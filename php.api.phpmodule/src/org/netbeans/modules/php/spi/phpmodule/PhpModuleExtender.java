@@ -90,16 +90,33 @@ public abstract class PhpModuleExtender {
     /**
      * Checks if this extender is valid (e.g., if the configuration set
      * using the UI component returned by {@link #getComponent} is valid).
+     * <p>
+     * If it returns <code>false</code>, check {@link #getErrorMessage() error message}, it
+     * should not be <code>null</code>.
      *
      * @return <code>true</code> if the configuration is valid, <code>false</code> otherwise.
+     * @see #getErrorMessage()
+     * @see #getWarningMessage()
      */
     public abstract boolean isValid();
 
     /**
-     * Get error message or <code>null</code> if the {@link #getComponent component} is valid.
-     * @return error message or <code>null</code> if the {@link #getComponent component} is valid
+     * Get error message or <code>null</code> if the {@link #getComponent component} is {@link #isValid() valid}.
+     * @return error message or <code>null</code> if the {@link #getComponent component} is {@link #isValid() valid}
+     * @see #isValid()
+     * @see #getWarningMessage()
      */
     public abstract String getErrorMessage();
+
+    /**
+     * Get warning message that can be not <code>null</code> even for {@link #isValid() valid} extender.
+     * In other words, it is safe to extend PHP module even if this method returns a message.
+     * @return warning message or <code>null</code>
+     * @see #isValid()
+     * @see #getErrorMessage()
+     * @since 1.7
+     */
+    public abstract String getWarningMessage();
 
     /**
      * Called to extend the given PHP module with the PHP framework

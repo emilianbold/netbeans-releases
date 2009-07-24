@@ -44,9 +44,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -64,6 +62,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpUnit.Files;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,7 +78,6 @@ import org.openide.util.NbBundle;
  */
 class ConfigActionTest extends ConfigAction {
     static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_LINE_CONVERTOR_FACTORY = new PhpUnitLineConvertorFactory();
-    private static final String CWD = "."; // NOI18N
     final PhpCoverageProvider coverageProvider;
 
     protected ConfigActionTest(PhpProject project) {
@@ -187,7 +185,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
-        return new PhpUnitInfo(testDirectory, null, CWD);
+        return new PhpUnitInfo(testDirectory, testDirectory, null);
     }
 
     private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
@@ -225,6 +223,10 @@ class ConfigActionTest extends ConfigAction {
             testRunner = getTestRunner();
             phpUnit = CommandUtils.getPhpUnit(false);
             assert phpUnit != null;
+        }
+
+        protected boolean allTests(PhpUnitInfo info) {
+            return info.testName == null;
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
@@ -265,28 +267,21 @@ class ConfigActionTest extends ConfigAction {
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
-            String testName = info.testName;
-            List<String> generatedFiles = new ArrayList<String>(3);
-            File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
-            if (bootstrap != null) {
+            File startFile = FileUtil.toFile(info.startFile);
+            Files files = phpUnit.getFiles(project, allTests(info));
+            if (files.bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                        .addArgument(bootstrap.getAbsolutePath());
+                        .addArgument(files.bootstrap.getAbsolutePath());
             }
-            File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
-            if (configuration != null) {
+            if (files.configuration != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                        .addArgument(configuration.getAbsolutePath());
+                        .addArgument(files.configuration.getAbsolutePath());
             }
-            if (testName == CWD) {
-                // provide NetBeans suite
-                File suite = phpUnit.getSuiteFile(project, generatedFiles);
-                if (suite != null) {
-                    testName = suite.getAbsolutePath();
-                }
+            if (files.suite != null) {
+                startFile = files.suite;
             }
-            PhpUnit.informAboutGeneratedFiles(generatedFiles);
 
             if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
@@ -294,14 +289,20 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(testName);
+                    .addArgument(PhpUnit.SUITE.getAbsolutePath())
+                    .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;
         }
 
         public String getOutputTabTitle() {
             String title = null;
-            if (info.testName == CWD) {
-                title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+            if (allTests(info)) {
+                File suite = phpUnit.getCustomSuite(project);
+                if (suite == null) {
+                    title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+                } else {
+                    title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesWithCustomSuiteSuffix", suite.getName());
+                }
             } else {
                 title = info.testName;
             }
@@ -309,7 +310,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public boolean isValid() {
-            return phpUnit.isValid() && info.workingDirectory != null && info.testName != null;
+            return phpUnit.isValid() && info.workingDirectory != null && info.startFile != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
@@ -317,12 +318,12 @@ class ConfigActionTest extends ConfigAction {
         }
 
         protected UnitTestRunner getTestRunner() {
-            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler);
+            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler, allTests(info));
         }
 
         void handleCodeCoverage() {
             if (!isCoverageEnabled()
-                    || info.testName != CWD) {
+                    || !allTests(info)) {
                 // XXX not enabled or just one test case (could be handled later)
                 return;
             }
@@ -348,12 +349,10 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public PhpProject getProject() {
-            assert info.startFile != null : "Only particular test files can be debugged";
             return project;
         }
 
         public FileObject getStartFile() {
-            assert info.startFile != null : "Only particular test files can be debugged";
             return info.startFile;
         }
 
@@ -365,7 +364,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         protected UnitTestRunner getTestRunner() {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
-            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler);
+            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, allTests(info));
         }
     }
 

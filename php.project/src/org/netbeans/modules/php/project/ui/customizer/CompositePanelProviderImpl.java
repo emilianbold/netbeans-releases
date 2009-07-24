@@ -54,6 +54,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String RUN = "Run"; // NOI18N
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
+    public static final String PHP_UNIT = "phpUnit"; // NOI18N
 
     private final String name;
 
@@ -88,6 +89,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_IgnorePath"),
                     null,
                     categories);
+        } else if (PHP_UNIT.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    PHP_UNIT,
+                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_PhpUnit"),
+                    null,
+                    categories);
         }
         assert toReturn != null : "No category for name: " + name;
         return toReturn;
@@ -104,6 +111,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerPhpIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
             return new CustomizerIgnorePath(category, uiProps);
+        } else if (PHP_UNIT.equals(nm)) {
+            return new CustomizerPhpUnit(category, uiProps);
         }
         return new JPanel();
     }
@@ -122,5 +131,9 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static CompositePanelProviderImpl createIgnorePath() {
         return new CompositePanelProviderImpl(IGNORE_PATH);
+    }
+
+    public static CompositePanelProviderImpl createPhpUnit() {
+        return new CompositePanelProviderImpl(PHP_UNIT);
     }
 }

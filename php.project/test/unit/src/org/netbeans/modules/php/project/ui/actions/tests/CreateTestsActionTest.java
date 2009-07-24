@@ -44,6 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.util.TestUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -53,6 +54,12 @@ public class CreateTestsActionTest extends NbTestCase {
 
     public CreateTestsActionTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtils.init();
     }
 
     public void testRequireOnceUnix() throws Exception {

@@ -119,6 +119,11 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return facesMapping;
     }
 
+    private void setFacesMapping(String facesMapping) {
+        this.facesMapping = facesMapping;
+    }
+
+
     private void updateFacesMapping() {
         if (enableFacelets)
             facesMapping = "*.jsf"; //NOI18N
@@ -133,7 +138,11 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     public boolean isValid() {
         getComponent();
-        return component.valid();
+        if (component.valid()) {
+            setFacesMapping(component.getURLPattern());
+            return true;
+        }
+        return false;
     }
     
     public Set extend(WebModule webModule) {
