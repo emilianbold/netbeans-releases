@@ -45,6 +45,7 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.Lookup;
@@ -109,12 +110,17 @@ public final class WebBeansModel {
      * lookup. Refer to javadoc of this method.
      * @param element element for check
      * @return true if element is simple injection point
+     * @throws WebBeansModelException if <code>element</code> could be injection 
+     * point but something wrong ( f.e. it has bindings and has no @Produces 
+     * annotation bit it is initialized ).   
      */
-    public boolean isInjectionPoint( VariableElement element ){
+    public boolean isInjectionPoint( VariableElement element ) 
+        throws WebBeansModelException 
+    {
         if ( getProvider() == null ){
             return false;
         }
-        return getProvider().isInjectionPoint(element);
+        return getProvider().isInjectionPoint(element, getModelImplementation());
     }
     
     /**
@@ -126,12 +132,18 @@ public final class WebBeansModel {
      * be used to access to possible bean types.
      * @param element  element for check
      * @return true if element is dynamic injection point
+     * @throws WebBeansModelException if <code>element</code> could be injection 
+     * point but something wrong ( f.e. it has bindings and has no @Produces 
+     * annotation bit it is initialized ). 
      */
-    public boolean isDynamicInjectionPoint( VariableElement element ){
+    public boolean isDynamicInjectionPoint( VariableElement element ) 
+        throws WebBeansModelException 
+    {
         if ( getProvider() == null ){
             return false;
         }
-        return getProvider().isDynamicInjectionPoint(element);
+        return getProvider().isDynamicInjectionPoint(element, 
+                getModelImplementation());
     }
     
     /**
@@ -146,6 +158,11 @@ public final class WebBeansModel {
             return null;
         }
         return getProvider().resolveType(fqn, getModelImplementation().getHelper());
+    }
+    
+    public Element getElementForCaret( JTextComponent target ){
+        return getProvider().getElementForCaret( target , 
+                getModelImplementation());
     }
     
     public AbstractModelImplementation getModelImplementation(){

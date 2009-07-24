@@ -82,7 +82,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.5</specification-version>
+                        <specification-version>0.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -150,42 +150,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.saas.codegen</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.saas.services.delicious</code-name-base>
-                    </test-dependency>
-                    <!--
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.saas.services.youtube</code-name-base>
-                    </test-dependency>
--->
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.saas.services.zillow</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.dialogs</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.modules</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
+            <test-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.wag.codegen.java</friend>
                 <friend>org.netbeans.modules.wag.kit</friend>

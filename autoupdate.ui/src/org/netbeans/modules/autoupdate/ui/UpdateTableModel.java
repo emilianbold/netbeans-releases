@@ -246,7 +246,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
 
     @Override
     public boolean isTabEnabled() {
-        return getRawItemCount() > 0;
+        return true;//getRawItemCount() > 0;
     }
 
     public boolean needsRestart () {
