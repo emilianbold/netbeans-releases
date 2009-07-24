@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="FunctionBreakpoint.xml" url="resources/FunctionBreakpoint.xml"/>
+            <file name="DisabledFunctionBreakpoint.xml" url="resources/DisabledFunctionBreakpoint.xml"/>
+            <file name="CondFuncBreakpoint.xml" url="resources/CondFuncBreakpoint.xml"/>
+            <file name="DisabledCondFuncBreakpoint.xml" url="resources/DisabledCondFuncBreakpoint.xml"/>
+            <!-- <file name="PC_anyBP.xml" url="PC_anyBP.xml"/> -->
+            <file name="AddressBreakpoint.xml" url="resources/AddressBreakpoint.xml"/>
+            <file name="DisabledAddressBreakpoint.xml" url="resources/DisabledAddressBreakpoint.xml"/>
+            <file name="CondAddrBreakpoint.xml" url="resources/CondAddrBreakpoint.xml"/>
+            <file name="DisabledCondAddrBreakpoint.xml" url="resources/DisabledCondAddrBreakpoint.xml"/>
+        </folder>
+    </folder>
+</filesystem>
