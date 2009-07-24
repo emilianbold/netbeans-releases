@@ -1071,7 +1071,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         }
         if ((sortedColum == 0 || sortedColum == 2) && sortedOrder != 0) {
-            Map<Comparable,Integer> map = new TreeMap<Comparable,Integer>();
+            Map<Comparable<?>,Integer> map = new TreeMap<Comparable<?>,Integer>();
             for(Integer i : filteredDataToDataIndex){
                 ThreadStateColumnImpl col = manager.getThreadData(i.intValue());
                 if (sortedColum == 0){
@@ -1186,7 +1186,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         @Override
-        public Class getColumnClass(int column) {
+        public Class<?> getColumnClass(int column) {
             // The main purpose of this method is to make numeric values aligned properly inside table cells
             switch (column) {
                 case NAME_COLUMN_INDEX:
