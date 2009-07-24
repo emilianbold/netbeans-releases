@@ -900,7 +900,7 @@ public final class ProjectXMLManager {
      * suite</em> module.
      */
     static void generateEmptyModuleTemplate(FileObject projectXml, String cnb,
-            NbModuleType moduleType) throws IOException {
+            NbModuleType moduleType, String... compileDepsCnbs) throws IOException {
 
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
 
@@ -920,7 +920,15 @@ public final class ProjectXMLManager {
         if (moduleTypeEl != null) {
             dataEl.appendChild(moduleTypeEl);
         }
-        dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
+        final Element deps = createModuleElement(dataDoc, MODULE_DEPENDENCIES);
+        for (String depCnb : compileDepsCnbs) {
+            Element modDepEl = createModuleElement(dataDoc, ProjectXMLManager.DEPENDENCY);
+            modDepEl.appendChild(createModuleElement(dataDoc, ProjectXMLManager.CODE_NAME_BASE, depCnb));
+            modDepEl.appendChild(createModuleElement(dataDoc, ProjectXMLManager.BUILD_PREREQUISITE));
+            modDepEl.appendChild(createModuleElement(dataDoc, ProjectXMLManager.COMPILE_DEPENDENCY));
+            deps.appendChild(modDepEl);
+        }
+        dataEl.appendChild(deps);
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
 
         // store document to disk

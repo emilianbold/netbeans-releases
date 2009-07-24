@@ -89,7 +89,9 @@ public final class ManifestManager {
     private Boolean autoUpdateShowInClient;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
+    public static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    public static final String BUNDLE_VERSION = "Bundle-Version"; // NOI18N
     public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION = "OpenIDE-Module-Implementation-Version"; // NOI18N
     public static final String OPENIDE_MODULE_PROVIDES = "OpenIDE-Module-Provides"; // NOI18N
     public static final String OPENIDE_MODULE_REQUIRES = "OpenIDE-Module-Requires"; // NOI18N
@@ -97,6 +99,8 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
+    public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
+    public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
@@ -160,7 +164,7 @@ public final class ManifestManager {
                     Manifest mf = new Manifest(mis);
                     return ManifestManager.getInstance(mf, loadPublicPackages);
                 } finally {
-                    mis.close();;
+                    mis.close();
                 }
             } catch (IOException x) {
                 Exceptions.attachMessage(x, "While opening: " + manifest);
@@ -203,6 +207,12 @@ public final class ManifestManager {
     public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
+        if (codename == null) {
+            if (attr.getValue(BUNDLE_SYMBOLIC_NAME) != null) {
+                return getOSGiInstance(manifest, loadPublicPackages, withGeneratedLayer);
+            }
+        }
+
         String codenamebase = null;
         String releaseVersion = null;
         if (codename != null) {
@@ -249,16 +259,98 @@ public final class ManifestManager {
                 autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
     }
+
+    private static ManifestManager getOSGiInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
+        Attributes attr = manifest.getMainAttributes();
+        String codenamebase = attr.getValue(BUNDLE_SYMBOLIC_NAME);
+        PackageExport[] publicPackages = null;
+        String requires = null;
+        String provides = null;
+        publicPackages = EMPTY_EXPORTED_PACKAGES;
+        {
+            String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+            if (pp != null) {
+                List<PackageExport> arr = new ArrayList<PackageExport>();
+                StringBuffer sb = new StringBuffer();
+                String sep = "";
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    final PackageExport pe = new PackageExport(p.replaceAll(";.*$", "").trim(), false);
+                    arr.add(pe);
+                    sb.append(sep).append(pe.getPackage());
+                    sep = ",";
+                }
+                publicPackages = arr.toArray(new PackageExport[0]);
+                provides = sb.toString();
+            }
+        }
+        {
+            String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
+            if (pp != null) {
+                StringBuffer sb = new StringBuffer();
+                String sep = "";
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    sep = ",";
+                }
+                requires = sb.toString();
+            }
+        }
+
+        if (!loadPublicPackages) {
+            publicPackages = EMPTY_EXPORTED_PACKAGES;
+        }
+        return new ManifestManager(
+                codenamebase, null,
+                just3dots(attr.getValue(BUNDLE_VERSION)),
+                attr.getValue(BUNDLE_VERSION),
+                provides, // provides
+                requires, // requires
+                null, // needs
+                attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
+                attr.getValue(OPENIDE_MODULE_LAYER),
+                withGeneratedLayer,
+                attr.getValue(CLASS_PATH),
+                publicPackages, //publicPackages,
+                null, //friendNames,
+                false, // deprecated,
+                null, // autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
+                attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
+    }
+
+    private static String just3dots(String v) {
+        if (v == null) {
+            return null;
+        }
+        String[] segments = v.split("\\.");
+        final int max = 3;
+        int[] version = new int[segments.length > max ? max : segments.length];
+        for (int i = 0; i < version.length; i++) {
+            version[i] = Integer.parseInt(segments[i]);
+        }
+        StringBuilder sb = new StringBuilder();
+        String conditionalDot = "";
+        for (int i = 0; i < version.length; i++) {
+            sb.append(conditionalDot);
+            sb.append(version[i]);
+            conditionalDot = ".";
+        }
+        return sb.toString();
+    }
     
     /**
      * Generates module manifest with the given values into the given
      * <code>manifest</code>.
      */
     static void createManifest(FileObject manifest, String cnb, String specVer,
-            String bundlePath, String layerPath) throws IOException {
+            String bundlePath, String layerPath, boolean osgi) throws IOException {
         EditableManifest em = new EditableManifest();
-        em.setAttribute(OPENIDE_MODULE, cnb, null);
-        em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+        if (osgi) {
+            em.setAttribute(BUNDLE_SYMBOLIC_NAME, cnb, null);
+            em.setAttribute(BUNDLE_VERSION, specVer, null);
+        } else {
+            em.setAttribute(OPENIDE_MODULE, cnb, null);
+            em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+        }
         em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
         if (layerPath != null) {
             em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
