@@ -971,7 +971,9 @@ public final class EarProjectProperties {
         String args = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2EE_PLATFORM_APPCLIENT_ARGS);
         if (args != null) {
             ep.setProperty(APPCLIENT_TOOL_ARGS, args);
-        }    
+        }    else {
+            ep.remove(APPCLIENT_TOOL_ARGS);
+        }
         
         //WORKAROUND for --retrieve option in asadmin deploy command
         //works only for local domains

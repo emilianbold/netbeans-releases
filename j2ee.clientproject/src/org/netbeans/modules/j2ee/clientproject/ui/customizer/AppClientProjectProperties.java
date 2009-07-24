@@ -791,6 +791,8 @@ final public class AppClientProjectProperties {
         String args = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2EE_PLATFORM_APPCLIENT_ARGS);
         if (args != null) {
             privateProps.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_ARGS, args);
+        }  else {
+            privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_ARGS);
         }
 
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);

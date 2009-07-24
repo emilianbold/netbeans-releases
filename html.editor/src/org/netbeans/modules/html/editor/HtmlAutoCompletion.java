@@ -42,6 +42,7 @@ package org.netbeans.modules.html.editor;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -77,6 +78,9 @@ public class HtmlAutoCompletion {
         } else if (ch == '"') {
             //user has pressed quotation mark
             handleQuotationMark(doc, dotPos, caret);
+        } else if (ch == '{') {
+            //user has pressed quotation mark
+            handleEL(doc, dotPos, caret);
         }
     }
 
@@ -134,6 +138,42 @@ public class HtmlAutoCompletion {
                     token.id() == HTMLTokenId.OPERATOR) {
                 doc.insertString(dotPosAfterTypedChar, "\"\"", null);
                 caret.setDot(dotPosAfterTypedChar + 1);
+            }
+
+        } finally {
+            doc.readUnlock();
+        }
+
+    }
+
+    //autocomplete ${ "}" and moves the caret inside the brackets
+    private static void handleEL(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
+        doc.readLock();
+        try {
+            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+            if (ts == null) {
+                return; //no html ts at the caret position
+            }
+            int diff = ts.move(dotPos);
+            if(diff == 0) {
+                return ; // ${ - the token diff must be > 0
+            }
+
+            if (!ts.moveNext()) {
+                return; //no token
+            }
+
+            Token token = ts.token();
+            int dotPosAfterTypedChar = dotPos + 1;
+            if(token.id() == HTMLTokenId.TEXT || token.id() == HTMLTokenId.VALUE) {
+                char charBefore = token.text().charAt(diff - 1);
+                if(charBefore == '$' || charBefore == '#') {
+                    doc.insertString(dotPosAfterTypedChar, "}", null);
+                    caret.setDot(dotPosAfterTypedChar);
+                    //open completion
+                    Completion.get().showCompletion();
+                }
+
             }
 
         } finally {

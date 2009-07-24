@@ -795,7 +795,11 @@ to simulate
     <xsl:template name="runTargets">
         <xsl:param name="subprojname"/>
         <xsl:param name="name"/>
-        <target name="run-{$subprojname}" depends="-tool-{$subprojname},-java-{$subprojname}"/>
+        <target name="run-{$subprojname}" depends="-tool2-{$subprojname},-old-java-{$subprojname}"/>
+        <target name="-old-java-{$subprojname}" if="j2ee.appclient.tool.args">
+            <antcall target="-tool-{$subprojname}"/>
+            <antcall target="-java-{$subprojname}"/>
+        </target>
         <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
             <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
@@ -816,7 +820,7 @@ to simulate
                 </syspropertyset>
             </java>
         </target>
-        <target name="tool2-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="run-deploy,-as-retrieve-option-workaround">
+        <target name="-tool2-{$subprojname}" unless="j2ee.appclient.tool.args" if="j2ee.appclient.mainclass.args" depends="run-deploy,-as-retrieve-option-workaround">
             <mkdir dir="${{dist.dir}}/{$name}Client"/>
             <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
                 <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>

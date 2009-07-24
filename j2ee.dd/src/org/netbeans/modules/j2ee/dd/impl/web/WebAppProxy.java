@@ -923,7 +923,9 @@ public class WebAppProxy implements WebApp {
     public void write(java.io.OutputStream os) throws java.io.IOException {
         if (webApp!=null) {
             writing=true;
-            Schema2BeansUtil.write((BaseBean) webApp, os);
+            BaseBean webAppl = (BaseBean)webApp;
+            webAppl.reindent("    ");
+            Schema2BeansUtil.write(webAppl, os);
         }
     }
 
