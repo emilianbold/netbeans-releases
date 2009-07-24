@@ -60,6 +60,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.ErrorManager;
@@ -213,7 +214,9 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
             LibraryTypeRegistry.getDefault().addTaskListener(this);
             initialized = true;
         } else {
-            LibraryTypeRegistry.getDefault().waitFinished();
+            if (!ProjectManager.mutex().isReadAccess() && !ProjectManager.mutex().isWriteAccess()) {
+                LibraryTypeRegistry.getDefault().waitFinished();
+            }
         }
     }
 
