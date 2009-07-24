@@ -5,20 +5,19 @@ syscall::open*:entry,
 syscall::creat*:entry
 /pid == $1/
 {
-    self->opening = 1;
-    self->path = stringof(arg0);
+    self->pathaddr = arg0;
 }
 
 syscall::open*:return,
 syscall::creat*:return
-/pid == $1 && self->opening/
+/pid == $1 && self->pathaddr/
 {
     this->fd = arg0;
     printf("%d %d %d %s %d \"%s\" %d",
-            timestamp, cpu, tid, "open", this->fd, self->path, 0);
+            timestamp, cpu, tid, "open", this->fd, copyinstr(self->pathaddr), 0);
     ustack();
     printf("\n");
-    self->opening = 0;
+    self->pathaddr = 0;
 }
 
 syscall::close*:entry
