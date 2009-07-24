@@ -131,8 +131,8 @@ public enum HTMLTokenId implements TokenId {
 
         @Override
         protected EmbeddingPresence embeddingPresence(HTMLTokenId id) {
-            if (id == TEXT) {
-                //always query TEXT for embedding
+            if (id == TEXT || id == VALUE) {
+                //always query TEXT and VALUE tokens for embedding
                 return EmbeddingPresence.ALWAYS_QUERY;
             } else {
                 return super.embeddingPresence(id);
