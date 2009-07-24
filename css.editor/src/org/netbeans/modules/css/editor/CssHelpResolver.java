@@ -66,7 +66,7 @@ public class CssHelpResolver {
 
     private static CssHelpResolver instance;
     private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOTICES
-    public static final String HELP_URL = getHelpZIPURL();
+    private static String HELP_ZIP_URL;
     private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
 
     public static synchronized CssHelpResolver instance() {
@@ -82,7 +82,12 @@ public class CssHelpResolver {
     private Map<String, PropertyDescriptor> properties;
 
     public String getPropertyHelp(String propertyName) {
-        return getHelpText(getPropertyHelpURL(propertyName));
+        URL helpURL = getPropertyHelpURL(propertyName);
+        if(helpURL == null) {
+            return NbBundle.getMessage(CssHelpResolver.class, "MISSING_HELP_FILE_MSG");//NOI18N
+        } else {
+            return getHelpText(helpURL);
+        }
     }
 
     private String getHelpText(URL url) {
@@ -127,12 +132,12 @@ public class CssHelpResolver {
         //find line beginning
         int start_index = 0;
         int begin_end_search_from = 0;
-        if(matcher.find()) {
+        if (matcher.find()) {
             start_index = matcher.start();
             begin_end_search_from = matcher.end();
         }
-        
-        
+
+
 //        for (start_index = anchor_index; start_index > 0; start_index--) {
 //            char ch = file_content.charAt(start_index);
 //            if (ch == '\n') {
@@ -142,34 +147,38 @@ public class CssHelpResolver {
 
         //find end of the "anchor part"
         int end_index = file_content.length();
-        
+
         Pattern end_search = Pattern.compile("^.*<[hH][1-5]>|<a name=\"propdef-", Pattern.MULTILINE);  //NOI18N
         matcher = end_search.matcher(file_content.subSequence(begin_end_search_from, file_content.length()));
-        if(matcher.find()) {
+        if (matcher.find()) {
             end_index = matcher.start() + begin_end_search_from + 1;
         }
 
         String anchor_part = file_content.substring(start_index, end_index);
 
         int firstLineEnd = anchor_part.indexOf("\n");  //NOI18N
-        if(firstLineEnd > 0) {
+        if (firstLineEnd > 0) {
             String firstLine = anchor_part.substring(0, firstLineEnd);
             firstLine = firstLine.replaceAll("<strong>'", "<strong style=\"font-size: large\">");  //N
             firstLine = firstLine.replaceAll("'</strong>", "</strong>"); //NOI18N
             anchor_part = firstLine + anchor_part.substring(firstLineEnd + 1);
         }
-        
+
         return anchor_part;
 
     }
 
     public URL getPropertyHelpURL(String propertyName) {
+        String hzurl = CssHelpResolver.getHelpZIPURL();
+        if(hzurl == null) {
+            return null;
+        }
         PropertyDescriptor pd = getPD(propertyName);
         if (pd == null) {
             return null;
         } else {
             try {
-                return new URL(HELP_URL + pd.helpLink);
+                return new URL(hzurl + pd.helpLink);
             } catch (MalformedURLException ex) {
                 Logger.global.log(Level.WARNING, "Error creating URL for property " + propertyName, ex); //NOI18N
                 return null;
@@ -235,18 +244,21 @@ public class CssHelpResolver {
 
     }
 
-    private static String getHelpZIPURL() {
-        File f = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
-        if (f != null) {
-            try {
-                URL urll = f.toURL();
-                urll = FileUtil.getArchiveRoot(urll);
-                return urll.toString();
-            } catch (java.net.MalformedURLException e) {
-                ErrorManager.getDefault().notify(e);
+    public static synchronized String getHelpZIPURL() {
+        if (HELP_ZIP_URL == null) {
+            File f = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+            if (f != null) {
+                try {
+                    URL urll = f.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    HELP_ZIP_URL = urll.toString();
+                } catch (java.net.MalformedURLException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
             }
         }
-        return null;
+
+        return HELP_ZIP_URL;
     }
 
     private static class PropertyDescriptor {

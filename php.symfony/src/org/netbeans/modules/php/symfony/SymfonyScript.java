@@ -121,10 +121,16 @@ public class SymfonyScript extends PhpProgram {
         return new SymfonyScript(symfony);
     }
 
+    /**
+     * @return full IDE options Symfony path
+     */
     public static String getOptionsPath() {
         return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
     }
 
+    /**
+     * @return IDE options Symfony subpath
+     */
     public static String getOptionsSubPath() {
         return OPTIONS_SUB_PATH;
     }
@@ -195,13 +201,13 @@ public class SymfonyScript extends PhpProgram {
         return lineProcessor.getHelp();
     }
 
-    private static <T> T[] mergeArrays(T[]... arrays) {
+    static <T> T[] mergeArrays(T[]... arrays) {
         List<T> list = new LinkedList<T>();
         for (T[] array : arrays) {
             list.addAll(Arrays.asList(array));
         }
         @SuppressWarnings("unchecked")
-        T[] merged = (T[]) Array.newInstance(arrays[0][0].getClass(), list.size());
+        T[] merged = (T[]) Array.newInstance(arrays[0].getClass().getComponentType(), list.size());
         return list.toArray(merged);
     }
 

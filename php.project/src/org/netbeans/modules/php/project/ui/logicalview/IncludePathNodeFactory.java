@@ -39,12 +39,10 @@
 package org.netbeans.modules.php.project.ui.logicalview;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -53,7 +51,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -86,7 +83,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         return NodeFactorySupport.fixedNodeList(new DummyNode(new IncludePathRootNode(project)) {
             @Override
             public Action[] getActions(boolean context) {
-                return new Action[]{new CustomizeIncludePathAction(project)};
+                return new Action[]{new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH)};
             }
         });
     }
@@ -256,18 +253,4 @@ public class IncludePathNodeFactory implements NodeFactory {
                 new DummyNode(dobj.getNodeDelegate());
         }
     }
-
-    private static class CustomizeIncludePathAction extends AbstractAction {
-        private PhpProject project;
-        CustomizeIncludePathAction(PhpProject project) {
-            super(NbBundle.getMessage(CustomizeIncludePathAction.class, "LBL_CustomizeIncludePath"));//NOI18N
-            this.project = project;
-        }
-        public void actionPerformed(ActionEvent e) {
-            project.getLookup().lookup(CustomizerProviderImpl.class).
-                    showCustomizer(CompositePanelProviderImpl.PHP_INCLUDE_PATH);
-        }
-
-    }
-
 }
