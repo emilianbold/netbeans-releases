@@ -225,7 +225,7 @@ public class ThreadMapVisualizer extends JPanel implements
         synchronized (uiLock) {
             threadsPanel.threadsMonitoringEnabled();
             dataManager.processData(MonitoredData.getMonitoredData(mapData));
-            startTimeStamp = dataManager.getEndTime();
+            startTimeStamp = dataManager.getEndTimeStump();
             setNonEmptyContent();
         }
     }
