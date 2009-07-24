@@ -19,7 +19,7 @@ BEGIN {
    endian_shift=*((char*)p)?0:8;
 }
 
-tick-1ms
+tick-100ms
 /!t || t->t_procp->p_pidp->pid_id != $1/
 {
        pidp = `pidhash[$1 & (`pid_hashsz - 1)];
@@ -31,7 +31,7 @@ tick-1ms
        nextreport=timestamp;
 }
 
-tick-1ms
+tick-100ms
 /t && t->t_procp->p_pidp->pid_id == $1 && timestamp > nextreport/
 {
        ttid      = t->t_tid;
@@ -51,7 +51,7 @@ tick-1ms
        t = t->t_forw;
 }
 
-tick-1ms
+tick-100ms
 /delta && lastts[ttid]/
 {
        /* the following two let us properly attribute OTHER WAIT */
@@ -63,7 +63,7 @@ tick-1ms
 
 }
 
-tick-1ms
+tick-100ms
 /delta/
 {
        w[wi] = 0;

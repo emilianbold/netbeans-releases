@@ -67,6 +67,25 @@
         </xsl:for-each>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='Menu']/folder[@name='File']/folder[@name='Import']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Menu</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">File</xsl:attribute>
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Import</xsl:attribute>
+                    <xsl:apply-templates mode="actions" select="attr"/>
+                    <xsl:apply-templates mode="actions" select="file[attr[@name='ergonomics' and @boolvalue='true']]"/>
+                </xsl:element>
+            </xsl:element>
+        </xsl:element>
+        <xsl:for-each select="file/attr[@name='originalFile' and ../attr[@name='ergonomics' and @boolvalue='true']]">
+            <xsl:call-template name="actions-definition">
+                <xsl:with-param name="originalFile" select="."/>
+            </xsl:call-template>
+        </xsl:for-each>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Services']/folder[@name='AntBasedProjectTypes']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Ergonomics</xsl:attribute>

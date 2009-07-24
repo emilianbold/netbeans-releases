@@ -246,17 +246,8 @@ public class FileInformation implements Serializable {
      * is not versioned or its entry is invalid
      */
     public FileStatus getStatus(File file) {
-        if (entry == null && file != null) {
-            readEntry(file);
-        }
         return entry;
     }
-    
-    private void readEntry(File file) {
-        // Fetches File info from .svn directory:
-        // entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
-        entry = null;       // TODO: read your detailed information about the file here, or disregard the entry field
-    }    
 
     /**
      * Returns localized text representation of status.

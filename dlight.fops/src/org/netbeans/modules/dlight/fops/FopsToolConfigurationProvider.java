@@ -52,7 +52,6 @@ import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
-import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
@@ -101,12 +100,9 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         toolConfiguration.addDataCollectorConfiguration(
                 new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:")); // NOI18N
 
-        toolConfiguration.addIndicatorDataProviderConfiguration(
-                new TimerIDPConfiguration());
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceCollectorConfig);
 
-        IndicatorMetadata indicatorMetadata =
-                new IndicatorMetadata(
-                Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), 100, // NOI18N

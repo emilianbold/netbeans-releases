@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -69,6 +68,7 @@ import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpUnit.Files;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -313,20 +313,18 @@ public final class CreateTestsAction extends NodeAction {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                 .workingDirectory(parent);
-        List<String> generatedFiles = new ArrayList<String>(2);
-        File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
-        if (bootstrap != null) {
+
+        Files files = phpUnit.getFiles(project, false);
+        if (files.bootstrap != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(bootstrap.getAbsolutePath());
+                    .addArgument(files.bootstrap.getAbsolutePath());
         }
-        File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
-        if (configuration != null) {
+        if (files.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                    .addArgument(configuration.getAbsolutePath());
+                    .addArgument(files.configuration.getAbsolutePath());
         }
-        PhpUnit.informAboutGeneratedFiles(generatedFiles);
 
         externalProcessBuilder = externalProcessBuilder
                 .addArgument(paramSkeleton)

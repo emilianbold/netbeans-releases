@@ -49,13 +49,13 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.RegistersAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/registers.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/common/resources/registers.png"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_RegistersAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-debugger-gdb-ui-MemoryViewAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.MemoryViewAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/common/resources/memory.png"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_MemoryViewAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.instance">
@@ -228,18 +228,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         
-        <folder name="AnnotationTypes">
-            <file name="FunctionBreakpoint.xml" url="FunctionBreakpoint.xml"/>
-            <file name="FunctionBreakpoint_broken.xml" url="FunctionBreakpoint_broken.xml"/>
-            <file name="DisabledFunctionBreakpoint.xml" url="DisabledFunctionBreakpoint.xml"/>
-            <file name="CondFuncBreakpoint.xml" url="CondFuncBreakpoint.xml"/>
-            <file name="DisabledCondFuncBreakpoint.xml" url="DisabledCondFuncBreakpoint.xml"/>
-            <!-- <file name="PC_anyBP.xml" url="PC_anyBP.xml"/> -->
-            <file name="AddressBreakpoint.xml" url="AddressBreakpoint.xml"/>
-            <file name="DisabledAddressBreakpoint.xml" url="DisabledAddressBreakpoint.xml"/>
-            <file name="CondAddrBreakpoint.xml" url="CondAddrBreakpoint.xml"/>
-            <file name="DisabledCondAddrBreakpoint.xml" url="DisabledCondAddrBreakpoint.xml"/>
-        </folder>
     </folder>
     
     <!-- Main menu -->

@@ -461,7 +461,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             }
         }
 
-        if(J2eeProjectCapabilities.forProject(project).isEjb31Supported())
+        if(J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported())
         {
             //change label if we will generate session beans
             jpaPackageLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_Jpa_SessionBean_Package")); // NOI18N
