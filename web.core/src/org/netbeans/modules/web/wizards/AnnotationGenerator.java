@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.web.wizards.FilterMappingData.Dispatcher;
 
@@ -52,6 +53,11 @@ import org.netbeans.modules.web.wizards.FilterMappingData.Dispatcher;
  */
 class AnnotationGenerator {
 
+    private static final String TRUE = "true";
+    private static final String CLASS_ANNOTATION = "classAnnotation";
+    private static final String INCL_INIT_PARAMS = "includeInitParams";
+    private static final String INCL_DISPATCHER = "includeDispatcher";
+
     private AnnotationGenerator() {
     }
 
@@ -59,12 +65,19 @@ class AnnotationGenerator {
      * Generate WebServlet annotation in form
      * "@WebServlet(name="xxx", urlPatterns={"/aaa","/ccc"}, initParams={@WebInitParam(name="a", value="1")})"
      * @param data Servlet data
+     * @param parameters Map where additional parameters are inserted
      * @return annotation as string
      */
-    static String webServlet(ServletData data) {
-        return "@WebServlet("+join(generServletName(data.getName()),
+    static String webServlet(ServletData data, Map<String,String> parameters) {
+        String initParams = generInitParams(data.getInitParams());
+        if (initParams != null) {
+            parameters.put(INCL_INIT_PARAMS, TRUE);
+        }
+        String res = "@WebServlet("+join(generServletName(data.getName()),
                 generUrlPatterns(data.getUrlMappings()),
-                generInitParams(data.getInitParams()))+")";
+                initParams)+")";
+        parameters.put(CLASS_ANNOTATION, res);
+        return res;
     }
 
     // -------------------------------------------------------------------------
@@ -101,12 +114,20 @@ class AnnotationGenerator {
      * "@WebFilter(filterName="abc", urlPatterns={"/aaa"}, dispatcherTypes={DispatcherType.ERROR}, initParams={@WebInitParam(name="a", value="1")})"
      * or
      * "@WebFilter(filterName="abc", servletNames={"xyz"}, dispatcherTypes={DispatcherType.ERROR}, initParams={@WebInitParam(name="a", value="1")})"
+     * @param data Filter data
+     * @param parameters Map where additional parameters are inserted
      * @return annotation as string
      */
-    static String webFilter(ServletData data) {
-        return "@WebFilter("+join(generFilterName(data.getName()),
-                generMappings(data.getName(), data.getFilterMappings()),
-                generInitParams(data.getInitParams()))+")";
+    static String webFilter(ServletData data, Map<String,String> parameters) {
+        String initParams = generInitParams(data.getInitParams());
+        if (initParams != null) {
+            parameters.put(INCL_INIT_PARAMS, TRUE);
+        }
+        String res = "@WebFilter("+join(generFilterName(data.getName()),
+                generMappings(data.getName(), data.getFilterMappings(), parameters),
+                initParams)+")";
+        parameters.put(CLASS_ANNOTATION, res);
+        return res;
     }
 
     // -------------------------------------------------------------------------
@@ -115,7 +136,7 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String generMappings(String filterName, List<FilterMappingData> mappings) {
+    private static String generMappings(String filterName, List<FilterMappingData> mappings, Map<String,String> parameters) {
         // Let's compute union of all specified dispatchers -- annotation is more
         // restrictive then DD and only one set of disoatchers may be specified.
         Set<String> dispatchers = new HashSet<String>();
@@ -137,6 +158,9 @@ class AnnotationGenerator {
         }
         String resDispatchers = dispatchers.isEmpty() ? null :
             "dispatcherTypes={"+join(dispatchers, "DispatcherType.", "")+"}";
+        if (resDispatchers != null) {
+            parameters.put(INCL_DISPATCHER, TRUE);
+        }
         String resUrlPatterns = urlPatterns.isEmpty() ? null : list("urlPatterns", urlPatterns);
         String resServltets = servletNames.isEmpty() ? null : list("servletNames", servletNames);
         return join(resUrlPatterns, resServltets, resDispatchers);
