@@ -119,7 +119,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public boolean isValid() {
-        return getErrorMessage() == null && getPanel().validateData() == null;
+        return getErrorMessage() == null;
     }
 
     @Override
@@ -129,7 +129,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         } catch (InvalidSymfonyScriptException ex) {
             return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
-        return getPanel().validateData();
+        return getPanel().getErrorMessage();
+    }
+
+    @Override
+    public String getWarningMessage() {
+        return getPanel().getWarningMessage();
     }
 
     private synchronized NewProjectConfigurationPanel getPanel() {

@@ -44,10 +44,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
@@ -57,7 +57,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -75,8 +74,6 @@ public final class PhpCoverageProvider implements CoverageProvider {
     private Boolean enabled = null;
     // GuardedBy(lock)
     private CoverageVO coverage = null;
-
-    private volatile String netbeansSuitePath;
 
     public PhpCoverageProvider(PhpProject project) {
         assert project != null;
@@ -144,13 +141,12 @@ public final class PhpCoverageProvider implements CoverageProvider {
         if (cov == null) {
             return null;
         }
-        String path = FileUtil.toFile(fo).getAbsolutePath();
-
-        if (path.equals(getNetBeansSuitePath())) {
+        if (!isUnderneathSourcesOnlyAndVisible(fo)) {
             return null;
         }
 
         // XXX optimize - hold files in a linked hash map
+        String path = FileUtil.toFile(fo).getAbsolutePath();
         for (FileVO file : cov.getFiles()) {
             if (path.equals(file.getPath())) {
                 return new PhpFileCoverageDetails(fo, file);
@@ -164,10 +160,10 @@ public final class PhpCoverageProvider implements CoverageProvider {
         if (cov == null) {
             return null;
         }
-        String suitePath = getNetBeansSuitePath();
+
         List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
         for (FileVO file : cov.getFiles()) {
-            if (!file.getPath().equals(suitePath)) {
+            if (isUnderneathSourcesOnlyAndVisible(file.getPath())) {
                 result.add(getFileCoverageSummary(file));
             }
         }
@@ -198,21 +194,15 @@ public final class PhpCoverageProvider implements CoverageProvider {
                 -1);
     }
 
-    private String getNetBeansSuitePath() {
-        if (netbeansSuitePath != null) {
-            return netbeansSuitePath;
-        }
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (phpUnit == null) {
-            LOGGER.log(Level.FINE, "PHPUnit not found but code coverage is present for {0} - how this can happen?!", project);
-        } else {
-            netbeansSuitePath = phpUnit.getSuiteFilePath(project);
-            if (netbeansSuitePath != null) {
-                LOGGER.log(Level.FINE, "Found NetBeansSuite file {0} for {1}", new Object[] {netbeansSuitePath, project});
-            } else {
-                LOGGER.log(Level.FINE, "NetBeansSuite file not found for {0}?!", project);
-            }
-        }
-        return netbeansSuitePath;
+    private boolean isUnderneathSourcesOnlyAndVisible(String path) {
+        return isUnderneathSourcesOnlyAndVisible(FileUtil.toFileObject(new File(path)));
+    }
+
+    private boolean isUnderneathSourcesOnlyAndVisible(FileObject fo) {
+        return fo != null
+                && CommandUtils.isUnderSources(project, fo)
+                && !CommandUtils.isUnderTests(project, fo, false)
+                && !CommandUtils.isUnderSelenium(project, fo, false)
+                && VisibilityQuery.getDefault().isVisible(fo);
     }
 }

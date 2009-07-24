@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.io.File;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
@@ -55,12 +56,14 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -102,6 +105,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
+    public static final String PHP_UNIT_BOOTSTRAP = "phpunit.bootstrap"; // NOI18N
+    public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
+    public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
@@ -174,6 +180,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String encoding;
     private String shortTags;
     private String aspTags;
+    private String phpUnitBootstrap;
+    private String phpUnitConfiguration;
+    private String phpUnitSuite;
 
     // CustomizerRun
     Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -351,6 +360,48 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         return ignorePathListRenderer;
     }
 
+    public String getPhpUnitBootstrap() {
+        if (phpUnitBootstrap == null) {
+            File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
+            if (bootstrap != null) {
+                phpUnitBootstrap = bootstrap.getAbsolutePath();
+            }
+        }
+        return phpUnitBootstrap;
+    }
+
+    public void setPhpUnitBootstrap(String phpUnitBootstrap) {
+        this.phpUnitBootstrap = phpUnitBootstrap;
+    }
+
+    public String getPhpUnitConfiguration() {
+        if (phpUnitConfiguration == null) {
+            File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
+            if (configuration != null) {
+                phpUnitConfiguration = configuration.getAbsolutePath();
+            }
+        }
+        return phpUnitConfiguration;
+    }
+
+    public void setPhpUnitConfiguration(String phpUnitConfiguration) {
+        this.phpUnitConfiguration = phpUnitConfiguration;
+    }
+
+    public String getPhpUnitSuite() {
+        if (phpUnitSuite == null) {
+            File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
+            if (suite != null) {
+                phpUnitSuite = suite.getAbsolutePath();
+            }
+        }
+        return phpUnitSuite;
+    }
+
+    public void setPhpUnitSuite(String phpUnitSuite) {
+        this.phpUnitSuite = phpUnitSuite;
+    }
+
     public void save() {
         try {
             // store properties
@@ -368,7 +419,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
     }
 
-    private void saveProperties() throws IOException {
+    void saveProperties() throws IOException {
         AntProjectHelper helper = project.getHelper();
 
         // encode include path
@@ -417,6 +468,17 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             projectProperties.setProperty(IGNORE_PATH, ignorePath);
         }
 
+        // phpunit
+        if (phpUnitBootstrap != null) {
+            projectProperties.setProperty(PHP_UNIT_BOOTSTRAP, relativizeFile(phpUnitBootstrap));
+        }
+        if (phpUnitConfiguration != null) {
+            projectProperties.setProperty(PHP_UNIT_CONFIGURATION, relativizeFile(phpUnitConfiguration));
+        }
+        if (phpUnitSuite != null) {
+            projectProperties.setProperty(PHP_UNIT_SUITE, relativizeFile(phpUnitSuite));
+        }
+
         // configs
         storeRunConfigs(runConfigs, projectProperties, privateProperties);
         EditableProperties ep = helper.getProperties(CONFIG_PRIVATE_PROPERTIES_PATH);
@@ -447,6 +509,19 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
                 getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
+    }
+
+    private String relativizeFile(String filePath) {
+        if (StringUtils.hasText(filePath)) {
+            File file = new File(filePath);
+            String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+            if (path == null) {
+                // sorry, cannot be relativized
+                path = file.getAbsolutePath();
+            }
+            return path;
+        }
+        return ""; // NOI18N
     }
 
     private String getActiveRunAsType() {

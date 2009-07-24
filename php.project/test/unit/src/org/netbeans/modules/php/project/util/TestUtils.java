@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,57 +34,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
+package org.netbeans.modules.php.project.util;
 
-import org.netbeans.junit.NbTestCase;
-import static org.junit.Assert.*;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.MockServices;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyScriptTest extends NbTestCase {
+public final class TestUtils {
 
-    public SymfonyScriptTest(String name) {
-        super(name);
+    private TestUtils() {
     }
 
-    public void testValidity() {
-        SymfonyScript symfonyScript = new SymfonyScript(null);
-        assertFalse(symfonyScript.isValid());
-
-        symfonyScript = new SymfonyScript("");
-        assertFalse(symfonyScript.isValid());
-
-        symfonyScript = new SymfonyScript(" ");
-        assertFalse(symfonyScript.isValid());
-
-        symfonyScript = new SymfonyScript("/a/b/c/DDD");
-        assertFalse(symfonyScript.isValid());
+    static {
+        MockServices.setServices(MockInstalledFileLocator.class);
     }
 
-    public void testMergeArrays() {
-        String[] a = new String[] {"a"};
-        String[] b = new String[] {"b"};
+    public static void init() {
+        // noop
+    }
 
-        String[] merged = SymfonyScript.mergeArrays(a, b);
-        assertEquals(2, merged.length);
-        assertEquals(a[0], merged[0]);
-        assertEquals(b[0], merged[1]);
 
-        a = new String[0];
-        b = new String[] {"b"};
+    public static final class MockInstalledFileLocator extends InstalledFileLocator {
 
-        merged = SymfonyScript.mergeArrays(a, b);
-        assertEquals(1, merged.length);
-        assertEquals(b[0], merged[0]);
-
-        a = new String[0];
-        b = new String[0];
-
-        merged = SymfonyScript.mergeArrays(a, b);
-        assertEquals(0, merged.length);
+        @Override
+        public File locate(String name, String codeNameBase, boolean localized) {
+            if (name.equals("NetBeansSuite.php")) {
+                try {
+                    // create dummy file and return it
+                    File tmpFile = File.createTempFile("nb-test-file", null);
+                    tmpFile.deleteOnExit();
+                    return tmpFile;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
+        }
     }
 }
