@@ -82,10 +82,10 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(
                 new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION, loc("ThreadMapTool.Indicator.Title"), 1, // NOI18N
                 Arrays.asList(
-                    new GraphDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
                     new GraphDescriptor(ThreadStateResources.THREAD_SLEEPING.color, ThreadStateResources.THREAD_SLEEPING.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
                     new GraphDescriptor(ThreadStateResources.THREAD_WAITING.color, ThreadStateResources.THREAD_WAITING.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                    new GraphDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
                 new DataRowToMSAPlot(msaTableMetadata.getColumns()));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
 
@@ -152,8 +152,8 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 Object value = row.getData(columnName);
                 if (value != null) {
                     int intValue = DataUtil.toInt(value);
-                    int state = mapMicrostateToState(i - 1);
-                    if (state < STATE_COUNT) {
+                    int state = mapMicrostateToIndex(i - 1);
+                    if (0 <= state && state < STATE_COUNT) {
                         newData[state] += intValue;
                         sum += intValue;
                     }
@@ -174,10 +174,21 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
     /*
      * Maps microstate index (LMS_USER = 0, LMS_SYSTEM = 1, etc)
-     * to simple state index (Running = 0, Sleeping = 1, etc).
+     * to index in array returned to indicator.
      */
-    private static int mapMicrostateToState(int microstate) {
-        return ThreadStateMapper.toSimpleState(MSAState.values()[microstate + MSAState.START_LONG_LIST.ordinal() + 1]).ordinal()
-                - MSAState.START_SHORT_LIST.ordinal() - 1;
+    private static int mapMicrostateToIndex(int microstate) {
+        MSAState state = ThreadStateMapper.toSimpleState(MSAState.values()[microstate + MSAState.START_LONG_LIST.ordinal() + 1]);
+        switch (state) {
+            case Running:
+                return 3;
+            case Blocked:
+                return 2;
+            case Waiting:
+                return 1;
+            case Sleeping:
+                return 0;
+            default:
+                return -1; // out of range
+        }
     }
 }
