@@ -71,6 +71,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -608,16 +609,20 @@ public final class AntProjectHelper {
                 }
                 Iterator<String> it = modifiedMetadataPaths.iterator();
                 while (it.hasNext()) {
-                    String path = it.next();
-                    if (path.equals(PROJECT_XML_PATH)) {
-                        assert projectXml != null;
-                        locks.add(saveXml(projectXml, path));
-                    } else if (path.equals(PRIVATE_XML_PATH)) {
-                        assert privateXml != null;
-                        locks.add(saveXml(privateXml, path));
-                    } else {
-                        // All else is assumed to be a properties file.
-                        locks.add(properties.write(path));
+                    try {
+                        String path = it.next();
+                        if (path.equals(PROJECT_XML_PATH)) {
+                            assert projectXml != null;
+                            locks.add(saveXml(projectXml, path));
+                        } else if (path.equals(PRIVATE_XML_PATH)) {
+                            assert privateXml != null;
+                            locks.add(saveXml(privateXml, path));
+                        } else {
+                            // All else is assumed to be a properties file.
+                            locks.add(properties.write(path));
+                        }
+                    } catch (FileAlreadyLockedException x) { // #155037
+                        LOG.log(Level.INFO, null, x);
                     }
                     // As metadata files are saved, take them off the modified list.
                     it.remove();
