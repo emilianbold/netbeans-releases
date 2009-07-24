@@ -72,6 +72,21 @@
                     </xsl:element>
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='Menu']/folder[@name='File']/folder[@name='Import']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Menu</xsl:attribute>
+                    <xsl:element name="folder">
+                        <xsl:attribute name="name">File</xsl:attribute>
+                        <xsl:element name="folder">
+                            <xsl:attribute name="name">Import</xsl:attribute>
+                            <xsl:apply-templates
+                                select="//*/folder[@name='Menu']/folder[@name='File']/folder[@name='Import']/*"
+                                mode="project-wizard"
+                            />
+                        </xsl:element>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:if>
             <xsl:if test="//filesystem/folder[@name='Actions']">
                 <xsl:element name="folder">
                     <xsl:attribute name="name">Actions</xsl:attribute>
