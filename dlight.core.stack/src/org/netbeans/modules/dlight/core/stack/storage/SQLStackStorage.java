@@ -562,7 +562,7 @@ public final class SQLStackStorage {
 
     private class ExecutorThread extends Thread {
 
-        private static final int MAX_COMMANDS = 1000;
+        private static final int MAX_COMMANDS = 5000;
         private static final long SLEEP_INTERVAL = 200L;
         private final LinkedBlockingQueue<Object> queue;
 
@@ -594,6 +594,7 @@ public final class SQLStackStorage {
                     // Taking commands from queue and executing them should be one atomic action.
                     synchronized (this) {
                         queue.drainTo(cmds, MAX_COMMANDS);
+                        System.err.println("rest queue size ="+queue.size());
 
                         // first pass: collect metrics
                         Iterator<Object> cmdIterator = cmds.iterator();
