@@ -145,21 +145,13 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="30"/>
             <!-- intentionally not in new file wizard, only in Tools > Templates -->
             <attr name="templateCategory" stringvalue="PHPUnit"/>
-            <file name="PHPUnitSuite" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitSuite.php">
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitSuiteDescription.html"/>
-                <attr name="templateCategory" stringvalue="PHP"/>
-                <attr name="position" intvalue="100"/>
-            </file>
             <file name="PHPUnitBootstrap" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitBootstrap.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitBootstrapDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="100"/>
             </file>
             <file name="PHPUnitConfiguration.xml" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitConfiguration.xml">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -167,7 +159,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitConfigurationDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>
@@ -201,6 +193,10 @@ made subject to such option by the copyright holder.
                 <file name="IgnorePath.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createIgnorePath"/>
                     <attr name="position" intvalue="310"/>
+                </file>
+                <file name="PhpUnit.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpUnit"/>
+                    <attr name="position" intvalue="320"/>
                 </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
