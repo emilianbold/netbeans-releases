@@ -48,13 +48,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
-
-import com.sun.source.util.TreePath;
 
 
 /**
@@ -149,20 +146,6 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return hasBinding && !hasProduces;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getElementForCaret(javax.swing.text.JTextComponent, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Element getElementForCaret( JTextComponent target,
-            AbstractModelImplementation modelImplementation )
-    {
-        WebBeansModelImplementation impl = getImplementation( modelImplementation);
-        int dot = target.getCaret().getDot();
-        TreePath tp = impl.getHelper().getCompilationController().getTreeUtilities()
-            .pathFor(dot);
-
-        return impl.getHelper().getCompilationController().getTrees().getElement( tp );
-    }
-        
     private WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {

@@ -45,8 +45,8 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.Lookup;
 
@@ -160,9 +160,8 @@ public final class WebBeansModel {
         return getProvider().resolveType(fqn, getModelImplementation().getHelper());
     }
     
-    public Element getElementForCaret( JTextComponent target ){
-        return getProvider().getElementForCaret( target , 
-                getModelImplementation());
+    public CompilationController getCompilationController(){
+        return getModelImplementation().getHelper().getCompilationController();
     }
     
     public AbstractModelImplementation getModelImplementation(){
