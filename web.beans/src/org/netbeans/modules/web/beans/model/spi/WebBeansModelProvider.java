@@ -45,7 +45,6 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
@@ -72,6 +71,4 @@ public interface WebBeansModelProvider {
     
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
 
-    Element getElementForCaret( JTextComponent target,
-            AbstractModelImplementation modelImplementation );
 }
