@@ -251,7 +251,7 @@ made subject to such option by the copyright holder.
   <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.javadoc.netbeans}" />
+              <dirset dir="${nb_all}" includes="${config.javadoc.all}" />
           </path>
           <mapper type="identity" />
       </pathconvert>
