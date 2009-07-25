@@ -62,7 +62,7 @@ public final class PlotIndicatorConfiguration extends IndicatorConfiguration {
     private LabelRenderer renderer;
 
     public PlotIndicatorConfiguration(IndicatorMetadata metadata, int position, String title, int scale, List<GraphDescriptor> graphDescriptors, DataRowToPlot dataRowHandler) {
-        super(metadata, position);
+        super(metadata, position, true);
         this.title = title;
         this.scale = scale;
         this.graphDescriptors = graphDescriptors;

@@ -105,7 +105,7 @@ public final class DLightConfiguration {
         this.toolsConfiguration = toolsConfiguration;
         this.rootFolder = configurationRoot;
         this.configurationOptions = getConfigurationOptions();
-        
+
     }
 
     /**
@@ -113,32 +113,58 @@ public final class DLightConfiguration {
      * @return list of tools used in the current configuration
      */
     public List<DLightTool> getToolsSet() {
-        return toolsConfiguration.getToolsSet();
+        synchronized (toolsConfiguration) {
+            return toolsConfiguration.getToolsSet();
+        }
     }
 
-    public List<Indicator> getIndicators(){
+    public List<Indicator> getIndicators() {
         List<Indicator> result = new ArrayList<Indicator>();
         List<DLightTool> tools = getToolsSet();
-          for (DLightTool tool : tools){
+        for (DLightTool tool : tools) {
             result.addAll(tool.getIndicators());
         }
-          return result;
-
+        return result;
     }
-    
-    public DLightTool getToolByName(String name){
-        if (name == null){
+
+    public DLightTool getToolByID(String id) {
+        if (id == null) {
             return null;
         }
-        List<DLightTool> list = toolsConfiguration.getToolsSet();
-        for (DLightTool tool : list){
-            if (name.equals(tool.getName())){
+
+        List<DLightTool> list;
+
+        synchronized (toolsConfiguration) {
+            list = new ArrayList<DLightTool>(toolsConfiguration.getToolsSet());
+        }
+
+        for (DLightTool tool : list) {
+            if (id.equals(tool.getID())) {
                 return tool;
             }
         }
+
         return null;
+    }
 
+    public DLightTool getToolByName(String name) {
+        if (name == null) {
+            return null;
+        }
 
+        List<DLightTool> list;
+
+        synchronized (toolsConfiguration) {
+            list = new ArrayList<DLightTool>(toolsConfiguration.getToolsSet());
+        }
+
+        for (DLightTool tool : list) {
+            if (name.equals(tool.getName())) {
+                return tool;
+            }
+        }
+
+        return null;
     }
 
     public DLightConfigurationOptions getConfigurationOptions(boolean template) {
@@ -210,6 +236,7 @@ public final class DLightConfiguration {
     }
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
+
         private boolean turnState = false;
 
         public void turnCollectorsState(boolean turnState) {
@@ -221,7 +248,9 @@ public final class DLightConfiguration {
         }
 
         public List<DLightTool> getToolsSet() {
-            return DLightConfiguration.this.toolsConfiguration.getToolsSet();
+            synchronized (toolsConfiguration) {
+                return toolsConfiguration.getToolsSet();
+            }
         }
 
         public List<DataCollector<?>> getCollectors(DLightTool tool) {
@@ -244,5 +273,4 @@ public final class DLightConfiguration {
             return null;
         }
     }
-
 }
