@@ -559,6 +559,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 return false;
             }
             
+            
             boolean shouldEnableLocal = (ejbReference.getLocal() != null);
             boolean shouldEnableRemote = (ejbReference.getRemote() != null);
             localRadioButton.setEnabled(shouldEnableLocal);
