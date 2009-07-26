@@ -65,8 +65,8 @@ org.openide.actions.PreviousTabAction
 org.openide.actions.PageSetupAction
 #org.openide.actions.PopupAction
 org.openide.actions.PropertiesAction
-#org.openide.actions.FindAction
-#org.openide.actions.ReplaceAction
+org.openide.actions.FindAction
+org.openide.actions.ReplaceAction
 
 org.openide.actions.UndockAction
 org.openide.actions.CloneViewAction
