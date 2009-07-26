@@ -177,6 +177,7 @@ public abstract class EjbMethodController {
      */
     public abstract void createAndAddImpl(MethodModel clientView);
     
+    public abstract void delete(MethodModel classMethod);
     public abstract void delete(MethodModel interfaceMethod, boolean local);
     
     /** Checks if given method type is supported by controller.
