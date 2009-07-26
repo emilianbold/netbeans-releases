@@ -70,29 +70,33 @@ import org.openide.util.lookup.InstanceContent;
  * @author Martin Adamek
  */
 public class MethodsNode extends AbstractNode implements OpenCookie {
-    
+    public static enum ViewType{NO_INTERFACE, LOCAL, REMOTE};
     private final String ejbClass;
     private final MetadataModel<EjbJarMetadata> model;
     private final EjbViewController controller;
     private FileObject fileObject;
-    private boolean local;
+    private ViewType viewType;
 
-    public MethodsNode(String ejbClass, EjbJar ejbModule, Children children, boolean local) {
-        this(new InstanceContent(), ejbClass, ejbModule, children, local);
+    public MethodsNode(String ejbClass, EjbJar ejbModule, Children children, ViewType viewType) {
+        this(new InstanceContent(), ejbClass, ejbModule, children, viewType);
     }
     
-    private MethodsNode(InstanceContent content, final String ejbClass, EjbJar ejbModule, Children children, final boolean local) {
+    private MethodsNode(InstanceContent content, final String ejbClass, EjbJar ejbModule, Children children, final ViewType viewType) {
         super(children, new AbstractLookup(content));
         this.ejbClass = ejbClass;
         this.model = ejbModule.getMetadataModel();
         this.controller = new EjbViewController(ejbClass, ejbModule);
-        this.local = local;
+        this.viewType = viewType;
         try {
             this.fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
                 public FileObject run(EjbJarMetadata metadata) throws Exception {
                     EntityAndSession entityAndSession = (EntityAndSession) metadata.findByEjbClass(ejbClass);
-                    String className = local ? entityAndSession.getLocal() : entityAndSession.getRemote();
-                    return metadata.findResource(Utils.toResourceName(className));
+                    switch (viewType){
+                        case NO_INTERFACE: return metadata.findResource(Utils.toResourceName(entityAndSession.getEjbClass()));
+                        case LOCAL: return metadata.findResource(Utils.toResourceName(entityAndSession.getLocal()));
+                        case REMOTE: return metadata.findResource(Utils.toResourceName(entityAndSession.getRemote()));
+                    }
+                    return null;
                 }
             });
         } catch (IOException ioe) {
@@ -130,6 +134,10 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
     }
     
     public boolean isLocal() {
-	return local;
+	return viewType == ViewType.LOCAL;
+    }
+
+    public boolean isRemote() {
+	return viewType == ViewType.REMOTE;
     }
 }
