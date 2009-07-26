@@ -12,7 +12,7 @@ and open the template in the editor.
 
             <tocitem text="Runnning Python Applications" target="org.netbeans.modules.python.help.run"/>
             
-            <tocitem text="Python Platforms" target="org.netbeans.modules.python.help.platforms"/>
+            <tocitem text="Python Platforms" target="org.netbeans.modules.python.platform.panels.PythonPlatformPanel"/>
            
         
             <tocitem text="Using Python Interactive Console" target="org.netbeans.modules.python.help.pyconsole"/>
