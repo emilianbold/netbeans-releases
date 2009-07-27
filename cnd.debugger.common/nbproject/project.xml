@@ -83,7 +83,6 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.cnd.debugger.dbx.comm</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>

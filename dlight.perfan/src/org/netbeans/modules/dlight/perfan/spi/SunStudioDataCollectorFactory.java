@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
@@ -66,7 +66,7 @@ public final class SunStudioDataCollectorFactory
         SunStudioDCConfigurationAccessor confInfo =
                 SunStudioDCConfigurationAccessor.getDefault();
 
-        List<CollectedInfo> collectedInfoList =
+        Set<CollectedInfo> collectedInfoList =
                 confInfo.getCollectedInfo(configuration);
 
         synchronized (this) {

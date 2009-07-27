@@ -39,6 +39,7 @@
 package org.netbeans.modules.html.editor.gsf.api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
@@ -117,6 +118,22 @@ public class HtmlParserResult extends ParserResult {
         } else {
             return result.getASTRoot(namespace);
         }
+    }
+
+    /** returns a map of all namespaces to astnode roots.*/
+    public Map<String, AstNode> roots() {
+        Map<String, AstNode> roots = new HashMap<String, AstNode>();
+        for(String uri : getNamespaces().keySet()) {
+            roots.put(uri, root(uri));
+        }
+        
+        //non xhtml workaround, add the default namespaces if missing
+        if(!roots.containsValue(root())) {
+            roots.put(null, root());
+        }
+
+        return roots;
+
     }
 
     /**declared uri to prefix map */

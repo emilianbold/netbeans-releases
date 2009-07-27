@@ -110,6 +110,7 @@ bool AppLauncher::findUserDir(const char *str) {
     const char *appToken = strstr(str, APPNAME_TOKEN);
     if (appToken) {
         userDir += string(str, appToken - str);
+        str += appToken - str;
         userDir += appName;
         str += strlen(APPNAME_TOKEN);
     }

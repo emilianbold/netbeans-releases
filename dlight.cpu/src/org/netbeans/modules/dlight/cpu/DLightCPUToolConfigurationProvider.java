@@ -79,6 +79,7 @@ public final class DLightCPUToolConfigurationProvider
         implements DLightToolConfigurationProvider {
 
     public static final int INDICATOR_POSITION = 100;
+    public static final String ID = "dlight.tool.cpu"; // NOI18N
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
@@ -86,8 +87,8 @@ public final class DLightCPUToolConfigurationProvider
     private static final int SECONDS_PER_MINUTE = 60;
 
     public DLightToolConfiguration create() {
-        final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
@@ -168,11 +169,11 @@ public final class DLightCPUToolConfigurationProvider
                 indicatorMetadata, INDICATOR_POSITION,
                 loc("indicator.title"), 100, // NOI18N
                 Arrays.<GraphDescriptor>asList(
-                    new GraphDescriptor(GraphConfig.COLOR_3, loc("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_3, loc("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
                 new DataRowToCpuPlot(
-                    Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
-                    Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
+                Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
+                Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
         indicatorConfiguration.setDetailDescriptors(Arrays.asList(
                 new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0)))); // NOI18N
@@ -307,5 +308,4 @@ public final class DLightCPUToolConfigurationProvider
     private static String formatTime(int seconds) {
         return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
     }
-
 }

@@ -325,6 +325,7 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_CPP;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
+    private static Filter<CppTokenId> FILTER_OMP;
     private static Filter<FortranTokenId> FILTER_FORTRAN;
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
@@ -337,6 +338,14 @@ public final class CndLexerUtilities {
             addPreprocKeywords(FILTER_PREPRPOCESSOR);
         }
         return FILTER_PREPRPOCESSOR;
+    }
+
+    public synchronized static Filter<CppTokenId> getOmpFilter() {
+        if (FILTER_OMP == null) {
+            FILTER_OMP = new Filter<CppTokenId>();
+            addOmpKeywords(FILTER_OMP);
+        }
+        return FILTER_OMP;
     }
 
     public synchronized static Filter<CppTokenId> getStdCFilter() {
@@ -406,6 +415,46 @@ public final class CndLexerUtilities {
             CppTokenId.PREPROCESSOR_PRAGMA,
             CppTokenId.PREPROCESSOR_WARNING,
             CppTokenId.PREPROCESSOR_ERROR,
+        };
+        addToFilter(ids, filterToModify);
+    }
+
+    private static void addOmpKeywords(Filter<CppTokenId> filterToModify) {
+        CppTokenId[] ids = new CppTokenId[]{
+            CppTokenId.PRAGMA_OMP_START,
+            CppTokenId.PRAGMA_OMP_PARALLEL,
+            CppTokenId.PRAGMA_OMP_SECTIONS,
+            CppTokenId.PRAGMA_OMP_NOWAIT,
+            CppTokenId.PRAGMA_OMP_ORDERED,
+            CppTokenId.PRAGMA_OMP_SCHEDULE,
+            CppTokenId.PRAGMA_OMP_DYNAMIC,
+            CppTokenId.PRAGMA_OMP_GUIDED,
+            CppTokenId.PRAGMA_OMP_RUNTIME,
+            CppTokenId.PRAGMA_OMP_SECTION,
+            CppTokenId.PRAGMA_OMP_SINGLE,
+            CppTokenId.PRAGMA_OMP_MASTER,
+            CppTokenId.PRAGMA_OMP_CRITICAL,
+            CppTokenId.PRAGMA_OMP_BARRIER,
+            CppTokenId.PRAGMA_OMP_ATOMIC,
+            CppTokenId.PRAGMA_OMP_FLUSH,
+            CppTokenId.PRAGMA_OMP_THREADPRIVATE,
+            CppTokenId.PRAGMA_OMP_PRIVATE,
+            CppTokenId.PRAGMA_OMP_FIRSTPRIVATE,
+            CppTokenId.PRAGMA_OMP_LASTPRIVATE,
+            CppTokenId.PRAGMA_OMP_SHARED,
+            CppTokenId.PRAGMA_OMP_NONE,
+            CppTokenId.PRAGMA_OMP_REDUCTION,
+            CppTokenId.PRAGMA_OMP_COPYIN,
+            CppTokenId.PRAGMA_OMP_TASK,
+            CppTokenId.PRAGMA_OMP_TASKWAIT,
+            CppTokenId.PRAGMA_OMP_COLLAPSE,
+            CppTokenId.PRAGMA_OMP_COPYPRIVATE,
+            CppTokenId.PRAGMA_OMP_DEFAULT,
+            CppTokenId.PRAGMA_OMP_STATIC,
+            CppTokenId.PRAGMA_OMP_IF,
+            CppTokenId.PRAGMA_OMP_FOR,
+            CppTokenId.PRAGMA_OMP_AUTO,
+            CppTokenId.PRAGMA_OMP_NUM_THREADS,
         };
         addToFilter(ids, filterToModify);
     }

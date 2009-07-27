@@ -74,11 +74,11 @@ import org.netbeans.modules.cnd.settings.CppSettings;
         return true;
     }
     
-    public boolean isGdbRequired() {
+    public boolean isDebuggerRequired() {
         return true;
     }
     
-    public void setGdbRequired(boolean value) {
+    public void setDebuggerRequired(boolean value) {
 //        CppSettings.getDefault().setGdbRequired(value);
     }
 //    

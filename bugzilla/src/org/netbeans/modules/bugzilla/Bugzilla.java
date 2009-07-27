@@ -70,7 +70,7 @@ public class Bugzilla {
     private static final Object REPOSITORIES_LOCK = new Object();
     private static Bugzilla instance;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
     private BugzillaCorePlugin bcp;
