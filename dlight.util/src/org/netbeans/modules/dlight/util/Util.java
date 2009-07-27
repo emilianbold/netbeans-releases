@@ -54,8 +54,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 public class Util {
+
     private static final Logger log = DLightLogger.getLogger(Util.class);
-    
+
     /**
      * Gets an absolute path of the module-installed file.
      * @param relpath path from install root, e.g. <samp>modules/ext/somelib.jar</samp>
@@ -85,7 +86,7 @@ public class Util {
             }
 
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-            
+
             if (hostInfo == null) {
                 return null;
             }
@@ -153,7 +154,7 @@ public class Util {
             pb.start();
         } catch (IOException ex) {
             ex.printStackTrace();
-        //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
+            //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
         }
     }
 
@@ -191,11 +192,13 @@ public class Util {
     public static boolean deleteLocalDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteLocalDirectory(files[i]);
-                } else {
-                    files[i].delete();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].isDirectory()) {
+                        deleteLocalDirectory(files[i]);
+                    } else {
+                        files[i].delete();
+                    }
                 }
             }
         }

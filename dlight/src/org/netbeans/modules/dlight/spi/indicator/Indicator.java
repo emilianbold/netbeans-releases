@@ -97,7 +97,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
-
+    private boolean visible;
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -123,6 +123,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             }
         };
 
+        this.visible = configuration.isVisible();
     }
 
     //public abstract Action[]  getActions();
@@ -191,6 +192,14 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     protected abstract void tick();
 
+    public final boolean isVisible() {
+        return visible;
+    }
+
+    public final void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {
             IndicatorTickerService.getInstance().unsubscribe(tickerListener);
@@ -229,7 +238,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             }
         });
         final Color c = component.getBackground();
-        final Color selectionColor = c == null ? (UIManager.getColor("Panel.background") == null ? c : UIManager.getColor("Panel.background").darker() ) :  c.darker();//UIManager.getColor("TextField.selectionBackground");
+        final Color selectionColor = c == null ? (UIManager.getColor("Panel.background") == null ? c : UIManager.getColor("Panel.background").darker()) : c.darker();//UIManager.getColor("TextField.selectionBackground");
         component.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -239,13 +248,13 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 component.setBorder(BorderFactory.createEtchedBorder());
                 component.setBackground(selectionColor);
                 JRootPane rootPane = component.getRootPane();
-                if ( rootPane== null){
+                if (rootPane == null) {
                     return;
                 }
-                InputMap iMap =rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                InputMap iMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                 iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
 
-                ActionMap aMap =rootPane.getActionMap();
+                ActionMap aMap = rootPane.getActionMap();
                 aMap.put("enter", new AbstractAction() {//NOI18N
 
                     public void actionPerformed(ActionEvent e) {
@@ -263,7 +272,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
             }
         });
-    //and add input map
+        //and add input map
     }
 
     void setToolName(String toolName) {
