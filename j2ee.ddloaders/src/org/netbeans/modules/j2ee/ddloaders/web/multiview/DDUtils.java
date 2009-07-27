@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -543,6 +544,7 @@ public final class DDUtils {
     }
 
     private static boolean isWebApp25(WebApp webApp) {
-        return WebApp.VERSION_2_5.equals(webApp.getVersion());
+        BigDecimal ver = new BigDecimal(webApp.getVersion());
+        return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
     }
 }

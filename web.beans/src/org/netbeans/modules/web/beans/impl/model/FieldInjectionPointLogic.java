@@ -52,7 +52,6 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
@@ -278,7 +277,6 @@ abstract class FieldInjectionPointLogic {
                     modelImpl , Element.class );
         }
         filterProductionByType( element, productionElements, modelImpl );
-        addSpecializes( productionElements , modelImpl );
         
         DeploymentTypeFilter<Element> deploymentFilter = DeploymentTypeFilter.get( 
                 Element.class);
@@ -295,6 +293,73 @@ abstract class FieldInjectionPointLogic {
         BindingChecker checker = BindingChecker.get();
         checker.init( element , helper );
         return checker.check();
+    }
+    
+    static Set<Element> getSpecialized( Element productionElement,
+            WebBeansModelImplementation model  )
+    {
+        return getSpecialized(productionElement, model, null);
+    }
+
+    static Set<Element> getSpecialized( Element productionElement,
+            WebBeansModelImplementation model , String annotationName )
+    {
+        if ( !( productionElement instanceof ExecutableElement )){
+            return Collections.emptySet();
+        }
+        Set<Element> set = new HashSet<Element>(); 
+        ExecutableElement current = (ExecutableElement)productionElement;
+        while ( true ){
+            ExecutableElement overridenElement = model.getHelper().getCompilationController().
+                getElementUtilities().getOverriddenMethod( current);
+            if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
+                    current, model.getHelper()))
+            {
+                set.add( overridenElement );
+                if ( annotationName!= null && AnnotationObjectProvider.
+                        hasAnnotation( overridenElement, annotationName, 
+                                model.getHelper()))
+                {
+                    return set;
+                }
+                current = overridenElement;
+            }
+            else {
+                break;
+            }
+        }
+        return set;
+    }
+
+    static Set<TypeElement> doGetImplementors( WebBeansModelImplementation modelImpl,
+            TypeElement typeElement )
+    {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        ElementHandle<TypeElement> handle = ElementHandle
+                .create((TypeElement) typeElement);
+        final Set<ElementHandle<TypeElement>> handles = modelImpl
+                .getHelper().getClasspathInfo().getClassIndex()
+                .getElements(
+                        handle,
+                        EnumSet.of(SearchKind.IMPLEMENTORS),
+                        EnumSet.of(SearchScope.SOURCE,
+                                SearchScope.DEPENDENCIES));
+        if (handles == null) {
+            LOGGER.log(Level.WARNING,
+                    "ClassIndex.getElements() was interrupted"); // NOI18N
+            return Collections.emptySet();
+        }
+        for (ElementHandle<TypeElement> elementHandle : handles) {
+            LOGGER.log(Level.FINE, "found derived element {0}",
+                    elementHandle.getQualifiedName()); // NOI18N
+            TypeElement derivedElement = elementHandle.resolve(modelImpl
+                    .getHelper().getCompilationController());
+            if (derivedElement == null) {
+                continue;
+            }
+            result.add(derivedElement);
+        }
+        return result;
     }
     
     private void filterCurrentProductions( Set<Element> productionElements , 
@@ -326,91 +391,6 @@ abstract class FieldInjectionPointLogic {
                     " was interrupted"); // NOI18N
         }
         return result;
-    }
-
-    private void addSpecializes( Set<Element> productionElements,
-            WebBeansModelImplementation model )
-    {
-        Set<Element> set = new HashSet<Element>(); 
-        for (Element productionElement : productionElements) {
-            if ( productionElement instanceof ExecutableElement ){
-                Set<Element> overrides = inspectHierarchy(model, productionElement);
-                set.addAll( overrides );
-            }
-        }
-        productionElements.addAll( set );
-    }
-
-    private Set<Element> inspectHierarchy( WebBeansModelImplementation model,
-            Element productionElement )
-    {
-        TypeElement typeElement = model.getHelper().
-            getCompilationController().getElementUtilities().
-                enclosingTypeElement( productionElement );
-        Set<TypeElement> implementors = doGetImplementors(model, typeElement);
-        Set<Element> specializeElements = new HashSet<Element>( );
-        specializeElements.add( productionElement );
-        for (TypeElement implementor : implementors) {
-            inspectHierarchy( productionElement , implementor , specializeElements
-                    , model );
-        }
-        specializeElements.remove( productionElement );
-        return specializeElements;
-    }
-    
-    private void inspectHierarchy( Element productionElement,
-            TypeElement implementor, Set<Element> specializeElements ,
-            WebBeansModelImplementation model )
-    {
-        List<? extends Element> enclosedElements = implementor.getEnclosedElements();
-        for (Element enclosedElement : enclosedElements) {
-            if ( enclosedElement.getKind() != ElementKind.METHOD) {
-                continue;
-            }
-            if ( !productionElement.getSimpleName().contentEquals(
-                    enclosedElement.getSimpleName()))
-            {
-                continue;
-            }
-            Set<Element> probableSpecializes = new HashSet<Element>();
-            if ( collectSpecializes( productionElement , 
-                    (ExecutableElement)enclosedElement , model , 
-                    probableSpecializes , specializeElements))
-            {
-                // for one method there could be just one override method in considered class
-                specializeElements.addAll( probableSpecializes );
-                return;
-            }
-        }
-    }
-
-    private boolean collectSpecializes( Element productionElement,
-            ExecutableElement element, WebBeansModelImplementation model,
-            Set<Element> probableSpecializes, Set<Element> specializeElements )
-    {
-        ElementUtilities elementUtilities = 
-            model.getHelper().getCompilationController().getElementUtilities();
-        if ( !elementUtilities.overridesMethod(element)){
-            return false;
-        }
-        ExecutableElement overriddenMethod = elementUtilities.
-            getOverriddenMethod( element);
-        if ( overriddenMethod == null ){
-            return false;
-        }
-        if (!AnnotationObjectProvider.hasSpecializes(element,  model.getHelper())){
-            return false;
-        }
-        if( overriddenMethod.equals( productionElement ) || 
-                specializeElements.contains( productionElement))
-        {
-            return true;
-        }
-        else {
-            probableSpecializes.add( element);
-            return collectSpecializes(productionElement, overriddenMethod, model, 
-                    probableSpecializes, specializeElements); 
-        }
     }
 
     private void filterProductionByType( VariableElement element,
@@ -481,6 +461,15 @@ abstract class FieldInjectionPointLogic {
         filter.filter( result );
         return result;
     }
+
+    private void filterBindingsByType( VariableElement element,
+            Set<TypeElement> typesWithBindings,
+            WebBeansModelImplementation modelImpl )
+    {
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init( element , modelImpl );
+        filter.filter( typesWithBindings );
+    }
     
     private Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
             Element typeElement )
@@ -508,46 +497,6 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
 
-    private Set<TypeElement> doGetImplementors( WebBeansModelImplementation modelImpl,
-            TypeElement typeElement )
-    {
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        ElementHandle<TypeElement> handle = ElementHandle
-                .create((TypeElement) typeElement);
-        final Set<ElementHandle<TypeElement>> handles = modelImpl
-                .getHelper().getClasspathInfo().getClassIndex()
-                .getElements(
-                        handle,
-                        EnumSet.of(SearchKind.IMPLEMENTORS),
-                        EnumSet.of(SearchScope.SOURCE,
-                                SearchScope.DEPENDENCIES));
-        if (handles == null) {
-            LOGGER.log(Level.WARNING,
-                    "ClassIndex.getElements() was interrupted"); // NOI18N
-            return Collections.emptySet();
-        }
-        for (ElementHandle<TypeElement> elementHandle : handles) {
-            LOGGER.log(Level.FINE, "found derived element {0}",
-                    elementHandle.getQualifiedName()); // NOI18N
-            TypeElement derivedElement = elementHandle.resolve(modelImpl
-                    .getHelper().getCompilationController());
-            if (derivedElement == null) {
-                continue;
-            }
-            result.add(derivedElement);
-        }
-        return result;
-    }
-
-    private void filterBindingsByType( VariableElement element,
-            Set<TypeElement> typesWithBindings,
-            WebBeansModelImplementation modelImpl )
-    {
-        TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( element , modelImpl );
-        filter.filter( typesWithBindings );
-    }
-
     private Set<Element> getProductions( 
             List<AnnotationMirror> bindingAnnotations ,
             final WebBeansModelImplementation model ) 
@@ -571,6 +520,7 @@ abstract class FieldInjectionPointLogic {
                                         PRODUCER_ANNOTATION, model.getHelper()))
                                 {
                                     binding.add( element );
+                                    binding.addAll(getSpecialized( element , model ));
                                 }
                             }
                         });
