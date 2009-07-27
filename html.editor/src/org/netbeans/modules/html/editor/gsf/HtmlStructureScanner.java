@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.Collection;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +100,6 @@ public class HtmlStructureScanner implements StructureScanner {
         if (doc == null) {
             return Collections.emptyMap();
         }
-        AstNode root = ((HtmlParserResult) info).root();
 
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         final List<OffsetRange> tags = new ArrayList<OffsetRange>();
@@ -144,7 +144,10 @@ public class HtmlStructureScanner implements StructureScanner {
         //the document is touched during the ast tree visiting, we need to lock it
         doc.readLock();
         try {
-            AstNodeUtils.visitChildren(root, foldsSearch);
+            Collection<AstNode> roots = ((HtmlParserResult) info).roots().values();
+            for (AstNode root : roots) {
+                AstNodeUtils.visitChildren(root, foldsSearch);
+            }
         } finally {
             doc.readUnlock();
         }
