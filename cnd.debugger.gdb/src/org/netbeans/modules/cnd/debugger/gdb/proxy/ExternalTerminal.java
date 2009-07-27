@@ -206,9 +206,13 @@ public class ExternalTerminal implements PropertyChangeListener {
                     "--disable-factory", // NOI18N
                     "--command", // NOI18N
                     gdbHelperScript.getAbsolutePath());
-        } else { //if (path.contains("xterm") || path.contains("konsole")) { // NOI18N
+        } else if (path.contains("xterm")) { // NOI18N
             return new TerminalProfile(false,
                     path,
+                    "-e", // NOI18N
+                    gdbHelperScript.getAbsolutePath()); // NOI18N
+        } else {//if (path.contains("konsole")) { // NOI18N
+            return new TerminalProfile(true,
                     "-e", // NOI18N
                     gdbHelperScript.getAbsolutePath()); // NOI18N
         }
