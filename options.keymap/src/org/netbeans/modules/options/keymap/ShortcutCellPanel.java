@@ -119,7 +119,7 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
         });
     }
 
-    public ShortcutCellPanel(String displayedShortcut) {
+    ShortcutCellPanel(String displayedShortcut) {
         this();
         setText(displayedShortcut);
     }

@@ -66,6 +66,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
@@ -130,8 +131,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter.getTableHeader().setReorderingAllowed(false);
         actionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        actionsTable.setDefaultRenderer(ShortcutCellPanel.class, new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
-
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getModel().setSearchText(searchField.getText());
@@ -195,6 +194,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         actionsTable.addMouseListener(new ButtonCellMouseListener(actionsTable));
         TableColumn column = actionsTable.getColumnModel().getColumn(1);
         column.setCellEditor(new ButtonCellEditor(getModel()));
+        column.setCellRenderer(new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
         setColumnWidths();
 
         popup.add(new ShortcutPopupPanel(actionsTable, popup));
@@ -215,7 +215,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
                             if (searched(shortcut, searchText))
-                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCellPanel(shortcut), category, ""});
+                                getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
                         }
                     }
                 }
@@ -502,23 +502,23 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             int row = table.rowAtPoint(p);
             int col = table.columnAtPoint(p);
             Object valueAt = table.getValueAt(row, col);
-            if (valueAt instanceof ShortcutCellPanel) {
-                Rectangle cellRect = table.getCellRect(row, col, false);
-                ShortcutCellPanel scCell = (ShortcutCellPanel) valueAt;
-                JButton button = scCell.getButton();
-                if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
+            if (col == 1) {
+//                Rectangle cellRect = table.getCellRect(row, col, false);
+//                JButton button = scCell.getButton();
+//                if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
 //                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
 //                    button.dispatchEvent(buttonEvent);
 //                    button.doClick();
 
-                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
+//                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
                     ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];
-                    panel.setDisplayAddAlternative(isShortcutSet);
+//                    panel.setDisplayAddAlternative(isShortcutSet);
+                    panel.setDisplayAddAlternative(true);
                     panel.setRow(row);
                     popup.show(table, e.getX(), e.getY());
                 }
             }
-        }
+//        }
     }
 
     static String loc (String key) {
