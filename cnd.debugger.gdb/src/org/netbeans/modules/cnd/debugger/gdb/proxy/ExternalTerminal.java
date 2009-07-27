@@ -48,8 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -89,8 +87,8 @@ public class ExternalTerminal implements PropertyChangeListener {
         debugger.addPropertyChangeListener(this);
         initGdbHelpers();
 
-        List<String> termOptions = getTermOptions(termpath);
-        ProcessBuilder pb = new ProcessBuilder(termOptions);
+        TerminalProfile termProfile = getTermProfile(termpath);
+        ProcessBuilder pb = new ProcessBuilder(termProfile.options);
         
         // Set "DISPLAY" environment variable if not already set (Mac OSX only)
         // Used only localy, so we can use Utilities.getOperatingSystem()
@@ -116,28 +114,25 @@ public class ExternalTerminal implements PropertyChangeListener {
         try {
             while (count++ < RETRY_LIMIT) {
                 // first check for process termination
-                try {
-                    int rc = process.exitValue();
+                // only if not in KDE
+                if (!termProfile.terminates) {
+                    try {
+                        int rc = process.exitValue();
 
-                    // In case of failure - read output and log it
-                    // See IZ 164026
-                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    StringBuilder sb = new StringBuilder();
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
+                        // In case of failure - read output and log it
+                        // See IZ 164026
+                        String out = ProcessUtils.readProcessOutputLine(process);
+
+                        // process already terminated - exit
+                        throw new IllegalStateException(NbBundle.getMessage(
+                                ExternalTerminal.class,
+                                "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
+                                termProfile.options,
+                                rc,
+                                out));
+                    } catch (IllegalThreadStateException e) {
+                        // do nothing
                     }
-                    br.close();
-
-                    // process already terminated - exit
-                    throw new IllegalStateException(NbBundle.getMessage(
-                            ExternalTerminal.class,
-                            "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
-                            termOptions,
-                            rc,
-                            sb.toString()));
-                } catch (IllegalThreadStateException e) {
-                    // do nothing
                 }
                 // TODO: it is not good to wait for the file to be filled with info this way
                 // need to find a better way to get pid later
@@ -203,23 +198,25 @@ public class ExternalTerminal implements PropertyChangeListener {
         return tty;
     }
     
-    private List<String> getTermOptions(String path) {
-        List<String> options = new ArrayList<String>();
-        
-        options.add(path);
+    private TerminalProfile getTermProfile(String path) {
         if (path.contains("gnome-terminal")) { // NOI18N
-            options.add("--hide-menubar"); // NOI18N
-            options.add("--disable-factory"); // NOI18N
-            options.add("--command"); // NOI18N
-            options.add(gdbHelperScript.getAbsolutePath());
+            return new TerminalProfile(false,
+                    path,
+                    "--hide-menubar", // NOI18N
+                    "--disable-factory", // NOI18N
+                    "--command", // NOI18N
+                    gdbHelperScript.getAbsolutePath());
         } else if (path.contains("xterm")) { // NOI18N
-            options.add("-e"); // NOI18N
-            options.add(gdbHelperScript.getAbsolutePath()); // NOI18N
-        } else if (path.contains("konsole")) { // NOI18N
-            options.add("-e"); // NOI18N
-            options.add(gdbHelperScript.getAbsolutePath());
+            return new TerminalProfile(false,
+                    path,
+                    "-e", // NOI18N
+                    gdbHelperScript.getAbsolutePath()); // NOI18N
+        } else {//if (path.contains("konsole")) { // NOI18N
+            return new TerminalProfile(true,
+                    path,
+                    "-e", // NOI18N
+                    gdbHelperScript.getAbsolutePath()); // NOI18N
         }
-        return options;
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
@@ -237,4 +234,14 @@ public class ExternalTerminal implements PropertyChangeListener {
             debugger.kill(Signal.TERM, pid);
         }
     }
+
+    private static class TerminalProfile {
+        private final String[] options;
+        private final boolean terminates;
+
+        private TerminalProfile(boolean terminates, String... options) {
+            this.options = options;
+            this.terminates = terminates;
+        }
+   }
 }
