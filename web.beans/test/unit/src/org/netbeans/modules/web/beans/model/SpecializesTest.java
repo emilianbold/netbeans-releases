@@ -114,6 +114,7 @@ public class SpecializesTest extends CommonTestCase {
                 for (Element element : children) {
                     if ( element instanceof VariableElement ){
                         assert element.getSimpleName().contentEquals("myField");
+                        inform("test injectables for 'myField'");
                         boolean exception = false;
                         try {
                             model.getInjectable((VariableElement)element);

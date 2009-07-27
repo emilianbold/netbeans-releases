@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
 
-import java.util.List;
+package org.netbeans.modules.web.beans.navigation;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
-
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
- * @author ads
  *
+ * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
-public interface WebBeansModelProvider {
+public final class JavaTreeCellRenderer extends DefaultTreeCellRenderer {
+    public Component getTreeCellRendererComponent(JTree tree, Object value,
+        boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value,
+                sel, expanded, leaf, row, hasFocus);
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-    
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
+        if (!sel) {
+            setBackgroundNonSelectionColor(tree.getBackground());
+        }
 
-    List<AnnotationMirror> getBindings( Element element );
+        if (value instanceof JavaElement) {
+            label.setIcon(((JavaElement) value).getIcon());
+            label.setToolTipText(((JavaElement) value).getTooltip());
+        }
 
-    AnnotationMirror getDeploymentType( Element element );
-
+        return label;
+    }
 }
