@@ -75,6 +75,7 @@
             </folder>
         </folder>
     </folder>-->
+    <!--
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.shadow">
@@ -83,6 +84,7 @@
             </file>
         </folder>
     </folder>
+    -->
     <folder name="Shortcuts">
         <file name="A-S-G.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-gizmo-ui-GizmoIndicatorTopComponentActivateAction.instance"/>
