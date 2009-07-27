@@ -82,6 +82,10 @@ public class LoopParallelizationAdvice implements Advice {
         return function;
     }
 
+    public CsmLoopStatement getLoop() {
+        return loop;
+    }
+
     public JComponent getComponent() {
         URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
         return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl, "Loop for parallelization has been found", // NOI18N
