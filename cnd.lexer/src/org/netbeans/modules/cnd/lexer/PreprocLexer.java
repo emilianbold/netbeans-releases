@@ -69,7 +69,9 @@ public final class PreprocLexer extends CndLexer {
     private static final int DIRECTIVE_NAME     = INIT + 1;
     private static final int EXPRESSION         = DIRECTIVE_NAME + 1;
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
-    private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
+    private static final int PRAGMA             = INCLUDE_DIRECTIVE + 1;
+    private static final int OMP                = PRAGMA + 1;
+    private static final int OTHER              = OMP + 1;
 
     // shift is the number of bits enough to mask all states
     private static final int SHIFT = 3;
@@ -169,9 +171,15 @@ public final class PreprocLexer extends CndLexer {
                     break;
                 }
                 // nobreak
-            case OTHER:
+            case PRAGMA:
+                id = ompFilter.check(text) == CppTokenId.PRAGMA_OMP_START ? CppTokenId.PRAGMA_OMP_START : null;
+                break;
+            case OMP:
                 id = ompFilter.check(text);
                 id = (id != null) ? id : keywordsFilter.check(text);
+                break;
+            case OTHER:
+                id = keywordsFilter.check(text);
                 break;
         }
         return id != null ? id : CppTokenId.PREPROCESSOR_IDENTIFIER;
@@ -198,6 +206,9 @@ public final class PreprocLexer extends CndLexer {
                         case PREPROCESSOR_INCLUDE_NEXT:
                             state = INCLUDE_DIRECTIVE;
                             break;
+                        case PREPROCESSOR_PRAGMA:
+                            state = PRAGMA;
+                            break;
                         default:
                             state = OTHER;
                     }
@@ -205,8 +216,21 @@ public final class PreprocLexer extends CndLexer {
                     // do not change state
                 }
                 break;
+            case PRAGMA:
+                if (!CppTokenId.WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+                           !CppTokenId.COMMENT_CATEGORY.equals(id.primaryCategory())) {
+                    switch (id) {
+                        case PRAGMA_OMP_START:
+                            state = OMP;
+                            break;
+                        default:
+                            state = OTHER;
+                    }
+                }
+                break;
             case INCLUDE_DIRECTIVE:                
             case EXPRESSION:                
+            case OMP:
             case OTHER:                
                 // do not change state
         }
