@@ -119,7 +119,10 @@ public class ParallelAdviserAdviceUtils {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+                    URL url = e.getURL();
+                    if(url != null) {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    }
                 }
             }
         });
