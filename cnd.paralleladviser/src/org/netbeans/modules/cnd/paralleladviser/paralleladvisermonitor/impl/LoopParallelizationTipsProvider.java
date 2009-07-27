@@ -68,7 +68,7 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
 
     public static void addTip(LoopParallelizationAdvice tip) {
         for (LoopParallelizationAdvice advice : tips) {
-            if(advice.getFunction().equals(tip.getFunction())) {
+            if(advice.getLoop().equals(tip.getLoop())) {
                 tips.remove(advice);
                 break;
             }
