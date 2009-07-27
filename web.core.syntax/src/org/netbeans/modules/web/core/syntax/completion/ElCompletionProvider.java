@@ -49,7 +49,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
@@ -60,7 +59,6 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.filesystems.FileObject;
 
 /** Expression Language completion provider implementation
  *
@@ -108,13 +106,80 @@ public class ElCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
             queryEL(resultSet, component, caretOffset);
-
             resultSet.addAllItems(jspResultSet.getItems());
             resultSet.setAnchorOffset(jspResultSet.getAnchor());
         }
 
-        /** Gets a list of completion items for EL */
-        private void queryEL(CompletionResultSet result, JTextComponent component, int offset) {
+    }
+
+    public static class DocQuery extends AbstractQuery {
+
+        private JTextComponent component;
+        private JspCompletionItem item;
+
+        public DocQuery(JspCompletionItem item) {
+            this.item = item;
+        }
+
+        @Override
+        protected void prepareQuery(JTextComponent component) {
+            this.component = component;
+        }
+
+        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            if (item != null) {
+                //this instance created from jsp completion item
+                if (item.hasHelp()) {
+                    resultSet.setDocumentation(new DocItem(item));
+                }
+            } else {
+                //called directly by infrastructure - run query
+                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+                queryEL(resultSet, component, caretOffset);
+                resultSet.addAllItems(jspResultSet.getItems());
+                resultSet.setAnchorOffset(jspResultSet.getAnchor());
+            }
+
+
+        }
+    }
+
+    private static class DocItem implements CompletionDocumentation {
+
+        private JspCompletionItem ri;
+
+        public DocItem(JspCompletionItem ri) {
+            this.ri = ri;
+        }
+
+        public String getText() {
+            return ri.getHelp();
+        }
+
+        public URL getURL() {
+            return ri.getHelpURL();
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
+    public static abstract class AbstractQuery extends AsyncCompletionQuery {
+
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            doQuery(resultSet, doc, caretOffset);
+            resultSet.finish();
+        }
+
+        abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
+
+         /** Gets a list of completion items for EL */
+        protected void queryEL(CompletionResultSet result, JTextComponent component, int offset) {
             BaseDocument doc = (BaseDocument) component.getDocument();
             JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
 
@@ -160,74 +225,6 @@ public class ElCompletionProvider implements CompletionProvider {
 
                     break;
             }
-
         }
-    }
-
-    public static class DocQuery extends AbstractQuery {
-
-        private JTextComponent component;
-        private JspCompletionItem item;
-
-        public DocQuery(JspCompletionItem item) {
-            this.item = item;
-        }
-
-        @Override
-        protected void prepareQuery(JTextComponent component) {
-            this.component = component;
-        }
-
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (item != null) {
-                //this instance created from jsp completion item
-                if (item.hasHelp()) {
-                    resultSet.setDocumentation(new DocItem(item));
-                }
-            } else {
-                //called directly by infrastructure - run query
-                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
-                JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
-                resultSet.addAllItems(jspResultSet.getItems());
-                resultSet.setAnchorOffset(jspResultSet.getAnchor());
-            }
-
-
-        }
-    }
-
-    private static class DocItem implements CompletionDocumentation {
-
-        private JspCompletionItem ri;
-
-        public DocItem(JspCompletionItem ri) {
-            this.ri = ri;
-        }
-
-        public String getText() {
-            return ri.getHelp();
-        }
-
-        public URL getURL() {
-            return ri.getHelpURL();
-        }
-
-        public CompletionDocumentation resolveLink(String link) {
-            return null;
-        }
-
-        public Action getGotoSourceAction() {
-            return null;
-        }
-    }
-
-    public static abstract class AbstractQuery extends AsyncCompletionQuery {
-
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            doQuery(resultSet, doc, caretOffset);
-            resultSet.finish();
-        }
-
-        abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
     }
 }

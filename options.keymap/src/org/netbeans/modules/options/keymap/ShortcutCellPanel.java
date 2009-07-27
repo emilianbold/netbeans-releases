@@ -65,14 +65,14 @@ import org.openide.util.Utilities;
  * Panel representing one shortcut cell inside keymap table
  * @author Max Sauer
  */
-public class ShortcutCell extends javax.swing.JPanel implements Comparable, Popupable {
+public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable, Popupable {
     
     private Popup popup;
     private final SpecialkeyPanel specialkeyList;
 
     PopupFactory factory = PopupFactory.getSharedInstance();
     /** Creates new form ShortcutCell */
-    public ShortcutCell() {
+    public ShortcutCellPanel() {
         initComponents();
         specialkeyList = new SpecialkeyPanel(this, scField);
 
@@ -119,7 +119,7 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable, Popu
         });
     }
 
-    public ShortcutCell(String displayedShortcut) {
+    ShortcutCellPanel(String displayedShortcut) {
         this();
         setText(displayedShortcut);
     }
@@ -188,16 +188,15 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable, Popu
         setBackground(new java.awt.Color(204, 204, 204));
         setPreferredSize(new java.awt.Dimension(134, 15));
 
-        scField.setText(org.openide.util.NbBundle.getMessage(ShortcutCell.class, "ShortcutCell.scField.text")); // NOI18N
+        scField.setText(org.openide.util.NbBundle.getMessage(ShortcutCellPanel.class, "ShortcutCellPanel.scField.text")); // NOI18N
         scField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         scField.setPreferredSize(new java.awt.Dimension(0, 15));
 
         changeButton.setBackground(new java.awt.Color(204, 204, 204));
-        org.openide.awt.Mnemonics.setLocalizedText(changeButton, org.openide.util.NbBundle.getMessage(ShortcutCell.class, "ShortcutCell.changeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(changeButton, org.openide.util.NbBundle.getMessage(ShortcutCellPanel.class, "ShortcutCellPanel.changeButton.text")); // NOI18N
         changeButton.setMaximumSize(new java.awt.Dimension(20, 15));
         changeButton.setMinimumSize(new java.awt.Dimension(20, 15));
         changeButton.setPreferredSize(new java.awt.Dimension(20, 15));
-        changeButton.setRolloverEnabled(true);
         changeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeButtonActionPerformed(evt);

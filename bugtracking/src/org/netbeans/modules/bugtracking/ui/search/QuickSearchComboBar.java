@@ -67,7 +67,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     PropertyChangeSupport changeSupport;
     private boolean ignoreCommandChanges = false;
 
-    public static String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed"; // NOI18N
+    public static final String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed"; // NOI18N
 
     public QuickSearchComboBar(JPanel caller) {
         this.caller = caller;

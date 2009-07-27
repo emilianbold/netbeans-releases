@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,56 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.options.keymap;
-
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
+package org.netbeans.modules.cnd.ui.options;
 
 /**
- * Renderer for table cells customising shortcut
- * @author Max Sauer
+ * service to manage Tools panel customization
+ * FIXME: only isDebuggerCustomizable is supported now
+ * 
+ * @author Vladimir Voskresensky
  */
-public class ButtonCellRenderer implements TableCellRenderer {
-
-    private TableCellRenderer defaultRenderer;
-
-    private static ShortcutCellPanel panel;
-
-    public ButtonCellRenderer(TableCellRenderer defaultRenderer) {
-        this.defaultRenderer = defaultRenderer;
-    }
-
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (value instanceof String) {
-            Rectangle cellRect = table.getCellRect(row, column, false);
-            String scCell = (String) value;
-            Dimension d = new Dimension((int) cellRect.getWidth(), (int) cellRect.getHeight());
-            if (panel == null) {
-                panel = new ShortcutCellPanel(scCell);
-            } else {
-                panel.setText(scCell);
-            }
-            panel.setSize(d);
-
-            if (isSelected) {
-                panel.setBgColor(table.getSelectionBackground());
-                panel.setFgCOlor(table.getSelectionForeground());
-            } else {
-                panel.setBgColor(table.getBackground());
-                panel.setFgCOlor(table.getForeground());
-            }
-
-            return panel;
-        }
-        else {
-            return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-
+public interface ToolsPanelGlobalCustomizer {
+    public boolean isHostCustomizable();
+    public boolean isBaseDirCustomizable();
+    public boolean isCCustomizable();
+    public boolean isCppCustomizable();
+    public boolean isFortranCustomizable();
+    public boolean isAssemblerCustomizable();
+    public boolean isMakeCustomizable();
+    public boolean isDebuggerCustomizable();
+    public boolean isQMakeCustomizable();
+    public boolean isCMakeCustomizable();
 }

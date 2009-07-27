@@ -46,15 +46,12 @@ import javax.swing.Action;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
@@ -74,7 +71,7 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
     private final String ejbClass;
     private final MetadataModel<EjbJarMetadata> model;
     private final EjbViewController controller;
-    private FileObject fileObject;
+    private DataObject dataObject;
     private ViewType viewType;
 
     public MethodsNode(String ejbClass, EjbJar ejbModule, Children children, ViewType viewType) {
@@ -87,14 +84,15 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
         this.model = ejbModule.getMetadataModel();
         this.controller = new EjbViewController(ejbClass, ejbModule);
         this.viewType = viewType;
+        String iClassName = null;
         try {
-            this.fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-                public FileObject run(EjbJarMetadata metadata) throws Exception {
+            iClassName = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
                     EntityAndSession entityAndSession = (EntityAndSession) metadata.findByEjbClass(ejbClass);
                     switch (viewType){
-                        case NO_INTERFACE: return metadata.findResource(Utils.toResourceName(entityAndSession.getEjbClass()));
-                        case LOCAL: return metadata.findResource(Utils.toResourceName(entityAndSession.getLocal()));
-                        case REMOTE: return metadata.findResource(Utils.toResourceName(entityAndSession.getRemote()));
+                        case NO_INTERFACE: return entityAndSession.getEjbClass();
+                        case LOCAL: return entityAndSession.getLocal();
+                        case REMOTE: return entityAndSession.getRemote();
                     }
                     return null;
                 }
@@ -102,25 +100,22 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+        this.dataObject = controller.getDataObject(iClassName);
         content.add(this);
-        if (fileObject != null) {
-            try {
-                content.add(DataObject.find(fileObject));
-            } catch (DataObjectNotFoundException donfe) {
-                Exceptions.printStackTrace(donfe);
-            }
+        if (dataObject != null) {
+             content.add(dataObject);
         }
     }
     
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new GoToSourceAction(fileObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup")),
+            new GoToSourceAction(dataObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup")),
             SystemAction.get(AddActionGroup.class),
         };
     }
 
     public Action getPreferredAction() {
-        return new GoToSourceAction(fileObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup"));
+        return new GoToSourceAction(dataObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup"));
     }
 
     public void open() {
