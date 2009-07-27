@@ -1459,7 +1459,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
-            super(followUpJob, checkEditor, false);
+            super(followUpJob, checkEditor, followUpJob);
             
             assert root != null;
             assert files != null && files.size() > 0;
