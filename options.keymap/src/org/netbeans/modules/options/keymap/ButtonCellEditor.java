@@ -80,7 +80,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
     };
 
-    private ShortcutCell cell = new ShortcutCell();
+    private static ShortcutCellPanel cell = new ShortcutCellPanel();
 
     public ButtonCellEditor(KeymapViewModel model) {
         super(new ShortcutTextField());
@@ -132,6 +132,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
                 return true;
             }
         }
+        cell.getTextField().removeActionListener(delegate);
+        cell.getTextField().removeKeyListener(escapeAdapter);
         model.removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
             model.addShortcut((ShortcutAction) action, s);
@@ -152,8 +154,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected,
             int row, int column) {
-        cell = (ShortcutCell) value;
-        this.orig = cell.toString();
+        cell.setText((String) value);
+        this.orig = cell.getTextField().getText();
         this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
@@ -166,7 +168,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
     @Override
     public Object getCellEditorValue() {
-        return cell;
+        return cell.getTextField().getText();
     }
 
     @Override
