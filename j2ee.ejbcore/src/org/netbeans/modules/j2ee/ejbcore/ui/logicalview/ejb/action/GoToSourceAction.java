@@ -43,15 +43,11 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -60,16 +56,16 @@ import org.openide.util.actions.Presenter;
  */
 public class GoToSourceAction extends AbstractAction implements Presenter.Popup {
 
-    private final FileObject classFO;
+    private final DataObject classDO;
     private final String actionName;
     
-    public GoToSourceAction(FileObject classFO, String actionName) {
+    public GoToSourceAction(DataObject classDO, String actionName) {
         this.actionName = actionName;
-        this.classFO = classFO;
+        this.classDO = classDO;
     }
 
     public void actionPerformed(ActionEvent actionEvent) {
-        openSourceFO(classFO);
+        openSourceDO(classDO);
     }
 
     public Object getValue(String key) {
@@ -90,24 +86,13 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
     /*
      * from NbJavaFastOpen
      */
-    private void openSourceFO(FileObject fileObject){
-        if (fileObject == null) {
-            return;
-        }
-        DataObject dob;
-        try {
-            dob = DataObject.find(fileObject);
-        } catch (DataObjectNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-            dob = null;
-        }
-        
-        if (dob != null) {
-            EditCookie editCookie = (EditCookie)dob.getCookie(EditCookie.class);
+    private void openSourceDO(DataObject dataObject){
+        if (dataObject != null) {
+            EditCookie editCookie = (EditCookie)dataObject.getCookie(EditCookie.class);
             if (editCookie != null) {
                 editCookie.edit();
             } else {
-                OpenCookie openCookie = (OpenCookie)dob.getCookie(OpenCookie.class);
+                OpenCookie openCookie = (OpenCookie)dataObject.getCookie(OpenCookie.class);
                 if (openCookie != null) {
                     openCookie.open();
                 } else {

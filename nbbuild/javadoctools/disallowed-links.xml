@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
     <filter pattern="http://www\.netbeans\.org/download/dev/javadoc/apichanges\.html" accept="true"/>
     <filter pattern="http://www\.netbeans\.org/download/release41/javadoc/apichanges\.html" accept="true"/>
     <filter pattern="http://www\.netbeans\.org/download/[0-9]_[0-9]/javadoc/apichanges\.html" accept="true"/>
+    <filter pattern="http://bits\.netbeans\.org/[0-9.]+/javadoc/apichanges\.html" accept="true"/>
     <!-- sources -->
     <filter pattern="http://www\.netbeans\.org/(unbranded-)?source/browse/.*" accept="true"/>
     <filter pattern="http://hg\.netbeans\.org.*" accept="true"/>
@@ -81,7 +82,7 @@ made subject to such option by the copyright holder.
     <!-- allow xsd files -->
     <filter pattern="http://www\.netbeans\.org/ns/.*" accept="true"/>
     <!-- allow Project Design document -->
-    <filter pattern="http://projects\.netbeans\.org/buildsys/design\.html" accept="true"/>
+    <filter pattern="http://projects\.netbeans\.org/buildsys/.*" accept="true"/>
     <filter pattern="http://platform\.netbeans\.org/articles/.*" accept="true"/>
     <filter pattern="http://ui\.netbeans\.org/docs/ui/themes/themes\.html" accept="true"/>
     <filter pattern="http://wiki.netbeans.org/.*" accept="true"/>
