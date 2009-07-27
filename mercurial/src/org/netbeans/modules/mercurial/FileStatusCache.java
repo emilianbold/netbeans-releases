@@ -443,10 +443,6 @@ public class FileStatusCache {
     public FileInformation refresh(File file, FileStatus repositoryStatus) {
         return refresh(file, repositoryStatus, false);
     }
-    
-    public FileInformation refreshForce(File file, FileStatus repositoryStatus) {
-        return refresh(file, repositoryStatus, true);
-    }
  
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
