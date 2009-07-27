@@ -213,6 +213,7 @@ public class ExternalTerminal implements PropertyChangeListener {
                     gdbHelperScript.getAbsolutePath()); // NOI18N
         } else {//if (path.contains("konsole")) { // NOI18N
             return new TerminalProfile(true,
+                    path,
                     "-e", // NOI18N
                     gdbHelperScript.getAbsolutePath()); // NOI18N
         }
