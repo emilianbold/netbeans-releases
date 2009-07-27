@@ -121,7 +121,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             case 0:
                 return ActionHolder.class;
             case 1:
-                return ShortcutCell.class;
+                return ShortcutCellPanel.class;
             default:
                 return String.class;
         }
@@ -224,14 +224,14 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
 //                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
                     if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
                         if (shortcuts.length == 0)
-                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category});
+                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCellPanel(), category});
                         else
                             for (int i = 0; i < shortcuts.length; i++) {
                                 String shortcut = shortcuts[i];
 //                                String shownDisplayName = i == 0 ? displayName : displayName + " (alternative shortcut)";
                                 addRow(new Object[]{
                                             i == 0 ? new ActionHolder(sca, false) : new ActionHolder(sca, true),
-                                            new ShortcutCell(shortcut), category, 
+                                            new ShortcutCellPanel(shortcut), category,
                                         });
                             }
                     }

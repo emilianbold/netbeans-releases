@@ -130,7 +130,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter.getTableHeader().setReorderingAllowed(false);
         actionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        actionsTable.setDefaultRenderer(ShortcutCell.class, new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
+        actionsTable.setDefaultRenderer(ShortcutCellPanel.class, new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
 
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -215,7 +215,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
                             if (searched(shortcut, searchText))
-                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(shortcut), category, ""});
+                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCellPanel(shortcut), category, ""});
                         }
                     }
                 }
@@ -502,9 +502,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             int row = table.rowAtPoint(p);
             int col = table.columnAtPoint(p);
             Object valueAt = table.getValueAt(row, col);
-            if (valueAt instanceof ShortcutCell) {
+            if (valueAt instanceof ShortcutCellPanel) {
                 Rectangle cellRect = table.getCellRect(row, col, false);
-                ShortcutCell scCell = (ShortcutCell) valueAt;
+                ShortcutCellPanel scCell = (ShortcutCellPanel) valueAt;
                 JButton button = scCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
 //                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);

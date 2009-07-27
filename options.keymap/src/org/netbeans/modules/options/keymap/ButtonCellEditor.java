@@ -80,7 +80,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
     };
 
-    private ShortcutCell cell = new ShortcutCell();
+    private ShortcutCellPanel cell = new ShortcutCellPanel();
 
     public ButtonCellEditor(KeymapViewModel model) {
         super(new ShortcutTextField());
@@ -152,7 +152,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected,
             int row, int column) {
-        cell = (ShortcutCell) value;
+        cell = (ShortcutCellPanel) value;
         this.orig = cell.toString();
         this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         JTextField textField = cell.getTextField();

@@ -58,9 +58,9 @@ public class ButtonCellRenderer implements TableCellRenderer {
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (value instanceof ShortcutCell) {
+        if (value instanceof ShortcutCellPanel) {
             Rectangle cellRect = table.getCellRect(row, column, false);
-            ShortcutCell scCell = (ShortcutCell) value;
+            ShortcutCellPanel scCell = (ShortcutCellPanel) value;
             Dimension d = new Dimension((int) cellRect.getWidth(), (int) cellRect.getHeight());
             scCell.setSize(d);
 
