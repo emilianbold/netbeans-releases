@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -121,13 +122,7 @@ public class ExternalTerminal implements PropertyChangeListener {
 
                     // In case of failure - read output and log it
                     // See IZ 164026
-                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    StringBuilder sb = new StringBuilder();
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
-                    }
-                    br.close();
+                    String out = ProcessUtils.readProcessOutputLine(process);
 
                     // process already terminated - exit
                     throw new IllegalStateException(NbBundle.getMessage(
@@ -135,7 +130,7 @@ public class ExternalTerminal implements PropertyChangeListener {
                             "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
                             termOptions,
                             rc,
-                            sb.toString()));
+                            out));
                 } catch (IllegalThreadStateException e) {
                     // do nothing
                 }
