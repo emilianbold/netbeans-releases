@@ -43,6 +43,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -139,6 +140,15 @@ public final class Util {
             mue.initCause(use);
             throw mue;
         }
+    }
+
+    public static boolean containsAny(Collection<? extends String> searchIn, Collection<? extends String> searchFor) {
+        for(String s : searchFor) {
+            if (searchIn.contains(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
