@@ -77,11 +77,13 @@ public final class PreprocLexer extends CndLexer {
      
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
+    private final Filter<CppTokenId> ompFilter;
     private final Filter<CppTokenId> keywordsFilter;
 
     public PreprocLexer(Filter<CppTokenId> defaultFilter, LexerRestartInfo<CppTokenId> info) {
         super(info);
         this.preprocFilter = CndLexerUtilities.getPreprocFilter();
+        this.ompFilter = CndLexerUtilities.getOmpFilter();
         @SuppressWarnings("unchecked")
         Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER);
         this.keywordsFilter = filter != null ? filter : defaultFilter;
@@ -168,7 +170,8 @@ public final class PreprocLexer extends CndLexer {
                 }
                 // nobreak
             case OTHER:
-                id = keywordsFilter.check(text);
+                id = ompFilter.check(text);
+                id = (id != null) ? id : keywordsFilter.check(text);
                 break;
         }
         return id != null ? id : CppTokenId.PREPROCESSOR_IDENTIFIER;

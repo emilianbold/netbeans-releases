@@ -64,7 +64,7 @@ public final class ParallelAdviserIndicatorConfiguration extends IndicatorConfig
     /*package*/ static final String ID = "ParallelAdvisertIndicatorConfiguration_ID"; // NOI18N
 
     public ParallelAdviserIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        super(metadata, position);
+        super(metadata, position, true);
     }
 
     @Override

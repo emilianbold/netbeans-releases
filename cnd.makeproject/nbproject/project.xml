@@ -313,7 +313,6 @@
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
-                <friend>org.netbeans.modules.cnd.debugger.dbx.comm</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
