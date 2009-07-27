@@ -70,6 +70,7 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
@@ -457,8 +458,9 @@ final public class WebProjectProperties {
             ProjectManager.getDefault().saveProject(project);
             
             Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
-            if (shouldCreateWebXml()) {
-                DDHelper.createWebXml(j2eeProfile, project.getAPIWebModule().getWebInf());
+            FileObject webInf = project.getAPIWebModule().getWebInf();
+            if (shouldCreateWebXml() && webInf != null) {
+                DDHelper.createWebXml(j2eeProfile, webInf);
             }
 
             // extend project with selected frameworks

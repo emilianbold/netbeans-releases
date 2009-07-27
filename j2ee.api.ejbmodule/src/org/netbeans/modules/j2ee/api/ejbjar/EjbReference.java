@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.api.ejbjar;
  * @author Martin Adamek
  */
 public final class EjbReference {
+    public static enum EjbRefIType{NO_INTERFACE, LOCAL, REMOTE};
 
     private final String ejbClass;
     private final String ejbRefType;
@@ -96,5 +97,22 @@ public final class EjbReference {
     public EjbJar getEjbModule() {
         return ejbModule;
     }
-    
+
+    public String getHomeName(EjbRefIType iType){
+        switch(iType){
+            case LOCAL: return getLocalHome();
+            case REMOTE: return getRemoteHome();
+            case NO_INTERFACE: return getEjbClass();
+            default: return null;
+        }
+    }
+
+    public String getComponentName(EjbRefIType iType){
+        switch(iType){
+            case LOCAL: return getLocal();
+            case REMOTE: return getRemote();
+            case NO_INTERFACE: return getEjbClass();
+            default: return null;
+        }
+    }
 }
