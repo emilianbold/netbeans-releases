@@ -654,17 +654,6 @@ public class FileStatusCache {
             }
         }
     }
-
-    /**
-     * Refreshes information about a given file or directory ONLY if its status is already cached. The
-     * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases.
-     *
-     * @param file
-     * @param repositoryStatus
-     */
-    public void refreshCached(File file, FileStatus repositoryStatus) {
-        refresh(file, repositoryStatus);
-    }
     
     /**
      * Refreshes status of the specified file or all files inside the 
@@ -766,41 +755,6 @@ public class FileStatusCache {
     Map<File, FileInformation> getAllModifiedFilesCached (final boolean changed[]) {
         changed[0] = cacheProvider.modifiedFilesChanged();
         return cacheProvider.getCachedValues();
-    }
-
-    /**
-     * Refreshes given directory and all subdirectories.
-     *
-     * @param dir directory to refresh
-     */
-    void directoryContentChanged(File dir) {
-        Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (originalFiles != null) {
-            for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-        }
-    }
-    
-    /**
-     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
-     */
-    void cleanUp() {
-        Map<File, FileInformation> files = cacheProvider.getAllModifiedValues();
-        for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
-            File file = entry.getKey();
-            FileInformation info = entry.getValue();
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                // remove entries that were excluded but no longer exist
-                // cannot simply call refresh on excluded files because of 'excluded on server' status
-                if (!exists(file)) {
-                    refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                }
-            }
-        }
     }
     
     // --- Private methods ---------------------------------------------------
@@ -948,26 +902,6 @@ public class FileStatusCache {
     
     public void notifyFileChanged(File file) {
         fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
-    }
-
-    public void refreshDirtyFileSystems() {
-        Set<FileSystem> filesystems = getFilesystemsToRefresh();
-        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-        synchronized (filesystems) {
-            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-            filesystems.clear();
-        }
-        for (int i = 0; i < filesystemsToRefresh.length; i++) {
-            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-            filesystemsToRefresh[i].refresh(true);
-        }
-    }
-    
-    private Set<FileSystem> getFilesystemsToRefresh() {
-        if(filesystemsToRefresh == null) {
-            filesystemsToRefresh = new HashSet<FileSystem>();
-        }
-        return filesystemsToRefresh;
     }
     
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
