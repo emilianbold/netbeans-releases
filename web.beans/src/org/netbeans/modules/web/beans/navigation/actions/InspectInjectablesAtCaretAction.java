@@ -268,7 +268,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     });
                 }
                 catch (AmbiguousDependencyException adExcpeption) {
-                    // TODO
+                    // TODO : show dialog with possible injectables
                 }
             }
         }

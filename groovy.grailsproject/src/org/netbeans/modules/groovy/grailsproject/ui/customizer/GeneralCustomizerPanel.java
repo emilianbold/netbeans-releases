@@ -34,14 +34,8 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
         grailsServerPort.getDocument().addDocumentListener(this);
         grailsServerPort.setText(uiProperties.getPort());
 
-//        // should we turn-on the Autodeploy flag?
-//
-//        autodeployCheckBox.setSelected(prjConfig.getAutoDeployFlag());
-//
-//        // populating the autodeploy field
-//
-//        autodeployLocation.getDocument().addDocumentListener( this );
-//        autodeployLocation.setText(prjConfig.getDeployDir());
+        vmOptionsTextField.getDocument().addDocumentListener(this);
+        vmOptionsTextField.setText(uiProperties.getVmOptions());
 
         // Here we define the indexes for the default enviroments as this:
         // 0 : "Development",
@@ -73,6 +67,10 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
         grailsServerPortLabel = new javax.swing.JLabel();
         grailsServerPort = new javax.swing.JTextField();
         grailsDisplayBrowser = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        vmOptionsLabel = new javax.swing.JLabel();
+        vmOptionsTextField = new javax.swing.JTextField();
+        vmOptionsTipLabel = new javax.swing.JLabel();
 
         activeGrailsEnvironmentLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.activeGrailsEnvironmentLabel.text")); // NOI18N
 
@@ -94,6 +92,11 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
             }
         });
 
+        vmOptionsLabel.setLabelFor(vmOptionsTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(vmOptionsLabel, org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.vmOptionsLabel.text")); // NOI18N
+
+        vmOptionsTipLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.vmOptionsTipLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -105,10 +108,20 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
                     .add(grailsServerPortLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(grailsServerPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(grailsEnvChooser, 0, 400, Short.MAX_VALUE)))
-            .add(grailsDisplayBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(grailsServerPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, grailsEnvChooser, 0, 431, Short.MAX_VALUE)))
+            .add(grailsDisplayBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(vmOptionsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(vmOptionsTipLabel)
+                        .addContainerGap())
+                    .add(vmOptionsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)))
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -126,7 +139,17 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
                     .add(grailsServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(grailsDisplayBrowser)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(vmOptionsLabel)
+                    .add(vmOptionsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(vmOptionsTipLabel))
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .add(112, 112, 112)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(41, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -141,8 +164,12 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
     private javax.swing.JComboBox grailsEnvChooser;
     private javax.swing.JTextField grailsServerPort;
     private javax.swing.JLabel grailsServerPortLabel;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
+    private javax.swing.JLabel vmOptionsLabel;
+    private javax.swing.JTextField vmOptionsTextField;
+    private javax.swing.JLabel vmOptionsTipLabel;
     // End of variables declaration//GEN-END:variables
 
     public void insertUpdate(DocumentEvent e) {
@@ -158,15 +185,14 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements HelpCt
     }
 
     private void updateTexts( DocumentEvent e ) {
-
         Document doc = e.getDocument();
 
+        // FIXME proper document model would be better
         if (doc == grailsServerPort.getDocument()) {
             uiProperties.setPort(grailsServerPort.getText().trim());
+        } else if (doc == vmOptionsTextField.getDocument()) {
+            uiProperties.setVmOptions(vmOptionsTextField.getText().trim());
         }
-//        else if ( doc == autodeployLocation.getDocument() ) {
-//            prjConfig.setDeployDir(autodeployLocation.getText());
-//        }
     }
 
 }

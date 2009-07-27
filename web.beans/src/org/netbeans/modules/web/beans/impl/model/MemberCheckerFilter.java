@@ -126,22 +126,22 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 // check specializes....
                 if (element instanceof TypeElement) {
                     TypeElement specializedSuper = AnnotationObjectProvider
-                            .checkSuper((TypeElement) element,
-                                    ((TypeElement) element).getQualifiedName()
-                                            .toString(), getImplementation()
-                                            .getHelper());
+                            .checkSuper((TypeElement) element, annotationName, 
+                                    getImplementation().getHelper());
                     if (specializedSuper != null) {
                         checkMember(exec, value, specializedSuper, iterator,
                                 annotationName);
                     }
                 }
-                /*
-                 * If element is method or field then it could specialize
-                 * other production element. But in this case original invoke
-                 * logic will add specialize elements after typesafe resolution
-                 * filtering. So there is no need to care here about 
-                 * check overridden method which could be specialized by the element.  
-                 */
+                else if ( element instanceof ExecutableElement){
+                    Set<Element> specialized = FieldInjectionPointLogic.
+                        getSpecialized(element, getImplementation(), 
+                                annotationName );
+                    if ( specialized.size() >0 ){
+                        checkMember(exec, value, specialized.iterator().next(), 
+                                iterator, annotationName);
+                    }
+                }
             }
         }
     }

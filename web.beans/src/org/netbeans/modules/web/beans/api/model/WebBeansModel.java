@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -162,6 +163,28 @@ public final class WebBeansModel {
     
     public CompilationController getCompilationController(){
         return getModelImplementation().getHelper().getCompilationController();
+    }
+    
+    /**
+     * Returns all bindings for <code>element</code>.
+     * <code>element</code> could be variable ( injection point , producer field ),
+     * type element ( bean type with binding ) and production method. 
+     * @param element element with bindings
+     * @return list of all bindings for <code>element</code>
+     */
+    public List<AnnotationMirror> getBindings( Element element ){
+        return getProvider().getBindings( element );
+    }
+    
+    /**
+     * Returns deployment type for <code>element</code>.
+     * <code>element</code> could be variable ( injection point , producer field ),
+     * type element ( bean type with binding ) and production method. 
+     * @param element element with bindings
+     * @return deployment type for <code>element</code>    
+     */
+    public AnnotationMirror getDeploymentType( Element element ){
+        return getProvider().getDeploymentType( element );
     }
     
     public AbstractModelImplementation getModelImplementation(){
