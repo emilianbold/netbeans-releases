@@ -72,6 +72,8 @@ public final class GrailsProjectConfig {
 
     public static final String GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY = "grails.global.plugins.dir"; // NOI18N
 
+    public static final String GRAILS_VM_OPTIONS_PROPERTY = "grails.vm.options"; // NOI18N
+
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
     private final Project prj;
@@ -144,6 +146,36 @@ public final class GrailsProjectConfig {
             settings.setPortForProject(prj, port);
         }
         propertyChangeSupport.firePropertyChange(GRAILS_PORT_PROPERTY, oldValue, port);
+    }
+
+    /**
+     * Returns the VM options configured for the project.
+     *
+     * @return the port configured for the project
+     */
+    public String getVmOptions() {
+        synchronized (settings) {
+            String port = settings.getVmOptionsForProject(prj);
+            if (port == null) {
+                port = ""; // NOI18N
+            }
+            return port;
+        }
+    }
+
+    /**
+     * Sets the VM options for the project.
+     *
+     * @param options VM options to set
+     */
+    public void setVmOptions(String options) {
+        assert options != null;
+        String oldValue;
+        synchronized (settings) {
+            oldValue = getPort();
+            settings.setVmOptionsForProject(prj, options);
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_VM_OPTIONS_PROPERTY, oldValue, options);
     }
 
     /**

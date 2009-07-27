@@ -39,80 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.api.ejbjar;
+package org.netbeans.modules.web.beans.navigation;
+
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
  *
- * @author Martin Adamek
+ * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
-public final class EjbReference {
-    public static enum EjbRefIType{NO_INTERFACE, LOCAL, REMOTE};
+public final class JavaTreeCellRenderer extends DefaultTreeCellRenderer {
+    public Component getTreeCellRendererComponent(JTree tree, Object value,
+        boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value,
+                sel, expanded, leaf, row, hasFocus);
 
-    private final String ejbClass;
-    private final String ejbRefType;
-    private final String local;
-    private final String localHome;
-    private final String remote;
-    private final String remoteHome;
-    private final EjbJar ejbModule;
-    
-    private EjbReference(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
-        this.ejbClass = ejbClass;
-        this.ejbRefType = ejbRefType;
-        this.local = local;
-        this.localHome = localHome;
-        this.remote = remote;
-        this.remoteHome = remoteHome;
-        this.ejbModule = ejbModule;
-    }
-
-    public static EjbReference create(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
-        return new EjbReference(ejbClass, ejbRefType, local, localHome, remote, remoteHome, ejbModule);
-    }
-    
-    public String getEjbClass() {
-        return ejbClass;
-    }
-    
-    public String getEjbRefType() {
-        return ejbRefType;
-    }
-    
-    public String getLocal() {
-        return local;
-    }
-
-    public String getLocalHome() {
-        return localHome;
-    }
-
-    public String getRemote() {
-        return remote;
-    }
-
-    public String getRemoteHome() {
-        return remoteHome;
-    }
-
-    public EjbJar getEjbModule() {
-        return ejbModule;
-    }
-
-    public String getHomeName(EjbRefIType iType){
-        switch(iType){
-            case LOCAL: return getLocalHome();
-            case REMOTE: return getRemoteHome();
-            case NO_INTERFACE: return getEjbClass();
-            default: return null;
+        if (!sel) {
+            setBackgroundNonSelectionColor(tree.getBackground());
         }
-    }
 
-    public String getComponentName(EjbRefIType iType){
-        switch(iType){
-            case LOCAL: return getLocal();
-            case REMOTE: return getRemote();
-            case NO_INTERFACE: return getEjbClass();
-            default: return null;
+        if (value instanceof JavaElement) {
+            label.setIcon(((JavaElement) value).getIcon());
+            label.setToolTipText(((JavaElement) value).getTooltip());
         }
+
+        return label;
     }
 }

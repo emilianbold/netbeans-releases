@@ -318,15 +318,19 @@ public final class GrailsPlatform {
         return new File(grailsBase);
     }
 
-    private static String createJvmArguments(Properties properties) {
+    private static String createJvmArguments(String vmOptions, Properties properties) {
         StringBuilder builder = new StringBuilder();
         int i = 0;
+
+        if (vmOptions != null) {
+            builder.append(vmOptions);
+        }
 
         for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
             String key = e.nextElement().toString();
             String value = properties.getProperty(key);
             if (value != null) {
-                if (i > 0) {
+                if (i > 0 || vmOptions != null) {
                     builder.append(" "); // NOI18N
                 }
                 builder.append("-D").append(key); // NOI18N
@@ -724,12 +728,16 @@ public final class GrailsPlatform {
                 }
             }
 
+            String vmOptions = descriptor.getProjectConfig().getVmOptions();
+            if (vmOptions != null && "".equals(vmOptions.trim())) {
+                vmOptions = null;
+            }
             String[] envp = new String[] {
                 "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N
                 "JAVA_HOME=" + javaHome, // NOI18N
                 "http_proxy=" + proxyString, // NOI18N
                 "HTTP_PROXY=" + proxyString, // NOI18N
-                "JAVA_OPTS=" + createJvmArguments(props)
+                "JAVA_OPTS=" + createJvmArguments(vmOptions, props)
             };
 
             // no executable check before java6

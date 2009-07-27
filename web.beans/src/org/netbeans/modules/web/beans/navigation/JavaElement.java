@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
 
-import java.util.List;
+package org.netbeans.modules.web.beans.navigation;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import java.util.Set;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.api.java.source.ElementHandle;
+import org.openide.filesystems.FileObject;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.swing.Icon;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
- * @author ads
- *
+ * The interface representing Java elements in hierarchy and members pop up windows.
+ * 
+ * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
-public interface WebBeansModelProvider {
-
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-    
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
-
-    List<AnnotationMirror> getBindings( Element element );
-
-    AnnotationMirror getDeploymentType( Element element );
-
+public interface JavaElement {
+    String getName();    
+    Set<Modifier> getModifiers();
+    ElementKind getElementKind();
+    String getLabel();
+    String getFQNLabel();
+    String getTooltip();
+    Icon getIcon();
+    ElementJavadoc getJavaDoc();
+    void gotoElement();
+    FileObject getFileObject();
+    ElementHandle getElementHandle();
 }

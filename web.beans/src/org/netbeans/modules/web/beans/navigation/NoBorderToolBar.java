@@ -38,42 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
 
-import java.util.List;
+package org.netbeans.modules.web.beans.navigation;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
-
+import java.awt.Graphics;
+import javax.swing.JToolBar;
 
 /**
- * @author ads
+ * ToolBar that doesn't paint any border.
  *
+ * @author S. Aubrecht
  */
-public interface WebBeansModelProvider {
-
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
+public class NoBorderToolBar extends JToolBar {
     
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
+    /** Creates a new instance of NoBorderToolbar */
+    public NoBorderToolBar() {
+    }
     
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
+    /** Creates a new instance of NoBorderToolbar 
+     * @param layout
+     */
+    public NoBorderToolBar( int layout ) {
+        super( layout );
+    }
     
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
-
-    List<AnnotationMirror> getBindings( Element element );
-
-    AnnotationMirror getDeploymentType( Element element );
-
+    @Override
+    protected void paintComponent(Graphics g) {
+    }
 }
