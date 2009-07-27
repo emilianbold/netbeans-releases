@@ -91,6 +91,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -1865,7 +1866,8 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private boolean isCustomizableDebugger() {
-        return !IpeUtils.isDbxguiEnabled();
+        ToolsPanelGlobalCustomizer customizer = Lookup.getDefault().lookup(ToolsPanelGlobalCustomizer.class);
+        return customizer == null ? true : customizer.isDebuggerCustomizable();
     }
 
     static class MyCellRenderer extends DefaultListCellRenderer {
