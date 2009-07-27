@@ -211,7 +211,7 @@
                       </Group>
                       <Component id="reporterCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="156" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -813,15 +813,15 @@
                       <Component id="keywordsComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="2"/>
                       <Component id="commentComboBox" linkSize="4" min="-2" max="-2" attributes="3"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="keywordsTextField" max="32767" attributes="1"/>
-                      <Component id="commentTextField" alignment="0" max="32767" attributes="1"/>
-                      <Component id="summaryTextField" alignment="0" pref="402" max="32767" attributes="1"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="keywordsTextField" max="32767" attributes="2"/>
+                      <Component id="commentTextField" alignment="0" max="32767" attributes="2"/>
+                      <Component id="summaryTextField" alignment="0" max="32767" attributes="2"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="38" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1114,6 +1114,9 @@
       <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
     </Property>
   </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,-85,0,0,5,120"/>
+  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -1135,7 +1138,7 @@
               <Component id="tableFieldsPanel" max="32767" attributes="2"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="noContentPanel" alignment="0" pref="1400" max="32767" attributes="0"/>
+          <Component id="noContentPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -1147,7 +1150,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="tableFieldsPanel" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="noContentPanel" pref="85" max="32767" attributes="0"/>
+              <Component id="noContentPanel" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -1167,7 +1170,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="tablePanel" alignment="0" pref="1360" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
               </Group>
@@ -1178,7 +1181,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="tablePanel" pref="99" max="32767" attributes="0"/>
+                  <Component id="tablePanel" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -1212,7 +1215,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1183" max="32767" attributes="0"/>
+                      <EmptySpace pref="1257" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1295,7 +1298,7 @@
                   <Component id="saveChangesButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="cancelChangesButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="505" max="32767" attributes="0"/>
+                  <EmptySpace pref="698" max="32767" attributes="0"/>
                   <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="separatorLabel1" min="-2" max="-2" attributes="0"/>
@@ -1404,30 +1407,30 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="byLastChangeContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
+                  <Component id="byLastChangeContainer" alignment="0" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
-                  <Component id="byTextContainer" alignment="0" pref="1400" max="32767" attributes="2"/>
+                  <Component id="byTextContainer" alignment="0" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1254" max="32767" attributes="0"/>
+                      <EmptySpace pref="1273" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1224" max="32767" attributes="0"/>
+                      <EmptySpace pref="1245" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1280" max="32767" attributes="0"/>
+                      <EmptySpace pref="1295" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1248" max="32767" attributes="0"/>
+                      <EmptySpace pref="1266" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1553,7 +1556,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" pref="1287" max="32767" attributes="0"/>
+                          <Component id="urlTextField" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1665,7 +1668,7 @@
                       <Component id="idTextField" min="-2" pref="191" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="gotoIssueButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="997" max="32767" attributes="0"/>
+                      <EmptySpace pref="1054" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1793,7 +1796,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="1006" max="32767" attributes="0"/>
+                          <EmptySpace pref="1104" max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>

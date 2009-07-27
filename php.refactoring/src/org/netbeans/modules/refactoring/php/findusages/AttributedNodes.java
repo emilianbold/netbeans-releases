@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -1204,17 +1205,20 @@ public class AttributedNodes extends DefaultVisitor {
 
             switch(k) {
                 case CONST:
-                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
+                    IndexedConstant m = classMember.getMember();
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.CONST, m);
                 } break;
                 case FUNC:
-                for (IndexedFunction m : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                    IndexedFunction m = classMember.getMember();
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                    IndexedConstant m = classMember.getMember();
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);

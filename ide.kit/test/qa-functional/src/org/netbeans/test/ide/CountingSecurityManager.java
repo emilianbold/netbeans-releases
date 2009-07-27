@@ -458,6 +458,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             if (e.getClassName().contains("junit.JUnitTestRunner")) {
                 return false;
             }
+            // this happens from time to time (according to GC being scheduled or not)
+            // and shall not influence the results of this test
+            if (e.getClassName().equals("org.openide.util.WeakListenerImpl$ListenerReference") && e.getMethodName().equals("getRemoveMethod")) {
+                return false;
+            }
         }
 
         return prefix == null || file.startsWith(prefix);
@@ -529,14 +534,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (cmd.contains("chmod")) {
             return;
         }
-        if (cmd.equals("hg")) {
-            return;
-        }
-        if (cmd.endsWith("/hg")) {
-            return;
-        }
-        if (cmd.endsWith("hg.exe")) {
-            return;
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if (e.getMethodName().equals("execEnv") && e.getClassName().equals("org.netbeans.modules.mercurial.util.HgCommand")) {
+                return;
+            }
         }
 
         super.checkExec(cmd);

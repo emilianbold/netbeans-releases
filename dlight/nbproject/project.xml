@@ -92,6 +92,7 @@
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
@@ -101,6 +102,7 @@
                 <package>org.netbeans.modules.dlight.api.dataprovider</package>
                 <package>org.netbeans.modules.dlight.api.execution</package>
                 <package>org.netbeans.modules.dlight.api.indicator</package>
+                <package>org.netbeans.modules.dlight.api.stack</package>
                 <package>org.netbeans.modules.dlight.api.storage</package>
                 <package>org.netbeans.modules.dlight.api.storage.threadmap</package>
                 <package>org.netbeans.modules.dlight.api.storage.types</package>

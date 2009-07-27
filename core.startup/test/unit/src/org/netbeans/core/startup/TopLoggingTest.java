@@ -136,6 +136,28 @@ public class TopLoggingTest extends NbTestCase {
         }
 
     }
+    public void testLoggingAnnotateException() throws Exception {
+        Exception e = new Exception("One");
+        Exceptions.attachMessage(e, "Two");
+
+        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Three", e);
+
+        String disk = readLog(true);
+        if (!disk.contains("One") || !disk.contains("Two") || !disk.contains("Three")) {
+            fail("There shall be One, Two, Three text in the log:\n" + disk);
+        }
+    }
+    public void testLoggingLocalizedAnnotateException() throws Exception {
+        Exception e = new Exception("One");
+        Exceptions.attachLocalizedMessage(e, "Two");
+
+        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Three", e);
+
+        String disk = readLog(true);
+        if (!disk.contains("One") || !disk.contains("Two") || !disk.contains("Three")) {
+            fail("There shall be One, Two, Three text in the log:\n" + disk);
+        }
+    }
     public void testLogMultiLineIsPrintedWithoutTheWarningPrefix() throws Exception {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.WARNING, "Some info");
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Second msg\nand its second line");

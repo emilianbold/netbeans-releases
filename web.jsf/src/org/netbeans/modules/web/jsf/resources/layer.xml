@@ -86,6 +86,16 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">
                         <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                     </file>
+                    <folder name="CompletionProviders">
+                        <file name="org-netbeans-modules-web-jsf-editor-jspel-JSFELCompletionProvider.instance"/>
+                        <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
+                    </folder>
+                    <folder name="HyperlinkProviders">
+                        <file name="JSFJSPHyperlinkProvider.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.jspel.JSFJSPHyperlinkProvider"/>
+                            <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        </file>
+                    </folder>
                 </folder>
             <folder name="x-jsf+xml">
                 <folder name="HyperlinkProviders">

@@ -67,6 +67,12 @@ public final class SpringUtilities {
     }
 
     public static Library findJSTLibrary() {
+        // see Issue #169105 - first try "pure" JSTL, if there isn't any then bundled JSTL will suffice
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (library.getName().startsWith("jstl")) {
+                return library;
+            }
+        }
         return getLibrary(JSTL_CLASS_NAME);
     }
 

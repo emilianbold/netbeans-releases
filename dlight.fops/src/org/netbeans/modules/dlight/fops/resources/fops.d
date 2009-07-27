@@ -1,47 +1,60 @@
 #!/usr/sbin/dtrace -s
 #pragma D option quiet 
-#pragma D option destructive
 
-self uint32_t stkIdx;
-
-syscall::read:entry 
+syscall::open*:entry,
+syscall::creat*:entry
 /pid == $1/
+{
+    self->pathaddr = arg0;
+}
+
+syscall::open*:return,
+syscall::creat*:return
+/pid == $1 && self->pathaddr/
+{
+    this->fd = arg0;
+    printf("%d %d %d %s %d \"%s\" %d",
+            timestamp, cpu, tid, "open", this->fd, copyinstr(self->pathaddr), 0);
+    ustack();
+    printf("\n");
+    self->pathaddr = 0;
+}
+
+syscall::close*:entry
+/pid == $1 && fds[arg0].fi_pathname != "<none>" && fds[arg0].fi_pathname != "<unknown>"/
 {
     self->fd = arg0;
+    self->path = fds[self->fd].fi_pathname;
 }
 
-syscall::read:return 
-/pid == $1/
+syscall::close*:return
+/pid == $1 && self->fd/
 {
-    fname = (self->fd == 0 ) ? "<stdin>" : fds[self->fd].fi_pathname;
-    printf("1 %d %d %d %d \"%s\" %d %d\n",
-           cpu,
-           tid,
-	   timestamp,
-	   0,
-	   fname,
-	   arg1,
-	   self->stkIdx);
-/*    raise(29); */
+    printf("%d %d %d %s %d \"%s\" %d",
+            timestamp, cpu, tid, "close", self->fd, self->path, 0);
+    ustack();
+    printf("\n");
+    self->fd = 0;
 }
 
-syscall::write:entry 
-/pid == $1/
+syscall::*read*:entry
+/pid == $1 && fds[arg0].fi_pathname != "<none>" && fds[arg0].fi_pathname != "<unknown>"/
 {
-    self->fd = arg0;
+    this->fd = arg0;
+    this->path = fds[this->fd].fi_pathname;
+    printf("%d %d %d %s %d \"%s\" %d",
+            timestamp, cpu, tid, "read", this->fd, this->path, arg2);
+    ustack();
+    printf("\n");
 }
 
-syscall::write:return 
-/pid == $1/
+syscall::*write*:entry
+/pid == $1 && fds[arg0].fi_pathname != "<none>" && fds[arg0].fi_pathname != "<unknown>"/
 {
-    fname = (self->fd == 1 ) ? "<stdout>" : (self->fd == 2 ) ? "<stderr>" : fds[self->fd].fi_pathname;
-    printf("1 %d %d %d %d \"%s\" %d %d\n",
-           cpu,
-           tid,
-	   timestamp,
-	   1,
-	   fname,
-	   arg1,
-	   self->stkIdx);
-    /*raise(29);*/
+    this->fd = arg0;
+    this->path = fds[this->fd].fi_pathname;
+    printf("%d %d %d %s %d \"%s\" %d",
+            timestamp, cpu, tid, "write", this->fd, this->path, arg2);
+    ustack();
+    printf("\n");
 }

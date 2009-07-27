@@ -52,7 +52,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 
 /**
  * @author Alexander Simon
@@ -153,15 +153,10 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         threadRunningTime = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
-            int rest = 0;
+            ThreadStateColumnImpl.normilizeMap(map, count);
+            ThreadStateColumnImpl.roundMap(map);
+            int rest = ThreadState.POINTS/2;
             int oldRest = 0;
-            for (Map.Entry<MSAState, AtomicInteger> entry : map.entrySet()){
-                AtomicInteger value = entry.getValue();
-                oldRest = rest;
-                rest = (value.get()+oldRest)%count;
-                value.set((value.get()+oldRest)/count);
-            }
-            rest = ThreadState.POINTS/2;
             oldRest = 0;
             int y = 6;
             int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
@@ -185,10 +180,11 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
         g.setColor(UIUtils.getDarker(getBackground(),0.4f));
-        g.drawString(s, 6 + 3 + 1, y);
-        g.drawString(s, 6 + 3 - 1, y);
-        g.drawString(s, 6 + 3, y + 1);
-        g.drawString(s, 6 + 3, y - 1);
+        for(int dx = -1; dx < 2; dx++) {
+            for(int dy = -1; dy < 2; dy++) {
+                g.drawString(s, 6 + 3 + dx, y + dy);
+            }
+        }
         g.setColor(getBackground());
         g.drawString(s, 6 + 3, y);
         threadData.setSummary(percent);
@@ -199,14 +195,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
         int count = countSum(aMap);
         if (count > 0) {
-            int rest = 0;
-            int oldRest = 0;
-            for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()){
-                AtomicInteger value = entry.getValue();
-                oldRest = rest;
-                rest = (value.get()+oldRest)%count;
-                value.set((value.get()+oldRest)/count);
-            }
+            ThreadStateColumnImpl.normilizeMap(aMap, count);
+            ThreadStateColumnImpl.roundMap(aMap);
             StringBuilder buf = new StringBuilder();
             buf.append("<html>");// NOI18N
             buf.append("<table>");// NOI18N
@@ -214,7 +204,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 Map.Entry<MSAState, AtomicInteger> entry = it.next();
                 int value = entry.getValue().get();
                 MSAState s = entry.getKey();
-                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                ThreadStateResources res = ThreadStateResources.forState(s);
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N

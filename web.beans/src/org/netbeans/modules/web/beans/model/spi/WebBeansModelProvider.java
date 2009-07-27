@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.model.spi;
 
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -63,9 +64,16 @@ public interface WebBeansModelProvider {
     List<Element> getInjectables( VariableElement element , 
             AbstractModelImplementation modelImpl  );
     
-    boolean isDynamicInjectionPoint( VariableElement element );
+    boolean isDynamicInjectionPoint( VariableElement element ,
+            AbstractModelImplementation impl ) throws WebBeansModelException;
     
-    boolean isInjectionPoint( VariableElement element );
+    boolean isInjectionPoint( VariableElement element , 
+            AbstractModelImplementation impl ) throws WebBeansModelException;
     
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
+
+    List<AnnotationMirror> getBindings( Element element );
+
+    AnnotationMirror getDeploymentType( Element element );
+
 }

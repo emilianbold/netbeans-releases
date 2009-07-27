@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module: org.netbeans.modules.dlight.tha
+OpenIDE-Module-Layer: org/netbeans/modules/dlight/tha/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/tha/resources/Bundle.properties
+OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider, org.netbeans.modules.dlight.spi.indicator.IndicatorFactory
+OpenIDE-Module-Specification-Version: 1.1

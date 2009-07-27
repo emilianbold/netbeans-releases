@@ -49,7 +49,7 @@ import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
- * This class could be useful for extending a PHP product.
+ * This class could be useful for extending a PHP project.
  * <p>
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik

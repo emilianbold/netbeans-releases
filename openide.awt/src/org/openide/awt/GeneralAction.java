@@ -82,7 +82,8 @@ final class GeneralAction {
     }
 
     public static ContextAwareAction callback(Map map) {
-        DelegateAction d = new DelegateAction(map);
+        Action fallback = (Action)map.get("fallback");
+        DelegateAction d = new DelegateAction(map, fallback);
         Parameters.notNull("key", d.key);
         return d;
     }
@@ -193,9 +194,6 @@ final class GeneralAction {
                 fallback, // NOI18N
                 Boolean.TRUE.equals(map.get("surviveFocusChange")) // NOI18N
             );
-        }
-        public DelegateAction(Map map) {
-            this(map, (Action)map.get("fallback")); // NOI18N
         }
 
         /** Overrides superclass method, adds delegate description. */

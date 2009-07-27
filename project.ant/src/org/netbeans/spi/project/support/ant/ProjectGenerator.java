@@ -53,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -117,19 +116,22 @@ public class ProjectGenerator {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
                 public AntProjectHelper run() throws IOException {
-                    Project prj = ProjectManager.getDefault().findProject(directory);
-                    if (prj != null) {
-                        // #139769: try harder to get rid of it...
-                        DefaultProjectOperations.performDefaultDeleteOperation(prj);
-                        System.gc();
-                    }
-                    prj = ProjectManager.getDefault().findProject(directory);
-                    if (prj != null) {
-                        throw new IllegalArgumentException("Already a " + prj.getClass().getName() + " in " + directory); // NOI18N
-                    }
+                    directory.refresh();
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
                         throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
+                    }
+                    Project prj = ProjectManager.getDefault().findProject(directory);
+                    if (prj != null && prj.getProjectDirectory().getChildren().length == 0) {
+                        // #139769: try to cleanse ProjectManager's cache of it.
+                        AntProjectHelper h = AntBasedProjectFactorySingleton.getHelperFor(prj);
+                        if (h != null) {
+                            h.notifyDeleted();
+                            prj = ProjectManager.getDefault().findProject(directory);
+                        }
+                    }
+                    if (prj != null) {
+                        throw new IllegalArgumentException("Already a " + prj.getClass().getName() + " in " + directory); // NOI18N
                     }
                     projectXml = FileUtil.createData(directory, AntProjectHelper.PROJECT_XML_PATH);
                     Document doc = XMLUtil.createDocument("project", AntProjectHelper.PROJECT_NS, null, null); // NOI18N

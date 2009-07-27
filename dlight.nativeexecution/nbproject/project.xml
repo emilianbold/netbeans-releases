@@ -143,6 +143,7 @@
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>

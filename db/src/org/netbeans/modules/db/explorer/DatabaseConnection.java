@@ -277,7 +277,7 @@ public class DatabaseConnection implements DBConnection {
             if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
                 LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
             }
-            return true;
+            return ! conn.isClosed();
         } catch (SQLException ex) {
             if (dbconn != null) {
                 try {

@@ -43,7 +43,6 @@ package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
 import java.util.Properties;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *
@@ -57,7 +56,7 @@ public class TestFileStorage extends NbPreferencesTest.TestBasicSetup {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         instance = getInstance();
     }

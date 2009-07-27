@@ -49,4 +49,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentModel;
  */
 public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
 
+    Beans getBeans();
+    
+    WebBeansComponentFactory getFactory();
 }

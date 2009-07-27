@@ -185,7 +185,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             model.setCppRequired(false);
             model.setFortranRequired(false);
             model.setMakeRequired(false);
-            model.setGdbRequired(true);
+            model.setDebuggerRequired(true);
             model.setShowRequiredBuildTools(false);
             model.setShowRequiredDebugTools(true);
             model.setCompilerSetName(null); // means don't change

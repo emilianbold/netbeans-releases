@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -69,6 +71,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -142,6 +145,8 @@ public final class AntProjectHelper {
             }
         };
     }
+
+    private static final Logger LOG = Logger.getLogger(AntProjectHelper.class.getName());
     
     private static RequestProcessor RP;
     
@@ -561,14 +566,21 @@ public final class AntProjectHelper {
      * to <code>project.xml</code>.
      * Access from GeneratedFilesHelper.
      */
-    void possiblyThrowProjectXmlModified(String msg) throws IllegalStateException {
+    void ensureProjectXmlUnmodified(String msg, boolean doSave) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
             IllegalStateException ise = new IllegalStateException(msg);
             if (addedProjectXmlPath != null) {
                 ise.initCause(addedProjectXmlPath);
             }
-            throw ise;
+            LOG.log(Level.INFO, null, ise);
+            if (doSave) {
+                try {
+                    save();
+                } catch (IOException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
+            }
         }
     }
     
@@ -597,16 +609,20 @@ public final class AntProjectHelper {
                 }
                 Iterator<String> it = modifiedMetadataPaths.iterator();
                 while (it.hasNext()) {
-                    String path = it.next();
-                    if (path.equals(PROJECT_XML_PATH)) {
-                        assert projectXml != null;
-                        locks.add(saveXml(projectXml, path));
-                    } else if (path.equals(PRIVATE_XML_PATH)) {
-                        assert privateXml != null;
-                        locks.add(saveXml(privateXml, path));
-                    } else {
-                        // All else is assumed to be a properties file.
-                        locks.add(properties.write(path));
+                    try {
+                        String path = it.next();
+                        if (path.equals(PROJECT_XML_PATH)) {
+                            assert projectXml != null;
+                            locks.add(saveXml(projectXml, path));
+                        } else if (path.equals(PRIVATE_XML_PATH)) {
+                            assert privateXml != null;
+                            locks.add(saveXml(privateXml, path));
+                        } else {
+                            // All else is assumed to be a properties file.
+                            locks.add(properties.write(path));
+                        }
+                    } catch (FileAlreadyLockedException x) { // #155037
+                        LOG.log(Level.INFO, null, x);
                     }
                     // As metadata files are saved, take them off the modified list.
                     it.remove();

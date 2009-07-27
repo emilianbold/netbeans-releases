@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,9 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.paralleladviser.utils;
 
 import java.net.URL;
@@ -57,13 +69,19 @@ public class ParallelAdviserAdviceUtils {
     private ParallelAdviserAdviceUtils() {
     }
 
-    public static JComponent createAdviceComponent(URL icon, String text) {
+    public static JComponent createAdviceComponent(URL icon, String title, String text, HyperlinkListener listner) {
+
+        URL tr = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_right.png");
+        URL tl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_left.png");
+        URL br = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_right.png");
+        URL bl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_left.png");
+        URL bm = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_middle.png");
 
         JEditorPane jEditorPane = createJEditorPane("<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
                 "        <tr bgcolor=\"#c7e3e8\">" + // NOI18N
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tl.png\" height=\"21\" width=\"7\"></td>" + // NOI18N
-                "            <td colspan=\"2\" width=\"800\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>Loop for parallelization has been found</b></td>" + // NOI18N
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tr.png\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"800\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
+                "            <td><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
                 "        </tr>" + // NOI18N
                 "    </table>" + // NOI18N
                 "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
@@ -80,11 +98,11 @@ public class ParallelAdviserAdviceUtils {
                 "    </table>" + // NOI18N
                 "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
                 "        <tr>" + // NOI18N
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-bl.png\" height=\"6\" width=\"7\"></td>" + // NOI18N
-                "            <td colspan=\"2\" width=\"800\"><img src=\"http://netbeans.org/images/v6/trails/trails-box-bm.png\" height=\"6\" width=\"800\"></td>" + // NOI18N
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-br.png\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "            <td><img src=\"" + bl + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"800\"><img src=\"" + bm + "\" height=\"6\" width=\"800\"></td>" + // NOI18N
+                "            <td><img src=\"" + br + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
                 "        </tr>" + // NOI18N
-                "    </table>", true); // NOI18N
+                "    </table>", true, listner); // NOI18N
 
         jEditorPane.setBackground(new java.awt.Color(255, 255, 255));
         jEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -92,13 +110,19 @@ public class ParallelAdviserAdviceUtils {
         return jEditorPane;
     }
 
-    public static JEditorPane createJEditorPane(String text, boolean needHTMLTags) {
+    public static JEditorPane createJEditorPane(String text, boolean needHTMLTags, HyperlinkListener listner) {
         JEditorPane editorPane = new JEditorPane("text/html", needHTMLTags || !text.startsWith("<html>") ? "<html> <body bgcolor=\"#ffffff\">" + text + "</body></html>" : text);//NOI18N
+        if (listner != null) {
+            editorPane.addHyperlinkListener(listner);
+        }
         editorPane.addHyperlinkListener(new HyperlinkListener() {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+                    URL url = e.getURL();
+                    if(url != null) {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    }
                 }
             }
         });
@@ -114,5 +138,4 @@ public class ParallelAdviserAdviceUtils {
         editorPane.setEditable(false);
         return editorPane;
     }
-
 }

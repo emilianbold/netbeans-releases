@@ -158,20 +158,20 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject folderFileObject;
     private File projectFile;
     private Image icon;
-    private Lookup lookup;
+    private final Lookup lookup;
     private Updater updater1;
     private Updater updater2;
     private MavenProject project;
     private ProblemReporterImpl problemReporter;
-    private Info projectInfo;
-    private MavenSharabilityQueryImpl sharability;
-    private SubprojectProviderImpl subs;
+    private final Info projectInfo;
+    private final MavenSharabilityQueryImpl sharability;
+    private final SubprojectProviderImpl subs;
     private MavenProject oldProject;
-    private NbMavenProject watcher;
-    private ProjectState state;
+    private final NbMavenProject watcher;
+    private final ProjectState state;
     private ConfigurationProviderEnabler configEnabler;
-    private M2AuxilaryConfigImpl auxiliary;
-    private MavenProjectPropsImpl auxprops;
+    private final M2AuxilaryConfigImpl auxiliary;
+    private final MavenProjectPropsImpl auxprops;
     private ProjectProfileHandler profileHandler;
     public static WatcherAccessor ACCESSOR = null;
     

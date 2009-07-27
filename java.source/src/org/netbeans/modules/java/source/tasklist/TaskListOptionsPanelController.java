@@ -64,7 +64,7 @@ public class TaskListOptionsPanelController extends OptionsPanelController imple
             getComponent(null);//XXX: should not happen
         }
 
-        panel.setDependenciesEnabled(TasklistSettings.isDependencyTrackingEnabled());
+        panel.setDependencies(TasklistSettings.getDependencyTracking());
         panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
         panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
 
@@ -76,7 +76,7 @@ public class TaskListOptionsPanelController extends OptionsPanelController imple
         }
 
         TasklistSettings.setTasklistsEnabled(panel.getTasklistEnabled());
-        TasklistSettings.setDependencyTrackingEnabled(panel.getDependenciesEnabled());
+        TasklistSettings.setDependencyTracking(panel.getDependencies());
         TasklistSettings.setBadgesEnabled(panel.getBadgesEnabled());
 
     }
@@ -86,7 +86,7 @@ public class TaskListOptionsPanelController extends OptionsPanelController imple
             return;
         }
         panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
-        panel.setDependenciesEnabled(TasklistSettings.isDependencyTrackingEnabled());
+        panel.setDependencies(TasklistSettings.getDependencyTracking());
         panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
     }
 
@@ -99,7 +99,7 @@ public class TaskListOptionsPanelController extends OptionsPanelController imple
             return false;
         }
 
-        return TasklistSettings.isTasklistEnabled() != panel.getTasklistEnabled() || TasklistSettings.isDependencyTrackingEnabled() != panel.getDependenciesEnabled() || TasklistSettings.isBadgesEnabled() != panel.getBadgesEnabled();
+        return TasklistSettings.isTasklistEnabled() != panel.getTasklistEnabled() || TasklistSettings.getDependencyTracking() != panel.getDependencies() || TasklistSettings.isBadgesEnabled() != panel.getBadgesEnabled();
     }
 
     public JComponent getComponent(Lookup masterLookup) {

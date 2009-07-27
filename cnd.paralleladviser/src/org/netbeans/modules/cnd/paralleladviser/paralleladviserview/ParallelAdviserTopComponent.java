@@ -51,11 +51,14 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
 
+import java.util.Collection;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.paralleladviser.api.ParallelAdviser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -68,7 +71,7 @@ import org.openide.windows.TopComponent;
 public final class ParallelAdviserTopComponent extends TopComponent {
 
     private static ParallelAdviserTopComponent instance;
-//    /** path to the icon used by the component and its open action */
+    // path to the icon used by the component and its open action
     public static final String ICON_PATH = "org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/paralleladviser.png"; // NOI18N
     private static final String PREFERRED_ID = "ParallelAdviserTopComponent"; // NOI18N
 
@@ -77,36 +80,40 @@ public final class ParallelAdviserTopComponent extends TopComponent {
         setName(NbBundle.getMessage(ParallelAdviserTopComponent.class, "CTL_ParallelAdviserTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(ParallelAdviserTopComponent.class, "HINT_ParallelAdviserTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        setTips();
+        updateTips();
     }
 
     /**
-     * Initializes tips.
+     * Updates tips.
      */
-    public void setTips() {
+    public void updateTips() {
         removeAll();
+        
+        Collection<Advice> tips = ParallelAdviser.getTips();
 
-        JPanel tips = null;
-        JPanel lastTip = tips;
+        JPanel tipPanels = null;
+        JPanel lastTipPanel = tipPanels;
+        
+        for (Advice advice : tips) {
+            JPanel newTipPanel = new JPanel();
+            newTipPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            newTipPanel.setLayout(new java.awt.BorderLayout());
+            newTipPanel.add(advice.getComponent(), java.awt.BorderLayout.PAGE_START);
 
-        JPanel newTip = new JPanel();
-        newTip.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        newTip.setLayout(new java.awt.BorderLayout());
-        newTip.add(new LoopParallelizationAdvice().getComponent(), java.awt.BorderLayout.PAGE_START);
+            newTipPanel.setBackground(Color.WHITE);
 
-        tips = newTip;
-        lastTip = newTip;
-
-        newTip = new JPanel();
-        newTip.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        newTip.setLayout(new java.awt.BorderLayout());
-        newTip.add(new SunStudioCompilerXautoparAdvice().getComponent(), java.awt.BorderLayout.PAGE_START);
-
-        lastTip.add(newTip, java.awt.BorderLayout.CENTER);
+            if(tipPanels == null) {
+                tipPanels = newTipPanel;
+            }
+            if(lastTipPanel != null) {
+                lastTipPanel.add(newTipPanel, java.awt.BorderLayout.CENTER);
+            }
+            lastTipPanel = newTipPanel;
+        }
 
         JScrollPane pane = new JScrollPane();
         pane.getVerticalScrollBar().setUnitIncrement(16);
-        pane.setViewportView(tips);
+        pane.setViewportView(tipPanels);
 
         add(pane, BorderLayout.CENTER);
         validate();
@@ -164,4 +171,11 @@ public final class ParallelAdviserTopComponent extends TopComponent {
     String preferredID() {
         return PREFERRED_ID;
     }
+
+    public
+    @Override
+    int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
 }

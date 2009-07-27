@@ -149,7 +149,7 @@ public class KeyMapOperator extends JDialogOperator {
 
     private JListOperator clickShortcutEllipsisButton(JTableOperator tab, int row) {
         TableModel tm = tab.getModel();
-        org.netbeans.modules.options.keymap.ShortcutCell sc = (org.netbeans.modules.options.keymap.ShortcutCell) tm.getValueAt(row, 1);
+        org.netbeans.modules.options.keymap.ShortcutCellPanel sc = (org.netbeans.modules.options.keymap.ShortcutCellPanel) tm.getValueAt(row, 1);
         final JButton button = sc.getButton();
         int x = button.getX() + button.getWidth() / 2;
         int y = button.getY() + button.getHeight() / 2;

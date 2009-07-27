@@ -78,11 +78,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -439,9 +439,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else if (leftHandSide instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) leftHandSide;
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
-            if (varN != null) {
+            //TODO: varN.representsThis() is hotfix for #166982 but this code 
+            //deserves review, the same like type inference for fields like $v->a = new a();$v->a->|
+            if (varN != null && varN.representsThis()) {
                 Collection<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
-                //TODO: getFirst must be reviewed
                 TypeScope type = ModelUtils.getFirst(types);
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
@@ -474,8 +475,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression parameterName = node.getParameterName();
         Expression parameterType = node.getParameterType();
         String typeName = parameterType != null ? CodeUtils.extractUnqualifiedTypeName(node) : null;
-        //FunctionScope scope = (FunctionScope) currentScope.peek();
-        FunctionScopeImpl scope =  (FunctionScopeImpl) modelBuilder.getCurrentScope();
+        Scope scp = modelBuilder.getCurrentScope();
+        FunctionScopeImpl fncScope =  (FunctionScopeImpl)scp;
         while(parameterName instanceof Reference) {
             Reference ref = (Reference)parameterName;
             Expression expression = ref.getExpression();
@@ -484,16 +485,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         if (typeName != null && parameterName instanceof Variable) {
-            VariableNameImpl varNameImpl = scope.createElement( (Variable) parameterName);
-            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, scope.getBlockRange(),
+            VariableNameImpl varNameImpl = fncScope.createElement( (Variable) parameterName);
+            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, fncScope, fncScope.getBlockRange(),
                     new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
         }
 
         if (parameterName instanceof Variable) {
             //Identifier paramId = parameterType != null ? CodeUtils.extractUnqualifiedIdentifier(parameterType) : null;
-            occurencesBuilder.prepare(Kind.CLASS, parameterType, scope);
-            occurencesBuilder.prepare(Kind.IFACE, parameterType, scope);
-            occurencesBuilder.prepare((Variable) parameterName, scope);
+            occurencesBuilder.prepare(Kind.CLASS, parameterType, fncScope);
+            occurencesBuilder.prepare(Kind.IFACE, parameterType, fncScope);
+            occurencesBuilder.prepare((Variable) parameterName, fncScope);
         }
         super.visit(node);
     }
@@ -525,6 +526,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
 
         scan(node.getBody());
+    }
+
+    public void visit(LambdaFunctionDeclaration node) {
+        //TODO: add in model
     }
 
     @Override
@@ -819,7 +824,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             assert occ != null;
             if (occ.getDeclaration().equals(element)) {
                 retval = occ;
-            }
+            } 
         }
         return retval;
     }

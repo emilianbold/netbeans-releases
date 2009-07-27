@@ -66,6 +66,7 @@ public class RepositoryConnection {
     private SVNRevision svnRevision;
     private String certFile;
     private String certPassword;
+    private static Boolean keepUserInHostname;
     
     public RepositoryConnection(RepositoryConnection rc) {
         this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword, rc.certFile, rc.certPassword);
@@ -213,7 +214,7 @@ public class RepositoryConnection {
         StringBuffer urlString = new StringBuffer();
         urlString.append(url.getProtocol());
         urlString.append("://");                                                // NOI18N
-        urlString.append(SvnUtils.ripUserFromHost(url.getHost()));
+        urlString.append(ripUserFromHost(url.getHost()));
         if(url.getPort() > 0) {
             urlString.append(":");                                              // NOI18N
             urlString.append(url.getPort());
@@ -276,5 +277,11 @@ public class RepositoryConnection {
         String certPasswrod = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
         return new RepositoryConnection(url, username, password, extCmd, save, certFile, certPasswrod);
     }
-    
+
+    private static String ripUserFromHost (String hostname) {
+        if (keepUserInHostname == null) {
+            keepUserInHostname = new Boolean("false".equals(System.getProperty("subversion.ripUserFromHostnames", "true"))); //NOI18N
+        }
+        return keepUserInHostname.booleanValue() ? hostname : SvnUtils.ripUserFromHost(hostname);
+    }
 }

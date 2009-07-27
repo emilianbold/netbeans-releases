@@ -272,9 +272,8 @@ public final class GeneratedFilesHelper {
      * @param stylesheet a URL to an XSLT stylesheet accepting <code>project.xml</code>
      *                   as input and producing the build script as output
      * @throws IOException if transforming or writing the output failed
-     * @throws IllegalStateException if the project was modified (and not being saved)
      */
-    public void generateBuildScriptFromStylesheet(final String path, final URL stylesheet) throws IOException, IllegalStateException {
+    public void generateBuildScriptFromStylesheet(final String path, final URL stylesheet) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("Null path"); // NOI18N
         }
@@ -285,7 +284,7 @@ public final class GeneratedFilesHelper {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     if (h != null) {
-                        h.possiblyThrowProjectXmlModified("Cannot generate build scripts from a modified project"); // NOI18N
+                        h.ensureProjectXmlUnmodified("Cannot generate build scripts from a modified project", true); // NOI18N
                     }
                     // Need to use an atomic action since otherwise creating new build scripts might
                     // cause them to not be recognized as Ant scripts.
@@ -567,14 +566,13 @@ public final class GeneratedFilesHelper {
      *                   (should match that given to {@link #generateBuildScriptFromStylesheet})
      * @return a bitwise OR of various flags, or <code>0</code> if the script
      *         is present on disk and fully up-to-date
-     * @throws IllegalStateException if the project was modified
      */
-    public int getBuildScriptState(final String path, final URL stylesheet) throws IllegalStateException {
+    public int getBuildScriptState(final String path, final URL stylesheet) {
         try {
             return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Integer>() {
                 public Integer run() throws IOException {
                     if (h != null) {
-                        h.possiblyThrowProjectXmlModified("Cannot generate build scripts from a modified project"); // NOI18N
+                        h.ensureProjectXmlUnmodified("Cannot generate build scripts from a modified project", false); // NOI18N
                     }
                     FileObject script = dir.getFileObject(path);
                     if (script == null || /* #55164 */script.isVirtual()) {
@@ -793,9 +791,8 @@ public final class GeneratedFilesHelper {
      *                                <code>project.xml</code> and/or the stylesheet
      * @return true if the script was in fact regenerated
      * @throws IOException if transforming or writing the output failed
-     * @throws IllegalStateException if the project was modified
      */
-    public boolean refreshBuildScript(final String path, final URL stylesheet, final boolean checkForProjectXmlModified) throws IOException, IllegalStateException {
+    public boolean refreshBuildScript(final String path, final URL stylesheet, final boolean checkForProjectXmlModified) throws IOException {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {

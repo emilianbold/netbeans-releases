@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -53,6 +52,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final int INDICATOR_POSITION = 300;
+    private static final String ID = "dlight.tool.sync"; // NOI18N
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
     private static final Column timestampColumn =
@@ -121,7 +122,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_DESCRIPTION);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(TOOL_DESCRIPTION);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
@@ -329,37 +331,20 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             for (String columnName : row.getColumnNames()) {
                 for (Column threadColumn : threadColumns) {
                     if (threadColumn.getColumnName().equals(columnName)) {
-                        threads = toInt(row.getData(columnName));
+                        threads = DataUtil.toInt(row.getData(columnName));
                     }
                 }
                 for (Column lockColumn : lockColumns) {
                     if (lockColumn.getColumnName().equals(columnName)) {
-                        locks = toInt(row.getData(columnName));
+                        locks = DataUtil.toInt(row.getData(columnName));
                     }
                 }
             }
         }
 
-        public void tick() {
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = threads;
+            data[1] = threads * Math.min(locks, 100) / 100.0f;
         }
-
-        public float[] getGraphData() {
-            return new float[]{threads, threads * Math.min(locks, 100) / 100.0f};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.emptyMap();
-        }
-    }
-
-    private static int toInt(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number)obj).intValue();
-        } else if (obj instanceof String) {
-            try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
-        }
-        return 0;
     }
 }

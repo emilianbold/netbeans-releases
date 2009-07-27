@@ -140,7 +140,7 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
                 if (webAppFo == null) {
                     WebModule wm = WebModule.getWebModule(folder);
                     if (wm != null) {
-                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), true, wm.getWebInf());
+                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
                     }
                 }
                 WebApp webApp=null;

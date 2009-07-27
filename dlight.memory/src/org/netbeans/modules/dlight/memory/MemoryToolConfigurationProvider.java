@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.memory;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,6 +51,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
@@ -80,6 +80,7 @@ import org.openide.util.NbBundle;
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final int INDICATOR_POSITION = 200;
+    private static final String ID = "dlight.tool.mem"; // NOI18N
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final String TOOL_NAME_DETAILED = loc("MemoryTool.ToolName.Detailed"); // NOI18N
     private static final Column totalColumn;
@@ -122,7 +123,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_NAME_DETAILED);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(TOOL_NAME_DETAILED);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
@@ -282,7 +284,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             for (String columnName : row.getColumnNames()) {
                 for (Column column : columns) {
                     if (column.getColumnName().equals(columnName)) {
-                        mem = toInt(row.getData(columnName));
+                        mem = DataUtil.toInt(row.getData(columnName));
                         if (max < mem) {
                             max = mem;
                         }
@@ -291,15 +293,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             }
         }
 
-        public void tick() {
-        }
-
-        public float[] getGraphData() {
-            return new float[]{mem};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.singletonMap(MAX_HEAP_DETAIL_ID, formatValue(max));
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = mem;
+            details.put(MAX_HEAP_DETAIL_ID, formatValue(max));
         }
     }
 
@@ -316,16 +312,5 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         }
         NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
         return nf.format(dbl) + SIFFIXES[i];
-    }
-
-    private static int toInt(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number)obj).intValue();
-        } else if (obj instanceof String) {
-            try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
-        }
-        return 0;
     }
 }

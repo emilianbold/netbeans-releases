@@ -1082,17 +1082,6 @@ public class CompilerSetManager {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
-            String path;
-            if (IpeUtils.isGdbEnabled()) {
-                path = Path.findCommand("gdb"); // NOI18N
-            } else {
-                path = Path.findCommand("dbx"); // NOI18N
-            }
-            if (path != null) {
-                cs.addNewTool(env, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
-            }
-        }
-        if (cs.findTool(Tool.DebuggerTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
         }
         if (cs.findTool(Tool.QMakeTool) == null) {

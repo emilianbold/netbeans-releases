@@ -63,12 +63,9 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -101,12 +98,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
-import org.openide.util.Union2;
 
 /**
  * @author Radek Matous
@@ -374,7 +369,7 @@ class OccurenceBuilder {
                         classes.add((ClassScope) type);
                     }
                 }
-                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                Collection<ModelElement> allFields = new HashSet<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
                         Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
@@ -423,7 +418,7 @@ class OccurenceBuilder {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
                 Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
-                Collection<ModelElement> allMethods = new ArrayList<ModelElement>();
+                Collection<ModelElement> allMethods = new HashSet<ModelElement>();
                 if (!types.isEmpty()) {
                     for (TypeScope type : types) {
                         Collection<? extends ModelElement> methods = CachingSupport.getInheritedMethods(
@@ -505,7 +500,7 @@ class OccurenceBuilder {
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 String originalClzName = CodeUtils.extractUnqualifiedClassName(nodeInfo.getOriginalNode());
                 boolean isParent = originalClzName.equals("parent");//NOI18N
-                List<ModelElement> allMethods = new ArrayList<ModelElement>();
+                Collection<ModelElement> allMethods = new HashSet<ModelElement>();
                 Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
                 for (ClassScope clz : classes) {
                     Collection<? extends ModelElement> methods = null;
@@ -556,7 +551,7 @@ class OccurenceBuilder {
             ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 StaticConstantAccess sca = nodeInfo.getOriginalNode();
-                List<ModelElement> allConstants = new ArrayList<ModelElement>();
+                Collection<ModelElement> allConstants = new HashSet<ModelElement>();
                 Collection<? extends TypeScope> types = getStaticTypeName(entry.getValue(), CodeUtils.extractUnqualifiedClassName(sca));
                 for (TypeScope type : types) {
                     Collection<? extends ModelElement> constants = type.findInheritedConstants(idName);
@@ -594,8 +589,8 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
             if (isNameEquality(query, nodeInfo, entry.getValue())) {
-                List<? extends ClassScope> elems = CachingSupport.getClasses(idName, fileScope);
-                List<MethodScope> methods = new ArrayList<MethodScope>();
+                Collection<? extends ClassScope> elems = CachingSupport.getClasses(idName, fileScope);
+                Collection<MethodScope> methods = new HashSet<MethodScope>();
                 for (ClassScope clz : elems) {
                     methods.addAll(CachingSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
                 }
@@ -734,7 +729,7 @@ class OccurenceBuilder {
             if (Kind.FIELD.equals(nodeInfo.getKind()) && scope instanceof ClassScope && idName.equalsIgnoreCase(name)) {
                 List<? extends ClassScope> classes = CachingSupport.getClasses(scope.getName(), scope);
 
-                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                Collection<ModelElement> allFields = new HashSet<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
                         Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
@@ -981,86 +976,88 @@ class OccurenceBuilder {
 
     private static boolean isNameEquality(ElementInfo query, ASTNodeInfo node, ModelElement nodeScope) {
         String idName = query.getName();
-        if (idName.equalsIgnoreCase(node.getName())) {
-            QualifiedName queryName = null;
-            QualifiedName nodeName = null;
-            TypeScope typeScope = ModelUtils.getTypeScope(query.getScope());
-            Union2<ASTNodeInfo, ModelElement> rawElement = query.getRawElement();
-            ASTNodeInfo nodeInfo = rawElement.hasFirst() ? rawElement.first() : null;
-            ModelElement modelElemnt = rawElement.hasSecond() ? rawElement.second() : null;
-            ASTNode originalNode = nodeInfo != null ? nodeInfo.getOriginalNode() : null;
-            boolean isMemberDeclaration = false;
-            if (nodeInfo != null && originalNode != null) {
-                isMemberDeclaration = typeScope != null && (originalNode instanceof MethodDeclaration ||
-                        originalNode instanceof SingleFieldDeclaration ||
-                        nodeInfo instanceof ClassConstantDeclarationInfo);
-            } else if (modelElemnt != null) {
-                PhpKind phpKind = modelElemnt.getPhpKind();
-                isMemberDeclaration = phpKind.equals(PhpKind.METHOD) ||
-                        phpKind.equals(PhpKind.FIELD) ||
-                        phpKind.equals(PhpKind.CLASS_CONSTANT);
-            }
-            if (isMemberDeclaration) {
-                NamespaceScope namespaceScope = query.getNamespaceScope();
-                if (namespaceScope != null) {
-                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceScope);
-                } else if (modelElemnt != null) {
-                    QualifiedName namespaceName = modelElemnt.getNamespaceName();
-                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceName);
-                }
-            } else if (originalNode instanceof StaticDispatch) {
-                if (typeScope instanceof ClassScope) {
-                    queryName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) originalNode).getClassName(), (ClassScope)typeScope).toFullyQualified(query.getNamespaceScope());
-                } else {
-                    queryName = QualifiedName.create(((StaticDispatch) originalNode).getClassName()).toFullyQualified(query.getNamespaceScope());
-                }
-            } else {
-                queryName = query.getFullyQualifiedName();
-            }
-            if (queryName != null) {
-                final ASTNode nodeOriginalNode = node.getOriginalNode();
-                final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(nodeScope);
-                final TypeScope nodeTypeScope = ModelUtils.getTypeScope(nodeScope);
-                Scope inScope = nodeScope.getInScope();
-                if (nodeOriginalNode instanceof FunctionInvocation) {
-                    if (namespaceScope != null) {
-                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceScope);
-                    } else if (nodeScope != null) {
-                        QualifiedName namespaceName = nodeScope.getNamespaceName();
-                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceName);
-                    }
-                } else if (nodeTypeScope != null && (nodeOriginalNode instanceof MethodDeclaration ||
-                    nodeOriginalNode instanceof SingleFieldDeclaration ||
-                    node instanceof ClassConstantDeclarationInfo)) {
-                    if (namespaceScope != null) {
-                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceScope);
-                    } else if (nodeScope != null) {
-                        QualifiedName namespaceName = nodeScope.getNamespaceName();
-                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceName);
-                    }
-                } else if (node.getOriginalNode() instanceof StaticDispatch) {
-                    if (nodeTypeScope instanceof ClassScope) {
-                        if (namespaceScope != null) {
-                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceScope);
-                        } else if (nodeScope != null) {
-                            QualifiedName namespaceName = nodeScope.getNamespaceName();
-                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceName);
-                        }
-                    } else {
-                        if (namespaceScope != null) {
-                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceScope);
-                        } else if (nodeScope != null) {
-                            QualifiedName namespaceName = nodeScope.getNamespaceName();
-                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceName);
-                        }
-                    }
-                } else {
-                    nodeName = new ElementInfo(node, nodeScope).getFullyQualifiedName();
-                }
-            }
-            return (queryName != null && nodeName != null) ? queryName.equals(nodeName) : true;
-        }
-        return false;
+        return idName.equalsIgnoreCase(node.getName());
+        //php 5.3 mark occurences - not working
+//        if (idName.equalsIgnoreCase(node.getName())) {
+//            QualifiedName queryName = null;
+//            QualifiedName nodeName = null;
+//            TypeScope typeScope = ModelUtils.getTypeScope(query.getScope());
+//            Union2<ASTNodeInfo, ModelElement> rawElement = query.getRawElement();
+//            ASTNodeInfo nodeInfo = rawElement.hasFirst() ? rawElement.first() : null;
+//            ModelElement modelElemnt = rawElement.hasSecond() ? rawElement.second() : null;
+//            ASTNode originalNode = nodeInfo != null ? nodeInfo.getOriginalNode() : null;
+//            boolean isMemberDeclaration = false;
+//            if (nodeInfo != null && originalNode != null) {
+//                isMemberDeclaration = typeScope != null && (originalNode instanceof MethodDeclaration ||
+//                        originalNode instanceof SingleFieldDeclaration ||
+//                        nodeInfo instanceof ClassConstantDeclarationInfo);
+//            } else if (modelElemnt != null) {
+//                PhpKind phpKind = modelElemnt.getPhpKind();
+//                isMemberDeclaration = phpKind.equals(PhpKind.METHOD) ||
+//                        phpKind.equals(PhpKind.FIELD) ||
+//                        phpKind.equals(PhpKind.CLASS_CONSTANT);
+//            }
+//            if (isMemberDeclaration) {
+//                NamespaceScope namespaceScope = query.getNamespaceScope();
+//                if (namespaceScope != null) {
+//                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceScope);
+//                } else if (modelElemnt != null) {
+//                    QualifiedName namespaceName = modelElemnt.getNamespaceName();
+//                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceName);
+//                }
+//            } else if (originalNode instanceof StaticDispatch) {
+//                if (typeScope instanceof ClassScope) {
+//                    queryName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) originalNode).getClassName(), (ClassScope)typeScope).toFullyQualified(query.getNamespaceScope());
+//                } else {
+//                    queryName = QualifiedName.create(((StaticDispatch) originalNode).getClassName()).toFullyQualified(query.getNamespaceScope());
+//                }
+//            } else {
+//                queryName = query.getFullyQualifiedName();
+//            }
+//            if (queryName != null) {
+//                final ASTNode nodeOriginalNode = node.getOriginalNode();
+//                final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(nodeScope);
+//                final TypeScope nodeTypeScope = ModelUtils.getTypeScope(nodeScope);
+//                Scope inScope = nodeScope.getInScope();
+//                if (nodeOriginalNode instanceof FunctionInvocation) {
+//                    if (namespaceScope != null) {
+//                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceScope);
+//                    } else if (nodeScope != null) {
+//                        QualifiedName namespaceName = nodeScope.getNamespaceName();
+//                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceName);
+//                    }
+//                } else if (nodeTypeScope != null && (nodeOriginalNode instanceof MethodDeclaration ||
+//                    nodeOriginalNode instanceof SingleFieldDeclaration ||
+//                    node instanceof ClassConstantDeclarationInfo)) {
+//                    if (namespaceScope != null) {
+//                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceScope);
+//                    } else if (nodeScope != null) {
+//                        QualifiedName namespaceName = nodeScope.getNamespaceName();
+//                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceName);
+//                    }
+//                } else if (node.getOriginalNode() instanceof StaticDispatch) {
+//                    if (nodeTypeScope instanceof ClassScope) {
+//                        if (namespaceScope != null) {
+//                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceScope);
+//                        } else if (nodeScope != null) {
+//                            QualifiedName namespaceName = nodeScope.getNamespaceName();
+//                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceName);
+//                        }
+//                    } else {
+//                        if (namespaceScope != null) {
+//                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceScope);
+//                        } else if (nodeScope != null) {
+//                            QualifiedName namespaceName = nodeScope.getNamespaceName();
+//                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceName);
+//                        }
+//                    }
+//                } else {
+//                    nodeName = new ElementInfo(node, nodeScope).getFullyQualifiedName();
+//                }
+//            }
+//            return (queryName != null && nodeName != null) ? queryName.equals(nodeName) : false;
+//        }
+//        return false;
     }
 
 }

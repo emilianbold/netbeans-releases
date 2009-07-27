@@ -149,7 +149,6 @@ public class CallEjbDialog {
         final FileObject fileObject = ejbNode.getLookup().lookup(FileObject.class);
         final Project nodeProject = FileOwnerQuery.getOwner(fileObject);
         
-        final boolean remoteInterfaceSelected = panel.isRemoteInterfaceSelected();
         boolean isDefaultRefName = panel.isDefaultRefName();
         final String referencedClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
 
@@ -163,7 +162,7 @@ public class CallEjbDialog {
                             fileObject,
                             referencedClassName,
                             panel.getServiceLocator(),
-                            remoteInterfaceSelected,
+                            panel.getSelectedInterface(),
                             throwExceptions,
                             nodeProject
                             );

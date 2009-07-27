@@ -42,22 +42,23 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
+import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class StackTraceDescriptor {
+public final class StackTraceDescriptor implements StackTraceColumn {
 
     private StackTrace stackTrace;
     private final List<Integer> showThreads;
     private final long startTime;
     private long stackTimeStamp;
 
-    public StackTraceDescriptor(ThreadState state, ThreadData stackProvider, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime) {
+    public StackTraceDescriptor(ThreadState state, ThreadStateColumn stackProvider, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime) {
         this.startTime = startTime;
         this.showThreads = showThreads;
         int msaIndex = -1;

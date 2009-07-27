@@ -299,7 +299,7 @@ public class FileStatusCache {
      * @see FileInformation
      */
     public FileInformation getStatus(File file) {
-        if (file.isDirectory() && (hg.isAdministrative(file) || HgUtils.isIgnored(file)))
+        if (file.isDirectory() && (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)))
             return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
@@ -315,8 +315,7 @@ public class FileStatusCache {
         if (file.isDirectory()) {
             return refresh(file, REPOSITORY_STATUS_UNKNOWN);
         } else {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE
-, false);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
         }
     }
     
@@ -397,7 +396,7 @@ public class FileStatusCache {
         Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0} {1}", new Object[] {file, callStatus}); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
-        if (hg.isAdministrative(file))
+        if (HgUtils.isAdministrative(file))
             return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
 
         File rootManagedFolder = hg.getRepositoryRoot(file);
@@ -443,10 +442,6 @@ public class FileStatusCache {
      */
     public FileInformation refresh(File file, FileStatus repositoryStatus) {
         return refresh(file, repositoryStatus, false);
-    }
-    
-    public FileInformation refreshForce(File file, FileStatus repositoryStatus) {
-        return refresh(file, repositoryStatus, true);
     }
  
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
@@ -841,7 +836,7 @@ public class FileStatusCache {
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
         
         Mercurial.LOG.log(Level.FINE, "scanFolder(): {0}", dir); // NOI18N
-        if (hg.isAdministrative(dir)) {
+        if (HgUtils.isAdministrative(dir)) {
             folderFiles.put(dir, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
             return folderFiles;
         }
@@ -851,7 +846,7 @@ public class FileStatusCache {
             // Only interested in looking for Hg managed dirs
             for (File file : files) {
                 if (file.isDirectory() && hg.getRepositoryRoot(file) != null){
-                    if (hg.isAdministrative(file) || HgUtils.isIgnored(file)){
+                    if (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)){
                         Mercurial.LOG.log(Level.FINE, "scanFolder NotMng Ignored Dir {0}: exclude SubDir: {1}", // NOI18N
                             new Object[]{dir.getAbsolutePath(), file.getName()});
                         folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
@@ -911,7 +906,7 @@ public class FileStatusCache {
             if (HgUtils.isPartOfMercurialMetadata(file)) continue;
             
             if (file.isDirectory()) {
-                if (hg.isAdministrative(file) || HgUtils.isIgnored(file)) {
+                if (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "scanFolder Mng Dir {0}: exclude Dir: {1}", // NOI18N
                             new Object[]{dir.getAbsolutePath(), file.getName()});
                     folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir

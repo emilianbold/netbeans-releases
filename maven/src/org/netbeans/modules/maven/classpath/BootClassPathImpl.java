@@ -69,7 +69,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private String lastHintValue = null;
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
@@ -118,7 +118,9 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         }                
         
         //TODO ideally we would handle this by toolchains in future.
-        String val = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        assert props != null;
+        String val = props.get(Constants.HINT_JDK_PLATFORM, true);
         lastHintValue = val;
         JavaPlatform plat = getActivePlatform(val);
         if (plat == null) {

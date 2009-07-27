@@ -276,12 +276,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         try {
             Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
             Element projectEl = projectXml.getDocumentElement();
-            if (!"project".equals(projectEl.getLocalName())) { // NOI18N
-                LOG.log(Level.FINE, "{0} had wrong root element name {1}", new Object[] {projectDiskFile, projectEl.getLocalName()});
+            if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
+                LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
+                        new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
                 return null;
             }
-            if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
-                LOG.log(Level.FINE, "{0} had wrong root element namespace {1}", new Object[] {projectDiskFile, projectEl.getNamespaceURI()});
+            if (!"project".equals(projectEl.getLocalName())) { // NOI18N
+                LOG.log(Level.FINE, "{0} had wrong root element name {1} when parsed from {2}",
+                        new Object[] {projectDiskFile, projectEl.getLocalName(), baos});
                 return null;
             }
             // #142680: try to cache CRC-32s of project.xml files known to be valid, since validation can be slow.
