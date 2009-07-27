@@ -170,5 +170,42 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="async">
+            <file name="none.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                <attr name='delegate' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+            </file>
+            <file name="true-always.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                <attr name='delegate' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="true.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
+                <attr name='fallback' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='key' stringvalue='delete'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="true-context.instance">
+               <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+               <attr name="type" stringvalue="org.netbeans.api.actions.Openable"/>
+               <attr name="selectionType" stringvalue="ANY"/>
+               <attr name="delegate" newvalue="org.openide.awt.AsynchronousTest$CAC"/>
+               <attr name="key" stringvalue="KeyInActionMap"/>
+               <attr name="surviveFocusChange" boolvalue="false"/>
+               <attr name="displayName" stringvalue="anything"/>
+               <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="false.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
+                <attr name='fallback' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='key' stringvalue='delete'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="false"/>
+            </file>
+        </folder>
     </folder> 
 </filesystem>
