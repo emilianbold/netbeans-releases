@@ -213,7 +213,7 @@ public final class SQLStackStorage {
         try {
             // First, we need ts of the thread threadID when it was in required state.
             PreparedStatement statement = sqlStorage.prepareStatement(
-                    "select max(time_stamp) from CallStack where " +
+                    "select max(time_stamp) from CallStack where " + // NOI18N
                     "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
 
             statement.setInt(1, threadID);
@@ -231,11 +231,11 @@ public final class SQLStackStorage {
 
             if (ts < 0) {
                 // Means that no callstack found for this thread in this state
-                System.out.println("No callstack found!!!");
+                //System.out.println("No callstack found!!!");
                 return null;
             }
 
-            System.out.println("Nearest callstack found at " + ts);
+            //System.out.println("Nearest callstack found at " + ts);
 
             result = new StackTraceImpl(ts);
 
@@ -243,7 +243,7 @@ public final class SQLStackStorage {
             // select threadid, max(ts) from test where ts <= 6 group by threadid;
 
             statement = sqlStorage.prepareStatement(
-                    "select thread_id, max(time_stamp) from CallStack where " +
+                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
                     "time_stamp <= ? group by thread_id"); // NOI18N
 
             statement.setLong(1, ts);

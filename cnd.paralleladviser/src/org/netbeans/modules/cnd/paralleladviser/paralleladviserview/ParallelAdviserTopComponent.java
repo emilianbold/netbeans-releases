@@ -171,4 +171,11 @@ public final class ParallelAdviserTopComponent extends TopComponent {
     String preferredID() {
         return PREFERRED_ID;
     }
+
+    public
+    @Override
+    int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
 }

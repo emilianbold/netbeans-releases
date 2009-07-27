@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.gizmo.tha;
 
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.BooleanStateAction;
 
 public class THAConfigurationImpl implements THAConfiguration {
@@ -53,7 +54,7 @@ public class THAConfigurationImpl implements THAConfiguration {
 
             @Override
             public String getName() {
-                return "Races";
+                return getMessage("THA_RaceDetection"); // NOI18N
             }
 
             @Override
@@ -68,7 +69,7 @@ public class THAConfigurationImpl implements THAConfiguration {
 
             @Override
             public String getName() {
-                return "On Start";
+                return getMessage("THA_OnStart"); // NOI18N
             }
 
             @Override
@@ -102,5 +103,9 @@ public class THAConfigurationImpl implements THAConfiguration {
 
     public boolean collectDeadlocks() {
         return true;
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(THAConfigurationImpl.class, name);
     }
 }

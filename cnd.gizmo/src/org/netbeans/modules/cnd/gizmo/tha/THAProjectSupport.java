@@ -184,7 +184,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         if (!activeCompierIsSunStudio()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Please re-configure Project " + projectName + " to be compiled with SunStudio!", NotifyDescriptor.INFORMATION_MESSAGE));
+                    loc("THA_ReconfigureProjectWithSunStudio", projectName), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             return false;
         }
 

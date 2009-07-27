@@ -120,6 +120,9 @@ import org.openide.util.NbBundle;
             SunStudioDataCollector collector = new SunStudioDataCollector();
 
             for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
+                if((Double)functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks/2) {
+                    break;
+                }
                 CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionCall.getFunction().getQuilifiedName());
                 for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
                     if (CodeModelUtils.canParallelize(loop)) {
