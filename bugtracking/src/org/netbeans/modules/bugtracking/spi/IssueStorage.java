@@ -473,7 +473,6 @@ class IssueStorage {
         File file = new File(folder, id + ISSUE_SUFIX);
         if(!file.exists()) return null;
         ZipInputStream zis = new ZipInputStream(new BufferedInputStream(getFileInputStream(file)));
-        ZipEntry entry = new ZipEntry(file.getName());
         zis.getNextEntry();
         return new DataInputStream(zis);
     }
