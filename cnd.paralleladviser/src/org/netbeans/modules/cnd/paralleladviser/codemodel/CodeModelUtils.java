@@ -122,6 +122,7 @@ public class CodeModelUtils {
                     }
                     break;
                 case FOR:
+                    loops.addAll(getForStatements(((CsmLoopStatement)statement).getBody()));
                     loops.add((CsmLoopStatement)statement);
                     break;
                 case IF:
