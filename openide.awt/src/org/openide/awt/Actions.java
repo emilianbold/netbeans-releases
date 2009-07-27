@@ -404,6 +404,7 @@ public class Actions extends Object {
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * In case the "delegate" is not just {@link ActionListener}, but also
@@ -451,6 +452,7 @@ public class Actions extends Object {
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * 
@@ -508,6 +510,7 @@ public class Actions extends Object {
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * In the previous case there has to be a class with public default constructor
