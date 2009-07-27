@@ -50,8 +50,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractButton;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
@@ -271,11 +274,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     private void refreshProfileCombo() {
         String currentProfile = getModel().getCurrentProfile();
         List keymaps = getModel().getProfiles();
-        cbProfile.removeAllItems();
-        int i;
-        int k = keymaps.size();
-        for (i = 0; i < k; i++)
-            cbProfile.addItem(keymaps.get(i));
+        ComboBoxModel model = new DefaultComboBoxModel(keymaps.toArray());
+        cbProfile.setModel(model);
         cbProfile.setSelectedItem(currentProfile);
     }
 
