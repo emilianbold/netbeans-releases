@@ -85,12 +85,11 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         init();
     }
 
-    @Override
-    public String getName(){
+    public String getDisplayName(){
         if (descriptor.getStacks().size() > 0) {
             return descriptor.getStacks().get(0).getThreadInfo().getThreadName();
         }
-        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetailes"); //NOI18N
+        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
 
     private void init() {
