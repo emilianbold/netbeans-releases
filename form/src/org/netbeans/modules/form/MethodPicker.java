@@ -195,9 +195,6 @@ public class MethodPicker extends javax.swing.JPanel {
 	    public Class[] getParameterTypes() {
 		return desc.getMethod().getParameterTypes();
 	    }
-	    public boolean providesMethodDescriptor() {
-		return true;
-	    }
 	    public MethodDescriptor getMethodDescriptor() {
 		return desc;
 	    }
@@ -212,9 +209,6 @@ public class MethodPicker extends javax.swing.JPanel {
 	    }
 	    public Class[] getParameterTypes() {
 		return NO_PARAMETERS;
-	    }
-	    public boolean providesMethodDescriptor() {
-		return false;
 	    }
 	    public MethodDescriptor getMethodDescriptor() {
 		return null;
