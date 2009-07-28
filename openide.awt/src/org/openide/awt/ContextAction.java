@@ -103,8 +103,6 @@ implements Action, ContextAwareAction {
     /** Invoked when an action occurs.
      */
     public void actionPerformed(final java.awt.event.ActionEvent e) {
-        assert EventQueue.isDispatchThread();
-
         global.actionPerformed(e, performer, type, selectMode);
     }
 
