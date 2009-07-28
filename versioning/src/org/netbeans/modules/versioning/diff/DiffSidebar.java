@@ -88,6 +88,7 @@ import java.nio.charset.CharsetDecoder;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.UserQuestionException;
 
 /**
  * Left editor sidebar showing changes in the file against the base version.
@@ -822,6 +823,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         File tempFolder = Utils.getTempFolder();
+        FileObject tempFileObj = null;
 
         Collection<File> originalFiles = null;
         DiffFileEncodingQueryImpl encodinqQuery = null;
@@ -833,8 +835,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if(encodinqQuery != null) {
                 encodinqQuery.associateEncoding(encoding, originalFiles);
             }
-            return getText(new File(tempFolder, fileObject.getNameExt()),
-                           encoding);
+            File tempFile = new File(tempFolder, fileObject.getNameExt());
+            tempFileObj = FileUtil.toFileObject(tempFile);     //can be null
+            return getText(tempFile, tempFileObj, encoding);
         } catch (Exception e) {
             // let providers raise errors when they feel appropriate
             return null;
@@ -842,7 +845,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if ((originalFiles != null) && (encodinqQuery != null)) {
                 encodinqQuery.resetEncodingForFiles(originalFiles);
             }
-            Utils.deleteRecursively(tempFolder);
+            deleteTempFolder(tempFolder, tempFileObj);
         }
     }
 
@@ -906,9 +909,10 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return originalFiles;
     }
 
-    private String getText(File file, Charset charset) throws IOException {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null) {
+    private static String getText(File file,
+                                  FileObject fileObj,
+                                  Charset charset) throws IOException {
+        if (fileObj != null) {
             try {
                 /*
                  * Text returned by EditorCookie.openDocument.getText(...)
@@ -921,11 +925,16 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                  * the EditorCookie, instead of reading it directly from the
                  * File or FileObject.
                  */
-                Document doc = getDocument(fo);
-                if (doc != null) {
-                    return doc.getText(0, doc.getLength());
+                EditorCookie edCookie = getEditorCookie(fileObj);
+                if (edCookie != null) {
+                    try {
+                        Document doc = edCookie.openDocument();
+                        return doc.getText(0, doc.getLength());
+                    } finally {
+                        edCookie.close();
+                    }
                 } else {
-                    return getRawText(fo, charset);
+                    return getRawText(fileObj, charset);
                 }
             } catch (IOException ex) {
                 throw ex;
@@ -938,13 +947,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     /**
-     * Tries to obtain a {@code Document} representing the given file.
-     * @param  fileObj  file to get a document from 
-     * @return  {@code Document} representing the file, or {@code null}
+     * Tries to obtain an {@code EditorCookie} representing the given file.
+     * @param  fileObj  file to get an {@code EditorCookie} from
+     * @return  {@code EditorCookie} representing the file, or {@code null}
      * @throws  java.io.IOException
      *          if there was some I/O error while reading the file's content
      */
-    private Document getDocument(FileObject fileObj) throws IOException {
+    private static EditorCookie getEditorCookie(FileObject fileObj) throws IOException {
         DataObject dao;
         try {
             dao = DataObject.find(fileObj);
@@ -956,19 +965,11 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             MultiDataObject.Entry entry = findEntryForFile((MultiDataObject) dao, fileObj);
             if ((entry != null) && (entry instanceof CookieSet.Factory)) {
                 CookieSet.Factory factory = (CookieSet.Factory) entry;
-                EditorCookie ec = factory.createCookie(EditorCookie.class);
-                if (ec != null) {
-                    return ec.openDocument();
-                }
+                return factory.createCookie(EditorCookie.class);   //can be null
             }
         }
 
-        EditorCookie ec = dao.getCookie(EditorCookie.class);
-        if (ec != null) {
-            return ec.openDocument();
-        }
-
-        return null;
+        return dao.getCookie(EditorCookie.class);                  //can be null
     }
 
     /**
@@ -1021,6 +1022,28 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return new String(chars);
         } finally {
             inputChannel.close();
+        }
+    }
+
+    private static void deleteTempFolder(File tempFolder, FileObject tempFileObj) {
+        boolean fullyDeleted = false;
+
+        if (tempFileObj != null) {
+            try {
+                FileObject tempFolderObj = tempFileObj.getParent();
+                if (tempFolderObj != null) {
+                    tempFolderObj.delete();
+                    fullyDeleted = true;
+                } else {
+                    tempFileObj.delete();
+                }
+            } catch (IOException ex) {
+                //'fullyDeleted' remains 'false'
+            }
+        }
+
+        if (!fullyDeleted) {
+            Utils.deleteRecursively(tempFolder);
         }
     }
 
