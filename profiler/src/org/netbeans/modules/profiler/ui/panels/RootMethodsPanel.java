@@ -40,8 +40,6 @@
 
 package org.netbeans.modules.profiler.ui.panels;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
@@ -109,11 +107,9 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
     private ArrayList selectedRoots = new ArrayList();
     private DefaultListModel rootsListModel;
     private HTMLTextArea hintArea;
-    private JButton addFromProjectButton;
     private JButton addManualButton;
     private JButton removeButton;
     private JList rootsList;
-    private Project project;
     private boolean globalAttach = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -132,12 +128,9 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
         return HELP_CTX;
     }
 
-    public static ClientUtils.SourceCodeSelection[] getSelectedRootMethods(ClientUtils.SourceCodeSelection[] roots,
-                                                                           Project project) {
+    public static ClientUtils.SourceCodeSelection[] getSelectedRootMethods(ClientUtils.SourceCodeSelection[] roots
+                                                                           ) {
         final RootMethodsPanel rm = getDefault();
-        rm.project = project;
-        rm.globalAttach = rm.project == null;
-        rm.addFromProjectButton.setEnabled(!rm.globalAttach || (OpenProjects.getDefault().getOpenProjects().length > 0));
         rm.refreshList(roots);
 
         return performDisplay(rm);
@@ -147,22 +140,7 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
      * Invoked when an action occurs.
      */
     public void actionPerformed(final ActionEvent e) {
-        if (e.getSource() == addFromProjectButton) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        final ClientUtils.SourceCodeSelection[] sel = ProjectSelectRootMethodsPanel.getDefault()
-                                                                                                   .getRootMethods(project,
-                                                                                                                   (ClientUtils.SourceCodeSelection[]) selectedRoots
-                                                                                                                                                   .toArray(new ClientUtils.SourceCodeSelection[] {
-                                                                                                                                                                
-                                                                                                                                                            }));
-
-                        if (sel != null) {
-                            addNewRootMethods(sel, true);
-                        }
-                    }
-                });
-        } else if (e.getSource() == addManualButton) {
+       if (e.getSource() == addManualButton) {
             final ClientUtils.SourceCodeSelection scs = ManualMethodSelect.selectMethod();
             
             if (scs != null) {
@@ -224,10 +202,6 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
         final DialogDescriptor dd = new DialogDescriptor(rm, SPECIFY_ROOT_METHODS_DIALOG_CAPTION);
         final Dialog d = ProfilerDialogs.createDialog(dd);
 
-        if (rm.addFromProjectButton.isEnabled()) {
-            rm.addFromProjectButton.grabFocus();
-        }
-
         d.setVisible(true);
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
@@ -274,7 +248,6 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
         rootsList = new JList();
 
         JPanel buttonPanel = new JPanel();
-        addFromProjectButton = new JButton();
         addManualButton = new JButton();
         removeButton = new JButton();
         hintArea = new HTMLTextArea() {
@@ -315,10 +288,6 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
 
         buttonPanel.setOpaque(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addFromProjectButton, ADD_FROM_PROJECTBUTTON_TEXT);
-        addFromProjectButton.getAccessibleContext().setAccessibleDescription(ADD_FROM_PROJECT_BUTTON_ACCESS_DESCR);
-        buttonPanel.add(addFromProjectButton);
-
         org.openide.awt.Mnemonics.setLocalizedText(addManualButton, ADD_MANUAL_BUTTON_TEXT);
         addManualButton.getAccessibleContext().setAccessibleDescription(ADD_MANUALLY_BUTTON_ACCESS_DESCR);
         buttonPanel.add(addManualButton);
@@ -354,7 +323,6 @@ public final class RootMethodsPanel extends JPanel implements ActionListener, Li
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         add(hintArea, gridBagConstraints);
 
-        addFromProjectButton.addActionListener(this);
         addManualButton.addActionListener(this);
         removeButton.addActionListener(this);
         rootsList.addListSelectionListener(this);

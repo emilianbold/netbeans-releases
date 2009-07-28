@@ -40,8 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.ResultsSnapshot;
@@ -110,7 +108,6 @@ public class LoadedSnapshot {
 
     private File file;
     private ProfilingSettings settings;
-    private Project project = null;
     private ResultsSnapshot snapshot;
     private boolean saved = false;
 
@@ -123,7 +120,7 @@ public class LoadedSnapshot {
      * @param settings ProfilingSettings used to obtain this snapshot
      * @param file     The FileObject in which this snapshot is saved or null if it is not yet saved (in-memory only)
      */
-    public LoadedSnapshot(ResultsSnapshot snapshot, ProfilingSettings settings, File file, Project project) {
+    public LoadedSnapshot(ResultsSnapshot snapshot, ProfilingSettings settings, File file) {
         if (snapshot == null) {
             throw new IllegalArgumentException();
         }
@@ -135,7 +132,6 @@ public class LoadedSnapshot {
         this.snapshot = snapshot;
         this.settings = settings;
         this.file = file;
-        this.project = project;
     }
 
     private LoadedSnapshot() {
@@ -154,10 +150,6 @@ public class LoadedSnapshot {
      */
     public File getFile() {
         return file;
-    }
-
-    public Project getProject() {
-        return project;
     }
 
     public void setSaved(boolean saved) {
@@ -214,13 +206,9 @@ public class LoadedSnapshot {
         }
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     static void writeToStream(CPUResultsSnapshot snapshot, DataOutputStream dos) throws IOException {
         LoadedSnapshot loadedSnapshot = new LoadedSnapshot(snapshot,
-                ProfilingSettingsPresets.createCPUPreset(), null, null);
+                ProfilingSettingsPresets.createCPUPreset(), null);
         loadedSnapshot.save(dos);
     }
 
@@ -308,10 +296,8 @@ public class LoadedSnapshot {
     public String toString() {
         String snapshotString = "snapshot = " + snapshot.toString(); // NOI18N
         String fileString = "file = " + ((file == null) ? "null" : file.toString()); // NOI18N
-        String projectString = "project = "
-                               + ((project == null) ? "null" : ProjectUtils.getInformation(project).getDisplayName()); // NOI18N
 
-        return "Loaded Results Snapshot, " + snapshotString + ", " + projectString + ", " + fileString; // NOI18N
+        return "Loaded Results Snapshot, " + snapshotString + ", "  + ", " + fileString; // NOI18N
     }
 
     private static String getCorruptedMessage(IOException e) {

@@ -263,3 +263,5 @@ public class OQLEditor extends JPanel {
         return queryEditor.isEditable();
     }
 }
+
+

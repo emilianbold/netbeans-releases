@@ -40,10 +40,8 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.netbeans.modules.profiler.ui.HyperlinkLabel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -1111,13 +1109,9 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
     // --- Private implementation ------------------------------------------------
     private void updateJavaPlatformCombo(String platformNameToSelect) {
-        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
-        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
+        String[] supportedPlatformNames = new String[1];
         supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
 
-        for (int i = 1; i < supportedPlatformNames.length; i++) {
-            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
-        }
 
         javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
 
