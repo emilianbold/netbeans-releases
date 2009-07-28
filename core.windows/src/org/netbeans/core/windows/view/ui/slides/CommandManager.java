@@ -43,6 +43,7 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Panel;
@@ -73,7 +74,7 @@ final class CommandManager implements ActionListener {
     /** Local tabbed container used to display slided component */
     private TabbedContainer slidedTabContainer;
     //TODO use light-weight container when embedded browser is turned off
-    private Panel heavyContainer;
+    private Container heavyContainer;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;

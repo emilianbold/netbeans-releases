@@ -42,7 +42,7 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
-import java.awt.Panel;
+import java.awt.Container;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -132,7 +132,7 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             case SLIDE_RESIZE:
                 component.setBounds(finishBounds);
                 component.doLayout();
-                JComponent c = (JComponent) ((Panel)component).getComponent(0);
+                JComponent c = (JComponent) ((Container)component).getComponent(0);
                 c.revalidate();
                 break;
         }
