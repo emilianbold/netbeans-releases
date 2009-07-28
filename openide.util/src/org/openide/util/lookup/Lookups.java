@@ -301,7 +301,7 @@ public class Lookups {
             return (Class<? extends T>)instance.getClass();
         }
 
-        public boolean equals(Object object) {
+        public @Override boolean equals(Object object) {
             if (object instanceof LookupItem) {
                 return instance == ((LookupItem) object).getInstance();
             }
@@ -309,7 +309,7 @@ public class Lookups {
             return false;
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return instance.hashCode();
         }
     }
