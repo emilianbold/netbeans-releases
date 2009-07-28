@@ -471,18 +471,17 @@ public class SunStudioDataCollector
                 args.add("/dev/null"); // NOI18N
             }
 
-            if (collectedInfo.contains(CollectedInfo.DEADLOCKS) ||
-                    collectedInfo.contains(CollectedInfo.DATARACES)) {
+            final boolean deadlocks = collectedInfo.contains(CollectedInfo.DEADLOCKS);
+            final boolean dataraces = collectedInfo.contains(CollectedInfo.DATARACES);
+            if (deadlocks || dataraces) {
                 args.add("-r"); // NOI18N
 
-                boolean opt = false;
-
-                if (collectedInfo.contains(CollectedInfo.DEADLOCKS)) {
+                if (deadlocks && dataraces) {
+                    args.add("deadlocks,races"); // NOI18N
+                } else if (deadlocks) {
                     args.add("deadlocks"); // NOI18N
-                    opt = true;
-                }
-                if (collectedInfo.contains(CollectedInfo.DATARACES)) {
-                    args.add((opt ? "," : "") + "races"); // NOI18N
+                } else if (dataraces) {
+                    args.add("races"); // NOI18N
                 }
 
                 args.add("-y"); // NOI18N

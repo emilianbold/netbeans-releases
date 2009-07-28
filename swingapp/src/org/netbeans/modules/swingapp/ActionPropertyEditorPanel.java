@@ -335,22 +335,18 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     }
     
     private void updateFieldsFromAction(final ProxyAction act) {
-        if(act == null) {
-            clearFieldsForNull();
-        } else {
-            textField.setEnabled(true);
-            tooltipField.setEnabled(true);
-            acceleratorListener.setEnabled(true);
-            setAcceleratorPanelEnabled(true);
-            iconButtonLarge.setEnabled(true);
-            setIconButtonLarge.setEnabled(true);
-            iconButtonSmall.setEnabled(true);
-            setIconButtonSmall.setEnabled(true);
-            selectedCombo.setEnabled(true);
-            enabledCombo.setEnabled(true);
-            backgroundTaskCheckbox.setEnabled(true);
-            updatePropertyCombos(act);
-        }
+        textField.setEnabled(true);
+        tooltipField.setEnabled(true);
+        acceleratorListener.setEnabled(true);
+        setAcceleratorPanelEnabled(true);
+        iconButtonLarge.setEnabled(true);
+        setIconButtonLarge.setEnabled(true);
+        iconButtonSmall.setEnabled(true);
+        setIconButtonSmall.setEnabled(true);
+        selectedCombo.setEnabled(true);
+        enabledCombo.setEnabled(true);
+        backgroundTaskCheckbox.setEnabled(true);
+        updatePropertyCombos(act);
         
         setFromActionProperty(textField,act,Action.NAME);
         setFromActionProperty(tooltipField,act,Action.SHORT_DESCRIPTION);
@@ -367,15 +363,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         sig.append(" " + act.getMethodName()); // NOI18N
         sig.append("()"); // NOI18N
         
-        if(act == null) {
-            classField.setText(""); // NOI18N
-            methodField.setText(""); // NOI18N
-        } else {
-            actionsField.setText(act.getId());
-            classField.setText(act.getClassname());
-            methodField.setText(sig.toString());
-            backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
-        }
+        actionsField.setText(act.getId());
+        classField.setText(act.getClassname());
+        methodField.setText(sig.toString());
+        backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
 
         smallIconName = (String) act.getValue(Action.SMALL_ICON +".IconName"); // NOTI18N
         largeIconName = (String) act.getValue(LARGE_ICON_KEY +".IconName"); // NOTI18N

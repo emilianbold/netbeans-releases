@@ -124,7 +124,14 @@ public class Util {
     
     public static int count = 0;
 
-    public static SchemaModel loadSchemaModel(String archivePath, String resourcePath)
+    public static SchemaModel loadSchemaModel2(String resourcePath) throws Exception {
+        URL url = Util.class.getResource(resourcePath);
+        FileObject fo = URLMapper.findFileObject(url);
+        SchemaModel schemaModel = loadSchemaModel(fo, true);
+        return schemaModel;
+    }
+
+    public static SchemaModel loadSchemaModel2(String archivePath, String resourcePath)
             throws Exception {
         URL url = Util.class.getResource(archivePath);
         url = new URL("jar:" + url.toString() + "!/" + resourcePath); // NOI18N

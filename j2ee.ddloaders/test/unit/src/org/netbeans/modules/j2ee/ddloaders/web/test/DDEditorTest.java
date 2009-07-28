@@ -116,6 +116,7 @@ public class DDEditorTest extends NbTestCase {
                 return sizeContextParam == n;
             }
 
+            @Override
             public void finalCheck() {
                 assertEquals("Context Param wasn't added to the model", n, sizeContextParam);
             }
@@ -132,6 +133,7 @@ public class DDEditorTest extends NbTestCase {
                 return document.getText(0, document.getLength()).indexOf("<param-value>Blue</param-value>") >= 0;
             }
 
+            @Override
             public void finalCheck() {
                 final Exception error = getError();
                 if (error != null) {
@@ -151,6 +153,7 @@ public class DDEditorTest extends NbTestCase {
                 return saveCookie != null;
             }
 
+            @Override
             public void finalCheck() {
                 // for debugging random failures
                 if (saveCookie == null){
@@ -181,6 +184,7 @@ public class DDEditorTest extends NbTestCase {
                 return index >= 0;
             }
 
+            @Override
             public void finalCheck() {
                 assertEquals("Cannot find new context param element in XML view (editor document)", true, index > 0);
                 try {
@@ -208,6 +212,7 @@ public class DDEditorTest extends NbTestCase {
                 }
             }
 
+            @Override
             public void finalCheck() {
                 assertEquals("Context Params Table wasn't changed: ", "cylinders", paramValue);
             }
@@ -235,6 +240,7 @@ public class DDEditorTest extends NbTestCase {
                 return document.getText(0, document.getLength()).indexOf("<param-value>Audi</param-value>") >= 0;
             }
             
+            @Override
             public void finalCheck() {
                 final Exception error = getError();
                 if (error != null) {
@@ -257,6 +263,7 @@ public class DDEditorTest extends NbTestCase {
                 return CAR_AUDI.equals(paramValue);
             }
             
+            @Override
             public void finalCheck() {
                 assertEquals("Context Params Table wasn't changed: ", CAR_AUDI, paramValue);
             }
