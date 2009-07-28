@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
@@ -717,6 +718,27 @@ public class IssueTest extends NbTestCase implements TestConstants {
             TestUtil.handleException(e);
         }
     }
+
+    public void testRecentChanges() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        BugzillaRepository repository = getRepository();
+        String id = TestUtil.createIssue( repository, summary);
+        BugzillaIssue issue = (BugzillaIssue) repository.getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        issue.setSeen(true);
+        String comment = "koment";
+        RepositoryResponse rr = TestUtil.addComment(repository.getTaskRepository(), issue.getID(), comment);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+        issue.refresh();
+
+        String rc = issue.getRecentChanges();
+        assertEquals("1 new comment(s)", rc);
+    }
+
 
     private void addHandler(LogHandler lh) {
         Logger l = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
