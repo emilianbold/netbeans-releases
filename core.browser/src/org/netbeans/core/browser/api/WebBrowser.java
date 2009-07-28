@@ -200,7 +200,7 @@ public abstract class WebBrowser {
      * @param path
      * @return Cookie with given name and domain or null.
      */
-    public abstract Map<String,List<String>> getCookie( String domain, String name, String path );
+    public abstract Map<String,String> getCookie( String domain, String name, String path );
 
     /**
      * Deletes a cookie
