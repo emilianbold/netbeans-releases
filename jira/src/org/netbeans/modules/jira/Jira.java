@@ -168,6 +168,15 @@ public class Jira {
         return repositories;
     }
 
+    public JiraRepository getRepository(String name) {
+        for(JiraRepository repo : getRepositories()) {
+            if(repo.getDisplayName().equals(name)) {
+                return repo;
+            }
+        }
+        return null;
+    }
+
     public JiraRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
             jrc = new JiraRepositoryConnector();

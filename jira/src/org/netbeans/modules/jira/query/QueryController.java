@@ -804,6 +804,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void selectFilter(Filter filter) {
         if(filter != null) {
             panel.filterComboBox.setSelectedItem(filter);
+            // XXX this part should be handled in the issues table - move the filtercombo and the label over
+            Issue[] issues = query.getIssues();
+            int c = 0;
+            if(issues != null) {
+                for (Issue issue : issues) {
+                    if(filter.accept(issue)) c++;
+                }
+            }
+            setIssueCount(c);
         }
         issueTable.setFilter(filter);
     }
