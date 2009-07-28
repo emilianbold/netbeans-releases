@@ -88,34 +88,24 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
                             .toString());
                 }
             }
-            if ( bindingNames.contains(WebBeansModelProviderImpl.
-                    ANY_BINDING_ANNOTATION) || bindingNames.contains(
-                            WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
+            if ( bindingNames.contains(
+                    WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
             {
                 continue;
             }
             if ( (element instanceof TypeElement) && (
                 AnnotationObjectProvider.checkSuper((TypeElement)element, 
                         WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION, 
-                        getImplementation().getHelper())!=null ||
-                        AnnotationObjectProvider.checkSuper((TypeElement)element, 
-                                WebBeansModelProviderImpl.ANY_BINDING_ANNOTATION, 
-                                getImplementation().getHelper())!=null))
+                        getImplementation().getHelper())!=null ))
             {
                     continue;
             }
             else if ( element instanceof ExecutableElement ){
-                Set<Element> specialized = 
-                    FieldInjectionPointLogic.getSpecialized( element, 
+                Element specialized = 
+                    MemberCheckerFilter.getSpecialized( element, 
                             getImplementation(), 
                             WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
-                if ( specialized.size() >0 ){
-                    continue;
-                }
-                specialized = FieldInjectionPointLogic.getSpecialized( element, 
-                            getImplementation(), 
-                            WebBeansModelProviderImpl.ANY_BINDING_ANNOTATION);
-                if ( specialized.size() >0 ){
+                if ( specialized!= null){
                     continue;
                 }
             }
@@ -126,9 +116,8 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
     }
 
     private boolean isBinding( TypeElement annotationElement ) {
-        BindingChecker checker = BindingChecker.get();
-        checker.init(annotationElement, getImplementation().getHelper());
-        return checker.check();
+        return AnnotationObjectProvider.isBinding(annotationElement, 
+                getImplementation().getHelper());
     }
 
     private WebBeansModelImplementation getImplementation() {
