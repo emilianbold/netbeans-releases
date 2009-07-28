@@ -715,7 +715,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ145071() throws Exception {
         // IZ#145071 : forward declarations marked as error
-        performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 5);
+        performTest("IZ145071.cc", 4, 23, "IZ145071.cc", 4, 13);
     }
 
     public void testIZ147795() throws Exception {
