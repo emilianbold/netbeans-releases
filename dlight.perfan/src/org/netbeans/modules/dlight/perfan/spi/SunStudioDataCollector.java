@@ -119,7 +119,7 @@ public class SunStudioDataCollector
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
     private final Collection<ValidationListener> validationListeners;
-    private final Collection<CollectedInfo> collectedInfo;
+    private final Set<CollectedInfo> collectedInfo;
     private final List<DataFilter> dataFilters;
     // ***
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
@@ -331,8 +331,7 @@ public class SunStudioDataCollector
 
     public List<DataTableMetadata> getDataTablesMetadata() {
         synchronized (lock) {
-            return Collections.unmodifiableList(
-                    new ArrayList<DataTableMetadata>(dataTablesMetadata));
+            return new ArrayList<DataTableMetadata>(dataTablesMetadata);
         }
     }
 
@@ -664,7 +663,7 @@ public class SunStudioDataCollector
         final ExecutionEnvironment execEnv;
         final String experimentDirectory;
         final String sproHome;
-        final Collection<CollectedInfo> collectedInfo;
+        final Set<CollectedInfo> collectedInfo;
 
         public CollectorConfiguration(
                 final PerfanDataStorage dataStorage,
@@ -672,14 +671,14 @@ public class SunStudioDataCollector
                 final ExecutionEnvironment execEnv,
                 final String experimentDirectory,
                 final String sproHome,
-                final Collection<CollectedInfo> collectedInfo) {
+                final Set<CollectedInfo> collectedInfo) {
 
             this.target = target;
             this.dataStorage = dataStorage;
             this.execEnv = execEnv;
             this.experimentDirectory = experimentDirectory;
             this.sproHome = sproHome;
-            this.collectedInfo = Collections.unmodifiableCollection(new ArrayList<CollectedInfo>(collectedInfo));
+            this.collectedInfo = Collections.unmodifiableSet(EnumSet.copyOf(collectedInfo));
         }
     }
 }

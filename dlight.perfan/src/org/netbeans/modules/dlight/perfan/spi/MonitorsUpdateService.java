@@ -43,9 +43,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
@@ -58,6 +58,8 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
+import org.netbeans.modules.dlight.perfan.storage.impl.DataRace;
+import org.netbeans.modules.dlight.perfan.storage.impl.Deadlock;
 import org.netbeans.modules.dlight.perfan.storage.impl.ErprintSession;
 import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
@@ -75,24 +77,34 @@ public class MonitorsUpdateService {
     static {
         METRIC_FORMAT.getDecimalFormatSymbols().setDecimalSeparator(',');
     }
+
     private static final Metrics LEAK_METRICS = Metrics.constructFrom(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize),
             Arrays.asList(SunStudioDCConfiguration.c_leakSize));
+    private static final List<String> LEAK_COLNAMES = Collections.unmodifiableList(
+            Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
+
     private static final Metrics SYNC_METRICS = Metrics.constructFrom(
             Arrays.asList(SunStudioDCConfiguration.c_eSync),
             Arrays.asList(SunStudioDCConfiguration.c_eSync));
+    private static final List<String> SYNC_COLNAMES = Collections.unmodifiableList(
+            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));
+
+    private static final List<String> DATARACE_COLNAMES = Collections.unmodifiableList(
+            Arrays.asList(SunStudioDCConfiguration.c_Datarace.getColumnName()));
+
+    private static final List<String> DEADLOCK_COLNAMES = Collections.unmodifiableList(
+            Arrays.asList(SunStudioDCConfiguration.c_Deadlocks.getColumnName()));
 
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
-    private static final List<String> syncColNames = Collections.unmodifiableList(
-            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
-    private static final List<String> leaksColNames = Collections.unmodifiableList(
-            Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
     private final SunStudioDataCollector ssdc;
     private final ExecutionEnvironment execEnv;
     private final String sproHome;
     private final String experimentDir;
     private final boolean isSyncMonitor;
     private final boolean isMemoryMonitor;
+    private final boolean isDataRaceMonitor;
+    private final boolean isDeadlockMonitor;
     private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
     private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
@@ -100,13 +112,15 @@ public class MonitorsUpdateService {
     MonitorsUpdateService(SunStudioDataCollector ssdc,
             ExecutionEnvironment execEnv,
             String sproHome, String experimentDir,
-            Collection<CollectedInfo> collectedInfo) {
+            Set<CollectedInfo> collectedInfo) {
         this.ssdc = ssdc;
         this.sproHome = sproHome;
         this.execEnv = execEnv;
         this.experimentDir = experimentDir;
-        isSyncMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY);
-        isMemoryMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY);
+        isSyncMonitor = collectedInfo.contains(CollectedInfo.SYNCSUMMARY);
+        isMemoryMonitor = collectedInfo.contains(CollectedInfo.MEMSUMMARY);
+        isDataRaceMonitor = collectedInfo.contains(CollectedInfo.DATARACES);
+        isDeadlockMonitor = collectedInfo.contains(CollectedInfo.DEADLOCKS);
     }
 
     public void start() {
@@ -223,7 +237,7 @@ public class MonitorsUpdateService {
                             }
 
                             if (0.1 < currTime - prevTime) {
-                                newData.add(new DataRow(syncColNames, Arrays.asList(
+                                newData.add(new DataRow(SYNC_COLNAMES, Arrays.asList(
                                         100 * (currLocks - prevLocks) / (currTime - prevTime) / currThreads,
                                         currThreads)));
 
@@ -248,8 +262,23 @@ public class MonitorsUpdateService {
                                 leaks = (long) sumMetrics(leakFunctions);
                             }
 
-                            newData.add(new DataRow(leaksColNames, Arrays.asList(leaks)));
+                            newData.add(new DataRow(LEAK_COLNAMES, Arrays.asList(leaks)));
                         }
+
+                        if (isDataRaceMonitor) {
+                            List<DataRace> dataraces = erprintSession.getDataRaces(!restarted);
+                            restarted = true;
+
+                            newData.add(new DataRow(DATARACE_COLNAMES, Arrays.asList(dataraces.size())));
+                        }
+
+                        if (isDeadlockMonitor) {
+                            List<Deadlock> deadlocks = erprintSession.getDeadlocks(!restarted);
+                            restarted = true;
+
+                            newData.add(new DataRow(DEADLOCK_COLNAMES, Arrays.asList(deadlocks.size())));
+                        }
+
                     } catch (Throwable ex) {
                         ex.printStackTrace();
                         log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());

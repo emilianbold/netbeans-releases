@@ -36,56 +36,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.editor.hints;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.spi.editor.hints.Context;
 
-public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
+/**
+ * Accessor for {@link Context}'s package private constructor
+ * @author Max Sauer
+ */
+public abstract class ContextAccessor {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
-    private final String dataracesColumnName;
-    private final String deadlocksColumnName;
-    private int dataraces;
-    private int deadlocks;
+    public static ContextAccessor DEFAULT;
 
-    public THAIndicator(final THAIndicatorConfiguration configuration) {
-        super(configuration);
-        dataracesColumnName = getMetadataColumnName(0);
-        deadlocksColumnName = getMetadataColumnName(1);
-    }
-
-    @Override
-    protected void repairNeeded(boolean needed) {
-        // throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected void tick() {
-        controlPanel.setDataRaces(dataraces);
-        controlPanel.setDeadlocks(deadlocks);
-    }
-
-    @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            Object dataracesObj = row.getData(dataracesColumnName);
-            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
-            Object deadlocksObj = row.getData(deadlocksColumnName);
-            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
+    public static ContextAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
         }
+
+        Class c = Context.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+
+        assert DEFAULT != null;
+        return DEFAULT;
     }
 
-    @Override
-    public void reset() {
-        controlPanel.reset();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return controlPanel;
-    }
+    public abstract Context newContext(int position, AtomicBoolean cancel);
 }

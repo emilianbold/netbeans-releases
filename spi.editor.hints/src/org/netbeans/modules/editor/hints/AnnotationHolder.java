@@ -61,6 +61,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -660,7 +661,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             detachAnnotation(previous);
         }
 
-        attachAnnotation(line, pea);
+        attachAnnotation(line, pea);   
     }
 
     void updateHighlightsOnLine(Position line) throws IOException {
@@ -996,6 +997,35 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
     public synchronized List<Annotation> getAnnotations() {
         return new ArrayList<Annotation>(line2Annotations.values());
+    }
+
+    public void setErrorsForLine(final int offset, final Map<String, List<ErrorDescription>> errs) {
+
+        doc.render(new Runnable() {
+
+            public void run() {
+                try {
+                    Position pos = getPosition(Utilities.getLineOffset(doc, offset), true);
+
+                    List<ErrorDescription> errsForCurrentLine = getErrorsForLine(pos, true);
+
+                    //for each layer
+                    for (Entry<String, List<ErrorDescription>> e : errs.entrySet()) {
+                        //get errors for this layer, all lines
+                        Set<ErrorDescription> errorsForLayer = new HashSet<ErrorDescription>(getErrorsForLayer(e.getKey()));
+                        errorsForLayer.removeAll(errsForCurrentLine); //remove all for current line
+                        e.getValue().addAll(errorsForLayer); //add the rest to those provided by refresher
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        for (Entry<String, List<ErrorDescription>> e : errs.entrySet()) {
+            final List<ErrorDescription> eds = e.getValue();
+            setErrorDescriptions(e.getKey(), eds); //set updated
+        }
     }
 
     public synchronized List<ErrorDescription> getErrorsGE(int offset) {

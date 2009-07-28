@@ -91,32 +91,23 @@ public class EntityNode extends AbstractNode implements OpenCookie {
     private final EjbViewController controller;
     
     public static EntityNode create(String ejbClass, EjbJar ejbModule, Project project) {
-        ClasspathInfo cpInfo = null;
-        FileObject[] javaSources = ejbModule.getJavaSources();
-        if (javaSources.length > 0) {
-            cpInfo = ClasspathInfo.create(
-                    ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
-                    ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
-                    ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
-                    );
-        }
-        assert cpInfo != null;
         try {
-            return new EntityNode(new InstanceContent(), cpInfo, ejbClass, ejbModule, project);
+            return new EntityNode(new InstanceContent(), new EjbViewController(ejbClass, ejbModule), project);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
         return null;
     }
 
-    private EntityNode(InstanceContent content, ClasspathInfo cpInfo, final String ejbClass, EjbJar ejbModule, Project project) throws IOException {
-        super(new EntityChildren(cpInfo, ejbClass, ejbModule), new AbstractLookup(content));
+    private EntityNode(InstanceContent content, final EjbViewController controller, Project project) throws IOException {
+        super(new EntityChildren(controller), new AbstractLookup(content));
+        this.controller = controller;
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon.gif");
         String ejbName = null;
         try {
-            ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            ejbName = controller.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
                 public String run(EjbJarMetadata metadata) throws Exception {
-                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    Ejb ejb = metadata.findByEjbClass(controller.getEjbClass());
                     return ejb == null ? null : ejb.getEjbName();
                 }
             });
@@ -124,7 +115,6 @@ public class EntityNode extends AbstractNode implements OpenCookie {
             Exceptions.printStackTrace(ioe);
         }
         setName(ejbName + "");
-        controller = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
