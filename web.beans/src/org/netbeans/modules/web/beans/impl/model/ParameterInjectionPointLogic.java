@@ -49,6 +49,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+
 
 /**
  * @author ads
@@ -66,7 +68,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
             "javax.enterprise.event.Observes";                      // NOI18N
 
     protected Element findParameterInjectable( VariableElement element , 
-            WebBeansModelImplementation model) 
+            WebBeansModelImplementation model) throws WebBeansModelException 
     {
         ExecutableElement parent = (ExecutableElement)element.getEnclosingElement();
         Set<Element> injectables = null;
@@ -88,7 +90,8 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
                     iterator.hasNext(); ) 
                 {
                     Element injectable = iterator.next();
-                    if ( !model.getHelper().getCompilationController().
+                    if ( !(injectable instanceof ExecutableElement) ||
+                            !model.getHelper().getCompilationController().
                             getElementUtilities().isMemberOf( injectable, 
                                     enclosingTypeElement))
                     {
@@ -103,12 +106,28 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
         if ( AnnotationObjectProvider.hasAnnotation( element, 
                                     OBSERVES_ANNOTATION, model.getHelper()))
         {
+            /*
+             * From the spec : if the event parameter does not explicitly 
+             * declare any binding, the observer method observes events with no binding.
+             * 
+             * TODO : if there is no binding type for parameter then
+             * one needs to find elements without bindings ( they 
+             * should not have any binding at all even explicit @Current
+             * binding ).   
+             * This is just implementor elements ( filtered by binding absence ). 
+             */
             injectables = findVariableInjectable(element, model , false );
         }
         boolean isInjectionPoint = false;
         List<? extends VariableElement> parameters = parent.getParameters();
+        /*
+         * Check if method has parameters as injection points.
+         * Parameter should differs from lead parameter ( parameter that define 
+         * method with special meaning ) .
+         */
         for (VariableElement variableElement : parameters) {
-            if ( AnnotationObjectProvider.hasAnnotation(variableElement, 
+            if ( !variableElement.equals( element ) && 
+                    AnnotationObjectProvider.hasAnnotation(variableElement, 
                     DISPOSES_ANNOTATION, model.getHelper()) ||
                     AnnotationObjectProvider.hasAnnotation(variableElement, 
                             OBSERVES_ANNOTATION, model.getHelper()) )
@@ -120,7 +139,10 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
         if ( isInjectionPoint ){
             injectables = findVariableInjectable(element, model , true );
         }
-        return (injectables== null || injectables.size() ==0 )? null: 
-            injectables.iterator().next();
+        
+        if ( injectables == null ){
+            return null;
+        }
+        return getResult(injectables);
     }
 }
