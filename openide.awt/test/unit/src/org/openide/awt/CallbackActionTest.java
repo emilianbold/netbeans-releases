@@ -180,7 +180,7 @@ public class CallbackActionTest extends NbTestCase {
     }
 
     static ContextAwareAction callback(String key, AbstractAction fallAction, Lookup al, boolean b) {
-        return GeneralAction.callback(key, fallAction, al, b);
+        return GeneralAction.callback(key, fallAction, al, b, false);
     }
     
     private static final class CntListener extends Object
