@@ -44,6 +44,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -274,6 +275,16 @@ final class Erprint {
     LeaksStatistics getExperimentLeaks() throws IOException {
         String[] stat = exec("leaks"); // NOI18N
         return new LeaksStatistics(stat);
+    }
+
+    List<DataRace> getDataRaces() throws IOException {
+        String[] races = exec("rsummary all"); // NOI18N
+        return DataRace.parseDataRaces(races);
+    }
+
+    List<Deadlock> getDeadlocks() throws IOException {
+        String[] deadlocks = exec("dsummary all"); // NOI18N
+        return Deadlock.parseDeadlocks(deadlocks);
     }
 
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {

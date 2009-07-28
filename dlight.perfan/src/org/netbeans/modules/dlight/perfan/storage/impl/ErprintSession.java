@@ -146,6 +146,24 @@ public class ErprintSession {
         }
     }
 
+    public List<DataRace> getDataRaces(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getDataRaces();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
+    public List<Deadlock> getDeadlocks(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getDeadlocks();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
     public String[] getCallersCallees(int limit) {
         // TODO: implemet
         return new String[0];

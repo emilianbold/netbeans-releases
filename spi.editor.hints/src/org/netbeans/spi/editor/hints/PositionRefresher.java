@@ -36,56 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+
+package org.netbeans.spi.editor.hints;
 
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import java.util.Map;
+import javax.swing.text.Document;
 
-public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
+/**
+ * Refresher invoked upon mouse click or Alt-Enter. Clients should register
+ * its implementations inside layer for appropriate mimetype and provide all
+ * {@link ErrorDescription}s for given line (specified by position).
+ *
+ * Contract is that fixes will be already computed in the time of the retrieval.
+ *
+ * @author Max Sauer
+ * @since 1.8.1
+ */
+public interface PositionRefresher {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
-    private final String dataracesColumnName;
-    private final String deadlocksColumnName;
-    private int dataraces;
-    private int deadlocks;
+    /**
+     * @param position current caret position inside document
+     * @param doc current document
+     * @return map of layer name to {@link ErrorDescription}s for current line
+     */
+    public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(Context context, Document doc);
 
-    public THAIndicator(final THAIndicatorConfiguration configuration) {
-        super(configuration);
-        dataracesColumnName = getMetadataColumnName(0);
-        deadlocksColumnName = getMetadataColumnName(1);
-    }
-
-    @Override
-    protected void repairNeeded(boolean needed) {
-        // throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected void tick() {
-        controlPanel.setDataRaces(dataraces);
-        controlPanel.setDeadlocks(deadlocks);
-    }
-
-    @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            Object dataracesObj = row.getData(dataracesColumnName);
-            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
-            Object deadlocksObj = row.getData(deadlocksColumnName);
-            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
-        }
-    }
-
-    @Override
-    public void reset() {
-        controlPanel.reset();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return controlPanel;
-    }
 }

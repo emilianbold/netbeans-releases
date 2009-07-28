@@ -154,8 +154,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
                 OutputStream os = getOutputStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream
-                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                if (os == null || os instanceof LogOutputStream) {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
@@ -167,8 +166,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
                 OutputStream os = getErrorStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream
-                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                if (os == null || os instanceof LogOutputStream) {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }

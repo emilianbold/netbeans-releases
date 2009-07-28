@@ -36,56 +36,44 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
+/**
+ * @author Alexey Vladykin
+ */
+public final class DataRace {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
-    private final String dataracesColumnName;
-    private final String deadlocksColumnName;
-    private int dataraces;
-    private int deadlocks;
+    private final long vaddr;
 
-    public THAIndicator(final THAIndicatorConfiguration configuration) {
-        super(configuration);
-        dataracesColumnName = getMetadataColumnName(0);
-        deadlocksColumnName = getMetadataColumnName(1);
+    public DataRace(long vaddr) {
+        this.vaddr = vaddr;
     }
 
-    @Override
-    protected void repairNeeded(boolean needed) {
-        // throw new UnsupportedOperationException("Not supported yet.");
+    public long vaddr() {
+        return vaddr;
     }
 
-    @Override
-    protected void tick() {
-        controlPanel.setDataRaces(dataraces);
-        controlPanel.setDeadlocks(deadlocks);
-    }
+    private static final Pattern RACE_PATTERN = Pattern.compile("Race #\\d+, Vaddr: (.+)"); // NOI18N
 
-    @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            Object dataracesObj = row.getData(dataracesColumnName);
-            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
-            Object deadlocksObj = row.getData(deadlocksColumnName);
-            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
+    public static List<DataRace> parseDataRaces(String[] erprint) {
+        List<DataRace> races = new ArrayList<DataRace>();
+        for (String line : erprint) {
+            Matcher m = RACE_PATTERN.matcher(line);
+            if (m.matches()) {
+                long vaddr;
+                try {
+                    vaddr = Long.parseLong(m.group(1), 16);
+                } catch (NumberFormatException ex) {
+                    vaddr = -1;
+                }
+                races.add(new DataRace(vaddr));
+            }
         }
-    }
-
-    @Override
-    public void reset() {
-        controlPanel.reset();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return controlPanel;
+        return races;
     }
 }

@@ -267,7 +267,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     */
     public final Node getNodeDelegate () {
         if (! isValid()) {
-            Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code"); // NOI18N
+            String debugMessage = "this=" + this + " id=" + System.identityHashCode(this) + " primaryFileId=" + System.identityHashCode(this.getPrimaryFile()) + " valid=" + this.getPrimaryFile().isValid() + "\n";  //NOI18N
+            DataObject dob = DataObjectPool.getPOOL().find(getPrimaryFile());
+            debugMessage += "pool=" + dob + " id=" + System.identityHashCode(dob) + " primaryFileId=" + System.identityHashCode(dob.getPrimaryFile()) + " valid=" + dob.getPrimaryFile().isValid();  //NOI18N
+
+            Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code.\n" + debugMessage); // NOI18N
             Logger.getLogger(DataObject.class.getName()).log(Level.WARNING, null, e);
         }
         return getNodeDelegateImpl();

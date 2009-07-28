@@ -182,9 +182,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         if (jsfLibrary !=null) {
             List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
             try {
-                faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet"); //NOI18N
-                if (!faceletsPresent)
-                    faceletsPresent = Util.containsClass(content, "com.sun.faces.facelets.Facelet"); //NOI18N
+                faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
+                                  Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS) ||   //NOI18N
+                                  Util.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
             }catch(Exception e) {
                 e.printStackTrace();
             }

@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import java.util.Arrays;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -62,12 +64,18 @@ public final class DLightTHAToolConfigurationProvider
         SunStudioDCConfiguration ssDeadlocks =
                 new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.DEADLOCKS);
         toolConfiguration.addDataCollectorConfiguration(ssDeadlocks);
+        toolConfiguration.addIndicatorDataProviderConfiguration(ssDeadlocks);
 
         SunStudioDCConfiguration ssRaces =
                 new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.DATARACES);
         toolConfiguration.addDataCollectorConfiguration(ssRaces);
+        toolConfiguration.addIndicatorDataProviderConfiguration(ssRaces);
 
-        IndicatorConfiguration indicatorConfiguration = new THAIndicatorConfiguration(null);
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(Arrays.asList(
+                SunStudioDCConfiguration.c_Datarace,
+                SunStudioDCConfiguration.c_Deadlocks));
+
+        IndicatorConfiguration indicatorConfiguration = new THAIndicatorConfiguration(indicatorMetadata);
 
 //        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
 //        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
