@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ak119685
@@ -65,41 +67,17 @@ public class THAControlPanel extends javax.swing.JPanel {
         setToolTipText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.toolTipText")); // NOI18N
 
         controlButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
+        add(controlButton);
 
         deadlocksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"))); // NOI18N
-        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.text")); // NOI18N
+        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.notext")); // NOI18N
         deadlocksButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive24.png"))); // NOI18N
-        deadlocksButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        deadlocksButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        add(deadlocksButton);
 
         racesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_active24.png"))); // NOI18N
+        racesButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.dataracesButton.notext")); // NOI18N
         racesButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive24.png"))); // NOI18N
-        racesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        racesButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(controlButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(deadlocksButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(racesButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(controlButton)
-                    .add(deadlocksButton)
-                    .add(racesButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        add(racesButton);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton controlButton;
@@ -108,16 +86,20 @@ public class THAControlPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     void setDeadlocks(int deadlocks) {
-        deadlocksButton.setText(deadlocks + " dealocks");
+        deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.text", deadlocks));
         deadlocksButton.setEnabled(0 < deadlocks);
     }
 
     void setDataRaces(int dataraces) {
-        racesButton.setText(dataraces + " dataraces");
+        racesButton.setText(getMessage("THAControlPanel.dataracesButton.text", dataraces));
         racesButton.setEnabled(0 < dataraces);
     }
 
     void reset() {
         // throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private static String getMessage(String name, Object... args) {
+        return NbBundle.getMessage(THAControlPanel.class, name, args);
     }
 }
