@@ -43,11 +43,11 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -91,7 +91,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
     }
 
     @Override
-    public ActionListener getDefaultAction() {
+    public Action getDefaultAction() {
         return QueryAccessor.getDefault().getDefaultAction(query);
     }
 

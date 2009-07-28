@@ -75,14 +75,9 @@ public class NextResultsAction extends NodeAction {
             throw new IllegalArgumentException("Node has no WagSearchResults");
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                for (int i = 0; i < nodes.length; i++) {
-                    nodes[i].getLookup().lookup(WagSearchResult.class).next();
-                }
-            }
-        });
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i].getLookup().lookup(WagSearchResult.class).next();
+        }
     }
 
     protected boolean asynchronous() {

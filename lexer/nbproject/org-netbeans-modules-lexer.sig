@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.29.1
+#Version 1.30.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -131,6 +131,7 @@ meth public int embeddedChangeCount()
 meth public int index()
 meth public int offset()
 meth public int removedTokenCount()
+meth public java.lang.String toString()
 meth public org.netbeans.api.lexer.Language<{org.netbeans.api.lexer.TokenChange%0}> language()
 meth public org.netbeans.api.lexer.LanguagePath languagePath()
 meth public org.netbeans.api.lexer.TokenChange<?> embeddedChange(int)
@@ -165,6 +166,7 @@ meth public int affectedStartOffset()
 meth public int insertedLength()
 meth public int modificationOffset()
 meth public int removedLength()
+meth public java.lang.String toString()
 meth public org.netbeans.api.lexer.TokenChange<?> tokenChange()
 meth public org.netbeans.api.lexer.TokenHierarchy<?> tokenHierarchy()
 meth public org.netbeans.api.lexer.TokenHierarchyEventType type()
@@ -304,7 +306,7 @@ meth public java.lang.CharSequence readText()
 meth public java.lang.CharSequence readText(int,int)
 meth public void backup(int)
 supr java.lang.Object
-hfds eof,operation,readText
+hfds LOG,eof,loggable,operation,readText
 hcls ReadText
 
 CLSS public final org.netbeans.spi.lexer.LexerRestartInfo<%0 extends org.netbeans.api.lexer.TokenId>

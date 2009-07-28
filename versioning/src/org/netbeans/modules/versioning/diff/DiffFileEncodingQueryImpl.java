@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,7 @@ package org.netbeans.modules.versioning.diff;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -92,32 +92,43 @@ public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {
      * @param files files to be encoded with the refernceFile-s charset 
      * 
      */ 
-    void associateEncoding(File referenceFile, List<File> files) {
-        FileObject fo = FileUtil.toFileObject(referenceFile);
-        if(fo == null || fo.isFolder()) {
+    void associateEncoding(FileObject referenceFile, Collection<File> files) {
+        if (referenceFile.isFolder()) {
             return;
         }
-        Charset c = FileEncodingQuery.getEncoding(fo);        
-        if(c == null) {
+        associateEncoding(FileEncodingQuery.getEncoding(referenceFile), files);
+    }   
+
+    /**
+     * Associates the given encoding with all files from the given list.
+     * A following getEncoding() call for any file from the list will then
+     * return the given Charset.
+     *
+     * @param charset charset that is to be used when encoding the files from the given list
+     * @param files files to be encoded with the given charset
+     *
+     */
+    void associateEncoding(Charset charset, Collection<File> files) {
+        if (charset == null) {
             return;
         }
         if(fileToCharset == null) {
             fileToCharset = new WeakHashMap<File, Charset>();
-        }        
+        }
         synchronized(fileToCharset) {
             for(File file : files) {
-                fileToCharset.put(file, c);    
-            }            
+                fileToCharset.put(file, charset);
+            }
         }
-    }   
+    }
 
     /**
      * Resets the asociation to a charset for every given file
      * 
      * @param files the files which have to be deregistered
      */ 
-    void resetEncodingForFiles(List<File> files) {        
-        if(fileToCharset == null || files == null || files.size() == 0) {
+    void resetEncodingForFiles(Collection<File> files) {
+        if(fileToCharset == null || files == null || files.isEmpty()) {
             return;
         }
         synchronized(fileToCharset) {

@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -52,12 +54,15 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 public class FileCommandActionTest extends NbTestCase {
     
@@ -78,7 +83,7 @@ public class FileCommandActionTest extends NbTestCase {
     private TestSupport.TestProject project1;
     private TestSupport.TestProject project2;
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
@@ -104,7 +109,7 @@ public class FileCommandActionTest extends NbTestCase {
         
     }
     
-    public boolean runInEQ () {
+    public @Override boolean runInEQ() {
         return true;
     }
     
@@ -131,6 +136,34 @@ public class FileCommandActionTest extends NbTestCase {
                 return new FileCommandAction("command", "TestProjectAction", (Icon) null, l);
             }
         }, true);
+    }
+
+    public void testGlobalActions() throws Exception {
+        final AtomicInteger runCount = new AtomicInteger();
+        MockLookup.setInstances(new ActionProvider() {
+            public String[] getSupportedActions() {
+                return new String[] {"run"};
+            }
+            public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+                DataObject d = context.lookup(DataObject.class);
+                return d != null && d.getPrimaryFile().getName().equals("foo");
+            }
+            public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+                runCount.incrementAndGet();
+            }
+        });
+        ContextAwareAction global = (ContextAwareAction) FileSensitiveActions.fileCommandAction("run", "Run {0,choice,0#File|1#\"{1}\"|1<Files}", null);
+        DataObject foo = DataObject.find(FileUtil.createMemoryFileSystem().getRoot().createData("foo"));
+        DataObject bar = DataObject.find(FileUtil.createMemoryFileSystem().getRoot().createData("bar"));
+        Action local = global.createContextAwareInstance(Lookups.fixed(foo));
+        assertTrue(local.isEnabled());
+        assertEquals("Run \"foo\"", local.getValue("menuText"));
+        local.actionPerformed(null);
+        assertEquals(1, runCount.get());
+        local = global.createContextAwareInstance(Lookups.fixed(bar));
+        assertFalse(local.isEnabled());
+        assertEquals("Run File", local.getValue("menuText"));
+        // XXX could test more complex interactions, e.g. >1 project responds, or file owned by project but project does not respond
     }
     
     private static class TestActionProvider implements ActionProvider {

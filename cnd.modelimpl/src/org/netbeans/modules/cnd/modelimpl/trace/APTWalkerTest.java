@@ -100,8 +100,10 @@ public class APTWalkerTest extends APTAbstractWalker {
             } finally {
                 getIncludeHandler().popInclude(); 
             }
+            return postIncludeState == null;
+        } else {
+            return false;
         }
-        return postIncludeState == null;
     }
 
     @Override

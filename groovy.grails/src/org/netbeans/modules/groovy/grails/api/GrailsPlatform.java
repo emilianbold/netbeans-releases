@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -65,8 +66,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.KillableProcess;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
+import org.netbeans.modules.groovy.grails.WrapperProcess;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -96,8 +97,6 @@ public final class GrailsPlatform {
     public static final String IDE_RUN_COMMAND = "run-app"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(GrailsPlatform.class.getName());
-
-    private static final AtomicLong UNIQUE_MARK = new AtomicLong();
 
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
 
@@ -319,15 +318,19 @@ public final class GrailsPlatform {
         return new File(grailsBase);
     }
 
-    private static String createJvmArguments(Properties properties) {
+    private static String createJvmArguments(String vmOptions, Properties properties) {
         StringBuilder builder = new StringBuilder();
         int i = 0;
+
+        if (vmOptions != null) {
+            builder.append(vmOptions);
+        }
 
         for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
             String key = e.nextElement().toString();
             String value = properties.getProperty(key);
             if (value != null) {
-                if (i > 0) {
+                if (i > 0 || vmOptions != null) {
                     builder.append(" "); // NOI18N
                 }
                 builder.append("-D").append(key); // NOI18N
@@ -702,13 +705,7 @@ public final class GrailsPlatform {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
-            // FIXME fix this hack - needed for proper process tree kill
-            // see KillableProcess
-            String mark = "";
-            if (Utilities.isWindows() && GUARDED_COMMANDS.contains(descriptor.getName())) {
-                mark = UNIQUE_MARK.getAndIncrement() + descriptor.getDirectory().getAbsolutePath();
-                command.append(" ").append("REM NB:" + mark); // NOI18N
-            }
+            String preProcessUUID = UUID.randomUUID().toString();
 
             LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
 
@@ -731,20 +728,24 @@ public final class GrailsPlatform {
                 }
             }
 
+            String vmOptions = descriptor.getProjectConfig().getVmOptions();
+            if (vmOptions != null && "".equals(vmOptions.trim())) {
+                vmOptions = null;
+            }
             String[] envp = new String[] {
                 "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N
                 "JAVA_HOME=" + javaHome, // NOI18N
                 "http_proxy=" + proxyString, // NOI18N
                 "HTTP_PROXY=" + proxyString, // NOI18N
-                "JAVA_OPTS=" + createJvmArguments(props)
+                "JAVA_OPTS=" + createJvmArguments(vmOptions, props)
             };
 
             // no executable check before java6
             Process process = null;
             try {
-                process = new KillableProcess(
+                process = new WrapperProcess(
                         grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
-                        descriptor.getName(), mark);
+                        preProcessUUID);
             } catch (IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
                         NbBundle.getMessage(GrailsPlatform.class, "MSG_StartFailedIOE",

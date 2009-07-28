@@ -45,6 +45,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -92,7 +93,7 @@ public class UserNode extends LeafNode {
             lblUser = new TreeLabel();
             lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_OpeningProjects")); //NOI18N
             btnOpenProject = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
-            btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new ActionListener() { //NOI18N
+            btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new AbstractAction() { //NOI18N
                 public void actionPerformed(ActionEvent e) {
                     DashboardImpl.getInstance().refreshProjects();
                 }

@@ -358,9 +358,9 @@ public final class CreatedModifiedFiles {
      * @param substitutionTokens see {@link #createFileWithSubstitutions} for details;
      *                           may be <code>null</code> to not use FreeMarker
      * @param localizedDisplayName if it is not a <code>null</code>
-     *        <em>SystemFileSystem.localizingBundle</em> attribute will be
-     *        created with the stringvalue to a default bundle (from manifest).
-     *        Also an appropriate entry will be added into the bundle.
+     *        <em>displayName</em> attribute will be
+     *        created with the bundlevalue to a new entry in default bundle (from manifest).
+     *        The entry will also be added into the bundle.
      * @param fileAttributes &lt;String,Object&gt; map. key in the map is the
      *        name of the file attribute value is the actual value, currently
      *        supported types are Boolean and String Generates

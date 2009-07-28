@@ -179,6 +179,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -203,6 +204,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -226,6 +228,7 @@ public class ExtendedTokenSequence {
             while(ts.moveNext()){
                 switch (ts.token().id()) {
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
                     case ESCAPED_WHITESPACE:
@@ -273,6 +276,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -340,6 +344,7 @@ public class ExtendedTokenSequence {
                     case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                         return true;
                     case WHITESPACE:
                         break;
@@ -362,6 +367,7 @@ public class ExtendedTokenSequence {
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
                     case ESCAPED_WHITESPACE:
+                    case DOXYGEN_LINE_COMMENT:
                         return null;
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -393,6 +399,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -417,6 +424,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:

@@ -293,6 +293,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
         });
         Project prj = ProjectManager.getDefault().findProject(root);
         assertNotNull(prj);
+        System.setProperty("test.nodelay", "true");
         ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj),
                 new AbstractNode(Children.LEAF, Lookups.singleton(prj)) {
                     public @Override String getDisplayName() {return "Prj";}

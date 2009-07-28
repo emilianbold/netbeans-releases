@@ -176,7 +176,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         repairPanel.setAlignmentY(CENTER_ALIGNMENT);
         this.add(repairPanel);
         if (!toRepairList.isEmpty()) {
-            for (DataCollector c : toRepairList) {
+            for (DataCollector<?> c : toRepairList) {
                 repair(c);
             }
         }

@@ -43,6 +43,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -73,6 +74,7 @@ public class InstallHiddenModuleTest extends OperationsTestImpl {
         return "com.sun.testmodule.cluster"; //NOI18N
     }
 
+    @RandomlyFails // NB-Core-Build #2967
     public void testSelf() throws Exception {
         UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull("There is an NBM to install", install);

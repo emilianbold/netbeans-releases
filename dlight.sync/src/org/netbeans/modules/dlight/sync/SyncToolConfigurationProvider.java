@@ -41,6 +41,8 @@ package org.netbeans.modules.dlight.sync;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -50,6 +52,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -57,6 +60,10 @@ import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -76,6 +83,7 @@ import org.openide.util.NbBundle;
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final int INDICATOR_POSITION = 300;
+    private static final String ID = "dlight.tool.sync"; // NOI18N
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
     private static final Column timestampColumn =
@@ -114,7 +122,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_DESCRIPTION);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(TOOL_DESCRIPTION);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
@@ -159,9 +168,17 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.add(ProcDataProviderConfiguration.THREADS);
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-        SyncIndicatorConfiguration indicatorConfiguration =
-            new SyncIndicatorConfiguration(indicatorMetadata, Arrays.asList(threadsColumn.getColumnName(), 
-            ProcDataProviderConfiguration.THREADS.getColumnName(), LLDataCollectorConfiguration.threads_count.getColumnName()), INDICATOR_POSITION);
+
+        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION,
+                loc("indicator.title"), 2, // NOI18N
+                Arrays.asList(
+                    new GraphDescriptor(GraphConfig.COLOR_4, loc("graph.description.threads"), GraphDescriptor.Kind.ABS_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.locks"), GraphDescriptor.Kind.ABS_SURFACE)), // NOI18N
+                new DataRowToSyncPlot(
+                    Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count),
+                    Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT)));
+        indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 
@@ -223,7 +240,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         }
 
         public DataRow process(String line) {
-            DLightLogger.instance.fine("SyncCLIOParser: " + line); //NOI18N
+            if (DLightLogger.instance.isLoggable(Level.FINE)) {
+                DLightLogger.instance.fine("SyncCLIOParser: " + line); //NOI18N
+            }
 
             /*----- Below is an example of output: -------------------------
             PID USERNAME USR SYS TRP TFL DFL LCK SLP LAT VCX ICX SCL SIG PROCESS/NLWP
@@ -294,5 +313,38 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(SyncToolConfigurationProvider.class, key, params);
+    }
+
+    private static final class DataRowToSyncPlot implements DataRowToPlot {
+
+        private final List<Column> threadColumns;
+        private final List<Column> lockColumns;
+        private int threads;
+        private int locks;
+
+        public DataRowToSyncPlot(List<Column> threadColumns, List<Column> lockColumns) {
+            this.threadColumns = new ArrayList<Column>(threadColumns);
+            this.lockColumns = new ArrayList<Column>(lockColumns);
+        }
+
+        public void addDataRow(DataRow row) {
+            for (String columnName : row.getColumnNames()) {
+                for (Column threadColumn : threadColumns) {
+                    if (threadColumn.getColumnName().equals(columnName)) {
+                        threads = DataUtil.toInt(row.getData(columnName));
+                    }
+                }
+                for (Column lockColumn : lockColumns) {
+                    if (lockColumn.getColumnName().equals(columnName)) {
+                        locks = DataUtil.toInt(row.getData(columnName));
+                    }
+                }
+            }
+        }
+
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = threads;
+            data[1] = threads * Math.min(locks, 100) / 100.0f;
+        }
     }
 }

@@ -65,9 +65,13 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     
     public static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee";  // NOI18N
     private static final String JSF_1_2_XSD="web-facesconfig_1_2.xsd"; // NOI18N
+    private static final String JSF_2_0_XSD="web-facesconfig_2_0.xsd"; // NOI18N
     private static final String JSF_1_2=JAVAEE_NS+"/"+JSF_1_2_XSD; // NOI18N
+    private static final String JSF_2_0=JAVAEE_NS+"/"+JSF_2_0_XSD; // NOI18N
     public static final String JSF_ID_1_2="SCHEMA:"+JSF_1_2; // NOI18N
+    public static final String JSF_ID_2_0="SCHEMA:"+JSF_2_0; // NOI18N
     private static final String URL_JSF_1_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.xsd"; // NOI18N
+    private static final String URL_JSF_2_0="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_0.xsd"; // NOI18N
     
     /** Creates a new instance of StrutsCatalog */
     public JSFCatalog() {
@@ -82,6 +86,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         list.add(JSF_ID_1_0);
         list.add(JSF_ID_1_1);
         list.add(JSF_ID_1_2);
+        list.add(JSF_ID_2_0);
         return list.listIterator();
     }
     
@@ -96,6 +101,8 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return URL_JSF_1_1;
         else if (JSF_ID_1_2.equals(publicId))
             return URL_JSF_1_2;
+        else if (JSF_ID_2_0.equals(publicId))
+            return URL_JSF_2_0;
         else return null;
     }
     
@@ -163,8 +170,12 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return new org.xml.sax.InputSource(URL_JSF_1_1);
         } else if (JSF_1_2.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_2);
+        } else if (JSF_2_0.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_JSF_2_0);
         } else if (systemId!=null && systemId.endsWith(JSF_1_2_XSD)) {
             return new org.xml.sax.InputSource(URL_JSF_1_2);    
+        } else if (systemId!=null && systemId.endsWith(JSF_2_0_XSD)) {
+            return new org.xml.sax.InputSource(URL_JSF_2_0);
         } else {
             return null;
         }
@@ -199,6 +210,9 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             }
             if (JSF_ID_1_2.equals(dt.getPublicId())) {
                 value = JSFVersion.JSF_1_2;
+            }
+            if (JSF_ID_2_0.equals(dt.getPublicId())) {
+                value = JSFVersion.JSF_2_0;
             }
         }
         return value;

@@ -62,8 +62,19 @@ public final class EjbJarFactory {
      * Create API ejbmodule instance for the given SPI webmodule.
      * @param spiWebmodule instance of SPI webmodule
      * @return instance of API webmodule
+     * @deprecated use {@link #create }
      */
     public static EjbJar createEjbJar(EjbJarImplementation spiWebmodule) {
+        return EjbJarAccessor.getDefault().createEjbJar (spiWebmodule);
+    }
+
+    /**
+     * Create API ejbmodule instance for the given SPI ejbmodule.
+     *
+     * @param spiWebmodule instance of SPI ejbmodule
+     * @return instance of API ejbmodule
+     */
+    public static EjbJar createEjbJar(EjbJarImplementation2 spiWebmodule) {
         return EjbJarAccessor.getDefault().createEjbJar (spiWebmodule);
     }
 
@@ -73,6 +84,10 @@ public final class EjbJarFactory {
      * @return instance of API Ear
      */
     public static Ear createEar(EarImplementation spiEar) {
-        return EarAccessor.DEFAULT.createEar (spiEar);
+        return EarAccessor.DEFAULT.createEar(spiEar);
+    }
+
+    public static Ear createEar(EarImplementation2 spiEar) {
+        return EarAccessor.DEFAULT.createEar(spiEar);
     }
 }

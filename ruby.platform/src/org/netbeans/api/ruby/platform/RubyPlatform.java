@@ -862,15 +862,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = isRubinius() ? null : getLibDirFO();
         FileObject rubyStubs = getRubyStubs();
-        FileObject gemHome = getGemManager() != null ? getGemManager().getGemHomeFO() : null;
-
-        //        FileObject jar = FileUtil.getArchiveFile(file);
-        //        if (jar != null) {
-        //            file = jar;
-        //        }
+        FileObject gemHome = getGemHome();
 
         while (file != null) {
-            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || file.equals(gemHome)) {
+            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || isGemRoot(file) || file.equals(gemHome)) {
                 return file;
             }
 
@@ -878,6 +873,23 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         }
 
         return null;
+    }
+
+    private FileObject getGemHome() {
+        return getGemManager() != null ? getGemManager().getGemHomeFO() : null;
+    }
+
+    /**
+     * @return true if the given file represents the lib dir of a gem, e.g.
+     * <code>$GEM_HOME/mygem-0.1/lib</code>, false otherwise. This is useful 
+     * for {@link #getSystemRoot(libDirFO)} to be able to return an indexed root 
+     * (the lib dirs of gems are indexed roots). See also IZ 167814.
+     */
+    private boolean isGemRoot(FileObject file) {
+        for (int i = 0; i < 3 && file != null; i++) {
+            file = file.getParent();
+        }
+        return file != null && file.isFolder() && file.equals(getGemHome());
     }
 
     private void updateIndexRoots() {
@@ -1063,22 +1075,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.2.0"; // NOI18N
+            info.jversion = "1.3.1"; // NOI18N
             info.patchlevel = "287"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2009-03-16"; // NOI18N
+            info.releaseDate = "2009-06-15"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.2.0", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.3.1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.3.1"; // NOI18N
+            info.gemVersion = "1.3.3"; // NOI18N
             return info;
         }
 

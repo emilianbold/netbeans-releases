@@ -169,11 +169,11 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         makeRequired = enabled;
     }
     
-    public boolean isGdbRequired() {
+    public boolean isDebuggerRequired() {
         return gdbRequired;
     }
     
-    public void setGdbRequired(boolean enabled) {
+    public void setDebuggerRequired(boolean enabled) {
         gdbRequired = enabled;
     }
     
@@ -230,7 +230,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     }
     
     @Override
-    public void SetEnableRequiredCompilerCB(boolean enabled) {
+    public void setEnableRequiredCompilerCB(boolean enabled) {
         enableRequiredCompilersCB = enabled;
     }
     

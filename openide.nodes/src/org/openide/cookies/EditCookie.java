@@ -40,6 +40,7 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Editable;
 import org.openide.nodes.Node;
 
 
@@ -47,11 +48,5 @@ import org.openide.nodes.Node;
 *
 * @author Jaroslav Tulach
 */
-public interface EditCookie extends Node.Cookie {
-    /** Instructs an editor to be opened. The operation can
-    * return immediately and the editor be opened later.
-    * There can be more than one editor open, so one of them is
-    * arbitrarily chosen and opened.
-    */
-    public void edit();
+public interface EditCookie extends Editable, Node.Cookie {
 }

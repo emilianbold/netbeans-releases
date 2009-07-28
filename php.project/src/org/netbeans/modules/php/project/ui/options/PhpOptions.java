@@ -84,8 +84,8 @@ public final class PhpOptions {
 
     private static final PhpOptions INSTANCE = new PhpOptions();
 
-    private boolean phpInterpreterSearched = false;
-    private boolean phpUnitSearched = false;
+    private volatile boolean phpInterpreterSearched = false;
+    private volatile boolean phpUnitSearched = false;
 
     private PhpOptions() {
     }

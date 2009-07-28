@@ -70,7 +70,8 @@ final class Printer implements Printable {
             if (job.printDialog()) {
                 job.print();
             }
-        } catch (PrinterException e) {
+        }
+        catch (PrinterException e) {
             printError(i18n(Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage())); // NOI18N
         }
         myPapers = null;

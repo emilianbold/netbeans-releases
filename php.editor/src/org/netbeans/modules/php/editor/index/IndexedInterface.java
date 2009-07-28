@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class IndexedInterface extends IndexedElement {
+public class IndexedInterface extends IndexedType {
     private String interfaces[];
 
     public IndexedInterface(String name, String in, PHPIndex index, String fileUrl,
@@ -57,5 +57,10 @@ public class IndexedInterface extends IndexedElement {
 
     public String[] getInterfaces() {
         return interfaces;
+    }
+    
+    public String getNamespaceName() {
+        final String retval = getIn();
+        return retval != null ? retval : "";//NOI18N
     }
 }

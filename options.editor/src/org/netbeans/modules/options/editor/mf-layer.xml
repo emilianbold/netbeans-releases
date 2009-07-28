@@ -325,6 +325,7 @@ made subject to such option by the copyright holder.
                     <file name="Self.instance">
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                        <attr name="position" intvalue="1"/>
                     </file>
                 </folder>
             </folder>

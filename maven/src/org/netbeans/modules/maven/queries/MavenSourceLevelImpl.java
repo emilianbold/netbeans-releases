@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
  * @author Milos Kleint
  */
 public class MavenSourceLevelImpl implements SourceLevelQueryImplementation {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private static Logger LOG = Logger.getLogger(MavenSourceLevelImpl.class.getName());
     /** Creates a new instance of MavenSourceLevelImpl */
     public MavenSourceLevelImpl(NbMavenProjectImpl proj) {

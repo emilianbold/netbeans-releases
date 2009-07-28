@@ -41,23 +41,27 @@
 
 package org.netbeans.core.startup;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -71,6 +75,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.TopSecurityManager;
@@ -230,10 +235,48 @@ public final class TopLogging {
         ps.println("-------------------------------------------------------------------------------"); // NOI18N
         ps.println(">Log Session: "+df.format (date)); // NOI18N
         ps.println(">System Info: "); // NOI18N
+
+        List<File> clusters = new ArrayList<File>();
+        String nbdirs = System.getProperty("netbeans.dirs");
+        if (nbdirs != null) { // noted in #67862: should show all clusters here.
+            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                File dir = FileUtil.normalizeFile(new File(tok.nextToken()));
+                if (dir.isDirectory()) {
+                    clusters.add(dir);
+                }
+            }
+        }
         
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
-        ps.println("  Product Version         = " + currentVersion); // NOI18N
+        ps.print("  Product Version         = " + currentVersion); // NOI18N
+        for (File cluster : clusters) { // also print Hg ID if available; more precise
+            File buildInfo = new File(cluster, "build_info"); // NOI18N
+            if (buildInfo.isFile()) {
+                try {
+                    Reader r = new FileReader(buildInfo);
+                    try {
+                        BufferedReader b = new BufferedReader(r);
+                        String line;
+                        Pattern p = Pattern.compile("Hg ID:    ([0-9a-f]{12})"); // NOI18N
+                        while ((line = b.readLine()) != null) {
+                            Matcher m = p.matcher(line);
+                            if (m.matches()) {
+                                ps.print(" (#" + m.group(1) + ")"); // NOI18N
+                                break;
+                            }
+                        }
+                    } finally {
+                        r.close();
+                    }
+                } catch (IOException x) {
+                    x.printStackTrace(ps);
+                }
+                break;
+            }
+        }
+        ps.println();
         ps.println("  Operating System        = " + System.getProperty("os.name", "unknown")
                    + " version " + System.getProperty("os.version", "unknown")
                    + " running on " +  System.getProperty("os.arch", "unknown"));
@@ -257,18 +300,10 @@ public final class TopLogging {
         ps.print(  "  User Directory          = "); // NOI18N
         ps.println(CLIOptions.getUserDir()); // NOI18N
         ps.print(  "  Installation            = "); // NOI18N
-        String nbdirs = System.getProperty("netbeans.dirs");
-        if (nbdirs != null) { // noted in #67862: should show all clusters here.
-            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                File dir = FileUtil.normalizeFile(new File(tok.nextToken()));
-                if (dir.isDirectory()) {
-                    ps.print(dir);
-                    ps.print("\n                            "); //NOI18N
-                }
-            }
+        for (File cluster : clusters) {
+            ps.print(cluster + "\n                            "); // NOI18N
         }
-        ps.println(CLIOptions.getHomeDir());
+        ps.println(CLIOptions.getHomeDir()); // platform cluster is separate
         ps.println("  Boot & Ext. Classpath   = " + createBootClassPath()); // NOI18N
         String cp;
         ClassLoader l = Lookup.class.getClassLoader();

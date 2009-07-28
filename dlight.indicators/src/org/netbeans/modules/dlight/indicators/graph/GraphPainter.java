@@ -48,6 +48,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.util.List;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 
 /**
@@ -68,19 +69,19 @@ class GraphPainter {
     private static final Stroke LINE_STROKE = new BasicStroke(GraphConfig.LINE_WIDTH);
 
     private final LabelRenderer renderer;
-    private final GraphDescriptor[] descriptors;
+    private final List<GraphDescriptor> descriptors;
     private final int seriesCount;
 
-    private CyclicArray<int[]> data;
+    private CyclicArray<float[]> data;
     private final Object dataLock = new Object();
 
 //    private BufferedImage cachedImage;
 
-    public GraphPainter(LabelRenderer renderer, GraphDescriptor... descriptors) {
+    public GraphPainter(LabelRenderer renderer, List<GraphDescriptor> descriptors) {
         this.descriptors = descriptors;
         this.renderer = renderer;
-        seriesCount = descriptors.length;
-        data = new CyclicArray<int[]>(1000);
+        seriesCount = descriptors.size();
+        data = new CyclicArray<float[]>(1000);
 //        initCacheImage();
     }
 
@@ -94,7 +95,7 @@ class GraphPainter {
 //        cachedImage = newImage;
 //    }
 
-    public void addData(int... newData) {
+    public void addData(float... newData) {
         synchronized (dataLock) {
             if (newData.length != seriesCount) {
                 throw new IllegalArgumentException(
@@ -104,6 +105,25 @@ class GraphPainter {
             data.add(newData.clone());
         }
      }
+
+    public int calculateUpperLimit(float... data) {
+        float absLimit = 0;
+        float relLimit = 0;
+        for (int i = 0; i < data.length; ++i) {
+            float value = data[i];
+            GraphDescriptor descriptor = descriptors.get(i);
+            switch (descriptor.getKind()) {
+                case ABS_SURFACE:
+                case LINE:
+                    absLimit = Math.max(absLimit, value);
+                    break;
+                case REL_SURFACE:
+                    relLimit += value;
+                    break;
+            }
+        }
+        return (int)Math.max(absLimit, relLimit);
+    }
 
 //    public GraphDescriptor[] getDescriptors() {
 //        return descriptors.clone();
@@ -226,34 +246,34 @@ class GraphPainter {
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 0; i < sampleCount; ++i) {
-                    int[] values = data.get(firstSample + i);
-                    int value = values[ser];
+                    float[] values = data.get(firstSample + i);
+                    float value = values[ser];
                     int bonus = 0;
-                    if (descriptors[ser].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                    if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors[j].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
+                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
                                 value += values[j];
                             }
                         }
-                    } else if (descriptors[ser].getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                    } else if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
-                            if (descriptors[j].getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                            if (descriptors.get(j).getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
                                 bonus += 2;
                             }
                         }
                     }
                     xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
-                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale) - bonus; // int can overflow in multiplication
+                    yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
-                g2.setColor(descriptors[ser].getColor());
-                switch (descriptors[ser].getKind()) {
+                g2.setColor(descriptors.get(ser).getColor());
+                switch (descriptors.get(ser).getKind()) {
                     case LINE:
                         g2.setStroke(LINE_STROKE);
                         g2.drawPolyline(xx, yy, sampleCount);
                         g2.setStroke(BALL_STROKE);
                         g2.setColor(Color.WHITE);
                         g2.fillOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
-                        g2.setColor(descriptors[ser].getColor());
+                        g2.setColor(descriptors.get(ser).getColor());
                         g2.drawOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
                         break;
                     case ABS_SURFACE:
@@ -264,7 +284,7 @@ class GraphPainter {
                         g2.fillPolygon(xx, yy, sampleCount + 2);
                         break;
                     default:
-                        System.err.println("Uknown graph kind: " + descriptors[ser].getKind()); // NOI18N
+                        System.err.println("Uknown graph kind: " + descriptors.get(ser).getKind()); // NOI18N
                 }
             }
         }

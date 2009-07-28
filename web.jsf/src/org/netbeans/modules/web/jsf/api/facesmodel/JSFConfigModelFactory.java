@@ -47,28 +47,16 @@ import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
     
-    private static JSFConfigModelFactory modelFactory = null;
-    
-    private static Object instanceSyncPoint = new Object();
-    
     /** Creates a new instance of JSFConfigModelFactory */
-    public JSFConfigModelFactory() {
+    private JSFConfigModelFactory() {
     }
     
     public static JSFConfigModelFactory getInstance(){
-        if (modelFactory == null){
-            synchronized(instanceSyncPoint) {
-                JSFConfigModelFactory _modelFactory = modelFactory;
-                if (_modelFactory == null){
-                    modelFactory = new JSFConfigModelFactory();
-                }
-            }
-        }
-        return modelFactory;
+        return INSTANCE;
     }
     
     protected JSFConfigModel createModel(ModelSource source) {
@@ -78,4 +66,6 @@ public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
     public JSFConfigModel getModel(ModelSource source) {
         return (JSFConfigModel) super.getModel(source);
     }
+    
+    private static final JSFConfigModelFactory INSTANCE = new JSFConfigModelFactory();
 }

@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.projectimport.eclipse.core.Bundle#CTL_SynchronizeMenuItem"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
+            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance"/>
         </folder>
     </folder>
     <folder name="Menu">
@@ -66,6 +67,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance"/>
                     <attr name="position" intvalue="100"/>
+                    <attr name="ergonomics" boolvalue="true"/>
                 </file>
                 <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance"/>
@@ -83,17 +85,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.shadow">
                 <attr name="position" intvalue="234"/> <!-- clarify position -->
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Actions">
-        <folder name="Project">
-            <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction"/>
-            </file>
-            <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance">
-            </file>
-            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance">
             </file>
         </folder>
     </folder>

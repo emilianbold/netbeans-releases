@@ -84,7 +84,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private List<String> privateProfiles = new ArrayList<String>();
     private List<String> sharedProfiles = new ArrayList<String>();
     private AuxiliaryConfiguration ac;
-    private NbMavenProjectImpl nmp;
+    private final NbMavenProjectImpl nmp;
 
     ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
         this.nmp = nmp;

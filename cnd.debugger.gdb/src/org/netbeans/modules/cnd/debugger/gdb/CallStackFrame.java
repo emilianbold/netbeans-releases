@@ -182,7 +182,7 @@ public class CallStackFrame extends org.netbeans.modules.cnd.debugger.common.Cal
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname),true);
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
     }
 
     public String getOriginalFullName() {

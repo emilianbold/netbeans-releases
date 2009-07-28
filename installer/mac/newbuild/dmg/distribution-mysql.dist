@@ -43,8 +43,15 @@ function volumeCheckTiger() {
 /* js:pkmk:start */
 function checkSystemversion() {
 	var result = false;
+	var version;	
 	try {
-		result = my.target.systemVersion.ProductVersion >= '10.4';
+		version = my.target.systemVersion.ProductVersion;
+		if(version == 'undefined') {
+			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.4'));
+		} else {
+			result = ( -1 != system.compareVersions(version, '10.4'));
+		}
+	
 	} catch (e) {}
 	
 	if(!result) {
@@ -109,7 +116,6 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
-            <line choice="webcommon"></line>
             <line choice="javaee"></line>
             <line choice="ruby"></line>
         </line>
@@ -127,9 +133,6 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.webcommon"></pkg-ref>
-    </choice>
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
@@ -145,7 +148,6 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
     <pkg-ref id="com.mysql.mysql" version="5.0.67.0.0" installKBytes="@SIZE_MYSQL@" auth="Root" onConclusion="None">file:./Contents/Packages/mysql.pkg</pkg-ref>

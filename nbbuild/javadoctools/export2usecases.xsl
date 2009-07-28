@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
             that <a href="overview-summary.html">offer an API</a>. 
 
 
-            <xsl:for-each select="//module/arch-usecases[not(../@name='_no module_')]" >
+            <xsl:for-each select="//module/arch-usecases[not(../@name='_no module_') and not(.='No answer')]" >
                 <hr/>
                 <h2><a>
                         <xsl:attribute name="name">

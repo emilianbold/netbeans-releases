@@ -119,6 +119,27 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static final int HARNESS_VERSION_65 = 6;
     /** Harness version found in 6.7. */
     public static final int HARNESS_VERSION_67 = 7;
+
+    static {
+        final File install = NbPlatform.defaultPlatformLocation();
+        if (install != null) {
+            ProjectManager.mutex().postWriteRequest(new Runnable() {
+                public void run() {
+                    EditableProperties p = PropertyUtils.getGlobalProperties();
+                    String installS = install.getAbsolutePath();
+                    p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
+                    if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
+                        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                    }
+                    try {
+                        PropertyUtils.putGlobalProperties(p);
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+            });
+        }
+    }
     
     /**
      * Reset cached info so unit tests can start from scratch.

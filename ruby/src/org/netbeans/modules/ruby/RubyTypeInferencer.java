@@ -41,10 +41,13 @@ package org.netbeans.modules.ruby;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.SelfNode;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 public final class RubyTypeInferencer {
 
@@ -147,6 +150,10 @@ public final class RubyTypeInferencer {
                 MethodDefNode methodDefNode = (MethodDefNode) node;
                 type = inferMethodNode(methodDefNode);
                 break;
+            case SELFNODE:
+                SelfNode selfNode = (SelfNode) node;
+                type = inferSelfNode(selfNode);
+                break;
         }
         if (type == null && AstUtilities.isCall(node)) {
             type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
@@ -160,12 +167,29 @@ public final class RubyTypeInferencer {
         return type;
     }
 
+    private RubyType inferSelfNode(SelfNode selfNode) {
+        Node root = knowledge.getRoot();
+        AstPath path = new AstPath(root, selfNode);
+        IScopingNode clazz = AstUtilities.findClassOrModule(path);
+        return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+    }
+
     private RubyType inferMethodNode(MethodDefNode methodDefNode) {
         String name = methodDefNode.getName();
         RubyType fastType = RubyMethodTypeInferencer.fastCheckType(name);
         if (fastType != null) {
             return fastType;
         }
+        if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+            List<String> rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodDefNode);
+            if (rdocs != null) {
+                RubyType type = RDocAnalyzer.collectTypesFromComment(rdocs);
+                if (type != null && type.isKnown()) {
+                    return type;
+                }
+            }
+        }
+        // this can be very time consuming, return if TI is not enabled
         RubyType result = new RubyType();
         Set<Node> exits = new LinkedHashSet<Node>();
         AstUtilities.findExitPoints(methodDefNode, exits);

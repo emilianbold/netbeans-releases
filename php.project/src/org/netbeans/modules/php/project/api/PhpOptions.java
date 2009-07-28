@@ -60,8 +60,8 @@ import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_
  */
 public final class PhpOptions {
     public static final String PROP_PHP_INTERPRETER = "propPhpInterpreter"; // NOI18N
-    public static final String PROP_PHP_DEBUGGER_PORT = "proPhpDebuggerPort"; // NOI18N
-    public static final String PROP_PHP_DEBUGGER_SESSION_ID = "proPhpDebuggerSessionId"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_PORT = "propPhpDebuggerPort"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SESSION_ID = "propPhpDebuggerSessionId"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 

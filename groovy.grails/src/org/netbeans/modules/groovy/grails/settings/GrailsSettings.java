@@ -55,9 +55,14 @@ public final class GrailsSettings {
     public static final String GRAILS_BASE_PROPERTY = "grailsBase"; // NOI18N
 
     private static final String GRAILS_HOME_KEY = "grailsHome"; // NOI18N
+
     private static final String GRAILS_PORT_KEY = "grailsPrj-Port-"; // NOI18N
+
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-"; // NOI18N
+
     private static final String GRAILS_JAVA_PLATFORM_KEY = "grailsPrj-JavaPlatform-"; // NOI18N
+
+    private static final String GRAILS_VM_OPTIONS_KEY = "grailsPrj-VmOptions-"; // NOI18N
 
     // Which browser to use for client side debugging Firfox or Internet Explorer ?
     // Possible values for this key are FIREFOX and INTERNET_EXPLORER
@@ -123,6 +128,19 @@ public final class GrailsSettings {
         assert port != null;
 
         getPreferences().put(getPortKey(prj), port);
+    }
+
+    // What VM options we should use
+    public String getVmOptionsForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().get(getVmOptionsKey(prj), null);
+    }
+
+    public void setVmOptionsForProject(Project prj, String options) {
+        assert prj != null;
+        assert options != null;
+
+        getPreferences().put(getVmOptionsKey(prj), options);
     }
 
     // which Environment should we use (Test, Production, Development, etc.)
@@ -215,6 +233,11 @@ public final class GrailsSettings {
     private String getPortKey(Project prj) {
         assert prj != null;
         return GRAILS_PORT_KEY + getProjectName(prj);
+    }
+
+    private String getVmOptionsKey(Project prj) {
+        assert prj != null;
+        return GRAILS_VM_OPTIONS_KEY + getProjectName(prj);
     }
 
     private String getEnvKey(Project prj) {

@@ -1,0 +1,4 @@
+Code completion result for source line:
+use \ANS\B|NS;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    ANS\BNS                                    null

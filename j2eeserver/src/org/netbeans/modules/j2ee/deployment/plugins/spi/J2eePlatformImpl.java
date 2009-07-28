@@ -47,13 +47,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 
@@ -198,6 +197,9 @@ public abstract class J2eePlatformImpl {
             if (profile != null) {
                 set.add(profile);
             }
+        }
+        for (Profile profile : getSupportedProfiles()) {
+            set.add(profile);
         }
         return set;
     }

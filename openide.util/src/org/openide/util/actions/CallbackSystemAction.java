@@ -66,11 +66,24 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
-/** Action that can have a performer of the action attached to it at any time,
-* or changed.
-* The action will be automatically disabled
-* when it has no performer.
-* <p>Also may be made sensitive to changes in window focus.
+/** Not preferred anymore, the replacement is
+* <a href="@org-openide-awt@/org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.callback</a> factory method.
+* To migrate to the new API just remove the definition of your action in
+* <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+* layer file</a> and replace it with:
+* <pre>
+* &lt;file name="action-pkg-ClassName.instance"&gt;
+*   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/&gt;
+*   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
+*   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; &lt;!-- defaults to false --&gt;
+*   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt; &lt;!-- may be missing --&gt;
+*   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+*   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+*   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+* &lt;/file&gt;
+* </pre>
+*
+*
 * @author   Ian Formanek, Jaroslav Tulach, Petr Hamernik
 */
 public abstract class CallbackSystemAction extends CallableSystemAction implements ContextAwareAction {

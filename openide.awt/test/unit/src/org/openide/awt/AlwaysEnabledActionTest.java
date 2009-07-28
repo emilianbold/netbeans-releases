@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -104,7 +103,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         //Object icon = a.getValue(a.ICON)
             
         assertEquals("Right localized name", "Icon &Name Action", name);
-        assertEquals("Mnemonic is N", Character.valueOf('N'), mnem);
+        assertEquals("Mnemonic is N", (int)'N', mnem);
         assertNotNull("small icon present", smallIcon);
 
         assertEquals("once icon called", 1, myIconResourceCounter);
@@ -201,7 +200,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         //Object icon = a.getValue(a.ICON)
 
         assertEquals("Right localized name", "Icon &Name Action", name);
-        assertEquals("Mnemonic is N", Character.valueOf('N'), mnem);
+        assertEquals("Mnemonic is N", (int) 'N', mnem);
         assertNotNull("small icon present", smallIcon);
 
         assertEquals("once icon called", 1, myIconResourceCounter);
@@ -252,7 +251,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         //Object icon = a.getValue(a.ICON)
 
         assertEquals("Right localized name", "Icon &Name Action", name);
-        assertEquals("Mnemonic is N", Character.valueOf('N'), mnem);
+        assertEquals("Mnemonic is N", (int) 'N', mnem);
         assertNotNull("small icon present", smallIcon);
 
         assertEquals("once icon called", 1, myIconResourceCounter);

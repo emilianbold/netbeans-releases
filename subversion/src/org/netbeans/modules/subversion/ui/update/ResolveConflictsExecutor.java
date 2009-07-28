@@ -78,6 +78,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     static final String CHANGE_DELIMETER = "======="; // NOI18N
 
     static final String LOCAL_FILE_SUFFIX = ".mine"; // NOI18N
+    static final String WORKING_FILE_SUFFIX = ".working"; // NOI18N
     
     private String leftFileRevision = null;
     private String rightFileRevision = null;
@@ -168,12 +169,12 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision.trim();
-        if (leftFileRevision == null || leftFileRevision.equals(LOCAL_FILE_SUFFIX)) { // NOI18N
+        if (leftFileRevision == null || leftFileRevision.equals(LOCAL_FILE_SUFFIX) || leftFileRevision.equals(WORKING_FILE_SUFFIX)) { // NOI18N
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N
         }
-        if (rightFileRevision == null || rightFileRevision.equals(LOCAL_FILE_SUFFIX)) { // NOI18N
+        if (rightFileRevision == null || rightFileRevision.equals(LOCAL_FILE_SUFFIX) || rightFileRevision.equals(WORKING_FILE_SUFFIX)) { // NOI18N
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision); // NOI18N

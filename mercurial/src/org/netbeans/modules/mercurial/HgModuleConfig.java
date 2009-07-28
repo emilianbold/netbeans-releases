@@ -86,6 +86,7 @@ public class HgModuleConfig {
     public static final String KEY_SHOW_HITORY_MERGES = "showHistoryMerges";                               // NOI18N
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo";        // NOI18N
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";        // NOI18N
+    private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -218,6 +219,14 @@ public class HgModuleConfig {
 
     public void setAutoOpenOutput(boolean value) {
         getPreferences().putBoolean(AUTO_OPEN_OUTPUT_WINDOW, value);
+    }
+
+    public boolean getConfirmCommitAfterMerge () {
+        return getPreferences().getBoolean(CONFIRM_BEFORE_COMMIT_AFTER_MERGE, false);
+    }
+
+    public void setConfirmCommitAfterMerge (boolean value) {
+        getPreferences().putBoolean(CONFIRM_BEFORE_COMMIT_AFTER_MERGE, value);
     }
 
 

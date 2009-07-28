@@ -148,6 +148,10 @@ public enum ELTokenId implements TokenId {
         ELTokenCategories(String categoryName) {
             this.categoryName = categoryName;
         }
+
+        public boolean hasCategory(TokenId id) {
+            return id.primaryCategory().equals(categoryName);
+        }
         
     }
     

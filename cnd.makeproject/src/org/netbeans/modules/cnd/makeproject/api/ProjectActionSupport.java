@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
@@ -75,6 +74,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -324,22 +324,26 @@ public class ProjectActionSupport {
             }
 
             if (pae.getType() == ProjectActionEvent.Type.CUSTOM_ACTION && customHandler != null) {
-                initHandler(customHandler, pae);
+                initHandler(customHandler, pae, paes);
                 customHandler.execute(ioTab);
             } else {
                 if (currentAction == 0 && !checkRemotePath(pae)) {
                     progressHandle.finish();
                     return;
                 }
+                boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
-                        initHandler(handler, pae);
+                        initHandler(handler, pae, paes);
                         handler.execute(ioTab);
+                        foundFactory = true;
                         break;
                     }
                 }
-
+                if (!foundFactory) {
+                    progressHandle.finish();
+                }
             }
 
         }
@@ -354,30 +358,35 @@ public class ProjectActionSupport {
                 ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
                 for (String subprojectDir : conf.getSubProjectLocations()) {
                     subprojectDir = IpeUtils.toAbsolutePath(baseDir, subprojectDir);
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(subprojectDir), env, null, null);
-                    success &= syncWorker.synchronize();
+                    success &= sync(subprojectDir, env);
                     if (!success) {
                         break;
                     }
                 }
                 if (success) {
-                    PrintWriter err = null;
-                    PrintWriter out = null;
-                    InputOutput tab = getTab();
-                    if (tab != null) {
-                        out = this.ioTab.getOut();
-                        err = this.ioTab.getErr();
-                    }
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
-                            new File(baseDir), env, out, err);
-                    success &= syncWorker.synchronize();
+                    success &= sync(baseDir, env);
                 }
             }
             return success;
         }
 
-        private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae) {
-            handler.init(pae);
+        private boolean sync(String projectDir, ExecutionEnvironment env) {
+            PrintWriter err = null;
+            PrintWriter out = null;
+            InputOutput tab = getTab();
+            if (tab != null) {
+                out = this.ioTab.getOut();
+                err = this.ioTab.getErr();
+            }
+            File dir2sync = new File(projectDir);
+            File privProjectStorage = new File(new File(dir2sync, "nbproject"), "private"); //NOI18N
+            RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
+                    dir2sync, env, out, err, privProjectStorage);
+            return syncWorker.synchronize();
+        }
+
+        private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
+            handler.init(pae, paes);
             progressHandle.finish();
             progressHandle = handler.canCancel()? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
@@ -389,11 +398,11 @@ public class ProjectActionSupport {
             return currentHandler;
         }
 
-        public void executionStarted() {
+        public void executionStarted(int pid) {
             if (additional != null) {
                 for (BuildAction action : additional) {
                     action.setStep(currentAction);
-                    action.executionStarted();
+                    action.executionStarted(pid);
                 }
             }
         }
@@ -555,19 +564,10 @@ public class ProjectActionSupport {
 
         public StopAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/stop.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.StopAction.stop")); // NOI18N
         //System.out.println("handleEvents 1 " + handleEvents);
         //setEnabled(false); // initially, until ready
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.StopAction.stop");
-            } else {
-                return super.getValue(key);
-            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -587,17 +587,8 @@ public class ProjectActionSupport {
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.RerunAction.rerun");
-            } else {
-                return super.getValue(key);
-            }
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {

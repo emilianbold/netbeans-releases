@@ -214,7 +214,7 @@ public final class XMLUtil extends Object {
      *
      * @return XMLReader configured according to passed parameters
      */
-    public static XMLReader createXMLReader(boolean validate, boolean namespaceAware)
+    public static synchronized XMLReader createXMLReader(boolean validate, boolean namespaceAware)
     throws SAXException {
         SAXParserFactory factory = saxes[validate ? 0 : 1][namespaceAware ? 0 : 1];
         if (factory == null) {
@@ -296,7 +296,7 @@ public final class XMLUtil extends Object {
     }
 
     private static DocumentBuilderFactory[][] doms = new DocumentBuilderFactory[2][2];
-    private static DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
+    private static synchronized DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
         DocumentBuilderFactory factory = doms[validate ? 0 : 1][namespaceAware ? 0 : 1];
         if (factory == null) {
             factory = DocumentBuilderFactory.newInstance();
@@ -816,8 +816,14 @@ public final class XMLUtil extends Object {
             doc = builder.newDocument();
         }
         for (int i = 0; i < nl.getLength(); i++) {
-            if (!(nl.item(i) instanceof DocumentType)) {
-                doc.appendChild(doc.importNode(nl.item(i), true));
+            Node node = nl.item(i);
+            if (!(node instanceof DocumentType)) {
+                try {
+                    doc.appendChild(doc.importNode(node, true));
+                } catch (DOMException x) {
+                    // Thrown in NB-Core-Build #2896 & 2898 inside GeneratedFilesHelper.applyBuildExtensions
+                    throw (IOException) new IOException("Could not import or append " + node + " of " + node.getClass()).initCause(x);
+                }
             }
         }
         doc.normalize();

@@ -73,7 +73,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  * This class collects various static methods for examining the layout.
@@ -180,7 +179,7 @@ public class LayoutTestUtils implements LayoutConstants {
                 testFO = primaryFile.getParent().createData(testClassName, "java"); //NOI18N
                 
                 //Rename the class in template to correct class name
-                String output = Utilities.replaceString(template.toString(), "${CLASS_NAME}", testFO.getName()); //NOI18N
+                String output = template.toString().replace("${CLASS_NAME}", testFO.getName()); //NOI18N
 
                 //Write the file to disc
                 fw = new FileWriter(FileUtil.toFile(testFO));

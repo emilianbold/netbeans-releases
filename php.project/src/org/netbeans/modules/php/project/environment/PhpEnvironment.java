@@ -41,15 +41,10 @@ package org.netbeans.modules.php.project.environment;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -153,7 +148,7 @@ public abstract class PhpEnvironment {
      */
     public List<String> getAllPhpUnits() {
         // simple detection - just try to find phpunit it on user's PATH
-        return findFileOnUsersPath("phpunit"); // NOI18N
+        return FileUtils.findFileOnUsersPath("phpunit"); // NOI18N
     }
 
     /**
@@ -301,25 +296,7 @@ public abstract class PhpEnvironment {
     }
 
     static List<String> getAllPhpInterpreters(String phpFilename) {
-        return findFileOnUsersPath(phpFilename);
-    }
-
-    // suitable for *nix as well as windows
-    protected static List<String> findFileOnUsersPath(String filename) {
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            return Collections.<String>emptyList();
-        }
-        // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                found.add(FileUtil.normalizeFile(file).getAbsolutePath());
-            }
-        }
-        return found;
+        return FileUtils.findFileOnUsersPath(phpFilename);
     }
 
     public static interface ReadDocumentRootsNotifier {

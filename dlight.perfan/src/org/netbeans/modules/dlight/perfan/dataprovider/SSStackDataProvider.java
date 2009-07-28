@@ -50,14 +50,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
 import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
@@ -102,8 +103,8 @@ class SSStackDataProvider implements StackDataProvider {
     private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
     private static Pattern noLineInfoPattern = Pattern.compile("^<Function: (.*), instructions from source file (.*)>"); // NOI18N
     private static Pattern noDebugInfoPattern = Pattern.compile("^<Function: (.*), instructions without line numbers>"); // NOI18N
-    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
-            new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
+    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>> hotSpotFunctionsFetcher =
+            new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>>(new HotSpotFunctionsFetcher(), true);
     private final List<FunctionMetric> metricsList = Arrays.asList(
             TimeMetric.UserFuncTimeExclusive,
             TimeMetric.UserFuncTimeInclusive,
@@ -137,11 +138,11 @@ class SSStackDataProvider implements StackDataProvider {
     public SSStackDataProvider() {
     }
 
-    public synchronized List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+    public synchronized List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLERS, path, aggregate);
     }
 
-    public synchronized List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+    public synchronized List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLEES, path, aggregate);
     }
 
@@ -150,7 +151,7 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCall[0]), false));
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
     }
 
     public FunctionCallTreeTableNode getValueAt(int row) {
@@ -162,7 +163,7 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     // TODO: implement
-    private synchronized List<FunctionCall> getCallersCallees(CC_MODE mode, FunctionCall[] path, boolean aggregate) {
+    private synchronized List<FunctionCallWithMetric> getCallersCallees(CC_MODE mode, FunctionCallWithMetric[] path, boolean aggregate) {
         //TODO: Now just take the last from the path...
 //        FunctionCall parent_fc = path[path.length - 1];
 //
@@ -185,8 +186,8 @@ class SSStackDataProvider implements StackDataProvider {
         return Collections.emptyList();
     }
 
-    public List<FunctionCall> getFunctionCalls(final List<Column> columns, final List<Column> orderBy, final int limit) {
-        List<FunctionCall> result = Collections.emptyList();
+    public List<FunctionCallWithMetric> getFunctionCalls(final List<Column> columns, final List<Column> orderBy, final int limit) {
+        List<FunctionCallWithMetric> result = Collections.emptyList();
 
         try {
             result = hotSpotFunctionsFetcher.compute(
@@ -198,7 +199,7 @@ class SSStackDataProvider implements StackDataProvider {
         return result;
     }
 
-    public List<FunctionCall> getHotSpotFunctions(
+    public List<FunctionCallWithMetric> getHotSpotFunctions(
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
@@ -236,7 +237,7 @@ class SSStackDataProvider implements StackDataProvider {
         }
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {
@@ -327,7 +328,7 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     private class HotSpotFunctionsFetcher
-            implements Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> {
+            implements Computable<HotSpotFunctionsFetcherParams, List<FunctionCallWithMetric>> {
 
         private final DecimalFormat df = new DecimalFormat();
 
@@ -335,8 +336,10 @@ class SSStackDataProvider implements StackDataProvider {
             df.getDecimalFormatSymbols().setDecimalSeparator(',');
         }
 
-        public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
-            log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+        public List<FunctionCallWithMetric> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+            }
 
             Metrics metrics = taskArguments.metrics;
 
@@ -358,7 +361,7 @@ class SSStackDataProvider implements StackDataProvider {
             }
 
             int limit = Math.min(er_result.length, taskArguments.limit);
-            ArrayList<FunctionCall> result = new ArrayList<FunctionCall>(limit);
+            ArrayList<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>(limit);
 
             int colCount = taskArguments.columns.size();
             Column primarySortColumn = taskArguments.orderBy.get(0);

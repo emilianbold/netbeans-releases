@@ -117,6 +117,8 @@ made subject to such option by the copyright holder.
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
       <exclude name="**/CheckHelpSetsBin.java" unless="have.javahelp"/>
+      <exclude name="**/ModifiedHTMLIndexerKit.java" unless="have.javahelp"/>
+      <exclude name="**/ModifiedIndexer.java" unless="have.javahelp"/>
       <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
     <jar jarfile="nbantext.jar">
@@ -249,7 +251,7 @@ made subject to such option by the copyright holder.
   <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.javadoc.netbeans}" />
+              <dirset dir="${nb_all}" includes="${config.javadoc.all}" />
           </path>
           <mapper type="identity" />
       </pathconvert>

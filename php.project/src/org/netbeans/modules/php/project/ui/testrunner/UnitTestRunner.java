@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
@@ -49,7 +50,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.OutputLineHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
@@ -57,6 +57,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -76,13 +78,21 @@ public final class UnitTestRunner {
     private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());
     private static final Manager MANAGER = Manager.getInstance();
     private static final PhpOutputLineHandler PHP_OUTPUT_LINE_HANDLER = new PhpOutputLineHandler();
+
+    private final PhpProject project;
     private final TestSession testSession;
+    private final boolean allTests;
+
     private volatile boolean started = false;
 
-    public UnitTestRunner(Project project, TestSession.SessionType sessionType, RerunHandler rerunHandler) {
+    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, boolean allTests) {
         assert project != null;
         assert sessionType != null;
         assert rerunHandler != null;
+
+        this.project = project;
+        this.allTests = allTests;
+
         testSession = new TestSession("PHPUnit test session", project, sessionType, new PhpTestRunnerNodeFactory()); // NOI18N
         testSession.setRerunHandler(rerunHandler);
         testSession.setOutputLineHandler(PHP_OUTPUT_LINE_HANDLER);
@@ -110,6 +120,20 @@ public final class UnitTestRunner {
         }
         TestSessionVO session = new TestSessionVO();
         PhpUnitLogParser.parse(reader, session);
+        if (!PhpUnit.KEEP_LOGS) {
+            PhpUnit.XML_LOG.delete();
+        }
+
+        if (allTests) {
+            // custom suite?
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            assert phpUnit != null : "PHPUnit must be set";
+            File customSuite = phpUnit.getCustomSuite(project);
+            if (customSuite != null) {
+                MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_CustomSuiteUsed", customSuite.getAbsolutePath()), false);
+                MANAGER.displayOutput(testSession, "", false); // NOI18N
+            }
+        }
 
         for (TestSuiteVO suite : session.getTestSuites()) {
             MANAGER.displaySuiteRunning(testSession, suite.getName());

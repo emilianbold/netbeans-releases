@@ -48,7 +48,7 @@ public interface PluginContainer extends POMComponent {
 
     
     List<Plugin> getPlugins();
-    void addPlugin(Plugin dependency);
+    void addPlugin(Plugin plugin);
     void removePlugin(Plugin plugin);
 
     Plugin findPluginById(String groupId, String artifactId);

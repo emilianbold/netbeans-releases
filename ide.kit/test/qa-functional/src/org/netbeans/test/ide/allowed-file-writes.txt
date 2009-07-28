@@ -19,6 +19,8 @@ config/Preferences
 config/Preferences/org
 config/Preferences/org/netbeans
 config/Preferences/org/netbeans/modules
+config/Preferences/org/netbeans/modules/project
+config/Preferences/org/netbeans/modules/project/ant.properties
 config/Preferences/org/netbeans/modules/uihandler.properties
 config/Preferences/org/netbeans/modules/welcome.properties
 config/Preferences/org/netbeans/modules/mercurial.properties
@@ -55,40 +57,6 @@ config/org-netbeans-modules-visualweb-ejb
 # issue 144355
 var/cache/cvscache
 var/cache/mercurialcache
-
-# issue 144357
-config/Navigator
-config/Navigator/Panels
-config/Navigator/Panels/application
-config/Navigator/Panels/application/x-httpd-eruby
-config/Navigator/Panels/application/x-httpd-eruby/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/application/x-gsp
-config/Navigator/Panels/application/x-gsp/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text
-config/Navigator/Panels/text/x-jsp
-config/Navigator/Panels/text/x-jsp/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/javascript
-config/Navigator/Panels/text/javascript/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-css
-config/Navigator/Panels/text/x-css/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-yaml
-config/Navigator/Panels/text/x-yaml/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-php5
-config/Navigator/Panels/text/x-php5/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-groovy
-config/Navigator/Panels/text/x-groovy/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-json
-config/Navigator/Panels/text/x-json/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/html
-config/Navigator/Panels/text/html/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-ruby
-config/Navigator/Panels/text/x-ruby/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Navigator/Panels/text/x-tag
-config/Navigator/Panels/text/x-tag/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance
-config/Loaders
-config/Loaders/text
-config/Loaders/text/x-nbs
-config/Loaders/text/x-nbs/Factories
 
 # issue 152889
 config/Databases

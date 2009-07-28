@@ -360,7 +360,7 @@ public class UIDUtilities {
             return new UnnamedOffsetableDeclarationUID<T>(decl, UnnamedID.incrementAndGet());
         }
     }
-    private static AtomicInteger UnnamedID = new AtomicInteger(0);
+    private static final AtomicInteger UnnamedID = new AtomicInteger(0);
     //////////////////////////////////////////////////////////////////////////
     // impl details
 
@@ -654,7 +654,7 @@ public class UIDUtilities {
      */
     /* package */ static abstract class UnresolvedUIDBase<T> implements CsmUID<T>, SelfPersistent {
 
-        private CsmUID<CsmProject> projectUID;
+        private final CsmUID<CsmProject> projectUID;
 
         public UnresolvedUIDBase(CsmProject project) {
             assert project != null : "how to create UID without project?";
@@ -707,7 +707,7 @@ public class UIDUtilities {
 
     /* package */ static final class UnresolvedClassUID extends UnresolvedUIDBase<CsmClass> {
 
-        private CharSequence name;
+        private final CharSequence name;
 
         public UnresolvedClassUID(String name, CsmProject project) {
             super(project);

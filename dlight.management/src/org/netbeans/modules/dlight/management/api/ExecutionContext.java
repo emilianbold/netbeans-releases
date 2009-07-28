@@ -87,7 +87,7 @@ final class ExecutionContext {
         DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
-
+    
     void clear() {
         envProvider.clear();
     }
@@ -121,8 +121,7 @@ final class ExecutionContext {
         validateTools(false);
     }
 
-//    static int count = 0;
-    void validateTools(boolean performRequiredActions) {
+    private final void validateTools(boolean performRequiredActions, List<DLightTool> toolsToValidate) {
         DLightLogger.assertNonUiThread();
 
         synchronized (lock) {
@@ -141,7 +140,8 @@ final class ExecutionContext {
 //        count++;
         List<DataCollector<?>> collectors = new ArrayList<DataCollector<?>>();
         if (getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
-            for (DLightTool tool : tools) {
+            //there is no need to check tools for turned off tools
+            for (DLightTool tool : toolsToValidate) {
                 List<DataCollector<?>> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
@@ -153,7 +153,7 @@ final class ExecutionContext {
             }
         }
         List<IndicatorDataProvider<?>> idps = new ArrayList<IndicatorDataProvider<?>>();
-        for (DLightTool tool : tools) {
+        for (DLightTool tool : toolsToValidate) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
@@ -276,6 +276,12 @@ final class ExecutionContext {
         }
 
         validationInProgress = false;
+    }
+
+//    static int count = 0;
+    void validateTools(boolean performRequiredActions) {
+        validateTools(performRequiredActions, getTools());
+
 
     }
 
@@ -321,7 +327,7 @@ final class ExecutionContext {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+            if (tool.isEnabled() && (activeToolNames == null || activeToolNames.contains(tool.getName()))) {
                 result.add(tool);
             }
         }

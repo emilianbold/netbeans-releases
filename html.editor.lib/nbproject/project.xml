@@ -197,7 +197,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.web.facelets</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
                 <package>org.netbeans.editor.ext.html.dtd</package>
                 <package>org.netbeans.editor.ext.html.parser</package>
             </friend-packages>

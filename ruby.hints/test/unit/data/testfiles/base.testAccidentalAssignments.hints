@@ -1,4 +1,0 @@
-          elsif match = matches_dynamic_finder_with_initialize_or_create?(method_id)
-                --------------------------------------------------------------------
-HINT:Accidental assignment? (if x = y instead of x == y)
-FIX:Convert assignment to comparison (change = to ==)

@@ -217,7 +217,7 @@ public class HtmlBrowser extends JPanel {
 
         setLayout(new BorderLayout(0, 2));
 
-        add((browserComponent != null) ? new JScrollPane(browserComponent) : new JScrollPane(), "Center"); // NOI18N
+        add((browserComponent != null) ? browserComponent : new JScrollPane(), "Center"); // NOI18N
 
         browserListener = new BrowserListener();
 
@@ -883,6 +883,14 @@ public class HtmlBrowser extends JPanel {
         * @param l Listener to remove.
         */
         public abstract void removePropertyChangeListener(PropertyChangeListener l);
+
+        /**
+         * Method invoked by the infrastructure when the browser component is no
+         * longer needed. The default implementation does nothing.
+         * @since 7.11
+         */
+        public void dispose() {
+        }
     }
 
     /** A manager class which can display URLs in the proper way.

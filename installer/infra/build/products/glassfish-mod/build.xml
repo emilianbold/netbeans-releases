@@ -59,7 +59,7 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-	<set property="gf.sub.dir" value="glassfishv3-prelude"/>
+	<set property="gf.sub.dir" value="glassfishv3"/>
         <move todir="${data.directory}">
             <fileset dir="${data.directory}/${gf.sub.dir}">
                 <include name="**/*"/>

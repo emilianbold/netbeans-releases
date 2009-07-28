@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,7 +51,6 @@ import org.netbeans.modules.subversion.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
@@ -78,6 +77,7 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -94,6 +94,7 @@ public class CommitAction extends ContextAction {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         if(isDeepRefresh()) {
             // allway true as we have will accept and check for external changes
@@ -142,7 +143,7 @@ public class CommitAction extends ContextAction {
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
         List<SvnHook> hooks = Subversion.getInstance().getHooks();
-        panel.initHooks(hooks, new SvnHookContext(new File[] { fileList.get(0) }, null, null));
+        panel.setHooks(hooks, new SvnHookContext(new File[] { fileList.get(0) }, null, null));
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         panel.setCommitTable(data);
 
@@ -169,7 +170,7 @@ public class CommitAction extends ContextAction {
         final CommitPanel panel = new CommitPanel();
         List<SvnHook> hooks = Subversion.getInstance().getHooks();
         File file = ctx.getRootFiles()[0];
-        panel.initHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
+        panel.setHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
 
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         panel.setCommitTable(data);
@@ -258,14 +259,22 @@ public class CommitAction extends ContextAction {
         Set<File> ret = new HashSet<File>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : fileList) {
-            File parent = null;;
+            File parent = null;
             while((parent = file.getParentFile()) != null) {
-                if(checked.contains(parent)) break;
+                if (checked.contains(parent)) {
+                    break;
+                }
                 checked.add(parent);
-                if(fileList.contains(parent)) break;
-                if(!SvnUtils.isManaged(parent)) break;
+                if (fileList.contains(parent)) {
+                    break;
+                }
+                if (!SvnUtils.isManaged(parent)) {
+                    break;
+                }
                 FileInformation info = onlyCached ? cache.getCachedStatus(parent) : cache.getStatus(parent);
-                if(info == null) continue;
+                if (info == null) {
+                    continue;
+                }
                 if(info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY ||
                    info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)
                 {
@@ -306,10 +315,6 @@ public class CommitAction extends ContextAction {
      * @return
      */
     private static Object showCommitDialog(final CommitPanel panel, final CommitTable data, final JButton commitButton, String contentTitle, final Context ctx) {
-        JComponent component = data.getComponent();
-        panel.filesPanel.setLayout(new BorderLayout());
-        panel.filesPanel.add(component, BorderLayout.CENTER);
-
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit")); // NOI18N
         commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit")); // NOI18N
@@ -353,7 +358,7 @@ public class CommitAction extends ContextAction {
 
     private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final List<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
-        final String message = panel.messageTextArea.getText();
+        final String message = panel.getCommitMessage();
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
 
         SVNUrl repository = null;
@@ -483,7 +488,9 @@ public class CommitAction extends ContextAction {
 
         for (SvnFileNode fileNode : files.keySet()) {
             CommitOptions options = files.get(fileNode);
-            if (options == CommitOptions.EXCLUDE) continue;
+            if (options == CommitOptions.EXCLUDE) {
+                continue;
+            }
             stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
@@ -915,9 +922,10 @@ public class CommitAction extends ContextAction {
         //    we have to commit it nonrecursively ...
         boolean nonRecursiveDirs = false;
         for(File file : nonRecursiveComits) {
+            ISVNStatus st = null;
             if( file.isDirectory() &&
                 !( removeCandidates.contains(file) ||
-                   cache.getStatus(file).getEntry(file).isCopied()) )
+                   ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
             {
                 nonRecursiveDirs = true;
                 break;
@@ -935,9 +943,10 @@ public class CommitAction extends ContextAction {
             //        the (bloody) flat-folder loginc aren't supposed to be commited at all =>
             //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
+                ISVNStatus st = null;
                 if(file.isDirectory() &&
                     ( removeCandidates.contains(file) ||
-                      cache.getStatus(file).getEntry(file).isCopied() ))
+                      ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
                 {
                     recursiveCommits.add(file);
                 }

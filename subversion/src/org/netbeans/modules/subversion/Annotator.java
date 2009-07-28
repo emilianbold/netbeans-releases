@@ -457,7 +457,7 @@ public class Annotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
 
         if (mostImportantInfo == null) return null;
@@ -617,7 +617,7 @@ public class Annotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
 
         if (folderAnnotation == false) {

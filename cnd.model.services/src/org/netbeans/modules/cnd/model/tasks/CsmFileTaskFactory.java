@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
+import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner.Phase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
@@ -231,7 +232,7 @@ public abstract class CsmFileTaskFactory {
     private static final int IMMEDIATELY = 0;
     
     public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
-        runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay(), true);
+        runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay());
     }
 
     private void runAllTasks(PhaseRunner.Phase phase, int delay) {
@@ -240,65 +241,68 @@ public abstract class CsmFileTaskFactory {
             fos = fobj2task.keySet();
         }
         for (FileObject fo : fos) {
-            runTask(fo, phase, delay, false);
+            runTask(fo, phase, delay);
         }
     }
 
-    private final void runTask(FileObject eventFobj, PhaseRunner.Phase phase, int delay, boolean checkFileDependency) {
-        List<TaskData> tasks = new ArrayList<TaskData>();
-        List<FileObject> fobjs = new ArrayList<FileObject>();
-        if (false && checkFileDependency) {
-            Set<FileObject> fos;
-            synchronized (this) {
-                fos = new HashSet<FileObject>(fobj2task.keySet());
-            }
-            CsmFile evntCsmFile = getCsmFile(eventFobj, false);
-            for (FileObject fileObject : fos) {
-
-            }
-        } else {
-            TaskData pr = fobj2task.get(eventFobj);
-            if (pr != null) {
-                tasks.add(pr);
-                fobjs.add(eventFobj);
+   private final void runTask(CsmFile eventCsm, PhaseRunner.Phase phase, int delay) {
+        if (fobj2task.size() == 0) {
+            return;
+        }
+        FileObject fobj = null;
+        TaskData pr = null;
+        for (Map.Entry<FileObject, TaskData> entry : fobj2task.entrySet()){
+            if (eventCsm.equals(entry.getValue().file)){
+                fobj = entry.getKey();
+                pr = entry.getValue();
+                break;
             }
         }
-        for (int i = 0; i < tasks.size(); i++) {
-            TaskData pr = tasks.get(i);
-            FileObject fobj = fobjs.get(i);
-            pr.runner.cancel();
-            if (pr.task != null) {
-                pr.task.cancel();
-            }
-            if (!pr.runner.isValid()) {
-                PhaseRunner runner = createTask(fobj);
-                assert runner.isValid();
-                pr = new TaskData(runner, getCsmFile(fobj, false));
-                fobj2task.put(fobj, pr);
-            }
+        if (pr == null) {
+            return;
+        }
+        _runTask(pr, fobj, phase, delay);
+   }
 
-            // Run the same task for related document if it exists
-            Document doc = CsmUtilities.getDocument(fobj);
-            if (doc != null) {
-                Document doc2 = (Document) doc.getProperty(Document.class);
-                if (doc2 != null) {
-                    FileObject fobj2 = CsmUtilities.getFileObject(doc2);
-                    if (fobj2 != null) {
-                        PhaseRunner task = createTask(fobj2);
-                        TaskData data = new TaskData(task, getCsmFile(fobj2, false));
-                        doc2.putProperty(USE_OWN_CARET_POSITION, false);
-                        doc.putProperty(USE_OWN_CARET_POSITION, true);
-                        if (data != null) {
-                            post(data, fobj2, phase, delay);
-                        }
+    private final void runTask(FileObject eventFobj, PhaseRunner.Phase phase, int delay) {
+        TaskData pr = fobj2task.get(eventFobj);
+        if (pr == null) {
+            return;
+        }
+        _runTask(pr, eventFobj, phase, delay);
+    }
+
+    private final void _runTask(TaskData pr, FileObject fobj, Phase phase, int delay) {
+        pr.runner.cancel();
+        if (pr.task != null) {
+            pr.task.cancel();
+        }
+        if (!pr.runner.isValid()) {
+            PhaseRunner runner = createTask(fobj);
+            assert runner.isValid();
+            pr = new TaskData(runner, getCsmFile(fobj, false));
+            fobj2task.put(fobj, pr);
+        }
+        // Run the same task for related document if it exists
+        Document doc = CsmUtilities.getDocument(fobj);
+        if (doc != null) {
+            Document doc2 = (Document) doc.getProperty(Document.class);
+            if (doc2 != null) {
+                FileObject fobj2 = CsmUtilities.getFileObject(doc2);
+                if (fobj2 != null) {
+                    PhaseRunner task = createTask(fobj2);
+                    TaskData data = new TaskData(task, getCsmFile(fobj2, false));
+                    doc2.putProperty(USE_OWN_CARET_POSITION, false);
+                    doc.putProperty(USE_OWN_CARET_POSITION, true);
+                    if (data != null) {
+                        post(data, fobj2, phase, delay);
                     }
                 }
             }
-
-            post(pr, fobj, phase, delay);
         }
+        post(pr, fobj, phase, delay);
     }
-    
+
     private final void post(TaskData pr, FileObject fo, PhaseRunner.Phase phase, int delay) {
         if (pr.runner.isHighPriority()) {
             pr.task = HIGH_PRIORITY_WORKER.post(new CsmSafeRunnable(getRunnable(pr.runner, phase), fo), delay, Thread.NORM_PRIORITY);
@@ -326,12 +330,12 @@ public abstract class CsmFileTaskFactory {
 
         @Override
         public void fileParsingFinished(CsmFile file) {
-            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSED, IMMEDIATELY, true);
+            runTask(file, PhaseRunner.Phase.PARSED, IMMEDIATELY);
         }
 
         @Override
         public void fileParsingStarted(CsmFile file) {
-            runTask(CsmUtilities.getFileObject(file), PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY, true);
+            runTask(file, PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY);
         }
 
         @Override
@@ -359,7 +363,7 @@ public abstract class CsmFileTaskFactory {
                         Document doc = CsmUtilities.getDocument(fobj);
                         if (doc != null) {
                             synchronized (this) {
-                                runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY, true);
+                                runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
                                 fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false)));
                             }
                         }

@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -547,46 +548,8 @@ public final class RubyParser extends Parser {
             }
 
             ParserConfiguration configuration = new ParserConfiguration();
-            
-            final String data = source;
-            final int length = data.length();
-
-            Reader r = new Reader() {
-
-                int offset = 0;
-
-                @Override
-                public int read() throws IOException {
-                    if (offset == length) {
-                        return -1;
-                    }
-
-                    int c = data.charAt(offset++);
-
-                    // Truncate values at c. This is wrong, but if I process
-                    // bytes properly UTF8 encoded, then all my source offsets on nodes
-                    // end up wrong! Unicode chars cannot show up in symbols anyway,
-                    // just in strings where I don't actually care what the string is.
-                    if (c > 255) {
-                        c = '?';
-                    }
-
-                    return c;
-                }
-
-                @Override
-                public int read(char[] cbuf, int off, int len) throws IOException {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-                @Override
-                public void close() throws IOException {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-
-            };
-
-            LexerSource lexerSource = LexerSource.getSource(fileName, r, configuration);
+            LexerSource lexerSource =
+                    LexerSource.getSource(fileName, new StringReader(source), configuration);
             result = parser.parse(configuration, lexerSource);
         } catch (SyntaxException e) {
             int offset = e.getPosition().getStartOffset();

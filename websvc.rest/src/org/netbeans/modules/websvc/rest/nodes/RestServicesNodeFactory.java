@@ -135,11 +135,10 @@ public class RestServicesNodeFactory implements NodeFactory {
                                     } else {
                                         result.add(NO_SERVICES);
                                     }
-
-                                    fireChange();
                                     return null;
                                 }
                             });
+                            fireChange();
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

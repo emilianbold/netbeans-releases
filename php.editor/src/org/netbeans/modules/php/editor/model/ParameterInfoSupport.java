@@ -406,7 +406,7 @@ public class ParameterInfoSupport {
             if (parameter.isMandatory()) {
                 paramNames.add(parameter.getName());
             } else {
-                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue());
+                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue() != null ? parameter.getDefaultValue() : "");//NOI18N
             }
         }
         return paramNames;

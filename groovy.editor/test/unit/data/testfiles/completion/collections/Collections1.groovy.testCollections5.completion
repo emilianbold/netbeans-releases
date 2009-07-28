@@ -34,7 +34,7 @@ METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -57,6 +57,7 @@ METHOD     getProperties()                            Map
 METHOD     getTo()                         [PUBLIC]   Comparable
 METHOD     grep(Object)                               Collection
 METHOD     groupBy(Closure)                           Map
+METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     head()                                     Object
 METHOD     identity(Closure)                          Object
@@ -79,6 +80,7 @@ METHOD     listIterator(int)               [PUBLIC]   ListIterator<E>
 METHOD     max()                                      Object
 METHOD     max(Closure)                               Object
 METHOD     max(Comparator)                            Object
+METHOD     metaClass(Closure)                         MetaClass
 METHOD     min()                                      Object
 METHOD     min(Closure)                               Object
 METHOD     min(Comparator)                            Object
@@ -108,16 +110,20 @@ METHOD     putAt(int, Object)                         void
 METHOD     remove(Object)                  [PUBLIC]   boolean
 METHOD     remove(int)                     [PUBLIC]   E
 METHOD     removeAll(Collection<?>)        [PUBLIC]   boolean
+METHOD     respondsTo(String)                         List
+METHOD     respondsTo(String, Object)                 List
 METHOD     retainAll(Collection<?>)        [PUBLIC]   boolean
 METHOD     reverse()                                  List
 METHOD     reverseEach(Closure)                       List
 METHOD     set(int, E)                     [PUBLIC]   E
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     size()                          [PUBLIC]   int
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     sort()                                     List
 METHOD     sort(Closure)                              List
 METHOD     sort(Comparator)                           List
+METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     step(int)                       [PUBLIC]   List

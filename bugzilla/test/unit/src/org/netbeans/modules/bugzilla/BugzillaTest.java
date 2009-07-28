@@ -101,6 +101,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
@@ -145,7 +146,8 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
             // add comment
             String comment = "this is not a comment " + System.currentTimeMillis();
-            addComment(repository, data, comment);
+            RepositoryResponse rr = TestUtil.addComment(repository, data, comment);
+            assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
 
             // read comments
             readComment(data, brc, repository, comment);
@@ -168,16 +170,6 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         assertNotNull(data);    
 
         return data;
-    }
-
-    private void addComment(TaskRepository repository, TaskData data, String comment) throws CoreException {
-        TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-        ta.setValue(comment);
-
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
-        attrs.add(ta);
-        RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
-        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
     }
 
     private void assertChanged(Task task, TaskData data, boolean changed) {

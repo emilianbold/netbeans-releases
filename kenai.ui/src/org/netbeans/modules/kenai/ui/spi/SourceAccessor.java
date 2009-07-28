@@ -5,8 +5,8 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
-import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /**
@@ -24,6 +24,8 @@ public abstract class SourceAccessor {
         return Lookup.getDefault().lookup(SourceAccessor.class);
     }
 
+    public abstract Action getOpenFavorites(SourceHandle src);
+
     /**
      * Retrieve the list of source repositories available for given project.
      * @param project
@@ -36,7 +38,7 @@ public abstract class SourceAccessor {
      * @param project
      * @return Action to invoke when user click 'get' button in the Sources list.
      */
-    public abstract ActionListener getOpenSourcesAction( SourceHandle project );
+    public abstract Action getOpenSourcesAction( SourceHandle project );
 
     /**
      *
@@ -44,14 +46,14 @@ public abstract class SourceAccessor {
      * @return Action to invoke when user pressed Enter key on given source line.
      */
     //maybe same as 'get'?
-    public abstract ActionListener getDefaultAction( SourceHandle source );
+    public abstract Action getDefaultAction( SourceHandle source );
 
     /**
      * Get default action for project. Typically opens it.
      * @param prj
      * @return default action on Project
      */
-    public abstract ActionListener getDefaultAction( NbProjectHandle prj );
+    public abstract Action getDefaultAction( NbProjectHandle prj );
 
     /**
      * Default action for "other" link
@@ -59,5 +61,5 @@ public abstract class SourceAccessor {
      * @param src
      * @return
      */
-    public abstract ActionListener getOpenOtherAction(SourceHandle src);
+    public abstract Action getOpenOtherAction(SourceHandle src);
 }

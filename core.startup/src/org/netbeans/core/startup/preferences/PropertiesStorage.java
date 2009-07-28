@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -81,41 +83,41 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     
     static NbPreferences.FileStorage instanceReadOnly(final String absolutePath) {
         return new PropertiesStorage(absolutePath, false) {
-            public boolean isReadOnly() {
+            public @Override boolean isReadOnly() {
                 return true;
             }
             
-            public final String[] childrenNames() {
+            public @Override final String[] childrenNames() {
                 return new String[0];
             }
             
-            public final Properties load() throws IOException {
+            public @Override final Properties load() throws IOException {
                 return new Properties();
             }
             
-            protected FileObject toPropertiesFile(boolean create) throws IOException {
+            protected @Override FileObject toPropertiesFile(boolean create) throws IOException {
                 if (create) {
                     throw new IOException();
                 }
                 return null;
             }
             
-            protected FileObject toFolder(boolean create) throws IOException {
+            protected @Override FileObject toFolder(boolean create) throws IOException {
                 if (create) {
                     throw new IOException();
                 }
                 return null;
             }
             
-            protected FileObject toPropertiesFile() {
+            protected @Override FileObject toPropertiesFile() {
                 return null;
             }
             
-            protected FileObject toFolder() {
+            protected @Override FileObject toFolder() {
                 return null;
             }
             
-            FileObject preferencesRoot() throws IOException {
+            @Override FileObject preferencesRoot() throws IOException {
                 return FileUtil.createFolder(SFS_ROOT, SYSTEMROOT_PREFIX);
             }
             
@@ -193,12 +195,18 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         Statistics.StopWatch sw = Statistics.getStopWatch(Statistics.LOAD, true);
         try {
             Properties retval = new Properties();
-            InputStream is = inputStream();
-            if (is != null) {
+            FileObject file = toPropertiesFile(false);
+            if (file != null) {
                 try {
-                    retval.load(is);
-                } finally {
-                    if (is != null) is.close();
+                    InputStream is = file.getInputStream();
+                    try {
+                        retval.load(is);
+                    } finally {
+                        is.close();
+                    }
+                } catch (IllegalArgumentException x) { // #167745
+                    Logger.getLogger(PropertiesStorage.class.getName()).log(Level.INFO, "While loading " + file, x);
+                    file.delete();
                 }
             }
             return retval;
@@ -237,11 +245,6 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         }
     }
     
-    private InputStream inputStream() throws IOException {
-        FileObject file = toPropertiesFile(false);
-        return (file == null) ? null : file.getInputStream();
-    }
-    
     private OutputStream outputStream() throws IOException {
         FileObject fo = toPropertiesFile(true);
         final FileLock lock = fo.lock();
@@ -255,7 +258,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             }
         }
         return new FilterOutputStream(os) {
-            public void close() throws IOException {
+            public @Override void close() throws IOException {
                 super.close();
                 lock.releaseLock();
             }

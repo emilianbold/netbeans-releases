@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  * SPI for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
  *
  * @see WebModuleFactory
+ * @deprecated implement {@link WebModuleImplementation2}
  */
 public interface WebModuleImplementation {
 

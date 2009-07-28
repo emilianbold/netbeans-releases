@@ -41,9 +41,11 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.text.MessageFormat;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
  * Factory for creating file-sensitive actions.
@@ -55,16 +57,20 @@ public class FileSensitiveActions {
 
     /**
      * Creates an action sensitive to the set of currently selected files.
-     * When performed the action will call the given command on the {@link org.netbeans.spi.project.ActionProvider} of
+     * When performed the action will call the given command on the {@link ActionProvider} of
      * the selected project(s) and pass the proper context to it. Enablement of the
-     * action depends on the behavior of the project's action provider.<BR>
-     * Shortcuts for actions are shared according to command, i.e. actions based on the same command
+     * action depends on the behavior of the project's action provider.
+     * <p>As mentioned in {@link ActionProvider} Javadoc, the action may also be enabled
+     * without the participation of any project in case some globally registered {@link ActionProvider}
+     * can provide an implementation.
+     * (This since {@code org.netbeans.modules.projectuiapi/1 1.37}.)
+     * <p>Shortcuts for actions are shared according to command, i.e. actions based on the same command
      * will have the same shortcut.
      * @param command the command which should be invoked when the action is
      *        performed
      * @param namePattern pattern which should be used for determining the action's
-     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}: <code>{0}</code> - number of selected projects;
-     *        <code>{1}</code> - name of the first project.
+     *        name (label). It takes two parameters a la {@link MessageFormat}: <code>{0}</code> - number of selected files;
+     *        <code>{1}</code> - name of the first file.
      * @param icon icon of the action (or null)
      * @return newly created file-sensitive action
      */    

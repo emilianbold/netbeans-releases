@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,12 +58,16 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
@@ -97,6 +102,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -169,8 +177,15 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     private static Lookup createLookup(Project project) {
         if (project.getProjectDirectory().isValid()) {
             DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(
+                                rootFolder.getPrimaryFile(), true,
+                                new FileObjectFilter[] {
+                                        SearchInfoFactory.VISIBILITY_FILTER,
+                                        SearchInfoFactory.SHARABILITY_FILTER}
+            );
+
             // XXX Remove root folder after FindAction rewrite
-            return Lookups.fixed(new Object[]{project, rootFolder});
+            return Lookups.fixed(new Object[]{project, rootFolder, searchInfo});
         } else {
             return Lookups.fixed(new Object[0]);
         }
@@ -354,12 +369,14 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private final FileChangeListener webInfListener = new FileChangeAdapter() {
 
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 if (isWellKnownFile(fe.getFile().getNameExt())) {
                     addKey(fe.getFile());
                 }
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 // if the old file name was in keys, the new file name
                 // is now there (since it's the same FileObject)
@@ -379,6 +396,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 }
             }
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 if (isWellKnownFile(fe.getFile().getNameExt())) {
                     removeKey(fe.getFile());
@@ -388,18 +406,22 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private final FileChangeListener anyFileListener = new FileChangeAdapter() {
 
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 removeKey(fe.getFile());
             }
@@ -416,6 +438,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         };
 
+        private final ClassPathChangeListener cpListener = new ClassPathChangeListener(this);
+
         private ConfFilesChildren(ProjectWebModule pwm) {
             this.pwm = pwm;
             keys = new HashSet<FileObject>();
@@ -426,11 +450,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return new ConfFilesChildren(pwm);
         }
 
+        @Override
         protected void addNotify() {
             createKeys();
             doSetKeys();
         }
 
+        @Override
         protected void removeNotify() {
             removeListeners();
         }
@@ -479,6 +505,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             addPersistenceXmlDirectoryFiles();
             addServerSpecificFiles();
             addFrameworkFiles();
+            addWebFragments();
         }
 
         private void doSetKeys() {
@@ -571,6 +598,28 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         }
 
+        private void addWebFragments() {
+            try {
+                List<FileObject> frags = pwm.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, List<FileObject>>() {
+                    public List<FileObject> run(WebAppMetadata metadata) throws Exception {
+                        return metadata.getFragmentFiles();
+                    }
+                });
+                keys.addAll(frags);
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            FileObject[] roots = pwm.getSourceRoots();
+            if (roots != null) {
+                for (FileObject root : roots) {
+                    ClassPath cp = pwm.getClassPathProvider().findClassPath(root, ClassPath.COMPILE);
+                    cp.addPropertyChangeListener(cpListener);
+                }
+            }
+        }
+
         private void removeListeners() {
             pwm.removeConfigurationFilesListener(serverSpecificFilesListener);
 
@@ -617,10 +666,22 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 return do1.getNameExt().compareTo(do2.getNameExt());
             }
 
+            @Override
             public boolean equals(Object o) {
                 return o instanceof NodeComparator;
             }
 
         }
     }
+
+    private static class ClassPathChangeListener implements PropertyChangeListener {
+        private ConfFilesChildren confFiles;
+        ClassPathChangeListener(ConfFilesChildren confFiles) {
+            this.confFiles = confFiles;
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            confFiles.refreshNodes();
+        }
+    }
+
 }

@@ -158,20 +158,20 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject folderFileObject;
     private File projectFile;
     private Image icon;
-    private Lookup lookup;
+    private final Lookup lookup;
     private Updater updater1;
     private Updater updater2;
     private MavenProject project;
     private ProblemReporterImpl problemReporter;
-    private Info projectInfo;
-    private MavenSharabilityQueryImpl sharability;
-    private SubprojectProviderImpl subs;
+    private final Info projectInfo;
+    private final MavenSharabilityQueryImpl sharability;
+    private final SubprojectProviderImpl subs;
     private MavenProject oldProject;
-    private NbMavenProject watcher;
-    private ProjectState state;
+    private final NbMavenProject watcher;
+    private final ProjectState state;
     private ConfigurationProviderEnabler configEnabler;
-    private M2AuxilaryConfigImpl auxiliary;
-    private MavenProjectPropsImpl auxprops;
+    private final M2AuxilaryConfigImpl auxiliary;
+    private final MavenProjectPropsImpl auxprops;
     private ProjectProfileHandler profileHandler;
     public static WatcherAccessor ACCESSOR = null;
     
@@ -212,7 +212,7 @@ public final class NbMavenProjectImpl implements Project {
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
-        auxprops = new MavenProjectPropsImpl(this, auxiliary, watcher);
+        auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
 //        if (!SwingUtilities.isEventDispatchThread()) {
@@ -235,16 +235,6 @@ public final class NbMavenProjectImpl implements Project {
         return problemReporter;
     }
 
-    /**
-     * load a project with properties and profiles other than the current ones.
-     * uses default project embedder
-     * @param activeProfiles
-     * @param properties
-     * @return
-     */
-    public synchronized MavenProject loadMavenProject(List<String> activeProfiles, Properties properties) {
-        return loadMavenProject(getEmbedder(), activeProfiles, properties);
-    }
     /**
      * load a project with properties and profiles other than the current ones.
      * @param embedder embedder to use
@@ -517,8 +507,21 @@ public final class NbMavenProjectImpl implements Project {
             });
             return;
         }
+        clearProjectWorkspaceCache();
+        synchronized (this) {
+            oldProject = project;
+            project = null;
+            getOriginalMavenProject(); //#167741 just reload the project here before anything happens.
+        }
+        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
+        ACCESSOR.doFireReload(watcher);
+        projectInfo.reset();
+        doBaseProblemChecks();
+    }
+
+    public void clearProjectWorkspaceCache() {
         //when project gets reloaded (pom.xml file changed, build finished)
-        //we need to dmp the weakly referenced caches and start with a clean room
+        //we need to dump the weakly referenced caches and start with a clean room
         try {
             MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
             if (store instanceof NbMavenWorkspaceStore) {
@@ -527,14 +530,6 @@ public final class NbMavenProjectImpl implements Project {
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         }
-        synchronized (this) {
-            oldProject = project;
-            project = null;
-        }
-        problemReporter.clearReports();
-        ACCESSOR.doFireReload(watcher);
-        projectInfo.reset();
-        doBaseProblemChecks();
     }
     
     
@@ -680,8 +675,7 @@ public final class NbMavenProjectImpl implements Project {
         URI[] uris = new URI[srcs.size() + 2];
         int count = 0;
         for (String str : srcs) {
-            File fil = FileUtil.normalizeFile(new File(str));
-            uris[count] = fil.toURI();
+            uris[count] = FileUtilities.convertStringToUri(str);
             count = count + 1;
         }
         uris[uris.length - 2 ] = getScalaDirectory(test);
@@ -916,9 +910,9 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
+                    new ProjectOpenedHookImpl(this),
 
                     // default mergers..        
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -930,6 +924,7 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
+                    CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestSkippingChecker(),
@@ -1219,8 +1214,8 @@ public final class NbMavenProjectImpl implements Project {
             "simple-files"   //NOPMD       // NOI18N
 
         };
-        private List<String> prohibited;
-        private NbMavenProjectImpl project;
+        private final List<String> prohibited;
+        private final NbMavenProjectImpl project;
 
         RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
             project = proj;

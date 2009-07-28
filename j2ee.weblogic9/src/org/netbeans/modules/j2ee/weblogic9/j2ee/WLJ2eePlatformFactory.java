@@ -72,14 +72,15 @@ import org.openide.util.lookup.Lookups;
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
+    @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return new J2eePlatformImplImpl((WLDeploymentManager)dm);
+        assert WLBaseDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
+        return new J2eePlatformImplImpl((WLBaseDeploymentManager)dm);
     }
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
         
-        private static final String J2EE_API_DOC    = "docs/javaee5-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
         private static final Set MODULE_TYPES = new HashSet();
         static {
             MODULE_TYPES.add(J2eeModule.EAR);
@@ -106,9 +107,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * The server's deployment manager, to be exact the plugin's wrapper for
          * it
          */
-        WLDeploymentManager dm;
+        WLBaseDeploymentManager dm;
         
-        public J2eePlatformImplImpl(WLDeploymentManager dm) {
+        public J2eePlatformImplImpl(WLBaseDeploymentManager dm) {
             this.dm = dm;
             
             // Allow J2EE 1.4 Projects
@@ -143,6 +144,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return cp;
         }
         
+        @Override
         public Set getSupportedSpecVersions() {
             return SPEC_VERSIONS;
         }

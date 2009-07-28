@@ -47,8 +47,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -162,13 +166,11 @@ public class PersistenceUtils {
     public static String getJPAVersion(Project target)
     {
         String version=null;
-        FileObject fo=target.getProjectDirectory().getFileObject("src/java");//works for ejb module project
+        Sources sources=ProjectUtils.getSources(target);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
         ClassPath compile=ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        if(compile==null)
-        {
-            FileObject fo2=target.getProjectDirectory().getFileObject("src");//works for j2se project
-            compile=ClassPath.getClassPath(fo2, ClassPath.COMPILE);
-        }
         if(compile.findResource("javax/persistence/criteria/JoinType.class")!=null)
         {
             version=Persistence.VERSION_2_0;

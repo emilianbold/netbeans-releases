@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.wizards;
 
 import java.io.File;
@@ -51,87 +50,92 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 
 /**
-* Generic methods for evaluating the input into the wizards.
-*
-* @author Ana von Klopp
-*/
+ * Generic methods for evaluating the input into the wizards.
+ *
+ * @author Ana von Klopp
+ */
 abstract class Evaluator {
 
     private static final Logger LOG = Logger.getLogger(Evaluator.class.getName());
-    
     private FileType fileType = null;
 
-    Evaluator(FileType fileType) { 
-	this.fileType = fileType; 
+    Evaluator(FileType fileType) {
+        this.fileType = fileType;
     }
 
-    abstract boolean isValid(); 
-    abstract String getTargetPath(); 
-    abstract String getErrorMessage(); 
-    abstract Iterator getPathItems(); 
+    abstract boolean isValid();
+
+    abstract String getTargetPath();
+
+    abstract String getErrorMessage();
+
+    abstract Iterator getPathItems();
+
     abstract void setInitialFolder(DataFolder df, Project project);
-    
-    FileType getFileType() { 
-	return fileType; 
+
+    FileType getFileType() {
+        return fileType;
     }
 
     /**
      * Returns the absolute path to the target class. Used by the
      * wizards to display the result of the selections. 
      */
-    String getTargetPath(Iterator pathItems) { 
+    String getTargetPath(Iterator pathItems) {
         StringBuffer buffer = new StringBuffer();
-	while(pathItems.hasNext()) { 
-	    buffer.append((String)(pathItems.next())); 
-	    if(pathItems.hasNext())
-		buffer.append(File.separator); 
-	} 
-	buffer.append("."); //NOI18N
-	buffer.append(fileType.getSuffix()); 
-	return buffer.toString(); 
-    } 
-
-    void checkFile(Iterator pathItems, FileObject root) throws IOException { 
-	LOG.finer("checkFile() "+root); //NOI18N
-        
-	String pathItem; 
-        FileObject fo = root;
-        
-	while(pathItems.hasNext()) { 
-	    pathItem = (String)(pathItems.next()); 
-	    LOG.finer("path item is " + pathItem); //NOI18N
-
-	    // Path item is a directory, check that we can get it
-	    if(pathItems.hasNext()) {
-		LOG.finer("Not the last one"); //NOI18N
-		try { 
-		    fo = fo.getFileObject(pathItem, null);
-		}
-		catch(IllegalArgumentException iaex) {
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
-		} 
-		if(fo == null) return; 
-			     
-		if(!fo.isFolder()) { 
-		    LOG.finer("Not a folder"); //NOI18N
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
-		}
-	    }
-	    else { 
-		LOG.finer("This is the last one"); //NOI18N
-		try { 
-		    fo = fo.getFileObject(pathItem, fileType.getSuffix()); 
-		}
-		catch(IllegalArgumentException iaex) { 
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
-		} 
-		if(fo == null) return; 
-		if(fo.isData())  
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_file_exists", pathItem)); 
-	    } 
-	}
-	LOG.finer("checkFile() passed"); //NOI18N
+        while (pathItems.hasNext()) {
+            buffer.append((String) (pathItems.next()));
+            if (pathItems.hasNext()) {
+                buffer.append(File.separator);
+            }
+        }
+        buffer.append("."); //NOI18N
+        buffer.append(fileType.getSuffix());
+        return buffer.toString();
     }
 
+    void checkFile(Iterator pathItems, FileObject root) throws IOException {
+        LOG.finer("checkFile() " + root); //NOI18N
+
+        String pathItem;
+        FileObject fo = root;
+
+        while (pathItems.hasNext()) {
+            pathItem = (String) (pathItems.next());
+            LOG.finer("path item is " + pathItem); //NOI18N
+
+            // Path item is a directory, check that we can get it
+            if (pathItems.hasNext()) {
+                LOG.finer("Not the last one"); //NOI18N
+                try {
+                    fo = fo.getFileObject(pathItem, null);
+                } catch (IllegalArgumentException iaex) {
+                    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem));
+                }
+                if (fo == null) {
+                    return;
+                }
+
+                if (!fo.isFolder()) {
+                    LOG.finer("Not a folder"); //NOI18N
+                    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem));
+                }
+            } else {
+                LOG.finer("This is the last one"); //NOI18N
+                try {
+                    fo = fo.getFileObject(pathItem, fileType.getSuffix());
+                } catch (IllegalArgumentException iaex) {
+                    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem));
+                }
+                if (fo == null) {
+                    return;
+                }
+                if (fo.isData()) {
+                    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_file_exists", pathItem));
+                }
+            }
+        }
+        LOG.finer("checkFile() passed"); //NOI18N
+    }
 }
 

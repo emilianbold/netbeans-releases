@@ -61,7 +61,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -228,7 +228,7 @@ public class EndToEndTest extends J2eeTestCase {
         newWizardOper.selectCategory("Struts");
         newWizardOper.selectFileType("Struts ActionForm Bean");
         newWizardOper.next();
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName("LoginForm");
         nameStepOper.setPackage("com.mycompany.eshop.struts.forms");
         nameStepOper.finish();
@@ -250,7 +250,7 @@ public class EndToEndTest extends J2eeTestCase {
         newWizardOper.selectCategory("Struts");
         newWizardOper.selectFileType("Struts Action");
         newWizardOper.next();
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName("LoginVerifyAction");
         nameStepOper.setPackage("com.mycompany.eshop.struts.actions");
         JTextFieldOperator txtActionPath = new JTextFieldOperator(
@@ -283,7 +283,7 @@ public class EndToEndTest extends J2eeTestCase {
         newWizardOper.selectCategory("Java");
         newWizardOper.selectFileType("Empty Java File");
         newWizardOper.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName("SecurityManager");
         nfnlso.setPackage("com.mycompany.eshop.security");
         nfnlso.finish();

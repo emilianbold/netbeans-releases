@@ -1,5 +1,5 @@
 package test;
-
+import javax.swing.text.BadLocationException;
 public class ExitPoints {
     
     public ExitPoints() {
@@ -118,6 +118,25 @@ public class ExitPoints {
             }
         };
         return "";
+    }
+
+}
+
+class ConstructorThrows {
+
+    public ConstructorThrows() throws NullPointerException, BadLocationException {
+    }
+
+    public ConstructorThrows(int a) throws NullPointerException, BadLocationException {
+        this();
+    }
+
+}
+
+class Foo extends ConstructorThrows {
+
+    public Foo() throws BadLocationException {
+        super(1);
     }
 
 }

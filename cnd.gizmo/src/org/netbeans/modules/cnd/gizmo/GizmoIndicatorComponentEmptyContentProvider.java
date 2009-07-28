@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.gizmo;
 
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
@@ -50,16 +50,27 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-
 @ServiceProvider(service = IndicatorComponentEmptyContentProvider.class)
-public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider{
+public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider {
 
     public List<Indicator> getEmptyContent() {
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        if (gizmoConfiguration == null){
-            return null;
-        }        
-        return gizmoConfiguration.getIndicators();
-    }
 
+        if (gizmoConfiguration == null) {
+            return null;
+        }
+
+        List<Indicator> indicators = gizmoConfiguration.getIndicators();
+
+        Iterator<Indicator> it = indicators.iterator();
+
+        while (it.hasNext()) {
+            Indicator ind = it.next();
+            if (!ind.isVisible()) {
+                it.remove();
+            }
+        }
+
+        return indicators;
+    }
 }

@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <NonVisualComponents>
-    <Component class="javax.swing.JLabel" name="serverTypeLabel">
-    </Component>
-    <Component class="javax.swing.JComboBox" name="serverTypeCombo">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(new Object[] {org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, &quot;SERVER_TYPE_LOCAL&quot;)/*, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, &quot;SERVER_TYPE_REMOTE&quot;)*/})"/>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverTypeCombo.addActionListener(new ServerTypeActionListener());"/>
-      </AuxValues>
-    </Component>
-  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>

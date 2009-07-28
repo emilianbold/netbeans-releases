@@ -40,7 +40,6 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,12 +47,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -65,6 +66,7 @@ import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -107,23 +109,23 @@ public class SourceAccessorImpl extends SourceAccessor {
             handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
         }
 
-        return handlesList.isEmpty() ? Collections.EMPTY_LIST : handlesList;
+        return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
 
     }
 
     @Override
-    public ActionListener getOpenSourcesAction(SourceHandle srcHandle) {
+    public Action getOpenSourcesAction(SourceHandle srcHandle) {
         return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override
-    public ActionListener getDefaultAction(SourceHandle srcHandle) {
+    public Action getDefaultAction(SourceHandle srcHandle) {
         return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override
-    public ActionListener getDefaultAction(final NbProjectHandle prj) {
-        return new ActionListener() {
+    public Action getDefaultAction(final NbProjectHandle prj) {
+        return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 Project project = ((NbProjectHandleImpl) prj).getProject();
@@ -167,11 +169,11 @@ public class SourceAccessorImpl extends SourceAccessor {
     }
 
     @Override
-    public ActionListener getOpenOtherAction(final SourceHandle src) {
+    public Action getOpenOtherAction(final SourceHandle src) {
 
-        return new ActionListener() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                ProjectChooser.setProjectsFolder(((SourceHandleImpl) src).getWorkingDirectory());
+                ProjectChooser.setProjectsFolder(src.getWorkingDirectory());
                 JFileChooser chooser = ProjectChooser.projectChooser();
                 chooser.setMultiSelectionEnabled(true);
 
@@ -210,6 +212,27 @@ public class SourceAccessorImpl extends SourceAccessor {
             }
         };
     }
+
+    @Override
+    public Action getOpenFavorites(final SourceHandle src) {
+
+        return new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                WindowManager.getDefault().findTopComponent("favorites").requestActive();
+                try {
+                    FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
+                    Favorites.getDefault().selectWithAddition(fo);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NullPointerException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+             }
+        };
+    }
+
 
     public static class ProjectAndFeature {
 

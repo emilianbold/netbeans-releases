@@ -69,17 +69,23 @@ public class FlowLayoutBeanInfo extends BISupport {
                 new int[] {
                     FlowLayout.CENTER,
                     FlowLayout.LEFT,
-                    FlowLayout.RIGHT
+                    FlowLayout.RIGHT,
+                    FlowLayout.LEADING,
+                    FlowLayout.TRAILING
                 },
                 new String[] {
                     "java.awt.FlowLayout.CENTER", // NOI18N
                     "java.awt.FlowLayout.LEFT", // NOI18N
-                    "java.awt.FlowLayout.RIGHT" // NOI18N
+                    "java.awt.FlowLayout.RIGHT", // NOI18N
+                    "java.awt.FlowLayout.LEADING", // NOI18N
+                    "java.awt.FlowLayout.TRAILING" // NOI18N
                 },
                 new String[] {
                     "VALUE_AlignmentCenter", // NOI18N
                     "VALUE_AlignmentLeft", // NOI18N
                     "VALUE_AlignmentRight", // NOI18N
+                    "VALUE_AlignmentLeading", // NOI18N
+                    "VALUE_AlignmentTrailing" // NOI18N
                 }
             );
         }

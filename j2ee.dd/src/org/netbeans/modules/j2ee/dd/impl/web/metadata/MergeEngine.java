@@ -49,7 +49,6 @@ import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
  * @author Petr Slechta
  */
 abstract class MergeEngine<T> {
-
     protected List<T> res = new ArrayList<T>();
 
     void clean() {
@@ -64,4 +63,11 @@ abstract class MergeEngine<T> {
         return res;
     }
 
+    protected void addAll(T[] items) {
+        if (items != null) {
+            for (T item : items) {
+                res.add(item);
+            }
+        }
+    }
 }

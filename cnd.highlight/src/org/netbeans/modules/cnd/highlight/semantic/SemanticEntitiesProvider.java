@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class SemanticEntitiesProvider {
 
-    private List<SemanticEntity> list;
+    private final List<SemanticEntity> list;
 
     public List<SemanticEntity> get() {
         return list;

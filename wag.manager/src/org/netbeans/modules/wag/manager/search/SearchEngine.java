@@ -50,7 +50,8 @@ import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.gateway.client.Zembly;
-
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -60,17 +61,14 @@ public class SearchEngine {
 
     private static final String BASE_URL = "http://zembly.com/things/";
     private static final String HTTP_METHOD = "POST";
-
     private static final String SEARCH_ITEM_URI = "platform/repository/SearchItems;exec";
     private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
-
     private static final String SEARCH_STRING_PARAM = "searchString";
     private static final String SEARCH_FOR = "searchFor";
     private static final String START_INDEX = "startIndex";
     private static final String MAX_RESULTS_PARAM = "maxResults";
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
-
     private static final String CONTENT_TYPE_ATTR = "contentType";
     private static final String ITEMS_ATTR = "items";
     private static final String PATH_ATTR = "path";
@@ -78,18 +76,15 @@ public class SearchEngine {
     private static final String URL_ATTR = "url";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
-
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
     private static final String JAVA_SERVICE_CONTENT_TYPE = "application/java";
-
     private static SearchEngine instance;
     private Zembly zembly;
 
     private SearchEngine() {
-        try {        
+        try {
             zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");
         } catch (Exception ex) {
-            ex.printStackTrace();
             // ignore
         }
     }
@@ -113,7 +108,7 @@ public class SearchEngine {
 
             return parse(result);
         } catch (Exception ex) {
-            Logger.getLogger(SearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+            handleException(ex);
         }
 
         return Collections.emptyList();
@@ -140,7 +135,7 @@ public class SearchEngine {
 
                 String contentType = item.getString(CONTENT_TYPE_ATTR);
 
-                if (contentType.equals(WADL_CONTENT_TYPE) || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
+                if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
                     svc.setPrependWeb(true);
                 }
 
@@ -167,9 +162,14 @@ public class SearchEngine {
 
             return services;
         } catch (Exception ex) {
-            Logger.getLogger(SearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+            handleException(ex);
         }
 
         return Collections.emptyList();
+    }
+
+    private void handleException(Exception ex) {
+        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+        DialogDisplayer.getDefault().notify(msg);
     }
 }

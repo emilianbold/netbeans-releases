@@ -53,7 +53,7 @@ public final class MethodCustomizerFactory {
 
     private MethodCustomizerFactory() {}
     
-    public static MethodCustomizer businessMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer businessMethod(String title, MethodModel method, ClasspathInfo cpInfo, boolean remote, boolean local, boolean selectLocal, boolean selectRemote, boolean allowNoInterface, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
@@ -67,6 +67,7 @@ public final class MethodCustomizerFactory {
                 false, // finder cardinality
                 true,  // exceptions
                 true,  // interfaces
+                allowNoInterface,
                 null,  // prefix
                 existingMethods
                 );

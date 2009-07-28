@@ -434,7 +434,7 @@ public final class SourcesHelper {
          * Configures optional exclude list.
          * See {@link #includes(java.lang.String)} for details.
          * @param value Ant-style excludes; may contain Ant property substitutions;
-         *                 if not null, files and folders
+         *                 files and folders
          *                 matching the pattern (or patterns) will not be {@link SourceGroup#contains included},
          *                 even if specified in the includes list.
          *                 Must not be <code>null</code>.
@@ -518,7 +518,8 @@ public final class SourcesHelper {
      * Source root is a top-level folder which may
      * contain sources that should be considered part of the project.
      * <p>
-     * If the actual value of the <code>location</code> parameter is inside the project directory,
+     * If the actual value of the <code>location</code> parameter is inside the project directory
+     * and the root is not {@link SourceRootConfig#type typed},
      * this is simply ignored; so it safe to configure source roots
      * for any source directory which might be set to use an external path, even
      * if the common location is internal.

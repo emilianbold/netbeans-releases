@@ -43,7 +43,6 @@ package org.netbeans.modules.form;
 
 import java.awt.EventQueue;
 import java.beans.*;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
@@ -51,6 +50,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
@@ -1421,7 +1421,8 @@ public class RADComponent {
         // setting javax.swing.Action property should not overwrite
         // manually entered prop values (text, tooltip, etc.)
         if ("action".equals(prop.getName()) && // NOI18N 
-                AbstractButton.class.isAssignableFrom(beanClass)) {
+                (AbstractButton.class.isAssignableFrom(beanClass)
+                || JComboBox.class.isAssignableFrom(beanClass))) {
             prop.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {

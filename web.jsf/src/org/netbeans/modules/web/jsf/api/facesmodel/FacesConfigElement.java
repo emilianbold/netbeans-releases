@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
+
 
 
 /**
@@ -47,6 +49,6 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
  * @author ads
  *
  */
-public interface FacesConfigElement extends JSFConfigComponent {
+public interface FacesConfigElement extends JsfModelElement, JSFConfigComponent {
 
 }

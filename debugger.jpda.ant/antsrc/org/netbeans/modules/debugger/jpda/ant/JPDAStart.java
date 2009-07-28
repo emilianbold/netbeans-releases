@@ -58,6 +58,7 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -279,12 +280,30 @@ public class JPDAStart extends Task implements Runnable {
                 logger.fine("Listening using transport "+transport);
 
                 final Map args = lc.defaultArguments ();
-                String address;
+                String address = null;
                 try {
                     address = lc.startListening (args);
                 } catch (java.io.IOException ioex) {
-                    getProject().log("Listening failed with arguments: "+args);
-                    throw ioex;
+                    boolean passed = false;
+                    // workaround for issue 148490
+                    if (SHMEM_TRANSPORT.equals(transport)) {
+                        Connector.StringArgument argName = (Connector.StringArgument) args.get("name"); // NOI18N
+                        for (int x = 0; x < 5; x++) {
+                            String tryAddress = "javadebug" + Math.round(Math.random() * 10000); // NOI18N
+                            try {
+                                argName.setValue (tryAddress);
+                                address = lc.startListening (args);
+                                passed = true;
+                                break;
+                            } catch (Exception e) {
+                                // ignore
+                            }
+                        } // for
+                    }
+                    if (!passed) {
+                        getProject().log("Listening failed with arguments: "+args);
+                        throw ioex;
+                    }
                 } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
                     getProject().log("Listening failed with arguments: "+args);
                     throw iaex;

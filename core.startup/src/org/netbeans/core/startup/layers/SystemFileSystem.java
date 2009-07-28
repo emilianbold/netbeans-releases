@@ -51,8 +51,8 @@ import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -205,26 +205,30 @@ implements FileSystem.Status, FileChangeListener {
                     // ignore--normal
                     }
             } catch (MissingResourceException ex) {
-                ModuleLayeredFileSystem.err.log(
-                        Level.WARNING,
-                        "Computing display name for " + fo, ex); // NOI18N
-            // ignore
+                Exceptions.attachMessage(ex, warningMessage(bundleName, fo));
+                ModuleLayeredFileSystem.err.log(Level.WARNING, null, ex);
+                // ignore
             }
         }
         return (String)fo.getAttribute("displayName"); // NOI18N
     }
+    private static String warningMessage(String name, FileObject fo) {
+        Object by = fo.getAttribute("layers"); // NOI18N
+        if (by instanceof Object[]) {
+            by = Arrays.toString((Object[])by);
+        }
+        return "Cannot load " + name + " for " + fo + " defined by " + by; // NOI18N
+    }
 
     /** Annotate name
     */
-    public String annotateName (String s, Set set) {
+    public String annotateName(String s, Set<? extends FileObject> files) {
 
         // Look for a localized file name.
         // Note: all files in the set are checked. But please only place the attribute
         // on the primary file, and use this primary file name as the bundle key.
-        Iterator it = set.iterator ();
-        while (it.hasNext ()) {
+        for (FileObject fo : files) {
             // annotate a name
-            FileObject fo = (FileObject) it.next ();
             String displayName = annotateName(fo);
             if (displayName != null) {
                 return displayName;
@@ -283,10 +287,8 @@ implements FileSystem.Status, FileChangeListener {
 
     /** Annotate icon
     */
-    public Image annotateIcon (Image im, int type, Set s) {
-        Iterator it = s.iterator ();
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject) it.next ();
+    public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
+        for (FileObject fo : files) {
             Image img = annotateIcon(fo, type);
             if (img != null) {
                 return img;

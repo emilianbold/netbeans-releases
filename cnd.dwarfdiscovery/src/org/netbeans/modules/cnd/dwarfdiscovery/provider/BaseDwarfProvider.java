@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -74,7 +76,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
     public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
     public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
-    protected boolean isStoped = false;
+    protected AtomicBoolean isStoped = new AtomicBoolean(false);
     
     public BaseDwarfProvider() {
     }
@@ -84,19 +86,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
     
     public void stop() {
-        isStoped = true;
-    }
-
-    private int getNumberThreads(){
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
-                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
-        threadCount = Math.min(threadCount, 4);
-        return Math.max(threadCount, 1);
+        isStoped.set(true);
     }
 
     protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
-        RequestProcessor rp = new RequestProcessor("Parallel analyzing", getNumberThreads()); // NOI18N
+        RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
@@ -119,7 +114,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress) {
-        if (isStoped) {
+        if (isStoped.get()) {
             return true;
         }
         String restrictSourceRoot = null;
@@ -139,7 +134,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         for (SourceFileProperties f : getSourceFileProperties(file, map)) {
-            if (isStoped) {
+            if (isStoped.get()) {
                 break;
             }
             String name = f.getItemPath();
@@ -229,7 +224,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             List <CompilationUnit> units = dump.getCompilationUnits();
             if (units != null && units.size() > 0) {
                 for (CompilationUnit cu : units) {
-                    if (isStoped) {
+                    if (isStoped.get()) {
                         break;
                     }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
@@ -400,7 +395,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
         public void run() {
             try {
-                if (!isStoped) {
+                if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
                     processObjectFile(file, map, progress);
                 }

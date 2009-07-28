@@ -45,10 +45,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -78,9 +82,10 @@ public final class J2SEProjectConfigurations {
      * @param sharedProps properties to be written to shared file; is allowed to
      *        contain special purpose properties starting with $ (e.g. $label)
      * @param privateProps properties to be written to private file
+     * @since 1.29
      */
     public static void createConfigurationFiles(Project prj, String configName, 
-            final Properties sharedProps, final Properties privateProps) throws IOException, IllegalArgumentException {
+            final EditableProperties sharedProps, final EditableProperties privateProps) throws IOException, IllegalArgumentException {
         
         if (prj == null || configName == null || "".equals(configName)) {
             throw new IllegalArgumentException();
@@ -106,8 +111,25 @@ public final class J2SEProjectConfigurations {
         }
         
     }
-    
-    private static void generateConfig(FileObject prjDir, String cfgFilePath, Properties propsToWrite) throws IOException {
+
+    /**
+     * Creates property files for run configuration and writes passed properties.
+     * Shared properties are written to nbproject/configs folder and private properties
+     * are written to nbproject/private/configs folder. The property file is not created
+     * if null is passed for either shared or private properties.
+     *
+     * @param prj project under which property files will be created
+     * @param configName name of the config file, '.properties' is apended
+     * @param sharedProps properties to be written to shared file; is allowed to
+     *        contain special purpose properties starting with $ (e.g. $label)
+     * @param privateProps properties to be written to private file
+     */
+    public static void createConfigurationFiles(Project prj, String configName,
+            final Properties sharedProps, final Properties privateProps) throws IOException, IllegalArgumentException {
+        createConfigurationFiles(prj, configName, props2EditableProps(sharedProps), props2EditableProps(privateProps));
+    }
+
+    private static void generateConfig(FileObject prjDir, String cfgFilePath, EditableProperties propsToWrite) throws IOException {
         
         if (propsToWrite == null) {
             // do not create anything if props is null
@@ -123,9 +145,21 @@ public final class J2SEProjectConfigurations {
             return;
         }
         OutputStream os = jwsConfigFO.getOutputStream();
-        propsToWrite.store(os, null);
+        propsToWrite.store(os);
         os.close();
         
     }
-    
+
+    private static EditableProperties props2EditableProps(Properties props) {
+        if (props == null) {
+            return null;
+        }
+        EditableProperties edProps = new EditableProperties();
+        for (Iterator<Entry<Object,Object>> iter = props.entrySet().iterator(); iter.hasNext(); ) {
+            Entry entry = iter.next();
+            edProps.put((String) entry.getKey(), (String) entry.getValue());
+        }
+        return edProps;
+    }
+
 }

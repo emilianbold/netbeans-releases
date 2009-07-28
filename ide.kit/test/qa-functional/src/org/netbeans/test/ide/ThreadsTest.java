@@ -141,6 +141,9 @@ public class ThreadsTest extends JellyTestCase {
             if (elem.toString().startsWith("sun.awt.X11.XToolkit")) {
                 return true;
             }
+            if (elem.toString().startsWith("sun.java2d.d3d.D3DScreenUpdateManager")) {
+                return true;
+            }
             // IZ http://www.netbeans.org/issues/show_bug.cgi?id=154324
             if (elem.toString().startsWith("org.netbeans.lib.profiler.ProfilerClient$SeparateCmdExecutionThread.run")) {
                 return true;

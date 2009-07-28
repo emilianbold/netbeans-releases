@@ -57,6 +57,8 @@ public interface IndexableImpl {
 
     public String getMimeType();
 
+    public boolean isTypeOf(String mimeType);
+
 //    public InputStream openInputStream() throws IOException;
 
 }

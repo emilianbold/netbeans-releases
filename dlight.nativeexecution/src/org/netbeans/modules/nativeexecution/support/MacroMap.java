@@ -42,6 +42,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
@@ -50,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
  */
 public class MacroMap {
 
+    private final static java.util.logging.Logger log = Logger.getInstance();
     private final MacroExpander macroExpander;
     private final TreeMap<String, String> map;
 
@@ -65,10 +67,18 @@ public class MacroMap {
     }
 
     public String put(String key, String value) {
+        if (value == null) {
+            log.log(Level.INFO, "Attempt to set env variable '%s' with null value", value); // NOI18N
+        }
+
         String result = value;
 
         Map<String, String> oneElementMap = new HashMap<String, String>();
-        oneElementMap.put(key, map.get(key));
+        String val = map.get(key);
+
+        if (val != null) {
+            oneElementMap.put(key, val);
+        }
 
         try {
             result = macroExpander.expandMacros(value, oneElementMap);

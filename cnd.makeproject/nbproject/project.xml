@@ -296,8 +296,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-		<friend>com.microchip.mdbcore</friend>
-		<friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.microchip.mdbcore</friend>
+                <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.dlight</friend>
@@ -312,6 +312,7 @@
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>

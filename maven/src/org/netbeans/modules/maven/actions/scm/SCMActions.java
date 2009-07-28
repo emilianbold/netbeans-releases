@@ -54,7 +54,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G 
  */
 public class SCMActions extends AbstractAction  implements Presenter.Popup{

@@ -76,14 +76,16 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private final ExceptionsPanel exceptionsPanel;
     private final boolean hasInterfaces;
     private final ClasspathInfo cpInfo;
+    private final boolean allowsNoInterface;
 
     private MethodCustomizerPanel(MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote, 
             boolean selectLocal, boolean selectRemote, boolean hasReturnType, String ejbql, 
-            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
+            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces, boolean allowsNoInterface) {
         initComponents();
 
         this.methodModel = methodModel;
         this.hasInterfaces = hasInterfaces;
+        this.allowsNoInterface = allowsNoInterface;
         this.cpInfo = cpInfo;
 
         nameTextField.setText(methodModel.getName());
@@ -130,9 +132,9 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
     public static MethodCustomizerPanel create(MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote,
             boolean selectLocal, boolean selectRemote, boolean hasReturnType, String  ejbql, 
-            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
+            boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces, boolean allowsNoInterface) {
         return new MethodCustomizerPanel(methodModel, cpInfo, hasLocal, hasRemote, selectLocal, selectRemote,
-                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
+                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces, allowsNoInterface);
     }
 
     @Override
@@ -471,6 +473,10 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
     public boolean hasRemote() {
         return (remoteRadio.isEnabled() && remoteRadio.isSelected()) || hasBothInterfaces();
+    }
+
+    public boolean allowsNoInterface(){
+        return allowsNoInterface;
     }
 
     public String getEjbql() {

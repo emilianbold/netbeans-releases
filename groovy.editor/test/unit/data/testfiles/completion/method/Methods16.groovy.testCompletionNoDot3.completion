@@ -5,6 +5,7 @@ n|o
 CLASS      NegativeArraySizeException                 null
 CLASS      NetPermission                              null
 CLASS      NetworkInterface                           null
+CLASS      Newify                                     null
 CLASS      NoClassDefFoundError                       null
 CLASS      NoRouteToHostException                     null
 CLASS      NoSuchElementException                     null

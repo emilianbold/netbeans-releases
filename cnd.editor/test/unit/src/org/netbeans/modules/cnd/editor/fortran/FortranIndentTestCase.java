@@ -2289,4 +2289,31 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              record /STR1/ inex\n" +
                 "          end structure|");
     }
+
+    public void testTypeIndentFree() {
+        setLoadDocumentText(
+                "  function QC_LOG(X) result(Z)\n" +
+                "    type (QC), intent(in) :: X|\n" +
+                "    type (QC) :: Z\n" +
+                "\n" +
+                "    Z % QR = log(abs(X))\n" +
+                "    Z % QI = atan2(X % QI, X % QR)\n" +
+                "\n" +
+                "    return\n" +
+                "  end function QC_LOG");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(true);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect structure indent (fixed form)",
+                "  function QC_LOG(X) result(Z)\n" +
+                "    type (QC), intent(in) :: X\n" +
+                "    |\n" +
+                "    type (QC) :: Z\n" +
+                "\n" +
+                "    Z % QR = log(abs(X))\n" +
+                "    Z % QI = atan2(X % QI, X % QR)\n" +
+                "\n" +
+                "    return\n" +
+                "  end function QC_LOG");
+    }
 }

@@ -102,7 +102,7 @@ public class Dwarf2NameFinder {
 
         @Override
         public String toString() {
-            java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
+            java.lang.StringBuilder str = new java.lang.StringBuilder(super.toString());
             str.append(" [ total_length: ").append(total_length); // NOI18N
             str.append("; version: ").append(version); // NOI18N
             str.append("; prologue_length: ").append(prologue_length); // NOI18N

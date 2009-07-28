@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -76,9 +77,7 @@ import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -189,7 +188,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     
     private WebApp getWebApp() throws IOException {
         if (webApp==null) {
-            WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+            ProjectWebModule jp = webProject.getLookup().lookup(ProjectWebModule.class);
             FileObject fo = jp.getDeploymentDescriptor();
             webApp = DDProvider.getDefault().getDDRoot(fo);
         }
@@ -204,7 +203,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
-        WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+        ProjectWebModule jp = webProject.getLookup().lookup(ProjectWebModule.class);
         
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
@@ -222,7 +221,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             refFile.runUserActionTask(task, true);
         }
         
-        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !isInjectionTarget[0];
+        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eeProfile()) || !isInjectionTarget[0];
         if (shouldWrite) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);
@@ -311,8 +310,8 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         return proposedValue;
     }
     
-    private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if (WebModule.J2EE_13_LEVEL.equals(j2eeVersion) || WebModule.J2EE_14_LEVEL.equals(j2eeVersion)) {
+    private static boolean isDescriptorMandatory(Profile j2eeVersion) {
+        if (Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion)) {
             return true;
         }
         return false;

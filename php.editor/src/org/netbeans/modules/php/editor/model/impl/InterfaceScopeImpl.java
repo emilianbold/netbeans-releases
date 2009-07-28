@@ -45,6 +45,7 @@ import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -84,9 +85,10 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
         interfaceScopes.addAll(getSuperInterfaces());
         for (InterfaceScope iface : interfaceScopes) {
-            Collection<IndexedFunction> indexedFunctions = index.getAllMethods(null, iface.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-            for (IndexedFunction indexedFunction : indexedFunctions) {
-                allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction, PhpKind.METHOD));
+            Collection<IndexedClassMember<IndexedFunction>> indexedFunctions = index.getAllMethods(null, iface.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+            for (IndexedClassMember<IndexedFunction> classMember : indexedFunctions) {
+                IndexedFunction indexedFunction = classMember.getMember();
+                allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction));
             }
         }
         return allMethods;
@@ -97,5 +99,35 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         allMethods.addAll(getDeclaredMethods());
         allMethods.addAll(getInheritedMethods());
         return allMethods;
+    }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        List<? extends String> superInterfaces = getSuperInterfaceNames();
+        for (int i = 0; i < superInterfaces.size(); i++) {
+            String iface = superInterfaces.get(0);
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(iface);
+        }
+        sb.append(";");//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        return sb.toString();
+    }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedInterface) {
+            IndexedInterface indexedInterface = (IndexedInterface)indexedElement;
+            return QualifiedName.create(indexedInterface.getNamespaceName());
+        }
+        return super.getNamespaceName();
     }
 }

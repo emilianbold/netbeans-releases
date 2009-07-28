@@ -71,9 +71,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -83,7 +84,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -195,7 +195,7 @@ public class RunAsWebAdvanced extends JPanel {
         List<String> locals = new ArrayList<String>(rowCount);
         for (int i = 0; i < rowCount; ++i) {
             String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
-            if (PhpProjectUtils.hasText(remotePath)) {
+            if (StringUtils.hasText(remotePath)) {
                 String localPath = null;
                 localPath = ((LocalPathCell) pathMappingTableModel.getValueAt(i, COLUMN_LOCAL_PATH)).getPath();
                 File local = new File(localPath);
@@ -211,14 +211,14 @@ public class RunAsWebAdvanced extends JPanel {
             }
         }
         return Pair.of(
-                PhpProjectUtils.implode(remotes, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR),
-                PhpProjectUtils.implode(locals, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+                StringUtils.implode(remotes, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR),
+                StringUtils.implode(locals, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
     }
 
     public Pair<String, String> getDebugProxy() {
         String proxyHost = proxyHostTextField.getText();
         String proxyPort = null;
-        if (PhpProjectUtils.hasText(proxyHost)) {
+        if (StringUtils.hasText(proxyHost)) {
             proxyPort = proxyPortTextField.getText();
         }
         return Pair.of(proxyHost, proxyPort);
@@ -230,17 +230,17 @@ public class RunAsWebAdvanced extends JPanel {
         for (int i = 0; i < pathMappingTableModel.getRowCount(); ++i) {
             String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
             String localPath = ((LocalPathCell) pathMappingTableModel.getValueAt(i, COLUMN_LOCAL_PATH)).getPath();
-            if (!PhpProjectUtils.hasText(remotePath)
-                    && !PhpProjectUtils.hasText(localPath)) {
+            if (!StringUtils.hasText(remotePath)
+                    && !StringUtils.hasText(localPath)) {
                 // empty line
                 continue;
-            } else if (!PhpProjectUtils.hasText(remotePath)
-                    && PhpProjectUtils.hasText(localPath)) {
+            } else if (!StringUtils.hasText(remotePath)
+                    && StringUtils.hasText(localPath)) {
                 notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_RemotePathEmpty"));
                 descriptor.setValid(false);
                 return;
-            } else if (PhpProjectUtils.hasText(remotePath)
-                    && !PhpProjectUtils.hasText(localPath)) {
+            } else if (StringUtils.hasText(remotePath)
+                    && !StringUtils.hasText(localPath)) {
                 notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_LocalPathEmpty"));
                 descriptor.setValid(false);
                 return;
@@ -252,7 +252,7 @@ public class RunAsWebAdvanced extends JPanel {
         }
 
         String proxyHost = proxyHostTextField.getText();
-        if (PhpProjectUtils.hasText(proxyHost)) {
+        if (StringUtils.hasText(proxyHost)) {
             String err = RemoteValidator.validatePort(proxyPortTextField.getText());
             if (err != null) {
                 notificationLineSupport.setErrorMessage(err);
@@ -278,7 +278,7 @@ public class RunAsWebAdvanced extends JPanel {
     private boolean isAnyRemotePathDefined() {
         for (int i = 0; i < pathMappingTableModel.getRowCount(); ++i) {
             String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
-            if (PhpProjectUtils.hasText(remotePath)) {
+            if (StringUtils.hasText(remotePath)) {
                 return true;
             }
         }
@@ -291,8 +291,8 @@ public class RunAsWebAdvanced extends JPanel {
     }
 
     private Object[][] getPathMappings(String remotePaths, String localPaths) {
-        List<String> remotes = PhpProjectUtils.explode(remotePaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        List<String> locals = PhpProjectUtils.explode(localPaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
+        List<String> remotes = StringUtils.explode(remotePaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
+        List<String> locals = StringUtils.explode(localPaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         int remotesSize = remotes.size();
         int localsSize = locals.size();
         Object[][] paths = new Object[remotesSize + 1][2];
@@ -312,7 +312,7 @@ public class RunAsWebAdvanced extends JPanel {
     }
 
     private Pair<String, String> getPathMapping(String remotePath, String localPath) {
-        if (PhpProjectUtils.hasText(remotePath)) {
+        if (StringUtils.hasText(remotePath)) {
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
             if (isSources(localPath)) {
                 localPath = FileUtil.toFile(sources).getAbsolutePath();
@@ -635,7 +635,7 @@ public class RunAsWebAdvanced extends JPanel {
     }
 
     private boolean isLocalPathValid(String localPath) {
-        assert PhpProjectUtils.hasText(localPath);
+        assert StringUtils.hasText(localPath);
         File directory = new File(localPath);
         return directory.isDirectory() && directory.isAbsolute();
     }
@@ -673,7 +673,7 @@ public class RunAsWebAdvanced extends JPanel {
             if (rowCount == 0) {
                 return true;
             }
-            return PhpProjectUtils.hasText((String) getValueAt(rowCount - 1, COLUMN_REMOTE_PATH));
+            return StringUtils.hasText((String) getValueAt(rowCount - 1, COLUMN_REMOTE_PATH));
         }
 
         @Override
