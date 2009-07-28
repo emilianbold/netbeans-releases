@@ -36,56 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
+/**
+ * @author Alexey Vladykin
+ */
+public final class Deadlock {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
-    private final String dataracesColumnName;
-    private final String deadlocksColumnName;
-    private int dataraces;
-    private int deadlocks;
-
-    public THAIndicator(final THAIndicatorConfiguration configuration) {
-        super(configuration);
-        dataracesColumnName = getMetadataColumnName(0);
-        deadlocksColumnName = getMetadataColumnName(1);
+    public Deadlock() {
     }
 
-    @Override
-    protected void repairNeeded(boolean needed) {
-        // throw new UnsupportedOperationException("Not supported yet.");
-    }
+    private static final Pattern DEADLOCK_PATTERN = Pattern.compile("^Deadlock #\\d+"); // NOI18N
 
-    @Override
-    protected void tick() {
-        controlPanel.setDataRaces(dataraces);
-        controlPanel.setDeadlocks(deadlocks);
-    }
-
-    @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            Object dataracesObj = row.getData(dataracesColumnName);
-            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
-            Object deadlocksObj = row.getData(deadlocksColumnName);
-            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
+    public static List<Deadlock> parseDeadlocks(String[] erprint) {
+        List<Deadlock> deadlocks = new ArrayList<Deadlock>();
+        for (String line : erprint) {
+            Matcher m = DEADLOCK_PATTERN.matcher(line);
+            if (m.find()) {
+                deadlocks.add(new Deadlock());
+            }
         }
-    }
-
-    @Override
-    public void reset() {
-        controlPanel.reset();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return controlPanel;
+        return deadlocks;
     }
 }

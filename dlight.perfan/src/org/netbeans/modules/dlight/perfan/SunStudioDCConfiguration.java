@@ -143,14 +143,14 @@ public final class SunStudioDCConfiguration
         DATARACES,
         DEADLOCKS,
     }
-    private final Set<CollectedInfo> collectedInfoList = EnumSet.<CollectedInfo>noneOf(CollectedInfo.class);
+    private final Set<CollectedInfo> collectedInfo = EnumSet.noneOf(CollectedInfo.class);
 
     /**
      * Creates new SunStudio Data Collector Configuration which should collect information <code>info</code>
      * @param info information to be collected
      */
     public SunStudioDCConfiguration(CollectedInfo info) {
-        collectedInfoList.add(info);
+        collectedInfo.add(info);
     }
 
     public static final DataTableMetadata getSyncTableMetadata(Column... columns) {
@@ -208,15 +208,15 @@ public final class SunStudioDCConfiguration
         return SunStudioIDsProvider.DATA_COLLECTOR_ID;
     }
 
-    Set<CollectedInfo> getCollectedInfoList() {
-        return collectedInfoList;
+    Set<CollectedInfo> getCollectedInfo() {
+        return collectedInfo;
     }
 
     private static final class SunStudioDCConfigurationAccessorImpl extends SunStudioDCConfigurationAccessor {
 
         @Override
         public Set<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
-            return configuration.getCollectedInfoList();
+            return configuration.getCollectedInfo();
         }
 
         public String getCPUTableName() {
