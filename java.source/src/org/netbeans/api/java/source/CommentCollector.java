@@ -129,10 +129,10 @@ public final class CommentCollector {
             attachComments(foundComments, tree, ch, endPositions, ts);
         }
 */
-/*
+
         if (log.isLoggable(Level.INFO))
             log.log(Level.INFO, "Collected comments: " + ch);
-*/
+
     }
 
     private void skipEvil(TokenSequence<JavaTokenId> ts) {
