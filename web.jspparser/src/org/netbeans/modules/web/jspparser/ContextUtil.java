@@ -45,6 +45,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -100,7 +102,39 @@ public final class ContextUtil {
         String rop = relativeObject.getPath();
         // check that they share the start of the path 
         if (!isInSubTree(rootFolder, relativeObject)) {
-            throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
+            // #146242 - remove debug messages when issue is solved
+            String message = relativeObject + " not under " + rootFolder + "\n";  //NOI18N
+            FileSystem fs = null;
+            try {
+                fs = rootFolder.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = null;
+            }
+            message += rootFolder + " valid=" + rootFolder.isValid() + " id=" + System.identityHashCode(rootFolder) + " filesystem=" + fs + "\n";  //NOI18N
+            try {
+                fs = relativeObject.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = null;
+            }
+            message += relativeObject + " valid=" + relativeObject.isValid() + " id=" + System.identityHashCode(relativeObject) + " filesystem=" + fs + "\n";  //NOI18N
+            FileObject parent = relativeObject.getParent();
+            while (parent != null && !rfp.equals(parent.getPath())) {
+                try {
+                    fs = parent.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    fs = null;
+                }
+                message += parent + " valid=" + parent.isValid() + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
+                parent = parent.getParent();
+            }
+            try {
+                fs = parent.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = null;
+            }
+            message += parent + " valid=" + parent.isValid() + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
+            throw new IllegalArgumentException(message);
+            //throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
         }
         // now really return the result
         String result = rop.substring(rfp.length());
