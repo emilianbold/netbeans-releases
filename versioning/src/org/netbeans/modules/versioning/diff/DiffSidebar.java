@@ -928,7 +928,14 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 EditorCookie edCookie = getEditorCookie(fileObj);
                 if (edCookie != null) {
                     try {
-                        Document doc = edCookie.openDocument();
+                        Document doc;
+                        try {
+                            doc = edCookie.openDocument();
+                        } catch (UserQuestionException ex) {
+                            /* the document is large - confirm automatically */
+                            ex.confirmed();
+                            doc = edCookie.openDocument();
+                        }
                         return doc.getText(0, doc.getLength());
                     } finally {
                         edCookie.close();
