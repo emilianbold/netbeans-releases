@@ -148,7 +148,7 @@ public final class Kenai {
                     xmppConnection.connect();
                     xmppConnection.login(shortName, new String(password), "NetBeans"); //NOI18N
                 } catch (XMPPException xMPPException) {
-                    new KenaiException(xMPPException);
+                    throw new KenaiException(xMPPException);
                 }
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override
