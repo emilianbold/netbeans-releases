@@ -54,7 +54,7 @@ public abstract class BugtrackingController {
     /**
      * Some data in the controllers component where changed
      */
-    public static String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";   // NOI18N
+    public static final String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";   // NOI18N
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 

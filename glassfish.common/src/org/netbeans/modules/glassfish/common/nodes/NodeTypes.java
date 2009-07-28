@@ -58,11 +58,13 @@ public class NodeTypes {
     private static final String[] APPLICATIONS_TREE = {
         EARS, WEBAPPS, EJBS, APPCLIENTS };
     private static final String[] RESOURCES_TREE = {
-        GlassfishModule.JDBC, GlassfishModule.CONNECTORS };
+        GlassfishModule.JDBC, GlassfishModule.CONNECTORS, GlassfishModule.JAVAMAIL };
     private static final String[] JDBC_TREE = {
         GlassfishModule.JDBC_RESOURCE, GlassfishModule.JDBC_CONNECTION_POOL };
     private static final String[] CONNECTORS_TREE = {
         GlassfishModule.CONN_RESOURCE, GlassfishModule.CONN_CONNECTION_POOL, GlassfishModule.ADMINOBJECT_RESOURCE };
+    private static final String[] JAVAMAIL_TREE = {
+        GlassfishModule.JAVAMAIL_RESOURCE };
     
     static {
         nodeTree = new HashMap<String, String[]>();
@@ -70,6 +72,7 @@ public class NodeTypes {
         nodeTree.put(RESOURCES, RESOURCES_TREE);
         nodeTree.put(GlassfishModule.JDBC, JDBC_TREE);
         nodeTree.put(GlassfishModule.CONNECTORS, CONNECTORS_TREE);
+        nodeTree.put(GlassfishModule.JAVAMAIL, JAVAMAIL_TREE);
     }
 
     private NodeTypes() { }
