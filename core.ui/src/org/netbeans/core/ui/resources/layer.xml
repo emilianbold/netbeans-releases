@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
                 <attr name="key" stringvalue="delete"/>
                 <attr name="iconBase" stringvalue="org/openide/resources/actions/delete.gif"/>
                 <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Delete"/>
+                <attr name="asynchronous" boolvalue="true"/>
             </file>
             <file name="org-openide-actions-FindAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>

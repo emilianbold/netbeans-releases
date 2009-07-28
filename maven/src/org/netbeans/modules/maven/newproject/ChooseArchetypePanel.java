@@ -93,7 +93,6 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
 
     private static FileObject getDefaultCatalogFileObject() {
         URL url = ChooseArchetypePanel.class.getClassLoader().getResource("org/netbeans/modules/maven/archetype-catalog.xml");
-        System.out.println("url1=" + url);
         if (url != null) {
             return URLMapper.findFileObject(url);
         }

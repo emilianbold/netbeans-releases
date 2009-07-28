@@ -88,16 +88,6 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     private final EjbViewController ejbViewController;
     
     public static SessionNode create(final String ejbClass, EjbJar ejbModule, Project project) {
-        ClasspathInfo cpInfo = null;
-        FileObject[] javaSources = ejbModule.getJavaSources();
-        if (javaSources.length > 0) {
-            cpInfo = ClasspathInfo.create(
-                    ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
-                    ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
-                    ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
-                    );
-        }
-        assert cpInfo != null;
         String ejbName = null;
         try {
             ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -112,16 +102,15 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         if (ejbName == null) {
             return null;
         } else {
-            return new SessionNode(new InstanceContent(), cpInfo, ejbClass, ejbName, ejbModule);
+            return new SessionNode(new InstanceContent(), new EjbViewController(ejbClass, ejbModule), ejbName);
         }
     }
     
-    private SessionNode(InstanceContent instanceContent, ClasspathInfo cpInfo, final String ejbClass, String ejbName, EjbJar ejbModule) {
-        super(new SessionChildren(cpInfo, ejbClass, ejbModule), new AbstractLookup(instanceContent));
+    private SessionNode(InstanceContent instanceContent, EjbViewController controller, String ejbName) {
+        super(new SessionChildren(controller), new AbstractLookup(instanceContent));
+        ejbViewController = controller;
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
-        
         setName(ejbName + "");
-        ejbViewController = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {

@@ -85,6 +85,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
@@ -93,6 +94,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.cookies.LineCookie;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 
 
@@ -119,8 +121,20 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         errorKind2Severity.put(Diagnostic.Kind.NOTE, Severity.WARNING);
         errorKind2Severity.put(Diagnostic.Kind.OTHER, Severity.WARNING);
     }
-    
+
+    /**
+     * @return errors for whole file
+     */
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc) throws IOException {
+        return computeErrors(info, doc, null);
+    }
+    
+    /**
+     * @param forPosition position for ehich errors would be computed
+     * @return errors for line specified by forPosition
+     * @throws IOException
+     */
+    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, Integer forPosition) throws IOException {
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         
@@ -128,7 +142,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors );
         
         Map<Class, Data> data = new HashMap<Class, Data>();
-        
+
         for (Diagnostic d : errors) {
             if (isCanceled())
                 return null;
@@ -162,13 +176,25 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             
             final String desc = d.getMessage(null);
             final Position[] range = getLine(info, d, doc, (int)d.getStartPosition(), (int)d.getEndPosition());
-            
+
             if (isCanceled())
                 return null;
             
             if (range[0] == null || range[1] == null)
                 continue;
 
+            if (forPosition != null) {
+                try {
+                    int posRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, forPosition);
+                    int errRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, range[0].getOffset());
+                    if (posRowStart != errRowStart) {
+                        continue;
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
             descs.add(ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getKind()), desc, ehm, doc, range[0], range[1]));
         }
         
@@ -477,7 +503,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             if (errors == null) //meaning: cancelled
                 return ;
 
-            HintsController.setErrors(doc, "java-hints", errors);
+            HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
             
             long end = System.currentTimeMillis();
 

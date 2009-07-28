@@ -1456,7 +1456,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             List<JPDAThread> oldLockerThreadsList;
             List<JPDAThread> newLockerThreadsList;
             logger.fine("checkForBlockingThreads("+threadName+"): suspend all...");
-            debugger.accessLock.writeLock().lock();
+            // Do not wait for write lock if it's not available, since no one will get read lock!
+            boolean locked = debugger.accessLock.writeLock().tryLock();
+            if (!locked) return false;
             try {
                 VirtualMachineWrapper.suspend(vm);
                 try {
@@ -1708,7 +1710,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private String getThreadStateLog() {
-        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended;
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking;
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {
