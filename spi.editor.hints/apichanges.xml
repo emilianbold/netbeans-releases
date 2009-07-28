@@ -105,7 +105,19 @@ is the proper place.
 
     <changes>
 
-        <!-- Start here... -->
+        <change id="Refreshers">
+             <api name="editor.hints"/>
+             <summary>Added PositionRefresher interface and Context</summary>
+             <version major="1" minor="8" subsubminor="1"/>
+             <date day="20" month="7" year="2009"/>
+             <author login="msauer"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added new interface and context class in order to be able to provide up-to-date hints on current line.
+             </description>
+             <class name="PositionRefresher" package="org.netbeans.spi.editor.hints"/>
+             <class name="Context" package="org.netbeans.spi.editor.hints"/>
+        </change>
 
     </changes>
 

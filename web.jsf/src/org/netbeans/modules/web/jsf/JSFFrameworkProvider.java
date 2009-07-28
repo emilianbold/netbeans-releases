@@ -543,13 +543,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 jsfConfig.addApplication(application);
                             }
                             //In JSF2.0 no need to add HANDLER need to change version of faces-config instead
-                            if (!isJSF20) {
+                            if (!isJSF20 && !isMyFaces) {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
                                 application.addViewHandler(viewHandler);
                             }
                             ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                            if (panel.getLibrary().getName().indexOf("facelets-icefaces") != -1
+                            if (panel.getLibrary()!=null && panel.getLibrary().getName().indexOf("facelets-icefaces") != -1
                                     && cp != null && cp.findResource("com/icesoft/faces/facelets/D2DFaceletViewHandler.class") != null){
                                 ViewHandler iceViewHandler = model.getFactory().createViewHandler();
                                 iceViewHandler.setFullyQualifiedClassType("com.icesoft.faces.facelets.D2DFaceletViewHandler");

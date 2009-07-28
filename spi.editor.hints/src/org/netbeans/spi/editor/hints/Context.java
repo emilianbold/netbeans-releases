@@ -36,56 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.spi.editor.hints;
 
-public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.editor.hints.ContextAccessor;
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
-    private final String dataracesColumnName;
-    private final String deadlocksColumnName;
-    private int dataraces;
-    private int deadlocks;
+/**
+ * Context for {@link PositionRefresher}
+ * Provides position of current alt-enter invocation and its cancel status
+ * 
+ * @author Max Sauer
+ * @since 1.8.1
+ */
+public final class Context {
 
-    public THAIndicator(final THAIndicatorConfiguration configuration) {
-        super(configuration);
-        dataracesColumnName = getMetadataColumnName(0);
-        deadlocksColumnName = getMetadataColumnName(1);
+    final AtomicBoolean cancel;
+    final int position;
+
+    Context(int position, AtomicBoolean cancel) {
+        this.position = position;
+        this.cancel = cancel;
     }
+
+    /**
+     * @return true if invocation has been canceled
+     */
+    public boolean isCanceled() {
+        return cancel.get();
+    }
+
+    /**
+     * @return Caret offset inside current document
+     */
+    public int getPosition() {
+        return position;
+    }
+
+    /**
+     * @return cancel status
+     */
+    public AtomicBoolean getCancel() {
+        return cancel;
+    }
+
+    static {
+        ContextAccessor.DEFAULT = new ComtextImpl();
+    }
+}
+
+final class ComtextImpl extends ContextAccessor {
 
     @Override
-    protected void repairNeeded(boolean needed) {
-        // throw new UnsupportedOperationException("Not supported yet.");
+    public Context newContext(int position, AtomicBoolean cancel) {
+        return new Context(position, cancel);
     }
 
-    @Override
-    protected void tick() {
-        controlPanel.setDataRaces(dataraces);
-        controlPanel.setDeadlocks(deadlocks);
-    }
-
-    @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            Object dataracesObj = row.getData(dataracesColumnName);
-            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
-            Object deadlocksObj = row.getData(deadlocksColumnName);
-            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
-        }
-    }
-
-    @Override
-    public void reset() {
-        controlPanel.reset();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return controlPanel;
-    }
 }

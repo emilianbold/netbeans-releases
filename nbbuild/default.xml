@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
     <!-- XXX should use cluster.properties rather than relying on this file -->
     <available property="clusters.file" file="${nb_all}/ide/launcher/netbeans.clusters" value="${nb_all}/ide/launcher/netbeans.clusters"/>
     <!-- fallback for orphaned modules -->
-    <available property="clusters.file" file="${netbeans.dest.dir}/etc/netbeans.clusters" value="${netbeans.dest.dir}/etc/netbeans.clusters"/>
+    <property name="clusters.file" value="${netbeans.dest.dir}/etc/netbeans.clusters"/>
     <loadfile property="cluster.path.evaluated" srcfile="${clusters.file}">
         <filterchain>
             <striplinecomments>

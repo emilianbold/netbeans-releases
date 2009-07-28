@@ -398,7 +398,6 @@ public final class Preview extends Dialog implements Percent.Listener {
         myScrollPane.setFocusable(true);
 
         myScrollPane.addWheelListener(new MouseWheelListener() {
-
             public void mouseWheelMoved(MouseWheelEvent event) {
                 if (SwingUtilities.isRightMouseButton(event) || event.isControlDown()) {
                     myScrollPane.setWheelScrollingEnabled(false);
@@ -416,9 +415,20 @@ public final class Preview extends Dialog implements Percent.Listener {
             }
         });
         myScrollPane.addMouseListener(new MouseAdapter() {
-
             public void mouseClicked(MouseEvent event) {
-                if (event.getClickCount() == 2) {
+                if (event.getClickCount() != 2) {
+                    return;
+                }
+                if (event.isControlDown()) {
+                    if (SwingUtilities.isRightMouseButton(event)) {
+                        decreaseZoom();
+                    }
+                    else {
+                        increaseZoom();
+                    }
+                    updated();
+                }
+                else {
                     if (SwingUtilities.isRightMouseButton(event)) {
                         myScale.decreaseValue();
                     }
@@ -429,8 +439,17 @@ public final class Preview extends Dialog implements Percent.Listener {
             }
         });
         myScrollPane.addKeyListener(myKeyListener);
+//Config.getDefault().getZoom()
 
         return myScrollPane;
+    }
+
+    private void increaseZoom() {
+        Config.getDefault().setZoom(Config.getDefault().getZoom() * Percent.FACTOR);
+    }
+
+    private void decreaseZoom() {
+        Config.getDefault().setZoom(Config.getDefault().getZoom() / Percent.FACTOR);
     }
 
     private void showCustom(boolean doNext) {
