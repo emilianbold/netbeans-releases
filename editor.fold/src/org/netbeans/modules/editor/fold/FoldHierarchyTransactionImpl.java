@@ -520,7 +520,8 @@ public final class FoldHierarchyTransactionImpl {
         int foldStartOffset = fold.getStartOffset();
         int foldEndOffset = fold.getEndOffset();
         int foldPriority = getOperation(fold).getPriority();
-        
+        StringBuffer sbDebug = new StringBuffer();
+        sbDebug.append("\n addFold1 ENTER");
         int index;
         boolean useLast; // use hints from lastOperationFold and lastOperationIndex
         if (parentFold == null) { // attempt to guess
@@ -683,10 +684,10 @@ public final class FoldHierarchyTransactionImpl {
             prevOverlapIndexes = null;
         }
 
-
         if (!blocked) {
             // Which fold will be the next important for the insert (possibly overlapped)
             int nextIndex = index;
+            sbDebug.append("\n addFold2 nextIndex:" + nextIndex + " index:" + index);
             // Non-null in case of active overlapping for foldEndOffset
             int[] nextOverlapIndexes = null;
             if (nextFold != null) { // next fold exists
@@ -700,6 +701,8 @@ public final class FoldHierarchyTransactionImpl {
                         //  in multiple empty folds (same like in findFoldInsertIndex())
                         nextIndex = FoldUtilitiesImpl.findFoldStartIndex(parentFold,
                         foldEndOffset, false);
+                        sbDebug.append("\n addFold3 nextIndex = FoldUtilitiesImpl.findFoldStartIndex(parentFold, foldEndOffset, false)"
+                        + " nextIndex:" + nextIndex + " index:" + index);
 
                         // nextIndex should not be -1 - otherwise should not reach this code
                         nextFold = parentFold.getFold(nextIndex);
@@ -725,6 +728,7 @@ public final class FoldHierarchyTransactionImpl {
 
                     } else { // fold ends after bounds of nextFold but prior start of next fold
                         nextIndex++; // insert clearly after the nextFold
+                        sbDebug.append("\n addFold4 nextIndex++ nextIndex:" + nextIndex + " index:" + index);
                     }
 
                 } // fold ends before start offset of nextFold => insert normally later
@@ -747,11 +751,14 @@ public final class FoldHierarchyTransactionImpl {
                             prevOverlapIndexes, fold);
                         // Must shift nextIndex by number of replaced children
                         nextIndex += prevFold.getFoldCount();
+                        sbDebug.append("\n addFold5 nextIndex += prevFold.getFoldCount()"
+                        + " nextIndex:" + nextIndex + " index:" + index);
                     }
 
                     removeFoldFromHierarchy(parentFold, index - 1, fold);
                     index += replaceIndexShift - 1; // -1 for removed prevFold
                     nextIndex--; // -1 for removed prevFold
+                    sbDebug.append("\n addFold6 nextIndex-- nextIndex:" + nextIndex + " index:" + index);
                 }
                 
                 if (nextOverlapIndexes != null) {
@@ -765,8 +772,13 @@ public final class FoldHierarchyTransactionImpl {
                     
                     removeFoldFromHierarchy(parentFold, nextIndex, fold);
                     nextIndex += replaceIndexShift;
+                    sbDebug.append("\n addFold7 nextIndex += replaceIndexShift"
+                    + " nextIndex:" + nextIndex
+                    + " replaceIndexShift:" + replaceIndexShift + " index:" + index);
                 }
-                
+                sbDebug.append("\n addFold8 INVOKE ApiPackageAccessor.get().foldExtractToChildren"
+                + " index:" + index + " nextIndex:" + nextIndex + " diff:" + (nextIndex - index));
+                assert (nextIndex - index) >= 0 : "Negative length." + sbDebug.toString();
                 ApiPackageAccessor.get().foldExtractToChildren(parentFold, index, nextIndex - index, fold);
                 
                 // Update affected offsets
