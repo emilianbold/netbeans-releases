@@ -16,6 +16,8 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.netbeans.modules.openide.util.ActionsBridge;
+import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -102,7 +104,7 @@ implements PropertyChangeListener, ContextAwareAction {
         return true;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         assert EventQueue.isDispatchThread();
         if (getDelegate() instanceof Action) {
             if (!((Action)getDelegate()).isEnabled()) {
@@ -112,7 +114,14 @@ implements PropertyChangeListener, ContextAwareAction {
             }
         }
 
-        getDelegate().actionPerformed(e);
+        boolean async = Boolean.TRUE.equals(map.get("asynchronous")); // NOI18N
+        ActionRunnable ar = new ActionRunnable(e, this, async) {
+            @Override
+            protected void run() {
+                getDelegate().actionPerformed(e);
+            }
+        };
+        ActionsBridge.doPerformAction(this, ar);
     }
 
     @Override
