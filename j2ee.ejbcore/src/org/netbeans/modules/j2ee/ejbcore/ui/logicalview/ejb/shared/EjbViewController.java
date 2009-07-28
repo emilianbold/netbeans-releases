@@ -129,10 +129,13 @@ public final class EjbViewController {
     }
     
     public void delete(boolean deleteClasses) throws IOException {
+
+        Profile profile = ejbModule.getJ2eeProfile();
+        boolean isEE5orEE6 = Profile.JAVA_EE_5.equals(profile) ||
+                             Profile.JAVA_EE_6_FULL.equals(profile) || 
+                             Profile.JAVA_EE_6_WEB.equals(profile);
         
-        boolean isEE5 = Profile.JAVA_EE_5.equals(ejbModule.getJ2eeProfile());
-        
-        if (!isEE5) {
+        if (!isEE5orEE6) {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) throws Exception {
                     EjbJar ejbJar = metadata.getRoot();
@@ -195,7 +198,19 @@ public final class EjbViewController {
                 ejbModule
                 );
     }
-    
+
+    public String getEjbClass(){
+        return ejbClass;
+    }
+
+    public org.netbeans.modules.j2ee.api.ejbjar.EjbJar getEjbModule(){
+        return ejbModule;
+    }
+
+    public ClasspathInfo getClasspathInfo(){
+        return cpInfo;
+    }
+
     public DataObject getBeanDo() {
         return getDataObject(ejbClass);
     }

@@ -91,15 +91,15 @@ public class MessageNode extends AbstractNode implements OpenCookie {
         if (ejbName == null) {
             return null;
         } else {
-            return new MessageNode(new InstanceContent(), ejbClass, ejbName, ejbModule, project);
+            return new MessageNode(new InstanceContent(), new EjbViewController(ejbClass, ejbModule), ejbName, project);
         }
     }
     
-    private MessageNode(InstanceContent content, final String ejbClass, String ejbName, EjbJar ejbModule, Project project) {
+    private MessageNode(InstanceContent content, EjbViewController controller, String ejbName, Project project) {
         super(Children.LEAF, new AbstractLookup(content));
+        this.controller = controller;
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif");
         setName(ejbName + "");
-        controller = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
