@@ -46,7 +46,6 @@ import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.beans.PropertyChangeSupport;
@@ -103,8 +102,6 @@ public class FileStatusCache {
     
     private Mercurial     hg;
     
-    private Set<FileSystem> filesystemsToRefresh;
-    
     FileStatusCache() {
         this.hg = Mercurial.getInstance();
         cacheProvider = new DiskMapTurboProvider();
@@ -130,19 +127,6 @@ public class FileStatusCache {
         Set<File> files = getScannedFiles(dir, null).keySet();
         return files.toArray(new File[files.size()]);
     }
-
-    /**
-     * Check if this context has at least one file with the passed in status
-     * May call I/O operations.
-     *
-     * @param context context to examine
-     * @param includeStatus file status to check for
-     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
-     */
-    public boolean containsFileOfStatus(VCSContext context, int includeStatus){
-        return containsFileOfStatus(context, includeStatus, false);
-    }
-
 
     /**
      * Check if this context has at least one file with the passed in status
