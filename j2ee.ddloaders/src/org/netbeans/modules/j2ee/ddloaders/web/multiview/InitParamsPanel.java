@@ -66,7 +66,6 @@ public class InitParamsPanel extends DefaultTablePanel {
         this.dObj=dObj;
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                
                 int row = getTable().getSelectedRow();
                 dObj.modelUpdatedFromUI();
                 dObj.setChangedFromUI(true);

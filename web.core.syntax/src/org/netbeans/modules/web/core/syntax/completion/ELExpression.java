@@ -140,7 +140,10 @@ public class ELExpression {
                         return NOT_EL;
                     }
                 }
+            }
 
+            if(ts == null) {
+                return NOT_EL;
             }
 
 
