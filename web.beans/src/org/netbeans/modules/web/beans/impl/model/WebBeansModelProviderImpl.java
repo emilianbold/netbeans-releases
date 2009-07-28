@@ -146,6 +146,22 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return hasBinding && !hasProduces;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element)
+     */
+    public List<AnnotationMirror> getBindings( Element element ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getDeploymentType(javax.lang.model.element.Element)
+     */
+    public AnnotationMirror getDeploymentType( Element element ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     private WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
@@ -158,5 +174,4 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         }
         return modelImpl;
     }
-
 }

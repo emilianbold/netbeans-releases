@@ -68,15 +68,15 @@ import org.openide.util.NbBundle;
 public class ThreadMapToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     public static final int INDICATOR_POSITION = 10;
+    private static final String ID = "dlight.tool.threadmap"; // NOI18N
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ThreadMapTool.DetailedToolName"); // NOI18N
 
     private static final int STATE_COUNT = 4;
 
     public DLightToolConfiguration create() {
-        final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
-
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         DataTableMetadata msaTableMetadata = createIndicatorTableMetadata();
 
         PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(

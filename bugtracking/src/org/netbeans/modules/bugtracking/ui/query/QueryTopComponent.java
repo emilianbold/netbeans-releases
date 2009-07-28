@@ -652,10 +652,10 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void updateSavedQueriesIntern(Repository repo) {
-        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
         if(repo == null) {
             return;
         }
+        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
         synchronized (LOCK) {
             if(savedQueries != null) {
                 for (Query q : savedQueries) {

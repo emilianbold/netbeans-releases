@@ -75,7 +75,7 @@ public interface NodeList<K> {
     /**
      * Creates a node for a given key.
      * @param key a key which was included in {@link #keys}
-     * @return a node which should represent that key visually
+     * @return a node which should represent that key visually or null if no such node can be created currently.
      */
     Node node(K key);
     /**
