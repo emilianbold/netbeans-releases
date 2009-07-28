@@ -270,6 +270,9 @@ public class BugzillaConfiguration {
      * @return
      */
     public BugzillaVersion getInstalledVersion() {
+        if(rc == null) {
+            return null;
+        }
         return rc.getInstallVersion();
     }
 

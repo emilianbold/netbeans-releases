@@ -208,8 +208,9 @@ public class FakeJiraSupport {
         }
         List<QueryResultHandle> getQueryResults() {
             if(results == null) {
-                results = new ArrayList<QueryResultHandle>(1);
-                results.add(new FakeJiraQueryResultHandle());
+                List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
+                r.add(new FakeJiraQueryResultHandle());
+                results = r;
             }
             return results; 
         }
