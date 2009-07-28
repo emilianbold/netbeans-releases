@@ -54,7 +54,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
@@ -66,7 +65,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
@@ -503,22 +501,22 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             int col = table.columnAtPoint(p);
             Object valueAt = table.getValueAt(row, col);
             if (col == 1) {
-//                Rectangle cellRect = table.getCellRect(row, col, false);
-//                JButton button = scCell.getButton();
-//                if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
-//                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
-//                    button.dispatchEvent(buttonEvent);
-//                    button.doClick();
+                ShortcutCellPanel scCell = (ShortcutCellPanel) table.getCellRenderer(row, col).getTableCellRendererComponent(table, valueAt, true, true, row, col);
+                Rectangle cellRect = table.getCellRect(row, col, false);
+                JButton button = scCell.getButton();
+                if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
+                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
+                    button.dispatchEvent(buttonEvent);
+                    e.consume();
 
-//                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
+                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
                     ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];
-//                    panel.setDisplayAddAlternative(isShortcutSet);
-                    panel.setDisplayAddAlternative(true);
+                    panel.setDisplayAddAlternative(isShortcutSet);
                     panel.setRow(row);
                     popup.show(table, e.getX(), e.getY());
                 }
             }
-//        }
+        }
     }
 
     static String loc (String key) {
