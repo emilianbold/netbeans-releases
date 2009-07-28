@@ -59,11 +59,13 @@ public final class DLightTHAToolConfigurationProvider
 
         // SunStudio should collect deadlocks data i.e. create a configuration
         // that collects CollectedInfo.DEADLOCKS
-        SunStudioDCConfiguration ssCollectorConfig =
+        SunStudioDCConfiguration ssDeadlocks =
                 new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.DEADLOCKS);
+        toolConfiguration.addDataCollectorConfiguration(ssDeadlocks);
 
-        // This tool will use DataCollector with this configuration...
-        toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
+        SunStudioDCConfiguration ssRaces =
+                new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.DATARACES);
+        toolConfiguration.addDataCollectorConfiguration(ssRaces);
 
         IndicatorConfiguration indicatorConfiguration = new THAIndicatorConfiguration(null);
 
