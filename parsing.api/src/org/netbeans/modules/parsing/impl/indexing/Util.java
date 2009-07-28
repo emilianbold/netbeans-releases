@@ -143,9 +143,11 @@ public final class Util {
     }
 
     public static boolean containsAny(Collection<? extends String> searchIn, Collection<? extends String> searchFor) {
-        for(String s : searchFor) {
-            if (searchIn.contains(s)) {
-                return true;
+        if (searchIn != null && searchFor != null) {
+            for(String s : searchFor) {
+                if (searchIn.contains(s)) {
+                    return true;
+                }
             }
         }
         return false;
