@@ -1546,7 +1546,7 @@ public final class WebProject implements Project, AntProjectListener {
             try {
                 FileObject fo = fe.getFile();
 
-                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true, false);
+                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
                 if (webInf != null && FileUtil.isParentOf(webInf, fo)
