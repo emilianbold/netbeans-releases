@@ -46,12 +46,13 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
  * @author Tor Norbye
  */
-public class IndexedFunction extends IndexedElement implements FunctionElement {
+public class IndexedFunction extends IndexedFullyQualified implements FunctionElement {
     private String arguments;
     private String namespaceName;
     private String[] args;
@@ -179,5 +180,10 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     public String getNamespaceName() {
         final String retval = namespaceName;
         return retval != null ? retval : "";//NOI18N
+    }
+
+    public String getFullyQualifiedName() {
+        QualifiedName qn = QualifiedName.createFullyQualified(name, namespaceName);
+        return qn.toString();
     }
 }

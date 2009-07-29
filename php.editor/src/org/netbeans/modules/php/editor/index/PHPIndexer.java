@@ -188,6 +188,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
+            PHPIndex.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = ModelFactory.getModel(r);
@@ -251,10 +252,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
             for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
-                if (nsElement.getName().length() == 0){
+                if (nsElement.isDefaultNamespace()){
                     continue; // do not index default ns
                 }
-
+                
                 defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
             }
@@ -300,7 +301,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 5;
+        public static final int VERSION = 6;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

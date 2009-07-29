@@ -42,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
@@ -57,7 +59,6 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -185,6 +186,7 @@ public class VariousUtils {
         return null;
     }
 
+    private static Set<String> recursionDetection = new HashSet<String>();//#168868
     //TODO: needs to be improved to properly return more types
     public static List<? extends TypeScope> getType(FileScope topScope, VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         List<? extends TypeScope> recentTypes = Collections.emptyList();
@@ -276,7 +278,14 @@ public class VariousUtils {
                         if (newRecentTypes.isEmpty()) {
                             VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                             if (var != null) {
-                                newRecentTypes.addAll(var.getTypes(offset));
+                                boolean added = recursionDetection.add(var.getName());
+                                if (added) {
+                                    try {
+                                        newRecentTypes.addAll(var.getTypes(offset));
+                                    } finally {
+                                        recursionDetection.remove(var.getName());
+                                    }
+                                } 
                             }
                         }
                         recentTypes = newRecentTypes;

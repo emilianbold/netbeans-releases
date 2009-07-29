@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Radek Matous
  */
-public class IndexedInterface extends IndexedType {
-    private String interfaces[];
-
-    public IndexedInterface(String name, String in, PHPIndex index, String fileUrl,
-            String interfaces[], int offset,  int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.CLASS);
-        this.interfaces = interfaces;
+public abstract class IndexedFullyQualified extends IndexedElement{
+    IndexedFullyQualified(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
+        super(name,in,index,fileUrl,offset,flags,kind);
     }
 
-    public String[] getInterfaces() {
-        return interfaces;
-    }
-    
-    public String getNamespaceName() {
-        final String retval = getIn();
-        return retval != null ? retval : "";//NOI18N
-    }
-
-    @Override
-    public String getFullyQualifiedName() {
-        QualifiedName qn = QualifiedName.createFullyQualified(name, getNamespaceName());
-        return qn.toString();
-    }
+    public abstract String getFullyQualifiedName();
+    public abstract String getNamespaceName();
 }
