@@ -153,7 +153,7 @@ class FCLSupport {
         }
         
     }
-    private static RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher"); // NOI18N
+    private static RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher", 1, false, false); // NOI18N
     private static final Queue<DispatchEventWrapper> q = new ConcurrentLinkedQueue<DispatchEventWrapper>();
     private static RequestProcessor.Task task = RP.create(new Runnable() {
         public void run() {

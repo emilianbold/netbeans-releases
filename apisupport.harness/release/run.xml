@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <!-- CP with id="cluster.path.id" is expected to be passed as parameter to run.xml -->
         <pathconvert property="install">
             <path refid="cluster.path.id"/>
-            <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
+            <regexpmapper from="(.*[/\\])platform[0-9]*$$" to="\1"/>
         </pathconvert>
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
         <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">

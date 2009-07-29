@@ -102,8 +102,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
      */
     private SoftReference parseResultSuccessfulRef;
     
-    private Object parseResultLock = new Object();
-    private Object openInfoLock = new Object();
+    private final Object parseResultLock = new Object();
+    private final Object openInfoLock = new Object();
     
     /** Holds a strong reference to the parsing 'successful' data during an editor 
      * pane is opened for a JSP corresponding to this support. 

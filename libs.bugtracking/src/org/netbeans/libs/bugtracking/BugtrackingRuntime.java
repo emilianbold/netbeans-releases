@@ -66,7 +66,7 @@ public class BugtrackingRuntime {
 
     private static BugtrackingRuntime instance;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.libs.bugtracking.BugtrackingRuntime"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.libs.bugtracking.BugtrackingRuntime"); // NOI18N
 
     private final String            DATA_DIRECTORY = "bugtracking";             // NOI18N
     private File                    cacheStore;

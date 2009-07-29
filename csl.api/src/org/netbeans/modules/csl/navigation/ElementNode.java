@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -65,6 +65,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /** 
  * This file is originally from Retouche, the Java Support 
@@ -445,9 +446,11 @@ public class ElementNode extends AbstractNode {
     private static class WaitNode extends AbstractNode {
         
         private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/wait.gif"); // NOI18N
+        private String displayName;
         
         WaitNode( ) {
             super( Children.LEAF );
+            displayName = NbBundle.getMessage(ElementNode.class, "LBL_WaitNode");
         }
         
         @Override
@@ -462,7 +465,7 @@ public class ElementNode extends AbstractNode {
 
         @java.lang.Override
         public java.lang.String getDisplayName() {
-            return "Please Wait...";
+            return displayName;
         }
     }
     

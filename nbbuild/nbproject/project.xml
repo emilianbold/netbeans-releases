@@ -171,6 +171,7 @@ made subject to such option by the copyright holder.
                     </action>
                     <separator/>
                     <action>
+                        <script>javadoctools/build.xml</script>
                         <label>Build All API Javadoc</label>
                         <target>build-javadoc</target>
                     </action>

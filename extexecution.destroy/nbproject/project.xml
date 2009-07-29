@@ -34,16 +34,16 @@
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/winp-1.10.jar</runtime-relative-path>
-                <binary-origin>external/winp-1.10.jar</binary-origin>
+                <runtime-relative-path>ext/winp-1.13-patched.jar</runtime-relative-path>
+                <binary-origin>external/winp-1.13-patched.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/libpam4j-1.1.jar</runtime-relative-path>
                 <binary-origin>external/libpam4j-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/processtreekiller-1.0.jar</runtime-relative-path>
-                <binary-origin>external/processtreekiller-1.0.jar</binary-origin>
+                <runtime-relative-path>ext/processtreekiller-1.0.1.jar</runtime-relative-path>
+                <binary-origin>external/processtreekiller-1.0.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-io-1.4.jar</runtime-relative-path>

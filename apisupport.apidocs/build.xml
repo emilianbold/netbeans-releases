@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
         <property file="../nbbuild/build.properties"/>
         <mkdir dir="${docs.dir}"/>
         <property name="javadoc.fail.on.error" value="true"/>
-        <ant dir="../nbbuild" target="build-javadoc" inheritall="false">
+        <ant dir="../nbbuild/javadoctools" target="build-javadoc" inheritall="false">
             <!-- build into my personal javadoc build area -->
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
             <property name="javadoc.fail.on.error" value="${javadoc.fail.on.error}"/>
