@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.NotificationLineSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Panel for adding data source reference.
@@ -239,6 +240,10 @@ public class DataSourceReferencePanel extends JPanel {
             return false;
         } else {
             refName = refName.trim();
+            if (!Utilities.isJavaIdentifier(refName)){
+                setError("ERR_INVALID_REFNAME"); // NOI18N
+                return false;
+            }
             if (refNames.contains(refName)) {
                 setError("ERR_DUPLICATE_REFNAME"); // NOI18N
                 return false;

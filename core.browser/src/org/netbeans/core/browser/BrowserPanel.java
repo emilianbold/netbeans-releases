@@ -129,6 +129,8 @@ public class BrowserPanel extends MozillaPanel {
     public void dispose() {
         MozillaExecutor.mozAsyncExec(new Runnable() {
             public void run() {
+                if( !browserAttached || null == getChromeAdapter() )
+                    return;
                 onDetachBrowser();
                 browserAttached = false;
             }

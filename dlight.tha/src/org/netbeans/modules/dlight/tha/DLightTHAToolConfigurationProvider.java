@@ -76,9 +76,10 @@ public final class DLightTHAToolConfigurationProvider
                 SunStudioDCConfiguration.c_Deadlocks));
 
         IndicatorConfiguration indicatorConfiguration = new THAIndicatorConfiguration(indicatorMetadata);
+        
+        DeadlockVisualizerConfiguration deadlockVisualizerConfiguration = new DeadlockVisualizerConfiguration();
+        indicatorConfiguration.addVisualizerConfiguration(deadlockVisualizerConfiguration);
 
-//        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
-//        indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 
         return toolConfiguration;
