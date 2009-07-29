@@ -150,12 +150,14 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         panel.validateButton.setEnabled(false);
 
+        // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
+        // is name unique?
         String[] repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = BugzillaConfig.getInstance().getRepositories();
@@ -167,6 +169,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
         }
 
+        // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");  // NOI18N
@@ -174,7 +177,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         }
 
         try {
-            new URL(url);
+            new URL(url); // check this first even if URL is an URI
             new URI(url);
         } catch (Exception ex) {
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
@@ -182,6 +185,10 @@ public class RepositoryController extends BugtrackingController implements Docum
             return false;
         }
 
+        // the url format is ok - lets enable the validate button
+        panel.validateButton.setEnabled(true);
+
+        // is url unique?
         if(repository.getTaskRepository() == null) {
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
@@ -192,7 +199,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
         }
 
-        panel.validateButton.setEnabled(true);
         return true;
     }
 
