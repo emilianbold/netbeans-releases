@@ -310,7 +310,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             getHttpPassword());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
-                    repository.getExecutor().execute(cmd, false);
+                    repository.getExecutor().execute(cmd, false, false, true);
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
                             Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
