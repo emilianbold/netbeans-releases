@@ -83,9 +83,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
-import org.netbeans.modules.bugtracking.patch.ContextualPatch;
-import org.netbeans.modules.bugtracking.patch.Patch;
-import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -314,17 +311,28 @@ public class BugtrackingUtil {
         }
         return context;
     }
-
-    public static void applyPatch(File patch, File context) {
-        try {
-            ContextualPatch cp = ContextualPatch.create(patch, context);
-            cp.patch(false);
-        } catch (PatchException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
+//
+//    public static void applyPatch(File patch, File context) {
+//        try {
+//            ContextualPatch cp = ContextualPatch.create(patch, context);
+//            cp.patch(false);
+//        } catch (PatchException ex) {
+//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+//        }
+//    }
+//
+//    public static boolean isPatch(FileObject fob) throws IOException {
+//        boolean isPatch = false;
+//        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
+//        try {
+//            isPatch = (Patch.parse(reader).length > 0);
+//        } finally {
+//            reader.close();
+//        }
+//        return isPatch;
+//    }
 
     /**
      * Recursively deletes all files and directories under a given file/directory.
@@ -594,17 +602,6 @@ public class BugtrackingUtil {
         };
         scrollPane.addMouseWheelListener(listener);
         scrollPane.getViewport().getView().addMouseWheelListener(listener);
-    }
-
-    public static boolean isPatch(FileObject fob) throws IOException {
-        boolean isPatch = false;
-        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
-        try {
-            isPatch = (Patch.parse(reader).length > 0);
-        } finally {
-            reader.close();
-        }
-        return isPatch;
     }
 
     public static void openPluginManager() {
