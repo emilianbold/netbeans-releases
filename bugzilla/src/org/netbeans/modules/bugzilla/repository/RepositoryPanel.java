@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -63,6 +64,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         progressPanel.setVisible(false);
         httpCheckBox.addActionListener(this);
         enableHttpFields();
+        connectionLabel.setForeground(new Color(0, 88, 00));
     }
 
     @Override
