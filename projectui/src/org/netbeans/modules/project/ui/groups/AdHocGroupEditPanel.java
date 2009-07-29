@@ -56,6 +56,7 @@ public class AdHocGroupEditPanel extends GroupEditPanel {
         nameField.setText(g.getName());
         autoSynchCheckbox.setSelected(g.isAutoSynch());
         updateSynchButton();
+        startPerformingNameChecks(nameField, g.getName());
     }
 
     public void applyChanges() {

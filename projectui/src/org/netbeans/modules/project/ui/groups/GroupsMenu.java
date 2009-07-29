@@ -217,6 +217,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     private static void openProperties(Group g) {
         GroupEditPanel panel = g.createPropertiesPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.properties_title"));
+        panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
