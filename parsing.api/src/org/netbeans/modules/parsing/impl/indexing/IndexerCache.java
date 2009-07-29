@@ -135,6 +135,10 @@ public abstract class IndexerCache <T> {
             return mimeTypes;
         }
 
+        public boolean isAllMimeTypesIndexer() {
+            return mimeTypes.contains(ALL_MIME_TYPES);
+        }
+
         // --------------------------------------------------------------------
         // Private implementation
         // --------------------------------------------------------------------
@@ -471,8 +475,8 @@ public abstract class IndexerCache <T> {
             }
 
             // check the slow mimetypes category
-            boolean slow1 = containsAny(mimeTypes1, SLOW_MIME_TYPES);
-            boolean slow2 = containsAny(mimeTypes2, SLOW_MIME_TYPES);
+            boolean slow1 = Util.containsAny(mimeTypes1, SLOW_MIME_TYPES);
+            boolean slow2 = Util.containsAny(mimeTypes2, SLOW_MIME_TYPES);
             if (slow1 && slow2) {
                 return 0;
             } else if (slow1) {
@@ -483,15 +487,6 @@ public abstract class IndexerCache <T> {
 
             // both indexers belong to the fast mimetypes category
             return 0;
-        }
-
-        private boolean containsAny(Collection<? extends String> searchIn, Collection<? extends String> searchFor) {
-            for(String s : searchFor) {
-                if (searchIn.contains(s)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private Integer highestOrder(Collection<? extends String> mimeTypes) {
