@@ -332,7 +332,7 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-javadoc
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc
 ERROR_CODE=$?
 
 create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
