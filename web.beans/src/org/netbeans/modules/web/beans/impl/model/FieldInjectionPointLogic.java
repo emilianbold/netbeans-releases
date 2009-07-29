@@ -96,6 +96,12 @@ abstract class FieldInjectionPointLogic {
     {
         Set<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
+        return getResult(injectables);
+    }
+
+    protected Element getResult( Set<Element> injectables )
+            throws AmbiguousDependencyException
+    {
         /*
          *  TODO : need to compare set before filtering and after.
          *  If after filtering there is only one element then 
@@ -250,12 +256,11 @@ abstract class FieldInjectionPointLogic {
             types.addAll( typesWithBindings );
         }
         
-        result.addAll( types );
-        
         DeploymentTypeFilter<TypeElement> filter = DeploymentTypeFilter.get( 
                 TypeElement.class);
         filter.init( modelImpl );
         filter.filter( types );
+        result.addAll( types );
         
         /*
          * This is list with production fields or methods ( they have @Produces annotation )
