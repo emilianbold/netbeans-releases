@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Collection;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -71,7 +70,6 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
@@ -86,6 +84,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.openide.util.EditableProperties;
 
 
 /**

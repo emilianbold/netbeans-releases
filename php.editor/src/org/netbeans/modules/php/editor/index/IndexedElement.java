@@ -306,5 +306,5 @@ public abstract class IndexedElement extends PHPElement {
 
     public int getFlags() {
         return flags;
-    }
+    }    
 }

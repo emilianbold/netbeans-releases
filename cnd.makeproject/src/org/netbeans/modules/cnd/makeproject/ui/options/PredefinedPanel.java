@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -86,6 +88,24 @@ public class PredefinedPanel extends javax.swing.JPanel {
         }
         includes.add(includesPanel = new IncludesPanel(includesList));
         List<String> definesList = compiler.getSystemPreprocessorSymbols();
+        Collections.sort(definesList, new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                return trim(s1).compareToIgnoreCase(trim(s2));
+            }
+            private String trim(String s) {
+                if (s == null) {
+                    return s;
+                } else {
+                    int start = 0;
+                    for (int i = 0; i < s.length(); i++) {
+                        if (s.charAt(i) == '_') {
+                            start++;
+                        }
+                    }
+                    return (start == 0) ? s : s.substring(start);
+                }
+            }
+        });
 //        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
 
         if (definitionsPanel != null) {
