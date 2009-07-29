@@ -57,7 +57,7 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
     private Component toolbarPresenter;
 
     public THAToolbarDropdownAction() {
-        defaultAction = THAActionsProvider.getDefault().getStartThreadAnalisysAction();
+        defaultAction = THAActionsProvider.getDefault().getStartThreadAnalysisAction();
     }
 
     public Object getValue(String key) {
