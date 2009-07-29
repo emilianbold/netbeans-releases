@@ -294,6 +294,7 @@ public class SpecializesTest extends CommonTestCase {
                 "public class CustomClass  {" +
                 " @Current Two myField1; "+
                 " @Current Three myField2; "+
+                " @Current @Binding2 @Binding1 One1 myField3; "+
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
@@ -345,10 +346,14 @@ public class SpecializesTest extends CommonTestCase {
                         else if ( element.getSimpleName().contentEquals("myField2")){
                             check2( element , model );
                         }
+                        else if ( element.getSimpleName().contentEquals("myField3")){
+                            check3( element , model );
+                        }
                     }
                 }
                 assert names.contains("myField1");
                 assert names.contains("myField2");
+                assert names.contains("myField3");
                 return null;
             }
         });
@@ -375,6 +380,12 @@ public class SpecializesTest extends CommonTestCase {
                 injectable instanceof TypeElement);
         assertEquals("foo.Three", ((TypeElement) injectable).getQualifiedName()
                 .toString());
+    }
+    
+    protected void check3( Element element, WebBeansModel model )
+            throws WebBeansModelException
+    {
+        check2(element, model);
     }
     
     public void testSimpleProductionSpecializes() throws IOException, InterruptedException{

@@ -212,7 +212,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebXmlWizardIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
       </file>
 
       <file name="web-fragment.xml">
@@ -222,7 +222,7 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebFragmentXmlWizardIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
       </file>
     </folder>
 </folder>
@@ -264,7 +264,6 @@ made subject to such option by the copyright holder.
         <attr name="position" intvalue="390"/>
       </file>
     </folder>
-
   </folder>
 
   <folder name="J2EE">
@@ -292,12 +291,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Popup">
-                    
                     <!--<file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
                     </file>-->
-
-                    
                     
                     <!--<attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-web-core-jsploader-EditServletAction.shadow" boolvalue="true"/>
@@ -349,7 +345,6 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="JSPPalette">
-
         <file name="HTML.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
@@ -364,7 +359,6 @@ made subject to such option by the copyright holder.
 
         <folder name="JSP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
-
             <attr name="position" intvalue="300"/>
             <file name="UseBean.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/UseBean.xml">
                 <attr name="position" intvalue="100"/>
@@ -384,14 +378,10 @@ made subject to such option by the copyright holder.
             <file name="ForEach.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/ForEach.xml">
                 <attr name="position" intvalue="600"/>
             </file>
-
-            
-
         </folder>
 
         <folder name="Database">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
-
             <attr name="position" intvalue="500"/>
             <file name="Query.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Query.xml">
                 <attr name="position" intvalue="100"/>
@@ -408,19 +398,7 @@ made subject to such option by the copyright holder.
             <file name="Delete.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Delete.xml">
                 <attr name="position" intvalue="500"/>
             </file>
-
-            
-        
         </folder>
-<!--        
-        <folder name="Enterprise">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
-
-        </folder>
--->
-<!--        
-        <attr name="Database/Enterprise" boolvalue="true" />
--->
     </folder>
 
     <folder name="Loaders">
