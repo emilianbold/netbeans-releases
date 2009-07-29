@@ -371,14 +371,17 @@ public abstract class Group {
         };
     }
 
+    @Override
     public int hashCode() {
         return id.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof Group && id.equals(((Group) obj).id);
     }
 
+    @Override
     public String toString() {
         return toString(false);
     }
