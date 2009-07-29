@@ -64,6 +64,7 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
                 folderField.setText(d.getAbsolutePath());
             }
         }
+        startPerformingNameChecks(nameField, g.getName());
     }
 
     public void applyChanges() {
