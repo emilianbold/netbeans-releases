@@ -1156,6 +1156,20 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexers();
                 for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
 
+                    Set<String> rootMimeTypes = PathRegistry.getDefault().getMimeTypesFor(root);
+                    if (rootMimeTypes != null && !cifInfo.isAllMimeTypesIndexer() && !Util.containsAny(rootMimeTypes, cifInfo.getMimeTypes())) {
+                        // ignore roots that are not marked to be scanned by the cifInfo indexer
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "Not using {0} registered for {1} to scan root {2} marked for {3}", new Object [] {
+                                cifInfo.getIndexerFactory().getIndexerName() + "/" + cifInfo.getIndexerFactory().getIndexVersion(),
+                                printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder()),
+                                root,
+                                PathRegistry.getDefault().getMimeTypesFor(root)
+                            });
+                        }
+                        continue;
+                    }
+
                     List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                     for(String mimeType : cifInfo.getMimeTypes()) {
                         indexerIndexablesList.add(ci.getIndexablesFor(mimeType));
