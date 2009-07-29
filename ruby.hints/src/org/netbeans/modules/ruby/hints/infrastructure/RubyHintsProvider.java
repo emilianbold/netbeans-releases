@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,6 +38,8 @@ import java.util.Set;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.IRubyWarnings.ID;
+import org.jrubyparser.ast.CaseNode;
+import org.jrubyparser.ast.WhenNode;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -311,7 +314,7 @@ public class RubyHintsProvider implements HintsProvider {
             List<Hint> result) {
         applyRules(manager, context, node.getNodeType(), node, path, hints, result);
         
-        List<Node> list = node.childNodes();
+        List<Node> list = childNodes(node);
 
         for (Node child : list) {
             if (child.isInvisible()) {
@@ -325,6 +328,32 @@ public class RubyHintsProvider implements HintsProvider {
             scan(manager, context, child, path, hints, result);
             path.ascend();
         }        
+    }
+
+    private List<Node> childNodes(Node node) {
+        if (node.getNodeType() == NodeType.WHENNODE) {
+            // skip the next case nodes for when nodes, the
+            // new parser includes them in child nodes which
+            // confuses our hints
+            // XXX: change this behaviour in the parser?
+            WhenNode whenNode = (WhenNode) node;
+            return nodeList(whenNode.getExpressionNodes(), whenNode.getBodyNode());
+        } else if (node.getNodeType() == NodeType.CASENODE) {
+            CaseNode caseNode = (CaseNode) node;
+            // include the else node for case nodes
+            return nodeList(caseNode.getCaseNode(), caseNode.getCases(), caseNode.getElseNode());
+        }
+        return node.childNodes();
+    }
+
+    private List<Node> nodeList(Node... nodes) {
+        List<Node> result = new ArrayList<Node>(nodes.length);
+        for (Node node : nodes) {
+            if (node != null) {
+                result.add(node);
+            }
+        }
+        return result;
     }
 
     public void cancel() {

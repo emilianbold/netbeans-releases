@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.db.h2;
 
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
@@ -79,7 +80,6 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final String tmpDir;
     private static final String url;
     private String dbURL;
-
 
     static {
         try {
@@ -252,5 +252,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
+    }
+
+    public StackTrace getStackTrace(long timestamp, int threadID, int threadState) {
+        return stackStorage.getStackTrace(timestamp, threadID, threadState);
     }
 }

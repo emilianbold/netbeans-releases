@@ -104,7 +104,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -590,32 +590,32 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         legendPanel.removeAll();
         if (!isFull) {
             JPanel container = new JPanel();
-            container.add(createLegendLabel(ThreadState.MSAState.Running, ThreadStateColumnImpl.THREAD_RUNNING));
-            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateColumnImpl.THREAD_BLOCKED));
-            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateColumnImpl.THREAD_WAITING));
-            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateColumnImpl.THREAD_SLEEPING));
+            container.add(createLegendLabel(ThreadState.MSAState.Running, ThreadStateResources.THREAD_RUNNING));
+            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateResources.THREAD_BLOCKED));
+            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateResources.THREAD_WAITING));
+            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateResources.THREAD_SLEEPING));
             legendPanel.add(container, BorderLayout.CENTER);
         } else {
             JPanel container = new JPanel();
             container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
-            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING_SYSTEM));
-            container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
-            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateColumnImpl.THREAD_WAITING_CPU));
-            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateColumnImpl.THREAD_SLEEP_USE_LOCK));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateResources.THREAD_RUNNING_USER));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateResources.THREAD_RUNNING_SYSTEM));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateResources.THREAD_RUNNING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateResources.THREAD_WAITING_CPU));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateResources.THREAD_SLEEP_USE_LOCK));
             legendPanel.add(container, BorderLayout.NORTH);
             container = new JPanel();
             container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
-            container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateColumnImpl.THREAD_SLEEPING_OTHER));
-            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
-            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
-            container.add(createLegendLabel(ThreadState.MSAState.SleepingKernelPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_KERNEL_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateResources.THREAD_THREAD_STOPPED));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateResources.THREAD_SLEEPING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateResources.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateResources.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingKernelPageFault, ThreadStateResources.THREAD_SLEEPING_KERNEL_PAGE_FAULT));
             legendPanel.add(container, BorderLayout.SOUTH);
         }
     }
 
-    private JLabel createLegendLabel(ThreadState.MSAState state, StateResources resources){
+    private JLabel createLegendLabel(ThreadState.MSAState state, ThreadStateResources resources){
         ThreadStateIcon icon = new ThreadStateIcon(state, 10, 10);
         JLabel label = new JLabel(resources.name, icon, SwingConstants.LEADING);
         label.setToolTipText(resources.tooltip);
@@ -965,7 +965,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                         ThreadState state = threadData.getThreadStateAt(index);
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
                         if (detailsCallback != null) {
-                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
+                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
                                                                                        isMSAMode(), isFullMode(), manager.getStartTime());
                             ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
                             detailsCallback.showStack(visualizer);
@@ -1071,7 +1071,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         }
         if ((sortedColum == 0 || sortedColum == 2) && sortedOrder != 0) {
-            Map<Comparable,Integer> map = new TreeMap<Comparable,Integer>();
+            Map<Comparable<?>,Integer> map = new TreeMap<Comparable<?>,Integer>();
             for(Integer i : filteredDataToDataIndex){
                 ThreadStateColumnImpl col = manager.getThreadData(i.intValue());
                 if (sortedColum == 0){
@@ -1186,7 +1186,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         @Override
-        public Class getColumnClass(int column) {
+        public Class<?> getColumnClass(int column) {
             // The main purpose of this method is to make numeric values aligned properly inside table cells
             switch (column) {
                 case NAME_COLUMN_INDEX:

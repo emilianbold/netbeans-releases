@@ -150,7 +150,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final Runnable r = new Runnable() {
 
             public void run() {
-                boolean genSessionBean=J2eeProjectCapabilities.forProject(project).isEjb31Supported();
+                boolean genSessionBean=J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
                 try {
                     handle.start();
                     int jpaProgressStepCount = genSessionBean ? EjbFacadeWizardIterator.getProgressStepCount(entities.size()) :  JpaControllerIterator.getProgressStepCount(entities.size());

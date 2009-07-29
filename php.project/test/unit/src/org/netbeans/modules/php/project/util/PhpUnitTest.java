@@ -53,6 +53,12 @@ public class PhpUnitTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtils.init();
+    }
+
     public void testVersion() {
         int[] version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3 by Sebastian Bergmann.");
         assertNull(version);

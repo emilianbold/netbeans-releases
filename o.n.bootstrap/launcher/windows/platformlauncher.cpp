@@ -142,7 +142,9 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
         if (nextAction == ARG_NAME_LA_START_APP) {
             return run(false, retCode);
         } else if (nextAction == ARG_NAME_LA_START_AU) {
-            return run(true, retCode);
+            if (shouldAutoUpdateClusters(false)) {
+                return run(true, retCode);
+            }
         } else {
             logErr(false, true, "We should not get here.");
             return false;
@@ -345,6 +347,7 @@ bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
             logErr(true, false, "Failed to move \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
             return false;
         }
+        logMsg("New updater successfully moved from \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
 
         srcPath.erase(srcPath.rfind('\\'));
         logMsg("Removing directory \"%s\"", srcPath.c_str());

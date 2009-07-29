@@ -45,6 +45,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -54,17 +58,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.stack.Function;
 import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.api.stack.OpenInEditor;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
 import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,19 +78,18 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
-    private final StackTraceColumn descriptor;
+    private StackTraceColumn descriptor;
 
     ThreadStackVisualizer(StackTraceColumn descriptor) {
         this.descriptor = descriptor;
         init();
     }
 
-    @Override
-    public String getName(){
+    public String getDisplayName(){
         if (descriptor.getStacks().size() > 0) {
             return descriptor.getStacks().get(0).getThreadInfo().getThreadName();
         }
-        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetailes"); //NOI18N
+        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
 
     private void init() {
@@ -96,8 +101,69 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         panel.setLayout(new GridBagLayout());
         pane.setViewportView(panel);
         int y = 0;
-        long time = descriptor.getTime();
+        final long time = descriptor.getTime();
         String timeString = TimeLineUtils.getMillisValue(time);
+        if (false) {
+            // for testing only
+            if (descriptor.getStacks().size() == 0) {
+                descriptor = new StackTraceColumn() {
+                    public List<Stack> getStacks() {
+                        List<Stack> res = new ArrayList<Stack>();
+                        res.add(new Stack(){
+                            public List<FunctionCall> getStack() {
+                                List<FunctionCall> calls = new ArrayList<FunctionCall>();
+                                calls.add(new FunctionCall() {
+                                    public String getDisplayedName() {
+                                        return "printf()"; //NOI18N
+                                    }
+                                    public Function getFunction() {
+                                        return null;
+                                    }
+                                    public boolean hasOffset() {
+                                        return true;
+                                    }
+                                    public long getOffset() {
+                                        return 20;
+                                    }
+                                });
+                                calls.add(new FunctionCall() {
+                                    public String getDisplayedName() {
+                                        return "main()"; //NOI18N
+                                    }
+                                    public Function getFunction() {
+                                        return null;
+                                    }
+                                    public boolean hasOffset() {
+                                        return true;
+                                    }
+                                    public long getOffset() {
+                                        return 100;
+                                    }
+                                });
+                                return calls;
+                            }
+                            public ThreadInfo getThreadInfo() {
+                                return new ThreadInfo() {
+                                    public int getThreadId() {
+                                        return 1;
+                                    }
+                                    public String getThreadName() {
+                                        return "Thread 1"; //NOI18N
+                                    }
+                                };
+                            }
+                            public MSAState getState() {
+                                return MSAState.Running;
+                            }
+                        });
+                        return res;
+                    }
+                    public long getTime() {
+                        return time;
+                    }
+                };
+            }
+        }
         if (descriptor.getStacks().size() > 0) {
             String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
             panel.add(new JLabel(message),
@@ -122,7 +188,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
 
     private int addThread(JPanel panel, int y, Stack stack){
         MSAState msa = stack.getState();
-        StateResources res = ThreadStateColumnImpl.getThreadStateResources(msa);
+        ThreadStateResources res = ThreadStateResources.forState(msa);
         if (res != null) {
             y++;
             panel.add(new JLabel(res.name+" "+stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), JLabel.LEFT), // NOI18N
@@ -139,16 +205,26 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private int addStack(JPanel panel, int y, Stack stack) {
         for(FunctionCall call : stack.getStack()) {
             y++;
-            JButton button = new JButton(call.getDisplayedName());
+            final JButton button = new JButton(new OpenAction(call));
             button.setBorder(BorderFactory.createEmptyBorder());
             button.setForeground(Color.blue);
+            button.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    button.setContentAreaFilled(true);
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    button.setContentAreaFilled(false);
+                }
+            });
+            button.setContentAreaFilled(false);
             panel.add(button,
                 new GridBagConstraints(0, y,
                             1, 1,
                             0., 0.,
                             GridBagConstraints.WEST, GridBagConstraints.NONE,
-                            new Insets(0, 30, 0, 0), 0, 0));
-            button.setAction(new OpenAction(call));
+                            new Insets(0, 35, 0, 0), 0, 0));
         }
         return y;
     }
@@ -181,9 +257,9 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private static final class OpenAction extends AbstractAction {
         private final FunctionCall call;
         private OpenAction(FunctionCall call) {
+            super(call.getDisplayedName());
             this.call = call;
         }
-
         public void actionPerformed(ActionEvent e) {
             OpenInEditor.open(call);
         }

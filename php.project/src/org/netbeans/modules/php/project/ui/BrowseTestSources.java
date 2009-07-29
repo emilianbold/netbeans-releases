@@ -159,8 +159,8 @@ public class BrowseTestSources extends JPanel {
             return;
         }
 
+        notificationLineSupport.setInformationMessage(NbBundle.getMessage(BrowseTestSources.class, "LBL_PhpUnitIncludePathInfo"));
         dialogDescriptor.setValid(true);
-        notificationLineSupport.clearMessages();
     }
 
     /** This method is called from within the constructor to
@@ -200,7 +200,7 @@ public class BrowseTestSources extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(testSourcesLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(testSourcesBrowseButton)))
                 .addContainerGap())

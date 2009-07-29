@@ -100,7 +100,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
             public void showStack(ThreadStackVisualizer visualizer) {
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
-                tc.addVisualizer(visualizer.getName(), visualizer);
+                tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
                 tc.requestVisible();
             }
@@ -225,7 +225,7 @@ public class ThreadMapVisualizer extends JPanel implements
         synchronized (uiLock) {
             threadsPanel.threadsMonitoringEnabled();
             dataManager.processData(MonitoredData.getMonitoredData(mapData));
-            startTimeStamp = dataManager.getEndTime();
+            startTimeStamp = dataManager.getEndTimeStump();
             setNonEmptyContent();
         }
     }

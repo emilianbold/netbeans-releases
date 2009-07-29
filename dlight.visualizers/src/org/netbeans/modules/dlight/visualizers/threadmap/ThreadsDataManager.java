@@ -49,7 +49,6 @@ import java.util.Set;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -69,7 +68,6 @@ public class ThreadsDataManager {
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
-    private ThreadMapData stackProvider;
     private int monitoredDataInterval;
 
     /**
@@ -132,6 +130,13 @@ public class ThreadsDataManager {
     /**
      * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
      */
+    public synchronized long getEndTimeStump() {
+        return endTime;
+    }
+
+    /**
+     * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
+     */
     public synchronized long getEndTime() {
         return ThreadStateColumnImpl.timeStampToMilliSeconds(endTime);
     }
@@ -153,10 +158,6 @@ public class ThreadsDataManager {
 
     public synchronized String getThreadName(int index) {
         return threadData.get(index).getName();
-    }
-
-    public synchronized ThreadData getStackProvider(int index) {
-        return stackProvider.getThreadsData().get(index);
     }
 
     /**
@@ -218,7 +219,6 @@ public class ThreadsDataManager {
         if (updateThreadSize == 0) {
             return;
         }
-        stackProvider = monitoredData.getStackProvider();
         monitoredDataInterval = monitoredData.getTimeStampInterval();
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
         for(int i = 0; i < updateThreadSize; i++){
@@ -243,9 +243,17 @@ public class ThreadsDataManager {
                 for (int j = 0; j < states.size(); j++) {
                     ThreadState newState = states.get(j);
                     if (newState.getTimeStamp() > lastState.getTimeStamp()) {
+                        if (lastTimeStamp == -1) {
+                            if (!col.isAlive()) {
+                                // remove stop mark
+                                col.removeStopMark();
+                                System.out.println("Reopen thread line "+col.getName()); // NOI18N
+                            }
+                        }
                         col.add(newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
+                    col.updateStackProvider(monitoredData.getStackProvider(newData));
                 }
                 if (lastTimeStamp == -1) {
                     if (col.isAlive()){
@@ -262,7 +270,8 @@ public class ThreadsDataManager {
             int size = states.size();
             if (size > 0) {
                 MergedThreadInfo info = new MergedThreadInfo(monitoredData.getThreadInfo(i), monitoredData.getStartTimestamp(i));
-                ThreadStateColumnImpl col = new ThreadStateColumnImpl(info);
+                ThreadData stackProvider = monitoredData.getStackProvider(i);
+                ThreadStateColumnImpl col = new ThreadStateColumnImpl(info, stackProvider);
                 threadData.add(col);
                 for (int j = 0; j < size; j++) {
                     col.add(states.get(j));
@@ -273,6 +282,7 @@ public class ThreadsDataManager {
 
     void closeThread(ThreadStateColumnImpl col, int interval){
         final long endTimeStamp = col.getThreadStateAt(col.size()-1).getTimeStamp() + interval;
+        System.out.println("Close thread line "+col.getName()); // NOI18N
         col.add(new ThreadState(){
             public int size() {
                 return 1;

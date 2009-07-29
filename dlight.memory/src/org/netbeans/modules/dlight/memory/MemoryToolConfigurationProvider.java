@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.memory;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,6 +80,7 @@ import org.openide.util.NbBundle;
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final int INDICATOR_POSITION = 200;
+    private static final String ID = "dlight.tool.mem"; // NOI18N
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final String TOOL_NAME_DETAILED = loc("MemoryTool.ToolName.Detailed"); // NOI18N
     private static final Column totalColumn;
@@ -123,7 +123,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_NAME_DETAILED);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(TOOL_NAME_DETAILED);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
@@ -292,15 +293,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             }
         }
 
-        public void tick() {
-        }
-
-        public float[] getGraphData() {
-            return new float[]{mem};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.singletonMap(MAX_HEAP_DETAIL_ID, formatValue(max));
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = mem;
+            details.put(MAX_HEAP_DETAIL_ID, formatValue(max));
         }
     }
 

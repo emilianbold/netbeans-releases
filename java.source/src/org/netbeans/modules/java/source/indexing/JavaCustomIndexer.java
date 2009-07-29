@@ -46,6 +46,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,27 +70,35 @@ import javax.tools.Diagnostic;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
+import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -97,7 +107,9 @@ import org.openide.util.Mutex.ExceptionAction;
 public class JavaCustomIndexer extends CustomIndexer {
 
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+    private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
+    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
 
     private static final CompileWorker[] WORKERS = {
         new OnePassCompileWorker(),
@@ -114,8 +126,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return;
             }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
+                return;
+            }
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+                JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
@@ -172,9 +189,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                             _af.removeAll(removedFiles);
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
-                            if (!context.isSupplementaryFilesIndexing() && !context.isAllFilesIndexing()) {
+                            TasklistSettings.DependencyTracking dt;
+                            if (!context.isSupplementaryFilesIndexing() && !context.isAllFilesIndexing() && (dt = TasklistSettings.getDependencyTracking()) != TasklistSettings.DependencyTracking.DISABLED) {
                                 compileResult.modifiedTypes.addAll(_rt);
-                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), javaContext.cpInfo.getClassIndex(), compileResult.modifiedTypes);
+                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, dt);
                                 Set<URL> urls = root2Rebuild.get(context.getRootURI());
                                 if (!errUrls.isEmpty() && !_af.isEmpty()) {
                                     //new type creation may cause/fix some errors
@@ -261,8 +279,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
                                 javaContext.checkSums.remove(i.getURL());
                             }
-                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), javaContext.cpInfo.getClassIndex(), removedTypes).entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+
+                            TasklistSettings.DependencyTracking dt = TasklistSettings.getDependencyTracking();
+                            if (dt != TasklistSettings.DependencyTracking.DISABLED) {
+                                for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, dt).entrySet()) {
+                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                                }
                             }
                             javaContext.checkSums.store();
                             javaContext.sa.store();
@@ -353,7 +375,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel)) {
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
@@ -428,7 +450,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static Map<URL, Set<URL>> findDependent(URL root, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) throws IOException {
+    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, TasklistSettings.DependencyTracking dt) throws IOException {
         //performance: filter out anonymous innerclasses:
         for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
             if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
@@ -436,24 +458,101 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
 
-        Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
-        Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
-        while (!queue.isEmpty()) {
-            ElementHandle<TypeElement> e = queue.poll();
-            if (toHandle.add(e))
-                queue.addAll(ci.getElements(e, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        //get dependencies
+        Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
+
+        //create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
+            final URL u1 = entry.getKey();
+            final List<URL> l1 = entry.getValue();
+            for (URL u2 : l1) {
+                List<URL> l2 = inverseDeps.get(u2);
+                if (l2 == null) {
+                    l2 = new ArrayList<URL>();
+                    inverseDeps.put (u2,l2);
+                }
+                l2.add (u1);
+            }
         }
 
-        Set<FileObject> files = new HashSet<FileObject>();
-        for (ElementHandle<TypeElement> e : toHandle)
-            files.addAll(ci.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        //get sorted list of depenedent roots
+        List<URL> depRoots = inverseDeps.get(root);
+        if (depRoots != null) {
+            if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_ROOT) {
+                for (URL url : depRoots) {
+                    JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                }
+                depRoots = null;
+            } else {
+                depRoots = new ArrayList<URL>(depRoots);
+                try {
+                    if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_PROJECT) {
+                        Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
+                        if (rootPrj == null) {
+                            for (URL url : depRoots) {
+                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                            }
+                            depRoots.clear();
+                        }
+                        for (Iterator<URL> it = depRoots.iterator(); it.hasNext();) {
+                            URL url = it.next();
+                            if (FileOwnerQuery.getOwner(url.toURI()) != rootPrj) {
+                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                                it.remove();
+                            }
+                        }
+                    }
+                    depRoots.add(root);
+                    depRoots = Utilities.topologicalSort(depRoots, inverseDeps);
+                } catch (TopologicalSortException ex) {
+                    JavaIndex.LOG.warning("Cycle in the source root dependencies detected: " + ex.unsortableSets()); //NOI18N
+                    List part = ex.partialSort();
+                    part.retainAll(depRoots);
+                    depRoots = part;
+                } catch (URISyntaxException urise) {
+                    depRoots = null;
+                }
+            }
+        }
 
-        Map<URL, Set<URL>> ret = new HashMap<URL, Set<URL>>();
-        Set<URL> urls = new HashSet<URL>();
-        for (FileObject file : files)
-            urls.add(file.getURL());
-        if (!urls.isEmpty())
-            ret.put(root, urls);
+        if (depRoots == null) {
+            depRoots = Collections.singletonList(root);
+        }
+
+        final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
+        final Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
+        final Map<URL, Set<ElementHandle<TypeElement>>> bases = new HashMap<URL, Set<ElementHandle<TypeElement>>>();
+        for (URL depRoot : depRoots) {
+            final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
+
+            final List<URL> dep = deps != null ? deps.get(depRoot) : null;
+            if (dep != null) {
+                for (URL url : dep) {
+                    final Set<ElementHandle<TypeElement>> b = bases.get(url);
+                    if (b != null)
+                        queue.addAll(b);
+                }
+            }
+
+            final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
+            while (!queue.isEmpty()) {
+                final ElementHandle<TypeElement> e = queue.poll();
+                if (toHandle.add(e))
+                    queue.addAll(index.getElements(e, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+            }
+            bases.put(depRoot, toHandle);
+
+            final Set<FileObject> files = new HashSet<FileObject>();
+            for (ElementHandle<TypeElement> e : toHandle)
+                files.addAll(index.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+            
+            final Set<URL> urls = new HashSet<URL>();
+            for (FileObject file : files)
+                urls.add(file.getURL());
+            if (!urls.isEmpty())
+                ret.put(depRoot, urls);
+        }
         return ret;
     }
 

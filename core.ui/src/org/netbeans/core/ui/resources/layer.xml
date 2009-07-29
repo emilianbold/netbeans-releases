@@ -73,12 +73,23 @@ made subject to such option by the copyright holder.
                 <attr name="key" stringvalue="delete"/>
                 <attr name="iconBase" stringvalue="org/openide/resources/actions/delete.gif"/>
                 <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Delete"/>
+                <attr name="asynchronous" boolvalue="true"/>
             </file>
-            <file name="org-openide-actions-FindAction.instance"/>
+            <file name="org-openide-actions-FindAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="org.openide.actions.FindAction"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/find.gif"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Find"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
             <file name="org-openide-actions-GotoAction.instance"/>
             <file name="org-openide-actions-PasteAction.instance"/>
             <file name="org-openide-actions-RedoAction.instance"/>
-            <file name="org-openide-actions-ReplaceAction.instance"/>
+            <file name="org-openide-actions-ReplaceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="org.openide.actions.ReplaceAction"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Replace"/>
+            </file>
             <file name="org-openide-actions-UndoAction.instance"/>
         </folder>
 

@@ -79,7 +79,7 @@ public class Util {
         for (int i = 0; i < len; i++) {
             if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 Element el = (Element)l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
+                if (namespace.equals(el.getNamespaceURI()) && name.equals(el.getLocalName())) {
                     if (result == null) {
                         result = el;
                     } else {

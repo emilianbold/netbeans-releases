@@ -60,6 +60,10 @@ public class FileSensitiveActions {
      * When performed the action will call the given command on the {@link ActionProvider} of
      * the selected project(s) and pass the proper context to it. Enablement of the
      * action depends on the behavior of the project's action provider.
+     * <p>As mentioned in {@link ActionProvider} Javadoc, the action may also be enabled
+     * without the participation of any project in case some globally registered {@link ActionProvider}
+     * can provide an implementation.
+     * (This since {@code org.netbeans.modules.projectuiapi/1 1.37}.)
      * <p>Shortcuts for actions are shared according to command, i.e. actions based on the same command
      * will have the same shortcut.
      * @param command the command which should be invoked when the action is

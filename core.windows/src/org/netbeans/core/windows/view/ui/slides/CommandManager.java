@@ -43,6 +43,7 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Panel;
@@ -51,10 +52,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.Map;
 import javax.swing.*;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -76,7 +74,7 @@ final class CommandManager implements ActionListener {
     /** Local tabbed container used to display slided component */
     private TabbedContainer slidedTabContainer;
     //TODO use light-weight container when embedded browser is turned off
-    private Panel heavyContainer;
+    private Container heavyContainer;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;
@@ -101,12 +99,6 @@ final class CommandManager implements ActionListener {
         }
         SlideOperation op = SlideOperationFactory.createSlideResize(getSlidedTabContainer(), curSlideOrientation);
         Component slidedComp = getSlidedTabContainer();
-        if( slidedComp instanceof JComponent ) {
-            Object panel = ((JComponent)slidedComp).getClientProperty("heavyweightcontainer");
-            if( panel instanceof Component ) {
-                slidedComp = (Component) panel;
-            }
-        }
         Rectangle finish = slidedComp.getBounds(null);
         String side = orientation2Side(curSlideOrientation);
         if (Constants.BOTTOM.equals(side)) {
@@ -308,7 +300,7 @@ final class CommandManager implements ActionListener {
             
             registerEscHandler(slidedTabContainer);
             heavyContainer = new Panel(new BorderLayout());
-            heavyContainer.add(slidedTabContainer);
+            heavyContainer.add(slidedTabContainer, BorderLayout.CENTER);
         }
         return heavyContainer;
     }

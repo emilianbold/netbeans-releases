@@ -173,7 +173,7 @@ class XMLResultItem implements CompletionItem {
                     // XML tag - it must no be removed
                     XMLSyntaxSupport support = (XMLSyntaxSupport)
                         org.netbeans.editor.Utilities.getSyntaxSupport(component);
-                    TokenItem tokenItem = support.getTokenChain(offset, doc.getLength() - 1);
+                    TokenItem tokenItem = support.getTokenChain(offset, doc.getLength());
                     isTextRemovingAllowable = (tokenItem == null);
                     if (! isTextRemovingAllowable) {
                         TokenID tokenID = tokenItem.getTokenID();
@@ -262,7 +262,8 @@ class XMLResultItem implements CompletionItem {
     public final String getItemText() {
         return replacementText;
     }
-    
+
+    @Override
     public String toString() {
         return getItemText();
     }
@@ -301,11 +302,11 @@ class XMLResultItem implements CompletionItem {
     }
     
     public Component getPaintComponent(boolean isSelected) {
-        XMLCompletionResultItemPaintComponent component =
-                new XMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
-        component.setSelected(isSelected);
-        component.setString(getItemText());
-        return component;
+        XMLCompletionResultItemPaintComponent paintComponent =
+            new XMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+        paintComponent.setSelected(isSelected);
+        paintComponent.setString(getItemText());
+        return paintComponent;
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {

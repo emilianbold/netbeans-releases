@@ -74,7 +74,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
     public static final String ERROR =
-            "org/netbeans/modules/cnd/debugger/gdb/resources/error_small_16.png"; // NOI18N
+            "org/netbeans/modules/cnd/debugger/common/resources/error_small_16.png"; // NOI18N
     
     private final RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();

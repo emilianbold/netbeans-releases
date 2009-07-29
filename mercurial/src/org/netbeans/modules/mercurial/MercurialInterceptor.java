@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 
@@ -75,6 +76,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
+    private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -342,6 +344,26 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
         refreshTask.schedule(delayMillis);
+    }
+
+    void pingRepositoryRootFor(final File file) {
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if (repositoryRoot != null) {
+                    File dirstate = new File(new File(repositoryRoot, ".hg"), "dirstate"); //NOI18N
+                    FileObject fo = FileUtil.toFileObject(dirstate);
+                    synchronized (dirStates) {
+                        if (!dirStates.contains(fo)) {
+                            reScheduleRefresh(2000, repositoryRoot); // the whole clone
+                            if (fo != null && fo.isValid() && fo.isData()) {
+                                dirStates.add(fo);
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private class RefreshTask implements Runnable {

@@ -107,6 +107,43 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         return myClass;
     }
     
+    static Element getSpecialized( Element productionElement,
+            WebBeansModelImplementation model , String annotationName )
+    {
+        if ( !( productionElement instanceof ExecutableElement )){
+            return null;
+        }
+        ExecutableElement current = (ExecutableElement)productionElement;
+        while ( true ){
+            ExecutableElement overridenElement = model.getHelper().getCompilationController().
+                getElementUtilities().getOverriddenMethod( current);
+            if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
+                    current, model.getHelper()))
+            {
+                if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.
+                        equals( annotationName))
+                {
+                    if ( AnnotationObjectProvider.checkCurrent(
+                            overridenElement, model.getHelper()))
+                    {
+                        return overridenElement;
+                    }
+                }
+                else if ( AnnotationObjectProvider.
+                        hasAnnotation( overridenElement, annotationName, 
+                                model.getHelper()))
+                {
+                    return overridenElement;
+                }
+                current = overridenElement;
+            }
+            else {
+                break;
+            }
+        }
+        return null;
+    }
+    
     private void checkMember( ExecutableElement exec, AnnotationValue value,
                 Set<T> elementsWithBindings )
     {
@@ -126,22 +163,21 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 // check specializes....
                 if (element instanceof TypeElement) {
                     TypeElement specializedSuper = AnnotationObjectProvider
-                            .checkSuper((TypeElement) element,
-                                    ((TypeElement) element).getQualifiedName()
-                                            .toString(), getImplementation()
-                                            .getHelper());
+                            .checkSuper((TypeElement) element, annotationName, 
+                                    getImplementation().getHelper());
                     if (specializedSuper != null) {
                         checkMember(exec, value, specializedSuper, iterator,
                                 annotationName);
                     }
                 }
-                /*
-                 * If element is method or field then it could specialize
-                 * other production element. But in this case original invoke
-                 * logic will add specialize elements after typesafe resolution
-                 * filtering. So there is no need to care here about 
-                 * check overridden method which could be specialized by the element.  
-                 */
+                else if ( element instanceof ExecutableElement){
+                    Element specialized = getSpecialized(element, 
+                            getImplementation(), annotationName );
+                    if ( specialized != null ){
+                        checkMember(exec, value, specialized, iterator, 
+                                annotationName);
+                    }
+                }
             }
         }
     }

@@ -40,14 +40,52 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
+import com.sun.source.util.TreePath;
 
 
 /**
@@ -82,8 +120,60 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
      */
     @Override
-    public void actionPerformed( ActionEvent event, JTextComponent component ) {
+    public void actionPerformed( ActionEvent event, final JTextComponent component ) {
+        if ( component == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        final FileObject fileObject = NbEditorUtilities.getFileObject( 
+                component.getDocument());
+        if ( fileObject == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        ClassPath boot = getClassPath( project , ClassPath.BOOT);
+        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
+        ClassPath src = getClassPath(project , ClassPath.SOURCE);
+        if ( boot == null || compile == null || src == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
+        MetadataModel<WebBeansModel> metaModel = WebBeansModelFactory.
+            getMetaModel( modelUnit );
         
+        /*
+         *  this list will contain variable element name and TypeElement 
+         *  qualified name which contains variable element. 
+         */
+        final List<String> variableAtCaret = new ArrayList<String>(2);
+        if ( !getVariableElementAtDot( component, variableAtCaret )){
+            return;
+        }
+        
+        try {
+            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
+
+                public Void run( WebBeansModel model ) throws Exception {
+                    inspectInjectables(component, fileObject, 
+                            model, variableAtCaret );
+                    return null;
+                }
+            });
+        }
+        catch (MetadataModelException e) {
+            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
+        catch (IOException e) {
+            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
     }
     
     /* (non-Javadoc)
@@ -91,8 +181,150 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      */
     @Override
     public boolean isEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        if (EditorRegistry.lastFocusedComponent() == null
+                || !EditorRegistry.lastFocusedComponent().isShowing())
+        {
+            return false;
+        }
+        return OpenProjects.getDefault().getOpenProjects().length > 0;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.editor.BaseAction#asynchonous()
+     */
+    @Override
+    protected boolean asynchonous() {
+        return true;
+    }
+    
+    private ClassPath getClassPath( Project project, String type ) {
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
+    }
+
+    /**
+     * Variable element is resolved based on containing type element 
+     * qualified name and simple name of variable itself.
+     * Model methods are used further for injectable resolution.   
+     */
+    private void inspectInjectables( final JTextComponent component, 
+            final FileObject fileObject, final WebBeansModel model, 
+            final List<String> variable )
+    {
+        TypeElement typeElement = model.getCompilationController().getElements().
+            getTypeElement( variable.get(0));
+        if ( typeElement == null ){
+            // TODO : notification ...
+            return;
+        }
+        List<? extends Element> children = typeElement.getEnclosedElements();
+        String name = variable.get( 1 );
+        VariableElement var = null;
+        for (Element element : children) {
+            if ( element.getSimpleName().contentEquals(name ) && 
+                    (element instanceof VariableElement))
+            {
+                var = (VariableElement)element;
+            }
+        }
+        if ( var == null ){
+            // TODO : notify 
+            return;
+        }
+        try {
+            if (model.isInjectionPoint(var)) {
+                try {
+                    Element injectable = model.getInjectable(var);
+                    if ( injectable == null ){
+                        // TODO: notify ...
+                        return;
+                    }
+                    final ElementHandle<Element> handle = ElementHandle
+                            .create(injectable);
+                    final ClasspathInfo classpathInfo = model.getCompilationController().
+                    getClasspathInfo();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        
+                        public void run() {
+                            ElementOpen.open( classpathInfo, handle);
+                        }
+                    });
+                }
+                catch (AmbiguousDependencyException adExcpeption) {
+                    // TODO : show dialog with possible injectables
+                }
+            }
+        }
+        catch (WebBeansModelException e) {
+            /*
+             * TODO : one need somehow notice user that injection point has
+             * inconsistency
+             */
+        }
+    }
+    
+    /**
+     * Compilation controller from metamodel could not be used for getting 
+     * TreePath via dot because it is not based on one FileObject ( Document ).
+     * So this method is required for searching Element at dot.
+     * If appropriate element is found it's name is placed into list 
+     * along with name of containing type.
+     * Resulted element could not be used in metamodel for injectable
+     * access. I believe this is because element was gotten via other Compilation
+     * controller so it is from other model.
+     * As result this trick is used.  
+     */
+    private boolean getVariableElementAtDot( final JTextComponent component,
+            final List<String> variableAtCaret ) 
+    {
+        JavaSource javaSource = JavaSource.forDocument( component.getDocument());
+        if ( javaSource == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return false;
+        }
+        try {
+            javaSource.runUserActionTask(  new Task<CompilationController>(){
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    int dot = component.getCaret().getDot();
+                    TreePath tp = controller.getTreeUtilities()
+                        .pathFor(dot);
+                    Element element = controller.getTrees().getElement(tp );
+                    if ( !( element instanceof VariableElement) ){
+                        return;
+                    }
+                    else {
+                        TypeElement enclosingTypeElement = controller.
+                            getElementUtilities().enclosingTypeElement(element);
+                        variableAtCaret.add( enclosingTypeElement.
+                                getQualifiedName().toString());
+                        variableAtCaret.add( element.getSimpleName().toString());
+                    }
+                }
+            }, true );
+        }
+        catch(IOException e ){
+            Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
+        return variableAtCaret.size() ==2 ;
     }
 
 }

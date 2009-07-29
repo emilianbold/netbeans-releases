@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import org.netbeans.modules.openide.util.ActionsBridge;
+import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -69,12 +71,12 @@ final class GeneralAction {
     static final Logger LOG = Logger.getLogger(GeneralAction.class.getName());
     
     public static ContextAwareAction callback(
-        String key, Action defaultDelegate, Lookup context, boolean surviveFocusChange
+        String key, Action defaultDelegate, Lookup context, boolean surviveFocusChange, boolean async
     ) {
         if (key == null) {
             throw new NullPointerException();
         }
-        return new DelegateAction(null, key, context, defaultDelegate, surviveFocusChange);
+        return new DelegateAction(null, key, context, defaultDelegate, surviveFocusChange, async);
     }
     
     public static Action alwaysEnabled(Map map) {
@@ -82,7 +84,8 @@ final class GeneralAction {
     }
 
     public static ContextAwareAction callback(Map map) {
-        DelegateAction d = new DelegateAction(map);
+        Action fallback = (Action)map.get("fallback");
+        DelegateAction d = new DelegateAction(map, fallback);
         Parameters.notNull("key", d.key);
         return d;
     }
@@ -160,6 +163,8 @@ final class GeneralAction {
         private Action fallback;
         /** key to delegate to */
         private Object key;
+        /** are we asynchronous? */
+        private final boolean async;
 
         /** global lookup to work with */
         private GlobalManager global;
@@ -174,12 +179,13 @@ final class GeneralAction {
          * listens for changes of <code>ActionMap</code> in order to delegate
          * to right action.
          */
-        public DelegateAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange) {
+        public DelegateAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange, boolean async) {
             this.map = map;
             this.key = key;
             this.fallback = fallback;
             this.global = GlobalManager.findManager(actionContext, surviveFocusChange);
             this.weakL = WeakListeners.propertyChange(this, fallback);
+            this.async = async;
             if (fallback != null) {
                 fallback.addPropertyChangeListener(weakL);
             }
@@ -191,11 +197,9 @@ final class GeneralAction {
                 map.get("key"), // NOI18N
                 Utilities.actionsGlobalContext(), // NOI18N
                 fallback, // NOI18N
-                Boolean.TRUE.equals(map.get("surviveFocusChange")) // NOI18N
+                Boolean.TRUE.equals(map.get("surviveFocusChange")), // NOI18N
+                Boolean.TRUE.equals(map.get("asynchronous")) // NOI18N
             );
-        }
-        public DelegateAction(Map map) {
-            this(map, (Action)map.get("fallback")); // NOI18N
         }
 
         /** Overrides superclass method, adds delegate description. */
@@ -210,7 +214,8 @@ final class GeneralAction {
             assert EventQueue.isDispatchThread();
             final javax.swing.Action a = findAction();
             if (a != null) {
-                a.actionPerformed(e);
+                ActionRunnable ar = ActionRunnable.create(e, a, async);
+                ActionsBridge.doPerformAction(a, ar);
             }
         }
 
@@ -290,7 +295,7 @@ final class GeneralAction {
             if (f instanceof ContextAwareAction) {
                 f = ((ContextAwareAction)f).createContextAwareInstance(actionContext);
             }
-            return new DelegateAction(map, key, actionContext, f, global.isSurvive());
+            return new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

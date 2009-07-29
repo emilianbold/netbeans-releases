@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
@@ -72,10 +73,10 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
         for (Iterator<T> iterator = set.iterator(); iterator
                 .hasNext();)
         {
-            Element typeElement = iterator.next();
+            Element element = iterator.next();
             List<? extends AnnotationMirror> allAnnotationMirrors = getImplementation()
                     .getHelper().getCompilationController().getElements()
-                    .getAllAnnotationMirrors(typeElement);
+                    .getAllAnnotationMirrors(element);
             Set<String> bindingNames = new HashSet<String>();
             for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
                 DeclaredType annotationType = annotationMirror
@@ -87,23 +88,36 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
                             .toString());
                 }
             }
-            if ( bindingNames.contains(WebBeansModelProviderImpl.
-                    ANY_BINDING_ANNOTATION) || bindingNames.contains(
-                            WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
+            if ( bindingNames.contains(
+                    WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
             {
                 continue;
+            }
+            if ( (element instanceof TypeElement) && (
+                AnnotationObjectProvider.checkSuper((TypeElement)element, 
+                        WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION, 
+                        getImplementation().getHelper())!=null ))
+            {
+                    continue;
+            }
+            else if ( element instanceof ExecutableElement ){
+                Element specialized = 
+                    MemberCheckerFilter.getSpecialized( element, 
+                            getImplementation(), 
+                            WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
+                if ( specialized!= null){
+                    continue;
+                }
             }
             if (bindingNames.size() != 0) {
                 iterator.remove();
             }
-            // TODO : care about @Specializes
         }
     }
 
     private boolean isBinding( TypeElement annotationElement ) {
-        BindingChecker checker = BindingChecker.get();
-        checker.init(annotationElement, getImplementation().getHelper());
-        return checker.check();
+        return AnnotationObjectProvider.isBinding(annotationElement, 
+                getImplementation().getHelper());
     }
 
     private WebBeansModelImplementation getImplementation() {

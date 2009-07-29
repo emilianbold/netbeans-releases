@@ -53,7 +53,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 
 /**
  * @author Jiri Sedlacek
@@ -166,12 +166,13 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             buf.append(TimeLineUtils.getMillisValue(ms));
             EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
             ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
+            ThreadStateColumnImpl.roundMap(aMap);
             buf.append("<table>");// NOI18N
             for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
                 Map.Entry<MSAState, AtomicInteger> entry = it.next();
                 int value = entry.getValue().get();
                 MSAState s = entry.getKey();
-                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                ThreadStateResources res = ThreadStateResources.forState(s);
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N
@@ -354,6 +355,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
 
             ThreadStateColumnImpl.fillMap(viewManager, threadStateColor, map);
+            ThreadStateColumnImpl.roundMap(map);
 
             int y = 0;
             int rest = ThreadState.POINTS/2;

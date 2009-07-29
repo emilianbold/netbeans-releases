@@ -95,10 +95,14 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.dlight.perfan</package>
+                <package>org.netbeans.modules.dlight.perfan.tha.api</package>
             </friend-packages>
         </data>
     </configuration>

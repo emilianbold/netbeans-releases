@@ -128,10 +128,12 @@ public class ProjectsRootNode extends AbstractNode {
         }
     }
         
+    @Override
     public String getName() {
         return ( "OpenProjects" ); // NOI18N
     }
     
+    @Override
     public String getDisplayName() {
         if ( this.bundle == null ) {
             this.bundle = NbBundle.getBundle( ProjectsRootNode.class );
@@ -139,14 +141,17 @@ public class ProjectsRootNode extends AbstractNode {
         return bundle.getString( "LBL_OpenProjectsNode_Name" ); // NOI18N
     }
     
+    @Override
     public boolean canRename() {
         return false;
     }
         
+    @Override
     public Node.Handle getHandle() {        
         return new Handle(type);
     }
     
+    @Override
     public Action[] getActions( boolean context ) {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
@@ -435,14 +440,28 @@ public class ProjectsRootNode extends AbstractNode {
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
         private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
+        private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
-                setProjectFiles();
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
+                fsRefreshTask.schedule(DELAY);
             }
             public @Override void fileFolderCreated(FileEvent fe) {
-                setProjectFiles();
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
+                fsRefreshTask.schedule(DELAY);
             }
         };
+        private final RequestProcessor.Task fsRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                setProjectFiles();
+            }
+        });
 
         public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));

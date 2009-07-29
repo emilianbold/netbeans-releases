@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -55,15 +57,11 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.CatalogUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
@@ -108,15 +106,22 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
                     }
                 }
-                JAXWSClientSupport jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
+                final JAXWSClientSupport jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
                 if ( jaxWsClientSupport != null && jaxWsClientSupport.getServiceClients().size() > 0) {
+                    FileObject wsdlFolder = null;
                     try {
-                        FileObject wsdlFolder = jaxWsClientSupport.getWsdlFolder(true);
-                        if (wsdlFolder != null && wsdlFolder.getParent().getFileObject("jax-ws-catalog.xml") == null) {
-                            generateJaxWsCatalog(prj, jaxWsClientSupport, wsdlFolder);
-                        }
-                    } catch (IOException ex) {
-
+                        wsdlFolder = jaxWsClientSupport.getWsdlFolder(false);
+                    } catch (IOException ex) {}
+                    if (wsdlFolder == null || wsdlFolder.getParent().getFileObject("jax-ws-catalog.xml") == null) { //NOI18N
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                try {
+                                    JaxWsCatalogPanel.generateJaxWsCatalog(prj, jaxWsClientSupport);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(JaxWsCatalogPanel.class.getName()).log(Level.WARNING, "Cannot create jax-ws-catalog.xml", ex);
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -263,20 +268,4 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
         }
     }
 
-    private void generateJaxWsCatalog(Project project, JAXWSClientSupport clientSupport, FileObject wsdlFolder) throws IOException {
-        FileObject jaxWsCatalog = WSUtils.retrieveJaxWsCatalogFromResource(wsdlFolder.getParent());
-        FileObject catalog = project.getProjectDirectory().getFileObject(JAXWSClientSupportImpl.CATALOG_FILE);
-        if (catalog != null) {
-            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-            if (jaxWsModel != null) {
-                CatalogUtils.copyCatalogEntriesForAllClients(catalog, jaxWsCatalog, jaxWsModel);
-                for (Client client : jaxWsModel.getClients()) {
-                    FileObject wsdlSourceFolder = clientSupport.getLocalWsdlFolderForClient(client.getName(), false);
-                    if (wsdlSourceFolder != null) {
-                        WSUtils.copyFiles(wsdlSourceFolder, wsdlFolder);
-                    }
-                }
-            }
-        }
-    }
 }

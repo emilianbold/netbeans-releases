@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.impl;
 
-import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 
 /**
@@ -72,11 +72,15 @@ public abstract class SunStudioDCConfigurationAccessor {
     public SunStudioDCConfigurationAccessor() {
     }
 
-    public abstract List<SunStudioDCConfiguration.CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration);
+    public abstract Set<SunStudioDCConfiguration.CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration);
 
     public abstract String getCPUTableName();
 
     public abstract String getSyncTableName();
 
     public abstract String getMemTableName();
+
+    public abstract String getDeadlockTableName();
+
+    public abstract String getDataraceTableName();
 }

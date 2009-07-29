@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
+import org.netbeans.modules.cnd.gizmo.GizmoToolsController;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -166,6 +167,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());
         }
+
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
 
@@ -187,7 +189,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             }
         }, "DLight Session for " + target.toString()); // NOI18N
-
     }
 
     private Map<String, String> createMap(String[][] array) {
@@ -283,6 +284,13 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         for (ExecutionListener l : listeners) {
             l.executionFinished(exitCode);
         }
+
+        // TODO: hack!!! fix me!
+        // see THAActionProvider .... we need a way to diable THA tool...
+        // Should we do this after run???
+        // Need to think-over
+
+        GizmoToolsController.getDefault().disableTool(pae.getProject(), "dlight.tool.tha"); // NOI18N
     }
 
     private static String formatTime(long millis) {

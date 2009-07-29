@@ -90,7 +90,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     private void addAlternative() {
         String category = (String) table.getValueAt(row, 2);
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
-        Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell(""), category, ""};
+        Object[] newRow = new Object[]{new ActionHolder(action, true), "", category, ""};
         ((DefaultTableModel) ((TableSorter) table.getModel()).getTableModel()).insertRow(row + 1, newRow);
         pm.setVisible(false);
         table.editCellAt(row + 1, 1);
@@ -98,8 +98,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
 
     private void clear() {
         pm.setVisible(false);
-        ShortcutCell name = (ShortcutCell) table.getValueAt(row, 1);
-        String scText = name.getTextField().getText();
+        String scText = (String)table.getValueAt(row, 1);
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         KeymapViewModel keymapViewModel = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
         if (scText.length() != 0)
@@ -108,7 +107,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
             //alternative SC, remove row
             keymapViewModel.removeRow(row);
         else {
-            name.getTextField().setText("");
+            table.setValueAt("",row, 1); // NOI18N
             keymapViewModel.update();
         }
         return;

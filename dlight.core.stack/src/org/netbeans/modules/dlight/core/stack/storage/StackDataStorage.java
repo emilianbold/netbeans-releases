@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -74,4 +75,16 @@ public interface StackDataStorage {//extends StackSupport {
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+
+    /**
+     * Returns stack trace (stacks for all threads) for the moment of timestamp 
+     * (i.e. all returned callstacks will be with timestamp &lt;= than the
+     * passed one). Also the state of the thread with id == threadID will be
+     * threadState.
+     *
+     * @param threadID
+     * @param timestamp
+     * @return
+     */
+    StackTrace getStackTrace(long timestamp, int threadID, int threadState);
 }

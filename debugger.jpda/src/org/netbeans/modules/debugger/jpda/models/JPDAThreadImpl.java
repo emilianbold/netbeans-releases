@@ -639,9 +639,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * Suspends thread.
      */
     public void suspend () {
+        logger.fine("JPDAThreadImpl.suspend() called.");
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
         try {
+            logger.fine("  write lock acquired, is suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
             if (!isSuspended ()) {
                 if (suspendedNoFire) {
                     // We were suspended just to process something, thus we do not want to be resumed then
@@ -845,8 +847,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public boolean notifyToBeResumedNoFire() {
         //System.err.println("notifyToBeResumed("+getName()+")");
+        logger.fine("notifyToBeResumedNoFire("+getName()+")");
         accessLock.writeLock().lock();
         try {
+            logger.fine("   suspendRequested = "+suspendRequested);
             if (suspendRequested) {
                 suspendRequested = false;
                 return false;
@@ -925,20 +929,20 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         accessLock.writeLock().unlock();
     }
 
-    private void notifySuspended(boolean doFire) {
+    public PropertyChangeEvent notifySuspended(boolean doFire) {
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
         try {
             try {
                 suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
             } catch (IllegalThreadStateExceptionWrapper ex) {
-                return ; // Thrown when thread has exited
+                return null; // Thrown when thread has exited
             } catch (ObjectCollectedExceptionWrapper ocex) {
-                return ; // The thread is gone
+                return null; // The thread is gone
             } catch (VMDisconnectedExceptionWrapper ex) {
-                return ; // The VM is gone
+                return null; // The VM is gone
             } catch (InternalExceptionWrapper ex) {
-                return ; // Something is gone
+                return null; // Something is gone
             }
             //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
             if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
@@ -964,7 +968,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+        } else if (suspendedToFire != null) {
+            return new PropertyChangeEvent(this, PROP_SUSPENDED,
+                    Boolean.valueOf(!suspendedToFire.booleanValue()),
+                    suspendedToFire);
         }
+        return null;
+    }
+
+    /**
+     * Call ONLY with events obtained from {@link #notifySuspended()} or other
+     * methods that return event(s).
+     * @param event The event to fire.
+     */
+    public void fireEvent(PropertyChangeEvent event) {
+        pch.firePropertyChange(event);
     }
 
     private SingleThreadWatcher watcher = null;
@@ -1438,7 +1456,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             List<JPDAThread> oldLockerThreadsList;
             List<JPDAThread> newLockerThreadsList;
             logger.fine("checkForBlockingThreads("+threadName+"): suspend all...");
-            debugger.accessLock.writeLock().lock();
+            // Do not wait for write lock if it's not available, since no one will get read lock!
+            boolean locked = debugger.accessLock.writeLock().tryLock();
+            if (!locked) return false;
             try {
                 VirtualMachineWrapper.suspend(vm);
                 try {
@@ -1690,7 +1710,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private String getThreadStateLog() {
-        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended;
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking;
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {

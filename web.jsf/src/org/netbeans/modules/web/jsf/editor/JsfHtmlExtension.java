@@ -47,11 +47,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
@@ -81,6 +87,56 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
+
+        //highlight JSF tags
+        highlightJsfTags(result, highlights);
+        //highlight Expression Language
+        highlightEL(result, highlights);
+
+        return highlights;
+
+    }
+
+    private void highlightEL(HtmlParserResult result, final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        TokenHierarchy th = TokenHierarchy.get(result.getSnapshot().getSource().getDocument(true));
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence();
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.VALUE) {
+                TokenSequence<ELTokenId> elts = ts.embedded(ELTokenId.language());
+                if (elts != null) {
+                    //if the token has EL embedding, highlight it
+                    elts.moveStart();
+                    int from = ts.offset();
+                    int to = ts.offset() + ts.token().length();
+
+                    if (ts.token().id() == HTMLTokenId.VALUE) {
+                        if (ts.token().text().charAt(0) == '"' ||
+                                ts.token().text().charAt(0) == '\'') {
+                            //sustract the qutations
+                            from += 1;
+                            to -= 1;
+                        }
+                    }
+
+                    //adjust the range based on the real embedding
+                    if (elts.moveNext()) {
+                        from = elts.offset();
+                        from -= 2; //substract the ${ length which is not with the embedding but should be highlighted
+                    }
+                    elts.moveEnd();
+                    if (elts.movePrevious()) {
+                        to = elts.offset() + elts.token().length();
+                        to += 1; //add } length
+                    }
+
+                    highlights.put(new OffsetRange(from, to), ColoringAttributes.FIELD_SET);
+                }
+            }
+        }
+    }
+
+    private void highlightJsfTags(HtmlParserResult result, final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
         Map<String, TldLibrary> libs = jsfs.getLibraries();
@@ -113,8 +169,6 @@ public class JsfHtmlExtension extends HtmlExtension {
             }
         }
 
-        return highlights;
-
     }
 
     private void highlight(AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) {
@@ -143,11 +197,11 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (colonIndex == -1) {
             //editing namespace or tag w/o ns
             //offer all tags
-            for(TldLibrary lib : libs.values()) {
+            for (TldLibrary lib : libs.values()) {
                 String declaredPrefix = declaredNS.get(lib.getURI());
-                if(declaredPrefix == null) {
+                if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
-                    if(lib.getDefaultPrefix().startsWith(context.getPrefix())) {
+                    if (lib.getDefaultPrefix().startsWith(context.getPrefix())) {
                         items.addAll(queryLibrary(context, lib, lib.getDefaultPrefix(), true));
                     }
                 } else {
@@ -183,9 +237,9 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         //filter the items according to the prefix
         Iterator<CompletionItem> itr = items.iterator();
-        while(itr.hasNext()) {
-            HtmlCompletionItem hci = (HtmlCompletionItem)itr.next();
-            if(!hci.getItemText().startsWith(context.getPrefix())) {
+        while (itr.hasNext()) {
+            HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
+            if (!hci.getItemText().startsWith(context.getPrefix())) {
                 itr.remove();
             }
         }
@@ -195,8 +249,8 @@ public class JsfHtmlExtension extends HtmlExtension {
     }
 
     private String getUriForPrefix(String prefix, Map<String, String> namespaces) {
-        for(Entry<String,String> entry : namespaces.entrySet()) {
-            if(prefix.equals(entry.getValue())) {
+        for (Entry<String, String> entry : namespaces.entrySet()) {
+            if (prefix.equals(entry.getValue())) {
                 return entry.getKey();
             }
         }
@@ -205,7 +259,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     private Collection<CompletionItem> queryLibrary(CompletionContext context, TldLibrary lib, String nsPrefix, boolean undeclared) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for(TldLibrary.Tag tag : lib.getTags().values()) {
+        for (TldLibrary.Tag tag : lib.getTags().values()) {
             String tagName = tag.getName();
             //TODO resolve help!!!
             items.add(JsfCompletionItem.createTag(nsPrefix + ":" + tagName, context.getCCItemStartOffset(), tag, lib, undeclared));
@@ -232,16 +286,16 @@ public class JsfHtmlExtension extends HtmlExtension {
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         TldLibrary lib = libs.get(namespace);
 
-        if(lib != null) {
+        if (lib != null) {
             TldLibrary.Tag tag = lib.getTags().get(tagName);
-            if(tag != null) {
+            if (tag != null) {
                 Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
                 //TODO resolve help
                 Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
 
-                for(TldLibrary.Attribute a : attrs) {
+                for (TldLibrary.Attribute a : attrs) {
                     String attrName = a.getName();
-                    if(!existingAttrNames.contains(attrName) ||
+                    if (!existingAttrNames.contains(attrName) ||
                             existingAttrNames.contains(context.getItemText())) {
                         //show only unused attributes except the one where the caret currently stays
                         //this is because of we need to show the item in the completion since
@@ -253,12 +307,12 @@ public class JsfHtmlExtension extends HtmlExtension {
             }
         }
 
-        if(context.getPrefix().length() > 0) {
+        if (context.getPrefix().length() > 0) {
             //filter the items according to the prefix
             Iterator<CompletionItem> itr = items.iterator();
-            while(itr.hasNext()) {
-                HtmlCompletionItem hci = (HtmlCompletionItem)itr.next();
-                if(!hci.getItemText().startsWith(context.getPrefix())) {
+            while (itr.hasNext()) {
+                HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
+                if (!hci.getItemText().startsWith(context.getPrefix())) {
                     itr.remove();
                 }
             }

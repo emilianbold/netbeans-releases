@@ -46,6 +46,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -58,6 +59,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -70,6 +72,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -93,14 +96,18 @@ public final class PhpUnit extends PhpProgram {
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // bootstrap & config
     public static final String PARAM_BOOTSTRAP = "--bootstrap"; // NOI18N
-    public static final String BOOTSTRAP_FILE = "bootstrap.php"; // NOI18N
+    private static final String BOOTSTRAP_FILENAME = "bootstrap%s.php"; // NOI18N
     public static final String PARAM_CONFIGURATION = "--configuration"; // NOI18N
-    public static final String CONFIGURATION_FILE = "configuration.xml"; // NOI18N
-    public static final String SUITE_FILE = "NetBeansSuite.php"; // NOI18N
+    private static final String CONFIGURATION_FILENAME = "configuration%s.xml"; // NOI18N
 
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
+
+    // suite file
+    public static final File SUITE;
+    public static final String SUITE_RUN = "run=%s"; // NOI18N
+    private static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -121,11 +128,22 @@ public final class PhpUnit extends PhpProgram {
      */
     static volatile int[] version = null;
 
+    static {
+        SUITE = InstalledFileLocator.getDefault().locate(SUITE_NAME, "org.netbeans.modules.php.project", false);  // NOI18N
+        if (SUITE == null || !SUITE.isFile()) {
+            throw new IllegalStateException("Could not locate file " + SUITE_NAME);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     public PhpUnit(String command) {
         super(command);
+    }
+
+    public File getWorkingDirectory() {
+        return new File(getProgram()).getParentFile();
     }
 
     // XXX see 2nd paragraph
@@ -168,6 +186,7 @@ public final class PhpUnit extends PhpProgram {
 
         version = UNKNOWN_VERSION;
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+                .workingDirectory(getWorkingDirectory())
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
@@ -206,45 +225,75 @@ public final class PhpUnit extends PhpProgram {
         return params.toArray(new String[params.size()]);
     }
 
-    public File getBootstrapFile(PhpProject project, List<String> generatedFiles) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        assert testDirectory != null : "Test directory must already be set";
+    public Files getFiles(PhpProject project, boolean withSuite) {
+        List<Pair<String, File>> missingFiles = new LinkedList<Pair<String, File>>();
+        File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
+        if (bootstrap != null
+                && !bootstrap.isFile()) {
+            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_Bootstrap"), bootstrap));
+            bootstrap = null;
+        }
 
-        File bootstrap = new File(FileUtil.toFile(testDirectory), PhpUnit.BOOTSTRAP_FILE);
-        if (!bootstrap.isFile()) {
-            if (createBootstrapFile(project, testDirectory, bootstrap)) {
-                assert bootstrap.isFile() : "bootstrap file for phpunit must exist";
-                generatedFiles.add(PhpUnit.BOOTSTRAP_FILE);
+        File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
+        if (configuration != null
+                && !configuration.isFile()) {
+            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_Configuration"), configuration));
+            configuration = null;
+        }
+
+        File suite = null;
+        if (withSuite) {
+            suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
+            if (suite != null
+                    && !suite.isFile()) {
+                missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_TestSuite"), suite));
+                suite = null;
             }
         }
-        if (bootstrap.isFile()) {
-            return bootstrap;
+        warnAboutMissingFiles(missingFiles);
+        return new Files(bootstrap, configuration, suite);
+    }
+
+    public File getCustomSuite(PhpProject project) {
+        File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
+        if (suite != null
+                && suite.isFile()) {
+            return suite;
         }
         return null;
     }
 
-    private boolean createBootstrapFile(final PhpProject project, FileObject testDirectory, final File bootstrapFile) {
+    public static File createBootstrapFile(final PhpProject project) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must already be set";
+
         final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitBootstrap"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
-        final boolean[] success = new boolean[] {true};
+        final File bootstrapFile = new File(getBootstrapFilepath(project));
+        final File[] files = new File[1];
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
                 try {
                     DataObject dataTemplate = DataObject.find(configFile);
-                    DataObject bootstrap = dataTemplate.createFromTemplate(dataFolder, PhpUnit.BOOTSTRAP_FILE + "~"); // NOI18N
+                    DataObject bootstrap = dataTemplate.createFromTemplate(dataFolder, bootstrapFile.getName() + "~"); // NOI18N
                     assert bootstrap != null;
                     moveAndAdjustBootstrap(project, FileUtil.toFile(bootstrap.getPrimaryFile()), bootstrapFile);
                     assert bootstrapFile.isFile();
+                    files[0] = bootstrapFile;
+                    informAboutGeneratedFile(bootstrapFile.getName());
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Cannot create PHPUnit bootstrap file", ex);
-                    success[0] = false;
                 }
             }
         });
-        return success[0];
+        if (files[0] == null) {
+            // no file generated
+            warnAboutNotGeneratedFile(bootstrapFile.getName());
+        }
+        return files[0];
     }
 
-    private void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
+    private static void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
         try {
             // input
             BufferedReader in = new BufferedReader(new FileReader(tmpBootstrap));
@@ -307,100 +356,57 @@ public final class PhpUnit extends PhpProgram {
         return line;
     }
 
-    public File getConfigurationFile(PhpProject project, List<String> generatedFiles) {
+    public static File createConfigurationFile(PhpProject project) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must already be set";
 
-        File configuration = new File(FileUtil.toFile(testDirectory), PhpUnit.CONFIGURATION_FILE);
-        if (!configuration.isFile()) {
-            if (createConfigurationFile(testDirectory)) {
-                assert configuration.isFile() : "configuration file for phpunit must exist";
-                generatedFiles.add(PhpUnit.CONFIGURATION_FILE);
-            }
-        }
-        if (configuration.isFile()) {
-            return configuration;
-        }
-        return null;
-    }
-
-    private boolean createConfigurationFile(FileObject testDirectory) {
         final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitConfiguration.xml"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        final File configurationFile = new File(getConfigurationFilepath(project));
+        File file = null;
         try {
             DataObject dataTemplate = DataObject.find(configFile);
-            DataObject configuration = dataTemplate.createFromTemplate(dataFolder, PhpUnit.CONFIGURATION_FILE.replace(".xml", "")); // NOI18N
+            DataObject configuration = dataTemplate.createFromTemplate(dataFolder, configurationFile.getName().replace(".xml", "")); // NOI18N
             assert configuration != null;
+            file = configurationFile;
+            informAboutGeneratedFile(configurationFile.getName());
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Cannot create PHPUnit configuration file", ex);
-            return false;
         }
-        return true;
+        if (file == null) {
+            // no file generated
+            warnAboutNotGeneratedFile(configurationFile.getName());
+        }
+        return file;
     }
 
-    public String getSuiteFilePath(PhpProject project) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        if (testDirectory == null) {
-            return null;
-        }
-
-        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
-        return suite.getAbsolutePath();
+    public static void informAboutGeneratedFile(String generatedFile) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(NbBundle.getMessage(PhpUnit.class, "MSG_FileGenerated", generatedFile)));
     }
 
-    public File getSuiteFile(PhpProject project, List<String> generatedFiles) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        assert testDirectory != null : "Test directory must already be set";
-
-        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
-        if (!suite.isFile()) {
-            if (createSuiteFile(testDirectory)) {
-                assert suite.isFile() : "suite file for phpunit must exist";
-                generatedFiles.add(PhpUnit.SUITE_FILE);
-            }
-        }
-        if (suite.isFile()) {
-            return suite;
-        }
-        return null;
+    private static void warnAboutNotGeneratedFile(String file) {
+        NotifyDescriptor warning = new NotifyDescriptor.Message(
+                NbBundle.getMessage(PhpUnit.class, "MSG_NotGenerated", file),
+                NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(warning);
     }
 
-    private boolean createSuiteFile(FileObject testDirectory) {
-        final FileObject suiteFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitSuite"); // NOI18N
-        final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
-        DataObject suite = null;
-        try {
-            DataObject dataTemplate = DataObject.find(suiteFile);
-            suite = dataTemplate.createFromTemplate(dataFolder, PhpUnit.SUITE_FILE);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot create PHPUnit suite file", ex);
-            return false;
-        }
-
-        assert suite != null;
-        // reformat the file
-        File file = FileUtil.toFile(suite.getPrimaryFile());
-        try {
-            PhpProjectUtils.reformatFile(file);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
-        }
-        return true;
-    }
-
-    public static void informAboutGeneratedFiles(List<String> generatedFiles) {
-        if (generatedFiles.isEmpty()) {
+    private static void warnAboutMissingFiles(List<Pair<String, File>> missingFiles) {
+        if (missingFiles.isEmpty()) {
             return;
         }
         StringBuilder buffer = new StringBuilder(100);
-        for (String file : generatedFiles) {
-            buffer.append(file);
+        for (Pair<String, File> pair : missingFiles) {
+            buffer.append(NbBundle.getMessage(PhpUnit.class, "LBL_MissingFile", pair.first, pair.second.getAbsolutePath()));
             buffer.append("\n"); // NOI18N
         }
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(NbBundle.getMessage(PhpUnit.class, "MSG_FilesGenerated", buffer.toString())));
+        NotifyDescriptor warning = new NotifyDescriptor.Message(
+                NbBundle.getMessage(PhpUnit.class, "MSG_MissingFiles", buffer.toString()),
+                NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(warning);
     }
 
-    public static String getDirnameFile(File testFile, File sourceFile) {
+    private static String getDirnameFile(File testFile, File sourceFile) {
         return getRelPath(testFile, sourceFile, DIRNAME_FILE, "'"); // NOI18N
     }
 
@@ -418,7 +424,45 @@ public final class PhpUnit extends PhpProgram {
         } else {
             relPath = prefix + relPath + suffix;
         }
-        return relPath.replace(File.separatorChar, PhpUnit.DIRECTORY_SEPARATOR);
+        return relPath.replace(File.separatorChar, DIRECTORY_SEPARATOR);
+    }
+
+    private static String getBootstrapFilepath(PhpProject project) {
+        return getFilepath(project, BOOTSTRAP_FILENAME);
+    }
+
+    private static String getConfigurationFilepath(PhpProject project) {
+        return getFilepath(project, CONFIGURATION_FILENAME);
+    }
+
+    private static String getFilepath(PhpProject project, String filename) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must already be set";
+
+        File tests = FileUtil.toFile(testDirectory);
+        File file = null;
+        int i = 0;
+        do {
+            file = new File(tests, getFilename(filename, i++));
+        } while (file.isFile());
+        assert !file.isFile();
+        return file.getAbsolutePath();
+    }
+
+    private static String getFilename(String filename, int i) {
+        return String.format(filename, i == 0 ? "" : i); // NOI18N
+    }
+
+    public static final class Files {
+        public final File bootstrap;
+        public final File configuration;
+        public final File suite;
+
+        public Files(File bootstrap, File configuration, File suite) {
+            this.bootstrap = bootstrap;
+            this.configuration = configuration;
+            this.suite = suite;
+        }
     }
 
     static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {

@@ -303,18 +303,27 @@ public class WSUtils {
         FileObject[] children = sourceFolder.getChildren();
         for (int i=0;i<children.length;i++) {
             if (children[i].isFolder()) {
-                FileObject folder = targetFolder.getFileObject(children[i].getNameExt());
-                if (folder == null) {
-                    folder = targetFolder.createFolder(children[i].getNameExt());
+                String folderName = children[i].getNameExt();
+                // don't copy system/VCS files
+                if (!folderName.startsWith(".")) { //NOI18N
+                    FileObject folder = targetFolder.getFileObject(children[i].getNameExt());
+                    if (folder == null) {
+                        folder = targetFolder.createFolder(children[i].getNameExt());
+                    }
+                    // recursive call
+                    copyFiles(children[i], folder);
                 }
-                // recursive call
-                copyFiles(children[i],folder);
             } else {
-                FileObject oldFile = targetFolder.getFileObject(children[i].getName(), children[i].getExt());
-                if (oldFile != null) {
-                    oldFile.delete();
+                String fileName = children[i].getName();
+                // don't copy system/VCS files
+                if (!fileName.startsWith(".")) {
+                    String fileExt = children[i].getExt();
+                    FileObject oldFile = targetFolder.getFileObject(fileName, fileExt);
+                    if (oldFile != null) {
+                        oldFile.delete();
+                    }
+                    children[i].copy(targetFolder, fileName, fileExt);
                 }
-                children[i].copy(targetFolder, children[i].getName(), children[i].getExt());
             }
         }
     }

@@ -73,17 +73,19 @@ public final class LineParsingHelper {
         int tlLength = (trailingLine != null ? trailingLine.length() : 0);
         int start = 0;
         List<String> ret = new ArrayList<String>();
-        for (int i = 0; i < input.length(); i++) { // going through the text read and searching for the new line
+        int length = input.length();
+        for (int i = 0; i < length; i++) { // going through the text read and searching for the new line
             //we see '\n' or '\r', *not* '\r\n'
-            if (input.charAt(i) == '\r'
-                    && (i + 1 == input.length() || input.charAt(i + 1) != '\n')
-                    || input.charAt(i) == '\n') {
+            char c = input.charAt(i);
+            if (c == '\r'
+                    && (i + 1 == length || input.charAt(i + 1) != '\n')
+                    || c == '\n') {
                 String line = lines.substring(start, tlLength + i);
                 //move start to the character right after the new line
                 start = tlLength + (i + 1);
                 ret.add(line);
-            } else if (input.charAt(i) == '\r'
-                    && (i + 1 < input.length()) && input.charAt(i + 1) == '\n') {//we see '\r\n'
+            } else if (c == '\r'
+                    && (i + 1 < length) && input.charAt(i + 1) == '\n') {//we see '\r\n'
                 String line = lines.substring(start, tlLength + i);
                 //skip the '\n' character
                 i += 1;

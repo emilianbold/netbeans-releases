@@ -140,7 +140,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 
@@ -1156,6 +1155,8 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         if (slownData != null){
+            assert slownData.getNpsContent() != null: "nps param should be not null";
+            assert slownData.getNpsContent().length > 0 : "nps param should not be empty";
             os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
             os.println("Content-Type: x-application/nps");
             os.println();
@@ -1834,9 +1835,9 @@ public class Installer extends ModuleInstall implements Runnable {
             if (slownData != null) {
                 String message;
                 if (slownData.getLatestActionName() == null) {
-                    message = NbBundle.getMessage(Installer.class, "Summary_MSG_No_Action", slownData.getTime());
+                    message = String.format("AWT thread blocked for %1$s ms.", Long.toString(slownData.getTime())); // NOI18N
                 } else {
-                    message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                    message = String.format("Invoking %1$s took %2$s ms.", slownData.getLatestActionName(), Long.toString(slownData.getTime()));// NOI18N
                 }
                 reportPanel.setSummary(message);
             } else {

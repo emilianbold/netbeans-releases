@@ -47,6 +47,32 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.asynchronous">
+        <api name="awt"/>
+        <summary>Support for asynchronous actions</summary>
+        <version major="7" minor="12"/>
+        <date day="30" month="7" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The layer definition used by factory methods for
+            <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+            context</a>
+            and
+            <a href="@TOP@/org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">
+            callback</a>
+            and
+            <a href="@TOP@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">
+                alwaysEnabledAction</a>
+            were enhanced to understand <code>&lt;attr name="asynchronous" boolvalue="true"/&gt;</code>
+            attribute. This extends these new factories with capabilities
+            already present in old <code>SystemAction</code>, thus makes
+            it easier to migrate from old to new while retaining compatible
+            behaviour.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="168547"/>
+    </change>
     <change id="HtmlBrowser.dispose">
         <api name="awt"/>
         <summary>Added dispose() method.</summary>
@@ -72,7 +98,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
             Two new factory methods for creating
-            <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20javax.swing.Action,%20java.lang.String,%20java.lang.String,%20boolean)">
+            <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
             context</a>
             and
             <a href="@TOP@/org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">

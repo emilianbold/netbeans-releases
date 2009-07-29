@@ -94,17 +94,6 @@ implements Action, ContextAwareAction {
         this.global = ContextManager.findManager(actionContext, surviveFocusChange);
     }
 
-    /*
-    public ContextAction(FileObject map) {
-        this(
-            map.getAttribute("key"), // NOI18N
-            Utilities.actionsGlobalContext(), // NOI18N
-            (Action)map.getAttribute("fallback"), // NOI18N
-            Boolean.TRUE.equals(map.getAttribute("surviveFocusChange")) // NOI18N
-        );
-    }
-     */
-
     /** Overrides superclass method, adds delegate description. */
     @Override
     public String toString() {
@@ -114,8 +103,6 @@ implements Action, ContextAwareAction {
     /** Invoked when an action occurs.
      */
     public void actionPerformed(final java.awt.event.ActionEvent e) {
-        assert EventQueue.isDispatchThread();
-
         global.actionPerformed(e, performer, type, selectMode);
     }
 

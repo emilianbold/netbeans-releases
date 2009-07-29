@@ -67,6 +67,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance"/>
                     <attr name="position" intvalue="100"/>
+                    <attr name="ergonomics" boolvalue="true"/>
                 </file>
                 <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance"/>

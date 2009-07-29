@@ -385,29 +385,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return sb.toString();
             }
             if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
-//                File exFile = new File(root, "lib/javaee.jar"); // NOI18N
                 FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dm.getProperties().getDomainDir())));
-//                if (location == null) {
-//                    return null;
-//                }
-//                FileObject domain = location.getFileObject(
-//                        dmProps.getInstanceProperties().getProperty(DeploymentManagerProperties.DOMAIN_ATTR));
-//                if (domain == null) {
-//                    return null;
-//                }
-//
-//                if (exFile.exists()) {
-                    FileObject copyLocation = location.getFileObject("generated/xml"); // NOI18N
-                    if (copyLocation != null) {
-                        return FileUtil.toFile(copyLocation).getAbsolutePath();
-                    }
-//                } else {
-//                    FileObject copyLocation = domain.getFileObject("applications/j2ee-modules"); // NOI18N
-//                    if (copyLocation != null) {
-//                        return FileUtil.toFile(copyLocation).getAbsolutePath();
-//                    }
-//                }
-                return null;
+                if (location == null) {
+                    return null;
+                }
+                return (FileUtil.toFile(location).getAbsolutePath())+File.separator+"generated"+File.separator+"xml"; // NOI18N
             }
             if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
                 return null; // "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() +

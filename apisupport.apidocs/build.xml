@@ -60,9 +60,7 @@ made subject to such option by the copyright holder.
         <property file="../nbbuild/build.properties"/>
         <mkdir dir="${docs.dir}"/>
         <property name="javadoc.fail.on.error" value="true"/>
-        <ant dir="../nbbuild" target="build-javadoc" inheritall="false">
-            <!-- Skip friend and experimental APIs: -->
-            <property name="config.javadoc.all" value="${config.javadoc.stable},${config.javadoc.devel},${config.javadoc.deprecated}"/>
+        <ant dir="../nbbuild/javadoctools" target="build-javadoc" inheritall="false">
             <!-- build into my personal javadoc build area -->
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
             <property name="javadoc.fail.on.error" value="${javadoc.fail.on.error}"/>
@@ -72,16 +70,6 @@ made subject to such option by the copyright holder.
             <property name="export.interfaces" value="${local.export.interfaces}"/>
             <property name="export.apichanges" value="${local.export.apichanges}"/>
             
-            <!-- these modules do not have stable API, so we need to link
-              to them on website -->
-            <property name="javadoc.docs.org-netbeans-modules-editor-util" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor-util/"/>
-            <property name="javadoc.docs.org-netbeans-modules-editor-lib" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor-lib/"/>
-            <property name="javadoc.docs.org-netbeans-modules-editor" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor/"/>
-            <!-- moreover we need to allow references to http://www.netbeans.org/download/dev/javadoc/
-              so skip forbidden links check
-            -->
-            <property name="javadoc.check.forbidden.links" value="false" />
-
             <property name="javadoc.web.zip" value=""/>
             <property name="javadoc.zip" value="${docs.zip}"/>
         </ant>

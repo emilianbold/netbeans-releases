@@ -48,6 +48,7 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.ThreadReference;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -265,6 +266,21 @@ public class Operator {
                                 logger.warning("!!\nMissed event "+eventSet+" thread "+tref+" is not suspended!\n");
                                 continue;
                             }
+                            // We check for multiple-suspension when event is received
+                            try {
+                                int sc = ThreadReferenceWrapper.suspendCount(tref);
+                                if (logger.isLoggable(Level.FINER)) {
+                                    logger.finer("Suspend count of "+tref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
+                                }
+                                while (sc-- > 1) {
+                                    ThreadReferenceWrapper.resume(tref);
+                                }
+                            } catch (ObjectCollectedExceptionWrapper e) {
+                            } catch (IllegalThreadStateExceptionWrapper e) {
+                                // ignore mobility VM defects
+                            } catch (InternalExceptionWrapper e) {
+                                // ignore mobility VM defects
+                            }
                             if (logger.isLoggable(Level.FINE)) {
                                 try {
                                     logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+tref);
@@ -356,7 +372,7 @@ public class Operator {
                          }
 
                          // safe invocation of user action
-                         if (exec != null)
+                         if (exec != null) {
                              try {
                                  startEventOnly = false;
                                  if (logger.isLoggable(Level.FINE)) {
@@ -380,7 +396,8 @@ public class Operator {
                              } catch (Exception ex) {
                                  ErrorManager.getDefault().notify(ex);
                              }
-                     } // while
+                         }
+                     } // for
 
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
                      if (logger.isLoggable(Level.FINE)) {
@@ -396,34 +413,42 @@ public class Operator {
                              debugger.notifyToBeResumedAllNoFire();
                          }
                          if (!silent && suspendedThread != null) {
-                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
+                             resume = resume & suspendedThread.notifyToBeResumedNoFire();
                          }
                      }
-                     if (!resume) { // resume could be changed above
+                     if (!resume) { // notify about the suspend if not resumed.
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
-                             debugger.notifySuspendAll();
+                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false);
+                             if (eventAccessLock != null) {
+                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                eventAccessLock.unlock();
+                                eventAccessLock = null;
+                             }
+                             for (PropertyChangeEvent event : events) {
+                                 ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                             }
                          }
                          if (!silent && suspendedThread != null) {
-                             suspendedThread.notifySuspended();
-                         }
-                     }
-
-
-                     } finally {
-                         if (eventAccessLock != null) {
-                             logger.finer("Write access lock RELEASED:"+eventAccessLock);
-                             eventAccessLock.unlock();
+                             PropertyChangeEvent event = suspendedThread.notifySuspended(false);
+                             if (eventAccessLock != null) {
+                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                eventAccessLock.unlock();
+                                eventAccessLock = null;
+                             }
+                             if (event != null) {
+                                suspendedThread.fireEvent(event);
+                             }
                          }
                      }
                      if (!startEventOnly) {
                          if (resume) {
-                             resumeLock.writeLock().lock();
-                             try {
+                             //resumeLock.writeLock().lock();
+                             //try {
                                 EventSetWrapper.resume(eventSet);
-                             } finally {
-                                 resumeLock.writeLock().unlock();
-                             }
+                             //} finally {
+                             //    resumeLock.writeLock().unlock();
+                             //}
                          } else if (!silent && (suspendedAll || suspendedThread != null)) {
                             Session session = debugger.getSession();
                             if (session != null) {
@@ -435,10 +460,20 @@ public class Operator {
                                 if (tref != null) {
                                     break;
                                 }
-                             }
+                            }
                             if (tref != null) debugger.setStoppedState (tref);
                          }
                      }
+
+
+                     } finally {
+                         if (eventAccessLock != null) {
+                             logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                             eventAccessLock.unlock();
+                         }
+                     }
+                     /* We check for multiple-suspension when event is received
+                      * This check is already performed above
                      if (!silent && !resume) { // Check for multiply-suspended threads
                          resumeLock.writeLock().lock();
                          try {
@@ -449,6 +484,7 @@ public class Operator {
                                      while (ThreadReferenceWrapper.suspendCount(t) > 1) {
                                          if (jt != null) {
                                              jt.notifyToBeResumed();
+                                             jt = null;
                                          }
                                          ThreadReferenceWrapper.resume(t);
                                      } // while
@@ -462,7 +498,7 @@ public class Operator {
                          } finally {
                              resumeLock.writeLock().unlock();
                          }
-                     }
+                     }*/
                  } catch (VMDisconnectedException e) {
                      break;
                  } catch (VMDisconnectedExceptionWrapper e) {
