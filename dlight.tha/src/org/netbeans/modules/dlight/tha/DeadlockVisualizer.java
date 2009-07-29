@@ -36,35 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.spi.datafilter;
+package org.netbeans.modules.dlight.tha;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
-public class SunStudioFiltersFactory implements DataFilterFactory {
+/**
+ * @author Alexey Vladykin
+ */
+public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
 
-    public static final String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
-    public static final String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
+    private final DeadlockVisualizerConfiguration configuration;
+    private final VisualizerDataProvider dataProvider;
 
-    public DataFilter createFilter(String filterID, String filterSpec) {
-        if (CollectedObjectsFilterID.equals(filterID)) {
-            return new CollectedObjectsFilter(filterSpec);
-        }
-
-        if (HotSpotFunctionsFilterID.equals(filterID)) {
-            return new HotSpotFunctionsFilter(filterSpec);
-        }
-
-        return null;
+    public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, VisualizerDataProvider dataProvider) {
+        this.configuration = configuration;
+        this.dataProvider = dataProvider;
     }
 
-    public Collection<String> getSupportedFilterIDs() {
-        return Arrays.asList(
-                CollectedObjectsFilterID,
-                HotSpotFunctionsFilterID);
+    public DeadlockVisualizerConfiguration getVisualizerConfiguration() {
+        return configuration;
+    }
+
+    public JComponent getComponent() {
+        return new JLabel("Deadlocks..."); // NOI18N
+    }
+
+    public VisualizerContainer getDefaultContainer() {
+        return DefaultVisualizerContainer.getInstance();
+    }
+
+    public void refresh() {
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 }

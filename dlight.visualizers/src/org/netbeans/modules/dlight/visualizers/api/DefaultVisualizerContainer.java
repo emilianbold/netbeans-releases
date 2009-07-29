@@ -36,35 +36,22 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.spi.datafilter;
+package org.netbeans.modules.dlight.visualizers.api;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.VisualizerTopComponentTopComponent;
 
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
-public class SunStudioFiltersFactory implements DataFilterFactory {
+/**
+ * Means for foreign visualizers to appear in default container.
+ *
+ * @author Alexey Vladykin
+ */
+public final class DefaultVisualizerContainer {
 
-    public static final String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
-    public static final String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
-
-    public DataFilter createFilter(String filterID, String filterSpec) {
-        if (CollectedObjectsFilterID.equals(filterID)) {
-            return new CollectedObjectsFilter(filterSpec);
-        }
-
-        if (HotSpotFunctionsFilterID.equals(filterID)) {
-            return new HotSpotFunctionsFilter(filterSpec);
-        }
-
-        return null;
+    private DefaultVisualizerContainer() {
     }
 
-    public Collection<String> getSupportedFilterIDs() {
-        return Arrays.asList(
-                CollectedObjectsFilterID,
-                HotSpotFunctionsFilterID);
+    public static VisualizerContainer getInstance() {
+        return VisualizerTopComponentTopComponent.findInstance();
     }
 }
