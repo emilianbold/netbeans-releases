@@ -486,6 +486,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                     }
                 }
                 parentWindow = new WeakReference<Window>(w);
+                browser.setVisible(true);
             }
         }
 
@@ -499,6 +500,16 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 super.removeNotify();
             } else {
                 urlToLoad = getURL();
+                if( isInitialized() ) {
+                    browser.setVisible(false);
+                    Window w = SwingUtilities.getWindowAncestor(this);
+                    if( null == w || !w.isVisible() ) {
+                        //something is happening with our window, probably 
+                        //switching fullscreen mode
+                        parentWindow = null;
+                        browser.removeNotify();
+                    }
+                }
             }
         }
 
