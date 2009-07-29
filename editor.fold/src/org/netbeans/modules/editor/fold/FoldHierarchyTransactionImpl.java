@@ -779,7 +779,6 @@ public final class FoldHierarchyTransactionImpl {
                 sbDebug.append("\n addFold8 INVOKE ApiPackageAccessor.get().foldExtractToChildren"
                 + " index:" + index + " nextIndex:" + nextIndex + " diff:" + (nextIndex - index)
                 + " parentFold.getFoldCount():" + parentFold.getFoldCount());
-                System.out.println(sbDebug.toString());
                 assert (nextIndex - index) >= 0 : "Negative length." + sbDebug.toString();
                 assert (nextIndex <= parentFold.getFoldCount()) : "End index exceeds children list size." + sbDebug.toString();
                 ApiPackageAccessor.get().foldExtractToChildren(parentFold, index, nextIndex - index, fold);
