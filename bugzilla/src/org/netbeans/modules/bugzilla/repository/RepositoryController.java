@@ -152,7 +152,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
@@ -161,7 +161,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = BugzillaConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -169,7 +169,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");  // NOI18N
             return false;
         }
 
@@ -177,10 +177,8 @@ public class RepositoryController extends BugtrackingController implements Docum
             new URL(url);
             new URI(url);
         } catch (Exception ex) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");
-            if(Bugzilla.LOG.isLoggable(Level.FINEST)) {
-                Bugzilla.LOG.log(Level.FINEST, errorMessage, ex);
-            }
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
+            Bugzilla.LOG.log(Level.FINEST, errorMessage, ex);
             return false;
         }
 
@@ -188,7 +186,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
