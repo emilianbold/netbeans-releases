@@ -396,7 +396,7 @@ public class BugtrackingUtil {
                || FileUtil.toFileObject(file).equals(fileObj);
 
         if (fileObj == null) {
-            fileObj = FileUtil.toFileObject(file);
+            fileObj = getFileObjForFileOrParent(file);
         } else if (file == null) {
             file = FileUtil.toFile(fileObj);
         }
@@ -427,6 +427,24 @@ public class BugtrackingUtil {
             assert fileObj != null;      //every non-folder should have a parent
             return FileUtil.toFile(fileObj);    //whether it is null or non-null
         }
+    }
+
+    private static FileObject getFileObjForFileOrParent(File file) {
+        FileObject fileObj = FileUtil.toFileObject(file);
+        if (fileObj != null) {
+            return fileObj;
+        }
+
+        File closestParentFile = file.getParentFile();
+        while (closestParentFile != null) {
+            fileObj = FileUtil.toFileObject(closestParentFile);
+            if (fileObj != null) {
+                return fileObj;
+            }
+            closestParentFile = closestParentFile.getParentFile();
+        }
+
+        return null;
     }
 
     public static File getLargerContext(Project project) {
