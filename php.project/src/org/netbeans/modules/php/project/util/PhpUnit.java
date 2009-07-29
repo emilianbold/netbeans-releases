@@ -105,9 +105,9 @@ public final class PhpUnit extends PhpProgram {
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
 
     // suite file
-    public static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
-    public static final String SUITE_RUN = "run=%s"; // NOI18N
     public static final File SUITE;
+    public static final String SUITE_RUN = "run=%s"; // NOI18N
+    private static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -140,6 +140,10 @@ public final class PhpUnit extends PhpProgram {
      */
     public PhpUnit(String command) {
         super(command);
+    }
+
+    public File getWorkingDirectory() {
+        return new File(getProgram()).getParentFile();
     }
 
     // XXX see 2nd paragraph
@@ -182,6 +186,7 @@ public final class PhpUnit extends PhpProgram {
 
         version = UNKNOWN_VERSION;
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+                .workingDirectory(getWorkingDirectory())
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)

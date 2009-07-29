@@ -15,6 +15,6 @@ import javax.ejb.Singleton;
 public class TestSingletonBean {
     
     // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method" or "Web Service > Add Operation")
+    // "Insert Code > Add Business Method")
  
 }

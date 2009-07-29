@@ -368,23 +368,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
         
         private boolean isPhpFile(FileObject file) {
-            FileObject fo = null;
-            String ext = file.getExt();
-            synchronized (EXT2FO) {
-                fo = (ext != null) ? EXT2FO.get(ext) : null;
-                if (fo == null) {
-                    try {
-                        fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
-                        if (ext != null && fo != null) {
-                            EXT2FO.put(ext, fo);
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            assert fo != null;
-            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE));
+            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHPLanguage.PHP_MIME_TYPE));
         }
     } // End of Factory class
 }
