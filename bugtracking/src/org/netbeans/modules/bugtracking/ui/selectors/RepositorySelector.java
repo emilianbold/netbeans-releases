@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 
@@ -69,7 +70,7 @@ public class RepositorySelector {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
-        BugtrackingManager.getInstance().fireRepositoriesChanged();
+        RepositoriesSupport.getInstance().fireRepositoriesChanged();
         return repo;
     }
 
