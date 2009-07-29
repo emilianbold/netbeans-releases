@@ -45,7 +45,6 @@ import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
@@ -103,7 +102,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         log("Option dialog was opened");
         
         OptionsOperator options = new OptionsOperator();
-        options.switchToClassicView();
+ //       options.switchToClassicView();
         //add timeout
         waitNoEvent(2000);
         

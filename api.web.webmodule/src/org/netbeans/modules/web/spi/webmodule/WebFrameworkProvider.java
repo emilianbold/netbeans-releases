@@ -60,7 +60,7 @@ import org.openide.util.Parameters;
  * <p>Instances of this class are registered in the <code>j2ee/webtier/framework</code>
  * in the module layer.</p>
  *
- * @author Petr Pisl, Andrei Badea
+ * @author Petr Pisl, Andrei Badea, Petr Slechta
  */
 public abstract class WebFrameworkProvider {
 
@@ -198,6 +198,7 @@ public abstract class WebFrameworkProvider {
      * Test if this framework requires web.xml deployment descriptor for its
      * functioning.
      * @return true if web.xml is required by this framework
+     * @since 1.15
      */
     public boolean requiresWebXml() {
         return true;

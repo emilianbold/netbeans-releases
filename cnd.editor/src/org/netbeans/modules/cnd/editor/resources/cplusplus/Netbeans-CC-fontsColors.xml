@@ -86,5 +86,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="preprocessor-user-include-literal" default="string">
     </fontcolor>
     <fontcolor name="preprocessor-identifier" default="identifier"/>
+    <!-- OpenMP categories -->
+    <fontcolor name="pragma-omp" foreColor="9B0000"/>
+    <fontcolor name="pragma-omp-keyword-directive" default="pragma-omp"/>
    
 </fontscolors>

@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -154,21 +155,28 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     }
 
     protected final void actionStatesAtStart() {
-        rerun.setEnabled(false);
-        rerunDebug.setEnabled(false);
-        if (this instanceof MavenCommandLineExecutor) {
-            buildPlan.setEnabled(false);
-        } else {
-            buildPlan.setEnabled(true);
-        }
-        stop.setEnabled(true);
-
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                rerun.setEnabled(false);
+                rerunDebug.setEnabled(false);
+                if (AbstractMavenExecutor.this instanceof MavenCommandLineExecutor) {
+                    buildPlan.setEnabled(false);
+                } else {
+                    buildPlan.setEnabled(true);
+                }
+                stop.setEnabled(true);
+            }
+        });
     }
 
     protected final void actionStatesAtFinish() {
-        rerun.setEnabled(true);
-        rerunDebug.setEnabled(true);
-        stop.setEnabled(false);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                rerun.setEnabled(true);
+                rerunDebug.setEnabled(true);
+                stop.setEnabled(false);
+            }
+        });
     }
 
     @Override

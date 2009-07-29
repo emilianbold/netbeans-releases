@@ -77,6 +77,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
@@ -150,10 +151,10 @@ public class PushAction extends ContextAction {
     static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
         // If the repository has no default push path then inform user
         String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(ctx);
-        if(tmpPushPath == null) {
+        if (isNullOrEmpty(tmpPushPath)) {
             tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
         }
-        if(tmpPushPath == null) {
+        if (isNullOrEmpty(tmpPushPath)) {
             notifyDefaultPushUrlNotSpecified(logger);
             return;
         }
@@ -183,10 +184,8 @@ public class PushAction extends ContextAction {
         logger.outputInRed(getMessage("MSG_PUSH_DONE"));                //NOI18N
         logger.output     ("");                                         //NOI18N
         DialogDisplayer.getDefault().notify(
-                new DialogDescriptor.Confirmation(
-                        getMessage("MSG_NO_DEFAULT_PUSH_SET"),          //NOI18N
-                        title,
-                        INFORMATION_MESSAGE));
+                new DialogDescriptor.Message(
+                        getMessage("MSG_NO_DEFAULT_PUSH_SET")));        //NOI18N
     }
 
     private static void notifyDefaultPushUrlInvalid(String pushUrl,
@@ -201,9 +200,7 @@ public class PushAction extends ContextAction {
         logger.outputInRed(getMessage("MSG_PUSH_DONE"));                //NOI18N
         logger.output     ("");                                         //NOI18N
         DialogDisplayer.getDefault().notify(
-                new DialogDescriptor.Confirmation(msg,
-                                                  title,
-                                                  INFORMATION_MESSAGE));
+                new DialogDescriptor.Message(msg));
     }
 
     static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger, boolean showSaveCredsOption) {

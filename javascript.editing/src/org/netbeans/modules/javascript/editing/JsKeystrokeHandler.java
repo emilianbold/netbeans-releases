@@ -947,77 +947,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             }
         }
     }
-
+    
+    /** Replaced by JsBracesMatcher */
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
-        BaseDocument doc = (BaseDocument)document;
-
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
-
-        if (ts != null) {
-            ts.move(offset);
-
-            if (!ts.moveNext()) {
-                return OffsetRange.NONE;
-            }
-
-            Token<?extends JsTokenId> token = ts.token();
-
-            if (token == null) {
-                return OffsetRange.NONE;
-            }
-
-            TokenId id = token.id();
-
-            if (id == JsTokenId.WHITESPACE) {
-                // ts.move(offset) gives the token to the left of the caret.
-                // If you have the caret right at the beginning of a token, try
-                // the token to the right too - this means that if you have
-                //  "   |def" it will show the matching "end" for the "def".
-                offset++;
-                ts.move(offset);
-
-                if (ts.moveNext() && (ts.offset() <= offset)) {
-                    token = ts.token();
-                    id = token.id();
-                }
-            }
-
-            if (id == JsTokenId.STRING_BEGIN) {
-                return LexUtilities.findFwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
-            } else if (id == JsTokenId.STRING_END) {
-                return LexUtilities.findBwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
-            } else if (id == JsTokenId.REGEXP_BEGIN) {
-                return LexUtilities.findFwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
-            } else if (id == JsTokenId.REGEXP_END) {
-                return LexUtilities.findBwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
-            } else if (id == JsTokenId.LPAREN) {
-                return LexUtilities.findFwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
-            } else if (id == JsTokenId.RPAREN) {
-                return LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
-            } else if (id == JsTokenId.LBRACE) {
-                return LexUtilities.findFwd(doc, ts, JsTokenId.LBRACE, JsTokenId.RBRACE);
-            } else if (id == JsTokenId.RBRACE) {
-                return LexUtilities.findBwd(doc, ts, JsTokenId.LBRACE, JsTokenId.RBRACE);
-            } else if (id == JsTokenId.LBRACKET) {
-                return LexUtilities.findFwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
-//            } else if (id == JsTokenId.DO && !LexUtilities.isEndmatchingDo(doc, ts.offset())) {
-//                // No matching dot for "do" used in conditionals etc.
-//                return OffsetRange.NONE;
-            } else if (id == JsTokenId.RBRACKET) {
-                return LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
-//            } else if (id.primaryCategory().equals(JsLexer.KEYWORD_CAT)) {
-//                if (LexUtilities.isBeginToken(id, doc, ts)) {
-//                    return LexUtilities.findEnd(doc, ts);
-//                } else if ((id == JsTokenId.END) || LexUtilities.isIndentToken(id)) { // Find matching block
-//
-//                    return LexUtilities.findBegin(doc, ts);
-//                }
-            }
-        }
-
         return OffsetRange.NONE;
     }
-
+    
     /**
     * Hook called after a character *ch* was backspace-deleted from
     * *doc*. The function possibly removes bracket or quote pair if

@@ -245,7 +245,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if (projectType == ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+        if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) { //EJB Web Service
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }
@@ -358,6 +358,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
         } else {
             final WsdlPort port = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
+            final boolean isStatelessSB = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN);
             //String portJavaName = port.getJavaName();   
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             // don't set the packageName for modeler (use the default one generated from target Namespace)
@@ -374,13 +375,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     port1.setSOAPVersion(port.getSOAPVersion());
                     FileObject targetFolder = Templates.getTargetFolder(wiz);
                     String targetName = Templates.getTargetName(wiz);
-
                     try {
                         JaxWsUtils.generateJaxWsImplementationClass(projectInfo.getProject(),
                                 targetFolder,
                                 targetName,
                                 wsdlURL,
-                                service1, port1, useProvider);
+                                service1, port1, useProvider, isStatelessSB);
                         handle.finish();
                     } catch (Exception ex) {
                         handle.finish();
@@ -402,7 +402,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
 
-                if (projectType == ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+                if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) { //EJB Web Service
                     FileObject templateParent = template.getParent();
                     template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
                 }
@@ -474,12 +474,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     if (interfaceClass[0] == null) {
                         interfaceClass[0] = ref.getRemote();
                     }
+                    if (interfaceClass[0] == null) {
+                        interfaceClass[0] = ref.getEjbClass();
+                    }
 
                     ejbRefInjection = generateEjbInjection(workingCopy, make, interfaceClass[0], onClassPath);
 
                     if (ejbRefInjection != null) {
                         String comment1 = "Add business logic below. (Right-click in editor and choose"; //NOI18N
-                        String comment2 = "\"Web Service > Add Operation\""; //NOI18N                        
+                        String comment2 = "\"Insert Code > Add Web Service Operation\")"; //NOI18N
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
 
@@ -552,7 +555,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         Set<String> operationNames = new HashSet<String>();
         for (Element el : interfaceElements) {
-            if (el.getKind() == ElementKind.METHOD) {
+            if (el.getKind() == ElementKind.METHOD && el.getModifiers().contains(Modifier.PUBLIC)) {
                 ExecutableElement methodEl = (ExecutableElement) el;
                 MethodTree method = utils.createAbstractMethodImplementation(classElement, methodEl);
 

@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -71,6 +72,7 @@ public class LogReader {
     private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
     
     private String workingDir;
+    private String guessWorkingDir;
     private String baseWorkingDir;
     private final String root;
     private final String fileName;
@@ -88,7 +90,7 @@ public class LogReader {
         setWorkingDir(root);
     }
     
-    private void run(Progress progress) {
+    private void run(Progress progress, AtomicBoolean isStoped) {
         if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
@@ -108,6 +110,9 @@ public class LogReader {
                 }
                 int nFoundFiles = 0;
                 while(true){
+                    if (isStoped.get()) {
+                        break;
+                    }
                     String line = in.readLine();
                     if (line == null){
                         break;
@@ -150,9 +155,9 @@ public class LogReader {
         }
     }
     
-    public List<SourceFileProperties> getResults(Progress progress) {
+    public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
         if (result == null) {
-            run(progress);
+            run(progress, isStoped);
         }
         return result;
     }
@@ -325,6 +330,11 @@ public class LogReader {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
         this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
+
+    private void setGuessWorkingDir(String workingDir) {
+        if (TRACE) {System.err.println("**>> alternative guess working dir: " + workingDir);}
+        this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
+    }
     
     private boolean parseLine(String line){
        if (checkDirectoryChange(line)) {
@@ -398,20 +408,42 @@ public class LogReader {
                         out.append(" "); //NOI18N
                     }
                 }
-            } else if (pkg.startsWith(ECHO_PATTERN)){
+            } else if (pkg.startsWith(ECHO_PATTERN)) {
                 pkg = pkg.substring(ECHO_PATTERN.length());
-                StringTokenizer st = new StringTokenizer(pkg);
-                if (st.hasMoreTokens()) {
-                    out.append(" "); //NOI18N
-                    out.append(st.nextToken()); //NOI18N
-                    out.append(" "); //NOI18N
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
+                    out.append(pkg.substring(1, pkg.length()-1));
+                } else {
+                    StringTokenizer st = new StringTokenizer(pkg);
+                    boolean first = true;
+                    if (st.hasMoreTokens()) {
+                        if (!first) {
+                            out.append(" "); //NOI18N
+                        }
+                        first = false;
+                        out.append(st.nextToken());
+                    }
+                }
+            } else if (pkg.contains(ECHO_PATTERN)) {
+                pkg = pkg.substring(pkg.indexOf(ECHO_PATTERN)+ECHO_PATTERN.length());
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
+                    out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
+                } else {
+                    StringTokenizer st = new StringTokenizer(pkg);
+                    boolean first = true;
+                    if (st.hasMoreTokens()) {
+                        if (!first) {
+                            out.append(" "); //NOI18N
+                        }
+                        first = false;
+                        out.append(st.nextToken());
+                    }
                 }
             }
             out.append(line.substring(j+1));
             return trimBackApostropheCalls(out.toString(), pkgConfig);
         }
     }
-    
+
     private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
@@ -444,37 +476,44 @@ public class LogReader {
             }
         }
         File f = new File(file);
-        if (!f.exists() || !f.isFile()) {
-            if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
-            
-            if (!what.startsWith("/")){  //NOI18N
-                try {
-                    //NOI18N
-                    String[] out = new String[1];
-                    boolean areThereOnlyOne = findFiles(new File(root), what, out);
-                    if (out[0] == null) {
-                        if (TRACE) {System.err.println("** And there is no such file under root");}
+        if (f.exists() && f.isFile()) {
+            if (TRACE) {System.err.println("**** Gotcha: " + file);}
+            result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
+            return true;
+        }
+        if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
+            f = new File(guessWorkingDir+"/"+what);  //NOI18N
+            if (f.exists() && f.isFile()) {
+                if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
+                result.add(new CommandLineSource(isCPP, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                return true;
+            }
+        }
+        if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
+        if (!what.startsWith("/")){  //NOI18N
+            try {
+                String[] out = new String[1];
+                boolean areThereOnlyOne = findFiles(new File(root), what, out);
+                if (out[0] == null) {
+                    if (TRACE) {System.err.println("** And there is no such file under root");}
+                } else {
+                    if (areThereOnlyOne) {
+                        result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
+                        if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
+                        // kinda adventure but it works
+                        setGuessWorkingDir(out[0]);
+                        return true;
                     } else {
-                        if (areThereOnlyOne) {
-                            result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
-                            if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
-                            // kinda adventure but it works
-                            setWorkingDir(out[0]);
-                            return true;
-                        } else {
-                            if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
-                        }
+                        if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
                     }
-                } catch (IOException ex) {
-                    if (TRACE) {Exceptions.printStackTrace(ex);}
                 }
-            } 
-            
+            } catch (IOException ex) {
+                if (TRACE) {Exceptions.printStackTrace(ex);}
+            }
             if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
             return false;
-        } else if (TRACE) {System.err.println("**** Gotcha: " + file);}
-        result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
-        return true;
+        }
+        return false;
     }
 
     private static class CommandLineSource implements SourceFileProperties {
@@ -558,7 +597,7 @@ public class LogReader {
         String root = args[1];
         LogReader.TRACE = true;
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults(null);
+        List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false));
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();

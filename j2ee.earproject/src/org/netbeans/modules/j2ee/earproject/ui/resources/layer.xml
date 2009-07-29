@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.dd.ApplicationXmlWizardIterator"/>
                 <attr name="templateCategory" stringvalue="ear-types,ear-deployment-descriptor"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/wizards/dd/applicationXml.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
             </file>
         </folder>
     </folder>
@@ -84,6 +84,7 @@ made subject to such option by the copyright holder.
         <file name="ear-1.3.xml" url="ear-1.3.xml"/>
         <file name="ear-1.4.xml" url="ear-1.4.xml"/>
         <file name="ear-5.xml" url="ear-5.xml"/>
+        <file name="ear-6.xml" url="ear-6.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
     

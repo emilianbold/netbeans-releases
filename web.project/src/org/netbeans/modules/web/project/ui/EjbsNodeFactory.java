@@ -43,14 +43,17 @@ package org.netbeans.modules.web.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -58,6 +61,7 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 
 /**
  * NodeFactory to create EJB nodes.
@@ -86,8 +90,8 @@ public class EjbsNodeFactory implements NodeFactory {
         }
 
         public List<String> keys() {
-            Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (profile == Profile.JAVA_EE_6_FULL){
+            J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
+            if (projectCap.isEjb31LiteSupported() && !isViewEmpty()){
                 return Collections.singletonList(KEY_EJBS);
             }else{
                 return Collections.EMPTY_LIST;
@@ -120,13 +124,38 @@ public class EjbsNodeFactory implements NodeFactory {
 
         public void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
-            if (p != null && p.equals(WebProjectProperties.J2EE_PLATFORM)){
+            if (p != null && (p.equals(WebProjectProperties.J2EE_PLATFORM) || p.startsWith("/EnterpriseBeans/"))){ //NOI18N
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         changeSupport.fireChange();
                     }
                 });
             }
+        }
+
+        private boolean isViewEmpty(){
+            Boolean isEmpty = Boolean.TRUE;
+            try {
+                isEmpty = project.getAPIEjbJar().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    public Boolean run(EjbJarMetadata metadata) {
+                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                        if (ejbJar != null) {
+                            EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                            if (enterpriseBeans != null) {
+                                enterpriseBeans.removePropertyChangeListener(EjbNodeList.this);
+                                enterpriseBeans.addPropertyChangeListener(EjbNodeList.this);
+                                if (enterpriseBeans.getEjbs().length > 0){
+                                    return Boolean.FALSE;
+                                }
+                            }
+                        }
+                        return Boolean.TRUE;
+                    }
+                });
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            return isEmpty;
         }
     }
 }

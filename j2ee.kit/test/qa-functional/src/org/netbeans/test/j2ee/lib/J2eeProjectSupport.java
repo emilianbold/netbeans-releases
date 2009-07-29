@@ -52,7 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator; 
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;

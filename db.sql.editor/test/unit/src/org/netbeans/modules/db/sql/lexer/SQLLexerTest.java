@@ -66,6 +66,7 @@ public class SQLLexerTest extends NbTestCase {
         doc.putProperty(Language.class, SQLTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence seq = hi.tokenSequence();
+        System.out.println(dumpTokens(seq));
         assertFalse(seq.moveNext());
         doc.insertString(0, "select -/ from 'a' + 1, dto", null);
         seq = hi.tokenSequence();

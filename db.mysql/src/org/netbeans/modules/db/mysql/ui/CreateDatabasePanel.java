@@ -151,8 +151,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
 
         okButton = new JButton(NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.CTL_OKButton")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(okButton.getAccessibleContext().getAccessibleName());
         okButton.setEnabled(false);
         cancelButton = new JButton(NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.CTL_CancelButton")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(cancelButton.getAccessibleContext().getAccessibleName());
 
         ActionListener listener = new ActionListener() {
             Task task;

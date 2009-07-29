@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <!-- CP with id="cluster.path.id" is expected to be passed as parameter to run.xml -->
         <pathconvert property="install">
             <path refid="cluster.path.id"/>
-            <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
+            <regexpmapper from="(.*[/\\])platform[0-9]*$$" to="\1"/>
         </pathconvert>
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
         <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">
@@ -96,7 +96,20 @@ made subject to such option by the copyright holder.
         <property name="run.exe" location="${run.exe.candidate}"/>
         <property name="run.sh" location="${run.sh.candidate}"/>
         <mkdir dir="${test.user.dir}/etc"/>
-        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${cluster}"</echo>
+        <pathconvert property="run.extra.clusters">
+            <path>
+                <pathelement location="${cluster}"/>
+                <path refid="cluster.path.id"/>
+            </path>
+            <!-- Exclude all clusters located in NB install dir;
+                 not exactly what netbeans.clusters specify, but good enough -->
+            <filtermapper>
+                <linecontains negate="true">
+                    <contains value="${install}"/>
+                </linecontains>
+            </filtermapper>
+        </pathconvert>
+        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${run.extra.clusters}"</echo>
         <property name="run.args.prepared" value=''/>
     </target>
 
@@ -133,6 +146,7 @@ made subject to such option by the copyright holder.
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
+        <property name="run.args.ide" value=""/>
         <property name="run.args.extra" value=""/>
         <exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
@@ -140,6 +154,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
+            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
         </exec>
         <exec osfamily="unix" dir="." executable="sh"
@@ -150,6 +165,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
+            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
         </exec>
         <fail>

@@ -100,11 +100,14 @@ public final class Preview extends Dialog implements Percent.Listener {
 
                 if (ch == '+' || ch == '=') {
                     myScale.increaseValue();
-                } else if (ch == '-' || ch == '_') {
+                }
+                else if (ch == '-' || ch == '_') {
                     myScale.decreaseValue();
-                } else if (ch == '/') {
+                }
+                else if (ch == '/') {
                     myScale.normalValue();
-                } else if (ch == '*') {
+                }
+                else if (ch == '*') {
                     showCustom(true);
                 }
             }
@@ -120,7 +123,8 @@ public final class Preview extends Dialog implements Percent.Listener {
 
         if (withPreview) {
             show(true);
-        } else {
+        }
+        else {
             print(true);
         }
     }
@@ -394,36 +398,58 @@ public final class Preview extends Dialog implements Percent.Listener {
         myScrollPane.setFocusable(true);
 
         myScrollPane.addWheelListener(new MouseWheelListener() {
-
             public void mouseWheelMoved(MouseWheelEvent event) {
                 if (SwingUtilities.isRightMouseButton(event) || event.isControlDown()) {
                     myScrollPane.setWheelScrollingEnabled(false);
 
                     if (event.getWheelRotation() > 0) {
                         myScale.increaseValue();
-                    } else {
+                    }
+                    else {
                         myScale.decreaseValue();
                     }
-                } else {
+                }
+                else {
                     myScrollPane.setWheelScrollingEnabled(true);
                 }
             }
         });
         myScrollPane.addMouseListener(new MouseAdapter() {
-
             public void mouseClicked(MouseEvent event) {
-                if (event.getClickCount() == 2) {
+                if (event.getClickCount() != 2) {
+                    return;
+                }
+                if (event.isControlDown()) {
+                    if (SwingUtilities.isRightMouseButton(event)) {
+                        decreaseZoom();
+                    }
+                    else {
+                        increaseZoom();
+                    }
+                    updated();
+                }
+                else {
                     if (SwingUtilities.isRightMouseButton(event)) {
                         myScale.decreaseValue();
-                    } else {
+                    }
+                    else {
                         myScale.increaseValue();
                     }
                 }
             }
         });
         myScrollPane.addKeyListener(myKeyListener);
+//Config.getDefault().getZoom()
 
         return myScrollPane;
+    }
+
+    private void increaseZoom() {
+        Config.getDefault().setZoom(Config.getDefault().getZoom() * Percent.FACTOR);
+    }
+
+    private void decreaseZoom() {
+        Config.getDefault().setZoom(Config.getDefault().getZoom() / Percent.FACTOR);
     }
 
     private void showCustom(boolean doNext) {
@@ -463,7 +489,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         int h = paper.getHeight();
         JViewport view = myScrollPane.getViewport();
 
-        if (!view.getViewRect().contains(x, y, w, h)) {
+        if ( !view.getViewRect().contains(x, y, w, h)) {
             view.setViewPosition(new Point(x, y));
             updatePaperPanel();
         }
@@ -504,7 +530,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         int w = width;
         int h = height;
 
-        if (!isSingleMode()) {
+        if ( !isSingleMode()) {
             int maxRow = 0;
             int maxColumn = 0;
 
@@ -524,7 +550,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         }
         int w = myPapers.get(0).getPaperWidth() + GAP_SIZE;
 
-        if (!isSingleMode()) {
+        if ( !isSingleMode()) {
             int maxColumn = 0;
 
             for (Paper paper : myPapers) {
@@ -564,7 +590,8 @@ public final class Preview extends Dialog implements Percent.Listener {
 
         if (isSingleMode()) {
             myPaperPanel.add(myPapers.get(myPaperNumber - 1), c);
-        } else {
+        }
+        else {
             for (Paper paper : myPapers) {
                 c.gridx = paper.getColumn();
                 c.gridy = paper.getRow();
@@ -673,7 +700,8 @@ public final class Preview extends Dialog implements Percent.Listener {
 
         if (number < 1 || number > count) {
             myGoto.setText(getPaper(myPaperNumber));
-        } else {
+        }
+        else {
             myPaperNumber = number;
             changePaper();
         }
@@ -683,7 +711,8 @@ public final class Preview extends Dialog implements Percent.Listener {
     private void changePaper() {
         if (isSingleMode()) {
             addPapers();
-        } else {
+        }
+        else {
             scrollTo();
         }
         updateButtons();
@@ -816,7 +845,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
 
-            if (!isDigit(c)) {
+            if ( !isDigit(c)) {
                 break;
             }
             builder.append(c);

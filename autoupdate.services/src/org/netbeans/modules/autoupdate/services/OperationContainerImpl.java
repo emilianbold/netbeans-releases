@@ -200,26 +200,36 @@ public final class OperationContainerImpl<Support> {
                 if (elImpl instanceof ModuleUpdateElementImpl) {
                     allModuleInfos.add (((ModuleUpdateElementImpl) elImpl).getModuleInfo ());
                 }
+                //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
-                assert impl instanceof ModuleUpdateElementImpl : eagerEl + " must instanceof ModuleUpdateElementImpl";
-                ModuleUpdateElementImpl eagerImpl = (ModuleUpdateElementImpl) impl;
-                ModuleInfo mi = eagerImpl.getModuleInfo ();
-                
-                Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
-                for (Dependency dep : mi.getDependencies ()) {
-                    UpdateElement req = Utilities.handleDependency (dep, Collections.singleton (mi), new HashSet<Dependency> ());
-                    if (req != null) {
-                        reqs.add (req);
-                    }
+                List <ModuleInfo> infos = new ArrayList <ModuleInfo>();
+                if(impl instanceof ModuleUpdateElementImpl) {
+                    ModuleUpdateElementImpl eagerImpl = (ModuleUpdateElementImpl) impl;
+                    infos.add(eagerImpl.getModuleInfo ());
+                } else if (impl instanceof FeatureUpdateElementImpl) {
+                    FeatureUpdateElementImpl eagerImpl = (FeatureUpdateElementImpl) impl;
+                    infos.addAll(eagerImpl.getModuleInfos ());
+                } else {
+                    assert false : eagerEl + " must instanceof ModuleUpdateElementImpl or FeatureUpdateElementImpl";
                 }
-                if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
-                        (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
-                    // adds affectedEager into list of elements for the operation
-                    OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
-                    if (i != null) {
-                        affectedEagers.add (i);                    
+
+                for(ModuleInfo mi: infos) {
+                    Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
+                    for (Dependency dep : mi.getDependencies ()) {
+                        UpdateElement req = Utilities.handleDependency (dep, Collections.singleton (mi), new HashSet<Dependency> ());
+                        if (req != null) {
+                            reqs.add (req);
+                        }
+                    }
+                    if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
+                            (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
+                        // adds affectedEager into list of elements for the operation
+                        OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
+                        if (i != null) {
+                            affectedEagers.add (i);
+                        }
                     }
                 }
             }

@@ -194,46 +194,46 @@
   require 'timeout'
   require 'thread'
   
-  class Resolv
++ class Resolv
 +   def self.getaddress(name)
 |     DefaultResolver.getaddress(name)
 -   end
-  
+| 
 +   def self.getaddresses(name)
 |     DefaultResolver.getaddresses(name)
 -   end
-  
+| 
 +   def self.each_address(name, &block)
 |     DefaultResolver.each_address(name, &block)
 -   end
-  
+| 
 +   def self.getname(address)
 |     DefaultResolver.getname(address)
 -   end
-  
+| 
 +   def self.getnames(address)
 |     DefaultResolver.getnames(address)
 -   end
-  
+| 
 +   def self.each_name(address, &proc)
 |     DefaultResolver.each_name(address, &proc)
 -   end
-  
+| 
 +   def initialize(resolvers=[Hosts.new, DNS.new])
 |     @resolvers = resolvers
 -   end
-  
+| 
 +   def getaddress(name)
 |     each_address(name) {|address| return address}
 |     raise ResolvError.new("no address for #{name}")
 -   end
-  
+| 
 +   def getaddresses(name)
 |     ret = []
 |     each_address(name) {|address| ret << address}
 |     return ret
 -   end
-  
+| 
 +   def each_address(name)
 |     if AddressRegex =~ name
 |       yield name
@@ -248,18 +248,18 @@
 |       return if yielded
 |     }
 -   end
-  
+| 
 +   def getname(address)
 |     each_name(address) {|name| return name}
 |     raise ResolvError.new("no name for #{address}")
 -   end
-  
+| 
 +   def getnames(address)
 |     ret = []
 |     each_name(address) {|name| ret << name}
 |     return ret
 -   end
-  
+| 
 +   def each_name(address)
 |     yielded = false
 |     @resolvers.each {|r|
@@ -270,13 +270,13 @@
 |       return if yielded
 |     }
 -   end
-  
+| 
 +   class ResolvError < StandardError
 -   end
-  
+| 
 +   class ResolvTimeout < TimeoutError
 -   end
-  
+| 
 +   class Hosts
 |     if /mswin32|cygwin|mingw|bccwin/ =~ RUBY_PLATFORM
 |       require 'win32/resolv'
@@ -358,7 +358,7 @@
 |       end
 -     end
 -   end
-  
+| 
 +   class DNS
 |     # STD0013 (RFC 1035, etc.)
 |     # ftp://ftp.isi.edu/in-notes/iana/assignments/dns-parameters
@@ -1710,7 +1710,7 @@
 -       end
 -     end
 -   end
-  
+| 
 +   class IPv4
 |     Regex = /\A(\d+)\.(\d+)\.(\d+)\.(\d+)\z/
 | 
@@ -1765,7 +1765,7 @@
 |       return @address.hash
 -     end
 -   end
-  
+| 
 +   class IPv6
 |     Regex_8Hex = /\A
 |       (?:[0-9A-Fa-f]{1,4}:){7}
@@ -1878,8 +1878,8 @@
 |       return @address.hash
 -     end
 -   end
-  
-    DefaultResolver = self.new
-    AddressRegex = /(?:#{IPv4::Regex})|(?:#{IPv6::Regex})/
-  end
+| 
+|   DefaultResolver = self.new
+|   AddressRegex = /(?:#{IPv4::Regex})|(?:#{IPv6::Regex})/
+- end
   

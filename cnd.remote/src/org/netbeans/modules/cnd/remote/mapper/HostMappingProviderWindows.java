@@ -76,27 +76,66 @@ public class HostMappingProviderWindows implements HostMappingProvider {
                 && hostPlatform.isLocalhost(); // Windows is only supported as client platform
     }
 
+    /**
+     * Parses "net use" Windows command output.
+     * Here is an example of the output (note that "\\" means "\")
+     *
+     * ----- output example start -----
+     *      New connections will not be remembered.
+     *
+     *
+     *      Status       Local     Remote                               Network
+     *
+     *      -------------------------------------------------------------------------------
+     *      OK           P:        \\\\serverOne\\pub                     Microsoft Windows Network
+     *      Disconnected Y:        \\\\sErvEr_22_\\long name              Microsoft Windows Network
+     *      OK           Z:        \\\\name.domen.domen2.zone\\username   Microsoft Windows Network
+     *      The command completed successfully.
+     *
+     * ----- output example end -----
+     *
+     * @param hostName
+     * @param outputReader
+     * @return
+     * @throws java.io.IOException
+     */
     @SuppressWarnings("empty-statement")
     /* package */ static Map<String, String> parseNetUseOutput(String hostName, Reader outputReader) throws IOException {
         Map<String, String> mappings = new HashMap<String, String>();
         BufferedReader reader = new BufferedReader(outputReader);
         String line;
-        // TODO: all those words are localized in non-English Windows versions
-        for( line = reader.readLine(); line != null && !line.contains("Status"); line = reader.readLine()); //NOI18N
-        if (line != null) {
-            int nLocal = line.indexOf("Local"); //NOI18N
-            int nRemote = line.indexOf("Remote"); //NOI18N
-            int nNetwork = line.indexOf("Network"); //NOI18N
-            for( line = reader.readLine(); line != null && !line.startsWith("----"); line = reader.readLine()) ; //NOI18N
-            if (line != null) {
-                for( line = reader.readLine(); line != null && line.indexOf(':')!=-1; line = reader.readLine() ) {  //NOI18N
-                    String local = line.substring(nLocal, nRemote -1).trim(); // something like X:
-                    String remote = line.substring(nRemote, nNetwork -1).trim(); // something like \\hostname\foldername
+        // firtst, find the "---------" line and remember "Status  Local  Remote Network" one
+        String lastNonEmptyLine = null;
+        for( line = reader.readLine(); line != null && !line.contains("----------------"); line = reader.readLine()) { //NOI18N
+            if (line.length() > 0) {
+                lastNonEmptyLine = line;
+            }
+        }
+        // we found "----";
+        if (lastNonEmptyLine == null) {
+            return Collections.<String, String>emptyMap();
+        }
+
+        // lastNonEmptyLine should contain "Status  Local  Remote Network" - probably localized
+        String[] words = lastNonEmptyLine.split("[ \t]+"); // NOI18N
+        if (words.length < 4) {
+            return Collections.<String, String>emptyMap();
+        }
+
+        int nLocal = lastNonEmptyLine.indexOf(words[1]); // "Local"
+        int nRemote = lastNonEmptyLine.indexOf(words[2]); // "Remote"
+        int nNetwork = lastNonEmptyLine.indexOf(words[3]); // "Network"
+        // neither of nLocal, nRemote and nNetwork can be negative - no check need
+        
+        for( line = reader.readLine(); line != null; line = reader.readLine() ) {  //NOI18N
+            if (line.indexOf(':') != -1) {
+                String local = line.substring(nLocal, nRemote -1).trim(); // something like X:
+                String remote = line.substring(nRemote, nNetwork -1).trim(); // something like \\hostname\foldername
+                if (remote.length() > 2) {
                     String[] arRemote = remote.substring(2).split("\\\\"); //NOI18N
                     if (arRemote.length >=2) {
                         String host = arRemote[0];
                         String folder = arRemote[1];
-
                         if (hostName.equals(host)) {
                             mappings.put(folder, local.toLowerCase());
                         }

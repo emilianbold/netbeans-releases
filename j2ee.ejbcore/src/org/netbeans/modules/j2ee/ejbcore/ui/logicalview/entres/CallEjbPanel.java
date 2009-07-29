@@ -65,6 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -246,6 +247,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         referenceNameTextField = new javax.swing.JTextField();
+        noInterfaceRadioButton = new javax.swing.JRadioButton();
         localRadioButton = new javax.swing.JRadioButton();
         remoteRadioButton = new javax.swing.JRadioButton();
 
@@ -274,7 +276,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -310,26 +312,40 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(jLabel3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(referenceNameTextField, gridBagConstraints);
         referenceNameTextField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_ReferenceName")); // NOI18N
         referenceNameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_ReferenceName")); // NOI18N
 
-        intefaceButtonGroup.add(localRadioButton);
-        localRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Local").charAt(0));
-        localRadioButton.setSelected(true);
-        localRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Local")); // NOI18N
+        intefaceButtonGroup.add(noInterfaceRadioButton);
+        noInterfaceRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_NoInterface").charAt(0));
+        noInterfaceRadioButton.setSelected(true);
+        noInterfaceRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_NoInterface")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(noInterfaceRadioButton, gridBagConstraints);
+        noInterfaceRadioButton.getAccessibleContext().setAccessibleDescription("No interface");
+
+        intefaceButtonGroup.add(localRadioButton);
+        localRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Local").charAt(0));
+        localRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Local")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(localRadioButton, gridBagConstraints);
         localRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Local")); // NOI18N
@@ -338,13 +354,14 @@ public class CallEjbPanel extends javax.swing.JPanel {
         intefaceButtonGroup.add(remoteRadioButton);
         remoteRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Remote").charAt(0));
         remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Remote")); // NOI18N
+        remoteRadioButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         remoteRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 remoteRadioButtonItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -361,7 +378,6 @@ public class CallEjbPanel extends javax.swing.JPanel {
         validateReferences();
     }//GEN-LAST:event_remoteRadioButtonItemStateChanged
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox convertToRuntime;
     private javax.swing.JPanel displayPanel;
@@ -369,6 +385,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton localRadioButton;
+    private javax.swing.JRadioButton noInterfaceRadioButton;
     private javax.swing.JTextField referenceNameTextField;
     private javax.swing.JRadioButton remoteRadioButton;
     private javax.swing.JPanel serviceLocatorPanel;
@@ -377,7 +394,6 @@ public class CallEjbPanel extends javax.swing.JPanel {
     public boolean convertToRuntime() {
         return convertToRuntime.isSelected();
     }
-    
     public Node getEjb() {
         Node[] selectedNodes = nodeDisplayPanel.getSelectedNodes();
         return selectedNodes.length > 0 ? selectedNodes[0] : null;
@@ -406,8 +422,16 @@ public class CallEjbPanel extends javax.swing.JPanel {
         return false;
     }
     
-    public boolean isRemoteInterfaceSelected() {
-        return remoteRadioButton.isSelected();
+    public EjbReference.EjbRefIType getSelectedInterface() {
+        if (noInterfaceRadioButton.isSelected()){
+            return EjbReference.EjbRefIType.NO_INTERFACE;
+        }else if (localRadioButton.isSelected()){
+            return EjbReference.EjbRefIType.LOCAL;
+        }else if (remoteRadioButton.isSelected()){
+            return EjbReference.EjbRefIType.REMOTE;
+        }else{
+            return null;
+        }
     }
     
     private String generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
@@ -519,8 +543,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NoSourcesForBean")); //NOI18N
                 return false;
             }
+            boolean isRemoteInterfaceSelected = getSelectedInterface() == EjbReference.EjbRefIType.REMOTE;
             Project nodeProject = FileOwnerQuery.getOwner(fileObject);
-            if (!isRemoteInterfaceSelected() &&
+            if (!isRemoteInterfaceSelected &&
                     !nodeProject.equals(project) &&
                     !Utils.areInSameJ2EEApp(project, nodeProject)) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
@@ -528,7 +553,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             
             //AC cannot contain references to local beans
-            if (!isRemoteInterfaceSelected() &&
+            if (!isRemoteInterfaceSelected &&
                     Utils.isAppClient(project)) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
                 return false;
@@ -536,7 +561,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
 
             //Unit tests or classes in a JSE project cannot contain references to local beans
             try {
-                if (!isRemoteInterfaceSelected() && Utils.isTargetJavaSE(srcFile, className)) {
+                if (!isRemoteInterfaceSelected && Utils.isTargetJavaSE(srcFile, className)) {
                     statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
                     return false;
                 }
@@ -559,17 +584,24 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 return false;
             }
             
+            boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
             boolean shouldEnableLocal = (ejbReference.getLocal() != null);
             boolean shouldEnableRemote = (ejbReference.getRemote() != null);
+            noInterfaceRadioButton.setEnabled(shouldEnableNoInterface);
             localRadioButton.setEnabled(shouldEnableLocal);
             remoteRadioButton.setEnabled(shouldEnableRemote);
-            if (!shouldEnableLocal && !shouldEnableRemote) {
+            if (!shouldEnableLocal && !shouldEnableRemote && !shouldEnableNoInterface) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
                 return false;
-            } else if (shouldEnableLocal && !shouldEnableRemote) {
-                localRadioButton.setSelected(true);
-            } else if (!shouldEnableLocal && shouldEnableRemote) {
-                remoteRadioButton.setSelected(true);
+            }
+            if (!intefaceButtonGroup.getSelection().isEnabled()){
+                if (shouldEnableNoInterface){
+                    noInterfaceRadioButton.setSelected(true);
+                } else if (shouldEnableLocal) {
+                    localRadioButton.setSelected(true);
+                } else if (shouldEnableRemote) {
+                    remoteRadioButton.setSelected(true);
+                }
             }
             statusLine.clearMessages();
             return true;

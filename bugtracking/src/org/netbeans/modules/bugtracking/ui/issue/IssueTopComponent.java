@@ -318,7 +318,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     controller = issue.getController();
 
-                    final BugtrackingController c = issue.getController();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);

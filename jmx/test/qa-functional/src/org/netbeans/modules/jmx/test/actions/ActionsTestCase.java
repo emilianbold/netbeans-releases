@@ -48,7 +48,7 @@ import java.util.Properties;
 import java.util.Set;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
@@ -122,7 +122,7 @@ public class ActionsTestCase extends JMXTestCase {
                 FILE_TYPE_JAVA_CLASS);
         nfwo.next();
         // Name and Location wizard
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 className, packageName);
         nfnlso.finish();
         

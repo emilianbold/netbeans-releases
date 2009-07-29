@@ -79,7 +79,9 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -95,13 +97,14 @@ import org.openide.util.RequestProcessor;
  * @author Pavel Buzek
  */
 public class PersistenceClientIterator implements TemplateWizard.Iterator {
-    
+
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
     static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
-    
+    private static final String FACADE_SUFFIX = "Facade"; //NOI18N
+  
     private transient WebModuleExtender wme;
     
     public Set instantiate(TemplateWizard wizard) throws IOException
@@ -147,14 +150,22 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final Runnable r = new Runnable() {
 
             public void run() {
+                boolean genSessionBean=J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
                 try {
                     handle.start();
-                    int jpaProgressStepCount = JpaControllerIterator.getProgressStepCount(entities.size());
+                    int jpaProgressStepCount = genSessionBean ? EjbFacadeWizardIterator.getProgressStepCount(entities.size()) :  JpaControllerIterator.getProgressStepCount(entities.size());
                     int progressStepCount = jpaProgressStepCount + getProgressStepCount(ajaxify);
                     progressStepCount += (JSFClientGenerator.PROGRESS_STEP_COUNT * entities.size());
                     progressContributor.start(progressStepCount);
-                    JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
-                    generateJsfControllers(progressContributor, progressPanel, targetFolder, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, jpaProgressStepCount);
+                    if(genSessionBean)
+                    {
+                        EjbFacadeWizardIterator.generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, false, false);
+                    }
+                    else
+                    {
+                        JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
+                    }
+                    generateJsfControllers(progressContributor, progressPanel, targetFolder, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
                     progressContributor.progress(progressStepCount);
                 } catch (IOException ioe) {
                     Logger.getLogger(PersistenceClientIterator.class.getName()).log(Level.INFO, null, ioe);
@@ -209,7 +220,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         return count;
     }
     
-    private static void generateJsfControllers(ProgressContributor progressContributor, final ProgressPanel progressPanel, FileObject targetFolder, String controllerPkg, String jpaControllerPkg, List<String> entities, boolean ajaxify, Project project, String jsfFolder, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, int progressIndex) throws IOException {
+    private static void generateJsfControllers(ProgressContributor progressContributor, final ProgressPanel progressPanel, FileObject targetFolder, String controllerPkg, String jpaControllerPkg, List<String> entities, boolean ajaxify, Project project, String jsfFolder, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean genSessionBean, int progressIndex) throws IOException {
         String progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Util_Pre"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);     
@@ -285,9 +296,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 jsfFolder = jsfFolder.substring(1);
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
-            String simpleJpaControllerName = simpleClassName + "JpaController"; //NOI18N
+            String simpleJpaControllerName = simpleClassName + (genSessionBean ? FACADE_SUFFIX : "JpaController"); //NOI18N
             FileObject jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, "java");
-            JSFClientGenerator.generateJSFPages(progressContributor, progressPanel, project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObject, converterFileObjects[i], progressIndex);
+            JSFClientGenerator.generateJSFPages(progressContributor, progressPanel, project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObject, converterFileObjects[i], genSessionBean, progressIndex);
             progressIndex += JSFClientGenerator.PROGRESS_STEP_COUNT;
         }
     }

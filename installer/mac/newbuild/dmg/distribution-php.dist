@@ -43,8 +43,15 @@ function volumeCheckTiger() {
 /* js:pkmk:start */
 function checkSystemversion() {
 	var result = false;
+	var version;	
 	try {
-		result = my.target.systemVersion.ProductVersion >= '10.4';
+		version = my.target.systemVersion.ProductVersion;
+		if(version == 'undefined') {
+			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.4'));
+		} else {
+			result = ( -1 != system.compareVersions(version, '10.4'));
+		}
+	
 	} catch (e) {}
 	
 	if(!result) {
@@ -109,20 +116,15 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>          
             <line choice="php"></line>           
-            <line choice="webcommon"></line>
         </line>            
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
     </choice>      
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.webcommon"></pkg-ref>
-    </choice>
     <choice id="php" title="php-title" description="php-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
 </installer-gui-script>

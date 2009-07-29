@@ -728,6 +728,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             while (token != null && (token.id() instanceof CppTokenId)) {
                 switch ((CppTokenId) token.id()) {
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                     case WHITESPACE:

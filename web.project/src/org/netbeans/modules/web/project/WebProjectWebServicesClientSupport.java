@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -598,8 +599,8 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     
     public List<ClientStubDescriptor> getStubDescriptors() {
         ArrayList<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
-        String version = project.getWebModule().getJ2eePlatformVersion();
-        if(WebModule.J2EE_14_LEVEL.equals(version)) {
+        Profile version = project.getWebModule().getJ2eeProfile();
+        if(Profile.J2EE_14.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
         stubs.add(jaxrpcClientStub);

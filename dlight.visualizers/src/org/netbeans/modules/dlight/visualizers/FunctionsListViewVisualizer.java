@@ -78,7 +78,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightSession;
@@ -94,8 +94,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
@@ -341,13 +339,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
     }
 
     private void syncFillModel() {
-        List<FunctionCall> callsList =
+        List<FunctionCallWithMetric> callsList =
                 dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
 
         updateList(callsList);
     }
 
-    private void updateList(final List<FunctionCall> list) {
+    private void updateList(final List<FunctionCallWithMetric> list) {
         if (Thread.currentThread().isInterrupted()) {
             return;
         }
@@ -562,15 +560,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return null;
     }
 
-    public class FunctionCallChildren extends Children.Keys<FunctionCall> {
+    public class FunctionCallChildren extends Children.Keys<FunctionCallWithMetric> {
 
-        private final List<FunctionCall> list;
+        private final List<FunctionCallWithMetric> list;
 
-        public FunctionCallChildren(List<FunctionCall> list) {
+        public FunctionCallChildren(List<FunctionCallWithMetric> list) {
             this.list = list;
         }
 
-        protected Node[] createNodes(FunctionCall key) {
+        protected Node[] createNodes(FunctionCallWithMetric key) {
             return new Node[]{new FunctionCallNode(key)};
         }
 
@@ -582,12 +580,12 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private class FunctionCallNode extends AbstractNode {
 
-        private final FunctionCall functionCall;
+        private final FunctionCallWithMetric functionCall;
         private PropertySet propertySet;
         private final Action[] actions;
         private final Action goToSourceAction;
 
-        FunctionCallNode(FunctionCall row) {
+        FunctionCallNode(FunctionCallWithMetric row) {
             super(Children.LEAF);
             functionCall = row;
             goToSourceAction = new GoToSourceAction(this);
@@ -619,7 +617,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             };
         }
 
-        public FunctionCall getFunctionCall() {
+        public FunctionCallWithMetric getFunctionCall() {
             return functionCall;
         }
 
@@ -712,7 +710,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     return sourceInfo;
                 }
             }
-            FunctionCall functionCall = functionCallNode.getFunctionCall();
+            FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
             SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
             if (result != null && result.isSourceKnown()) {
                 synchronized (this) {

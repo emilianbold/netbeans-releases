@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
@@ -52,108 +51,134 @@ import org.openide.util.NbBundle;
  * @author  mkuchtiak
  */
 public class FilterMappingPanel extends javax.swing.JPanel {
+
     private FilterMapping fm;
-    private boolean hasFilterNames=true;
-    private boolean hasServletNames=true;
+    private boolean hasFilterNames = true;
+    private boolean hasServletNames = true;
     private static final String[] dispatcherTypes = {
-        "REQUEST","FORWARD", "INCLUDE", "ERROR" //NOI18N
+        "REQUEST", "FORWARD", "INCLUDE", "ERROR" //NOI18N
     };
-    
+
     /** Creates new form FilterMappingPanel */
     public FilterMappingPanel(FilterMapping fm, String[] filterNames, String[] servletNames) {
-        this.fm=fm;
+        this.fm = fm;
         initComponents();
         jCheckBox1.setText(dispatcherTypes[0]);
         jCheckBox2.setText(dispatcherTypes[1]);
         jCheckBox3.setText(dispatcherTypes[2]);
         jCheckBox4.setText(dispatcherTypes[3]);
-        jCheckBox1.setMnemonic(dispatcherTypes[0].charAt(0)); 
+        jCheckBox1.setMnemonic(dispatcherTypes[0].charAt(0));
         jCheckBox2.setMnemonic(dispatcherTypes[1].charAt(0));
         jCheckBox3.setMnemonic(dispatcherTypes[2].charAt(0));
         jCheckBox4.setMnemonic(dispatcherTypes[3].charAt(0));
-        
+
         // fill CB1 with filter names
-        if(filterNames == null || filterNames.length == 0) {
-	    filterNames = new String[1]; 
-	    filterNames[0] = NbBundle.getMessage(FilterMappingPanel.class,"LBL_no_filters");
-	    hasFilterNames = false; 
-	}
-        for (int i=0;i<filterNames.length;i++) filterNameCB.addItem(filterNames[i]);
-        
+        if (filterNames == null || filterNames.length == 0) {
+            filterNames = new String[1];
+            filterNames[0] = NbBundle.getMessage(FilterMappingPanel.class, "LBL_no_filters");
+            hasFilterNames = false;
+        }
+        for (int i = 0; i < filterNames.length; i++) {
+            filterNameCB.addItem(filterNames[i]);
+        }
+
         String filterName = fm.getFilterName();
         if (filterName != null) {
             filterNameCB.setSelectedItem(filterName);
         }
-        
+
         // fill CB2 with servlet names
-	if(servletNames == null || servletNames.length == 0) {
-	    servletNames = new String[1]; 
-	    servletNames[0] = NbBundle.getMessage(FilterMappingPanel.class,"LBL_no_servlets");
-	    hasServletNames = false; 
-	}
-        for (int i=0;i<servletNames.length;i++) servletNameCB.addItem(servletNames[i]);
+        if (servletNames == null || servletNames.length == 0) {
+            servletNames = new String[1];
+            servletNames[0] = NbBundle.getMessage(FilterMappingPanel.class, "LBL_no_servlets");
+            hasServletNames = false;
+        }
+        for (int i = 0; i < servletNames.length; i++) {
+            servletNameCB.addItem(servletNames[i]);
+        }
         if (!hasServletNames) {
             jRadioButton2.setEnabled(false);
         }
-        
+
         String servletName = fm.getServletName();
         if (servletName != null) {
-            jRadioButton2.setSelected(true); 
+            jRadioButton2.setSelected(true);
             urlTF.setEnabled(false);
             servletNameCB.setSelectedItem(servletName);
         } else {
-	    jRadioButton1.setSelected(true);
-	    urlTF.setText(fm.getUrlPattern());
+            jRadioButton1.setSelected(true);
+            urlTF.setText(fm.getUrlPattern());
             servletNameCB.setEnabled(false);
         }
-        
+
         try {
             String[] dispTypes = fm.getDispatcher();
-            for (int i=0;i<dispTypes.length;i++) {
-                if (dispatcherTypes[0].equals(dispTypes[i])) jCheckBox1.setSelected(true);
-                else if (dispatcherTypes[1].equals(dispTypes[i])) jCheckBox2.setSelected(true);
-                else if (dispatcherTypes[2].equals(dispTypes[i])) jCheckBox3.setSelected(true);
-                else if (dispatcherTypes[3].equals(dispTypes[i])) jCheckBox4.setSelected(true);
+            for (int i = 0; i < dispTypes.length; i++) {
+                if (dispatcherTypes[0].equals(dispTypes[i])) {
+                    jCheckBox1.setSelected(true);
+                } else if (dispatcherTypes[1].equals(dispTypes[i])) {
+                    jCheckBox2.setSelected(true);
+                } else if (dispatcherTypes[2].equals(dispTypes[i])) {
+                    jCheckBox3.setSelected(true);
+                } else if (dispatcherTypes[3].equals(dispTypes[i])) {
+                    jCheckBox4.setSelected(true);
+                }
             }
-        } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {}
+        } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
+        }
     }
-    
+
     javax.swing.JTextField getUrlTF() {
         return urlTF;
     }
+
     javax.swing.JRadioButton getUrlRB() {
         return jRadioButton1;
     }
+
     javax.swing.JRadioButton getServletNameRB() {
         return jRadioButton2;
     }
+
     String getUrlPattern() {
-        return (jRadioButton1.isSelected()?urlTF.getText().trim():null);
+        return (jRadioButton1.isSelected() ? urlTF.getText().trim() : null);
     }
+
     String getServletName() {
-        return (jRadioButton2.isSelected()?(String)servletNameCB.getSelectedItem():null);
+        return (jRadioButton2.isSelected() ? (String) servletNameCB.getSelectedItem() : null);
     }
+
     String getFilterName() {
-        return (hasFilterNames?(String)filterNameCB.getSelectedItem():null);
+        return (hasFilterNames ? (String) filterNameCB.getSelectedItem() : null);
     }
+
     String[] getDispatcherTypes() {
         java.util.List list = new java.util.ArrayList();
-        if (jCheckBox1.isSelected()) list.add(dispatcherTypes[0]);
-        if (jCheckBox2.isSelected()) list.add(dispatcherTypes[1]);
-        if (jCheckBox3.isSelected()) list.add(dispatcherTypes[2]);
-        if (jCheckBox4.isSelected()) list.add(dispatcherTypes[3]);
+        if (jCheckBox1.isSelected()) {
+            list.add(dispatcherTypes[0]);
+        }
+        if (jCheckBox2.isSelected()) {
+            list.add(dispatcherTypes[1]);
+        }
+        if (jCheckBox3.isSelected()) {
+            list.add(dispatcherTypes[2]);
+        }
+        if (jCheckBox4.isSelected()) {
+            list.add(dispatcherTypes[3]);
+        }
         String[] ret = new String[list.size()];
         list.toArray(ret);
         return ret;
     }
-    
+
     boolean hasFilterNames() {
         return hasFilterNames;
     }
+
     boolean hasServletNames() {
         return hasServletNames;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -296,18 +321,16 @@ public class FilterMappingPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-            urlTF.setEnabled(false);
-            servletNameCB.setEnabled(true);
-            jRadioButton2.requestFocus();
+        urlTF.setEnabled(false);
+        servletNameCB.setEnabled(true);
+        jRadioButton2.requestFocus();
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
     private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-            urlTF.setEnabled(true);
-            servletNameCB.setEnabled(false);
-            urlTF.requestFocus();
+        urlTF.setEnabled(true);
+        servletNameCB.setEnabled(false);
+        urlTF.requestFocus();
     }//GEN-LAST:event_jRadioButton1ActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox filterNameCB;
@@ -325,5 +348,4 @@ public class FilterMappingPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox servletNameCB;
     private javax.swing.JTextField urlTF;
     // End of variables declaration//GEN-END:variables
-    
 }

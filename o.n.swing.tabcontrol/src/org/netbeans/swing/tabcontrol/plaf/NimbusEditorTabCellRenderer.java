@@ -41,7 +41,6 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import com.sun.java.swing.Painter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -55,7 +54,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
-import javax.swing.plaf.synth.SynthConstants;
 
 /**
  * Nimbus implementation of tab renderer
@@ -69,6 +67,8 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final TabPainter normal = new NimbusPainter();
     
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
+
+    static final boolean IS_JDK_17 = System.getProperty("java.version").startsWith("1.7"); //NOI18N
     
     /**
      * Creates a new instance of GtkEditorTabCellRenderer
@@ -127,15 +127,26 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         } else {
             o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
         }
-        if ((o != null) && (o instanceof Painter)) {
-            Painter painter = (Painter) o;
-            BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = bufIm.createGraphics();
-            g2d.setBackground(UIManager.getColor("Panel.background"));
-            g2d.clearRect(0, 0, w, h);
-            painter.paint(g2d, null, w, h);
-            g.drawImage(bufIm, x, y, null);
+        if( IS_JDK_17 ) {
+            if ((o != null) && (o instanceof javax.swing.Painter)) {
+                javax.swing.Painter painter = (javax.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, w, h);
+                painter.paint(g2d, null, w, h);
+                g.drawImage(bufIm, x, y, null);
+            }
         } else {
+            if ((o != null) && (o instanceof com.sun.java.swing.Painter)) {
+                com.sun.java.swing.Painter painter = (com.sun.java.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, w, h);
+                painter.paint(g2d, null, w, h);
+                g.drawImage(bufIm, x, y, null);
+            }
         }
 
         if (isPreviousTabSelected) {

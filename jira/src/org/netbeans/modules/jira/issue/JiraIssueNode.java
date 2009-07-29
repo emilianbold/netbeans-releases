@@ -83,19 +83,6 @@ public class JiraIssueNode extends IssueNode {
         super.fireDataChanged();
     }
 
-    private Integer getTypeSortKey(String type) {
-        // XXX sorting !!!
-        return 1;
-    }
-
-    private Integer getPrioritySortKey(String priority) {
-        return 1;
-    }
-
-    private Integer getResolutionSortKey(String resolution) {
-        return 1;
-    }
-
     private class KeyProperty extends IssueNode.IssueProperty<String> {
         public KeyProperty() {
             super(NbJiraIssue.LABEL_NAME_ID,
@@ -126,11 +113,14 @@ public class JiraIssueNode extends IssueNode {
         }
         @Override
         public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getTypeSortKey(getNbJiraIssue().getFieldValue(IssueField.TYPE));
-            } else {
-                return super.getValue(attributeName);
-            }
+            return super.getValue(attributeName);
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getNbJiraIssue().getType().getName();
+            String s2 = ((NbJiraIssue)p.getIssue()).getType().getName();
+            return s1.compareTo(s2);
         }
     }
 
@@ -151,7 +141,11 @@ public class JiraIssueNode extends IssueNode {
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getPrioritySortKey(getNbJiraIssue().getFieldValue(IssueField.PRIORITY));
+                try {
+                    return Integer.parseInt(getNbJiraIssue().getFieldValue(IssueField.PRIORITY));
+                } catch (NumberFormatException nfex) {
+                    return null;
+                }
             } else {
                 return super.getValue(attributeName);
             }
@@ -191,11 +185,16 @@ public class JiraIssueNode extends IssueNode {
         }
         @Override
         public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getResolutionSortKey(getNbJiraIssue().getFieldValue(IssueField.RESOLUTION));
-            } else {
-                return super.getValue(attributeName);
-            }
+            return super.getValue(attributeName);
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            Resolution resolution = getNbJiraIssue().getResolution();
+            String s1 = (resolution == null) ? "" : resolution.getName(); // NOI18N
+            resolution = ((NbJiraIssue)p.getIssue()).getResolution();
+            String s2 = (resolution == null) ? "" : resolution.getName(); // NOI18N
+            return s1.compareTo(s2);
         }
     }
 

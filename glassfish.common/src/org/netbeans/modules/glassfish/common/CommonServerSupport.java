@@ -106,11 +106,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
-        updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
-                glassfishRoot + File.separator + GlassfishInstance.DEFAULT_DOMAINS_FOLDER);
-        updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
-        updateString(ip,GlassfishModule.START_DERBY_FLAG,"true");  // NOI18N
+        updateString(ip,GlassfishModule.START_DERBY_FLAG,
+                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? "false" : "true");  // NOI18N
         updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
@@ -118,7 +116,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             ip.put(URL_ATTR, deployerUrl);
         }
 
-        ip.put(JVM_MODE, NORMAL_MODE);
+        ip.put(JVM_MODE, ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? DEBUG_MODE : NORMAL_MODE);
         properties.putAll(ip);
         
         // XXX username/password handling at some point.
@@ -221,18 +219,18 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     public String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
-        if (null == retVal) {
-            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
-                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
-        }
+//        if (null == retVal) {
+//            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
+//                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
+//        }
         return retVal;
     }
     
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
-        if (null == retVal) {
-            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
-        }
+//        if (null == retVal) {
+//            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
+//        }
         return retVal;
     }
     
@@ -450,7 +448,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         try {
             InetSocketAddress isa = new InetSocketAddress(host, port);
             Socket socket = new Socket();
-            socket.connect(isa, 1);
+            socket.connect(isa, 100);
             socket.close();
             return true;
         } catch(IOException ex) {
@@ -477,12 +475,15 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
                     String domainRoot = getDomainsRoot() + File.separator + getDomainName();
                     String targetDomainRoot = command.getDomainRoot();
-                    if(domainRoot != null && targetDomainRoot != null) {
+                    if(getDomainsRoot() != null && targetDomainRoot != null) {
                         File installDir = FileUtil.normalizeFile(new File(domainRoot));
                         File targetInstallDir = FileUtil.normalizeFile(new File(targetDomainRoot));
                         isReady = installDir.equals(targetInstallDir);
                     } else {
-                        isReady = false;
+                        // if we got a response from the server... we are going 
+                        // to trust that it is the 'right one'
+                        // TODO -- better edge case detection/protection
+                        isReady = null != targetDomainRoot;
                     }
                     break;
                 } else if(!command.retry()) {
@@ -537,9 +538,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     /**
-     * !PW XXX Is there a more efficient way to implement a failed future object? 
+     * !PW XXX Is there a more efficient way to implement a successful future object?
      * 
-     * @return Future object that represents an immediate failed operation
+     * @return Future object that represents an immediate successful operation
      */
     private static Future<OperationState> successfulOperation() {
         return new Future<OperationState>() {

@@ -445,8 +445,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         String strMsg = null, strMsgLower;
         
         if (msg instanceof String) {
-            msg = org.openide.util.Utilities.replaceString((String)msg, "\t", "    "); // NOI18N
-            msg = org.openide.util.Utilities.replaceString((String)msg, "\r", ""); // NOI18N
+            msg = ((String) msg).replace("\t", "    "); // NOI18N
+            msg = ((String) msg).replace("\r", ""); // NOI18N
             //If string is html text (contains "<html>" or "<HTML>")
             //we will not override JOptionPane.getMaxCharactersPerLineCount
             //so that html text will be displayed correctly in JOptionPane

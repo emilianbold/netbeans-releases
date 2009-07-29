@@ -54,7 +54,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
@@ -203,7 +203,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugAction().perform(servletNode);
+        new DebugJavaFileAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
@@ -229,7 +229,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOver() {
         JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugAction().perform(servletNode);
+        new DebugJavaFileAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
         stt.waitText("DivideServlet.java:" + line); //NOI18N
@@ -251,7 +251,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testApplyCodeChanges() {
         JSPDebuggingOverallTest.verifyActiveNode(servletNode);
-        new DebugAction().perform(servletNode);
+        new DebugJavaFileAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
         stt.waitText("DivideServlet.java:" + line); //NOI18N

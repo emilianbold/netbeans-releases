@@ -98,13 +98,24 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                     final ElementUtilities elementUtilities = controller.getElementUtilities();
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (String className : getInterfaces()) {
-                        TypeElement intf = elements.getTypeElement(className);
+                        final TypeElement intf = elements.getTypeElement(className);
 
                         if (intf != null) {
                             // from home interface we want only direct methods
                             if (className.equals(homeInterface)) {
                                 for (ExecutableElement executableElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, executableElement);
+                                    keys.add(methodModel);
+                                }
+                            } else if(intf.getKind() == ElementKind.CLASS) {
+                                Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    public boolean accept(Element e, TypeMirror type) {
+                                        TypeElement parent = elementUtilities.enclosingTypeElement(e);
+                                        return ElementKind.METHOD == e.getKind() && e.getEnclosingElement().equals(intf);
+                                    }
+                                });
+                                for (Element method : methods) {
+                                    MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
                                     keys.add(methodModel);
                                 }
                             } else {

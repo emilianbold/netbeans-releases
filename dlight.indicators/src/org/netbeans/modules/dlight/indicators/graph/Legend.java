@@ -48,7 +48,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -64,7 +63,7 @@ import javax.swing.SwingUtilities;
  */
 public class Legend extends JPanel {
 
-    public Legend(List<GraphDescriptor> descriptors, Map<String, String> details) {
+    public Legend(List<GraphDescriptor> graphs, List<DetailDescriptor> details) {
         super(new GridBagLayout());
 
         setBackground(GraphConfig.LEGEND_COLOR);
@@ -75,8 +74,8 @@ public class Legend extends JPanel {
         setOpaque(true);
         GridBagConstraints c;
 
-        for (GraphDescriptor descriptor : descriptors) {
-            JLabel label = new JLabel(descriptor.getDescription(), new ColorIcon(descriptor.getColor()), SwingConstants.LEADING);
+        for (GraphDescriptor graph : graphs) {
+            JLabel label = new JLabel(graph.getDescription(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
             label.setForeground(GraphConfig.TEXT_COLOR);
             label.setFont(label.getFont().deriveFont(10f));
             c = new GridBagConstraints();
@@ -95,26 +94,28 @@ public class Legend extends JPanel {
         c.weighty = 1.0;
         add(Box.createVerticalStrut(4), c);
 
-        for (Map.Entry<String, String> entry : details.entrySet()) {
-            JLabel name = new JLabel(entry.getValue());
-            name.setForeground(GraphConfig.TEXT_COLOR);
-            name.setFont(name.getFont().deriveFont(10f));
-            c = new GridBagConstraints();
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.insets = new Insets(0, 4, 4, 4);
-            add(name, c);
-            JLabel value = new JLabel();
-            value.setName(entry.getKey());
-            value.setForeground(GraphConfig.TEXT_COLOR);
-            value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
-            c = new GridBagConstraints();
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridwidth = GridBagConstraints.REMAINDER;
-            c.weightx = 1.0;
-            c.insets = new Insets(0, 0, 4, 4);
-            add(value, c);
+        if (details != null) {
+            for (DetailDescriptor detail : details) {
+                JLabel name = new JLabel(detail.getDisplayName());
+                name.setForeground(GraphConfig.TEXT_COLOR);
+                name.setFont(name.getFont().deriveFont(10f));
+                c = new GridBagConstraints();
+                c.anchor = GridBagConstraints.WEST;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.insets = new Insets(0, 4, 4, 4);
+                add(name, c);
+                JLabel value = new JLabel(detail.getDefaultValue());
+                value.setName(detail.getName());
+                value.setForeground(GraphConfig.TEXT_COLOR);
+                value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
+                c = new GridBagConstraints();
+                c.anchor = GridBagConstraints.WEST;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.weightx = 1.0;
+                c.insets = new Insets(0, 0, 4, 4);
+                add(value, c);
+            }
         }
     }
 

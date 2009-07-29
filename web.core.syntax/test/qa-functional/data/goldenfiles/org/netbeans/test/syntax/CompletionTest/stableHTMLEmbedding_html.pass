@@ -180,7 +180,6 @@ color windowtext
 color yellow
 End cursor position = 448
 [<style> | </style>, @import, <style> @import </style>, 530]
-</style >
 @charset
 @font-face
 @import

@@ -113,7 +113,7 @@ do
 		;;
         --ycpu|-ycpu)
                 echo "profile using YourKit Profiler with CPU sampling, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=sampling,noj2ee,dir=${HOME}/yjp_data/IDE"
+                PROFILE="-J-agentlib:yjpagent=sampling,monitors,noj2ee,disablej2ee,dir=${HOME}/yjp_data/IDE"
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"

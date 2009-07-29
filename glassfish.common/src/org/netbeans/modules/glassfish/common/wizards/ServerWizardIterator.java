@@ -94,6 +94,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     public ServerWizardIterator(GlassfishInstanceProvider gip) {
         assert null != gip;
         this.gip = gip;
+        setHostName("localhost");
     }
 
     private ServerWizardIterator() {
@@ -141,40 +142,15 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         Set<ServerInstance> result = new HashSet<ServerInstance>();
         File ir = new File(installRoot);
         ensureExecutable(ir);
-        File domainDir = new File(domainsDir, domainName);
-        String canonicalPath = null;
-        try {
-            canonicalPath = domainDir.getCanonicalPath();
-        } catch (IOException ioe) {
-            Logger.getLogger("glassfish").log(Level.INFO, domainDir.getAbsolutePath(), ioe); // NOI18N
-        }
-        if (null != canonicalPath && !canonicalPath.equals(domainDir.getAbsolutePath())) {
-            setDomainLocation(canonicalPath);
-            domainDir = new File(domainsDir, domainName);
-        }
-        if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
-            // Need to create a domain right here!
-            Map<String, String> ip = new HashMap<String, String>();
-            ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
-            ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
-            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
-                    (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
-            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
-            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip,gip);
-            cd.start();
-            result.add(gip.getInstance(domainsDir));
+        if (null != domainsDir) {
+            handleLocalDomains(result, ir);
         } else {
-            GlassfishInstance instance = GlassfishInstance.create(
-                    (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-                    installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,
-                    formatUri(glassfishRoot,"localhost",adminPort),gip.getUriFragment(),gip);
-            result.add(instance.getCommonInstance());
+            handleRemoteDomains(result,ir);
         }
         // lookup the javadb register service here and use it.
         RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
         if (null != db) {
-            File f = new File(ir,"javadb");
+            File f = new File(ir, "javadb");
             if (f.exists() && f.isDirectory() && f.canRead()) {
                 db.initialize(f.getAbsolutePath());
             }
@@ -262,6 +238,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 //    private String password;
     private String installRoot;
     private String glassfishRoot;
+    private String hostName;
 
     public String formatUri(String glassfishRoot, String host, int port) {
         return gip.formatUri(glassfishRoot, host, port);
@@ -351,9 +328,14 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 
     // expose for qa-functional tests
     public void setDomainLocation(String absolutePath) {
-        int dex = absolutePath.lastIndexOf(File.separator);
-        this.domainsDir = absolutePath.substring(0,dex);
-        this.domainName = absolutePath.substring(dex+1);
+        if (null == absolutePath) {
+            domainsDir = null;
+            domainName = null;
+        } else {
+            int dex = absolutePath.lastIndexOf(File.separator);
+            this.domainsDir = absolutePath.substring(0,dex);
+            this.domainName = absolutePath.substring(dex+1);
+        }
     }
 
     // Borrowed from RubyPlatform...
@@ -440,5 +422,55 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 
     String getInstallRootKey() {
         return gip.getInstallRootKey(); // "last-install-root"; // NOI18N
+    }
+
+    private void handleLocalDomains(Set<ServerInstance> result, File ir) {
+        File domainDir = new File(domainsDir, domainName);
+        String canonicalPath = null;
+        try {
+            canonicalPath = domainDir.getCanonicalPath();
+        } catch (IOException ioe) {
+            Logger.getLogger("glassfish").log(Level.INFO, domainDir.getAbsolutePath(), ioe); // NOI18N
+        }
+        if (null != canonicalPath && !canonicalPath.equals(domainDir.getAbsolutePath())) {
+            setDomainLocation(canonicalPath);
+            domainDir = new File(domainsDir, domainName);
+        }
+        if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
+            // Need to create a domain right here!
+            Map<String, String> ip = new HashMap<String, String>();
+            ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
+            ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
+            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
+            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip);
+            cd.start();
+            result.add(gip.getInstance(domainsDir));
+        } else {
+            GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, formatUri(glassfishRoot, "localhost", adminPort), gip.getUriFragment(), gip);
+            result.add(instance.getCommonInstance());
+        }
+    }
+
+    private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
+        // TODO - vbk : get the real port from the server. Doable, but hard to do right.
+        httpPort = 8080;
+        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, getHostName(), adminPort), gip.getUriFragment(), gip);
+        result.add(instance.getCommonInstance());
+    }
+
+    /**
+     * @return the hostName
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    /**
+     * @param hostName the hostName to set
+     */
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 }

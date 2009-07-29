@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,12 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -106,12 +106,13 @@ public class SQLExecutor {
             throw new NullPointerException();
         }
 
-        try {
-            if (dbconn.getJDBCConnection() == null || dbconn.getJDBCConnection().isClosed()) {
-                throw new DatabaseException("The connection is not open"); // NOI18N
-            }
-        } catch (SQLException sqle) {
-            throw new DatabaseException(sqle);
+        if (dbconn == null) {
+            throw new IllegalArgumentException("The connection parameter cannot be null");
+        }
+
+        Connection conn = dbconn.getJDBCConnection(true);
+        if (conn == null) {
+            throw new DatabaseException("The connection is not open"); // NOI18N
         }
 
 

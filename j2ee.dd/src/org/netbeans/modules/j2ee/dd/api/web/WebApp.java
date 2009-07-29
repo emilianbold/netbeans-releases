@@ -38,8 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.dd.api.web;
+
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 
 /**
  * Generated interface for WebApp element.<br>
@@ -61,320 +62,210 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
  *</p>
  */
 public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
-        public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-        public static final String VERSION_2_3="2.3"; //NOI18N
-        public static final String VERSION_2_4="2.4"; //NOI18N
-        public static final String VERSION_2_5="2.5"; //NOI18N
-        public static final String VERSION_3_0="3.0"; //NOI18N
-        public static final int STATE_VALID=0;
-        public static final int STATE_INVALID_PARSABLE=1;
-        public static final int STATE_INVALID_UNPARSABLE=2;
-        public static final String PROPERTY_STATUS="dd_status"; //NOI18N
-    
-	//public void setVersion(java.lang.String value);
-        /** Getter for version property.
-         * @return property value
-         */        
-	public java.lang.String getVersion();
-        /** Getter for SAX Parse Error property. 
-         * Used when deployment descriptor is in invalid state.
-         * @return property value or null if in valid state
-         */        
-	public org.xml.sax.SAXParseException getError();      
-        /** Getter for status property.
-         * @return property value
-         */        
-	public int getStatus();      
-        /** Setter for distributable property.
-         * @param value property value
-         */
-        public void setDistributable(boolean value);
-        /** Getter for distributable property.
-         * @return property value 
-         */
-	public boolean isDistributable();        
 
-	public void setContextParam(int index, InitParam valueInterface);
-
-	public InitParam getContextParam(int index);
-
-	public void setContextParam(InitParam[] value);
-
-	public InitParam[] getContextParam();
-
-	public int sizeContextParam();
-
-	public int addContextParam(InitParam valueInterface);
-
-	public int removeContextParam(InitParam valueInterface);
-
-	public void setFilter(int index, org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Filter getFilter(int index);
-
-	public void setFilter(org.netbeans.modules.j2ee.dd.api.web.Filter[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Filter[] getFilter();
-
-	public int sizeFilter();
-
-	public int addFilter(org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
-
-	public int removeFilter(org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
-
-	public void setFilterMapping(int index, org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.FilterMapping getFilterMapping(int index);
-
-	public void setFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.FilterMapping[] getFilterMapping();
-
-	public int sizeFilterMapping();
-
-	public int addFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
-
-	public int removeFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
-
-	public void setListener(int index, org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Listener getListener(int index);
-
-	public void setListener(org.netbeans.modules.j2ee.dd.api.web.Listener[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Listener[] getListener();
-
-	public int sizeListener();
-
-	public int addListener(org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
-
-	public int removeListener(org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
-
-	public void setServlet(int index, org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Servlet getServlet(int index);
-
-	public void setServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.Servlet[] getServlet();
-
-	public int sizeServlet();
-
-	public int addServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
-
-	public int removeServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
-
-	public void setServletMapping(int index, org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.ServletMapping getServletMapping(int index);
-
-	public void setServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.ServletMapping[] getServletMapping();
-
-	public int sizeServletMapping();
-
-	public int addServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
-
-	public int removeServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
-
-        public void setSessionConfig(org.netbeans.modules.j2ee.dd.api.web.SessionConfig value);
-	public org.netbeans.modules.j2ee.dd.api.web.SessionConfig getSingleSessionConfig();
-
-	public void setMimeMapping(int index, org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.MimeMapping getMimeMapping(int index);
-
-	public void setMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.MimeMapping[] getMimeMapping();
-
-	public int sizeMimeMapping();
-
-	public int addMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
-
-	public int removeMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
-
-        public void setWelcomeFileList(org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList value);
-        public org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList getSingleWelcomeFileList();
-     
-	public void setErrorPage(int index, org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.ErrorPage getErrorPage(int index);
-
-	public void setErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.ErrorPage[] getErrorPage();
-
-	public int sizeErrorPage();
-
-	public int addErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
-
-	public int removeErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
-        
-	public void setJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) throws VersionNotSupportedException;
-	public org.netbeans.modules.j2ee.dd.api.web.JspConfig getSingleJspConfig() throws VersionNotSupportedException;
-        
-        public int addJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
-	
-        public int removeJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
-
-	public void setSecurityConstraint(int index, org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint getSecurityConstraint(int index);
-
-	public void setSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint[] getSecurityConstraint();
-
-	public int sizeSecurityConstraint();
-
-	public int addSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
-
-	public int removeSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
-        
-	public void setLoginConfig(org.netbeans.modules.j2ee.dd.api.web.LoginConfig value);
-	public org.netbeans.modules.j2ee.dd.api.web.LoginConfig getSingleLoginConfig();
-
-	public void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
-
-	public org.netbeans.modules.j2ee.dd.api.common.SecurityRole getSecurityRole(int index);
-
-	public void setSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] value);
-
-	public org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] getSecurityRole();
-
-	public int sizeSecurityRole();
-
-	public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
-
-	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
-
-	public void setEnvEntry(int index, EnvEntry valueInterface);
-
-	public EnvEntry getEnvEntry(int index);
-
-	public void setEnvEntry(EnvEntry[] value);
-
-	public EnvEntry[] getEnvEntry();
-
-	public int sizeEnvEntry();
-
-	public int addEnvEntry(EnvEntry valueInterface);
-
-	public int removeEnvEntry(EnvEntry valueInterface);
-
-	public void setEjbRef(int index, EjbRef valueInterface);
-
-	public EjbRef getEjbRef(int index);
-
-	public void setEjbRef(EjbRef[] value);
-
-	public EjbRef[] getEjbRef();
-
-	public int sizeEjbRef();
-
-	public int addEjbRef(EjbRef valueInterface);
-
-	public int removeEjbRef(EjbRef valueInterface);
-
-	public void setEjbLocalRef(int index, EjbLocalRef valueInterface);
-
-	public EjbLocalRef getEjbLocalRef(int index);
-
-	public void setEjbLocalRef(EjbLocalRef[] value);
-
-	public EjbLocalRef[] getEjbLocalRef();
-
-	public int sizeEjbLocalRef();
-
-	public int addEjbLocalRef(EjbLocalRef valueInterface);
-
-	public int removeEjbLocalRef(EjbLocalRef valueInterface);
-
-	public void setServiceRef(int index, ServiceRef valueInterface) throws VersionNotSupportedException;
-
-	public ServiceRef getServiceRef(int index) throws VersionNotSupportedException;
-
-	public void setServiceRef(ServiceRef[] value) throws VersionNotSupportedException;
-
-	public ServiceRef[] getServiceRef() throws VersionNotSupportedException;
-
-	public int sizeServiceRef() throws VersionNotSupportedException;
-
-	public int addServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
-
-	public int removeServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
-
-	public void setResourceRef(int index, ResourceRef valueInterface);
-
-	public ResourceRef getResourceRef(int index);
-
-	public void setResourceRef(ResourceRef[] value);
-
-	public ResourceRef[] getResourceRef();
-
-	public int sizeResourceRef();
-
-	public int addResourceRef(ResourceRef valueInterface);
-
-	public int removeResourceRef(ResourceRef valueInterface);
-
-	public void setResourceEnvRef(int index, ResourceEnvRef valueInterface);
-
-	public ResourceEnvRef getResourceEnvRef(int index);
-
-	public void setResourceEnvRef(ResourceEnvRef[] value);
-
-	public ResourceEnvRef[] getResourceEnvRef();
-
-	public int sizeResourceEnvRef();
-
-	public int addResourceEnvRef(ResourceEnvRef valueInterface);
-
-	public int removeResourceEnvRef(ResourceEnvRef valueInterface);
-
-	public void setMessageDestinationRef(int index, MessageDestinationRef valueInterface) throws VersionNotSupportedException;
-
-	public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
-
-	public void setMessageDestinationRef(MessageDestinationRef[] value) throws VersionNotSupportedException;
-
-	public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
-
-	public int sizeMessageDestinationRef() throws VersionNotSupportedException;
-
-	public int addMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
-
-	public int removeMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
-
-	public void setMessageDestination(int index, MessageDestination valueInterface) throws VersionNotSupportedException;
-
-	public MessageDestination getMessageDestination(int index) throws VersionNotSupportedException;
-
-	public void setMessageDestination(MessageDestination[] value) throws VersionNotSupportedException;
-
-	public MessageDestination[] getMessageDestination() throws VersionNotSupportedException;
-
-	public int sizeMessageDestination() throws VersionNotSupportedException;
-
-	public int addMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
-
-	public int removeMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
-
-	public org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException;
-        
-	public void setLocaleEncodingMappingList(org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList value) throws VersionNotSupportedException;
-
-        // due to compatibility with servlet2.3
-	public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
-	public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws VersionNotSupportedException;
-	public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws VersionNotSupportedException;
-	public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws VersionNotSupportedException;
-	public int sizeTaglib() throws VersionNotSupportedException;
-	public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
-	public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
-        // This attribute is optional
-	public void setMetadataComplete(boolean value) throws VersionNotSupportedException;
-	public boolean isMetadataComplete() throws VersionNotSupportedException;
+    static final String PROPERTY_VERSION = "dd_version"; //NOI18N
+    static final String VERSION_2_4 = "2.4"; //NOI18N
+    static final String VERSION_2_5 = "2.5"; //NOI18N
+    static final String VERSION_3_0 = "3.0"; //NOI18N
+    static final int STATE_VALID = 0;
+    static final int STATE_INVALID_PARSABLE = 1;
+    static final int STATE_INVALID_UNPARSABLE = 2;
+    static final String PROPERTY_STATUS = "dd_status"; //NOI18N
+
+    /** Getter for version property.
+     * @return property value
+     */
+    String getVersion();
+
+    /** Getter for SAX Parse Error property.
+     * Used when deployment descriptor is in invalid state.
+     * @return property value or null if in valid state
+     */
+    org.xml.sax.SAXParseException getError();
+
+    /** Getter for status property.
+     * @return property value
+     */
+    int getStatus();
+
+    /** Setter for distributable property.
+     * @param value property value
+     */
+    void setDistributable(boolean value);
+
+    /** Getter for distributable property.
+     * @return property value
+     */
+    boolean isDistributable();
+
+    void setContextParam(int index, InitParam valueInterface);
+    InitParam getContextParam(int index);
+    void setContextParam(InitParam[] value);
+    InitParam[] getContextParam();
+    int sizeContextParam();
+    int addContextParam(InitParam valueInterface);
+    int removeContextParam(InitParam valueInterface);
+
+    void setFilter(int index, Filter valueInterface);
+    Filter getFilter(int index);
+    void setFilter(Filter[] value);
+    Filter[] getFilter();
+    int sizeFilter();
+    int addFilter(Filter valueInterface);
+    int removeFilter(Filter valueInterface);
+
+    void setFilterMapping(int index, FilterMapping valueInterface);
+    FilterMapping getFilterMapping(int index);
+    void setFilterMapping(FilterMapping[] value);
+    FilterMapping[] getFilterMapping();
+    int sizeFilterMapping();
+    int addFilterMapping(FilterMapping valueInterface);
+    int removeFilterMapping(FilterMapping valueInterface);
+
+    void setListener(int index, Listener valueInterface);
+    Listener getListener(int index);
+    void setListener(Listener[] value);
+    Listener[] getListener();
+    int sizeListener();
+    int addListener(Listener valueInterface);
+    int removeListener(Listener valueInterface);
+
+    void setServlet(int index, Servlet valueInterface);
+    Servlet getServlet(int index);
+    void setServlet(Servlet[] value);
+    Servlet[] getServlet();
+    int sizeServlet();
+    int addServlet(Servlet valueInterface);
+    int removeServlet(Servlet valueInterface);
+
+    void setServletMapping(int index, ServletMapping valueInterface);
+    ServletMapping getServletMapping(int index);
+    void setServletMapping(ServletMapping[] value);
+    ServletMapping[] getServletMapping();
+    int sizeServletMapping();
+    int addServletMapping(ServletMapping valueInterface);
+    int removeServletMapping(ServletMapping valueInterface);
+
+    void setSessionConfig(SessionConfig value);
+    SessionConfig getSingleSessionConfig();
+
+    void setMimeMapping(int index, MimeMapping valueInterface);
+    MimeMapping getMimeMapping(int index);
+    void setMimeMapping(MimeMapping[] value);
+    MimeMapping[] getMimeMapping();
+    int sizeMimeMapping();
+    int addMimeMapping(MimeMapping valueInterface);
+    int removeMimeMapping(MimeMapping valueInterface);
+
+    void setWelcomeFileList(WelcomeFileList value);
+    WelcomeFileList getSingleWelcomeFileList();
+
+    void setErrorPage(int index, ErrorPage valueInterface);
+    ErrorPage getErrorPage(int index);
+    void setErrorPage(ErrorPage[] value);
+    ErrorPage[] getErrorPage();
+    int sizeErrorPage();
+    int addErrorPage(ErrorPage valueInterface);
+    int removeErrorPage(ErrorPage valueInterface);
+
+    void setJspConfig(JspConfig value) throws VersionNotSupportedException;
+    JspConfig getSingleJspConfig() throws VersionNotSupportedException;
+    int addJspConfig(JspConfig valueInterface) throws VersionNotSupportedException;
+    int removeJspConfig(JspConfig valueInterface) throws VersionNotSupportedException;
+
+    void setSecurityConstraint(int index, SecurityConstraint valueInterface);
+    SecurityConstraint getSecurityConstraint(int index);
+    void setSecurityConstraint(SecurityConstraint[] value);
+    SecurityConstraint[] getSecurityConstraint();
+    int sizeSecurityConstraint();
+    int addSecurityConstraint(SecurityConstraint valueInterface);
+    int removeSecurityConstraint(SecurityConstraint valueInterface);
+
+    void setLoginConfig(LoginConfig value);
+    LoginConfig getSingleLoginConfig();
+
+    void setSecurityRole(int index, SecurityRole valueInterface);
+    SecurityRole getSecurityRole(int index);
+    void setSecurityRole(SecurityRole[] value);
+    SecurityRole[] getSecurityRole();
+    int sizeSecurityRole();
+    int addSecurityRole(SecurityRole valueInterface);
+    int removeSecurityRole(SecurityRole valueInterface);
+
+    void setEnvEntry(int index, EnvEntry valueInterface);
+    EnvEntry getEnvEntry(int index);
+    void setEnvEntry(EnvEntry[] value);
+    EnvEntry[] getEnvEntry();
+    int sizeEnvEntry();
+    int addEnvEntry(EnvEntry valueInterface);
+    int removeEnvEntry(EnvEntry valueInterface);
+
+    void setEjbRef(int index, EjbRef valueInterface);
+    EjbRef getEjbRef(int index);
+    void setEjbRef(EjbRef[] value);
+    EjbRef[] getEjbRef();
+    int sizeEjbRef();
+    int addEjbRef(EjbRef valueInterface);
+    int removeEjbRef(EjbRef valueInterface);
+
+    void setEjbLocalRef(int index, EjbLocalRef valueInterface);
+    EjbLocalRef getEjbLocalRef(int index);
+    void setEjbLocalRef(EjbLocalRef[] value);
+    EjbLocalRef[] getEjbLocalRef();
+    int sizeEjbLocalRef();
+    int addEjbLocalRef(EjbLocalRef valueInterface);
+    int removeEjbLocalRef(EjbLocalRef valueInterface);
+
+    void setServiceRef(int index, ServiceRef valueInterface) throws VersionNotSupportedException;
+    ServiceRef getServiceRef(int index) throws VersionNotSupportedException;
+    void setServiceRef(ServiceRef[] value) throws VersionNotSupportedException;
+    ServiceRef[] getServiceRef() throws VersionNotSupportedException;
+    int sizeServiceRef() throws VersionNotSupportedException;
+    int addServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
+    int removeServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
+
+    void setResourceRef(int index, ResourceRef valueInterface);
+    ResourceRef getResourceRef(int index);
+    void setResourceRef(ResourceRef[] value);
+    ResourceRef[] getResourceRef();
+    int sizeResourceRef();
+    int addResourceRef(ResourceRef valueInterface);
+    int removeResourceRef(ResourceRef valueInterface);
+
+    void setResourceEnvRef(int index, ResourceEnvRef valueInterface);
+    ResourceEnvRef getResourceEnvRef(int index);
+    void setResourceEnvRef(ResourceEnvRef[] value);
+    ResourceEnvRef[] getResourceEnvRef();
+    int sizeResourceEnvRef();
+    int addResourceEnvRef(ResourceEnvRef valueInterface);
+    int removeResourceEnvRef(ResourceEnvRef valueInterface);
+
+    void setMessageDestinationRef(int index, MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+    MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
+    void setMessageDestinationRef(MessageDestinationRef[] value) throws VersionNotSupportedException;
+    MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
+    int sizeMessageDestinationRef() throws VersionNotSupportedException;
+    int addMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+    int removeMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+
+    void setMessageDestination(int index, MessageDestination valueInterface) throws VersionNotSupportedException;
+    MessageDestination getMessageDestination(int index) throws VersionNotSupportedException;
+    void setMessageDestination(MessageDestination[] value) throws VersionNotSupportedException;
+    MessageDestination[] getMessageDestination() throws VersionNotSupportedException;
+    int sizeMessageDestination() throws VersionNotSupportedException;
+    int addMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
+    int removeMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
+
+    LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException;
+    void setLocaleEncodingMappingList(LocaleEncodingMappingList value) throws VersionNotSupportedException;
+
+    void setMetadataComplete(boolean value) throws VersionNotSupportedException;
+    boolean isMetadataComplete() throws VersionNotSupportedException;
+
+    void setName(String[] value) throws VersionNotSupportedException;
+    String[] getName() throws VersionNotSupportedException;
+
+	AbsoluteOrdering newAbsoluteOrdering() throws VersionNotSupportedException;
+    void setAbsoluteOrdering(AbsoluteOrdering[] value) throws VersionNotSupportedException;
+    AbsoluteOrdering[] getAbsoluteOrdering() throws VersionNotSupportedException;
 }

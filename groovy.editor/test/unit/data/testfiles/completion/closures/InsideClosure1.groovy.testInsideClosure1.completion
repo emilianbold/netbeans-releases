@@ -50,6 +50,7 @@ CLASS      ByteArrayOutputStream                      null
 CLASS      CacheRequest                               null
 CLASS      CacheResponse                              null
 CLASS      Calendar                                   null
+CLASS      Category                                   null
 CLASS      CharArrayReader                            null
 CLASS      CharArrayWriter                            null
 CLASS      CharConversionException                    null
@@ -93,6 +94,7 @@ CLASS      DatagramSocket                             null
 CLASS      DatagramSocketImpl                         null
 CLASS      DatagramSocketImplFactory                  null
 CLASS      Date                                       null
+CLASS      Delegate                                   null
 CLASS      DelegatingMetaClass                        null
 CLASS      Deprecated                                 null
 CLASS      DeprecationException                       null
@@ -145,6 +147,8 @@ CLASS      FormattableFlags                           null
 CLASS      Formatter                                  null
 CLASS      FormatterClosedException                   null
 CLASS      GString                                    null
+CLASS      Grab                                       null
+CLASS      Grapes                                     null
 CLASS      GregorianCalendar                          null
 CLASS      GroovyClassLoader                          null
 CLASS      GroovyCodeSource                           null
@@ -159,6 +163,7 @@ CLASS      GroovyResourceLoader                       null
 CLASS      GroovyRuntimeException                     null
 CLASS      GroovyScriptEngine                         null
 CLASS      GroovyShell                                null
+CLASS      GroovyShellTestCase                        null
 CLASS      GroovySystem                               null
 CLASS      GroovyTestCase                             null
 CLASS      GroovyTestSuite                            null
@@ -183,6 +188,7 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
+CLASS      Immutable                                  null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -210,6 +216,7 @@ CLASS      InvalidPropertiesFormatExcepti             null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      JarURLConnection                           null
+CLASS      Lazy                                       null
 CLASS      LineNumberInputStream                      null
 CLASS      LineNumberReader                           null
 CLASS      LinkageError                               null
@@ -230,6 +237,8 @@ CLASS      MetaBeanProperty                           null
 CLASS      MetaClass                                  null
 CLASS      MetaClassImpl                              null
 CLASS      MetaClassRegistry                          null
+CLASS      MetaClassRegistryChangeEvent               null
+CLASS      MetaClassRegistryChangeEventLi             null
 CLASS      MetaExpandoProperty                        null
 CLASS      MetaMethod                                 null
 CLASS      MetaObjectProtocol                         null
@@ -241,11 +250,13 @@ CLASS      MissingFormatWidthException                null
 CLASS      MissingMethodException                     null
 CLASS      MissingPropertyException                   null
 CLASS      MissingResourceException                   null
+CLASS      Mixin                                      null
 CLASS      MulticastSocket                            null
 CLASS      MutableMetaClass                           null
 CLASS      NegativeArraySizeException                 null
 CLASS      NetPermission                              null
 CLASS      NetworkInterface                           null
+CLASS      Newify                                     null
 CLASS      NoClassDefFoundError                       null
 CLASS      NoRouteToHostException                     null
 CLASS      NoSuchElementException                     null
@@ -287,6 +298,7 @@ CLASS      OutputStream                               null
 CLASS      OutputStreamWriter                         null
 CLASS      Override                                   null
 CLASS      Package                                    null
+CLASS      PackageScope                               null
 CLASS      ParameterArray                             null
 CLASS      PasswordAuthentication                     null
 CLASS      PipedInputStream                           null
@@ -343,6 +355,7 @@ CLASS      ServerSocket                               null
 CLASS      Set                                        null
 CLASS      Short                                      null
 CLASS      SimpleTimeZone                             null
+CLASS      Singleton                                  null
 CLASS      Socket                                     null
 CLASS      SocketAddress                              null
 CLASS      SocketException                            null

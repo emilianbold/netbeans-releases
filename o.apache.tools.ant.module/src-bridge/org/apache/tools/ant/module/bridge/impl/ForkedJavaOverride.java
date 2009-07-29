@@ -45,6 +45,7 @@ import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -69,17 +70,37 @@ public class ForkedJavaOverride extends Java {
 
     @Override
     public void setFork(boolean fork) {
-        // #47465: ignore! Does not work to be set to false.
+        // #47645: ignore! Does not work to be set to false.
     }
 
-    // #121512: NbRedirector does not work with custom input
+    private void useStandardRedirector() { // #121512, #168153
+        if (redirector instanceof NbRedirector) {
+            redirector = new Redirector(this);
+        }
+    }
     public @Override void setInput(File input) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInput(input);
     }
     public @Override void setInputString(String inputString) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInputString(inputString);
+    }
+    public @Override void setOutput(File out) {
+        useStandardRedirector();
+        super.setOutput(out);
+    }
+    public @Override void setOutputproperty(String outputProp) {
+        useStandardRedirector();
+        super.setOutputproperty(outputProp);
+    }
+    public @Override void setError(File error) {
+        useStandardRedirector();
+        super.setError(error);
+    }
+    public @Override void setErrorProperty(String errorProperty) {
+        useStandardRedirector();
+        super.setErrorProperty(errorProperty);
     }
 
     private class NbRedirector extends Redirector {
@@ -133,8 +154,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
                 OutputStream os = getOutputStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream
-                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                if (os == null || os instanceof LogOutputStream) {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
@@ -146,8 +166,7 @@ public class ForkedJavaOverride extends Java {
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
                 OutputStream os = getErrorStream();
                 Integer logLevel = null;
-                if (os == null || os instanceof LogOutputStream
-                        || os.getClass().getName().equals("org.apache.tools.ant.util.OutputStreamFunneler$Funnel")) { // Ant 1.8.0
+                if (os == null || os instanceof LogOutputStream) {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }
@@ -231,8 +250,13 @@ public class ForkedJavaOverride extends Java {
                                         str = str.substring(0, len - 1);
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
-                                    if (!STACK_TRACE.matcher(str).find() && !StandardLogger.HYPERLINK.matcher(str).matches()) {
-                                        ow.println(str);
+                                    if (!STACK_TRACE.matcher(str).find()) {
+                                        OutputListener hyperlink = StandardLogger.findHyperlink(str, null, null);
+                                        if (hyperlink != null) {
+                                            ow.println(str, hyperlink);
+                                        } else {
+                                            ow.println(str);
+                                        }
                                     }
                                     log(str, logLevel);
                                     currentLine.reset();

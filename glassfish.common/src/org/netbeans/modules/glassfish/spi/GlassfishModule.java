@@ -104,7 +104,10 @@ public interface GlassfishModule {
     public static final String CONN_RESOURCE = "connector-resource"; // NOI18N
     public static final String CONN_CONNECTION_POOL = "connector-connection-pool"; // NOI18N
     public static final String ADMINOBJECT_RESOURCE = "admin-object"; // NOI18N
-    
+
+    public static final String JAVAMAIL = "JAVAMAIL"; // NOI18N
+    public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -323,5 +326,5 @@ public interface GlassfishModule {
      * @param listener listener to remove.
      */
     public void removeChangeListener(ChangeListener listener);
-
+    
 }

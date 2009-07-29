@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEditorCookie;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -107,7 +109,30 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         x = fs.findResource("x");
         assertNotNull(x);
         assertEquals("more stuff", TestBase.slurp(x));
-        // XXX check that using a nbres: or nbresloc: URL protocol works here too (if we specify a classpath)
+    }
+
+    // check that nbres: and nbresloc: URL protocols work here too (with a classpath)
+    public void testNBResLocURL() throws Exception {
+        Map<String, String> files = new HashMap<String, String>();
+        files.put("org/test/x.txt", "stuff");
+        files.put("org/test/resources/y.txt", "more stuff");
+        Layer orig = new Layer("<file name='x' url='nbres:/org/test/x.txt'/><file name='y' url='nbresloc:/org/test/resources/y.txt'/>", files);
+        FileObject orgTest = FileUtil.createFolder(new File(orig.folder, "org/test"));
+        FileObject lf = orig.f.copy(orgTest, "layer", "xml");
+        SavableTreeEditorCookie cookie = LayerUtils.cookieForFile(lf);
+        FileSystem fs = new WritableXMLFileSystem(lf.getURL(), cookie, 
+                ClassPathSupport.createClassPath(new FileObject[] { FileUtil.toFileObject(orig.folder) } ));
+        FileObject x = fs.findResource("x");
+        assertNotNull(x);
+        assertTrue(x.isData());
+        assertEquals(5L, x.getSize());
+        assertEquals("stuff", TestBase.slurp(x));
+
+        FileObject y = fs.findResource("y");
+        assertNotNull(y);
+        assertTrue(y.isData());
+        assertEquals(10L, y.getSize());
+        assertEquals("more stuff", TestBase.slurp(y));
     }
 
     /** #150902 - test spaces in url attribute are escaped to get valid URL. */
@@ -385,7 +410,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
 
         Object value = x.getAttribute("bv");
-        // not working:
+        // not working, localized attrs implemented only in merged layer FS, see BadgingSupport:
         //assertEquals("value is returned localized", "Hello", value);
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);
@@ -432,7 +457,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
 
         Object value = x.getAttribute("bv");
-        // not working:
+        // not working, localized attrs implemented only in merged layer FS, see BadgingSupport:
         //assertEquals("value is returned localized", "Hello", value);
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);

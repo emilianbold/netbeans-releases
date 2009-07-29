@@ -57,7 +57,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
@@ -341,7 +341,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         Project p = J2eeProjectSupport.getProject(new File(prjRoot), ".");
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
                 "Web", "Servlet");
-        NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
+        NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 servletName, servletPkg, null);
         nop.finish();
 
@@ -370,7 +370,7 @@ public class NewFileWizardsTest extends JellyTestCase {
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
-        NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
+        NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 ejbName, ejbPkg, srcRoot);
         if (type.equals("Message-Driven Bean")) {
             new JButtonOperator(nop, "Add").pushNoBlock();
@@ -434,7 +434,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             category = "Web";
         }
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
-        NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
+        NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 name, pkg, srcRoot);
         nop.finish();
         List<File> files = new ArrayList<File>(1);
@@ -473,7 +473,7 @@ public class NewFileWizardsTest extends JellyTestCase {
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
                 "Persistence", "Entity Class");
-        NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
+        NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 name, pkg, srcRoot);
         nop.finish();
         List<File> files = new ArrayList<File>();

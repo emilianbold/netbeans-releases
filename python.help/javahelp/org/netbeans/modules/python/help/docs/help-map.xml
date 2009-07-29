@@ -8,7 +8,7 @@ and open the template in the editor.
     <mapID target="org.netbeans.modules.python.help.about" url="help-about.html"/>
      <mapID target="org.netbeans.modules.python.help.getstarted" url="help-get_started.html"/>
      <mapID target="org.netbeans.modules.python.help.run" url="help-run.html"/>
-     <mapID target="org.netbeans.modules.python.help.platforms" url="help-platforms.html"/>
+     <mapID target="org.netbeans.modules.python.platform.panels.PythonPlatformPanel" url="help-platforms.html"/>
      <mapID target="org.netbeans.modules.python.help.pyconsole" url="help-pyconsole.html"/>
      <mapID target="org.netbeans.modules.python.help.pydebug" url="help-pydebug.html"/>
      

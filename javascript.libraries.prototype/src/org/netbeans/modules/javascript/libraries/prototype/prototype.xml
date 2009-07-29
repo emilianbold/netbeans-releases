@@ -50,8 +50,4 @@ made subject to such option by the copyright holder.
         <type>scriptpath</type>
 	<resource>jar:nbinst:///modules/ext/javascript/prototype-1.6.0.3.zip!/</resource>
     </volume>
-    <!-- volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
-    </volume -->
 </library>

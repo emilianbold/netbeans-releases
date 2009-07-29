@@ -53,21 +53,21 @@ public final class FileObjectIndexable implements IndexableImpl {
 
     private final FileObject root;
     private final String relativePath;
-    private final String mimeType;
 
     private Object url;
+    private String mimeType;
+    private FileObject file;
 
     public FileObjectIndexable (FileObject root, FileObject file) {
-        this(root, FileUtil.getRelativePath(root, file), file.getMIMEType());
+        this(root, FileUtil.getRelativePath(root, file));
+        this.file = file;
     }
 
-    public FileObjectIndexable (FileObject root, String relativePath, String mimeType) {
+    public FileObjectIndexable (FileObject root, String relativePath) {
         Parameters.notNull("root", root); //NOI18N
         Parameters.notNull("relativePath", relativePath); //NOI18N
-        Parameters.notNull("mimeType", mimeType); //NOI18N
         this.root = root;
         this.relativePath = relativePath;
-        this.mimeType = mimeType;
     }
 
 //    public long getLastModified() {
@@ -93,9 +93,9 @@ public final class FileObjectIndexable implements IndexableImpl {
     public URL getURL() {
         if (url == null) {
             try {
-                FileObject file = root.getFileObject(relativePath);
-                if (file != null) {
-                    url = file.getURL();
+                FileObject f = getFile();
+                if (f != null) {
+                    url = f.getURL();
                 }
             } catch (FileStateInvalidException ex) {
                 url = ex;
@@ -106,7 +106,21 @@ public final class FileObjectIndexable implements IndexableImpl {
     }
 
     public String getMimeType() {
-        return mimeType;
+        return mimeType == null ? "content/unknown" : mimeType;
+    }
+
+    public boolean isTypeOf(String mimeType) {
+        Parameters.notNull("mimeType", mimeType); //NOI18N
+        if (this.mimeType == null) {
+            FileObject f = getFile();
+            if (f != null) {
+                String mt = FileUtil.getMIMEType(f, mimeType);
+                if (mt != null && !mt.equals("content/unknown")) {
+                    this.mimeType = mt;
+                }
+            }
+        }
+        return this.mimeType == null ? false : this.mimeType.equals(mimeType);
     }
 
 //    public InputStream openInputStream() throws IOException {
@@ -142,6 +156,13 @@ public final class FileObjectIndexable implements IndexableImpl {
     @Override
     public String toString() {
         return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + toURL(root) + "/" + getRelativePath() + "]"; //NOI18N
+    }
+
+    private FileObject getFile() {
+        if (file == null) {
+            file = root.getFileObject(relativePath);
+        }
+        return file == null ? null : file.isValid() ? file : null;
     }
 
     private static String toURL(FileObject f) {

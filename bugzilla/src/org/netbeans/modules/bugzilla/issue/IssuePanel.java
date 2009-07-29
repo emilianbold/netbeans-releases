@@ -1911,7 +1911,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     }
 
-    private class PriorityRenderer extends DefaultListCellRenderer {
+    private static class PriorityRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

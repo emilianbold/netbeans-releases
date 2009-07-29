@@ -84,7 +84,7 @@ final class ComponentLine {
     }
 
     private Font createFont(Font attrFont, Font defaultFont) {
-        if (!Config.getDefault().isUseFont()) {
+        if ( !Config.getDefault().isUseFont()) {
             return defaultFont;
         }
         String name = defaultFont.getName();
@@ -269,7 +269,8 @@ final class ComponentLine {
             }
             if (font.isItalic()) {
                 style += " italic"; // NOI18N
-            } else {
+            }
+            else {
                 style += " plain"; // NOI18N
             }
             return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N

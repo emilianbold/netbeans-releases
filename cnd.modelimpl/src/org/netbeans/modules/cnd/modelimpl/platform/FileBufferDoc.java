@@ -67,7 +67,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private static final boolean TRACE = false;
     
     private final Document doc;
-    private EventListenerList listeners = new EventListenerList();
+    private final EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
     private long lastModified;
     private final ChangedSegment changedSegment;

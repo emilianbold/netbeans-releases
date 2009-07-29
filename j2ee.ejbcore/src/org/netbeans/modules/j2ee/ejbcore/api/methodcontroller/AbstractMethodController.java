@@ -434,7 +434,35 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }
         return resultList;
     }
-    
+
+    public final void delete(MethodModel classMethod) {
+        if (hasLocal()){
+            ClassMethodPair classMethodPair_local = getInterface(classMethod, true);
+            if (classMethodPair_local != null) {
+                try {
+                    removeMethodFromClass(classMethodPair_local.getClassName(), classMethodPair_local.getMethodModel());
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }
+        if (hasRemote()){
+            ClassMethodPair classMethodPair_remote = getInterface(classMethod, false);
+            if (classMethodPair_remote != null) {
+                try {
+                    removeMethodFromClass(classMethodPair_remote.getClassName(), classMethodPair_remote.getMethodModel());
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }
+        try {
+            removeMethodFromClass(getBeanClass(), classMethod);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
     @Override
     public final void delete(MethodModel interfaceMethod, boolean local) {
         List<MethodModel> impls = getImplementation(interfaceMethod);

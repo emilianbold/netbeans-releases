@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
         <file name="ejb-jar-2.0.xml" url="ejb-jar-2.0.xml"/>
         <file name="ejb-jar-2.1.xml" url="ejb-jar-2.1.xml"/>
         <file name="ejb-jar-3.0.xml" url="ejb-jar-3.0.xml"/>
+        <file name="ejb-jar-3.1.xml" url="ejb-jar-3.1.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
 

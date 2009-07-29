@@ -140,12 +140,41 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
+        <folder name="PHPUnit">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+            <attr name="position" intvalue="30"/>
+            <!-- intentionally not in new file wizard, only in Tools > Templates -->
+            <attr name="templateCategory" stringvalue="PHPUnit"/>
+            <file name="PHPUnitBootstrap" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitBootstrap.php">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitBootstrapDescription.html"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="PHPUnitConfiguration.xml" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitConfiguration.xml">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitConfigurationDescription.html"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
     </folder>
     <folder name="OptionsDialog">
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
             <attr name="position" intvalue="650"/>
         </file>
-    </folder>
+        <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
+            <attr name="position" intvalue="900"/>
+            <file name="General.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpGeneralAdvancedOptions"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
@@ -160,6 +189,14 @@ made subject to such option by the copyright holder.
                 <file name="PhpIncludePath.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="IgnorePath.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createIgnorePath"/>
+                    <attr name="position" intvalue="310"/>
+                </file>
+                <file name="PhpUnit.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpUnit"/>
+                    <attr name="position" intvalue="320"/>
                 </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
@@ -285,13 +322,15 @@ made subject to such option by the copyright holder.
             <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="700"/>
             <file name="General">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/general/.*|config/Preferences/org/netbeans/modules/php/project/general.properties|config/Editors/text/x-php5/.*"/>
-                <attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/php/project/private/.*|config/Preferences/org/netbeans/modules/php/project/private.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/general(\.properties|/.*)|config/Editors/text/x-php5/.*"/>
+                <attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/php/project/private(\.properties|/.*)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.General.displayName"/>
+                <attr name="position" intvalue="100"/>
             </file>
             <file name="Remote">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/RemoteConnections/.*|config/Preferences/org/netbeans/modules/php/project/RemoteConnections.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/RemoteConnections(\.properties|/.*)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Remote.displayName"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>

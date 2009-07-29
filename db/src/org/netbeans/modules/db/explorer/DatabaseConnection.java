@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.ObjectStreamException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -267,10 +267,33 @@ public class DatabaseConnection implements DBConnection {
     public MetadataModel getMetadataModel() {
         return metadataModel;
     }
+
+    public static boolean isVitalConnection(Connection conn, DatabaseConnection dbconn) {
+        if (conn == null) {
+            return false;
+        }
+        try {
+            SQLWarning warnings = conn.getWarnings();
+            if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
+                LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
+            }
+            return ! conn.isClosed();
+        } catch (SQLException ex) {
+            if (dbconn != null) {
+                try {
+                    dbconn.disconnect();
+                } catch (DatabaseException ex1) {
+                    LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex1.getLocalizedMessage(), ex1);
+                }
+            }
+            LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex.getLocalizedMessage(), ex);
+            return false;
+        }
+    }
     
     public static boolean test(Connection conn, String connectionName) {
         try {
-            if (conn == null || conn.isClosed()) {
+            if (! isVitalConnection(conn, null)) {
                 return false;
             }
 

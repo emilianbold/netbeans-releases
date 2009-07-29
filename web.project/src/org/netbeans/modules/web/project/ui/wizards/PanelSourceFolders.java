@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPa
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

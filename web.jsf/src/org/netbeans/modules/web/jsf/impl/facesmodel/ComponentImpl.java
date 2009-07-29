@@ -150,7 +150,6 @@ class ComponentImpl extends IdentifiableDescriptionGroupImpl implements
      * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
      */
     public String getComponentClass() {
-     // TODO : add possible annotation information via JsfModel
         return getChildElementText(
                 JSFConfigQNames.COMPONENT_CLASS.getQName(getNamespaceURI()));
     }
@@ -159,7 +158,6 @@ class ComponentImpl extends IdentifiableDescriptionGroupImpl implements
      * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
      */
     public String getComponentType() {
-     // TODO : add possible annotation information via JsfModel
         return getChildElementText(
                 JSFConfigQNames.COMPONENT_TYPE.getQName(getNamespaceURI()));
     }

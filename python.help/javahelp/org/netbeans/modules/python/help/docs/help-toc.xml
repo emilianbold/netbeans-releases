@@ -8,11 +8,11 @@ and open the template in the editor.
     <tocitem text="Python Development" target="org.netbeans.modules.python.help.about">
         <tocitem text="About Python Development in NetBeans" target="org.netbeans.modules.python.help.about"/>
         <tocitem text="Getting Started" target="org.netbeans.modules.python.help.getstarted">
-            <tocitem text="New Python Application" target="org.netbeans.modules.python.help.getstarted"/>
+            <tocitem text="New Python Applications" target="org.netbeans.modules.python.help.getstarted"/>
 
             <tocitem text="Runnning Python Applications" target="org.netbeans.modules.python.help.run"/>
             
-            <tocitem text="Python Platforms" target="org.netbeans.modules.python.help.platforms"/>
+            <tocitem text="Python Platforms" target="org.netbeans.modules.python.platform.panels.PythonPlatformPanel"/>
            
         
             <tocitem text="Using Python Interactive Console" target="org.netbeans.modules.python.help.pyconsole"/>

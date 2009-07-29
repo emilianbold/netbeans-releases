@@ -320,16 +320,25 @@ public final class Log extends Handler {
     static Throwable wrapWithAddendum(Throwable ex, String addendum) {
         if (ex instanceof AssertionFailedError) {
             AssertionFailedError ne = new AssertionFailedError(combineMessages(ex, addendum));
+            if (ex.getCause() != null) {
+                ne.initCause(ex.getCause());
+            }
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }
         if (ex instanceof AssertionError) { // preferred in JUnit 4
             AssertionError ne = new AssertionError(combineMessages(ex, addendum));
+            if (ex.getCause() != null) {
+                ne.initCause(ex.getCause());
+            }
             ne.setStackTrace(ex.getStackTrace());
             return ne;
         }
         if (ex instanceof IOException) {//#66208
             IOException ne = new IOException(combineMessages(ex, addendum));
+            if (ex.getCause() != null) {
+                ne.initCause(ex.getCause());
+            }
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }

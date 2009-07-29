@@ -101,12 +101,30 @@ is the proper place.
         <apidef name="extexecution_api">External Execution API</apidef>
         <apidef name="extexecution_api_input">External Execution Input API</apidef>
         <apidef name="extexecution_api_print">External Execution Input Printing API</apidef>
+        <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change>
+            <api name="extexecution_spi_destroy"/>
+            <summary>New SPI for improved external process termination</summary>
+            <version major="1" minor="16"/>
+            <date day="1" month="7" year="2009"/>
+            <author login="mkleint"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added API/SPI support to kill the whole process tree on
+                Process.destroy().
+            </description>
+            <class package="org.netbeans.api.extexecution" name="ExternalProcessSupport"/>
+            <class package="org.netbeans.spi.extexecution.destroy" name="ProcessDestroyPerformer"/>
+            <issue number="138116"/>
+        </change>
+
         <change>
             <api name="extexecution_api"/>
             <summary>Configurable charset for process streams</summary>

@@ -203,7 +203,7 @@ public abstract class NbAction implements ContextAwareAction {
      * no context sensitivity whatsoever).
      * It should be overridden if the subclass is actually context sensitive.
      * @param actionContext
-     * @return
+     * @return this
      */
     protected NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return this;
@@ -256,7 +256,7 @@ public abstract class NbAction implements ContextAwareAction {
      * Same as merge (actions, false);
      *
      * @param actions An array of context actions
-     * @return
+     * @return An action which merges the passed actions
      */
     public static NbAction merge (NbAction... actions) {
         return new MergeAction(actions);

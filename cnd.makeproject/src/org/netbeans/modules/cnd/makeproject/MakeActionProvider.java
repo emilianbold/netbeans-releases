@@ -1224,14 +1224,14 @@ public class MakeActionProvider implements ActionProvider {
                 model.setCompilerSetName(null); // means don't change
                 model.setSelectedCompilerSetName(csname);
                 model.setMakeRequired(true);
-                model.setGdbRequired(false);
+                model.setDebuggerRequired(false);
                 model.setCRequired(cRequired);
                 model.setCppRequired(cppRequired);
                 model.setFortranRequired(fRequired);
                 model.setAsRequired(asRequired);
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
-                model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
+                model.setEnableRequiredCompilerCB(conf.isMakefileConfiguration());
                 if (bt.initBuildTools(model, errs) && pd.okToChange()) {
                     String name = model.getSelectedCompilerSetName();
                     CppSettings.getDefault().setCompilerSetName(name);

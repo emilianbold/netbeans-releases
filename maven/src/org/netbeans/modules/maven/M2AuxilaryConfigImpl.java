@@ -62,6 +62,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,7 +81,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
     private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
     private static final int SAVING_DELAY = 100;
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
     private Date timeStamp = new Date(0);
@@ -224,18 +225,16 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     try {
                         doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
                     } catch (SAXException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
+                        if (config.getSize() == 0) {
+                            //something got wrong in the past..
+                            doc = createNewSharedDocument();
+                        }
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "IO Error with " + config.getPath(), ex);
                     }
                 } else {
-                    String element = "project-shared-configuration"; // NOI18N
-                    doc = XMLUtil.createDocument(element, null, null, null);
-                    doc.getDocumentElement().appendChild(doc.createComment(
-                            "\nThis file contains additional configuration written by modules in the NetBeans IDE.\n" + //NOI18N will be part of a file on disk, don't translate
-                            "The configuration is intended to be shared among all the users of project and\n" +//NOI18N
-                            "therefore it is assumed to be part of version control checkout.\n" +//NOI18N
-                            "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));//NOI18N
+                    doc = createNewSharedDocument();
                 }
             }
         } else {
@@ -260,20 +259,20 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 doc.getDocumentElement().removeChild(el);
             }
             doc.getDocumentElement().appendChild(doc.importNode(fragment, true));
-        }
-        if (shared) {
-            if (scheduledDocument == null) {
-                scheduledDocument = doc;
-            }
-            savingTask.schedule(SAVING_DELAY);
 
-        } else {
-            try {
-                StringOutputStream wr = new StringOutputStream();
-                XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            if (shared) {
+                if (scheduledDocument == null) {
+                    scheduledDocument = doc;
+                }
+                savingTask.schedule(SAVING_DELAY);
+            } else {
+                try {
+                    StringOutputStream wr = new StringOutputStream();
+                    XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
+                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 
@@ -288,11 +287,18 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             } else {
                 if (config != null) {
                     try {
-                        doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
-                    } catch (SAXException ex) {
-                        Exceptions.printStackTrace(ex);
+                        try {
+                            doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                        } catch (SAXException ex) {
+                            Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
+                            if (config.getSize() == 0) {
+                                //just delete the empty file, something got wrong a while back..
+                                config.delete();
+                            }
+                            return true;
+                        }
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "IO Error with " + config.getPath(), ex);
                     }
                 } else {
                     return false;
@@ -317,19 +323,19 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (el != null) {
                 doc.getDocumentElement().removeChild(el);
             }
-        }
-        if (shared) {
-            if (scheduledDocument == null) {
-                scheduledDocument = doc;
-            }
-            savingTask.schedule(SAVING_DELAY);
-        } else {
-            try {
-                StringOutputStream wr = new StringOutputStream();
-                XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (shared) {
+                if (scheduledDocument == null) {
+                    scheduledDocument = doc;
+                }
+                savingTask.schedule(SAVING_DELAY);
+            } else {
+                try {
+                    StringOutputStream wr = new StringOutputStream();
+                    XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
+                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         return true;
@@ -375,5 +381,16 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         }
+    }
+
+    private Document createNewSharedDocument() throws DOMException {
+        String element = "project-shared-configuration";
+        Document doc = XMLUtil.createDocument(element, null, null, null);
+        doc.getDocumentElement().appendChild(doc.createComment(
+                "\nThis file contains additional configuration written by modules in the NetBeans IDE.\n" +
+                "The configuration is intended to be shared among all the users of project and\n" +
+                "therefore it is assumed to be part of version control checkout.\n" +
+                "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));
+        return doc;
     }
 }

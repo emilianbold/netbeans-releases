@@ -42,9 +42,8 @@ made subject to such option by the copyright holder.
 -->
 
 
-<project name="Design-Time_API_Library" default="default" basedir=".">
+<project name="visualweb.designtime/library" default="default" basedir=".">
 
-    <description>Builds, tests, and runs the project Design-Time API Library.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="../../nbbuild/templates/projectized.xml"/>
     

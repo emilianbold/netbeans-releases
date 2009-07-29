@@ -50,9 +50,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -303,7 +301,6 @@ public final class IOWindow implements IOContainer.Provider {
             if (cb != null) {
                 tabToCb.put(comp, cb);
             }
-            setFocusable(false);
             if (singleTab != null) {
                 // only single tab, remove it from TopComp. and add it to tabbed pane
                 assert pane.getParent() == null;
@@ -325,6 +322,7 @@ public final class IOWindow implements IOContainer.Provider {
                 // nothing yet
                 assert pane.getParent() == null;
                 assert singleTab == null;
+                setFocusable(false);
                 singleTab = comp;
                 add(comp);
                 updateWindowName(singleTab.getName());
@@ -355,7 +353,7 @@ public final class IOWindow implements IOContainer.Provider {
                 }
                 revalidate();
             }
-            CallBacks cb = tabToCb.get(comp);
+            CallBacks cb = tabToCb.remove(comp);
             if (cb != null) {
                 cb.closed();
             }
@@ -475,7 +473,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (name != null) {
                 String newName = NbBundle.getMessage(IOWindowImpl.class, "FMT_IO_WINDOW", new Object[]{winName, name}); //NOI18N
                 if (newName.indexOf("<html>") != -1) {
-                    newName = "<html>" + Utilities.replaceString(newName, "<html>", ""); //NOI18N
+                    newName = "<html>" + newName.replace("<html>", ""); //NOI18N
                     setHtmlDisplayName(newName); //NOI18N
                     setToolTipText(newName);
                 } else {

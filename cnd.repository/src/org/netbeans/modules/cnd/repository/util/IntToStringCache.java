@@ -120,7 +120,8 @@ public class IntToStringCache {
      * This is a simple cache that keeps last found index by string.
      * Cache reduces method consuming time in 10 times (on huge projects).
      */
-    private final Object oneItemCacheLock = new Object(); // Cache lock
+    private static final class Lock {}
+    private final Object oneItemCacheLock = new Lock();
     private String oneItemCacheString; // Cached last string
     private int oneItemCacheInt; // Cached last index
     

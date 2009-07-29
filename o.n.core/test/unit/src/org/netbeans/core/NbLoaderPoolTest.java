@@ -43,6 +43,7 @@ package org.netbeans.core;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.actions.*;
 import org.openide.loaders.DataLoader;
@@ -55,7 +56,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Jaroslav Tulach
  */
-public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
+public class NbLoaderPoolTest extends NbTestCase {
     private OldStyleLoader oldL;
     private NewStyleLoader newL;
 
@@ -63,7 +64,7 @@ public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
         super (testName);
     }
 
-    protected void setUp () throws java.lang.Exception {
+    protected @Override void setUp() throws Exception {
         NbLoaderPool.installationFinished();
 
         oldL = DataLoader.getLoader(OldStyleLoader.class);
@@ -73,7 +74,7 @@ public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
         NbLoaderPool.waitFinished();
     }
 
-    protected void tearDown () throws java.lang.Exception {
+    protected @Override void tearDown() throws Exception {
         NbLoaderPool.remove(oldL);
         NbLoaderPool.remove(newL);
     }
@@ -123,7 +124,8 @@ public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
             throw new IOException ("Not implemented");
         }
 
-        protected SystemAction[] defaultActions () {
+        @SuppressWarnings("deprecation")
+        protected @Override SystemAction[] defaultActions() {
             defaultActionsCalled = true;
             SystemAction[] retValue;
             
@@ -135,8 +137,8 @@ public class NbLoaderPoolTest extends org.netbeans.junit.NbTestCase {
     }
     
     public static final class NewStyleLoader extends OldStyleLoader {
-        protected String actionsContext () {
-            return "Loaders/IamTheNewBeggining";
+        protected @Override String actionsContext() {
+            return "Loaders/IamTheNewBeginning";
         }
     }
 }

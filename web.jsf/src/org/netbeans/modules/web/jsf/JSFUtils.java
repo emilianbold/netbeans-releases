@@ -80,8 +80,8 @@ public class JSFUtils {
     
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
-    public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.view.Location"; //NOI18N
-    public static final String MYFACES_SPAECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
+    public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
+    public static final String MYFACES_SPECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
 
     //constants for web.xml
     protected static final String FACELETS_SKIPCOMMNETS = "facelets.SKIP_COMMENTS";

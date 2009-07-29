@@ -38,24 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.dd.api.web;
 
 /**
  * Interface for WebFragment element.<br>
  * The WebFragment object is the root of bean graph generated<br>
  * for deployment descriptor(web-fragment.xml) file.<br>
- * For getting the root (WebFragment object) use the {@link DDProvider#getDDRoot} method.
+ * For getting the root (WebFragment object) use the {@link WebFragmentProvider#getDDRoot} method.
  *
  *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface unless you are a DD API provider!</em></font></b>
  *</p>
  */
+public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface, WebApp {
 
-// For now, it is exacly the same interface as WebApp.
-// TODO: When specification of Java EE 6 is final, this file should be
-//       modified according to the specification.
+    // For now, the interface inherits from WebApp interface
+    // Later, it can be changed to separate interface
+    // (It will require rewriting of a lot of code -- all GUI editors, etc.)
 
-public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface,
-        WebApp
-{
+
+    // Methods specific for WebFragment
+
+	RelativeOrdering newRelativeOrdering();
+	RelativeOrdering[] getOrdering();
+	void setOrdering(RelativeOrdering[] value);
+
 }

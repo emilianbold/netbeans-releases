@@ -95,59 +95,67 @@ public class DataModel extends AbstractTableModel
         return getValue((String)ColumnItem.getColumnNames().elementAt(col), row);
     }
 
-    public void setValue(Object val, String pname, int row)
-    {
-        if( row < getRowCount() ) {
+    public void setValue(Object val, String pname, int row) {
+        if (row < getRowCount()) {
             int srow = row, erow = row;
             ColumnItem xcol = (ColumnItem)data.elementAt(row);
             xcol.setProperty(pname, val);
-            if (pname.equals(ColumnItem.PRIMARY_KEY) && val.equals(Boolean.TRUE)) {
-
-                if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-                if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
-                if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
-                /*for (int i=0; i<data.size();i++) {
-                    ColumnItem eitem = (ColumnItem)data.elementAt(i);
-                    if (i!=row && eitem.isPrimaryKey()) {
-                        eitem.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                        if (i<row) srow = i; else erow = i;
+            if (pname.equals(ColumnItem.PRIMARY_KEY)) {
+                if (val.equals(Boolean.TRUE)) {
+                    if (xcol.allowsNull()) {
+                        xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
                     }
-                }*/
-                primaryKeys.add(xcol);
-            }
-            
-            if (pname.equals(ColumnItem.PRIMARY_KEY) && val.equals(Boolean.FALSE)) {
-                primaryKeys.remove((ColumnItem)data.elementAt(row));
+                    if (!xcol.isIndexed()) {
+                        xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
+                    }
+                    if (!xcol.isUnique()) {
+                        xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
+                    }
+                    /*for (int i=0; i<data.size();i++) {
+                        ColumnItem eitem = (ColumnItem)data.elementAt(i);
+                        if (i!=row && eitem.isPrimaryKey()) {
+                            eitem.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                        if (i<row) srow = i; else erow = i;
+                        }
+                    }*/
+                    primaryKeys.add(xcol);
+                } else {
+                    primaryKeys.remove(xcol);
+                }
             }
 
             if (pname.equals(ColumnItem.NULLABLE)) {
                 if (val.equals(Boolean.TRUE)) {
-                    //xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
-                    //xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
-                    xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                    primaryKeys.remove((ColumnItem)data.elementAt(row));
+                    if (xcol.isPrimaryKey()) {
+                        xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    }
+                    // do not reset unique and index - unique column can contain null values
                 }
             }
 
             if (pname.equals(ColumnItem.INDEX)) {
                 if (val.equals(Boolean.FALSE)) {
-                    if (xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
+                    if (xcol.isUnique()) {
+                        xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
+                    }
                     if (xcol.isPrimaryKey()) {
                         xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                        primaryKeys.remove((ColumnItem)data.elementAt(row));
                     }
-                    //xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
-                    //xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                } //else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                }
             }
 
             if (pname.equals(ColumnItem.UNIQUE)) {
                 if (val.equals(Boolean.TRUE)) {
-                    if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
+                    if (!xcol.isIndexed()) {
+                        xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
+                    }
                 } else {
-                    xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                    primaryKeys.remove((ColumnItem)data.elementAt(row));
-                    xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+                    if (xcol.isPrimaryKey()) {
+                        xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    }
+                    if (xcol.isIndexed()) {
+                        xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+                    }
                 }
             }
 
@@ -176,12 +184,6 @@ public class DataModel extends AbstractTableModel
     public Class getColumnClass(int c)
     {
         return getValueAt(0,c).getClass();
-    }
-
-    @Override
-    public boolean isCellEditable(int row, int col)
-    {
-        return true;
     }
 
     public boolean isTablePrimaryKey()
@@ -254,5 +256,13 @@ public class DataModel extends AbstractTableModel
         
         
         fireTableRowsDeleted(row, row);
+    }
+
+    /**
+     * Returns ColumnItem with given index.
+     * @param rowIndex The row index of the row to be returned
+     */
+    public ColumnItem getRow(int rowIndex) {
+        return (ColumnItem) data.elementAt(rowIndex);
     }
 }

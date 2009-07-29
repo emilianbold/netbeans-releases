@@ -42,31 +42,24 @@ package org.netbeans.modules.maven.hints.pom;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.model.pom.Build;
-import org.netbeans.modules.maven.model.pom.BuildBase;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Parent;
-import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -123,8 +116,13 @@ public class ParentVersionError implements POMErrorFixProvider {
                 if (parentPrj != null) {
                     NbMavenProject nbprj = parentPrj.getLookup().lookup(NbMavenProject.class);
                     if (nbprj != null) { //do we have some non-maven project maybe?
-                        currentVersion = nbprj.getMavenProject().getVersion();
-                        useSources = true;
+                        MavenProject mav = nbprj.getMavenProject();
+                        //#167711 check the coordinates to filter out parents in non-default location without relative-path elemnt
+                        if (par.getGroupId().equals(mav.getGroupId()) &&
+                            par.getArtifactId().equals(mav.getArtifactId())) {
+                            currentVersion = mav.getVersion();
+                            usedSources = true;
+                        }
                     }
                 }
             } catch (IOException ex) {
@@ -133,7 +131,7 @@ public class ParentVersionError implements POMErrorFixProvider {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (!useSources || currentVersion == null) {
+        if ((!useSources || currentVersion == null) && declaredVersion != null) {
             List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId());
             ArtifactVersion currentAV = new DefaultArtifactVersion(declaredVersion);
             for (NBVersionInfo info : infos) {

@@ -153,7 +153,7 @@ public class ColonToThen extends RubyAstRule {
             }
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
-            List<HintFix> fixes = new ArrayList<HintFix>(2);
+            List<HintFix> fixes = new ArrayList<HintFix>(3);
             fixes.add(new ColonFix(doc, offset, INSERT_THEN));
             fixes.add(new ColonFix(doc, offset, INSERT_SEMICOLON));
             fixes.add(new ColonFix(doc, offset, INSERT_NEWLINE));

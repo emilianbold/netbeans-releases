@@ -39,6 +39,8 @@
 
 package org.netbeans.core.startup;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.CLIHandler;
 import org.netbeans.TopSecurityManager;
@@ -85,6 +87,27 @@ public class ModuleLifecycleManager extends LifecycleManager {
             }
             if (System.getProperty("netbeans.close.no.exit") == null) {
                 TopSecurityManager.exit(0);
+            }
+        }
+    }
+
+    public @Override void markForRestart() throws UnsupportedOperationException {
+        try {
+            Class.forName("javax.jnlp.BasicService"); // NOI18N
+            throw new UnsupportedOperationException("cannot restart in JNLP mode"); // NOI18N
+        } catch (ClassNotFoundException x) {
+            // OK, running in normal mode
+        }
+        String userdir = System.getProperty("netbeans.user"); // NOI18N
+        if (userdir == null) {
+            throw new UnsupportedOperationException("no userdir"); // NOI18N
+        }
+        File restartFile = new File(userdir, "var/restart"); // NOI18N
+        if (!restartFile.exists()) {
+            try {
+                restartFile.createNewFile();
+            } catch (IOException x) {
+                throw new UnsupportedOperationException(x);
             }
         }
     }

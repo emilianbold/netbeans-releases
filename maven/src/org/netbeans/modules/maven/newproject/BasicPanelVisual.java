@@ -114,6 +114,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     
     private ArchetypeWizardUtils ngprovider;
 
+    private static final String ILLEGAL_CHARS = "*/\\|:(){}";
+
     /** Creates new form PanelProjectLocationVisual */
     public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
@@ -437,6 +439,15 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             wizardDescriptor.putProperty(ERROR_MSG,
                     NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_has_slash"));
             return false;
+        }
+        
+        for (int i = 0; i < ILLEGAL_CHARS.length(); i++) {
+            if(projName.indexOf(ILLEGAL_CHARS.charAt(i)) != -1) {
+                wizardDescriptor.putProperty(ERROR_MSG,
+                        NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_illegal",
+                            ILLEGAL_CHARS.charAt(i)));
+                return false;
+            }
         }
 
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());

@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -60,14 +59,18 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.modules.php.project.util.PhpUnit.Files;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -91,8 +94,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
     private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
-    private static final String INCLUDE_PATH_TPL = "ini_set(\"include_path\", %sini_get(\"include_path\"));"; // NOI18N
-    private static final String INCLUDE_PATH_PART = "\"%s\".PATH_SEPARATOR."; // NOI18N
+    private static final String REQUIRE_ONCE_TPL = "require_once '%s';"; // NOI18N
 
     private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
             = new ExecutionDescriptor().controllable(false).frontWindow(false);
@@ -135,7 +137,14 @@ public final class CreateTestsAction extends NodeAction {
 
         RUNNABLES.add(new Runnable() {
             public void run() {
-                generateTests(activatedNodes, phpUnit, phpProject);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
+                handle.start();
+                try {
+                    LifecycleManager.getDefault().saveAll();
+                    generateTests(activatedNodes, phpUnit, phpProject);
+                } finally {
+                    handle.finish();
+                }
             }
         });
         TASK.schedule(0);
@@ -192,30 +201,34 @@ public final class CreateTestsAction extends NodeAction {
     void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
         assert phpProject != null;
 
-        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
         final Set<FileObject> proceeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
-        try {
-            for (FileObject fo : files) {
-                generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
-                Enumeration<? extends FileObject> children = fo.getChildren(true);
-                while (children.hasMoreElements()) {
-                    generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                try {
+                    for (FileObject fo : files) {
+                        generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
+                        Enumeration<? extends FileObject> children = fo.getChildren(true);
+                        while (children.hasMoreElements()) {
+                            generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+                        }
+                    }
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    UiUtils.processExecutionException(ex);
                 }
             }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            CommandUtils.processExecutionException(ex);
-        }
+        });
 
         if (!failed.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                     NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
@@ -246,12 +259,15 @@ public final class CreateTestsAction extends NodeAction {
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !CommandUtils.isPhpFile(sourceFo)
-                || proceeded.contains(sourceFo)) {
+                || proceeded.contains(sourceFo)
+                || CommandUtils.isUnderTests(phpProject, sourceFo, false)
+                || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)) {
             return;
         }
         proceeded.add(sourceFo);
 
         final String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        final File sourceFile = FileUtil.toFile(sourceFo);
         final File parent = FileUtil.toFile(sourceFo.getParent());
 
         // find out the name of a class(es)
@@ -260,7 +276,7 @@ public final class CreateTestsAction extends NodeAction {
         Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
         if (classNames.size() == 0) {
             // run phpunit in order to have some output
-            generateSkeleton(phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
+            generateSkeleton(phpProject, phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
             failed.add(sourceFo);
             return;
         }
@@ -274,14 +290,14 @@ public final class CreateTestsAction extends NodeAction {
             final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, className, sourceFo, parent, paramSkeleton);
+            Future<Integer> result = generateSkeleton(phpProject, phpUnit, className, sourceFo, parent, paramSkeleton);
             try {
                 if (result.get() != 0) {
                     // test not generated
                     failed.add(sourceFo);
                     continue;
                 }
-                File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, getTestDirectory(phpProject));
+                File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
                 if (moved == null) {
                     failed.add(sourceFo);
                 } else {
@@ -293,10 +309,24 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private Future<Integer> generateSkeleton(PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
+    private Future<Integer> generateSkeleton(PhpProject project, PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(parent)
+                .workingDirectory(parent);
+
+        Files files = phpUnit.getFiles(project, false);
+        if (files.bootstrap != null) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                    .addArgument(files.bootstrap.getAbsolutePath());
+        }
+        if (files.configuration != null) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_CONFIGURATION)
+                    .addArgument(files.configuration.getAbsolutePath());
+        }
+
+        externalProcessBuilder = externalProcessBuilder
                 .addArgument(paramSkeleton)
                 .addArgument(className)
                 .addArgument(sourceFo.getNameExt());
@@ -328,7 +358,7 @@ public final class CreateTestsAction extends NodeAction {
         return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
     }
 
-    private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File testDirectory) {
+    private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {
         assert generatedFile.isFile() : "Generated files must exist: " + generatedFile;
         assert !testFile.exists() : "Test file cannot exist: " + testFile;
 
@@ -341,27 +371,23 @@ public final class CreateTestsAction extends NodeAction {
             return generatedFile;
         }
 
-        testFile = adjustFileContent(generatedFile, testFile, getIncludePaths(generatedFile, testFile, testDirectory));
+        testFile = adjustFileContent(generatedFile, testFile, sourceFile, PhpUnit.getRequireOnce(testFile, sourceFile));
         if (testFile == null) {
             return null;
         }
         assert testFile.isFile() : "Test file must exist: " + testFile;
+
+        // reformat the file
+        try {
+            PhpProjectUtils.reformatFile(testFile);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        }
+
         return testFile;
     }
 
-    static List<String> getIncludePaths(File generatedFile, File testFile, File testDirectory) {
-        File toFile = generatedFile.getParentFile();
-        List<String> includePaths = new LinkedList<String>();
-        includePaths.add(PropertyUtils.relativizeFile(testDirectory, toFile));
-
-        File parent = testFile.getParentFile();
-        if (!testDirectory.equals(parent)) {
-            includePaths.add(PropertyUtils.relativizeFile(parent, toFile));
-        }
-        return includePaths;
-    }
-
-    private File adjustFileContent(File generatedFile, File testFile, List<String> includePaths) {
+    private File adjustFileContent(File generatedFile, File testFile, File sourceFile, String requireOnce) {
         try {
             // input
             BufferedReader in = new BufferedReader(new FileReader(generatedFile));
@@ -371,19 +397,19 @@ public final class CreateTestsAction extends NodeAction {
                 BufferedWriter out = new BufferedWriter(new FileWriter(testFile));
 
                 try {
-                    // data
-                    StringBuilder sb = new StringBuilder(200);
-                    for (String path : includePaths) {
-                        sb.append(String.format(INCLUDE_PATH_PART, path));
-                    }
+                    // original require generated by phpunit
+                    final String ignore = String.format(REQUIRE_ONCE_TPL, sourceFile.getName());
 
                     String line;
                     boolean written = false;
                     while ((line = in.readLine()) != null) {
+                        if (line.equals(ignore)) {
+                            continue;
+                        }
                         out.write(line);
                         out.newLine();
                         if (!written && PHP_OPEN_TAG.equals(line.trim())) {
-                            out.write(String.format(INCLUDE_PATH_TPL, sb.toString()));
+                            out.write(String.format(REQUIRE_ONCE_TPL, requireOnce).replace("''.", "")); // NOI18N
                             out.newLine();
                             written = true;
                         }

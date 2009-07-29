@@ -13,10 +13,6 @@ class Book {
      */
     public $title;
 
-    /**
-     *
-     * @var Author|null
-     */
     public $author;
 
     private function __construct($title) {

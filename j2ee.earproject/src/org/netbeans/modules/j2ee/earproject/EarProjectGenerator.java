@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
@@ -103,7 +103,9 @@ import org.w3c.dom.Element;
  * @author vince kraemer
  */
 public final class EarProjectGenerator {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(EarProjectGenerator.class.getName());
+
     private static final String DEFAULT_DOC_BASE_FOLDER = "src/conf"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
     private static final String DEFAULT_RESOURCE_FOLDER = "setup"; //NOI18N
@@ -511,18 +513,20 @@ public final class EarProjectGenerator {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
             } else {
-                String newLine = System.getProperty("line.separator");
-                /*StringBuilder sb = new StringBuilder();
-                for (StackTraceElement ste : new RuntimeException().getStackTrace()) {
-                    sb.append("\t");
-                    sb.append(ste.toString());
-                    sb.append(newLine);
-                }*/
-
-                Logger.getLogger("global").log(Level.FINE,
-                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5." + newLine +
-                        "If it\'s *really* needed, set force param to true." + newLine);
+                LOGGER.log(Level.FINE,
+                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5."
+                        + "If it\'s *really* needed, set force param to true.");
             }
+        } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile)) {
+            if (force) {
+                template = FileUtil.getConfigFile(
+                        "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
+            } else {
+                LOGGER.log(Level.FINE,
+                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 6."
+                        + "If it\'s *really* needed, set force param to true.");
+            }
+
         } else {
             assert false : "Unknown j2eeProfile: " + j2eeProfile;
         }

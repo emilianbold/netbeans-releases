@@ -59,7 +59,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -147,14 +149,14 @@ public final class DashboardImpl extends Dashboard {
         userNode.set(login, false);
         model.addRoot(-1, userNode);
 
-        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new ActionListener() {
+        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 clearError(memberProjectsError);
                 refreshMemberProjects();
             }
         });
 
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenProjects"), new ActionListener() {
+        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenProjects"), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
                 refreshProjects();
@@ -307,16 +309,16 @@ public final class DashboardImpl extends Dashboard {
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
-    ActionListener createLoginAction() {
-        return new ActionListener() {
+    Action createLoginAction() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 LoginAction.getDefault().actionPerformed(e);
             }
         };
     }
 
-    private ActionListener createWhatIsKenaiAction() {
-        return new ActionListener() {
+    private Action createWhatIsKenaiAction() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 try {
                     URLDisplayer.getDefault().showURL(

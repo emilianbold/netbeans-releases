@@ -85,7 +85,11 @@ public final class DeletedIndexable implements IndexableImpl {
     }
 
     public String getMimeType() {
-        return null;
+        throw new UnsupportedOperationException("Mimetype related operations are not supported by DeletedIndexable"); //NOI18N
+    }
+
+    public boolean isTypeOf(String mimeType) {
+        throw new UnsupportedOperationException("Mimetype related operations are not supported by DeletedIndexable"); //NOI18N
     }
 
 //    public InputStream openInputStream() throws IOException {

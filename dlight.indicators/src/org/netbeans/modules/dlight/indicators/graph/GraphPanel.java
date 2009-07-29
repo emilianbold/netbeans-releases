@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -45,6 +46,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -62,35 +64,44 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     private final L legend;
     private final JComponent hAxis;
     private final JComponent vAxis;
+    private final JButton button;
     private final JComponent graphPanel;
     private JComponent overlay;
 
-    public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis) {
+    public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis, JButton button) {
         this.graph = graph;
         this.legend = legend;
         this.hAxis = hAxis;
         this.vAxis = vAxis;
-        this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis);
+        this.button = button;
+        this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis, button);
         setOpaque(true); // otherwise background is white
         setMinimumSize(graphPanel.getMinimumSize());
         setPreferredSize(graphPanel.getPreferredSize());
         add(graphPanel, Integer.valueOf(0));
     }
 
-    private static JPanel createGraphPanel(String title, JComponent graph, JComponent legend, JComponent hAxis, JComponent vAxis) {
+    private static JPanel createGraphPanel(String title, JComponent graph, JComponent legend, JComponent hAxis, JComponent vAxis, JButton button) {
         JPanel graphPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c;
 
+        JPanel topPanel = new JPanel(new BorderLayout());
         JLabel label = new JLabel(title);
         Font labelFont = label.getFont();
         label.setFont(labelFont.deriveFont(labelFont.getStyle() | Font.BOLD));
         label.setForeground(GraphConfig.TEXT_COLOR);
         c = new GridBagConstraints();
+        topPanel.add(label, BorderLayout.CENTER);
+
+        if (button != null) {
+            topPanel.add(button, BorderLayout.EAST);
+        }
+
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
         c.insets = new Insets(PADDING, PADDING, 0, PADDING);
-        graphPanel.add(label, c);
+        graphPanel.add(topPanel, c);
 
         if (vAxis != null) {
             c = new GridBagConstraints();
@@ -173,6 +184,9 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         }
         if (hAxis != null) {
             hAxis.setEnabled(enabled);
+        }
+        if (button != null) {
+            button.setEnabled(enabled);
         }
         super.setEnabled(enabled);
     }

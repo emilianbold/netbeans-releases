@@ -51,6 +51,27 @@ org.netbeans.lib.profiler.results.cpu.ThreadInfos
 org.netbeans.lib.profiler.results.cpu.TimingAdjusterOld
 org.netbeans.lib.profiler.results.cpu.cct.CPUCCTNodeFactory
 
+# removing of actions
+org.openide.actions.SaveAction
+org.openide.actions.OpenAction
+org.openide.actions.EditAction
+org.openide.actions.ViewAction
+#org.openide.actions.CutAction
+#org.openide.actions.CopyAction
+org.openide.actions.DeleteAction
+#org.openide.actions.GotoAction
+org.openide.actions.NextTabAction
+org.openide.actions.PreviousTabAction
+org.openide.actions.PageSetupAction
+#org.openide.actions.PopupAction
+org.openide.actions.PropertiesAction
+org.openide.actions.FindAction
+org.openide.actions.ReplaceAction
+
+org.openide.actions.UndockAction
+org.openide.actions.CloneViewAction
+
+
 # issue 136587:
  org.netbeans.modules.cnd.loaders.CndAbstractDataLoader
  org.netbeans.modules.cnd.loaders.ShellDataLoader

@@ -384,7 +384,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     setLoading();
                 }
             } else {
-                gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
+                gdb.file_exec_and_symbols(pathMap.getRemotePath(pae.getExecutable().replace("\\", "/"), true)); // NOI18N
+                //gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 Map<String, String> mapEnv = new HashMap<String, String>(env.length);
@@ -693,22 +694,22 @@ public class GdbDebugger implements PropertyChangeListener {
         threadsList = emptyThreadsList;
     }
 
-    private String getProgramName(String program) {
-        StringBuilder programName = new StringBuilder();
-
-        for (int i = 0; i < program.length(); i++) {
-            if (program.charAt(i) == '\\') {
-                programName.append('/');
-            } else {
-                if (program.charAt(i) == ' ') {
-                    programName.append("\\ "); // NOI18N
-                } else {
-                    programName.append(program.charAt(i));
-                }
-            }
-        }
-        return pathMap.getRemotePath(programName.toString(),true);
-    }
+//    private String getProgramName(String program) {
+//        StringBuilder programName = new StringBuilder();
+//
+//        for (int i = 0; i < program.length(); i++) {
+//            if (program.charAt(i) == '\\') {
+//                programName.append('/');
+//            } else {
+//                if (program.charAt(i) == ' ') {
+//                    programName.append("\\ "); // NOI18N
+//                } else {
+//                    programName.append(program.charAt(i));
+//                }
+//            }
+//        }
+//        return pathMap.getRemotePath(programName.toString(),true);
+//    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {

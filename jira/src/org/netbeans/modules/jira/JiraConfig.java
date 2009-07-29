@@ -51,7 +51,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -66,7 +65,10 @@ public class JiraConfig {
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
-    private static final String DELIMITER           = "<=>";                            // NOI18N
+    private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
+
+    private static final String DELIMITER           = "<=>";                        // NOI18N
+
     private HashMap<String, Icon> priorityIcons;
     private JiraConfig() { }
 
@@ -93,6 +95,10 @@ public class JiraConfig {
         getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
+    public void setCheckUpdates(boolean bl) {
+        getPreferences().putBoolean(CHECK_UPDATES, bl);
+    }
+
     public int getQueryRefreshInterval() {
         return getPreferences().getInt(QUERY_REFRESH_INT, 30);
     }
@@ -103,6 +109,10 @@ public class JiraConfig {
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
+    }
+
+    public boolean getCheckUpdates() {
+        return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
     public String getUrlParams(JiraRepository repository, String queryName) {

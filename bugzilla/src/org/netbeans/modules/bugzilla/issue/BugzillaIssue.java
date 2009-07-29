@@ -345,8 +345,7 @@ public class BugzillaIssue extends Issue {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
         } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> seenAtributes = getSeenAttributes();
-            assert seenAtributes != null;
+            assert getSeenAttributes() != null;
             for (IssueField f : IssueField.values()) {
                 switch(f) {
                     case MODIFICATION :
@@ -356,10 +355,7 @@ public class BugzillaIssue extends Issue {
                         continue;
                 }
                 String value = getFieldValue(f);
-                String seenValue = seenAtributes.get(f.key);
-                if(seenValue == null) {
-                    seenValue = "";                                             // NOI18N
-                }
+                String seenValue = getSeenValue(f);
                 if(!value.trim().equals(seenValue)) {
                     changedFields.add(f);
                 }
@@ -384,7 +380,10 @@ public class BugzillaIssue extends Issue {
                             break;
                         case COMMENT_COUNT :
                             String value = getFieldValue(changedField);
-                            String seenValue = seenAtributes.get(changedField.key);
+                            String seenValue = getSeenValue(changedField);
+                            if(seenValue.equals("")) {
+                                seenValue = "0";
+                            }
                             int count = 0;
                             try {
                                 count = Integer.parseInt(value) - Integer.parseInt(seenValue);
@@ -460,7 +459,7 @@ public class BugzillaIssue extends Issue {
      * @param taskData
      * @return id or null
      */
-    public static String getID(TaskData taskData) {        
+    public static String getID(TaskData taskData) {
         if(taskData.isNew()) {
             return null;
         }
@@ -484,7 +483,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial(); 
+        assert !taskData.isPartial();
         data = taskData;
         attributes = null; // reset
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
@@ -589,14 +588,7 @@ public class BugzillaIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-//        if(!wasSeen()) {
-//            return FIELD_STATUS_IRELEVANT;
-//        }
-        Map<String, String> a = getSeenAttributes();
-        String seenValue = a != null ? a.get(f.key) : null;
-        if(seenValue == null) {
-            seenValue = "";                                                     // NOI18N
-        }
+        String seenValue = getSeenValue(f);
         if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {       // NOI18N
             return FIELD_STATUS_NEW;
         } else if (!seenValue.equals(getFieldValue(f))) {
@@ -687,7 +679,7 @@ public class BugzillaIssue extends Issue {
                 contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
             }
         }
-        attachmentSource.setContentType(contentType);        
+        attachmentSource.setContentType(contentType);
 
         final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
@@ -779,7 +771,7 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(submitCmd);
-        
+
         BugzillaCommand refreshCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
@@ -812,7 +804,7 @@ public class BugzillaIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
-                
+
         try {
             seenAtributes = null;
             setSeen(true);
@@ -827,7 +819,7 @@ public class BugzillaIssue extends Issue {
         return refresh(getID(), false);
     }
 
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache 
+    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, id);
@@ -852,6 +844,15 @@ public class BugzillaIssue extends Issue {
             }
         }
         return seenAtributes;
+    }
+
+    private String getSeenValue(IssueField f) {
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.key) : null;
+        if(seenValue == null) {
+            seenValue = "";                                                     // NOI18N
+        }
+        return seenValue;
     }
 
     private String getMappedValue(TaskAttribute a, String key) {

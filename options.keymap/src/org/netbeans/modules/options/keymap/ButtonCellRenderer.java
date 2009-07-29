@@ -53,29 +53,37 @@ public class ButtonCellRenderer implements TableCellRenderer {
 
     private TableCellRenderer defaultRenderer;
 
+    private static ShortcutCellPanel panel;
+
     public ButtonCellRenderer(TableCellRenderer defaultRenderer) {
         this.defaultRenderer = defaultRenderer;
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (value instanceof ShortcutCell) {
+        if (value instanceof String) {
             Rectangle cellRect = table.getCellRect(row, column, false);
-            ShortcutCell scCell = (ShortcutCell) value;
+            String scCell = (String) value;
             Dimension d = new Dimension((int) cellRect.getWidth(), (int) cellRect.getHeight());
-            scCell.setSize(d);
+            if (panel == null) {
+                panel = new ShortcutCellPanel(scCell);
+            } else {
+                panel.setText(scCell);
+            }
+            panel.setSize(d);
 
             if (isSelected) {
-                scCell.setBgColor(table.getSelectionBackground());
-                scCell.setFgCOlor(table.getSelectionForeground());
+                panel.setBgColor(table.getSelectionBackground());
+                panel.setFgCOlor(table.getSelectionForeground());
             } else {
-                scCell.setBgColor(table.getBackground());
-                scCell.setFgCOlor(table.getForeground());
+                panel.setBgColor(table.getBackground());
+                panel.setFgCOlor(table.getForeground());
             }
 
-            return (Component) value;
+            return panel;
         }
-        else
+        else {
             return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
     }
 
 }

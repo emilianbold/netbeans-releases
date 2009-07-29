@@ -71,12 +71,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         LINUX,
         WINDOWS
     }
-       
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
-
 //    // Profile on Run
     private BooleanConfiguration profileOnRun;
     public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
@@ -94,7 +92,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private static final String[] LINUX_DATA_PROVIDER_NAMES = {
         getString("Simple"),
         getString("SunStudio")
-        
     };
     private static final String[] WINDOWS_DATA_PROVIDER_NAMES = {
         getString("Simple")
@@ -141,32 +138,32 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N
             dataProvider = new IntConfiguration(null, 0, LINUX_DATA_PROVIDER_NAMES, null);
             currentDPCollection = DataProvidersCollection.LINUX;
-             switch (index){
-                 case 0:
-                     setDataProviderValue(DataProvider.SIMPLE);
-                     break;
-                 case 1:
-                     setDataProviderValue(DataProvider.SUN_STUDIO);
-                     break;
-                 default:
-                     setDataProviderValue(DataProvider.SIMPLE);
-                     break;
-             }
-        } else if (platform.indexOf("Solaris")  != -1){//NOI18N
+            switch (index) {
+                case 0:
+                    setDataProviderValue(DataProvider.SIMPLE);
+                    break;
+                case 1:
+                    setDataProviderValue(DataProvider.SUN_STUDIO);
+                    break;
+                default:
+                    setDataProviderValue(DataProvider.SIMPLE);
+                    break;
+            }
+        } else if (platform.indexOf("Solaris") != -1) {//NOI18N
             dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
             currentDPCollection = DataProvidersCollection.DEFAULT;
-              switch (index){
-                 case 0:
-                     setDataProviderValue(DataProvider.SUN_STUDIO);
-                     break;
-                 case 1:
-                     setDataProviderValue(DataProvider.DTRACE);
-                     break;
-                 default:
-                     setDataProviderValue(DataProvider.SIMPLE);
-                     break;
-             }
-        }else  {//Windows or Whatever else //NOI18N
+            switch (index) {
+                case 0:
+                    setDataProviderValue(DataProvider.SUN_STUDIO);
+                    break;
+                case 1:
+                    setDataProviderValue(DataProvider.DTRACE);
+                    break;
+                default:
+                    setDataProviderValue(DataProvider.SIMPLE);
+                    break;
+            }
+        } else {//Windows or Whatever else //NOI18N
             dataProvider = new IntConfiguration(null, 0, WINDOWS_DATA_PROVIDER_NAMES, null);
             currentDPCollection = DataProvidersCollection.WINDOWS;
             setDataProviderValue(DataProvider.SIMPLE);
@@ -233,7 +230,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return toolConfigurations.get(toolName);
     }
 
-    public boolean isConfigurationModified(String toolName){
+    public boolean isConfigurationModified(String toolName) {
         return toolConfigurations.get(toolName) != null && !toolConfigurations.get(toolName).getValue();
     }
 
@@ -303,13 +300,13 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             } else if (dataProvider == DataProvider.SIMPLE) {
                 value = 2;
             }
-        }else if (currentDPCollection == DataProvidersCollection.LINUX) {
-            if (dataProvider == DataProvider.SUN_STUDIO){
+        } else if (currentDPCollection == DataProvidersCollection.LINUX) {
+            if (dataProvider == DataProvider.SUN_STUDIO) {
                 value = 1;
-            }else if (dataProvider == DataProvider.SIMPLE){
+            } else if (dataProvider == DataProvider.SIMPLE) {
                 value = 0;
             }
-        }else {
+        } else {
             value = 0;
         }
 

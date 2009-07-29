@@ -1,4 +1,5 @@
 <?php
+echo Mammal::$count;
 abstract class Animal {
     const KIND=1;
     static $animalSpecies = array();

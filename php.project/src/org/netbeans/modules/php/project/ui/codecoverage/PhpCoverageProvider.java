@@ -44,8 +44,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
@@ -53,8 +55,8 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -63,6 +65,7 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Mysik
  */
 public final class PhpCoverageProvider implements CoverageProvider {
+    private static final Logger LOGGER = Logger.getLogger(PhpCoverageProvider.class.getName());
     private static final Set<String> MIME_TYPES = Collections.singleton(PhpSourcePath.MIME_TYPE);
 
     private final Object lock = new Object();
@@ -138,8 +141,12 @@ public final class PhpCoverageProvider implements CoverageProvider {
         if (cov == null) {
             return null;
         }
-        String path = FileUtil.toFile(fo).getAbsolutePath();
+        if (!isUnderneathSourcesOnlyAndVisible(fo)) {
+            return null;
+        }
+
         // XXX optimize - hold files in a linked hash map
+        String path = FileUtil.toFile(fo).getAbsolutePath();
         for (FileVO file : cov.getFiles()) {
             if (path.equals(file.getPath())) {
                 return new PhpFileCoverageDetails(fo, file);
@@ -153,9 +160,12 @@ public final class PhpCoverageProvider implements CoverageProvider {
         if (cov == null) {
             return null;
         }
+
         List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
         for (FileVO file : cov.getFiles()) {
-            result.add(getFileCoverageSummary(file));
+            if (isUnderneathSourcesOnlyAndVisible(file.getPath())) {
+                result.add(getFileCoverageSummary(file));
+            }
         }
         return result;
     }
@@ -175,23 +185,24 @@ public final class PhpCoverageProvider implements CoverageProvider {
     static FileCoverageSummary getFileCoverageSummary(FileVO file) {
         assert file != null;
         FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
-        int executedLineCount = getExecutedLineCount(file);
         return new FileCoverageSummary(
                 fo,
                 fo.getNameExt(),
-                file.getMetrics().loc,
-                executedLineCount,
-                file.getMetrics().loc - executedLineCount,
+                file.getMetrics().statements,
+                file.getMetrics().coveredStatements,
+                -1,
                 -1);
     }
 
-    private static int getExecutedLineCount(FileVO file) {
-        int executed = file.getMetrics().loc;
-        for (LineVO line : file.getLines()) {
-            if (line.count == 0) {
-                executed--;
-            }
-        }
-        return executed;
+    private boolean isUnderneathSourcesOnlyAndVisible(String path) {
+        return isUnderneathSourcesOnlyAndVisible(FileUtil.toFileObject(new File(path)));
+    }
+
+    private boolean isUnderneathSourcesOnlyAndVisible(FileObject fo) {
+        return fo != null
+                && CommandUtils.isUnderSources(project, fo)
+                && !CommandUtils.isUnderTests(project, fo, false)
+                && !CommandUtils.isUnderSelenium(project, fo, false)
+                && VisibilityQuery.getDefault().isVisible(fo);
     }
 }

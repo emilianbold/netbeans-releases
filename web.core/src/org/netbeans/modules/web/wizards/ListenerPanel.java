@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -87,12 +88,12 @@ public class ListenerPanel implements WizardDescriptor.Panel {
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             WebModule wm=null;
-            String j2eeVersion = WebModule.J2EE_14_LEVEL;
+            Profile j2eeVersion = Profile.J2EE_14;
             if (groups!=null && groups.length>0) {
                 wm = WebModule.getWebModule(groups[0].getRootFolder());
             }
             if (wm!=null) {
-                j2eeVersion=wm.getJ2eePlatformVersion();
+                j2eeVersion=wm.getJ2eeProfile();
             }
             component = new ListenerVisualPanel(this,j2eeVersion);
         }

@@ -87,7 +87,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -971,7 +971,9 @@ public final class EarProjectProperties {
         String args = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2EE_PLATFORM_APPCLIENT_ARGS);
         if (args != null) {
             ep.setProperty(APPCLIENT_TOOL_ARGS, args);
-        }    
+        }    else {
+            ep.remove(APPCLIENT_TOOL_ARGS);
+        }
         
         //WORKAROUND for --retrieve option in asadmin deploy command
         //works only for local domains
@@ -979,15 +981,28 @@ public final class EarProjectProperties {
         File asRoot = j2eePlatform.getPlatformRoots()[0];
         InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
         //check if we have AS
-        if (ip != null && new File(asRoot, "lib/admin-cli.jar").exists()) { // NOI18N
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            if (exFile.exists()) {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
-            }
+        if (ip != null) {
+            // Pre-v3
+            if (new File(asRoot, "lib/admin-cli.jar").exists()) {
+                File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
+                if (exFile.exists()) {
+                    // GF v1, v2
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
+                } else {
+                    // SJSAS 8.x
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
+                }
+             } else {
+                String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME,
+                        J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+                if (copyProperty != null) {
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM, copyProperty);
+                } else {
+                    ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
+                }
+             }
         } else {
             ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
         }

@@ -54,30 +54,37 @@ public class JavaProjectModule {
 
     public static Action compile() {
         return FileSensitiveActions.fileCommandAction(
-                       ActionProvider.COMMAND_COMPILE_SINGLE,
-                       NbBundle.getMessage( JavaProjectModule.class, "LBL_CompileFile_Action" ), // NOI18N
-                       null );
+                ActionProvider.COMMAND_COMPILE_SINGLE,
+                NbBundle.getMessage(JavaProjectModule.class, "LBL_CompileFile_Action"), // NOI18N
+                null);
     }
-            
+
     public static Action run() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_RUN_SINGLE, 
-                       NbBundle.getMessage( JavaProjectModule.class, "LBL_RunFile_Action" ), // NOI18N
-                       null );
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_RUN_SINGLE,
+                NbBundle.getMessage(JavaProjectModule.class, "LBL_RunFile_Action"), // NOI18N
+                null);
     }
 
     public static Action test() {
         return FileSensitiveActions.fileCommandAction(
-                       ActionProvider.COMMAND_TEST_SINGLE,
-                       NbBundle.getMessage( JavaProjectModule.class, "LBL_TestFile_Action" ), // NOI18N
-                       null );
+                ActionProvider.COMMAND_TEST_SINGLE,
+                NbBundle.getMessage(JavaProjectModule.class, "LBL_TestFile_Action"), // NOI18N
+                null);
     }
-    
+
     public static Action debug() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_DEBUG_SINGLE, 
-                       NbBundle.getMessage( JavaProjectModule.class, "LBL_DebugFile_Action" ), // NOI18N
-                       null );
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_DEBUG_SINGLE,
+                NbBundle.getMessage(JavaProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
+                null);
+    }
+
+    public static Action debugTest() {
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE,
+                NbBundle.getMessage(JavaProjectModule.class, "LBL_DebugTestFile_Action"), // NOI18N
+                null);
     }
     
 }

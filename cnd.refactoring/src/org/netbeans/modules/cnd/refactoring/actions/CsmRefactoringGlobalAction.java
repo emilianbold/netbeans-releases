@@ -88,9 +88,9 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         putValue(Action.MNEMONIC_KEY, Integer.valueOf(m));
     }
 
-    private static String trim(String arg) {
-        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
-        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+    private static String trim(String arg) {//XXX unused
+        arg = arg.replace("&", ""); // NOI18N
+        return arg.replace("...", ""); // NOI18N
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

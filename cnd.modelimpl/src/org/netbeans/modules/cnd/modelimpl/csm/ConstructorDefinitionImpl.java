@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> implements CsmInitializerListContainer {
 
-    private List<CsmExpression> initializers;
+    private final List<CsmExpression> initializers;
     
     public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         super(ast, file, scope, register, register);

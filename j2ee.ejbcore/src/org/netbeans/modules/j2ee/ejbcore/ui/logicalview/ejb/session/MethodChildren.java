@@ -44,7 +44,9 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -60,6 +62,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -74,20 +77,21 @@ public class MethodChildren extends ComponentMethodModel {
 
     private ComponentMethodViewStrategy mvs;
     private final SessionMethodController controller;
-    private final boolean local;
+    private final MethodsNode.ViewType viewType;
     
-    public MethodChildren(ClasspathInfo cpInfo, SessionMethodController smc, Collection<String> interfaces, boolean local) {
-        super(cpInfo, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(ClasspathInfo cpInfo, SessionMethodController smc, Collection<String> interfaces, MethodsNode.ViewType viewType) {
+        super(cpInfo, smc.getBeanClass(), interfaces, viewType == viewType.NO_INTERFACE? null:viewType == viewType.LOCAL ? smc.getLocalHome() : smc.getHome());
         controller = smc;
-        this.local = local;
+        this.viewType = viewType;
         mvs = new SessionStrategy();
     }
 
     protected Collection<String> getInterfaces() {
-        if (local) {
-            return controller.getLocalInterfaces();
-        } else {
-            return controller.getRemoteInterfaces();
+        switch (viewType){
+            case LOCAL: return controller.getLocalInterfaces();
+            case REMOTE: return controller.getRemoteInterfaces();
+            case NO_INTERFACE: return Arrays.asList(controller.getBeanClass());
+            default: return Collections.EMPTY_LIST;
         }
     }
     
@@ -98,7 +102,17 @@ public class MethodChildren extends ComponentMethodModel {
     private class SessionStrategy implements ComponentMethodViewStrategy {
         
         public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException {
-            controller.delete(me, local);
+            switch (viewType){
+                case NO_INTERFACE:{
+                    controller.delete(me);
+                    break;
+                }
+                case LOCAL:
+                case REMOTE:{
+                    controller.delete(me, viewType == viewType.LOCAL);
+                    break;
+                }
+            }
         }
 
         public Image getBadge(MethodModel me, Collection interfaces) {

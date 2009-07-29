@@ -144,6 +144,7 @@ public class FolderChildrenTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #2858
     public void testSimulateADeadlockThatWillBeFixedByIssue49459 () throws Exception {
         FileObject a = FileUtil.createData (FileUtil.getConfigRoot (), "XYZ49459/org-openide-loaders-FolderChildrenTest$N1.instance");
         FileObject bb = FileUtil.getConfigFile("XYZ49459");
@@ -294,6 +295,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     private static Object holder;
+    @RandomlyFails // NB-Core-Build #2838 (in FolderChildrenEagerTest)
     public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter();
         holder = filter;

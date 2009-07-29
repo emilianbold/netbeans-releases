@@ -69,7 +69,16 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -205,6 +214,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
                 <package>org.netbeans.modules.j2ee.api.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar.support</package>

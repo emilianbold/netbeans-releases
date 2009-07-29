@@ -49,4 +49,6 @@ public final class PhpProjectType {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project/1"; // NOI18N
     static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project-private/1"; // NOI18N
 
+    private PhpProjectType() {
+    }
 }

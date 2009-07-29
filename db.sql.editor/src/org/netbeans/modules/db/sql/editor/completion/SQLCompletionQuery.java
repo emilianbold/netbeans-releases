@@ -240,7 +240,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 insideFrom (ident);
                 break;
             case COLUMNS:
-                insideColumns (ident, insertStatement.getTable ());
+                insideColumns (ident, resolveTable(insertStatement.getTable ()));
                 break;
             case VALUES:
                 break;
@@ -255,18 +255,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideColumns (Identifier ident, QualIdent table) {
+    private void insideColumns (Identifier ident, Table table) {
         if (ident.fullyTypedIdent.isEmpty()) {
             if (table == null) {
                 completeColumnWithTableIfSimpleIdent (ident.lastPrefix, ident.quoted);
             } else {
-                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+                items.addColumns (table, ident.lastPrefix, ident.quoted, substitutionOffset);
             }
         } else {
             if (table == null) {
                 completeColumnWithTableIfQualIdent (ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
             } else {
-                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+                items.addColumns (table, ident.lastPrefix, ident.quoted, substitutionOffset);
             }
         }
     }
@@ -537,6 +537,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private Table resolveTable(QualIdent tableName) {
         Table table = null;
+        if (tableName == null) {
+            return table;
+        }
         switch (tableName.size()) {
             case 1:
                 Schema schema = metadata.getDefaultSchema();

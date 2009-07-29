@@ -418,13 +418,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property designerSizeProperty = new PropertySupport.ReadOnly(
+        Node.Property<Dimension> designerSizeProperty = new PropertySupport.ReadWrite<Dimension>(
             FormDesigner.PROP_DESIGNER_SIZE,
             Dimension.class,
             bundle.getString("MSG_DesignerSize"), // NOI18N
             bundle.getString("HINT_DesignerSize")) // NOI18N
         {
-            public Object getValue()
+            public Dimension getValue()
                 throws IllegalAccessException, IllegalArgumentException,
                        java.lang.reflect.InvocationTargetException
             {
@@ -432,13 +432,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
 
             @Override
-            public void setValue(Object val)
+            public void setValue(Dimension val)
                 throws IllegalAccessException, IllegalArgumentException,
                        java.lang.reflect.InvocationTargetException
             {
-//                if (!(val instanceof Dimension))
-//                    throw new IllegalArgumentException();
-                setDesignerSize((Dimension)val);
+                setDesignerSize(val);
             }
         };
 

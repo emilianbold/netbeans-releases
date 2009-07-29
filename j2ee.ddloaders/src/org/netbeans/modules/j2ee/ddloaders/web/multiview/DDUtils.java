@@ -41,9 +41,15 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.*;
@@ -101,8 +107,8 @@ public final class DDUtils {
     }
     
     public static String[] getStringArray(String text) {
-        java.util.StringTokenizer tok = new java.util.StringTokenizer(text,",");
-        java.util.Set set = new java.util.HashSet();
+        StringTokenizer tok = new StringTokenizer(text, ",");
+        Set set = new HashSet();
         while (tok.hasMoreTokens()) {
             String token = tok.nextToken().trim();
             if (token.length()>0) set.add(token);
@@ -190,7 +196,7 @@ public final class DDUtils {
             }
             if (!found) newPatterns.add(urlPatterns[i]);
         }
-        int min = java.lang.Math.min(oldMaps.size(),newPatterns.size());
+        int min = Math.min(oldMaps.size(), newPatterns.size());
         // replace old mappings
         for (int i=0;i<min;i++) {
             ServletMapping oldMap = (ServletMapping)oldMaps.get(i);
@@ -287,7 +293,7 @@ public final class DDUtils {
                     }
                 }
             }
-        } catch (java.io.IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
         }
         org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
@@ -299,7 +305,7 @@ public final class DDUtils {
         FileObject docBase = null;
         try {
             docBase = getDocumentBase(dObj);
-        } catch (java.io.IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
             return;
         }
@@ -323,11 +329,11 @@ public final class DDUtils {
                 org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
     }
     
-    public static void openEditorForFiles(DDDataObject dObj, java.util.StringTokenizer tok) {
+    public static void openEditorForFiles(DDDataObject dObj, StringTokenizer tok) {
         FileObject docBase = null;
         try {
             docBase = getDocumentBase(dObj);
-        } catch (java.io.IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
             return;
         }
@@ -359,21 +365,21 @@ public final class DDUtils {
         }
     }
     
-    public static SourceGroup[] getJavaSourceGroups(DDDataObject dObj) throws java.io.IOException {
+    public static SourceGroup[] getJavaSourceGroups(DDDataObject dObj) throws IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj==null) return new SourceGroup[]{};
         Sources sources = ProjectUtils.getSources(proj);
         return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
     
-    public static SourceGroup[] getDocBaseGroups(DDDataObject dObj) throws java.io.IOException {
+    public static SourceGroup[] getDocBaseGroups(DDDataObject dObj) throws IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj==null) return new SourceGroup[]{};
         Sources sources = ProjectUtils.getSources(proj);
         return sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
     }
     
-    public static FileObject getDocumentBase(DDDataObject dObj) throws java.io.IOException {
+    public static FileObject getDocumentBase(DDDataObject dObj) throws IOException {
         WebModule wm = WebModule.getWebModule(dObj.getPrimaryFile());
         if (wm==null) return null;
         return wm.getDocumentBase();
@@ -421,8 +427,8 @@ public final class DDUtils {
     /** removes all filter mappings for given filter name
      * @return Stack of deleted rows
      */
-    public static java.util.Stack removeFilterMappings(WebApp webApp, String filterName) {
-        java.util.Stack deletedRows = new java.util.Stack();
+    public static Stack removeFilterMappings(WebApp webApp, String filterName) {
+        Stack deletedRows = new Stack();
         if (filterName==null) return deletedRows;
         FilterMapping[] oldMaps = webApp.getFilterMapping();
         for (int i=0;i<oldMaps.length;i++) {
@@ -543,6 +549,7 @@ public final class DDUtils {
     }
 
     private static boolean isWebApp25(WebApp webApp) {
-        return WebApp.VERSION_2_5.equals(webApp.getVersion());
+        BigDecimal ver = new BigDecimal(webApp.getVersion());
+        return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
     }
 }

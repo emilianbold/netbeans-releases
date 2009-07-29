@@ -42,6 +42,7 @@
 package org.netbeans.api.project;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,19 +50,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -261,6 +262,33 @@ public class ProjectUtils {
      */
     public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
         return new AuxiliaryConfigImpl(project);
+    }
+
+    /**
+     * Gets a directory in which modules may store arbitrary extra unversioned files
+     * associated with a project.
+     * These could be caches of information found in sources, logs or snapshots
+     * from activities associated with developing the project, etc.
+     * <p>
+     * If the project supplies a {@link CacheDirectoryProvider}, that will be used
+     * for the parent directory. Otherwise an unspecified storage area will be used.
+     * @param project a project
+     * @param owner a class from the calling module (each module or package will get its own space)
+     * @return a directory available for storing miscellaneous files
+     * @throws IOException if no such directory could be created
+     * @since org.netbeans.modules.projectapi/1 1.26
+     */
+    public static FileObject getCacheDirectory(Project project, Class<?> owner) throws IOException {
+        FileObject d;
+        CacheDirectoryProvider cdp = project.getLookup().lookup(CacheDirectoryProvider.class);
+        if (cdp != null) {
+            d = cdp.getCacheDirectory();
+        } else {
+            d = FileUtil.createFolder(FileUtil.getConfigRoot(),
+                    String.format("Projects/extra/%s-%08x", getInformation(project).getName().replace('/', '_'), // NOI18N
+                                  project.getProjectDirectory().getPath().hashCode()));
+        }
+        return FileUtil.createFolder(d, AuxiliaryConfigBasedPreferencesProvider.findCNBForClass(owner));
     }
 
 }

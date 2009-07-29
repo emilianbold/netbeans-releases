@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.test;
 
 import java.io.File;
@@ -51,30 +50,23 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
-    
+
     static {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
-        
-        while (true) {
-            String dirName = junitWorkdir.getName();
-            junitWorkdir = junitWorkdir.getParentFile();
-            if ("dlight.nativeexecution".equals(dirName) || "".equals(dirName)) { // NOI18N
-                break;
-            }
-        }
+        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
 
-        File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
-        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + ":" + dirs); // NOI18N
-
-        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
         log.setLevel(Level.ALL);
 
         log.addHandler(new Handler() {
 
             @Override
             public void publish(LogRecord record) {
-                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
+                // Log if parent cannot log the message ONLY.
+                if (!log.getParent().isLoggable(record.getLevel())) {
+                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
+                    if (record.getThrown() != null) {
+                        record.getThrown().printStackTrace(System.err);
+                    }
+                }
             }
 
             @Override
@@ -83,11 +75,10 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
             @Override
             public void close() throws SecurityException {
-
             }
         });
-    }
 
+    }
     private final ExecutionEnvironment testExecutionEnvironment;
 
     public NativeExecutionBaseTestCase(String name) {
@@ -108,7 +99,6 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
     }
-
 
     @Override
     protected void setUp() throws Exception {
@@ -139,17 +129,54 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
-
     public static void writeFile(File file, CharSequence content) throws IOException {
         Writer writer = new FileWriter(file);
         writer.write(content.toString());
         writer.close();
     }
 
+    /**
+     * Removes directory recursively
+     * @param dir directory  to remove
+     * @return true in the case the directory was removed sucessfully, otherwise false
+     */
+    public static boolean removeDirectory(File dir) {
+        return removeDirectory(dir, true);
+    }
+
+    /**
+     * Removes directory content (recursively)
+     * @param dir directory  to remove
+     * @return true in the case the directory content was removed sucessfully, otherwise false
+     */
+    public static boolean removeDirectoryContent(File dir) {
+        return removeDirectory(dir, false);
+    }
+
+    /**
+     * Removes directory recursively
+     * @param dir directory  to remove
+     * @return true in the case the directory was removed sucessfully, otherwise false
+     */
+    private static boolean removeDirectory(File dir, boolean removeItself) {
+        boolean success = true;
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                if (!removeDirectory(new File(dir, children[i]), true)) {
+                    success = false;
+                }
+            }
+        }
+        if (success && removeItself) {
+            success = dir.delete();
+        }
+        return success;
+    }
     public static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
         File tmpFile = File.createTempFile(prefix, suffix);
         if (directory) {
-            if(!(tmpFile.delete())) {
+            if (!(tmpFile.delete())) {
                 throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath()); // NOI18N
             }
             if (!(tmpFile.mkdir())) {
@@ -159,5 +186,4 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         tmpFile.deleteOnExit();
         return tmpFile;
     }
-
 }

@@ -40,7 +40,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject.api;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 
 /**
  *

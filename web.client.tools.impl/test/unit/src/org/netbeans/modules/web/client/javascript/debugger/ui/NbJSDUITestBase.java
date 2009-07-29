@@ -62,13 +62,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
          
 /**
- * A Test based on NbTestCase. It is a NetBeans extension to JUnit TestCase
- * which among othres allows to compare files via assertFile methods, create
- * working directories for testcases, write to log files, compare log files
- * against reference (golden) files, etc.
- * 
- * More details here http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html.
- * 
  * @author joelle
  */
 public class NbJSDUITestBase extends JsTestBase {

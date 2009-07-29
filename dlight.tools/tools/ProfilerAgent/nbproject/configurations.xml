@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="51">
+<configurationDescriptor version="62">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -30,9 +30,9 @@
         <platform>2</platform>
       </toolsSet>
       <compileType>
-        <ccCompilerTool>
+        <ccTool>
           <developmentMode>5</developmentMode>
-        </ccCompilerTool>
+        </ccTool>
         <linkerTool>
           <output>prof_agent.so</output>
           <linkerLibItems>
@@ -40,14 +40,9 @@
             <linkerLibStdlibItem>Dynamic Linking</linkerLibStdlibItem>
             <linkerOptionItem>-lrt</linkerOptionItem>
           </linkerLibItems>
+          <commandLine>ldscript.txt</commandLine>
         </linkerTool>
       </compileType>
-      <item path="instruments.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="prof_agent.c">
-        <itemTool>0</itemTool>
-      </item>
     </conf>
   </confs>
 </configurationDescriptor>

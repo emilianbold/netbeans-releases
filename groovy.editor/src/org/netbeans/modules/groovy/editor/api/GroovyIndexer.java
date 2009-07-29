@@ -218,7 +218,7 @@ public class GroovyIndexer extends EmbeddingIndexer {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport support = IndexingSupport.getInstance(context);
                 for (Indexable indexable : deleted) {
@@ -230,7 +230,7 @@ public class GroovyIndexer extends EmbeddingIndexer {
         }
         
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {

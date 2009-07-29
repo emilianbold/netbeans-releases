@@ -32,7 +32,9 @@
 |org.netbeans.modules.spring.webmvc|Spring Web MVC|Java Web and EE|enterprise
 |org.netbeans.modules.web.struts|Struts|Java Web and EE|enterprise
 |org.netbeans.modules.php.kit|PHP|PHP|php
+|org.netbeans.modules.php.symfony|PHP Symfony Framework|PHP|php
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
 |org.netbeans.modules.web.client.tools.kit|JavaScript Debugger|Web Applications|webcommon
 |org.netbeans.modules.websvc.saas.kit|Software as a Service|Web Applications|websvccommon
+|org.netbeans.modules.wag.kit|Zembly Web API Gateway|Web Applications|websvccommon

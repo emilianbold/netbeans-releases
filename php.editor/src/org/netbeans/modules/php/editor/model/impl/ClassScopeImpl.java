@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.ArrayList;
@@ -50,10 +49,12 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.openide.util.Union2;
 
 /**
@@ -73,8 +74,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
     //new contructors
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
-        Identifier superId = nodeInfo.getSuperClass();
-        String superName = (superId != null) ? superId.getName() : null;
+        Expression superId = nodeInfo.getSuperClass();
+        String superName = (superId != null) ? CodeUtils.extractUnqualifiedName(superId) : null;
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superName);
     }
 
@@ -172,25 +173,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
 
     public Collection<? extends MethodScope> getInheritedMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
-        IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScopeImpl.getIndex();
-        ClassScope clz = ModelUtils.getFirst(getSuperClasses());
-        List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
-        interfaces.addAll(getSuperInterfaces());
-        while(clz != null) {
-            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-            for (IndexedFunction indexedFunction : indexedFunctions) {
-                allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
-            }
-            interfaces.addAll(clz.getSuperInterfaces());
-            clz = ModelUtils.getFirst(clz.getSuperClasses());
-        }
-
-        for (InterfaceScope ifaceScope : interfaces) {
-            allMethods.addAll(ifaceScope.getMethods());
-        }
-        return allMethods;
+        return findInheritedMethods("");//NOI18N
     }
 
     @Override
@@ -260,7 +243,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     @Override
     public String getNormalizedName() {
-        return super.getNormalizedName()+getSuperClassName();
+        return super.getNormalizedName()+(getSuperClassName() != null ? getSuperClassName() : "");//NOI18N
     }
 
     @NonNull
@@ -280,7 +263,83 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
                 return cls.getName();
             }
         }
-        return "";//NOI18N
+        return null;//NOI18N
     }
 
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        final String superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(superClassName);
+        }
+        sb.append(";");//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        List<? extends String> superInterfaceNames = getSuperInterfaceNames();
+        StringBuilder ifaceSb = new StringBuilder();
+        for (String iface : superInterfaceNames) {
+            if (ifaceSb.length() > 0) {
+                ifaceSb.append(",");//NOI18N
+            }
+            ifaceSb.append(iface);//NOI18N
+        }
+        sb.append(ifaceSb);
+        sb.append(";");//NOI18N
+        //TODO: add ifaces
+        return sb.toString();
+    }
+
+    public Collection<? extends MethodScope> getDeclaredConstructors() {
+        return ModelUtils.filter(getDeclaredMethods(), new ModelUtils.ElementFilter<MethodScope>() {
+            public boolean isAccepted(MethodScope methodScope) {
+                return methodScope.isConstructor();
+            }
+        });
+    }
+
+    public String getDefaultConstructorIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(BodyDeclaration.Modifier.PUBLIC).append(";");
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+
+        return sb.toString();
+
+    }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedClass) {
+            IndexedClass indexedClass = (IndexedClass)indexedElement;
+            return QualifiedName.create(indexedClass.getNamespaceName());
+        }
+        return super.getNamespaceName();
+    }
+
+    public Collection<? extends String> getSuperClassNames() {
+        String supeClsName = superClass.hasFirst() ? superClass.first() : null;
+        if (supeClsName != null) {
+            return Collections.singletonList(supeClsName);
+        }
+        List<ClassScopeImpl> supeClasses =  Collections.emptyList();
+        if (superClass.hasSecond()) {
+            supeClasses = superClass.second();
+        }
+        List<String> retval =  new ArrayList<String>();
+        for (ClassScopeImpl cls : supeClasses) {
+            retval.add(cls.getName());
+        }
+        return retval;
+    }
 }

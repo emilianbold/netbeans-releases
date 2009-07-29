@@ -46,6 +46,12 @@ import org.openide.util.Lookup;
 /**
  * Ability for a project to have various actions (e.g. Build) invoked on it.
  * Should be registered in a project's lookup and will be used by UI infrastructure.
+ * <p>
+ * Implementations supporting single file commands (command constants ending with
+ * {@code _SINGLE}) can also be registered in default lookup. If a provider in project
+ * lookup does not enable the action for a given command on the selected file then
+ * the first implementation found in default lookup that is enabled will be used.
+ * </p>
  * @see org.netbeans.api.project.Project#getLookup
  * @see <a href="@org-apache-tools-ant-module@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>
  * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/support/ProjectSensitiveActions.html#projectCommandAction(java.lang.String,%20java.lang.String,%20javax.swing.Icon)"><code>ProjectSensitiveActions.projectCommandAction(...)</code></a>

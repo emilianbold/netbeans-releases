@@ -40,6 +40,7 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Printable;
 import org.openide.nodes.Node;
 
 
@@ -47,7 +48,5 @@ import org.openide.nodes.Node;
 *
 * @author Ales Novak
 */
-public interface PrintCookie extends Node.Cookie {
-    /** Print the content of the object. */
-    public void print();
+public interface PrintCookie extends Printable, Node.Cookie {
 }

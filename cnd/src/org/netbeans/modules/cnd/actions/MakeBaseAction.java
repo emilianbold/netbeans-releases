@@ -48,7 +48,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -118,7 +117,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 env,
                 tabName,
                 "make", // NOI18N
-                false,
+                true,
                 true,
                 false);
         if (outputListener != null) {

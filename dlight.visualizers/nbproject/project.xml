@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.dlight.visualizers</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -61,6 +70,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.38</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.settings</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -150,10 +168,10 @@
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.dlight.visualizers.api</package>
                 <package>org.netbeans.modules.dlight.visualizers.spi</package>
-                <package>org.netbeans.modules.dlight.visualizers.spi.support</package>
             </friend-packages>
         </data>
     </configuration>

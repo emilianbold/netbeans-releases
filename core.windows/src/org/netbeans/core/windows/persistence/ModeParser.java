@@ -169,7 +169,7 @@ class ModeParser {
     private void readTCRefs (ModeConfig mc) throws IOException {
         if (DEBUG) Debug.log(ModeParser.class, "readTCRefs ENTER" + " mo:" + getName());
         
-        for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
+        for (Iterator<String> it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
             TCRefParser tcRefParser = tcRefParserMap.get(it.next());
             tcRefParser.setInModuleFolder(false);
             tcRefParser.setInLocalFolder(false);
@@ -444,7 +444,7 @@ class ModeParser {
         }
         //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs" + " localFolder:" + localFolder);
         
-        for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
+        for (Iterator<String> it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
             tcRefParser = tcRefParserMap.get(it.next());
             tcRefParser.setLocalParentFolder(localFolder);
             tcRefParser.setInLocalFolder(true);
@@ -682,7 +682,7 @@ class ModeParser {
         
         // Update order
         List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
-        Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
+        Map<String,TCRefParser> localMap = (Map) ((HashMap) tcRefParserMap).clone();
         
         TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
         for (Iterator it = tcRefOrder.entrySet().iterator(); it.hasNext(); ) {
@@ -690,6 +690,7 @@ class ModeParser {
             String name = (String) en.getKey();
             int index = ((Integer) en.getValue()).intValue();
             tcRefParser = (TCRefParser) localMap.remove(name);
+            assert tcRefParser != null : "No parser for " + name + " in " + tcRefParser;
             //Put instances to array according to defined order
             //Order should be defined from 0 to N-1
             //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());
@@ -699,8 +700,10 @@ class ModeParser {
             localList.add(tcRefParserArray[i]);
         }
         //Append remaining instances if any
-        for (Iterator it = localMap.keySet().iterator(); it.hasNext(); ) {
-            tcRefParser = (TCRefParser) localMap.get(it.next());
+        for (Iterator<String> it = localMap.keySet().iterator(); it.hasNext(); ) {
+            String key = it.next();
+            tcRefParser = localMap.get(key);
+            assert tcRefParser != null : "No parser for " + key;
             localList.add(tcRefParser);
         }
         

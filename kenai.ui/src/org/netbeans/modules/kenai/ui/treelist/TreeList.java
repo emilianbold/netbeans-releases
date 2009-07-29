@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui.treelist;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -58,6 +59,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 import javax.swing.plaf.ListUI;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.util.Utilities;
@@ -97,6 +99,7 @@ public class TreeList extends JList {
         setFixedCellHeight( ROW_HEIGHT+2 );
         setCellRenderer(renderer);
         setBackground(ColorManager.getDefault().getDefaultBackground());
+        ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MouseAdapter() {
 
             @Override
@@ -114,6 +117,8 @@ public class TreeList extends JList {
                         ActionListener al = node.getDefaultAction();
                         if( null != al )
                             al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
+                    } else if( null != node && node.isExpandable() ) {
+                        node.setExpanded(!node.isExpanded());
                     }
                 }
             }
@@ -184,6 +189,48 @@ public class TreeList extends JList {
         setSelectedIndex(rowIndex);
         JPopupMenu popup = Utilities.actionsToPopup(actions, this);
         popup.show(this, location.x, location.y);
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        if(event != null) {
+            Point p = event.getPoint();
+            int index = locationToIndex(p);
+            ListCellRenderer r = getCellRenderer();
+            Rectangle cellBounds;
+
+            if (index != -1 && r != null && (cellBounds =
+                               getCellBounds(index, index)) != null &&
+                               cellBounds.contains(p.x, p.y)) {
+                ListSelectionModel lsm = getSelectionModel();
+                Component rComponent = r.getListCellRendererComponent(
+                           this, getModel().getElementAt(index), index,
+                           lsm.isSelectedIndex(index),
+                           (hasFocus() && (lsm.getLeadSelectionIndex() ==
+                                           index)));
+
+                if(rComponent instanceof JComponent) {
+                    rComponent.setBounds(cellBounds);
+                    rComponent.doLayout();
+                    MouseEvent      newEvent;
+
+                    p.translate(-cellBounds.x, -cellBounds.y);
+                    newEvent = new MouseEvent(rComponent, event.getID(),
+                                              event.getWhen(),
+                                              event.getModifiers(),
+                                              p.x, p.y, event.getClickCount(),
+                                              event.isPopupTrigger());
+
+                    String tip = ((JComponent)rComponent).getToolTipText(
+                                              newEvent);
+
+                    if (tip != null) {
+                        return tip;
+                    }
+                }
+            }
+        }
+        return super.getToolTipText();
     }
 
     private static class TreeListRenderer implements ListCellRenderer {

@@ -130,7 +130,7 @@ public class CallEjbGenerator {
     }
     
     public ElementHandle<? extends Element> addReference(FileObject referencingFO, String referencingClassName, FileObject referencedFO, String referencedClassName, 
-            String serviceLocator, boolean remote, boolean throwExceptions, Project nodeProject) throws IOException {
+            String serviceLocator, EjbReference.EjbRefIType refIType, boolean throwExceptions, Project nodeProject) throws IOException {
         
         ElementHandle<? extends Element> result = null;
         
@@ -149,28 +149,25 @@ public class CallEjbGenerator {
             });
         }
 
-        if (remote) {
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
-            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+        if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
+            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
+        } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
+            switch(refIType){
+                case REMOTE: {
+                    erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    break;
+                }
+                case NO_INTERFACE:
+                case LOCAL:{
+                    erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    break;
+                }
             }
-            if (serviceLocator == null) {
-                result = generateReferenceCode(referencingFO, referencingClassName, false, throwExceptions, !nodeProjectIsJavaEE5);
-            } else {
-                result = generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, false, throwExceptions);
-            }
+        }
+        if (serviceLocator == null) {
+            result = generateReferenceCode(referencingFO, referencingClassName, refIType, throwExceptions, !nodeProjectIsJavaEE5);
         } else {
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
-            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
-            }
-            if (serviceLocator == null) {
-                result = generateReferenceCode(referencingFO, referencingClassName, true, throwExceptions, !nodeProjectIsJavaEE5);
-            } else {
-                result = generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, true, throwExceptions);
-            }
+            result = generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, refIType, throwExceptions);
         }
         if (serviceLocator != null) {
             erc.setServiceLocatorName(serviceLocator);
@@ -178,7 +175,7 @@ public class CallEjbGenerator {
 
         // generate the server-specific resources
 
-        if (remote) {
+        if (refIType == refIType.REMOTE) {
             J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
             String referencedEjbName = getEjbName(referencedFO, referencedClassName);
             try {
@@ -203,15 +200,15 @@ public class CallEjbGenerator {
     // private stuff ===========================================================
     
     private ElementHandle<ExecutableElement> generateServiceLocatorLookup(FileObject referencingFO, String referencingClassName, 
-            String serviceLocatorName, boolean isLocal, boolean throwExceptions) {
+            String serviceLocatorName, EjbReference.EjbRefIType refIType, boolean throwExceptions) {
         try {
             return generateServiceLocatorJNDI(
                     referencingFO, 
                     referencingClassName,
-                    isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
+                    ejbReference.getHomeName(refIType),
                     ejbReferenceName, 
-                    !isLocal, 
-                    isLocal ? ejbReference.getLocal() : ejbReference.getRemote(), 
+                    refIType != refIType.LOCAL,
+                    ejbReference.getComponentName(refIType),
                     throwExceptions, 
                     serviceLocatorName
                     );
@@ -224,7 +221,7 @@ public class CallEjbGenerator {
     private ElementHandle<? extends Element> generateReferenceCode(
             FileObject fileObject,
             String className,
-            boolean isLocal,
+            EjbReference.EjbRefIType refIType,
             boolean throwExceptions,
             boolean isTargetEjb2x) {
         
@@ -237,24 +234,24 @@ public class CallEjbGenerator {
                     result = generateInjectionEjb21FromEE5(
                             fileObject,
                             className,
-                            isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
-                            isLocal ? ejbReference.getLocal() : ejbReference.getRemote()
+                            ejbReference.getHomeName(refIType),
+                            ejbReference.getComponentName(refIType)
                             );
                 } else {
                     result = generateInjection(
                             fileObject, 
                             className, 
-                            isLocal ? ejbReference.getLocal() : ejbReference.getRemote()
+                            ejbReference.getComponentName(refIType)
                             );
                 }
             } else {
                 result = generateJNDI(
                         fileObject, 
                         className, 
-                        isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
-                        isLocal ? ejbReference.getLocal() : ejbReference.getRemote(), 
+                        ejbReference.getHomeName(refIType),
+                        ejbReference.getComponentName(refIType),
                         throwExceptions,
-                        isLocal
+                        refIType != refIType.REMOTE
                         );
             }
         } catch (IOException ioe) {

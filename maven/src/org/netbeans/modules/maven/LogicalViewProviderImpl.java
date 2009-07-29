@@ -67,7 +67,7 @@ import org.openidex.search.SearchInfoFactory;
  * @author  Milos Kleint
  */
 public class LogicalViewProviderImpl implements LogicalViewProvider {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     /** Creates a new instance of LogicalViewProviderImpl */
     public LogicalViewProviderImpl(NbMavenProjectImpl proj) {
         project = proj;

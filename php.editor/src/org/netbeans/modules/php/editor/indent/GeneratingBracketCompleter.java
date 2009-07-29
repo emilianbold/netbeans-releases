@@ -200,7 +200,7 @@ public class GeneratingBracketCompleter {
                     type = new AttributedType() {
                         @Override
                         public String getTypeName() {
-                            return CodeUtils.extractParameterTypeName(p);
+                            return CodeUtils.extractUnqualifiedTypeName(p);
                         }
                     };
                 }

@@ -87,6 +87,10 @@ public class WebExecSupport implements RequestParametersQueryImplementation {
         return ""; // NOI18N
     }
 
+    /** Returns a web execution URL for a file
+     * @param f file to run
+     * @return part of URL string corresponding to file and parameters to use for execution. May be null if it can not be determined.
+     */
     public String getFileAndParameters(FileObject f) {
         
         List <WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks(); 
@@ -101,10 +105,15 @@ public class WebExecSupport implements RequestParametersQueryImplementation {
                 }
             }
         }
-        if (url == null)
-            url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (f).getDocumentBase (), f);
-        url = url + getQueryString(f);
-        url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+        if (url == null) {
+            FileObject docBase = wm.getDocumentBase();
+            if (docBase != null)
+                url = JspCompileUtil.findRelativeContextPath(docBase, f);
+        }
+        if (url != null) {
+            url = url + getQueryString(f);
+            url = url.replace(" ", "%20");
+        }
         return url;
     }
 }

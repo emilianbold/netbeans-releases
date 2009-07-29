@@ -86,7 +86,8 @@ public class HashMapRepository implements Repository {
     }
     
     private final Map<CharSequence, Unit> units;
-    private final Object unitsLock = new Object();
+    private static final class Lock {}
+    private final Object unitsLock = new Lock();
     
     /** 
      *  HashMapRepository creates from META-INF/services;

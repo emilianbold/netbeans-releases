@@ -52,6 +52,8 @@ import javax.swing.Icon;
 import org.netbeans.editor.*;
 import javax.swing.JLabel;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -163,8 +165,27 @@ class XMLResultItem implements CompletionItem {
                 if (len == replacementLength) {
                     component.setCaretPosition(offset + len);
                 } else {
-                    doc.remove( offset, len );
-                    doc.insertString( offset, replaceToText, null);
+                    boolean isTextRemovingAllowable = true;
+
+                    //+++ fix for issue #166462
+                    //    (http://www.netbeans.org/issues/show_bug.cgi?id=166462)
+                    // check that the next XML document text is a correct different
+                    // XML tag - it must no be removed
+                    XMLSyntaxSupport support = (XMLSyntaxSupport)
+                        org.netbeans.editor.Utilities.getSyntaxSupport(component);
+                    TokenItem tokenItem = support.getTokenChain(offset, doc.getLength());
+                    isTextRemovingAllowable = (tokenItem == null);
+                    if (! isTextRemovingAllowable) {
+                        TokenID tokenID = tokenItem.getTokenID();
+                        isTextRemovingAllowable = (tokenID != null) &&
+                            (tokenID.getNumericID() != XMLDefaultTokenContext.TAG_ID);
+                    }
+                    //+++ end of fix for issue #166462
+
+                    if (isTextRemovingAllowable) {
+                        doc.remove(offset, len);
+                    }
+                    doc.insertString(offset, replaceToText, null);
                 }
             } else {
                 int newCaretPos = component.getCaret().getDot() + replacementLength - len;
@@ -241,7 +262,8 @@ class XMLResultItem implements CompletionItem {
     public final String getItemText() {
         return replacementText;
     }
-    
+
+    @Override
     public String toString() {
         return getItemText();
     }
@@ -280,11 +302,11 @@ class XMLResultItem implements CompletionItem {
     }
     
     public Component getPaintComponent(boolean isSelected) {
-        XMLCompletionResultItemPaintComponent component =
-                new XMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
-        component.setSelected(isSelected);
-        component.setString(getItemText());
-        return component;
+        XMLCompletionResultItemPaintComponent paintComponent =
+            new XMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+        paintComponent.setSelected(isSelected);
+        paintComponent.setString(getItemText());
+        return paintComponent;
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {

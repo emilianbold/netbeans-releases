@@ -111,7 +111,8 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
                     if (DialogDescriptor.OK_OPTION == event.getSource()) {
                         if (updatePreview()) {
                             myDescriptor.setClosingOptions(new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION });
-                        } else {
+                        }
+                        else {
                             myDescriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
                         }
                     }
@@ -123,23 +124,21 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
     private Object[] getButtons() {
         return new Object[] {
-              DialogDescriptor.OK_OPTION,
-              createButton(
-              new ButtonAction(i18n("LBL_Apply"), i18n("TLT_Apply")) { // NOI18N
-
-                  public void actionPerformed(ActionEvent event) {
-                      updatePreview();
-                  }
-              }),
-              DialogDescriptor.CANCEL_OPTION
-          };
+            DialogDescriptor.OK_OPTION,
+            createButton(new ButtonAction(i18n("LBL_Apply"), i18n("TLT_Apply")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    updatePreview();
+                }
+            }),
+            DialogDescriptor.CANCEL_OPTION
+        };
     }
 
     private boolean updatePreview() {
         int zoomWidth = getInt(myZoomWidth.getText());
         int zoomHeight = getInt(myZoomHeight.getText());
 
-        if (!checkValue(zoomWidth, zoomHeight)) {
+        if ( !checkValue(zoomWidth, zoomHeight)) {
             return false;
         }
         Config.getDefault().setBorder(myBorder.isSelected());
@@ -174,11 +173,14 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
         if (myZoomFactor.isEnabled()) {
             zoom = myZoomFactor.getValue();
-        } else if (myZoomWidth.isEnabled()) {
+        }
+        else if (myZoomWidth.isEnabled()) {
             zoom = Percent.createZoomWidth(zoomWidth);
-        } else if (myZoomHeight.isEnabled()) {
+        }
+        else if (myZoomHeight.isEnabled()) {
             zoom = Percent.createZoomHeight(zoomHeight);
-        } else if (myFitToPage.isSelected()) {
+        }
+        else if (myFitToPage.isSelected()) {
             zoom = 0.0;
         }
         Config.getDefault().setZoom(zoom);
@@ -545,8 +547,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         c.insets = new Insets(0, 0, 0, 0);
         myWrapLines = createCheckBox(
             new ButtonAction(i18n("LBL_Wrap_Lines")) { // NOI18N
-                public void actionPerformed(ActionEvent event) {
-                }
+                public void actionPerformed(ActionEvent event) {}
             }
         );
         panel.add(myWrapLines, c);
@@ -554,8 +555,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         // use font
         myUseFont = createCheckBox(
             new ButtonAction(i18n("LBL_Use_Font"), i18n("TLT_Use_Font")) { // NOI18N
-                public void actionPerformed(ActionEvent event) {
-                }
+                public void actionPerformed(ActionEvent event) {}
             }
         );
         panel.add(myUseFont, c);
@@ -586,8 +586,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         c.insets = new Insets(0, 0, 0, 0);
         myAsEditor = createCheckBox(
             new ButtonAction(i18n("LBL_As_Editor"), i18n("TLT_As_Editor")) { // NOI18N
-                public void actionPerformed(ActionEvent event) {
-                }
+                public void actionPerformed(ActionEvent event) {}
             }
         );
         myAsEditor.addItemListener(new ItemListener() {
@@ -600,8 +599,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         // selection
         mySelection = createCheckBox(
             new ButtonAction(i18n("LBL_Selection"), i18n("TLT_Selection")) { // NOI18N
-                public void actionPerformed(ActionEvent event) {
-                }
+                public void actionPerformed(ActionEvent event) {}
             }
         );
         panel.add(mySelection, c);
@@ -705,7 +703,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
     private ItemListener createItemListener(final boolean width, final boolean height, final boolean factor) {
         return new ItemListener() {
-
             public void itemStateChanged(ItemEvent event) {
                 if (myZoomWidth != null) {
                     myZoomWidth.setEnabled(width);
@@ -720,8 +717,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         };
     }
 
-    private void updateAttribute() {
-    }
+    private void updateAttribute() {}
 
     private void updateText() {
         boolean enabled = !myAsEditor.isSelected();
@@ -883,11 +879,10 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         return 0.0;
     }
 
-    public void valueChanged(double value, int index) {
-    }
+    public void valueChanged(double value, int index) {}
 
     private double getDouble(Object value) {
-        if (!(value instanceof Double)) {
+        if ( !(value instanceof Double)) {
             return -1.0;
         }
         return ((Double) value).doubleValue();
