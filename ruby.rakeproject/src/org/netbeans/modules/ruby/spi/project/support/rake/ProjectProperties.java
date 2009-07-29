@@ -67,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;

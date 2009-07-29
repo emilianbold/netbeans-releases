@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.spi.project.support.rake;
+package org.openide.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -60,7 +60,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import org.openide.util.Parameters;
 
 // XXX: consider adding getInitialComment() and setInitialComment() methods
 // (useful e.g. for GeneratedFilesHelper)
@@ -80,6 +79,7 @@ import org.openide.util.Parameters;
  * Only (non-null) String is supported for keys and values.
  * This class is not thread-safe; use only from a single thread, or use {@link java.util.Collections#synchronizedMap}.
  * @author Jesse Glick, David Konecny
+ * @since org.openide.util 7.26
  */
 public final class EditableProperties extends AbstractMap<String,String> implements Cloneable {
     
@@ -107,13 +107,6 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     private static final int READING_KEY_VALUE = 2;
     
     /**
-     * Creates empty instance whose items will not be alphabetized.
-     */
-    public EditableProperties() {
-        this(/* mentioned in #64174 - documented default */false);
-    }
-
-    /**
      * Creates empty instance.
      * @param alphabetize alphabetize new items according to key or not
      */
@@ -121,17 +114,6 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         this.alphabetize = alphabetize;
         items = new LinkedList<Item>();
         itemIndex = new HashMap<String,Item>();
-    }
-    
-    /**
-     * Creates instance from an existing map. No comments will be defined.
-     * Any order from the existing map will be retained,
-     * and further additions will not be alphabetized.
-     * @param map a map from String to String
-     */
-    public EditableProperties(Map<String,String> map) {
-        this(false);
-        putAll(map);
     }
     
     /**
@@ -235,10 +217,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
     @Override
     public String put(String key, String value) {
-        Parameters.notNull("key", key); //NOI18N
-        if (value == null) {
-            throw new NullPointerException("The value for key [" + key + "] must not be null"); //NOI18N
-        }
+        Parameters.notNull("key", key);
+        Parameters.notNull(key, value);
         Item item = itemIndex.get(key);
         String result = null;
         if (item != null) {
@@ -394,13 +374,6 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         items.add(item);
         if (key != null) {
             itemIndex.put(key, item);
-        }
-    }
-    
-    private void removeItem(Item item) {
-        items.remove(item);
-        if (item.getKey() != null) {
-            itemIndex.remove(item.getKey());
         }
     }
     
@@ -594,7 +567,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
         
         private String mergeLines(List<String> lines) {
-            String line = ""; // XXX use StringBuilder instead
+            StringBuilder line = new StringBuilder();
             Iterator<String> it = lines.iterator();
             while (it.hasNext()) {
                 String l = trimLeft(it.next());
@@ -603,9 +576,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                     assert l.endsWith("\\") : lines;
                     l = l.substring(0, l.length()-1);
                 }
-                line += l;
+                line.append(l);
             }
-            return line;
+            return line.toString();
         }
         
         private void splitKeyValue(String line) {

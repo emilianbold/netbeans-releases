@@ -42,8 +42,9 @@ package org.netbeans.modules.jira.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
@@ -140,12 +141,14 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         panel.validateButton.setEnabled(false);
 
+        // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME"); 
             return false;
         }
 
+        // is name unique?
         String[] repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = JiraConfig.getInstance().getRepositories();
@@ -157,21 +160,29 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
         }
 
+        // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL"); 
             return false;
         }
         try {
-            new URL(url);
-        } catch (MalformedURLException ex) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT"); 
+            new URL(url); // check this first even if URL is an URI
+            new URI(url);
+        } catch (Exception ex) {
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");
+            Jira.LOG.log(Level.FINEST, errorMessage, ex);
             return false;
         }
 
+        // url ok - enable validate button
+        panel.validateButton.setEnabled(true);
+
+        // is url unique?
         if(repository.getTaskRepository() == null) {
             for (String repositoryName : repositories) {
-                JiraRepository repo = JiraConfig.getInstance().getRepository(repositoryName);
+                JiraRepository repo = Jira.getInstance().getRepository(repositoryName);
+                if(repo == null) continue;
                 if(url.trim().equals(repo.getUrl())) {
                     errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS"); 
                     return false;
@@ -179,7 +190,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
         }
 
-        panel.validateButton.setEnabled(true);
         return true;
     }
 

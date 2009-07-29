@@ -72,17 +72,17 @@ import org.openide.util.NbBundle;
  * @author Petr Jiricka
  */
 public class JspParserImpl implements JspParserAPI {
-    
+
     // @GuardedBy(this)
     final Map<WebModule, WebAppParseProxy> parseSupports = new WeakHashMap<WebModule, WebAppParseProxy>();
     private final TldChangeSupport tldChangeSupport;
-    
+
     private static final Logger LOGGER = Logger.getLogger(JspParserImpl.class.getName());
     private static Method webAppParserImplFactoryMethod;
-    
+
     private static final JspParserAPI.JspOpenInfo DEFAULT_OPENINFO =
             new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
-    
+
     /** Constructs a new Parser API implementation.
      */
     public JspParserImpl() {
@@ -158,10 +158,10 @@ public class JspParserImpl implements JspParserAPI {
             }
         }
     }
-    
+
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
         //try to fast create openinfo
-        
+
         //detects encoding even if there is not webmodule (null) or deployment descriptor doesn't exist
         FastOpenInfoParser fastOIP = FastOpenInfoParser.get(wm);
         if (fastOIP != null) {
@@ -170,7 +170,7 @@ public class JspParserImpl implements JspParserAPI {
                 return jspOI;
             }
         }
-        
+
         //no encoding found in the file or the deployment descriptor contains encoding declarations
         if (wm != null) {
             FileObject wmRoot = wm.getDocumentBase();
@@ -183,7 +183,7 @@ public class JspParserImpl implements JspParserAPI {
         }
         return DEFAULT_OPENINFO;
     }
-    
+
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
         if (wm == null) {
             return getNoWebModuleResult(jspFile, null);
@@ -198,7 +198,7 @@ public class JspParserImpl implements JspParserAPI {
         }
         return pp.analyzePage(jspFile, errorReportingMode);
     }
-    
+
     /**
      * Returns the mapping of the 'global' tag library URI to the location (resource
      * path) of the TLD associated with that tag library.
@@ -217,16 +217,16 @@ public class JspParserImpl implements JspParserAPI {
         WebAppParseProxy pp = getParseProxy(wm);
         return pp.getTaglibMap(true);
     }
-    
+
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
         WebAppParseProxy pp = parseSupports.get(wm);
-        if (pp == null) {
+        if (pp == null || !pp.isValid()) {
             pp = createParseProxy(wm);
             parseSupports.put(wm, pp);
         }
         return pp;
     }
-    
+
     private WebAppParseProxy createParseProxy(WebModule wm) {
         // PENDING - do caching for individual JSPs
         try {
@@ -241,12 +241,12 @@ public class JspParserImpl implements JspParserAPI {
         }
         return null;
     }
-    
+
     public URLClassLoader getModuleClassLoader(WebModule wm) {
         WebAppParseProxy pp = getParseProxy(wm);
         return pp.getWAClassLoader();
     }
-    
+
     private JspParserAPI.ParseResult getNoWebModuleResult(FileObject jspFile, WebModule wm) {
         JspParserAPI.ErrorDescriptor error = new JspParserAPI.ErrorDescriptor(null, jspFile, -1, -1,
                 NbBundle.getMessage(JspParserImpl.class, "MSG_webModuleNotFound", jspFile.getNameExt()), ""); // NOI18N
@@ -266,13 +266,13 @@ public class JspParserImpl implements JspParserAPI {
     }
 
     private static class ExtClassLoader extends URLClassLoader {
-        
+
         private static final AllPermission ALL_PERM = new AllPermission();
-        
+
         public ExtClassLoader(URL[] classLoadingURLs, ClassLoader parent) {
             super(classLoadingURLs, parent);
         }
-        
+
         @Override
         protected PermissionCollection getPermissions(CodeSource codesource) {
             PermissionCollection perms = super.getPermissions(codesource);

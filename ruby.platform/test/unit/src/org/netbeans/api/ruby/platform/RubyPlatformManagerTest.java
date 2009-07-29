@@ -42,8 +42,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
@@ -99,7 +99,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     }
 
     public void test60PlatformInBuildProperties() throws Exception {
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         ep.setProperty("rubyplatform.ruby_(1_8_6).interpreter", "/a/path/to/ruby");
         ep.setProperty("rubyplatform.ruby_(1_8_6).label", "ruby (1.8.6)");
         File bp = new File(getWorkDir(), "build.properties");
