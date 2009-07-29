@@ -130,12 +130,15 @@ public class ReferencedSchemasNode extends AbstractNode {
         }
         
         private boolean isIncludedSchema(AXIDocument thisDoc) {
-            AXIDocument original = context.getModel().getRoot();
-            if(original.getTargetNamespace().equals(thisDoc.getTargetNamespace())) {
-                return true;
+            if (thisDoc == null) {
+                return false;
             }
-            
-            return false;
+            AXIDocument original = context.getModel().getRoot();
+
+            if (original == null || original.getTargetNamespace() == null) {
+                return false;
+            }
+            return original.getTargetNamespace().equals(thisDoc.getTargetNamespace());
         }
         
         private AXIDocument doc;
