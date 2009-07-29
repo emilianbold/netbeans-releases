@@ -6,13 +6,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.mozilla.browser.MozillaExecutor;
 import org.mozilla.browser.MozillaKeyEvent;
 import org.mozilla.browser.MozillaMouseEvent;
 import org.mozilla.browser.MozillaPanel;
-import org.mozilla.browser.MozillaRuntimeException;
 import org.mozilla.browser.impl.ChromeAdapter;
 import org.mozilla.browser.impl.DOMUtils;
 import org.mozilla.dom.NodeFactory;
@@ -43,9 +40,8 @@ public class BrowserPanel extends MozillaPanel {
     private boolean backEnabled = false;
     private boolean forwardEnabled = false;
     private String statusText;
-    private String url;
     private String title;
-    private Document doc;
+    private boolean browserAttached = false;
 
     public BrowserPanel(PropertyChangeSupport propSupport, BrowserCallback callback) {
         super(VisibilityMode.FORCED_HIDDEN, VisibilityMode.FORCED_HIDDEN);
@@ -53,6 +49,14 @@ public class BrowserPanel extends MozillaPanel {
         this.callback = callback;
         setUpdateTitle(false);
         setMinimumSize(new Dimension(10, 10));
+    }
+
+    @Override
+    public void attachNewBrowser() {
+        if( browserAttached )
+            return;
+        super.attachNewBrowser();
+        browserAttached = true;
     }
 
     @Override
@@ -72,7 +76,6 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingEnded() {
         super.onLoadingEnded();
-//            doc = getDocument();
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_ENDED, null );
     }
@@ -108,13 +111,7 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onSetUrlbarText(String url) {
         super.onSetUrlbarText(url);
-        this.url = url;
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_URL, false, true);
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
     }
 
     @Override
@@ -130,7 +127,12 @@ public class BrowserPanel extends MozillaPanel {
     }
 
     public void dispose() {
-        //TODO implement
+        MozillaExecutor.mozAsyncExec(new Runnable() {
+            public void run() {
+                onDetachBrowser();
+                browserAttached = false;
+            }
+        });
     }
 
     private void updateCopyPaste() {
@@ -190,21 +192,6 @@ public class BrowserPanel extends MozillaPanel {
         }
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        try {
-            if( null != doc ) {
-                loadHTML(doc.getTextContent());
-                doc = null;
-            } else if( null != url ) {
-                this.load(url);
-            }
-        } catch( MozillaRuntimeException e ) {
-            Logger.getLogger(BrowserFactory.class.getName()).log(Level.FINE, null, e);
-        }
-    }
-
     public String getStatusText() {
         return statusText;
     }
@@ -251,5 +238,13 @@ public class BrowserPanel extends MozillaPanel {
             }
         };
         mozAsyncExec(r);
+    }
+
+    public void reparent() {
+        if( !browserAttached )
+            return;
+        removeNotify();
+        browserAttached = false;
+        addNotify();
     }
 }

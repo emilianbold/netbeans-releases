@@ -16,36 +16,45 @@ import org.openide.awt.HtmlBrowser;
  */
 class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
-    private final WebBrowser browser;
+    private WebBrowser browser;
+    private final Object LOCK = new Object();
 
     public HtmlBrowserImpl() {
         super();
-        browser = ApiAccessor.DEFAULT.createWebBrowser();
     }
 
     @Override
     public Component getComponent() {
-        return browser.getComponent();
+        return getBrowser().getComponent();
+    }
+
+    private WebBrowser getBrowser() {
+        synchronized( LOCK ) {
+            if( null == browser ) {
+                browser = ApiAccessor.DEFAULT.createWebBrowser();
+            }
+            return browser;
+        }
     }
 
     @Override
     public void reloadDocument() {
-        browser.reloadDocument();
+        getBrowser().reloadDocument();
     }
 
     @Override
     public void stopLoading() {
-        browser.stopLoading();
+        getBrowser().stopLoading();
     }
 
     @Override
     public void setURL(URL url) {
-        browser.setURL(url.toString());
+        getBrowser().setURL(url.toString());
     }
 
     @Override
     public URL getURL() {
-        String strUrl = browser.getURL();
+        String strUrl = getBrowser().getURL();
         if( null == strUrl )
             return null;
         try {
@@ -58,115 +67,61 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
     @Override
     public String getStatusMessage() {
-        return browser.getStatusMessage();
+        return getBrowser().getStatusMessage();
     }
 
     @Override
     public String getTitle() {
-        return browser.getTitle();
+        return getBrowser().getTitle();
     }
 
     @Override
     public boolean isForward() {
-        return browser.isForward();
+        return getBrowser().isForward();
     }
 
     @Override
     public void forward() {
-        browser.forward();
+        getBrowser().forward();
     }
 
     @Override
     public boolean isBackward() {
-        return browser.isBackward();
+        return getBrowser().isBackward();
     }
 
     @Override
     public void backward() {
-        browser.backward();
+        getBrowser().backward();
     }
 
     @Override
     public boolean isHistory() {
-        return browser.isHistory();
+        return getBrowser().isHistory();
     }
 
     @Override
     public void showHistory() {
-        browser.showHistory();
+        getBrowser().showHistory();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        browser.addPropertyChangeListener(l);
+        getBrowser().addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        browser.removePropertyChangeListener(l);
+        getBrowser().removePropertyChangeListener(l);
     }
 
     @Override
     public void dispose() {
-        browser.dispose();
+        synchronized( LOCK ) {
+            if( null != browser ) {
+                browser.dispose();
+            }
+            browser = null;
+        }
     }
-
-//    private void initialize() {
-//        synchronized( this ) {
-//            if( initialized ) {
-//                return;
-//            }
-//            initialized = true;
-//            final XULManager xm = XULManager.getDefault();
-//            if( !xm.isFinished() ) {
-//                addLabel("Initializing...");
-//                xm.addChangeListener(new ChangeListener() {
-//
-//                    public void stateChanged(ChangeEvent e) {
-//                        xm.removeChangeListener(this);
-//                        mozilla = new BrowserPanel(propSupport);
-//                        wrapper.removeAll();
-//                        wrapper.add(mozilla, BorderLayout.CENTER);
-//                        if( null != urlToLoad ) {
-//                            setURL(urlToLoad);
-//                        }
-//                    }
-//                });
-//                return;
-//            }
-//            if( xm.isXULRunnerAvailable() ) {
-//                mozilla = new BrowserPanel(propSupport);
-//                wrapper.add(mozilla, BorderLayout.CENTER);
-//            } else {
-//                addLabel("<XULRunner initialization failed, see log file for more details.>");
-//            }
-//        }
-//    }
-//
-//    private void addLabel(String text) {
-//        JLabel lbl = new JLabel(text);
-//        lbl.setHorizontalAlignment(JLabel.CENTER);
-//        wrapper.removeAll();
-//        wrapper.add(lbl, BorderLayout.CENTER);
-//    }
-//
-//    private void showCookies() {
-//        nsICookieManager cm = XPCOMUtils.getService("@browser.org/cookiemanager;1", nsICookieManager.class);
-//        if( null != cm ) {
-//            nsISimpleEnumerator enumerator = cm.getEnumerator();
-//            while( enumerator.hasMoreElements() ) {
-//                nsISupports obj = enumerator.getNext();
-//                nsICookie cookie = XPCOMUtils.qi(obj, nsICookie.class);
-//                if( null != cookie ) {
-//                    System.out.println("name: " + cookie.getName());
-//                    System.out.println("value: " + cookie.getValue());
-//                    System.out.println("host: " + cookie.getHost());
-//                    System.out.println("path: " + cookie.getPath());
-//                    System.out.println();
-//                }
-//            }
-//            cm.remove("kenai.com", "SSO", "/", false);
-//            cm.remove("kenai.com", "auth_token", "/", false);
-//        }
-//    }
 }
