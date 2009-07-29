@@ -280,6 +280,9 @@ import org.openide.util.NbBundle;
         }
 
         private static boolean isSingleThreadOnOneProcessorHighLoaded(List<DataRow> data, int processorsNumber) {
+
+            //HostInfoUtils
+
             for (DataRow dataRow : data) {
                 double utime = (Float) dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
                 int threads = (Integer) dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
