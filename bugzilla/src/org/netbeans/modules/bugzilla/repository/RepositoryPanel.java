@@ -47,21 +47,18 @@ package org.netbeans.modules.bugzilla.repository;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class RepositoryPanel extends javax.swing.JPanel implements DocumentListener, ActionListener {
+public class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
     private RepositoryController controller;
 
     /** Creates new form RepositoryPanel */
     public RepositoryPanel(RepositoryController controller) {
         initComponents();
         this.controller = controller;
-        urlField.getDocument().addDocumentListener(this);
         validateLabel.setVisible(false);
         progressPanel.setVisible(false);
         httpCheckBox.addActionListener(this);
@@ -271,23 +268,6 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     final javax.swing.JButton validateButton = new javax.swing.JButton();
     final javax.swing.JLabel validateLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
-
-    public void insertUpdate(DocumentEvent e) {
-        validateText();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        validateText();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        validateText();
-    }
-
-    private void validateText() {
-        String txt = urlField.getText();
-        validateButton.setEnabled(txt != null && !txt.equals(""));              // NOI18N
-    }
 
     void enableFields(boolean bl) {
         psswdLabel.setEnabled(bl);
