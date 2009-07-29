@@ -250,7 +250,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void backward() {
         if( !isInitialized() )
             return;
-        browser.goForward();
+        browser.goBack();
     }
 
     @Override
