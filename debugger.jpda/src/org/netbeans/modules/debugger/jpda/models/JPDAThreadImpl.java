@@ -948,7 +948,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
-                suspendedNoFire = !doFire;
+                suspendedNoFire = false;
                 suspendRequested = false; // Regularly suspended now
                 suspendedToFire = Boolean.TRUE;
                 if (doFire) {
