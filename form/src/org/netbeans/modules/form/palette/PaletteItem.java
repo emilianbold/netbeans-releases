@@ -60,7 +60,7 @@ import org.openide.filesystems.FileObject;
  */
 
 public final class PaletteItem implements Node.Cookie {
-    public static String TYPE_CHOOSE_BEAN = "chooseBean"; // NOI18N
+    public static final String TYPE_CHOOSE_BEAN = "chooseBean"; // NOI18N
     private PaletteItemDataObject itemDataObject;
 
     // raw data (as read from the item file - to be resolved lazily)
