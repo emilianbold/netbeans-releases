@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -63,6 +64,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         progressPanel.setVisible(false);
         httpCheckBox.addActionListener(this);
         enableHttpFields();
+        connectionLabel.setForeground(new Color(0, 88, 0));
     }
 
     @Override
@@ -70,6 +72,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         super.addNotify();
         // XXX use controler.opened() instead
         controller.populate();
+        connectionLabel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -133,11 +136,16 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
 
         httpPsswdField.setColumns(15);
 
+        connectionLabel.setForeground(java.awt.Color.green);
+        connectionLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.connectionLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(httpCheckBox)
+            .add(layout.createSequentialGroup()
+                .add(httpCheckBox)
+                .addContainerGap(321, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(27, 27, 27)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -147,28 +155,30 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, httpPsswdField)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, httpUserField)))
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                    .add(validateButton)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(validateLabel)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                    .addContainerGap())
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(urlLabel)
-                        .add(psswdLabel)
-                        .add(userLabel)
-                        .add(nameLabel))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, urlField)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, nameField)))))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(urlLabel)
+                            .add(psswdLabel)
+                            .add(userLabel)
+                            .add(nameLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
+                            .add(urlField)
+                            .add(nameField)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(validateButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(validateLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(connectionLabel)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -198,13 +208,13 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(httpPsswdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(psswdLabel1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(validateButton)
+                    .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(validateLabel)
-                    .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(layout.createSequentialGroup()
-                .add(239, 239, 239)
-                .add(validateButton))
+                    .add(connectionLabel))
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -225,6 +235,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JLabel connectionLabel = new javax.swing.JLabel();
     final javax.swing.JCheckBox httpCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPasswordField httpPsswdField = new javax.swing.JPasswordField();
     final javax.swing.JTextField httpUserField = new javax.swing.JTextField();
