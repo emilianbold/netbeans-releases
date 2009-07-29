@@ -306,6 +306,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         task[0] = rp.create(new Runnable() {
             public void run() {
+                panel.connectionLabel.setVisible(false);
                 handle.start();
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
@@ -333,7 +334,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                         }
                         validateError = true;
                         fireDataChanged();
-
+                    } else {
+                        panel.connectionLabel.setVisible(true);
                     }
                 } finally {
                     panel.enableFields(true);
