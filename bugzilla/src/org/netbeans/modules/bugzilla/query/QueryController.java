@@ -660,9 +660,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onWeb() {
         String params = getUrlParameters();
-        String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; // NOI18N //XXX need constants
+        String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
 
-        final String urlString = repoURL + (params != null && !params.equals("") ? params : "");
+        final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 URL url;
