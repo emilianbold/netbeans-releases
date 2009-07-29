@@ -42,8 +42,13 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
@@ -60,6 +65,7 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -146,7 +152,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME"); 
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");
             return false;
         }
 
@@ -155,7 +161,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = BugzillaConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS"); 
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");
                     return false;
                 }
             }
@@ -163,13 +169,18 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL"); 
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");
             return false;
         }
+
         try {
             new URL(url);
-        } catch (MalformedURLException ex) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT"); 
+            new URI(url);
+        } catch (Exception ex) {
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");
+            if(Bugzilla.LOG.isLoggable(Level.FINEST)) {
+                Bugzilla.LOG.log(Level.FINEST, errorMessage, ex);
+            }
             return false;
         }
 
@@ -177,7 +188,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS"); 
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");
                     return false;
                 }
             }
@@ -312,13 +323,13 @@ public class RepositoryController extends BugtrackingController implements Docum
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
                             Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
-                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); 
+                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");
                         } else {
                             errorMessage = cmd.getErrorMessage();
                         }
                         validateError = true;
                         fireDataChanged();
-                        
+
                     }
                 } finally {
                     panel.enableFields(true);
