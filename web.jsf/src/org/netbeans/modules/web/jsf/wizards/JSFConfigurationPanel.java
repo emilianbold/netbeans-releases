@@ -94,7 +94,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         facesSuffix = ".xhtml"; //NOI18N
         validateXml = true;
         verifyObjects = false;
-        updateFacesMapping();
+        facesMapping = "/faces/*";
         getComponent();
     }
     
@@ -123,15 +123,6 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.facesMapping = facesMapping;
     }
 
-
-    private void updateFacesMapping() {
-        if (enableFacelets)
-            facesMapping = "*.jsf"; //NOI18N
-        else
-            facesMapping = "/faces/*"; //NOI18N
-        setURLPattern(facesMapping);
-    }
-    
     public void update() {
         component.update();
     }
@@ -268,7 +259,6 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public void setEnableFacelets(boolean enableFacelets) {
         if (this.enableFacelets != enableFacelets) {
             this.enableFacelets = enableFacelets;
-            updateFacesMapping();
         }
     }
 
