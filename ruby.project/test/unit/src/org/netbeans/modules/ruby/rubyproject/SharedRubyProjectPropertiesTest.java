@@ -42,9 +42,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.RUBY_OPTIONS;
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.RUBY_OPTIONS_DEPRECATED;
