@@ -62,7 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.mozilla.browser.MozillaRuntimeException;
 import org.mozilla.browser.XPCOMUtils;
-import org.mozilla.interfaces.nsICookie2;
+import org.mozilla.interfaces.nsICookie;
 import org.mozilla.interfaces.nsICookieManager;
 import org.mozilla.interfaces.nsICookieManager2;
 import org.mozilla.interfaces.nsISimpleEnumerator;
@@ -326,10 +326,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             nsICookieManager cm = XPCOMUtils.getService(SERVICE_COOKIE_MANAGER, nsICookieManager.class);
             if( null != cm ) {
                 nsISimpleEnumerator enumerator = cm.getEnumerator();
-                nsICookie2 theCookie = null;
+                nsICookie theCookie = null;
                 while( enumerator.hasMoreElements() ) {
                     nsISupports obj = enumerator.getNext();
-                    nsICookie2 cookie = XPCOMUtils.qi(obj, nsICookie2.class);
+                    nsICookie cookie = XPCOMUtils.qi(obj, nsICookie.class);
                     if( null == cookie )
                         continue;
                     LOG.log(Level.FINER, "Cookie: domain={0}, name={1}, path={2}, value={3}", //NOI18N
@@ -449,14 +449,14 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         };
     }
 
-    private static Map<String, String> cookie2map(nsICookie2 cookie) {
+    private static Map<String, String> cookie2map(nsICookie cookie) {
         Map<String, String> res = new HashMap<String, String>(10);
         res.put(CA_PATH, cookie.getPath());
         res.put(CA_DOMAIN, cookie.getHost());
-        res.put(CA_EXPIRY, String.valueOf(cookie.getExpiry()));
-        res.put(CA_IS_HTTP_ONLY, String.valueOf(cookie.getIsHttpOnly()));
+//        res.put(CA_EXPIRY, String.valueOf(cookie.getExpiry()));
+//        res.put(CA_IS_HTTP_ONLY, String.valueOf(cookie.getIsHttpOnly()));
         res.put(CA_IS_SECURE, String.valueOf(cookie.getIsSecure()));
-        res.put(CA_IS_SESSION, String.valueOf(cookie.getIsSession()));
+//        res.put(CA_IS_SESSION, String.valueOf(cookie.getIsSession()));
         res.put(CA_NAME, cookie.getName());
         res.put(CA_VALUE, cookie.getValue());
         return res;
