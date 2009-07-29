@@ -51,8 +51,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +63,7 @@ import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -73,7 +76,8 @@ import org.openide.windows.OutputWriter;
 public class SftpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
-    static final Map<Integer, String> PASSPHRASES = new HashMap<Integer, String>();
+    private static final Map<Integer, String> PASSPHRASES = new HashMap<Integer, String>();
+    private static final Map<Integer, Set<String>> MESSAGES = new HashMap<Integer, Set<String>>();
 
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
@@ -142,6 +146,7 @@ public class SftpClient implements RemoteClient {
             // remove password from a memory storage
             PASSWORDS.remove(configuration.hashCode());
             PASSPHRASES.remove(configuration.hashCode());
+            MESSAGES.remove(configuration.hashCode());
             disconnect();
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
@@ -423,6 +428,40 @@ public class SftpClient implements RemoteClient {
         return password;
     }
 
+    static void showMessageForConfiguration(SftpConfiguration configuration, String message) {
+        if (!StringUtils.hasText(message)
+                || getMessages(configuration).contains(message)) {
+            return;
+        }
+        MessagePanel messagePanel = new MessagePanel(message);
+        DialogDescriptor descriptor = new DialogDescriptor(
+                messagePanel,
+                configuration.getDisplayName(),
+                true,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
+            if (messagePanel.doNotShowThisMessageAgain()) {
+                getMessages(configuration).add(message);
+            }
+        }
+    }
+
+    private static Set<String> getMessages(SftpConfiguration configuration) {
+        Set<String> messages;
+        synchronized (MESSAGES) {
+            messages = MESSAGES.get(configuration.hashCode());
+            if (messages == null) {
+                messages = new HashSet<String>();
+                MESSAGES.put(configuration.hashCode(), messages);
+            }
+        }
+        return messages;
+    }
+
     private static final class RemoteFileImpl implements RemoteFile {
         private final ChannelSftp.LsEntry entry;
 
@@ -545,7 +584,7 @@ public class SftpClient implements RemoteClient {
         }
 
         public void showMessage(String message) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message));
+            showMessageForConfiguration(configuration, message);
         }
 
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
