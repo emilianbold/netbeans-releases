@@ -43,12 +43,14 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -91,6 +93,14 @@ public abstract class WebRestSupport extends RestSupport {
             File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml"); // NOI18N
             if (dd != null && dd.exists()) {
                 return FileUtil.toFileObject(dd);
+            } else {
+                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+                if (wm != null) {
+                    FileObject webInf = wm.getWebInf();
+                    if (webInf != null) {
+                        return DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+                    }
+                }
             }
         }
         return null;
