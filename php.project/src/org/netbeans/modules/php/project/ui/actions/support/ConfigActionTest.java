@@ -185,7 +185,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
-        return new PhpUnitInfo(testDirectory, testDirectory, null);
+        return new PhpUnitInfo(testDirectory, null);
     }
 
     private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
@@ -194,16 +194,14 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        return new PhpUnitInfo(fileObj.getParent(), fileObj, fileObj.getName());
+        return new PhpUnitInfo(fileObj, fileObj.getName());
     }
 
     private static class PhpUnitInfo {
-        public final FileObject workingDirectory;
         public final FileObject startFile;
         public final String testName;
 
-        public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
-            this.workingDirectory = workingDirectory;
+        public PhpUnitInfo(FileObject startFile, String testName) {
             this.startFile = startFile;
             this.testName = testName;
         }
@@ -259,7 +257,7 @@ class ConfigActionTest extends ConfigAction {
 
         public ExternalProcessBuilder getProcessBuilder() {
             ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                    .workingDirectory(FileUtil.toFile(info.workingDirectory));
+                    .workingDirectory(phpUnit.getWorkingDirectory());
             for (String param : phpUnit.getParameters()) {
                 externalProcessBuilder = externalProcessBuilder.addArgument(param);
             }
@@ -289,6 +287,7 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.SUITE.getName())
                     .addArgument(PhpUnit.SUITE.getAbsolutePath())
                     .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;
@@ -310,7 +309,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public boolean isValid() {
-            return phpUnit.isValid() && info.workingDirectory != null && info.startFile != null;
+            return phpUnit.isValid() && info.startFile != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
