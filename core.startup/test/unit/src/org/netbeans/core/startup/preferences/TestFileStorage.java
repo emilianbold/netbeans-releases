@@ -42,7 +42,7 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
-import java.util.Properties;
+import org.openide.util.EditableProperties;
 
 /**
  *
@@ -70,7 +70,7 @@ public class TestFileStorage extends NbPreferencesTest.TestBasicSetup {
         noFileRepresentationAssertion();
         
         //load doesn't change file layout
-        Properties p = instance.load();
+        EditableProperties p = instance.load();
         p.put("key", "value");//NOI18N
         noFileRepresentationAssertion();
         

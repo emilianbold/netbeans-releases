@@ -72,7 +72,7 @@ public final class THAActionsProvider {
         return instance;
     }
 
-    public Action getStartThreadAnalisysAction() {
+    public Action getStartThreadAnalysisAction() {
         return startThreadAnalyzer;
     }
 
