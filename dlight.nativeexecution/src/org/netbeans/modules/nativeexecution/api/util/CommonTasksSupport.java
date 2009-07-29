@@ -48,10 +48,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
@@ -287,6 +289,55 @@ public final class CommonTasksSupport {
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Creating directory " + dirname); // NOI18N
+        return execService.run();
+    }
+
+    /**
+     * Sends the signal to the process.
+     *
+     * @param execEnv  execution environment of the process
+     * @param pid  pid of the process
+     * @param signal  signal number
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the signal task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, int signal, final Writer error) {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+
+        boolean isWindows = false;
+        HostInfo hostInfo = null;
+        if (execEnv.isLocal()) {
+            try {
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                isWindows = hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+            } catch (IOException ex) {
+                // should not happen, it's localhost!
+            } catch (CancellationException ex) {
+                // should not happen, it's localhost!
+            }
+        }
+
+        if (isWindows) {
+            npb.setExecutable(hostInfo.getShell()).setArguments(
+                    "-c", "kill", String.valueOf(-signal), String.valueOf(pid)); // NOI18N
+        } else {
+            npb.setExecutable("/bin/kill").setArguments( // NOI18N
+                    String.valueOf(-signal), String.valueOf(pid));
+        }
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Sending signal to " + pid); // NOI18N
         return execService.run();
     }
 

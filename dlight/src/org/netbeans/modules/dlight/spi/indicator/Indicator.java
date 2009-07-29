@@ -97,6 +97,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
+    private DLightTarget target;
     private boolean visible;
 
     static {
@@ -186,7 +187,20 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     private void targetStarted(DLightTarget target) {
         synchronized (lock) {
+            this.target = target;
             IndicatorTickerService.getInstance().subsribe(tickerListener);
+        }
+    }
+
+    private void targetFinished(DLightTarget target) {
+        synchronized (lock) {
+            IndicatorTickerService.getInstance().unsubscribe(tickerListener);
+        }
+    }
+
+    public final DLightTarget getTarget() {
+        synchronized (lock) {
+            return target;
         }
     }
 
@@ -198,12 +212,6 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     public final void setVisible(boolean visible) {
         this.visible = visible;
-    }
-
-    private void targetFinished(DLightTarget target) {
-        synchronized (lock) {
-            IndicatorTickerService.getInstance().unsubscribe(tickerListener);
-        }
     }
 
     private void initMouseListener() {
