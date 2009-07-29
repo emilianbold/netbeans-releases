@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
@@ -199,7 +201,14 @@ public class GlobalSourcePath {
         for (ClassPath cp : r.sourceCps) {
             boolean isNew = !r.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
-                result.add(ClassPathSupport.createResource(entry.getURL()));
+                try {
+                    URL url = entry.getURL ();
+                    if (!url.toExternalForm ().endsWith ("/"))
+                        url = new URL (url.toExternalForm () + "/");
+                    result.add (ClassPathSupport.createResource (url));
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault ().notify (ioe);
+                }
             }
             boolean notContained = newCps.add (cp);
             if (isNew && notContained) {
@@ -212,7 +221,14 @@ public class GlobalSourcePath {
         for (ClassPath cp : r.bootCps) {
             boolean isNew = !r.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
-                result.add(ClassPathSupport.createResource(entry.getURL()));
+                try {
+                    URL url = entry.getURL ();
+                    if (!url.toExternalForm ().endsWith ("/"))
+                        url = new URL (url.toExternalForm () + "/");
+                    result.add (ClassPathSupport.createResource (url));
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault ().notify (ioe);
+                }
             }
             boolean notContained = newCps.add (cp);
             if (isNew && notContained) {
@@ -278,7 +294,13 @@ public class GlobalSourcePath {
                     List<URL> cacheURLs = new ArrayList<URL> ();
                     Collection<? extends PathResourceImplementation> srcRoots = getSources(sr.getRoots(),cacheURLs, r.unknownRoots);
                     if (srcRoots.isEmpty()) {
-                        binaryResult.add(ClassPathSupport.createResource(url));
+                        try {
+                            if (!url.toExternalForm ().endsWith ("/"))
+                                url = new URL (url.toExternalForm () + "/");
+                            binaryResult.add (ClassPathSupport.createResource (url));
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault ().notify (ioe);
+                        }
                     }
                     else {
                         result.addAll(srcRoots);
@@ -303,7 +325,13 @@ public class GlobalSourcePath {
             entry.getValue().removeChangeListener(r.changeListener);
         }                        
         for (URL unknownRoot : r.unknownRoots.keySet()) {
-            unknownResult.add (ClassPathSupport.createResource(unknownRoot));
+            try {
+                if (!unknownRoot.toExternalForm ().endsWith ("/"))
+                    unknownRoot = new URL (unknownRoot.toExternalForm () + "/");
+                unknownResult.add (ClassPathSupport.createResource (unknownRoot));
+            } catch (IOException ioe) {
+                ErrorManager.getDefault ().notify (ioe);
+            }
         }        
         return new Result (r.timeStamp, new ArrayList<PathResourceImplementation> (result), new ArrayList(binaryResult), new ArrayList<PathResourceImplementation>(unknownResult),
                 newCps,newSR,translatedRoots, r.unknownRoots);
@@ -346,7 +374,14 @@ public class GlobalSourcePath {
                 if (unknownRoots != null) {
                     unknownRoots.remove (urls[i]);
                 }
-                result.add(ClassPathSupport.createResource(urls[i]));
+                try {
+                    URL url = urls[i];
+                    if (!url.toExternalForm ().endsWith ("/"))
+                        url = new URL (url.toExternalForm () + "/");
+                    result.add (ClassPathSupport.createResource (url));
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault ().notify (ioe);
+                }
             }
             return result;
         }

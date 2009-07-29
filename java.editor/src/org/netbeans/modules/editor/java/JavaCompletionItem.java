@@ -1953,10 +1953,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         doc.remove(offset2, length);
                         if (insertName) {
                             doc.insertString(pos.getOffset(), simpleName + text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() + simpleName.length() + text2.indexOf('('));
+                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         } else {
                             doc.insertString(pos.getOffset(), text2, null);
-                            position [0] = doc.createPosition(offset2 + text2.indexOf('('));
+                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         }
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
