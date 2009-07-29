@@ -118,6 +118,22 @@ public class QualifiedName {
         assert kind.equals(QualifiedNameKind.UNQUALIFIED);
         return new QualifiedName(false, Collections.singletonList(name));
     }
+    public static QualifiedName createFullyQualified(String name, String namespaceName) {
+        List<String> list = new ArrayList<String>();        
+        if (name.startsWith("\\") || name.endsWith("\\")) {//NOI18N
+            throw new IllegalArgumentException();
+        }
+        if (namespaceName != null && namespaceName.trim().length() > 0) {
+            if (namespaceName.startsWith("\\") || namespaceName.endsWith("\\")) {//NOI18N
+                throw new IllegalArgumentException();
+            }
+            final String[] segments =  namespaceName.split("\\\\");//NOI18N
+            list.addAll(Arrays.asList(segments));
+        }
+        list.add(name);
+        return new QualifiedName(true,list);
+
+    }
     public static QualifiedName create(String name) {
         final QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
         if (kind.isUnqualified()) {
@@ -213,10 +229,13 @@ public class QualifiedName {
     public QualifiedName toName() {
         return createUnqualifiedName(getSegments().getLast());
     }
-    public QualifiedName toNamespaceName() {
+    public QualifiedName toNamespaceName(boolean fullyQualified) {
         LinkedList<String> list = new LinkedList<String>(getSegments());
         list.removeLast();
-        return new QualifiedName(false, list);
+        return new QualifiedName(fullyQualified, list);
+    }
+    public QualifiedName toNamespaceName() {
+        return toNamespaceName(false);
     }
 
     @Override

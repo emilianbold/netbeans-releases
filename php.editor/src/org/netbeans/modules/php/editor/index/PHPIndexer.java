@@ -188,6 +188,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
+            PHPIndex.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = ModelFactory.getModel(r);
@@ -300,7 +301,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 5;
+        public static final int VERSION = 6;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

@@ -77,17 +77,19 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
     );
 
-
-    /*private static final List<Object[]> NAMESPACE_ONLY_TOKENS = Arrays.asList(
+    private static final List<Object[]> USE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
+    );
+
+    private static final List<Object[]> NAMESPACE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NAMESPACE},
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
-    );*/
+    );
 
     private static final List<Object[]> TYPE_TOKENCHAINS = Arrays.asList(
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
@@ -99,10 +101,10 @@ class CompletionContextFinder {
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
         new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
         new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}//,
+        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
         //TODO: doesn't work properly
-        //new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
-        //new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
     );
 
     private static final List<Object[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
@@ -193,8 +195,7 @@ class CompletionContextFinder {
 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_ELEMENT,
-        NAMESPACE_CLASS_ELEMENT, NAMESPACE_ONLY};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD, USE_KEYWORD};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -236,7 +237,11 @@ class CompletionContextFinder {
             return clsIfaceDeclContext;
         }
 
-        if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
+        if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS)){
+            return CompletionContext.USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS)){
+            return CompletionContext.NAMESPACE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
             return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.CLASS_MEMBER;

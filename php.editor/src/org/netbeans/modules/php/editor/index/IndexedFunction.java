@@ -52,7 +52,7 @@ import org.netbeans.modules.php.editor.model.QualifiedName;
  *
  * @author Tor Norbye
  */
-public class IndexedFunction extends IndexedElement implements FunctionElement {
+public class IndexedFunction extends IndexedFullyQualified implements FunctionElement {
     private String arguments;
     private String namespaceName;
     private String[] args;
@@ -183,12 +183,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     }
 
     public String getFullyQualifiedName() {
-        QualifiedName qn = QualifiedName.create(name);
-        if (namespaceName != null) {
-            qn = qn.toFullyQualified(QualifiedName.create(namespaceName));
-        } else {
-            qn = qn.toFullyQualified();
-        }
+        QualifiedName qn = QualifiedName.createFullyQualified(name, namespaceName);
         return qn.toString();
     }
 }
