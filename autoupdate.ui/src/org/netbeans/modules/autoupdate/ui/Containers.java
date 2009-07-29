@@ -72,6 +72,8 @@ public class Containers {
             forUpdate().removeAll();
             forEnable().removeAll();
             forDisable().removeAll();
+            forCustomInstall().removeAll();
+            forCustomUninstall().removeAll();
         } catch (NullPointerException npe) {
             // doesn't matter, can ignore that
         }
