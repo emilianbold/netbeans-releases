@@ -98,7 +98,7 @@ public abstract class WebRestSupport extends RestSupport {
                 if (wm != null) {
                     FileObject webInf = wm.getWebInf();
                     if (webInf != null) {
-                        return DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+                        return DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
                     }
                 }
             }
