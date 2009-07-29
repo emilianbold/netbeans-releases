@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,10 +46,8 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.util.*;
-import org.openide.*;
 import org.openide.nodes.Node;
 import java.io.File;
-import java.lang.String;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.*;
@@ -88,7 +86,7 @@ public class IgnoreAction extends ContextAction {
     }
     
     public int getActionStatus(Node [] nodes) {
-        return getActionStatus(SvnUtils.getCurrentContext(nodes).getFiles());
+        return getActionStatus(getCachedContext(nodes).getFiles());
     }
 
     public int getActionStatus(File [] files) {
