@@ -110,6 +110,7 @@ made subject to such option by the copyright holder.
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
@@ -149,4 +150,25 @@ made subject to such option by the copyright holder.
     <property name="cluster.path.final" refid="cluster.path.id"/>
   </target>
   
+  <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+    	<format property="buildstamp" pattern="yyMMdd"/>
+    </tstamp>
+    <tstamp>
+    	<format property="buildday" pattern="d MMM yyyy" locale="en" />
+    </tstamp>
+
+    <property environment="hudson"/>
+    <condition property="buildnumber" value="${hudson.JOB_NAME}-${hudson.BUILD_NUMBER}-on-${buildstamp}">
+      <and>
+        <isset property="hudson.JOB_NAME"/>
+        <isset property="hudson.BUILD_NUMBER"/>
+      </and>
+    </condition>
+    <property name="buildnumber" value="${buildstamp}"/>
+    <echo message="${buildnumber}"/>
+    <!-- Overridable. Note: need not necessarily be a number at all): -->
+    <property name="buildnum" value="dev-${buildnumber}"/>
+  </target>
+
 </project>

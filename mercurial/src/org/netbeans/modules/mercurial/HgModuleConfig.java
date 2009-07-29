@@ -568,15 +568,15 @@ public class HgModuleConfig {
         }
     }
     
-    // private methods ~~~~~~~~~~~~~~~~~~
-    
-    private synchronized Set<String> getCommitExclusions() {
+    synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
             exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
         }
         return exclusions;
     }
     
+    // private methods ~~~~~~~~~~~~~~~~~~
+
     private static Pattern[] getDefaultFilePatterns() {
         return new Pattern [] {
                         Pattern.compile("cvslog\\..*"), // NOI18N

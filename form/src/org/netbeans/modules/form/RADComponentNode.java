@@ -649,7 +649,7 @@ public class RADComponentNode extends FormNode
                 comps = null;
             
             Node[] nodes = new Node[comps != null ? comps.length : 0];
-            for (int i = 0; i < comps.length; i++)
+            for (int i = 0; i < nodes.length; i++)
                 nodes[i] = comps[i].getNodeReference();
             
             return nodes;

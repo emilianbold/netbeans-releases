@@ -211,22 +211,23 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
     
     private Difference getDifferenceAt(MouseEvent event) {
-        if (currentDiff == null) {
+        Difference[] paintDiff = currentDiff;
+        if (paintDiff == null) {
             return null;
         }
         int line = getLineFromMouseEvent(event);
         if (line == -1) {
             return null;
         }
-        Difference diff = getDifference(line + 1);
+        Difference diff = getDifference(line + 1, paintDiff);
         if (diff == null) {
             // delete annotations (arrows) are rendered between lines
-            diff = getDifference(line);
+            diff = getDifference(line, paintDiff);
             if ((diff != null) && (diff.getType() != Difference.DELETE)) {
                 diff = null;
             }
         } else if (diff.getType() == Difference.DELETE) {
-            Difference diffPrev = getDifference(line);
+            Difference diffPrev = getDifference(line, paintDiff);
             if (diffPrev != null && diffPrev.getType() == Difference.DELETE) {
                 // two delete arrows next to each other cause some selection problems, select the closer one
                 diff = getCloserDifference(event, diffPrev, diff);
@@ -275,9 +276,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private int getDiffIndex(Difference diff) {
-        for (int i = 0; i < currentDiff.length; i++) {
-            if (diff == currentDiff[i]) {
-                return i;
+        Difference[] diffs = currentDiff;
+        if (diffs != null) {
+            for (int i = 0; i < diffs.length; i++) {
+                if (diff == diffs[i]) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -330,17 +334,23 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
     
     void onPrevious(Difference diff) {
-        diff = currentDiff[getDiffIndex(diff) - 1];
-        Point location = scrollToDifference(diff);
-        showTooltipWindow(location, diff);
-        textComponent.repaint();
+        Difference[] diffs = currentDiff;
+        if (diffs != null) {
+            diff = diffs[getDiffIndex(diff) - 1];
+            Point location = scrollToDifference(diff);
+            showTooltipWindow(location, diff);
+            textComponent.repaint();
+        }
     }
 
     void onNext(Difference diff) {
-        diff = currentDiff[getDiffIndex(diff) + 1];
-        Point location = scrollToDifference(diff);
-        showTooltipWindow(location, diff);
-        textComponent.repaint();
+        Difference[] diffs = currentDiff;
+        if (diffs != null) {
+            diff = diffs[getDiffIndex(diff) + 1];
+            Point location = scrollToDifference(diff);
+            showTooltipWindow(location, diff);
+            textComponent.repaint();
+        }
     }
 
     private Point scrollToDifference(Difference diff) {
@@ -624,7 +634,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     view = rootView.getView(i);
                     line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
-                    Difference ad = getDifference(line);
+                    Difference ad = getDifference(line, paintDiff);
                     if (ad != null) {
                         g.setColor(getColor(ad));
                         if (ad.getType() == Difference.DELETE) {
@@ -666,12 +676,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return colorRemoved;
     }
 
-    private Difference getDifference(int line) {
-        if (line < 0) {
+    private Difference getDifference(int line, Difference[] paintDiff) {
+        if (line < 0 || paintDiff == null) {
             return null;
         }
-        for (int i = 0; i < currentDiff.length; i++) {
-            Difference difference = currentDiff[i];
+        for (int i = 0; i < paintDiff.length; i++) {
+            Difference difference = paintDiff[i];
             if (line < difference.getSecondStart()) {
                 return null;
             }

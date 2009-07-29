@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -102,7 +103,7 @@ public class RepositoryNode extends AbstractNode {
                         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                             public void run() {
                                 repository.remove();
-                                BugtrackingManager.getInstance().fireRepositoriesChanged();
+                                RepositoriesSupport.getInstance().fireRepositoriesChanged();
                             }
                         });
                     }
