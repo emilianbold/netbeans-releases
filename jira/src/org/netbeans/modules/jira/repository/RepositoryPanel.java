@@ -59,7 +59,6 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     public RepositoryPanel(RepositoryController controller) {
         initComponents();
         this.controller = controller;
-        urlField.getDocument().addDocumentListener(this);
         validateLabel.setVisible(false);
         progressPanel.setVisible(false);
         httpCheckBox.addActionListener(this);
