@@ -110,7 +110,12 @@ public class ClusterUpdateProvider implements UpdateProvider {
             String cnb = (cf.getName ().substring (0, cf.getName ().length () - ".xml".length ())).replaceAll ("-", "."); // NOI18N
             Map<String, String> attr = new HashMap<String, String> (7);
             readConfigFile (cf, attr);
-            File jarFile = new File (cluster, attr.get ("jar")); // NOI18N
+            String jarName = attr.get ("jar");
+            if(jarName == null) {
+                LOG.info ("Can`t get jar file name for " + cnb + ", skip checking.");
+                continue;
+            }
+            File jarFile = new File (cluster, jarName); // NOI18N
             if (! jarFile.exists ()) {
                 LOG.info ("Jar file " + jarFile + " doesn't exists. Skip checking " + cnb);
                 continue;
@@ -161,9 +166,15 @@ public class ClusterUpdateProvider implements UpdateProvider {
                 //158204
                 continue;
             }
-            assert cf.getName ().endsWith (".xml") : cf + " is XML file";
+            
             if (cf.getName ().endsWith (".xml")) { // NOI18N
-                res.add (cf);
+                if(cf.length() > 0) {
+                    res.add (cf);
+                } else {
+                    LOG.log(Level.INFO, "Found zero-sized xml file in config/Modules, ignoring: " + cf);
+                }
+            } else {
+                LOG.log(Level.INFO, "Found non-xml file in config/Modules, ignoring: " + cf);
             }
         }
         return res;
@@ -171,19 +182,26 @@ public class ClusterUpdateProvider implements UpdateProvider {
 
     private static void readConfigFile (File cf, Map<String, String> attr) {
         Document document = null;
-        InputStream is;
+        InputStream is = null;
         try {
             is = new BufferedInputStream (new FileInputStream (cf));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, EntityCatalog.getDefault ());
-            if (is != null) {
-                is.close ();
-            }
         } catch (SAXException saxe) {
-            LOG.log(Level.WARNING, saxe.getLocalizedMessage (), saxe);
+            LOG.log(Level.INFO, "Error while reading " + cf);
+            LOG.log(Level.INFO, saxe.getLocalizedMessage (), saxe);
             return;
         } catch (IOException ioe) {
+            LOG.log(Level.INFO, "Error while reading " + cf);
             LOG.log(Level.WARNING, ioe.getLocalizedMessage (), ioe);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close ();
+                } catch (IOException e){
+                    //ignore
+                }
+            }
         }
 
         assert document.getDocumentElement () != null : "File " + cf + " must contain document element.";
