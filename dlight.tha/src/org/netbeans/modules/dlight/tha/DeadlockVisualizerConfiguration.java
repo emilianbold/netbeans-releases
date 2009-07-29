@@ -36,35 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.spi.datafilter;
+package org.netbeans.modules.dlight.tha;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
-public class SunStudioFiltersFactory implements DataFilterFactory {
+/**
+ * @author Alexey Vladykin
+ */
+public final class DeadlockVisualizerConfiguration implements VisualizerConfiguration {
 
-    public static final String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
-    public static final String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
+    /*package*/ static final String ID = "deadlockVisualizer"; // NOI18N
 
-    public DataFilter createFilter(String filterID, String filterSpec) {
-        if (CollectedObjectsFilterID.equals(filterID)) {
-            return new CollectedObjectsFilter(filterSpec);
-        }
-
-        if (HotSpotFunctionsFilterID.equals(filterID)) {
-            return new HotSpotFunctionsFilter(filterSpec);
-        }
-
-        return null;
+    public String getID() {
+        return ID;
     }
 
-    public Collection<String> getSupportedFilterIDs() {
-        return Arrays.asList(
-                CollectedObjectsFilterID,
-                HotSpotFunctionsFilterID);
+    public DataTableMetadata getMetadata() {
+        return SunStudioDCConfiguration.getDeadlockTableMetadata(
+                SunStudioDCConfiguration.c_Deadlocks);
+    }
+
+    public DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:deadlocks"); //NOI18N
     }
 }
