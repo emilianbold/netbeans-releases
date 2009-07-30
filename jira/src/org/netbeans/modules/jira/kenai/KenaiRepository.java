@@ -86,7 +86,11 @@ public class KenaiRepository extends JiraRepository {
     @Override
     public Query createQuery() {
         FilterDefinition fd = new FilterDefinition();
-        Project project = getConfiguration().getProjectByKey(projectName);
+        JiraConfiguration configuration = getConfiguration();
+        if(configuration == null) {
+            return null;
+        }
+        Project project = configuration.getProjectByKey(projectName);
         fd.setProjectFilter(new ProjectFilter(project));
         KenaiQuery q = new KenaiQuery(null, this, fd, projectName, false, false);
         return q;
@@ -110,10 +114,15 @@ public class KenaiRepository extends JiraRepository {
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
+        JiraConfiguration configuration = getConfiguration();
+        if(configuration == null) {
+            return new Query[0];
+        }
+
         // my issues - only if logged in
         if(KenaiUtil.isLoggedIn()) {
             if(myIssues == null) {
-                Project p = getConfiguration().getProjectByKey(projectName);
+                Project p = configuration.getProjectByKey(projectName);
                 if(p != null) {
                     FilterDefinition fd = new FilterDefinition();
                     fd.setAssignedToFilter(new CurrentUserFilter());
@@ -136,7 +145,7 @@ public class KenaiRepository extends JiraRepository {
 
         // all issues
         if(allIssues == null) {
-            Project p = getConfiguration().getProjectByKey(projectName);
+            Project p = configuration.getProjectByKey(projectName);
             if(p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
@@ -158,7 +167,11 @@ public class KenaiRepository extends JiraRepository {
     }
 
     private JiraStatus[] getOpenStatuses() {
-        JiraStatus[] statuses = getConfiguration().getStatuses();
+        JiraConfiguration configuration = getConfiguration();
+        if(configuration == null) {
+            return new JiraStatus[0];
+        }
+        JiraStatus[] statuses = configuration.getStatuses();
         if(statuses == null || statuses.length == 0) {
             return new JiraStatus[0];
         }
