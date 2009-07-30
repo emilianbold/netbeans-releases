@@ -60,6 +60,12 @@ public class BrowserPanel extends MozillaPanel {
     }
 
     @Override
+    public void onDetachBrowser() {
+        super.onDetachBrowser();
+        browserAttached = false;
+    }
+
+    @Override
     public void onEnableBackButton(boolean enabled) {
         super.onEnableBackButton(enabled);
         this.backEnabled = enabled;
@@ -127,6 +133,8 @@ public class BrowserPanel extends MozillaPanel {
     }
 
     public void dispose() {
+        if( !browserAttached || null == getChromeAdapter() )
+            return;
         MozillaExecutor.mozAsyncExec(new Runnable() {
             public void run() {
                 if( !browserAttached || null == getChromeAdapter() )
