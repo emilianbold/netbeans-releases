@@ -771,7 +771,10 @@ class OccurenceBuilder {
 
     void build(FileScopeImpl fileScope) {
         if (currentContextInfo == null && element != null) {
-            currentContextInfo = new ElementInfo(element);
+            ElementInfo contextInfo = new ElementInfo(element);
+            if (contextInfo.getName() != null && contextInfo.getName().trim().length() > 0) {
+                currentContextInfo = contextInfo;
+            }
         }
         ASTNodeInfo.Kind kind = currentContextInfo != null ? currentContextInfo.getKind() : null;
         if (currentContextInfo != null && kind != null) {
@@ -841,11 +844,13 @@ class OccurenceBuilder {
     }
 
     private void setOccurenceAsCurrent(ElementInfo contextInfo) {
-        if (element == null) {
-            OffsetRange range = contextInfo.getRange();
-            if (range.containsInclusive(getOffset())) {
-                currentContextInfo = contextInfo;
-           }
+        if (element == null && contextInfo != null) {
+            if (contextInfo.getName() != null && contextInfo.getName().trim().length() > 0) {
+                OffsetRange range = contextInfo.getRange();
+                if (range.containsInclusive(getOffset())) {
+                    currentContextInfo = contextInfo;
+                }
+            }
         }
     }
 

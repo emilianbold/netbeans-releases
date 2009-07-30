@@ -370,12 +370,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 //now we have a source file, need to convert to testSource..
                 String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
                 path = path.replace(selected.getNameExt(), nameExt);
-                ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
-                ClassPath cp = ClassPathSupport.createProxyClassPath(cps);
-                FileObject testFo = cp.findResource(path);
-                if (testFo != null) {
-                    selected = testFo;
-                }
+            }
+            ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
+            ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
+            FileObject testFo = testcp.findResource(path);
+            if (testFo != null) {
+                selected = testFo;
             } else {
                 //#160776 only files on source classpath pass through
                 return true;

@@ -204,7 +204,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         if( !isInitialized() )
             return null;
         try {
-            return browser.getUrl();
+            String url = browser.getUrl();
+            if( null == url )
+                url = urlToLoad;
+            return url;
         } catch( MozillaRuntimeException ex ) {
             Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
         }
@@ -294,7 +297,6 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         synchronized( LOCK ) {
             disposed = true;
             if( isInitialized() ) {
-                browser.dispose();
                 container.removeAll();
                 browser = null;
             }

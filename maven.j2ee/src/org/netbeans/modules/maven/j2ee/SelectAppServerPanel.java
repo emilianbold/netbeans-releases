@@ -39,23 +39,47 @@
 
 package org.netbeans.modules.maven.j2ee;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkleint
  */
 public class SelectAppServerPanel extends javax.swing.JPanel {
+    private NotificationLineSupport nls;
 
     /** Creates new form SelectAppServerPanel */
-    public SelectAppServerPanel() {
+    public SelectAppServerPanel(boolean showIgnore) {
         initComponents();
         buttonGroup1.add(rbSession);
         buttonGroup1.add(rbPermanent);
         loadComboModel();
+        if (showIgnore) {
+            buttonGroup1.add(rbIgnore);
+            checkIgnoreEnablement();
+            comServer.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    checkIgnoreEnablement();
+                }
+            });
+            rbIgnore.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    printIgnoreWarning();
+                }
+
+            });
+        } else {
+            rbIgnore.setVisible(false);
+        }
     }
 
     String getSelectedServerType() {
@@ -70,6 +94,10 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
 
     boolean isPermanent() {
         return rbPermanent.isSelected();
+    }
+
+    boolean isIgnored() {
+        return rbIgnore.isSelected();
     }
 
     private void loadComboModel() {
@@ -101,36 +129,36 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        rbSession = new javax.swing.JRadioButton();
-        rbPermanent = new javax.swing.JRadioButton();
         lblServer = new javax.swing.JLabel();
         comServer = new javax.swing.JComboBox();
+        rbSession = new javax.swing.JRadioButton();
+        rbPermanent = new javax.swing.JRadioButton();
+        rbIgnore = new javax.swing.JRadioButton();
+
+        lblServer.setLabelFor(comServer);
+        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.lblServer.text")); // NOI18N
 
         rbSession.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(rbSession, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbSession.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(rbPermanent, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbPermanent.text")); // NOI18N
 
-        lblServer.setLabelFor(comServer);
-        org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.lblServer.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbIgnore, org.openide.util.NbBundle.getBundle(SelectAppServerPanel.class).getString("SelectAppServerPanel.rbIgnore.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(rbIgnore)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(lblServer)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(comServer, 0, 323, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(rbSession))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(rbPermanent)))
+                    .add(rbSession)
+                    .add(rbPermanent))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -144,6 +172,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                 .add(rbSession)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbPermanent)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rbIgnore)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -153,8 +183,33 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox comServer;
     private javax.swing.JLabel lblServer;
+    javax.swing.JRadioButton rbIgnore;
     javax.swing.JRadioButton rbPermanent;
     javax.swing.JRadioButton rbSession;
     // End of variables declaration//GEN-END:variables
+
+    private void checkIgnoreEnablement() {
+        Wrapper sel = (Wrapper) comServer.getSelectedItem();
+        if (ExecutionChecker.DEV_NULL.equals(sel.getServerID())) {
+            rbIgnore.setEnabled(true);
+        } else {
+            if (rbIgnore.isSelected()) {
+                rbSession.setSelected(true);
+            }
+            rbIgnore.setEnabled(false);
+        }
+    }
+
+    void setNLS(NotificationLineSupport notif) {
+        nls = notif;
+    }
+    
+    private void printIgnoreWarning() {
+        if (rbIgnore.isSelected()) {
+            nls.setWarningMessage(NbBundle.getMessage(SelectAppServerPanel.class, "WARN_Ignore_Server"));
+        } else {
+            nls.clearMessages();
+        }
+    }
 
 }

@@ -268,15 +268,13 @@ class ServletData extends DeployData {
      */
     private String findNextId(String id) {
         char ch = id.charAt(id.length() - 1);
-        String result = null;
         if (Character.isDigit(ch)) {
             String lastDigit = id.substring(id.length() - 1);
             int num = new Integer(lastDigit).intValue() + 1;
-            result = id.substring(0, id.length() - 1) + new Integer(num).toString();
+            return id.substring(0, id.length() - 1) + num;
         } else {
-            return result = id + "_1"; //NOI18N
+            return id + "_1"; //NOI18N
         }
-        return result;
     }
 
     String getUrlMappingsAsString() {
@@ -326,7 +324,7 @@ class ServletData extends DeployData {
     }
 
     boolean isValid() {
-        errorMessage = new String();
+        errorMessage = "";
         //if (webApp == null) {
         //    return true;
         //}
@@ -369,7 +367,7 @@ class ServletData extends DeployData {
     }
 
     private boolean checkMappingsForServlet() {
-        errorMessage = new String();
+        errorMessage = "";
         String[] mappings = getUrlMappings();
         if (mappings == null || mappings.length == 0) {
             LOG.finer("No URL mappings"); //NOI18N
@@ -387,7 +385,7 @@ class ServletData extends DeployData {
     }
 
     private boolean checkServletDuplicitMappings() {
-        errorMessage = new String();
+        errorMessage = "";
         String[] newMappings = getUrlMappings();
         List<String> urlPatterns = getUrlPatterns();
         for (int i = 0; i < newMappings.length; i++) {
@@ -407,7 +405,7 @@ class ServletData extends DeployData {
     }
 
     private boolean checkMappingsForFilter() {
-        errorMessage = new String();
+        errorMessage = "";
         if (filterMappings == null || filterMappings.size() == 0) {
             LOG.finer("No mappings"); //NOI18N
             errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping");
