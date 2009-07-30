@@ -247,6 +247,72 @@ public class CurrentTest extends CommonTestCase {
         });
     }
     
+    public void testSpecializeInheritanceCurrent() throws IOException, InterruptedException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class SuperClass  { " +
+                " @Produces String productionField = \"\"; "+
+                " @Produces @Current int[] productionMethod() { return null; } "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Current " +
+                "public class One extends SuperClass {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class TestClass  {" +
+                " @Current SuperClass myField1; "+
+                " @Current String myField2; "+
+                " @Current int[] myField3; "+
+                " @Current One myField4; "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "public class Two extends SuperClass {}" );
+        
+        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        check1( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        check2( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField3")){
+                        check3( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField4")){
+                        check4( element , model);
+                    }
+                }
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                assert names.contains("myField3");
+                assert names.contains("myField4");
+                return null;
+            }
+        });
+    }
     
     protected void check1( VariableElement element, WebBeansModel model ) {
         inform("test myField1");
