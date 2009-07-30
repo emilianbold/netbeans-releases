@@ -108,13 +108,13 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         targetList.setVisibleRowCount(6);
         targetList.setListData(listData);
         targetList.addListSelectionListener(new TargetSelectionListener());
-        targetList.addKeyListener(new java.awt.event.KeyAdapter() {
-
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                targetListKeyPressed(evt);
-            }
-        });
+// VK: NoIZ: keyboard navigation does not work in Predefined Macros and Include Search Path components
+//        targetList.addKeyListener(new java.awt.event.KeyAdapter() {
+//            @Override
+//            public void keyPressed(java.awt.event.KeyEvent evt) {
+//                targetListKeyPressed(evt);
+//            }
+//        });
         targetList.addMouseListener(new MouseAdapter() {
 
             @SuppressWarnings("unchecked")
@@ -581,10 +581,11 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         copyObjectAction();
     }//GEN-LAST:event_copyButtonActionPerformed
 
-    private void targetListKeyPressed(java.awt.event.KeyEvent evt) {
-        // Add your handling code here:
-        processKeyEvent(evt);
-    }
+// VK: NoIZ: keyboard navigation does not work in Predefined Macros and Include Search Path components
+//    private void targetListKeyPressed(java.awt.event.KeyEvent evt) {
+//        // Add your handling code here:
+//        processKeyEvent(evt);
+//    }
 
     private void downAction() {
         int selectedIndex = getSelectedIndex();

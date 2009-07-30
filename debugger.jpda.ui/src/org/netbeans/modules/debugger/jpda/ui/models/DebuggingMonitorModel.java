@@ -561,7 +561,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         
         Monitor (ObjectVariable variable, CallStackFrame f, JPDADebugger debugger) {
             this.variable = variable;
-            setVarInfo(variable, f, debugger);
+            if (f != null) {
+                setVarInfo(variable, f, debugger);
+            }
         }
 
         private void setVarInfo(ObjectVariable v, CallStackFrame f, JPDADebugger debugger) {
