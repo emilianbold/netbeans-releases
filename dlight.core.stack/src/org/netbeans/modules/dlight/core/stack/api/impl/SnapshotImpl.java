@@ -36,49 +36,58 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+
+package org.netbeans.modules.dlight.core.stack.api.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 
-public final class ThreadDataImpl implements ThreadData {
+public class SnapshotImpl implements ThreadSnapshot {
+    private final ThreadInfo threadInfo;
+    private final SQLStackStorage storage;
+    private final int stackID;
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
-    private final List<ThreadState> pstates;
+    public SnapshotImpl(final SQLStackStorage storage, final int threadID, final int stackID) {
+        this.storage = storage;
+        this.stackID = stackID;
+        
+        this.threadInfo = new ThreadInfo() {
 
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
+            public int getThreadId() {
+                return threadID;
+            }
+
+            public String getThreadName() {
+                return "Thread " + threadID; // NOI18N
+            }
+        };
     }
 
-    public ThreadInfoImpl getThreadInfo() {
+
+    public ThreadInfo getThreadInfo() {
         return threadInfo;
     }
 
-    public List<ThreadState> getThreadState() {
-        return pstates;
+    public List<FunctionCall> getStack() {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+//        FunctionCall call = storage.getFunctionCall(stackID);
+
+//        storage.getCallers(path, true)
+
+        return result;
     }
 
-    void addState(ThreadStateImpl state) {
-        states.add(state);
+    public MSAState getState() {
+        // TODO: implement!
+        return MSAState.Running;
     }
 
-    public ThreadDump getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new ThreadDump(){
-            public List<ThreadSnapshot> getThreadStates() {
-                return Collections.<ThreadSnapshot>emptyList();
-            }
-            public long getTimestamp() {
-                return timeStamp;
-            }
-        };
+    public MemoryAccessType getMemoryAccessType() {
+        return null;
     }
 }

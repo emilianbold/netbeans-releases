@@ -147,19 +147,26 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
-    public List<AnnotationMirror> getBindings( Element element ) {
+    public List<AnnotationMirror> getBindings( Element element ,
+        AbstractModelImplementation iml )
+    {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getDeploymentType(javax.lang.model.element.Element)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getDeploymentType(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
-    public AnnotationMirror getDeploymentType( Element element ) {
-        // TODO Auto-generated method stub
-        return null;
+    public AnnotationMirror getDeploymentType( Element element , 
+            AbstractModelImplementation impl ) throws WebBeansModelException
+    {
+        WebBeansModelImplementation model = getImplementation( impl );
+        if ( impl == null ){
+            return null;
+        }
+        return DeploymentTypeFilter.getDeploymentType(element , model );
     }
     
     private WebBeansModelImplementation getImplementation(

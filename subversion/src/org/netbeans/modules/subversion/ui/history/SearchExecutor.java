@@ -127,7 +127,7 @@ class SearchExecutor implements Runnable {
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for(File f : files) {
-            if(SvnUtils.isAdministrative(f)) {
+            if(SvnUtils.isAdministrative(f) || !SvnUtils.isManaged(f)) {
                 continue;
             }
             int status = cache.getStatus(f).getStatus();

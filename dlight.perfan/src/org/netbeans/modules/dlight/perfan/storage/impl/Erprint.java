@@ -277,14 +277,14 @@ final class Erprint {
         return new LeaksStatistics(stat);
     }
 
-    List<DataRace> getDataRaces() throws IOException {
-        String[] races = exec("rsummary all"); // NOI18N
-        return DataRace.parseDataRaces(races);
+    List<DataraceImpl> getDataRaces() throws IOException {
+        String[] races = exec("rdetail all"); // NOI18N
+        return DataraceImpl.fromErprint(races);
     }
 
-    List<Deadlock> getDeadlocks() throws IOException {
-        String[] deadlocks = exec("dsummary all"); // NOI18N
-        return Deadlock.parseDeadlocks(deadlocks);
+    List<DeadlockImpl> getDeadlocks() throws IOException {
+        String[] deadlocks = exec("ddetail all"); // NOI18N
+        return DeadlockImpl.fromErprint(deadlocks);
     }
 
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
