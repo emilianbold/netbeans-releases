@@ -146,7 +146,7 @@ public class ErprintSession {
         }
     }
 
-    public List<DataRace> getDataRaces(boolean restart) throws IOException {
+    public List<DataraceImpl> getDataRaces(boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getDataRaces();
@@ -155,7 +155,7 @@ public class ErprintSession {
         }
     }
 
-    public List<Deadlock> getDeadlocks(boolean restart) throws IOException {
+    public List<DeadlockImpl> getDeadlocks(boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getDeadlocks();

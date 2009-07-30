@@ -39,21 +39,15 @@
 package org.netbeans.modules.dlight.api.stack;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
-public interface StackTrace {
+/**
+ * Snapshot of a set of threads at particular moment in time.
+ *
+ * @author Alexey Vladykin
+ */
+public interface ThreadDump {
 
-    List<Stack> getStackTrace();
+    long getTimestamp();
 
-    long getTimeStamp();
-
-    public interface Stack {
-
-        List<FunctionCall> getStack();
-
-        ThreadInfo getThreadInfo();
-
-        MSAState getState();
-    }
+    List<ThreadSnapshot> getThreadStates();
 }

@@ -39,10 +39,10 @@
 package org.netbeans.modules.dlight.tha;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
+import org.netbeans.modules.dlight.api.stack.Deadlock;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 
 /**
@@ -51,9 +51,10 @@ import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
 
     private final DeadlockVisualizerConfiguration configuration;
-    private final VisualizerDataProvider dataProvider;
+    private final ThreadAnalyzerDataProvider dataProvider;
+    private MasterSlaveView msview;
 
-    public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, VisualizerDataProvider dataProvider) {
+    public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, ThreadAnalyzerDataProvider dataProvider) {
         this.configuration = configuration;
         this.dataProvider = dataProvider;
     }
@@ -63,7 +64,10 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     }
 
     public JComponent getComponent() {
-        return new JLabel("Deadlocks..."); // NOI18N
+        if (msview == null) {
+            msview = new MasterSlaveView<Deadlock>(dataProvider.getDeadlocks(), null);
+        }
+        return msview;
     }
 
     public VisualizerContainer getDefaultContainer() {
