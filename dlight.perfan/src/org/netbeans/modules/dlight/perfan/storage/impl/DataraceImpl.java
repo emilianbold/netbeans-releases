@@ -36,49 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.api.stack.Datarace;
 import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
-public final class ThreadDataImpl implements ThreadData {
+/**
+ * @author Alexey Vladykin
+ */
+public final class DataraceImpl implements Datarace {
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
-    private final List<ThreadState> pstates;
+    private final int id;
+    private final long address;
 
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
+    public DataraceImpl(int id, long address) {
+        this.id = id;
+        this.address = address;
     }
 
-    public ThreadInfoImpl getThreadInfo() {
-        return threadInfo;
+    public long getAddress() {
+        return address;
     }
 
-    public List<ThreadState> getThreadState() {
-        return pstates;
+    public List<ThreadDump> getThreadDumps() {
+        return Collections.emptyList();
     }
 
-    void addState(ThreadStateImpl state) {
-        states.add(state);
-    }
 
-    public ThreadDump getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new ThreadDump(){
-            public List<ThreadSnapshot> getThreadStates() {
-                return Collections.<ThreadSnapshot>emptyList();
+    private static final Pattern RACE_PATTERN = Pattern.compile("Race #(\\d+), Vaddr: 0x(.+)"); // NOI18N
+
+    public static List<DataraceImpl> fromErprint(String[] lines) {
+        List<DataraceImpl> races = new ArrayList<DataraceImpl>();
+        for (String line : lines) {
+            Matcher m = RACE_PATTERN.matcher(line);
+            if (m.matches()) {
+                int id;
+                try {
+                    id = Integer.parseInt(m.group(1));
+                } catch (NumberFormatException ex) {
+                    id = -1;
+                }
+                long vaddr;
+                try {
+                    vaddr = Long.parseLong(m.group(2), 16);
+                } catch (NumberFormatException ex) {
+                    vaddr = -1;
+                }
+                races.add(new DataraceImpl(id, vaddr));
             }
-            public long getTimestamp() {
-                return timeStamp;
-            }
-        };
+        }
+        return races;
     }
 }

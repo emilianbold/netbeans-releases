@@ -40,9 +40,8 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
-import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
@@ -51,9 +50,9 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
  *
  * @author Alexander Simon
  */
-public final class StackTraceDescriptor implements StackTraceColumn {
+public final class StackTraceDescriptor implements ThreadDump {
 
-    private StackTrace stackTrace;
+    private ThreadDump stackTrace;
     private final List<Integer> showThreads;
     private final long startTime;
     private long stackTimeStamp;
@@ -82,11 +81,11 @@ public final class StackTraceDescriptor implements StackTraceColumn {
         }
     }
 
-    public List<Stack> getStacks() {
-        List<Stack> selectesStacks = new ArrayList<Stack>();
+    public List<ThreadSnapshot> getThreadStates() {
+        List<ThreadSnapshot> selectesStacks = new ArrayList<ThreadSnapshot>();
         if (stackTrace != null) {
             for (Integer info : showThreads) {
-                for (Stack stack : stackTrace.getStackTrace()) {
+                for (ThreadSnapshot stack : stackTrace.getThreadStates()) {
                     if (info.intValue() == stack.getThreadInfo().getThreadId()) {
                         selectesStacks.add(stack);
                         break;
@@ -97,7 +96,7 @@ public final class StackTraceDescriptor implements StackTraceColumn {
         return selectesStacks;
     }
 
-    public long getTime(){
+    public long getTimestamp(){
         return ThreadStateColumnImpl.timeStampToMilliSeconds(stackTimeStamp) - startTime;
     }
 }

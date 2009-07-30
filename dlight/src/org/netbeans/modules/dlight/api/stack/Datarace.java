@@ -36,49 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.api.stack;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
-public final class ThreadDataImpl implements ThreadData {
+/**
+ * Describes a datarace - condition when several threads concurrently read
+ * and write the same address in memory.
+ *
+ * @author Alexey Vladykin
+ */
+public interface Datarace {
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
-    private final List<ThreadState> pstates;
+    /**
+     * @return memory address if available, <code>-1</code> otherwise
+     */
+    long getAddress();
 
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
-    }
-
-    public ThreadInfoImpl getThreadInfo() {
-        return threadInfo;
-    }
-
-    public List<ThreadState> getThreadState() {
-        return pstates;
-    }
-
-    void addState(ThreadStateImpl state) {
-        states.add(state);
-    }
-
-    public ThreadDump getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new ThreadDump(){
-            public List<ThreadSnapshot> getThreadStates() {
-                return Collections.<ThreadSnapshot>emptyList();
-            }
-            public long getTimestamp() {
-                return timeStamp;
-            }
-        };
-    }
+    /**
+     * @return list of unique thread dumps related to this datarace
+     */
+    List<ThreadDump> getThreadDumps();
 }

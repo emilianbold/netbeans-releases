@@ -58,8 +58,8 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.dlight.perfan.storage.impl.DataRace;
-import org.netbeans.modules.dlight.perfan.storage.impl.Deadlock;
+import org.netbeans.modules.dlight.perfan.storage.impl.DataraceImpl;
+import org.netbeans.modules.dlight.perfan.storage.impl.DeadlockImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.ErprintSession;
 import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
@@ -266,14 +266,14 @@ public class MonitorsUpdateService {
                         }
 
                         if (isDataRaceMonitor) {
-                            List<DataRace> dataraces = erprintSession.getDataRaces(!restarted);
+                            List<DataraceImpl> dataraces = erprintSession.getDataRaces(!restarted);
                             restarted = true;
 
                             newData.add(new DataRow(DATARACE_COLNAMES, Arrays.asList(dataraces.size())));
                         }
 
                         if (isDeadlockMonitor) {
-                            List<Deadlock> deadlocks = erprintSession.getDeadlocks(!restarted);
+                            List<DeadlockImpl> deadlocks = erprintSession.getDeadlocks(!restarted);
                             restarted = true;
 
                             newData.add(new DataRow(DEADLOCK_COLNAMES, Arrays.asList(deadlocks.size())));

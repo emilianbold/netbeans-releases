@@ -36,30 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.impl;
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.Datarace;
+import org.netbeans.modules.dlight.api.stack.Deadlock;
 
-public class StackTraceImpl implements StackTrace {
+/**
+ * @author Alexey Vladykin
+ */
+public interface ThreadAnalyzerDataProvider {
 
-    private final List<Stack> stacks = new ArrayList<Stack>();
-    private final long timestamp;
+    List<? extends Datarace> getDataraces();
 
-    public StackTraceImpl(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public List<Stack> getStackTrace() {
-        return stacks;
-    }
-
-    public void addStack(Stack stack) {
-        stacks.add(stack);
-    }
-
-    public long getTimeStamp() {
-        return timestamp;
-    }
+    List<? extends Deadlock> getDeadlocks();
 }

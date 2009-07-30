@@ -62,17 +62,15 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.impl.StackImpl;
-import org.netbeans.modules.dlight.core.stack.api.impl.StackTraceImpl;
+import org.netbeans.modules.dlight.core.stack.api.impl.ThreadDumpImpl;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -207,8 +205,8 @@ public final class SQLStackStorage {
         return result;
     }
 
-    public StackTrace getStackTrace(long timestamp, int threadID, int threadState) {
-        StackTraceImpl result = null;
+    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        ThreadDumpImpl result = null;
 
         try {
             // First, we need ts of the thread threadID when it was in required state.
@@ -237,7 +235,7 @@ public final class SQLStackStorage {
 
             //System.out.println("Nearest callstack found at " + ts);
 
-            result = new StackTraceImpl(ts);
+            result = new ThreadDumpImpl(ts);
 
             // Next, get all times for all threads for alligned stacks (time <= ts)
             // select threadid, max(ts) from test where ts <= 6 group by threadid;
