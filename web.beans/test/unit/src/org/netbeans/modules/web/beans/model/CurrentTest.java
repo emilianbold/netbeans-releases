@@ -248,33 +248,81 @@ public class CurrentTest extends CommonTestCase {
     }
     
     public void testSpecializeInheritanceCurrent() throws IOException, InterruptedException{
-        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
-                "public class SuperClass  { " +
-                " @Produces String productionField = \"\"; "+
-                " @Produces @Current int[] productionMethod() { return null; } "+
-                "}" );
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "@Inherited "+
+                "public @interface Binding2  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
-                "@Current " +
-                "public class One extends SuperClass {}" );
+                "public class One {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
                 "public class TestClass  {" +
-                " @Current SuperClass myField1; "+
-                " @Current String myField2; "+
-                " @Current int[] myField3; "+
-                " @Current One myField4; "+
+                " @Current Two myField1; "+
+                " @Current One1 myField2; "+
+                " @Current Two2 myField3; "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
-                "public class Two extends SuperClass {}" );
+                "import javax.enterprise.inject.deployment.*; "+
+                "@Binding1 "+
+                "@Specializes "+
+                "public class Two extends One {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class One1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.deployment.*; "+
+                "@Specializes "+
+                "public class Two1 extends One1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding2 "+
+                "public class One2 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class Two2 extends One2 {}" );
+        
+        inform("start @Current inheritance and specializtion tests" );
         
         createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -293,22 +341,18 @@ public class CurrentTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        check1( element , model);
+                        checkCurrent1( element , model);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        check2( element , model);
+                        checkCurrent2( element , model);
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        check3( element , model);
-                    }
-                    else if ( element.getSimpleName().contentEquals("myField4")){
-                        check4( element , model);
+                        checkCurrent3( element , model);
                     }
                 }
                 assert names.contains("myField1");
                 assert names.contains("myField2");
                 assert names.contains("myField3");
-                assert names.contains("myField4");
                 return null;
             }
         });
@@ -495,6 +539,51 @@ public class CurrentTest extends CommonTestCase {
             
             assertEquals( "foo.Four",  
                     ((TypeElement)injactable).getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+    
+    protected void checkCurrent1( VariableElement element, WebBeansModel model ) {
+        inform("test current absence for myField1");
+        try {
+            Element injactable = model.getInjectable( element );
+            
+            assertNull( injactable );
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+    
+    protected void checkCurrent2( VariableElement element, WebBeansModel model ) {
+        inform("test current presence for myField2");
+        try {
+            Element injactable = model.getInjectable( element );
+            
+            assertNotNull( injactable );
+            assertTrue( "Expect production field , but found : " +
+                    injactable.getKind()
+                    , injactable instanceof TypeElement );
+            
+            assertEquals( "foo.Two1",  ((TypeElement)injactable).
+                    getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+    
+    protected void checkCurrent3( VariableElement element, WebBeansModel model ) {
+        inform("test current absence for myField3");
+        try {
+            Element injactable = model.getInjectable( element );
+            
+            assertNull( injactable );
         }
         catch (WebBeansModelException e) {
             e.printStackTrace();
