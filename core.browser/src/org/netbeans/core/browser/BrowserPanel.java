@@ -90,6 +90,8 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingStarted() {
         super.onLoadingStarted();
+        backEnabled = true;
+        propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_BACKWARD, false, true);
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_STARTED, null );
     }
