@@ -93,7 +93,7 @@ public final class MethodCustomizer {
         DialogDescriptor notifyDescriptor = new DialogDescriptor(
                 panel, title, true,
                 DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.PLAIN_MESSAGE,
+                DialogDescriptor.OK_OPTION,
                 null
                 );
         panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor, existingMethods));

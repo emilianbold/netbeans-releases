@@ -36,49 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.core.stack.api.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
-public final class ThreadDataImpl implements ThreadData {
+public class ThreadDumpImpl implements ThreadDump {
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
-    private final List<ThreadState> pstates;
+    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
+    private final long timestamp;
 
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
+    public ThreadDumpImpl(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public ThreadInfoImpl getThreadInfo() {
-        return threadInfo;
+    public List<ThreadSnapshot> getThreadStates() {
+        return stacks;
     }
 
-    public List<ThreadState> getThreadState() {
-        return pstates;
+    public void addStack(ThreadSnapshot stack) {
+        stacks.add(stack);
     }
 
-    void addState(ThreadStateImpl state) {
-        states.add(state);
-    }
-
-    public ThreadDump getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new ThreadDump(){
-            public List<ThreadSnapshot> getThreadStates() {
-                return Collections.<ThreadSnapshot>emptyList();
-            }
-            public long getTimestamp() {
-                return timeStamp;
-            }
-        };
+    public long getTimestamp() {
+        return timestamp;
     }
 }

@@ -38,29 +38,55 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin
  */
-public final class Deadlock {
+public class DataraceImplTest {
 
-    public Deadlock() {
-    }
+    @Test
+    public void testParse() {
+        List<DataraceImpl> dataraces = DataraceImpl.fromErprint(new String[]{
+        "",
+        "Total Races:  1 Experiment:  /tmp/dlight_av202691/experiment_2.er",
+        "",
+        "Race #1, Vaddr: 0x804a040",
+        "      Access 1: Write, work + 0x00000072,",
+        "                       line 54 in \"pi_pthreads.c\"",
+        "      Access 2: Write, work + 0x00000072,",
+        "                       line 54 in \"pi_pthreads.c\"",
+        "  Total Traces: 2",
+        "  Trace 1",
+        "      Access 1: Write",
+        "                work + 0x00000072, line 54 in \"pi_pthreads.c\"",
+        "                thread_hj_start_routine + 0x00000067",
+        "                collector_root + 0x0000005A",
+        "                start_thread + 0x000000B8",
+        "                clone + 0x0000005C",
+        "      Access 2: Write",
+        "                work + 0x00000072, line 54 in \"pi_pthreads.c\"",
+        "                thread_hj_start_routine + 0x00000067",
+        "                collector_root + 0x0000005A",
+        "                start_thread + 0x000000B8",
+        "                clone + 0x0000005C",
+        "  Trace 2",
+        "      Access 1: Write",
+        "                work + 0x00000072, line 54 in \"pi_pthreads.c\"",
+        "                thread_hj_start_routine + 0x00000067",
+        "                collector_root + 0x0000005A",
+        "                start_thread + 0x000000B8",
+        "                clone + 0x0000005C",
+        "      Access 2: Write",
+        "                work + 0x00000072, line 54 in \"pi_pthreads.c\"",
+        "                main + 0x00000092, line 74 in \"pi_pthreads.c\"",
+        "                __libc_start_main + 0x000000E2",
+        "                _start + 0x0000003C"});
+        assertEquals(1, dataraces.size());
 
-    private static final Pattern DEADLOCK_PATTERN = Pattern.compile("^Deadlock #\\d+"); // NOI18N
-
-    public static List<Deadlock> parseDeadlocks(String[] erprint) {
-        List<Deadlock> deadlocks = new ArrayList<Deadlock>();
-        for (String line : erprint) {
-            Matcher m = DEADLOCK_PATTERN.matcher(line);
-            if (m.find()) {
-                deadlocks.add(new Deadlock());
-            }
-        }
-        return deadlocks;
+        DataraceImpl r1 = dataraces.get(0);
+        assertEquals(0x804a040, r1.getAddress());
     }
 }
