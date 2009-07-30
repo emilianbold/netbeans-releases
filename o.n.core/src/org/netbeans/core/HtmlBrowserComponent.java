@@ -120,6 +120,18 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         setToolTipText(title);
     }    
     
+    /** always open this top component in our special mode, if
+    * no mode for this component is specified yet */
+    @Override
+    public void open() {
+        // do not open this component if this is dummy browser
+        if (null != browserComponent && browserComponent.getBrowserComponent() == null)
+            return;
+
+        // behave like superclass
+        super.open();
+    }
+
     /** Serializes browser component -> writes Replacer object which
     * holds browser content and look. */
     @Override
@@ -156,14 +168,17 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     @Override
     protected void componentActivated () {
-        browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
+        if( null != browserComponent )
+            browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
         super.componentActivated ();
     }
 
     @Override
     protected void componentClosed() {
-        browserComponent.getBrowserImpl().removePropertyChangeListener(this);
-        browserComponent.getBrowserImpl().dispose();
+        if( null != browserComponent ) {
+            browserComponent.getBrowserImpl().removePropertyChangeListener(this);
+            browserComponent.getBrowserImpl().dispose();
+        }
         removeAll();
         browserComponent = null;
     }

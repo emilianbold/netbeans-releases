@@ -43,13 +43,18 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -89,7 +94,7 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
     
     SlideOperationImpl(int type, Component component, String side, 
          SlidingFx effect, boolean requestsActivation) {
-        this.type = type;
+        this.type = type; 
         this.component = component;
         this.effect = effect;
         this.requestsActivation = requestsActivation;
@@ -125,15 +130,19 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             case SLIDE_IN:
                 component.setBounds(finishBounds);
                 pane.add(component, layer);
+                if( isHeavyWeightShowing() ) {
+                    repaintLayeredPane();
+                }
                 break;
             case SLIDE_OUT:
                 pane.remove(component);
                 break;
             case SLIDE_RESIZE:
                 component.setBounds(finishBounds);
-                component.doLayout();
-                JComponent c = (JComponent) ((Container)component).getComponent(0);
-                c.revalidate();
+                ((JComponent)component).revalidate();
+                if( isHeavyWeightShowing() ) {
+                    repaintLayeredPane();
+                }
                 break;
         }
     }
@@ -198,5 +207,43 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             orientation = SlideBarDataModel.SOUTH;
         }
         return orientation;
+    }
+
+    private void repaintLayeredPane() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Frame f = WindowManagerImpl.getInstance().getMainWindow();
+                if( f instanceof JFrame ) {
+                    JLayeredPane lp = ((JFrame)f).getLayeredPane();
+                    if( null != lp ) {
+                        lp.invalidate();
+                        lp.revalidate();
+                        lp.repaint();
+                    }
+                }
+            }
+        });
+    }
+
+    private boolean isHeavyWeightShowing() {
+        for( TopComponent tc : TopComponent.getRegistry().getOpened() ) {
+            if( !tc.isShowing() )
+                continue;
+            if( containsHeavyWeightChild( tc ) )
+                return true;
+        }
+        return false;
+    }
+
+    private boolean containsHeavyWeightChild( Container c ) {
+        if( !c.isLightweight() )
+            return true;
+        for( Component child : c.getComponents() ) {
+            if( null != child && !child.isLightweight() )
+                return true;
+            if( child instanceof Container && containsHeavyWeightChild((Container) child) )
+                return true;
+        }
+        return false;
     }
 }
