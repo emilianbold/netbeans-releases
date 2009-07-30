@@ -137,6 +137,13 @@ public class ModelTest extends CommonTestCase {
                 " return null; } "+
                 "}" );
         
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@foo.CustomBinding(\"b\") "+
+                "public class Generic1<T extends foo.MyThread>  extends " +
+                "Generic<T>{}");
+        
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
                 "package foo; " +
                 "public class MyThread extends Thread  {}" );
@@ -183,12 +190,16 @@ public class ModelTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myFieldB")){
                         checkB( element , model);
                     }
+                    else if ( element.getSimpleName().contentEquals("myThread")){
+                        checkThread( element , model);
+                    }
                 }
                 
                 assert names.contains("myFieldA");
                 assert names.contains("myGen");
                 assert names.contains("myIndex");
                 assert names.contains("myFieldB");
+                assert names.contains("myThread");
                 
                 return null;
             }
@@ -502,6 +513,23 @@ public class ModelTest extends CommonTestCase {
                     produce.getKind(), 
                     produce instanceof ExecutableElement);
             assertEquals( "getThread", ((ExecutableElement)produce).getSimpleName().toString());
+        }   
+        catch(WebBeansModelException e ){
+            assert false : "Unexpected exception " +e.getClass()+ " appears"; 
+        }
+    }
+    
+    protected void checkThread( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myThread");
+            Element injectable = model.getInjectable(element);
+            
+            assertNotNull( injectable );
+            assertTrue( "Found injectable should be a method, but found " +
+                    injectable.getKind(), 
+                    injectable instanceof TypeElement);
+            assertEquals( "foo.Generic1", ((TypeElement)injectable).
+                    getQualifiedName().toString());
         }   
         catch(WebBeansModelException e ){
             assert false : "Unexpected exception " +e.getClass()+ " appears"; 

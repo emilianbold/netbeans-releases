@@ -159,7 +159,7 @@ final class ExecutionContext {
             //and not attacheble
             List<IndicatorDataProvider<?>> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             for (IndicatorDataProvider idp : tool_idps){
-                if (!collectors.contains(idp) && !idps.contains(idps)){
+                if (!collectors.contains(idp) && !idps.contains(idp)){
                     idps.add(idp);
                 }
             }

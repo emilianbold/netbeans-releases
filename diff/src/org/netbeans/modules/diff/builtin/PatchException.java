@@ -40,12 +40,14 @@
  */
 package org.netbeans.modules.diff.builtin;
 
+import java.io.IOException;
+
 /**
  * The patch is invalid or cannot be applied on the specified file.
  *
  * @author Maros Sandor
  */
-public final class PatchException extends Exception {
+public final class PatchException extends IOException {
 
     public PatchException(String msg) {
         super(msg);

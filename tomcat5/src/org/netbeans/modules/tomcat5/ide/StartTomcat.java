@@ -77,13 +77,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
-import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
-import org.netbeans.modules.tomcat5.util.EditableProperties;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
@@ -809,7 +808,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         if (!catalinaProp.exists()) {
             return; // catalina.properties does not exist, can't do anything
         }
-        EditableProperties props = new EditableProperties();
+        EditableProperties props = new EditableProperties(false);
         try {
             InputStream is = new BufferedInputStream(new FileInputStream(catalinaProp));
             try {

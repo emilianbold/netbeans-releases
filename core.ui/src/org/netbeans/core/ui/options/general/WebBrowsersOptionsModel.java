@@ -257,8 +257,7 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                 }
                 
                 if (propertyPanel == null) {
-                    propertyPanel = new PropertyPanel(cookie.instanceCreate(), 
-                            fallbackProp.getName(), PropertyPanel.PREF_CUSTOM_EDITOR);
+                    propertyPanel = new PropertyPanel();
                     propertyPanelID = "PROPERTY_PANEL_" + propertyPanelIDCounter++;
                 }
                 

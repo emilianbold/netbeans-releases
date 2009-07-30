@@ -41,28 +41,12 @@
 
 package org.netbeans.modules.ruby.javaint;
 
-import java.io.File;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-//import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-//import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
-//import org.netbeans.api.project.libraries.LibraryManager;
-//import org.netbeans.api.queries.CollocationQuery;
-//import org.netbeans.spi.project.support.ant.AntProjectHelper;
-//import org.netbeans.spi.project.support.ant.EditableProperties;
-//import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-//import org.netbeans.spi.project.support.ant.PropertyUtils;
-//import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.filesystems.FileUtil;
 
 /**
  *

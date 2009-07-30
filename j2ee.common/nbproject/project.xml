@@ -425,6 +425,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.struts</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
+                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.dd</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
