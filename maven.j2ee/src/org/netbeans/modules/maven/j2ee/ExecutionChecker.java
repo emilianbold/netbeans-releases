@@ -202,7 +202,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
                 if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-                    boolean isDefaultGoal = config.getGoals().size() == 1 && config.getGoals().get(0).equals("package"); //TODO how to figure if really default or overridden by user?
+                    boolean isDefaultGoal = neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
                     SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal);
                     DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
                     panel.setNLS(dd.createNotificationLineSupport());
@@ -309,6 +309,15 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         } catch (XmlPullParserException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private boolean neitherJettyNorCargo(List<String> goals) {
+        for (String goal : goals) {
+            if (goal.contains("jetty") || goal.contains("cargo")) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
