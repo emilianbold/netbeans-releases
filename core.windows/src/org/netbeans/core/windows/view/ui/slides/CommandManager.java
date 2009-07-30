@@ -41,18 +41,17 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.Dimension;
-import java.awt.Panel;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
+import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -289,20 +288,20 @@ final class CommandManager implements ActionListener {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
             slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo());
             slidedTabContainer.addActionListener(this);
-//            Border b = null;
-//            String side = orientation2Side( slideBar.getModel().getOrientation() );
-//            b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
-//            if( b == null )
-//                b = UIManager.getBorder("floatingBorder"); //NOI18N
-//            if (b != null) {
-//                slidedTabContainer.setBorder (b);
-//            }
+            Border b = null;
+            String side = orientation2Side( slideBar.getModel().getOrientation() );
+            b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
+            if( b == null )
+                b = UIManager.getBorder("floatingBorder"); //NOI18N
+            if (b != null) {
+                slidedTabContainer.setBorder (b);
+            }
             
             registerEscHandler(slidedTabContainer);
-            heavyContainer = new Panel(new BorderLayout());
-            heavyContainer.add(slidedTabContainer, BorderLayout.CENTER);
+//            heavyContainer = new Panel(new BorderLayout());
+//            heavyContainer.add(slidedTabContainer, BorderLayout.CENTER);
         }
-        return heavyContainer;
+        return slidedTabContainer;//heavyContainer;
     }
     
     private Component updateSlidedTabContainer(int tabIndex) {

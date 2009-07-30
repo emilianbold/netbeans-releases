@@ -294,7 +294,6 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         synchronized( LOCK ) {
             disposed = true;
             if( isInitialized() ) {
-                browser.dispose();
                 container.removeAll();
                 browser = null;
             }
