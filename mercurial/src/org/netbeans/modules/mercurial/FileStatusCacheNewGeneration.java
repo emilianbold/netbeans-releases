@@ -202,7 +202,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
             if (allModifiedFiles == null) {
                 allModifiedFiles = new HashMap<File, FileInformation>(cachedFiles.size());
                 for (Map.Entry<File, FileInformation> e : cachedFiles.entrySet()) {
-                    if ((e.getValue().getStatus() & (FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
+                    if ((e.getValue().getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) == 0) {
                         allModifiedFiles.put(e.getKey(), e.getValue());
                     }
                 }
