@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.spi.impl;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
@@ -56,5 +56,5 @@ public interface ThreadMapDataProvider extends VisualizerDataProvider {
      */
     ThreadMapData queryData(ThreadMapDataQuery query);
 
-    StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
+    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
 }

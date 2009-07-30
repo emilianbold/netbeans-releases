@@ -39,7 +39,7 @@
 package org.netbeans.modules.dlight.db.h2;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
@@ -254,7 +254,8 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
-    public StackTrace getStackTrace(long timestamp, int threadID, int threadState) {
-        return stackStorage.getStackTrace(timestamp, threadID, threadState);
+    @Override
+    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 }

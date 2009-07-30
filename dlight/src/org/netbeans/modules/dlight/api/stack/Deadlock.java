@@ -36,54 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.stack;
 
-package org.netbeans.modules.dlight.core.stack.api.impl;
-
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
-import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 
-public class StackImpl implements Stack {
-    private final ThreadInfo threadInfo;
-    private final SQLStackStorage storage;
-    private final int stackID;
+/**
+ * Describes a deadlock, actual or potential.
+ *
+ * @author Alexey Vladykin
+ */
+public interface Deadlock {
 
-    public StackImpl(final SQLStackStorage storage, final int threadID, final int stackID) {
-        this.storage = storage;
-        this.stackID = stackID;
-        
-        this.threadInfo = new ThreadInfo() {
+    /**
+     * @return <code>true</code> if the deadlock really occurred,
+     *      <code>false</code> if it is possible but not yet occurred
+     */
+    boolean isActual();
 
-            public int getThreadId() {
-                return threadID;
-            }
-
-            public String getThreadName() {
-                return "Thread " + threadID; // NOI18N
-            }
-        };
-    }
-
-
-    public ThreadInfo getThreadInfo() {
-        return threadInfo;
-    }
-
-    public List<FunctionCall> getStack() {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-//        FunctionCall call = storage.getFunctionCall(stackID);
-
-//        storage.getCallers(path, true)
-
-        return result;
-    }
-
-    public MSAState getState() {
-        // TODO: implement!
-        return MSAState.Running;
-    }
+    /**
+     * @return states of threads involved in the deadlock
+     */
+    List<DeadlockThreadSnapshot> getThreadStates();
 }

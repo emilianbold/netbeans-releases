@@ -36,19 +36,34 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.stack;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
 
 /**
+ * Describes state of a thread that is about to deadlock.
  *
- * @author Alexander Simon
+ * @author Alexey Vladykin
  */
-public interface StackTraceColumn {
+public interface DeadlockThreadSnapshot {
 
-    List<Stack> getStacks();
+    /**
+     * @return address of lock already held by the thread
+     */
+    long getHeldLockAddress();
 
-    long getTime();
+    /**
+     * @return call stack where the lock has been acquired
+     */
+    List<FunctionCall> getHeldLockCallStack();
+
+    /**
+     * @return address of new lock being requested
+     */
+    long getRequestedLockAddress();
+
+    /**
+     * @return call stack where the new lock is being requested
+     */
+    List<FunctionCall> getRequestedLockCallStack();
 }
