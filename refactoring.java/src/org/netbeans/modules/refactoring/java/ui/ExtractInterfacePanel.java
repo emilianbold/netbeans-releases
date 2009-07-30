@@ -174,7 +174,6 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
         List<ElementHandle<ExecutableElement>> methods = new ArrayList<ElementHandle<ExecutableElement>>();
         List<TypeMirrorHandle<TypeMirror>> implementz = new ArrayList<TypeMirrorHandle<TypeMirror>>();
         
-        List<TreePathHandle> list = new ArrayList<TreePathHandle>();
         // go through all rows of a table and collect selected members
         for (int i = 0; i < members.length; i++) {
             if (members[i][0].equals(Boolean.TRUE)) {
@@ -308,7 +307,7 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
 
                     }, true);
             } catch (IOException ex) {
-                new IllegalStateException(ex);
+                throw new IllegalStateException(ex);
             }
         }
         

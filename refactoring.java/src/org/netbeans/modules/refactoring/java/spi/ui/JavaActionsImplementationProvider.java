@@ -84,7 +84,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doEncapsulateFields(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
 
     /**
@@ -100,7 +100,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doChangeParameters(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
 
     /**
@@ -116,7 +116,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doPullUp(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
 
     /**
@@ -132,7 +132,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doPushDown(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
     
     /**
@@ -148,7 +148,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doInnerToOuter(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }    
     
     /**
@@ -164,7 +164,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doUseSuperType(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }    
     
     /**
@@ -180,7 +180,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doExtractSuperclass(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }    
     
     /**
@@ -196,7 +196,7 @@ public class JavaActionsImplementationProvider {
      * @param lookup 
      */
     public void doExtractInterface(Lookup lookup) {
-        new UnsupportedOperationException("Not implemented"); // NOI18N
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }    
     
 }
