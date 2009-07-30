@@ -318,9 +318,9 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -336,7 +336,7 @@ public class PageIterator implements TemplateWizard.Iterator {
     // or disappear dynamically, go ahead.
     public String name() {
         return NbBundle.getMessage(PageIterator.class, "TITLE_x_of_y",
-                new Integer(index + 1), new Integer(panels.length));
+                index + 1, panels.length);
     }
 
     public boolean hasNext() {
