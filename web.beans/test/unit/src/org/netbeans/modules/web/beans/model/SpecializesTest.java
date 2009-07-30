@@ -312,6 +312,7 @@ public class SpecializesTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/One1.java",
                 "package foo; " +
+                "@Binding1 "+
                 "public class One1  {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two1.java",
@@ -325,7 +326,6 @@ public class SpecializesTest extends CommonTestCase {
                 "package foo; " +
                 "import javax.enterprise.inject.deployment.*; "+
                 "@Specializes "+
-                "@Binding1 "+
                 "public class Three  extends Two1 {}" );
         
         inform("start @Current specializes test");
@@ -628,7 +628,7 @@ public class SpecializesTest extends CommonTestCase {
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
                 "public class One1  {" +
-                " @Produces boolean isNull(){ return true;} "+
+                " @Produces @Binding1 boolean isNull(){ return true;} "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two1.java",
@@ -644,7 +644,7 @@ public class SpecializesTest extends CommonTestCase {
                 "import javax.enterprise.inject.deployment.*; "+
                 "import javax.enterprise.inject.*; "+
                 "public class Three  extends Two1 {" +
-                " @Produces @Specializes @Binding1 boolean isNull(){ return true;} "+
+                " @Produces @Specializes boolean isNull(){ return true;} "+
                 "}" );
         
         inform("start @Current specializes test for production method");
