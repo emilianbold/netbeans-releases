@@ -82,6 +82,7 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingEnded() {
         super.onLoadingEnded();
+        statusText = null;
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_ENDED, null );
     }
