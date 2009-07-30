@@ -42,9 +42,9 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
 
@@ -70,12 +70,12 @@ public abstract class Crawler {
         this.cancelRequest = cancelRequest;
     }
 
-    public final List<IndexableImpl> getResources() throws IOException {
+    public final Collection<IndexableImpl> getResources() throws IOException {
         init ();
         return cache;
     }
 
-    public final List<IndexableImpl> getDeletedResources () throws IOException {
+    public final Collection<IndexableImpl> getDeletedResources () throws IOException {
         init ();
         return deleted;
     }
@@ -98,7 +98,7 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
-    protected abstract boolean collectResources(List<IndexableImpl> resources);
+    protected abstract boolean collectResources(Collection<IndexableImpl> resources);
 
     // -----------------------------------------------------------------------
     // private implementation
@@ -109,24 +109,24 @@ public abstract class Crawler {
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
 
-    private List<IndexableImpl> cache;
-    private List<IndexableImpl> deleted;
+    private Collection<IndexableImpl> cache;
+    private Collection<IndexableImpl> deleted;
     private boolean finished;
 
     private void init () throws IOException {
         if (this.cache == null) {
-            List<IndexableImpl> resources = new LinkedList<IndexableImpl>();
+            Collection<IndexableImpl> resources = new LinkedHashSet<IndexableImpl>();
             this.finished = collectResources(resources);
-            this.cache = Collections.unmodifiableList(resources);
+            this.cache = Collections.unmodifiableCollection(resources);
             final Set<String> unseen = timeStamps.getUnseenFiles();
             if (unseen != null) {
                 deleted = new ArrayList<IndexableImpl>(unseen.size());
                 for (String u : unseen) {
                     deleted.add(new DeletedIndexable(root, u));
                 }
-                deleted = Collections.unmodifiableList(deleted);
+                deleted = Collections.unmodifiableCollection(deleted);
             } else {
-                deleted = Collections.<IndexableImpl>emptyList();
+                deleted = Collections.<IndexableImpl>emptySet();
             }
         }
     }
