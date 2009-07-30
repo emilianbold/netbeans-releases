@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -62,6 +63,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
@@ -71,6 +73,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.profile.Profile;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -199,8 +202,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
                 if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-                    SelectAppServerPanel panel = new SelectAppServerPanel();
+                    boolean isDefaultGoal = config.getGoals().size() == 1 && config.getGoals().get(0).equals("package"); //TODO how to figure if really default or overridden by user?
+                    SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal);
                     DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
+                    panel.setNLS(dd.createNotificationLineSupport());
                     Object obj = DialogDisplayer.getDefault().notify(dd);
                     if (obj == NotifyDescriptor.OK_OPTION) {
                         String instanceId = panel.getSelectedServerInstance();
@@ -230,6 +235,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             POHImpl.USG_LOGGER.log(record);
 
                             return true;
+                        } else {
+                            //ignored used now..
+                            if (panel.isIgnored()) {
+                                removeNetbeansDeployFromActionMappings(config.getActionName());
+                                return true;
+                            }
                         }
                     }
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
@@ -278,6 +289,26 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         fl = FileUtil.normalizeFile(fl);
         File check = new File(fl, NB_COS);
         return check.exists();
+    }
+
+    private void removeNetbeansDeployFromActionMappings(String actionName) {
+        try {
+            ModelHandle handle = ModelHandleUtils.createModelHandle(project);
+            NetbeansActionMapping mapp = ModelHandle.getActiveMapping(actionName, project);
+            if (mapp != null) {
+                java.util.Properties props = mapp.getProperties();
+                if (props != null) {
+                    props.remove(Constants.ACTION_PROPERTY_DEPLOY);
+                    ModelHandle.setUserActionMapping(mapp, handle.getActionMappings());
+                    handle.markAsModified(handle.getActionMappings());
+                    ModelHandleUtils.writeModelHandle(handle, project);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (XmlPullParserException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 
