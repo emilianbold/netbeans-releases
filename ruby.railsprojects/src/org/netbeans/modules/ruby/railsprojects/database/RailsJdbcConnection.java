@@ -53,7 +53,6 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**

@@ -169,9 +169,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        QualifiedName qualifiedName = getQualifiedName();
+        String name = qualifiedName.toName().toString();
+        String namespaceName = qualifiedName.toNamespaceName().toString();
+        sb.append(name.toLowerCase()).append(";");//NOI18N
+        sb.append(name).append(";");//NOI18N
+        sb.append(namespaceName).append(";");//NOI18N
         return sb.toString();
     }
 }

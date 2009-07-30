@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 
 /**
@@ -77,4 +78,11 @@ public class IndexedClass extends IndexedType {
         final String retval = getIn();
         return retval != null ? retval : "";//NOI18N
     }
+
+    @Override
+    public String getFullyQualifiedName() {
+        QualifiedName qn = QualifiedName.createFullyQualified(name, getNamespaceName());
+        return qn.toString();
+    }
+
 }

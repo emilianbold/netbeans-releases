@@ -142,7 +142,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         if (annotationMirror != null ) {
             result.add( new Binding(getHelper(), type, getAnnotationName()));
         }
-        if ( !getHelper().hasAnnotation( annotationMirror.
+        if ( annotationMirror == null || !getHelper().hasAnnotation( annotationMirror.
                 getAnnotationType().asElement().
                 getAnnotationMirrors(), 
                 Inherited.class.getCanonicalName()))

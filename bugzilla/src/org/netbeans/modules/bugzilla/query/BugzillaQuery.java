@@ -193,7 +193,7 @@ public class BugzillaQuery extends Query {
                     // only issues not returned by the query are obsolete
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store all you got
+                        // ... and store all issues you got
                         repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
                         repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
@@ -212,6 +212,12 @@ public class BugzillaQuery extends Query {
                 }
             }
         });
+
+        if(isSaved()) {
+            // persist last refresh etc.
+            BugzillaConfig.getInstance().putQuery(repository, BugzillaQuery.this);
+        }
+
         return ret[0];
     }
 

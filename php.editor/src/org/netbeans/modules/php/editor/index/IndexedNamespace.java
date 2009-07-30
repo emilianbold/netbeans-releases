@@ -46,15 +46,21 @@ import org.netbeans.modules.php.editor.model.QualifiedName;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class IndexedNamespace extends IndexedElement {
-    protected IndexedNamespace(String name, String in, PHPIndex index, String fileUrl,
-            int offset, int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.PACKAGE);
+public class IndexedNamespace extends IndexedFullyQualified {
+    private String fqn;
+    public IndexedNamespace(String name, String in){
+        super(name, in, null, null, 0, 0, ElementKind.PACKAGE);
         
     }
 
-    public QualifiedName getQualifiedName()
-    {
-        return QualifiedName.create(getName());
+    public String getNamespaceName() {
+        return super.getIn();
+    }
+
+    public String getFullyQualifiedName() {
+        if (fqn == null) {
+            fqn = QualifiedName.createFullyQualified(getName(), getNamespaceName()).toString();
+        }
+        return fqn;
     }
 }

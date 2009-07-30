@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import javax.swing.Action;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,8 +47,11 @@ import org.openide.util.NbBundle;
  */
 public class THAControlPanel extends javax.swing.JPanel {
 
+    private final Action action;
+
     /** Creates new form THAControlPanel */
-    public THAControlPanel() {
+    public THAControlPanel(Action action) {
+        this.action = action;
         initComponents();
     }
 
@@ -69,14 +73,18 @@ public class THAControlPanel extends javax.swing.JPanel {
         controlButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
         add(controlButton);
 
+        deadlocksButton.setAction(action);
         deadlocksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"))); // NOI18N
-        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.notext")); // NOI18N
+        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.nodeadlocks")); // NOI18N
         deadlocksButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive24.png"))); // NOI18N
+        deadlocksButton.setEnabled(false);
         add(deadlocksButton);
 
+        racesButton.setAction(action);
         racesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_active24.png"))); // NOI18N
-        racesButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.dataracesButton.notext")); // NOI18N
+        racesButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.dataracesButton.nodataraces")); // NOI18N
         racesButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive24.png"))); // NOI18N
+        racesButton.setEnabled(false);
         add(racesButton);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -86,13 +94,23 @@ public class THAControlPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     void setDeadlocks(int deadlocks) {
-        deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.text", deadlocks));
-        deadlocksButton.setEnabled(0 < deadlocks);
+        if (0 < deadlocks) {
+            deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.deadlocks", deadlocks));
+            deadlocksButton.setEnabled(true);
+        } else {
+            deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.nodeadlocks"));
+            deadlocksButton.setEnabled(false);
+        }
     }
 
     void setDataRaces(int dataraces) {
-        racesButton.setText(getMessage("THAControlPanel.dataracesButton.text", dataraces));
-        racesButton.setEnabled(0 < dataraces);
+        if (0 < dataraces) {
+            racesButton.setText(getMessage("THAControlPanel.dataracesButton.dataraces", dataraces));
+            racesButton.setEnabled(true);
+        } else {
+            racesButton.setText(getMessage("THAControlPanel.dataracesButton.nodataraces"));
+            racesButton.setEnabled(false);
+        }
     }
 
     void reset() {
