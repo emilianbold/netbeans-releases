@@ -82,7 +82,7 @@ public enum PHPTokenId implements TokenId {
     PHP_PAAMAYIM_NEKUDOTAYIM(null, "operator"), //NOI18N
     PHP_EXTENDS(null, "keyword"), //NOI18N
     PHP_VAR_COMMENT(null, "comment"), //NOI18N
-    PHP_USE(null, "php"), //NOI18N
+    PHP_USE(null, "keyword"), //NOI18N
     //	PHP_MINUS_EQUAL(null, "php"),
     //	PHP_INT_CAST(null, "php"),
     //	PHP_BOOLEAN_OR(null, "php"),

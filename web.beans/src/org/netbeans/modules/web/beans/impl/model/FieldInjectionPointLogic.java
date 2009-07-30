@@ -211,7 +211,7 @@ abstract class FieldInjectionPointLogic {
                  *  It should be either absent at all or binding types 
                  *  should contain @Current.  
                  */
-                filterBindnigsByCurrent( assignableTypes, modelImpl );
+                filterBindingsByCurrent( assignableTypes, modelImpl );
             }
             types.addAll( assignableTypes );
         }
@@ -444,7 +444,7 @@ abstract class FieldInjectionPointLogic {
         filter.filter( productionElements );
     }
     
-    private void filterBindnigsByCurrent( Set<TypeElement> assignableTypes,
+    private void filterBindingsByCurrent( Set<TypeElement> assignableTypes,
             WebBeansModelImplementation modelImpl )
     {
         CurrentBindingTypeFilter<TypeElement> filter = CurrentBindingTypeFilter.get( 
@@ -545,21 +545,25 @@ abstract class FieldInjectionPointLogic {
     {
         List<Set<Element>> bindingCollections = 
             new ArrayList<Set<Element>>( bindingAnnotations.size());
-        /* XXX : I'm not sure if logic with current ( <code>hasCurrent</code>
-         * and <code>currentBindings</code> ) should be there.
-         * It is unclear from specification @Current inheritance ( if 
-         * it is not explicitly declared for parent ) in @Specializes case. 
-         */  
+        /*
+         * One need to handle special case with @Current annotation 
+         * in case of specialization. There can be a case 
+         * when production method doesn't explicitly declare @Current but 
+         * specialize other method with several appropriate binding types.
+         * In this case original method will have @Current along with 
+         * binding types "inherited" from specialized methods.  
+         */
         boolean hasCurrent = model.getHelper().getAnnotationsByType( bindingAnnotations ).
-            get(CURRENT_BINDING_ANNOTATION) != null ;
+                get(CURRENT_BINDING_ANNOTATION) != null ;
         Set<Element> currentBindings = new HashSet<Element>();
         for (AnnotationMirror annotationMirror : bindingAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
             String annotationFQN = annotationElement.getQualifiedName().toString();
-            findAnnotation(model, bindingCollections, annotationFQN, hasCurrent, 
+            findAnnotation(model, bindingCollections, annotationFQN , hasCurrent,
                     currentBindings );
         }
+
         if ( hasCurrent ){
             bindingCollections.add( currentBindings );
         }
@@ -574,15 +578,18 @@ abstract class FieldInjectionPointLogic {
                 result.retainAll( list );
             }
         }
+        if ( result == null ){
+            return Collections.emptySet();
+        }
         return result;
     }
 
     private void findAnnotation( final WebBeansModelImplementation model,
-            List<Set<Element>> bindingCollections, final String annotationFQN ,
-            final boolean hasCurrent , final Set<Element> elementsWithCurrent)
+            final List<Set<Element>> bindingCollections, final String annotationFQN ,
+            final boolean hasCurrent , final Set<Element> currentBindings )
     {
         try {
-            final Set<Element> binding = new HashSet<Element>();
+            final Set<Element> bindings = new HashSet<Element>();
             model.getHelper().getAnnotationScanner().findAnnotations( 
                     annotationFQN, 
                     EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
@@ -593,31 +600,27 @@ abstract class FieldInjectionPointLogic {
                             if ( AnnotationObjectProvider.hasAnnotation(element, 
                                     PRODUCER_ANNOTATION, model.getHelper()))
                             {
-                                binding.add( element );
-                                binding.addAll(getChildSpecializes( element , 
+                                bindings.add( element );
+                                bindings.addAll(getChildSpecializes( element , 
                                         model ));
-                                if ( hasCurrent && !annotationFQN.
-                                        contentEquals( CURRENT_BINDING_ANNOTATION))
-                                {
-                                    for (Element bind : binding) {
-                                        Element specialized = MemberCheckerFilter.
-                                            getSpecialized(element, 
-                                                model, CURRENT_BINDING_ANNOTATION );
-                                        if ( specialized != null){
-                                            elementsWithCurrent.add( bind);
-                                        }
-                                    }
+                                if ( annotationFQN.contentEquals( 
+                                        CURRENT_BINDING_ANNOTATION )){
+                                    currentBindings.addAll( bindings );
+                                }
+                                else {
+                                    bindingCollections.add( bindings );
                                 }
                             }
                         }
                     });
-            if ( annotationFQN.contentEquals(
-                    CURRENT_BINDING_ANNOTATION))
-            {
-                elementsWithCurrent.addAll( binding );
-            }
-            else {
-                bindingCollections.add( binding );
+            if ( hasCurrent ){
+                for (Element element : bindings) {
+                    if ( AnnotationObjectProvider.checkCurrent(
+                            element, model.getHelper()))
+                    {
+                        currentBindings.add( element );
+                    }
+                }
             }
         }
         catch (InterruptedException e) {
@@ -632,11 +635,14 @@ abstract class FieldInjectionPointLogic {
         List<Set<Binding>> bindingCollections = 
             new ArrayList<Set<Binding>>( bindingAnnotations.size());
 
-        /* XXX : I'm not sure if logic with current ( <code>hasCurrent</code>
-         * and <code>currentBindings</code> ) should be there.
-         * It is unclear from specification @Current inheritance ( if 
-         * it is not explicitly declared for parent ) in @Specializes case. 
-         */  
+        /*
+         * One need to handle special case with @Current annotation 
+         * in case of specialization. There can be a case 
+         * when bean doesn't explicitly declare @Current but 
+         * specialize other beans with several appropriate binding types.
+         * In this case original bean will have @Current along with 
+         * binding types "inherited" from specialized beans.  
+         */
         boolean hasCurrent = modelImpl.getHelper().getAnnotationsByType( bindingAnnotations ).
                 get(CURRENT_BINDING_ANNOTATION) != null ;
         Set<Binding> currentBindings = new HashSet<Binding>();
@@ -654,9 +660,8 @@ abstract class FieldInjectionPointLogic {
                 bindingCollections.add( new HashSet<Binding>( bindings) );
                 if ( hasCurrent ){
                     for (Binding binding : bindings) {
-                        if ( AnnotationObjectProvider.checkSuper(
-                                binding.getTypeElement(), CURRENT_BINDING_ANNOTATION,
-                                modelImpl.getHelper())!= null)
+                        if ( AnnotationObjectProvider.checkCurrent(
+                                binding.getTypeElement(), modelImpl.getHelper()))
                         {
                             currentBindings.add( new Binding( 
                                     modelImpl.getHelper(), binding.getTypeElement(), 

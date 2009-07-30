@@ -84,7 +84,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Creates new html browser with toolbar and status line.
     */
     public HtmlBrowserComponent(boolean toolbar, boolean statusLine) {
-        this (null, toolbar, statusLine);
+        this (IDESettings.getWWWBrowser(), toolbar, statusLine);
     }
 
     /**
@@ -315,7 +315,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
         statLine = in.readBoolean ();
         toolbar = in.readBoolean ();
         url = (URL) in.readObject ();
-        
+
     }
 
 

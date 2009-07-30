@@ -39,7 +39,7 @@
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -86,5 +86,5 @@ public interface StackDataStorage {//extends StackSupport {
      * @param timestamp
      * @return
      */
-    StackTrace getStackTrace(long timestamp, int threadID, int threadState);
+    ThreadDump getThreadDump(long timestamp, int threadID, int threadState);
 }

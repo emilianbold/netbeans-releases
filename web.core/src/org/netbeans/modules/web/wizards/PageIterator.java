@@ -202,6 +202,9 @@ public class PageIterator implements TemplateWizard.Iterator {
                 if (panel.isXml()) {
                     template = templateParent.getFileObject("JSPX", "jspx"); //NOI18N
                 }
+                if (panel.isFacelets()) {
+                    template = templateParent.getFileObject("JSP", "xhtml"); //NOI18N
+                }
             }
         } else if (FileType.TAG.equals(fileType)) {
             if (panel.isSegment()) {

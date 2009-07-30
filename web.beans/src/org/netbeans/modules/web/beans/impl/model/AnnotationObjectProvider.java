@@ -182,7 +182,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         
         TypeElement superClass = helper.getSuperclass(type);
         if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.equals( annotationName)){
-            if ( checkCurrent( superClass, helper )){
+            if ( checkSpecializedCurrent( superClass, helper )){
                 return superClass;
             }
         }
@@ -205,7 +205,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
             if ( el instanceof TypeElement ){
                 TypeElement interfaceElement = (TypeElement) el;
                 if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.equals( annotationName)){
-                    if ( checkCurrent( interfaceElement, helper )){
+                    if ( checkSpecializedCurrent( interfaceElement, helper )){
                         return superClass;
                     }
                 }
@@ -222,7 +222,28 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         return null;
     }
     
-    static boolean checkCurrent( Element element , AnnotationModelHelper helper){
+    /*
+     * This method is called only for parent which are specialized.
+     * In this case @Current is not "inherited" child from parents. 
+     */
+    static boolean checkSpecializedCurrent( Element element , AnnotationModelHelper helper){
+        /*
+        Set<String> bindingNames = getBindings(element, helper);
+        if ( bindingNames.contains(
+                        WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
+        {
+            return true;
+        }
+        if ( bindingNames.size() == 0 ){
+            return true;
+        }
+        */
+        return helper.hasAnnotation( helper.getCompilationController().
+                getElements().getAllAnnotationMirrors(element), 
+                WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
+    }
+    
+    static  boolean checkCurrent( Element element , AnnotationModelHelper helper){
         Set<String> bindingNames = getBindings(element, helper);
         if ( bindingNames.contains(
                         WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))

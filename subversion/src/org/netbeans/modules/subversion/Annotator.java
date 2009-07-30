@@ -438,6 +438,11 @@ public class Annotator {
         boolean folderAnnotation = false;
 
         for (File file : context.getRootFiles()) {
+            if (SvnUtils.isPartOfSubversionMetadata(file)) {
+                // no need to handle .svn files, eliminates some warnings as 'no repository url found for managed file .svn'
+                // happens e.g. when annotating a Project folder
+                continue;
+            }
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 // status not in cache, plan refresh
