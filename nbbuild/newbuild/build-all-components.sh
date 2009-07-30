@@ -197,6 +197,17 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 
+
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.python -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+create_test_result "build.Python.modules" "Build Python modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build Python modules"
+#    exit $ERROR_CODE;
+fi
+
+
 #Build SOA modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.soa -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
