@@ -120,8 +120,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
     public boolean save() {
         boolean wasChanges = settingsReseted;
         settingsReseted = false;
-        Vector<String> includes = includesPanel.getListData();
-        wasChanges |= compiler.setSystemIncludeDirectories(includes);
+        Vector<String> tmpIncludes = includesPanel.getListData();
+        wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
         Vector<String> definitions = definitionsPanel.getListData();
         wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         return wasChanges;
@@ -309,14 +309,17 @@ public class PredefinedPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public char getRemoveButtonMnemonics() {
             return getString("IRemoveButtonMn").charAt(0);
         }
 
+        @Override
         public char getUpButtonMnemonics() {
             return getString("IUpButtonMn").charAt(0);
         }
 
+        @Override
         public char getDownButtonMnemonics() {
             return getString("IDownButtonMn").charAt(0);
         }
@@ -332,6 +335,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public String addAction() {
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
             DialogDisplayer.getDefault().notify(notifyDescriptor);
