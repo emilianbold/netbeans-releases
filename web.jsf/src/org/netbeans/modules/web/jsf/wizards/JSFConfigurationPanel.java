@@ -78,6 +78,8 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     //jsf configuration
     private String facesSuffix;
     private String facesMapping;
+    private boolean validateXml;
+    private boolean verifyObjects;
 
     /** Creates a new instance of JSFConfigurationPanel */
     public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
@@ -85,11 +87,14 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.controller = controller;
         this.customizer = customizer;
 
-        debugFacelets = false;
+        enableFacelets = false;
+        debugFacelets = true;
         skipComments = true;
         createExamples = true;
-        facesMapping = "*.jsf"; //NOI18N
         facesSuffix = ".xhtml"; //NOI18N
+        validateXml = true;
+        verifyObjects = false;
+        facesMapping = "/faces/*";
         getComponent();
     }
     
@@ -113,14 +118,22 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public String getFacesMapping(){
         return facesMapping;
     }
-    
+
+    private void setFacesMapping(String facesMapping) {
+        this.facesMapping = facesMapping;
+    }
+
     public void update() {
         component.update();
     }
     
     public boolean isValid() {
         getComponent();
-        return component.valid();
+        if (component.valid()) {
+            setFacesMapping(component.getURLPattern());
+            return true;
+        }
+        return false;
     }
     
     public Set extend(WebModule webModule) {
@@ -138,11 +151,13 @@ public class JSFConfigurationPanel extends WebModuleExtender {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -161,29 +176,34 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public void setServletName(String name){
         component.setServletName(name);
     }
-    
+
+    @Deprecated
+    /*
+     * Use getFacesMapping() instead
+     */
     public String getURLPattern(){
         return component.getURLPattern();
     }
-    
+
     public void setURLPattern(String pattern){
-        component.setURLPattern(pattern);
+        if (component !=null)
+            component.setURLPattern(pattern);
     }
     
     public boolean validateXML(){
-        return component.validateXML();
+        return validateXml;
     }
     
     public void setValidateXML(boolean ver){
-        component.setValidateXML(ver);
+        validateXml = ver;
     }
     
     public boolean verifyObjects(){
-        return component.verifyObjects();
+        return verifyObjects;
     }
     
     public void setVerifyObjects(boolean val){
-        component.setVerifyObjects(val);
+        verifyObjects = val;
     }
     
     public boolean packageJars(){
@@ -237,7 +257,9 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     }
 
     public void setEnableFacelets(boolean enableFacelets) {
-        this.enableFacelets = enableFacelets;
+        if (this.enableFacelets != enableFacelets) {
+            this.enableFacelets = enableFacelets;
+        }
     }
 
     public LibraryType getLibraryType(){

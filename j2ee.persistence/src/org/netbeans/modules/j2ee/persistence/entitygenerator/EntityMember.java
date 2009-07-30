@@ -88,30 +88,48 @@ public abstract class EntityMember {
 
     /**
      * Provide a mapping algorithm from an arbitrary string into a java
-     * recommend relationship field name (of the form lllUlll, where l = 
+     * recommend relationship field name (of the form lllUlll, where l =
      * lower case U = uppercase). The algorithm adds a suffix of "Collection"
-     * if the second parameter is true.  In any case, it adds capitalization 
-     * where a non alpha numeric character appears. If the resultant field 
-     * name would be a reserved java identifier an integer will be appended 
+     * if the second parameter is true.  In any case, it adds capitalization
+     * where a non alpha numeric character appears. If the resultant field
+     * name would be a reserved java identifier an integer will be appended
      * to cause the result not to be a reserved word.
      * @param fieldName name of field to transform
-     * @param isCollection <code>true</code> if the relationship is a 
+     * @param isCollection <code>true</code> if the relationship is a
      * a collection, <code>false</code> otherwise
      */
-    public static String makeRelationshipFieldName(String fieldName, 
+    public static String makeRelationshipFieldName(String fieldName,
+            boolean isCollection) {
+        return makeRelationshipFieldName(fieldName, CollectionType.COLLECTION, isCollection);
+    }
+        /**
+     * Provide a mapping algorithm from an arbitrary string into a java
+     * recommend relationship field name (of the form lllUlll, where l =
+     * lower case U = uppercase). The algorithm adds a suffix dependent on collectionType argument
+     * if the second parameter is true.  In any case, it adds capitalization
+     * where a non alpha numeric character appears. If the resultant field
+     * name would be a reserved java identifier an integer will be appended
+     * to cause the result not to be a reserved word.
+     * @param fieldName name of field to transform
+     * @param isCollection <code>true</code> if the relationship is a
+     * a collection, <code>false</code> otherwise
+     */
+    public static String makeRelationshipFieldName(String fieldName,
+            CollectionType collectionType,
             boolean isCollection) {
         if (isCollection){
-            fieldName += "Collection";  // NOI18N
+            fieldName += collectionType.getShortName();
         }
         return makeFieldName(fieldName);
     }
-    
+
     /**
      * Fix the relationship field name to be more related to the collection type.
      *
      * @param orgName The original name
      * @param colType The collection type, such as, java.util.List, java.util.Set
      * @return The nicer name
+     * @deprecated it was a fix for bad name, use makeRelationshipFieldName with collection type parameter to generate proper name initially
      */
     public static String fixRelationshipFieldName(String orgName, CollectionType colType) {
         String newName = orgName;

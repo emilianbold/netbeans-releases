@@ -141,7 +141,8 @@ public class NbTestCaseTest extends NbTestCase {
             next = o;
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2880
     public void testAssertGcFailsWithTwoPaths() {
         Object target = new Object();
         REF_O = new Node(new Node(new Node(target)));

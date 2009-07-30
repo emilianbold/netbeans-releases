@@ -46,7 +46,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewRubyProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -158,7 +158,7 @@ public class RubyValidation extends JellyTestCase {
         String rubyApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "TXT_NewJavaApp");
         npwo.selectProject(rubyApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();
@@ -206,7 +206,7 @@ public class RubyValidation extends JellyTestCase {
         String railsApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.ui.wizards.Bundle", "Templates/Project/Ruby/railsApp.xml");
         npwo.selectProject(railsApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_RAILS_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
 

@@ -1140,7 +1140,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
         
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             for (Indexable i : deleted) {
                 //System.out.println("FooIndexerFactory.filesDeleted: " + i.getURL());
                 indexer.deletedCounter++;
@@ -1151,7 +1151,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             for (Indexable i : dirty) {
                 //System.out.println("FooIndexerFactory.filesDirty: " + i.getURL());
                 indexer.dirtyCounter++;
@@ -1250,7 +1250,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             for (Indexable i : deleted) {
                 //System.out.println("EmbIndexerFactory.filesDeleted: " + i.getURL());
                 indexer.deletedCounter++;
@@ -1261,7 +1261,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             for (Indexable i : dirty) {
                 //System.out.println("EmbIndexerFactory.filesDirty: " + i.getURL());
                 indexer.dirtyCounter++;

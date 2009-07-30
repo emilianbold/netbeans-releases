@@ -66,19 +66,15 @@ public class CommonDDAccess {
     
     public static final String COMMON_API = "org.netbeans.modules.j2ee.dd.api.common."; //NOI18N
     
-    public static final String SERVLET_2_3 = "2_3"; //NOI18N
     public static final String SERVLET_2_4 = "2_4"; //NOI18N
     public static final String WEB_API = "org.netbeans.modules.j2ee.dd.api.web."; //NOI18N
     public static final String WEB_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.web.model_"; //NOI18N
-    
-    public static final String APP_1_3 = "1_3"; //NOI18N
+
     public static final String APP_1_4 = "1_4"; //NOI18N
     public static final String APP_API = "org.netbeans.modules.j2ee.dd.api.application."; //NOI18N
     public static final String APP_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.application.model_"; //NOI18N
     
-    public static final String EJB_2_0 = "2_0"; //NOI18N
     public static final String EJB_2_1 = "2_1"; //NOI18N
-    public static final String EJB_1_1 = "1_1"; //NOI18N
     public static final String EJB_API = "org.netbeans.modules.j2ee.dd.api.ejb."; //NOI18N
     public static final String EJB_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.ejb.model_"; //NOI18N
     
@@ -164,10 +160,7 @@ public class CommonDDAccess {
      * Handle special cases of version differences
      */
     private static String getImplementationBeanName (CommonDDBean parent, String beanName, String pkgName) {
-	if (pkgName.equals(WEB_PACKAGE_PREFIX + SERVLET_2_3)) {
-            if ("InitParam".equals(beanName) && parent instanceof WebApp) return "ContextParam"; //NOI18N
-            else return beanName;
-        } else if (beanName.equals("Session") || beanName.equals("Entity") || beanName.equals("MessageDriven")) { //NOI18N
+        if (beanName.equals("Session") || beanName.equals("Entity") || beanName.equals("MessageDriven")) { //NOI18N
             return beanName + "Bean"; //NOI18N
         } else
             return beanName;

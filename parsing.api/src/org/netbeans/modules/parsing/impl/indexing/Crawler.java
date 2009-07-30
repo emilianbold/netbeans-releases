@@ -44,10 +44,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,20 +63,19 @@ public abstract class Crawler {
      *
      * @throws java.io.IOException
      */
-    protected Crawler(final URL root, boolean checkTimeStamps, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+    protected Crawler(final URL root, boolean checkTimeStamps, CancelRequest cancelRequest) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
         this.timeStamps = TimeStamps.forRoot(root, checkTimeStamps);
-        this.mimeTypesToCheck = mimeTypesToCheck;
         this.cancelRequest = cancelRequest;
     }
 
-    public final Map<String, Collection<Indexable>> getResources() throws IOException {
+    public final Collection<IndexableImpl> getResources() throws IOException {
         init ();
         return cache;
     }
 
-    public final Collection<Indexable> getDeletedResources () throws IOException {
+    public final Collection<IndexableImpl> getDeletedResources () throws IOException {
         init ();
         return deleted;
     }
@@ -101,7 +98,7 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
-    protected abstract boolean collectResources(Set<? extends String> supportedMimeTypes, Map<String, Collection<Indexable>> resources);
+    protected abstract boolean collectResources(Collection<IndexableImpl> resources);
 
     // -----------------------------------------------------------------------
     // private implementation
@@ -110,27 +107,26 @@ public abstract class Crawler {
     private final URL root;
     private final boolean checkTimeStamps;
     private final TimeStamps timeStamps;
-    private final Set<String> mimeTypesToCheck;
     private final CancelRequest cancelRequest;
 
-    private Map<String, Collection<Indexable>> cache;
-    private Collection<Indexable> deleted;
+    private Collection<IndexableImpl> cache;
+    private Collection<IndexableImpl> deleted;
     private boolean finished;
 
     private void init () throws IOException {
         if (this.cache == null) {
-            Map<String, Collection<Indexable>> resources = new HashMap<String, Collection<Indexable>>();
-            this.finished = collectResources(mimeTypesToCheck, resources);
-            this.cache = Collections.unmodifiableMap(resources);
+            Collection<IndexableImpl> resources = new LinkedHashSet<IndexableImpl>();
+            this.finished = collectResources(resources);
+            this.cache = Collections.unmodifiableCollection(resources);
             final Set<String> unseen = timeStamps.getUnseenFiles();
             if (unseen != null) {
-                deleted = new ArrayList<Indexable>(unseen.size());
+                deleted = new ArrayList<IndexableImpl>(unseen.size());
                 for (String u : unseen) {
-                    deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
+                    deleted.add(new DeletedIndexable(root, u));
                 }
                 deleted = Collections.unmodifiableCollection(deleted);
             } else {
-                deleted = Collections.<Indexable>emptyList();
+                deleted = Collections.<IndexableImpl>emptySet();
             }
         }
     }

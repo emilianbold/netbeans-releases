@@ -52,11 +52,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -113,7 +113,9 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private String urlForJar(String path) {
-        return FileUtil.urlForArchiveOrDir(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
+        File fp = new File(path);
+        fp = fp.isAbsolute() ? fp : PropertyUtils.resolveFile(nbRootFile(), path);
+        return FileUtil.urlForArchiveOrDir(fp).toExternalForm();
     }
     
     private String urlForDir(String path) {
@@ -723,63 +725,12 @@ public class ClassPathProviderImplTest extends TestBase {
     
     /* XXX failing, should be rewritten to use generated module:
     public void testQaFunctionalTestClasspath() throws Exception {
-        FileObject qaftsrc = nbCVSRoot().getFileObject("performance/test/qa-functional/src");
-        if (qaftsrc == null) {
-            System.err.println("Skipping testQaFunctionalTestClasspath since performance not checked out");
-            return;
-        }
-        ClassPath cp = ClassPath.getClassPath(qaftsrc, ClassPath.COMPILE);
-        assertNotNull("have a COMPILE classpath", cp);
-        Set<String> expectedRoots = new TreeSet<String>();
-        // Keep up to date w/ changes in /space/src/nb_all/performance/nbproject/project.properties
-        // & nbbuild/templates/xtest-qa-functional.xml:
-        expectedRoots.add("junit.jar");
-        expectedRoots.add("nbjunit.jar");
-        expectedRoots.add("nbjunit-ide.jar");
-        expectedRoots.add("insanelib.jar");
-        // jemmy.and.jelly.path:
-        expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
-        expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
-        // test.qa-functional.cp.extra currently empty
-        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
-        cp = ClassPath.getClassPath(qaftsrc, ClassPath.EXECUTE);
-        assertNotNull("have an EXECUTE classpath", cp);
-        expectedRoots.add(urlForDir("performance/build/test/qa-functional/classes"));
-        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp4Tests(cp));
-        cp = ClassPath.getClassPath(qaftsrc, ClassPath.SOURCE);
-        assertNotNull("have a SOURCE classpath", cp);
-        assertEquals("right SOURCE classpath", Collections.singleton(qaftsrc), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-        // XXX test BOOT
+        ....
     }
      */
 
 //    XXX: failing test, fix or delete
 //    public void testQaFunctionalTestClasspathExternalModules() throws Exception {
-//        FileObject qaftsrc = resolveEEP("suite1/action-project/test/qa-functional/src");
-//        assertNotNull("have action-project/test/qa-functional/src", qaftsrc);
-//        ClassPath cp = ClassPath.getClassPath(qaftsrc, ClassPath.COMPILE);
-//        assertNotNull("have a COMPILE classpath", cp);
-//        Set<String> expectedRoots = new TreeSet<String>();
-//        expectedRoots.add("junit.jar");
-//        expectedRoots.add("nbjunit.jar");
-//        expectedRoots.add("nbjunit-ide.jar");
-//        expectedRoots.add("insanelib.jar");
-//        expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
-//        expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
-//        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
-//        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
-//        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
-//        TestBase.TestPCL l = new TestBase.TestPCL();
-//        cp.addPropertyChangeListener(l);
-//        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(qaftsrc);
-//        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-//        File added = file("xtest/lib/xtest.jar");
-//        ep.setProperty("test.qa-functional.cp.extra", added.getAbsolutePath());
-//        p.getHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-//        // do not save! just want to test change, not actually make it...
-//        assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
-//        expectedRoots.add(urlForJar("xtest/lib/xtest.jar"));
-//        assertEquals("right COMPILE classpath after added to .extra", expectedRoots, urlsOfCp4Tests(cp));
 //    }
 
     /* XXX failing, but what was it supposed to be testing? I cannot decipher this. -jglick
@@ -879,7 +830,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         assertEquals("right COMPILE classpath after changing project.xml again", expectedRoots, urlsOfCp(cp));
     }
-    
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();

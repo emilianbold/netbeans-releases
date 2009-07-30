@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -740,6 +741,8 @@ public final class JavaSource {
             JavacParserFactory factory = JavacParserFactory.getDefault();
             final Snapshot snapshot = s.createSnapshot();
             final JavacParser parser = factory.createPrivateParser(snapshot);
+            if (parser == null)
+                return null;
             final UserTask dummy = new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {                    
@@ -795,6 +798,11 @@ public final class JavaSource {
         public CompilationInfoImpl getCompilationInfoImpl(CompilationInfo info) {
             assert info != null;
             return info.impl;
+        }
+
+        @Override
+        public @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
+            return SourceUtils.generateReadableParameterName(typeName, used);
         }
     }                                                
 }

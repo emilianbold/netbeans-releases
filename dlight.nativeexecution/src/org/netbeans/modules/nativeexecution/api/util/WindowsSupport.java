@@ -41,9 +41,23 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 
 /**
  * Currently remote Windows execution is not considered...
@@ -51,13 +65,21 @@ import java.util.regex.Pattern;
  */
 public final class WindowsSupport {
 
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
-    private String cygwinBase = null;
-    private String cygwinShell = null;
-    private String msysBase = null;
-    private String msysShell = null;
+    private ShellType type = ShellType.NO_SHELL;
+    private String shell = null;
+    private String bin = null;
+    private Properties env = null;
 
     private WindowsSupport() {
+        init();
+
+        if (type == ShellType.NO_SHELL) {
+            log.fine("WindowsSupport: no shell found"); // NOI18N
+        } else {
+            log.fine("WindowsSupport: found " + type + " shell in " + bin); // NOI18N
+        }
     }
 
     public static WindowsSupport getInstance() {
@@ -65,18 +87,30 @@ public final class WindowsSupport {
     }
 
     public String getShell() {
+        return shell;
+    }
+
+    public void init() {
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
                 "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
                 "native", // NOI18N
                 ".*native.*REG_SZ(.*)"); // NOI18N
 
+        if (cygwinRoot == null) {
+            cygwinRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
+                    "rootdir", // NOI18N
+                    ".*rootdir.*REG_SZ(.*)"); // NOI18N
+        }
+
         if (cygwinRoot != null) {
             File sh = new File(cygwinRoot + "/bin/sh.exe"); // NOI18N
             if (sh.exists() && sh.canRead()) {
-                cygwinShell = sh.getAbsolutePath();
-                cygwinBase = sh.getParentFile().getParentFile().getAbsolutePath();
-                return cygwinShell;
+                type = ShellType.CYGWIN;
+                shell = sh.getAbsolutePath();
+                bin = sh.getParentFile().getAbsolutePath();
+                return;
             }
         }
 
@@ -89,24 +123,64 @@ public final class WindowsSupport {
         if (msysRoot != null) {
             File sh = new File(msysRoot + "/bin/sh.exe"); // NOI18N
             if (sh.exists() && sh.canRead()) {
-                msysShell = sh.getAbsolutePath();
-                msysBase = sh.getParentFile().getParentFile().getAbsolutePath();
-                return msysShell;
+                type = ShellType.MSYS;
+                shell = sh.getAbsolutePath();
+                bin = sh.getParentFile().getAbsolutePath();
+                return;
             }
         }
 
         // 3. Search in PATH
         String paths = System.getenv("PATH"); // NOI18N
         if (paths != null) {
+            String foundBin = null;
+            String foundShell = null;
+            ShellType foundType = ShellType.NO_SHELL;
+
             for (String path : paths.split(";")) { // NOI18N
                 File sh = new File(path, "sh.exe"); // NOI18N
+                File parent = sh.getParentFile();
+
                 if (sh.exists() && sh.canRead()) {
-                    return sh.getAbsolutePath();
+                    if ("bin".equals(parent.getName())) { // NOI18N
+                        // Looks like we have found something...
+                        // An attempt to understand what exactly we have found
+                        if (new File(parent, "cygcheck.exe").exists()) { // NOI18N
+                            // Cygwin found! No need to continue further search
+                            bin = parent.getAbsolutePath();
+                            shell = sh.getAbsolutePath();
+                            type = ShellType.CYGWIN;
+                            return;
+                        } else {
+                            // If we found msys already - we are not intresting in this entry
+                            // (which is either UNKNOWN shell or MSYS)
+                            // (is it possible to have several msys installations? If yes - then this will
+                            //  a guarantee that we are using the one that is the first in the PATH)
+                            if (foundType == ShellType.MSYS) {
+                                continue;
+                            }
+
+                            // We never found msys before... Perhaps this one is msys?
+                            if (new File(parent, "msysinfo").exists()) { // NOI18N
+                                // Looks like it is...
+                                // Still will continue search - perhaps next one will be a preferred Cygwin.
+                                foundType = ShellType.MSYS;
+                            } else {
+                                // This is some unknown shell ...
+                                foundType = ShellType.UNKNOWN;
+                            }
+
+                            foundBin = parent.getAbsolutePath();
+                            foundShell = sh.getAbsolutePath();
+                        }
+                    }
                 }
             }
-        }
 
-        return null;
+            bin = foundBin;
+            shell = foundShell;
+            type = foundType;
+        }
     }
 
     private static String queryWindowsRegistry(String key, String param, String regExpr) {
@@ -115,19 +189,16 @@ public final class WindowsSupport {
                     "c:\\windows\\system32\\reg.exe", // NOI18N
                     "query", key, "/v", param); // NOI18N
             Process p = pb.start();
-            String s;
             Pattern pattern = Pattern.compile(regExpr);
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
             }
 
-            while (true) {
-                s = br.readLine();
-                if (s == null) {
-                    break;
-                }
+            List<String> out = ProcessUtils.readProcessOutput(p);
+
+            for (String s : out) {
                 Matcher m = pattern.matcher(s);
                 if (m.matches()) {
                     return m.group(1).trim();
@@ -136,76 +207,232 @@ public final class WindowsSupport {
         } catch (IOException e) {
         }
 
+        // If not found, try to search for the entry in user's space ...
+        if (key.toLowerCase().startsWith("hklm")) { // NOI18N
+            return queryWindowsRegistry("HKCU" + key.substring(4), param, regExpr); // NOI18N
+        }
+
         return null;
     }
 
     /**
-     * For now it is assumed that once cygwin was found it is used for starting
-     * shell ... So in this case will convert to /cygdrive/....
+     * Cygwin is preferrable shell (over msys). So it cygwin is
+     * installed we will always use it's for shell
      */
     public String convertToShellPath(String path) {
-        if (path == null) {
-            return ""; // NOI18N
+        String result = ""; // NOI18N
+
+        if (path == null || path.length() == 0) {
+            return result;
         }
 
-        while (path.startsWith("\"") && path.endsWith("\"")) { // NOI18N
-            path = path.substring(1, path.length() - 1);
+        switch (type) {
+            case CYGWIN:
+                List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
+
+                if (paths != null) {
+                    result = paths.get(0);
+                }
+
+                break;
+            case MSYS:
+                result = path;
+
+                if (result.charAt(1) == ':') {
+                    result = "/" + result.replaceFirst(":", ""); // NOI18N
+                }
+
+                result = result.replaceAll("\\\\", "/"); // NOI18N
+                break;
+            default:
+            // No shell ...
         }
-
-        if (path.length() < 2) {
-            return path;
-        }
-
-        if (path.charAt(1) != ':') {
-            return path.replaceAll("\\\\", "/"); // NOI18N
-        }
-
-        char driveLetter = path.charAt(0);
-        String p = path.substring(2);
-        String result;
-
-        if (cygwinBase != null) {
-            result = "/cygdrive/" + driveLetter + p; // NOI18N
-            result = result.replaceAll("\\\\", "/"); // NOI18N
-        } else if (msysBase != null) {
-            result = "/" + driveLetter + p; // NOI18N
-            result = result.replaceAll("\\\\", "/"); // NOI18N
-        } else {
-            result = path;
-        }
-
-        result = result.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
 
         return result;
+    }
+    private final static long CygpathTimeout = 5;
 
+    private List<String> cygpath(String opts, List<String> paths) {
+        File cygpath = new File(bin, "cygpath"); // NOI18N
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(cygpath.getAbsolutePath());
+        cmd.add(opts);
+        cmd.addAll(paths);
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        try {
+            Process p = pb.start();
+            StreamReader outReader = new StreamReader(p.getInputStream());
+            StreamReader errReader = new StreamReader(p.getErrorStream());
+
+            Future<List<String>> futureOutput = NativeTaskExecutorService.submit(outReader, "Cygpath output reader"); // NOI18N
+            Future<List<String>> futureError = NativeTaskExecutorService.submit(errReader, "Cygpath error reader"); // NOI18N
+
+            int exitCode = p.waitFor();
+
+            if (exitCode == 0) {
+                try {
+                    return futureOutput.get(CygpathTimeout, TimeUnit.SECONDS);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (TimeoutException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            try {
+                List<String> errorOutput = futureError.get(CygpathTimeout, TimeUnit.SECONDS);
+                log.fine(cygpath.getAbsolutePath() + " failed."); // NOI18N
+                for (String errorLine : errorOutput) {
+                    log.fine("cygpath: " + errorLine); // NOI18N
+                }
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (TimeoutException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
     }
 
     public String convertToWindowsPath(String path) {
         String result = ""; // NOI18N
 
-        if (path.startsWith("/cygdrive/")) { // NOI18N
-            path = path.substring(9);
-        }
+        switch (type) {
+            case CYGWIN:
+                List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
 
-        if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
-            result = path.charAt(1) + ":"; // NOI18N
-            path = path.substring(2);
-        }
+                if (paths != null) {
+                    result = paths.get(0);
+                }
+                break;
+            case MSYS:
+                if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
+                    result = path.charAt(1) + ":"; // NOI18N
+                    path = path.substring(2);
+                }
 
-        result = (result + path).replaceAll("/", "\\\\"); // NOI18N
+                result = (result + path).replaceAll("/", "\\\\"); // NOI18N
+                break;
+            default:
+        }
 
         return result;
     }
 
     public String convertToAllShellPaths(String paths) {
-        String[] ps = paths.split(";"); // NOI18N
+        if (paths == null) {
+            return ""; // NOI18N
+        }
+
+        String[] origPaths = paths.split(";"); // NOI18N
+        List<String> convertedPaths = new ArrayList<String>();
+
+        switch (type) {
+            case CYGWIN:
+                // Will start cygpath only once...
+                convertedPaths.addAll(cygpath("-u", Arrays.asList(origPaths))); // NOI18N
+                break;
+            case MSYS:
+                for (String path : origPaths) {
+                    convertedPaths.add(convertToShellPath(path));
+                }
+                break;
+            default:
+        }
+
         StringBuilder sb = new StringBuilder();
 
-        for (String path : ps) {
-            sb.append(convertToShellPath(path));
-            sb.append(':');
+        for (String path : convertedPaths) {
+            sb.append(path).append(':');
         }
 
         return sb.toString();
+    }
+
+    public synchronized Properties getEnv() {
+        if (env == null) {
+            env = readEnv();
+        }
+
+        return env;
+    }
+
+    private static Properties readEnv() {
+        Properties result = new Properties();
+
+        try {
+            String os = System.getProperty("os.name").toLowerCase(); // NOI18N
+            String cmd = "cmd"; // NOI18N
+
+            if (os.contains("windows 9")) { // NOI18N Win95, Win98.. not supported... but, still...
+                cmd = "command.com"; // NOI18N
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(cmd, "/c", "set"); // NOI18N
+            Process p = pb.start();
+
+            List<String> out = ProcessUtils.readProcessOutput(p);
+
+            for (String line : out) {
+                int idx = line.indexOf('=');
+                String key = line.substring(0, idx).trim().toUpperCase();
+                String value = line.substring(idx + 1);
+                result.setProperty(key, value);
+            }
+
+            int exitStatus = -1;
+
+            try {
+                exitStatus = p.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            if (exitStatus != 0) {
+                log.log(Level.FINE, "Unable to read environment"); // NOI18N
+                ProcessUtils.logError(Level.FINE, log, p);
+            }
+        } catch (IOException ex) {
+            log.log(Level.FINE, "Unable to read environment", ex); // NOI18N
+        }
+
+        return result;
+    }
+
+    private class StreamReader implements Callable<List<String>> {
+
+        private final InputStream is;
+        private final List<String> result;
+
+        public StreamReader(InputStream is) {
+            this.is = is;
+            result = new ArrayList<String>();
+        }
+
+        public List<String> call() throws Exception {
+            try {
+                String s;
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                while ((s = br.readLine()) != null) {
+                    result.add(s);
+                }
+            } catch (IOException ex) {
+            }
+
+            return result;
+        }
+    }
+
+    private enum ShellType {
+
+        NO_SHELL,
+        CYGWIN,
+        MSYS,
+        UNKNOWN
     }
 }

@@ -90,7 +90,7 @@ public class QTCTest extends NbTestCase {
     public void testOpenNewQuery() throws Throwable {
         MyRepository repo = MyConnector.repo;
 
-        LogHandler openedHandler = new LogHandler("opened", LogHandler.Compare.ENDS_WITH);
+        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
         LogHandler savedQueriesHandler = new LogHandler("saved queries.", LogHandler.Compare.ENDS_WITH);
 
         repo.queries.add(new MyQuery(repo));
@@ -107,6 +107,7 @@ public class QTCTest extends NbTestCase {
         assertTrue(button.isVisible());
 
         openedHandler.reset();
+        savedQueriesHandler.reset();
         QueryAction.openQuery(null, repo, false);
         openedHandler.waitUntilDone();
         savedQueriesHandler.waitUntilDone();

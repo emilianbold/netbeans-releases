@@ -308,7 +308,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
             super(key, String.class, name, desc);
         }
         public @Override String getValue() {
-            return properties.getProperty(getName(), String.class);
+            return properties.getProperty(super.getName(), String.class);
         }
     }
 }

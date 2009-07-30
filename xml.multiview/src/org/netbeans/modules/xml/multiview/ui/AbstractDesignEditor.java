@@ -45,7 +45,6 @@ import java.awt.BorderLayout;
 import java.beans.*;
 import javax.swing.JComponent;
 import javax.swing.ActionMap;
-import javax.swing.Action;
 import javax.swing.KeyStroke;
 
 import org.openide.nodes.*;

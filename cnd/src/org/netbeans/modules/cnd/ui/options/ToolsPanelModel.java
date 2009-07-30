@@ -99,9 +99,9 @@ public abstract class ToolsPanelModel {
     
     public abstract boolean isMakeRequired();
     
-    public abstract boolean isGdbRequired();
+    public abstract boolean isDebuggerRequired();
     
-    public abstract void setGdbRequired(boolean value);
+    public abstract void setDebuggerRequired(boolean value);
     
     public abstract boolean isCRequired();
     
@@ -143,7 +143,7 @@ public abstract class ToolsPanelModel {
     
     public abstract boolean showRequiredDebugTools();
     
-    public void SetEnableRequiredCompilerCB(boolean enabled) {}
+    public void setEnableRequiredCompilerCB(boolean enabled) {}
     
     public boolean enableRequiredCompilerCB() {return true;}
 

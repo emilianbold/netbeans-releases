@@ -46,6 +46,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -67,50 +68,19 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
         cancelled = true;
     }
 
-
     @Override
     public void run(Result result, SchedulerEvent event) {
-
         cancelled = false; //resume
-        
-        if (cancelled) {
-            return;
-        }
-
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
-
-//        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
-//        if(!presultIterator.hasNext()) {
-//            return;
-//        }
-//
-//        ParserResult presult = presultIterator.next();
-//        final TranslatedSource source = presult.getTranslatedSource();
-        
         HtmlParserResult htmlResult = (HtmlParserResult) result;
-        
-        if (cancelled) {
-            return;
-        }
-        
-        //just a test - highlight all tags' ids
-        Set<TagAttribute> ids = htmlResult.elementsIds();
-        for(TagAttribute ta : ids) {
-            int start = ta.getValueOffset();
-//            if (source != null) {
-                start = result.getSnapshot().getOriginalOffset(start);
-                if (start == -1) {
-                    start = 0;
-                }
-//            }
-            
-            // We assume that the start and end are always mapped to the same delta,
-            // e.g. tags don't span embedding regions
-            int end = start + ta.getValueLength();
 
-            OffsetRange range = new OffsetRange(start, end);
-            highlights.put(range, ColoringAttributes.METHOD_SET);
-        }    
+        //process extensions
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions()) {
+            if (cancelled) {
+                return;
+            }
+            highlights.putAll(ext.getHighlights(htmlResult, event));
+        }
 
         semanticHighlights = highlights;
 

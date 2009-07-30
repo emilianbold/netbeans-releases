@@ -98,6 +98,7 @@ public class SchemaRefCacheTest extends TestCase {
         suite.addTest(new SchemaRefCacheTest("testRedefinedTargetNamespaceChanged")); // NOI18N
         suite.addTest(new SchemaRefCacheTest("testImportedTargetNamespaceDeleted")); // NOI18N
         suite.addTest(new SchemaRefCacheTest("testDetachedSchemaGarbageCollected")); // NOI18N
+        suite.addTest(new SchemaRefCacheTest("testCacheContainsRelevantComponents")); // NOI18N
         return suite;
     }
 
@@ -641,6 +642,23 @@ public class SchemaRefCacheTest extends TestCase {
         //
         sm = smWeakRef.get();
         assertNull("Detached schema model has to be garbage collected", sm); // NOI18N
+    }
+
+    /**
+     * Checks that a model caches only relevant schema model references.
+     * See issue #168376
+     * 
+     * @throws java.lang.Exception
+     */
+    public void testCacheContainsRelevantComponents() throws Exception {
+        SchemaModel sm;
+        sm = Util.loadSchemaModel("resources/address.xsd"); // NOI18N // the source of incorrect components
+        sm = Util.loadSchemaModel(TEST_XSD);
+        RefCacheSupport cache = loadReferencedModels(sm);
+        //
+        // Cache has to contain 3 items
+        assertEquals(3, cache.getCachedModelsSize());
+        assertEquals(0, cache.checkKeys());
     }
 
 }

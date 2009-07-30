@@ -132,6 +132,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         if (KenaiService.Names.SUBVERSION.equals(newPrjScmType)) {
             if (!Subversion.isClientAvailable(autoCommit)) {
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
+                        Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
                 throw new IOException(Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
             }
         }
@@ -372,10 +374,12 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 sb.append(prepend + " "); // NOI18N
             }
             boolean sepAdded = false;
-            for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
-                String fld = it.next();
-                sb.append(errMap.get(fld) + ". "); // NOI18N
-                sepAdded = true;
+            if (errMap != null) {
+                for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
+                    String fld = it.next();
+                    sb.append(errMap.get(fld) + ". "); // NOI18N
+                    sepAdded = true;
+                }
             }
             if (sepAdded) {
                 errMsg = sb.substring(0, sb.length() - 2);

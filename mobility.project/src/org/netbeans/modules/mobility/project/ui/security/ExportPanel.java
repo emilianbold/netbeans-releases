@@ -57,7 +57,7 @@ import org.netbeans.modules.mobility.project.security.MEKeyTool;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
@@ -68,10 +68,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Collection;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.HashSet;
+import java.util.Set;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,7 +93,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     String keyString = NbBundle.getMessage(ExportPanel.class, "LBL_Key"); // NOI18N
     
     /** Creates new form ExportPanel */
-    public ExportPanel(KeyStoreRepository.KeyStoreBean bean, KeyStoreRepository.KeyStoreBean.KeyAliasBean alias, J2MEPlatform preselectedPlatform, String preselectedDomain) {
+    public ExportPanel(KeyStoreRepository.KeyStoreBean bean, KeyStoreRepository.KeyStoreBean.KeyAliasBean alias, Object preselectedTarget, String preselectedDomain) {
         this.bean = bean;
         this.alias = alias;
         initComponents();
@@ -102,49 +107,86 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 			public void actionPerformed(@SuppressWarnings("unused")
 			final ActionEvent evt) {
                 export();
-                reloadList((J2MEPlatform)cPlatform.getSelectedItem());
+                reloadList(cTarget.getSelectedItem());
             }
         });
         tKeystore.setText(bean.getKeyStorePath());
         tAlias.setText(alias.getAlias());
         lDetails.setText(KeyAliasCellRenderer.getHtmlFormattedText(alias));
-        cPlatform.addItemListener(this);
+        cTarget.addItemListener(this);
         list.setCellRenderer(new DefaultListCellRenderer() {
+
+            @Override
             public Component getListCellRendererComponent(final JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
                 if (value instanceof MEKeyTool.KeyDetail) {
                     final MEKeyTool.KeyDetail key = (MEKeyTool.KeyDetail) value;
                     final Color color = isSelected ? list.getSelectionForeground() : list.getForeground();
-                    final StringBuffer sb = new StringBuffer("<html><font color=\"#"+ Integer.toHexString(color.getRGB() & 0xffffff) +"\"><b>" + keyString + ": " + key.getOrder() + "</b>"); // NOI18N
+                    final StringBuffer sb = new StringBuffer("<html><font color=\"#" + Integer.toHexString(color.getRGB() & 0xffffff) + "\"><b>" + keyString + ": " + key.getOrder() + "</b>"); // NOI18N
                     final String[] lines = key.getInfo();
-                    if (lines != null)
-                        for (int i = 0; i < lines.length; i++)
+                    if (lines != null) {
+                        for (int i = 0; i < lines.length; i++) {
                             sb.append("<br>").append(lines[i]); // NOI18N
+                        }
+                    }
                     value = sb.toString();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
         list.addListSelectionListener(this);
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
-        cPlatform.removeAllItems();
-        if (platforms != null) for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
-            if (platform instanceof J2MEPlatform)
-                cPlatform.addItem(platform);
-        }
-        if (preselectedPlatform != null) {
-            cPlatform.setSelectedItem(preselectedPlatform);
-            if (preselectedDomain != null)
-                cDomain.setSelectedItem(preselectedDomain);
-        }
+        cTarget.removeAllItems();
+        cTarget.addItem(org.openide.util.NbBundle.getMessage(ExportPanel.class, "MSG_Loading")); // NOI18N
+        final Collection<JavaPlatform> javaMEPlatforms = getJavaMEPlatformsWithoutBdj();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                boolean removedLoading = false;
+                for (final JavaPlatform platform : javaMEPlatforms) {
+                    if (platform != null) {
+                        if (platform instanceof J2MEPlatform) {
+                            J2MEPlatform.Device[] dev = ((J2MEPlatform) platform).getDevices();
+                            for (J2MEPlatform.Device device : dev) {
+                                if (null != MEKeyTool.keystoreForDevice(device)) {
+                                    if (!removedLoading) {
+                                        cTarget.removeAllItems();
+                                        removedLoading = true;
+                                    }
+                                    cTarget.addItem(device);
+                                } else {
+                                    cTarget.removeAllItems();
+                                    cTarget.addItem(platform); //platform only once
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
+    
+    private boolean equivalent(String owner, String subjectName) {
+        final String[] ownerSplit = owner.split("[,;]");
+        final Set<String> ownerSet = new HashSet<String>();
+        for (final String string : ownerSplit) {
+            ownerSet.add(string.trim());
+        }
+
+        final String[] subjectSplit = subjectName.split("[,;]");
+        final Set<String> subjectSet = new HashSet<String>();
+        for (final String string : subjectSplit) {
+            subjectSet.add(string.trim());
+        }
+
+        return ownerSet.equals(subjectSet);
+    }
+
     
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -155,7 +197,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         pDetails = new javax.swing.JPanel();
         lDetails = new javax.swing.JLabel();
         lPlatform = new javax.swing.JLabel();
-        cPlatform = new javax.swing.JComboBox();
+        cTarget = new javax.swing.JComboBox();
         lDomain = new javax.swing.JLabel();
         cDomain = new javax.swing.JComboBox();
         lKeys = new javax.swing.JLabel();
@@ -210,8 +252,8 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         tAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Alias")); // NOI18N
 
         pDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Details"))); // NOI18N
-        pDetails.setPreferredSize(new java.awt.Dimension(300, 100));
         pDetails.setEnabled(false);
+        pDetails.setPreferredSize(new java.awt.Dimension(300, 100));
         pDetails.setLayout(new java.awt.GridBagLayout());
 
         lDetails.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -231,7 +273,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(pDetails, gridBagConstraints);
 
-        lPlatform.setLabelFor(cPlatform);
+        lPlatform.setLabelFor(cTarget);
         org.openide.awt.Mnemonics.setLocalizedText(lPlatform, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Platform")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -245,8 +287,8 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
-        add(cPlatform, gridBagConstraints);
-        cPlatform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Platform")); // NOI18N
+        add(cTarget, gridBagConstraints);
+        cTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Platform")); // NOI18N
 
         lDomain.setLabelFor(cDomain);
         org.openide.awt.Mnemonics.setLocalizedText(lDomain, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Domain")); // NOI18N
@@ -340,9 +382,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
             if (o instanceof MEKeyTool.KeyDetail) {
                 final MEKeyTool.KeyDetail key = (MEKeyTool.KeyDetail) o;
                 final String owner = key.getOwner();
-                if (owner != null  &&  owner.equals(alias.getSubjectName()))
+                if (owner != null  &&  equivalent(owner, alias.getSubjectName())) {
                     return NbBundle.getMessage(ExportPanel.class, "ERR_KeyIsAlreadyInPlatform", owner, Integer.toString(key.getOrder())); // NOI18N
             }
+        }
         }
         return null;
     }
@@ -351,58 +394,86 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         final String errorMessage = getErrorMessage();
         pError.setErrorMessage(errorMessage);
         final boolean valid = errorMessage == null;
-        bExport.setEnabled(valid  &&  cPlatform.getSelectedItem() != null);
+        bExport.setEnabled(valid  &&  cTarget.getSelectedItem() != null && !(cTarget.getSelectedItem() instanceof String));
         if (dd != null && valid != dd.isValid())
             dd.setValid(valid);
     }
     
     private void bDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDeleteActionPerformed
-        final J2MEPlatform platform = (J2MEPlatform) cPlatform.getSelectedItem();
+        final Object target = cTarget.getSelectedItem();
         final Object value = list.getSelectedValue();
-        final String keytool = MEKeyTool.getMEKeyToolPath(platform);
-        if (value instanceof MEKeyTool.KeyDetail  &&  keytool != null) {
+        final String keytool = MEKeyTool.getMEKeyToolPath(target);
+        if (value instanceof MEKeyTool.KeyDetail && keytool != null) {
             final MEKeyTool.KeyDetail key = (MEKeyTool.KeyDetail) value;
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_DeleteKeyConfirmation", Integer.toString(key.getOrder()), platform.getDisplayName()), NbBundle.getMessage(ExportPanel.class, "TITLE_ConfirmKeyDeletion"), NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) { // NOI18N
+            String name = (target instanceof J2MEPlatform.Device) ? ((J2MEPlatform.Device)target).getName() : ((J2MEPlatform)target).getName();
+            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_DeleteKeyConfirmation", Integer.toString(key.getOrder()), name), NbBundle.getMessage(ExportPanel.class, "TITLE_ConfirmKeyDeletion"), NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) { // NOI18N
                 try {
-                    MEKeyTool.execute(new String[]{keytool, "-delete", "-number", Integer.toString(key.getOrder())}); // NOI18N
+                    if (target instanceof J2MEPlatform.Device)
+                        MEKeyTool.execute(new String[]{keytool, "-delete", "-MEkeystore", MEKeyTool.keystoreForDevice((J2MEPlatform.Device)target).toString(), "-number", Integer.toString(key.getOrder())}); // NOI18N
+                    else
+                        MEKeyTool.execute(new String[]{keytool, "-delete", "-number", Integer.toString(key.getOrder())}); // NOI18N
                 } catch (IOException e) {
                     e.printStackTrace();
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_WhileDeletingKey"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
                 }
-                reloadList(platform);
+                reloadList(target);
             }
         }
+
     }//GEN-LAST:event_bDeleteActionPerformed
     
     public void itemStateChanged(@SuppressWarnings("unused")
-	final ItemEvent e) {
-        final J2MEPlatform platform = (J2MEPlatform) cPlatform.getSelectedItem();
+            final ItemEvent e) {
+        final Object target = cTarget.getSelectedItem();
+        if (target instanceof String){
+            reloadList(target);
+            return;
+        }
         final ArrayList<String> list = new ArrayList<String>();
-        if (platform != null) {
-            final J2MEPlatform.Device[] devices = platform.getDevices();
-            if(devices != null) for (int i = 0; i < devices.length; i++) {
-                final J2MEPlatform.Device device = devices[i];
-                final String[] domains = device.getSecurityDomains();
-                if (domains != null) for (int j = 0; j < domains.length; j++) {
-                    final String domain = domains[j];
-                    if (!list.contains(domain))
-                        list.add(domain);
+        if (target != null) {
+            if (target instanceof J2MEPlatform.Device) {
+                final String[] domains = ((J2MEPlatform.Device) target).getSecurityDomains();
+                if (domains != null) {
+                    for (int j = 0; j < domains.length; j++) {
+                        final String domain = domains[j];
+                        if (!list.contains(domain)) {
+                            list.add(domain);
+                        }
+                    }
+                }
+            } else {
+                final J2MEPlatform.Device[] devices = ((J2MEPlatform) target).getDevices();
+                if (devices != null) {
+                    for (int i = 0; i < devices.length; i++) {
+                        final J2MEPlatform.Device device = devices[i];
+                        final String[] domains = device.getSecurityDomains();
+                        if (domains != null) {
+                            for (int j = 0; j < domains.length; j++) {
+                                final String domain = domains[j];
+                                if (!list.contains(domain)) {
+                                    list.add(domain);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
         cDomain.removeAllItems();
-        for (int i = 0; i < list.size(); i++)
+        for (int i = 0; i < list.size(); i++) {
             cDomain.addItem(list.get(i));
-        reloadList(platform);
+        }
+        reloadList(target);
     }
     
-    protected void reloadList(final J2MEPlatform platform) {
+    protected void reloadList(final Object target) {
         bDelete.setEnabled(false);
-        if (platform != null) {
+        if (target != null && !(target instanceof String)) {
             setListLoading();
-            setList(MEKeyTool.listKeys(platform));
-        } else
+            setList(MEKeyTool.listKeys(target));
+        } else {
             setListNotLoaded();
+        }
         checkErrors();
     }
     
@@ -435,10 +506,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         list.setModel(model);
     }
     
-    public static void showExportKeyIntoPlatform(final KeyStoreRepository.KeyStoreBean bean, final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias, final J2MEPlatform preselectedPlatform, final String preselectedDomain) {
+    public static void showExportKeyIntoPlatform(final KeyStoreRepository.KeyStoreBean bean, final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias, final Object preselectedTarget, final String preselectedDomain) {
         if (bean == null  ||  alias == null  ||  ! bean.isOpened()  ||  ! alias.isValid()  ||  ! alias.isOpened())
             return;
-        final ExportPanel export = new ExportPanel(bean, alias, preselectedPlatform, preselectedDomain);
+        final ExportPanel export = new ExportPanel(bean, alias, preselectedTarget, preselectedDomain);
         final DialogDescriptor dd = new DialogDescriptor(export, NbBundle.getMessage(ExportPanel.class, "TITLE_ExportKey"), true, null); // NOI18N
         dd.setOptions(new Object[] { export.bExport, NotifyDescriptor.CLOSED_OPTION });
         dd.setClosingOptions(new Object[] { NotifyDescriptor.CLOSED_OPTION });
@@ -449,54 +520,90 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     }
     
     protected void export() {
-        final J2MEPlatform platform = (J2MEPlatform) cPlatform.getSelectedItem();
+        final Object target = cTarget.getSelectedItem();
         final String domain = (String) cDomain.getSelectedItem();
-        final String keytool = MEKeyTool.getMEKeyToolPath(platform);
-        if (platform != null  &&  domain != null  &&  keytool != null) {
-            final File target = new File(System.getProperty("user.home", ""), ".keystore"); // NOI18N
-            if (target.exists()) {
-                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFile", bean.getKeyStorePath(), target.getAbsolutePath()), NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFileTitle"), NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION) // NOI18N
+        final String keytool = MEKeyTool.getMEKeyToolPath(target);
+        if (target != null && domain != null && keytool != null) {
+            final File keyStoreFile = new File(System.getProperty("user.home", ""), ".keystore"); // NOI18N
+            if (keyStoreFile.exists()) {
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFile", bean.getKeyStorePath(), keyStoreFile.getAbsolutePath()), NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFileTitle"), NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION) // NOI18N
+                {
                     return;
-                if (! target.delete()) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_CannotDeleteFile", target.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                }
+                if (!keyStoreFile.delete()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_CannotDeleteFile", keyStoreFile.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
                     return;
                 }
             }
             boolean canDeleteTempKeystore = false;
-            if (! KeyStoreRepository.KeyStoreBean.equalFiles(bean.getKeyStoreFile(), target)) {
+            if (!KeyStoreRepository.KeyStoreBean.equalFiles(bean.getKeyStoreFile(), keyStoreFile)) {
                 canDeleteTempKeystore = true;
                 FileInputStream fis = null;
                 FileOutputStream fos = null;
                 try {
                     fis = new FileInputStream(bean.getKeyStoreFile());
-                    fos = new FileOutputStream(target);
+                    fos = new FileOutputStream(keyStoreFile);
                     FileUtil.copy(fis, fos);
                 } catch (IOException e) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_IOErrorWhileCopying", bean.getKeyStorePath(), target.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_IOErrorWhileCopying", bean.getKeyStorePath(), keyStoreFile.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
                     e.printStackTrace();
                     return;
                 } finally {
-                    if (fis != null) try { fis.close(); } catch (IOException e) {}
-                    if (fos != null) try { fos.close(); } catch (IOException e) {}
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        } catch (IOException e) {
+                }
+            }
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                        }
+                    }
                 }
             }
             
             try {
-                MEKeyTool.execute(new String[] { keytool, "-import", "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain }); // NOI18N
+                if (target instanceof J2MEPlatform.Device)
+                    MEKeyTool.execute(new String[]{keytool, "-import", "-MEkeystore", MEKeyTool.keystoreForDevice((J2MEPlatform.Device)target), "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                else
+                    MEKeyTool.execute(new String[] { keytool, "-import", "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain }); // NOI18N
             } catch (IOException e) {
                 e.printStackTrace();
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "MSG_ErrorExportingKey"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             }
             
-            if (canDeleteTempKeystore)
-                target.delete();
+            if (canDeleteTempKeystore) {
+                keyStoreFile.delete();
         }
     }
+    }
+    
+        public static Collection<JavaPlatform> getJavaMEPlatformsWithoutBdj() {
+        final java.util.List<JavaPlatform> res = new ArrayList<JavaPlatform>();
+        final JavaPlatformManager platformManager = JavaPlatformManager.getDefault();
+        JavaPlatform[] platforms = null;
+        try {
+            platforms = platformManager.getInstalledPlatforms();
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+        for (JavaPlatform javaPlatform : platforms) {
+            if (javaPlatform instanceof J2MEPlatform ||
+                    (javaPlatform instanceof CDCPlatform &&
+                    !((CDCPlatform) javaPlatform).getType().equals("bdj"))) {
+                res.add(javaPlatform);
+            }
+        }
+        return res;
+    }
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDelete;
     private javax.swing.JComboBox cDomain;
-    private javax.swing.JComboBox cPlatform;
+    private javax.swing.JComboBox cTarget;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lAlias;
     private javax.swing.JLabel lDetails;

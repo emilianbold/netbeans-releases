@@ -48,6 +48,23 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+
+<change id="wm_openedtcs">
+    <api name="winsys"/>
+    <summary>New method to retrieve the list of TopComponents opened in a Mode.</summary>
+    <version major="6" minor="28"/>
+    <date day="15" month="7" year="2009"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added new a method to WindowManager to retrieve the list of TopComponents
+        opened in a given Mode. This method does not iterate through all the TopComponents
+        in the Mode so it prevents already closed TopComponents from being deserialized
+        from disk.
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="168060"/>
+</change>
 <change id="tc_customization">
     <api name="winsys"/>
     <summary>Window system customizations on TopComponent level</summary>

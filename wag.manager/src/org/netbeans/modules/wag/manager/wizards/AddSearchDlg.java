@@ -149,11 +149,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
         dialog.setVisible(true);
 
         if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    addSearchResult();
-                }
-            });
+            addSearchResult();
         }
     }
 

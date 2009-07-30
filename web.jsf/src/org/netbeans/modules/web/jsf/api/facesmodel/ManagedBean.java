@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
@@ -96,26 +97,10 @@ public interface ManagedBean extends FacesConfigElement, DescriptionGroup,
     
     void setManagedBeanName(String name);
     
-    String getManagedBeanClass();
     void setManagedBeanClass(String beanClass);
     
-    /**
-     * Obtaining scope for the managed bean
-     * @return The scope of the managed bean.  null
-     * is returned if in the document is not supported value.
-     * "scope" property could be also a EL expression.
-     * In the latter case one should use method 
-     * {@link #getManagedBeanScopeString()} 
-     */
-    ManagedBean.Scope getManagedBeanScope();
     void setManagedBeanScope(ManagedBean.Scope scope);
     
-    /**
-     * Accessor methods for scope property as string.
-     * Required to use in case of scope as EL expression. 
-     * @return
-     */
-    String getManagedBeanScopeString();
     void setManagedBeanScope( String scope);
     
     List<ManagedBeanExtension> getManagedBeanExtensions();

@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -115,14 +113,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
-        // if the server instance is local, then check the profile root
-        // directory for validity
-        if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesVisual.class, "SERVER_TYPE_LOCAL"))) { // NOI18N
-            if (!isValidDomainRoot(domainPathField.getText())) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
-                return false;
-            }
+        // check the profile root directory for validity
+        if (!isValidDomainRoot(domainPathField.getText())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
+            return false;
         }
 
         if (InstanceProperties.getInstanceProperties(getUrl()) != null) {
@@ -154,7 +149,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setUsername(usernameField.getText());
         instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-        instantiatingIterator.setIsLocal(serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesVisual.class, "SERVER_TYPE_LOCAL")) ? "true" : "false"); // NOI18N
 
         // everything seems ok
         return true;
@@ -421,7 +415,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     /**
      * The registrered listeners vector
      */
-    private Vector listeners = new Vector();
+    private final Vector listeners = new Vector();
 
     /**
      * Removes a registered listener
@@ -472,13 +466,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
     }
 
-    /*
-     * XXX
-     * ServerTypeLabel and ServerTypeCombo are not present in form due to
-     * issue #64480 (remote instances not supported in 5.0)
-     *
-     * In future this should change.
-     */
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -489,8 +476,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        serverTypeLabel = new javax.swing.JLabel();
-        serverTypeCombo = new javax.swing.JComboBox(new Object[] {org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "SERVER_TYPE_LOCAL")/*, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "SERVER_TYPE_REMOTE")*/});
         jPanel1 = new javax.swing.JPanel();
         UpdateListener updateListener = new UpdateListener();
         localInstancesLabel = new javax.swing.JLabel();
@@ -505,8 +490,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         usernameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-
-        serverTypeCombo.addActionListener(new ServerTypeActionListener());
 
         setLayout(new java.awt.BorderLayout());
 
@@ -650,8 +633,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField portField;
     private javax.swing.JLabel portLabel;
-    private javax.swing.JComboBox serverTypeCombo;
-    private javax.swing.JLabel serverTypeLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
@@ -684,59 +665,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     }
 
-    /**
-     * A listener that reacts to the change of the server type combobox,
-     * is the local server type is selected we should disable several fields
-     * and enable some others instead.
-     *
-     * @author Kirill Sorokin
-     */
-    private class ServerTypeActionListener implements ActionListener {
-        /**
-         * The main action handler. This method is called when the combobox
-         * value changes
-         */
-        public void actionPerformed(ActionEvent e) {
-            // if the selected type is local
-            if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesVisual.class, "SERVER_TYPE_LOCAL"))) { // NOI18N
-                Instance instance = (Instance) localInstancesCombo.getSelectedItem();
-
-                // enable the local instances combo
-                localInstancesCombo.setEnabled(true);
-
-                // enable and set as read-only the domain path field
-                domainPathField.setEnabled(true);
-                domainPathField.setEditable(false);
-
-                // enable and set as read-only the host field
-                hostField.setEnabled(true);
-                hostField.setEditable(false);
-                hostField.setText(instance.getHost());
-
-                // enable and set as read-only the port field
-                portField.setEnabled(true);
-                portField.setEditable(false);
-                portField.setText(instance.getPort());
-            } else {
-                // disable the local instances combo
-                localInstancesCombo.setEnabled(false);
-
-                // disable the domain path field
-                domainPathField.setEnabled(false);
-                domainPathField.setEditable(false);
-
-                // enable and set as read-write the host field
-                hostField.setEnabled(true);
-                hostField.setEditable(true);
-
-                // enable and set as read-write the port field
-                portField.setEnabled(true);
-                portField.setEditable(true);
-            }
-
-            isValid();
-        }
-    }
 
     /**
      * A combobox model that represents the list of local instances. It
@@ -752,7 +680,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         private Vector instances;
 
         /**
-         * The index of the selected instance
+         * The index of the selected instance, or -1 if there is no selection
          */
         private int selectedIndex = 0;
 
@@ -808,6 +736,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public Object getSelectedItem() {
             // if there are no instances return null
             if (instances.size() == 0) {
+                return null;
+            }
+            // #168297
+            if (selectedIndex == -1) {
                 return null;
             }
 
@@ -937,6 +869,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * An overriden version of the Object's toString() so that the
          * instance is displayed properly in the combobox
          */
+        @Override
         public String toString() {
             return name + " [" + host + ":" + port + "]"; // NOI18N
         }

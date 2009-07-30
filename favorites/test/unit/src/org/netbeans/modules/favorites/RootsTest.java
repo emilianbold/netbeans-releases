@@ -52,6 +52,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 public class RootsTest extends NbTestCase {
     private File userDir, platformDir, clusterDir;
@@ -100,10 +101,10 @@ public class RootsTest extends NbTestCase {
             }
         }
         
-        Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
+        Node[] arr = FavoritesNode.getNode ().getChildren ().getNodes (true);
         
         for (int i = 0; i < arr.length; i++) {
-            File f = Favorites.fileForNode (arr[i]);
+            File f = FavoritesNode.fileForNode (arr[i]);
             if (f != null) {
                 roots.remove (f);
             }
@@ -120,7 +121,7 @@ public class RootsTest extends NbTestCase {
     }*/
     
     public void testLinkToHomeDirIsThere () throws Exception {
-        Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
+        Node[] arr = FavoritesNode.getNode ().getChildren ().getNodes (true);
         
         File home = new File (System.getProperty("user.home")).getCanonicalFile();
 
@@ -150,18 +151,28 @@ public class RootsTest extends NbTestCase {
     public void testNodesUnderRootRepresentTheirFiles () throws Exception {
         HashSet<File> roots = new HashSet<File>(Arrays.asList (File.listRoots()));
         
-        Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
+        Node[] arr = FavoritesNode.getNode ().getChildren ().getNodes (true);
         
         for (int i = 0; i < arr.length; i++) {
-            File f = Favorites.fileForNode (arr[i]);
+            File f = FavoritesNode.fileForNode (arr[i]);
             if (roots.remove (f)) {
                 Node[] nexts = arr[i].getChildren().getNodes (true);
                 for (int j = 0; j < nexts.length; j++) {
-                    File file = Favorites.fileForNode (nexts[i]);
+                    File file = FavoritesNode.fileForNode (nexts[i]);
                     assertNotNull ("For node: " + nexts[i] + " there has to be file", file);
                     assertEquals ("Correct parent for " + nexts[i], f, file.getParentFile());
                 }
             }
         }
+    }
+
+    // helper method for access to o.n.m.favorites.Tab singleton
+    public static TopComponent getBareFavoritesTabInstance() {
+        return Tab.DEFAULT;
+    }
+
+    // helper method for access to o.n.m.favorites.Tab singleton
+    public static void clearBareFavoritesTabInstance() {
+        Tab.DEFAULT = null;
     }
 }

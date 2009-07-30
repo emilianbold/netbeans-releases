@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.utils.cache;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 
 /**
@@ -65,8 +67,18 @@ public abstract class APTStringManager  {
 
     private static final Map<String, APTStringManager> instances = Collections.synchronizedMap(new HashMap<String, APTStringManager>());
 
-    private static final int STRING_MANAGER_DEFAULT_CAPACITY=1024;
-    private static final int STRING_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int STRING_MANAGER_DEFAULT_CAPACITY;
+    private static final int STRING_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = CndUtils.getConcurrencyLevel();
+        if (nrProc <= 4) {
+            STRING_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            STRING_MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            STRING_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            STRING_MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
 
     /*package*/ static final String TEXT_MANAGER="Manager of sharable texts"; // NOI18N
     /*package*/ static final int    TEXT_MANAGER_INITIAL_CAPACITY=STRING_MANAGER_DEFAULT_CAPACITY;
@@ -115,8 +127,8 @@ public abstract class APTStringManager  {
             this.name = name;
         }
 
-        // we need exclusive copy of string => use "new String(String)" constructor
-        private final String lock = new String("lock in APTStringManager"); // NOI18N
+        private static final class Lock {}
+        private final Object lock = new Lock();
 
         /**
          * returns shared string instance equal to input text.
@@ -141,9 +153,9 @@ public abstract class APTStringManager  {
         }
 
         public final void dispose() {
-            if (false){
-                System.out.println("Dispose cache "+name+" "+getClass().getName()); // NOI18N
+            if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS){
                 Object[] arr = storage.toArray();
+                System.out.println("Dispose cache "+name+" "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
                 for(Object o : arr){
                     if (o != null) {
@@ -169,15 +181,22 @@ public abstract class APTStringManager  {
     
     /*package*/ static final class APTCompoundStringManager extends APTStringManager {
         private final APTStringManager[] instances;
-        private final int sliceNumber; // primary number for better distribution
+//        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         // To gebug
         private final String name;
         /*package*/APTCompoundStringManager(String name, int sliceNumber) {
             this(name, sliceNumber, APTStringManager.TEXT_MANAGER_INITIAL_CAPACITY);
         }
         /*package*/APTCompoundStringManager(String name, int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
-            instances = new APTStringManager[sliceNumber];
+//            this.sliceNumber = sliceNumber;
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
+            instances = new APTStringManager[ssize];
             for (int i = 0; i < instances.length; i++) {
                 instances[i] = new APTSingleStringManager(name, initialCapacity);
             }
@@ -188,10 +207,10 @@ public abstract class APTStringManager  {
             if (text == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
             }            
-            int index = text.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = text.hashCode() & segmentMask;
+//            if (index < 0) {
+//                index += sliceNumber;
+//            }
             return instances[index];
         }
         

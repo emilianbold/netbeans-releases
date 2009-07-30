@@ -830,7 +830,11 @@ public final class UpdateTracking {
             while (it.hasNext()) {
                 ModuleFile f = (ModuleFile) it.next ();
                 String n = f.getName();
-                String parentDir = new File(f.getName()).getParentFile().getName();
+                String parentDir;
+                {
+                    File p = new File(f.getName()).getParentFile();
+                    parentDir = p != null ? p.getName() : "";
+                }
                 needToWrite = needToWrite || n.indexOf(ModuleDeactivator.MODULES) >= 0;
                 if (n.endsWith(".jar")) {
                     // NOI18N

@@ -44,7 +44,6 @@ package org.netbeans.modules.visualweb.insync.faces.refactoring;
 import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Dictionary;
 import java.util.List;
 
 import javax.swing.Action;
@@ -243,8 +242,8 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
 
     static String getActionName(Action action) {
         String arg = (String) action.getValue(Action.NAME);
-        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
-        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+        arg = arg.replace("&", ""); // NOI18N
+        return arg.replace("...", ""); // NOI18N
     }
     
 }

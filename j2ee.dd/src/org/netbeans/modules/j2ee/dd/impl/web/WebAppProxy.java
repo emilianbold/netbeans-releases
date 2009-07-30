@@ -50,6 +50,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import java.io.OutputStream;
+import org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering;
 
 /**
  * @author  mk115033
@@ -206,10 +207,6 @@ public class WebAppProxy implements WebApp {
 
     public int addServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping value) {
         return webApp==null?-1:webApp.addServletMapping(value);
-    }
-
-    public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?-1:webApp.addTaglib(value);
     }
 
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
@@ -444,14 +441,6 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getSmallIcon(locale);
     }
 
-    public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.Taglib[0]:webApp.getTaglib();
-    }
-
-    public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?null:webApp.getTaglib(index);
-    }
-
     public Object getValue(String name) {
         return webApp==null?null:webApp.getValue(name);
     }
@@ -599,10 +588,6 @@ public class WebAppProxy implements WebApp {
 
     public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.removeSmallIcon(locale);
-    }
-
-    public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?-1:webApp.removeTaglib(value);
     }
 
     public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
@@ -859,14 +844,6 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setSmallIcon(locale, icon);
     }
 
-    public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        if (webApp!=null) webApp.setTaglib(value);
-    }
-
-    public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        if (webApp!=null) webApp.setTaglib(index, value);
-    }
-
     public void setWelcomeFileList(org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList value) {
         if (webApp!=null) webApp.setWelcomeFileList(value);
     }
@@ -943,14 +920,12 @@ public class WebAppProxy implements WebApp {
         return webApp==null?0:webApp.sizeServletMapping();
     }
 
-    public int sizeTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?0:webApp.sizeTaglib();
-    }
-
     public void write(java.io.OutputStream os) throws java.io.IOException {
         if (webApp!=null) {
             writing=true;
-            Schema2BeansUtil.write((BaseBean) webApp, os);
+            BaseBean webAppl = (BaseBean)webApp;
+            webAppl.reindent("    ");
+            Schema2BeansUtil.write(webAppl, os);
         }
     }
 
@@ -984,10 +959,7 @@ public class WebAppProxy implements WebApp {
         else {
             WebApp clonedWebApp=(WebApp)webApp.clone();
             proxy = new WebAppProxy(clonedWebApp,version);
-            if (WebApp.VERSION_2_3.equals(version)) {
-                ((org.netbeans.modules.schema2beans.BaseBean)clonedWebApp).changeDocType
-                    ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN","http://java.sun.com/dtd/web-app_2_3.dtd");
-            } else if (WebApp.VERSION_2_4.equals(version)) {
+            if (WebApp.VERSION_2_4.equals(version)) {
                 ((org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp)clonedWebApp)._setSchemaLocation
                     ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd");
             } else if (WebApp.VERSION_2_5.equals(version)) {
@@ -1026,4 +998,25 @@ public class WebAppProxy implements WebApp {
     public int removeJspConfig(JspConfig valueInterface) throws VersionNotSupportedException {
         return webApp == null ? 0 : webApp.removeJspConfig(valueInterface);
     }
+
+    public void setName(String[] value) throws VersionNotSupportedException {
+        if (webApp != null) webApp.setName(value);
+    }
+
+    public String[] getName() throws VersionNotSupportedException {
+        return webApp != null ? webApp.getName() : null;
+    }
+
+    public AbsoluteOrdering newAbsoluteOrdering() throws VersionNotSupportedException {
+        return webApp != null ? webApp.newAbsoluteOrdering() : null;
+    }
+    
+    public void setAbsoluteOrdering(AbsoluteOrdering[] value) throws VersionNotSupportedException {
+        if (webApp != null) webApp.setAbsoluteOrdering(value);
+    }
+
+    public AbsoluteOrdering[] getAbsoluteOrdering() throws VersionNotSupportedException {
+        return webApp != null ? webApp.getAbsoluteOrdering() : null;
+    }
+
 }

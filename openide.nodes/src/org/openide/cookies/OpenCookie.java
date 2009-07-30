@@ -40,6 +40,7 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Openable;
 import org.openide.nodes.Node;
 
 
@@ -48,7 +49,5 @@ import org.openide.nodes.Node;
 * @author Petr Hamernik
 * @version 0.10, Apr 03, 1998
 */
-public interface OpenCookie extends Node.Cookie {
-    /** Invokes the open action. */
-    public void open();
+public interface OpenCookie extends Openable, Node.Cookie {
 }

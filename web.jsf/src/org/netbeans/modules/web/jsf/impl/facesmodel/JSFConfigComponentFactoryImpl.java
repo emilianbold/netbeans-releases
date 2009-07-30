@@ -103,7 +103,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
 import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
@@ -121,12 +121,10 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
     private static final Logger LOGGER = Logger.getLogger(JSFConfigComponentFactoryImpl.class.getName());
     
     private final JSFConfigModelImpl model;
-    private final CreateVisitor myCreateVisitor;
     
     /** Creates a new instance of JSFConfigComponentFactoruImpl */
     public JSFConfigComponentFactoryImpl(JSFConfigModelImpl model) {
         this.model = model;
-        myCreateVisitor = new CreateVisitor();
     }
     
     public JSFConfigComponent create(Element element, JSFConfigComponent context) {
@@ -137,7 +135,7 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
                 configComponent = new FacesConfigImpl(model, element);
             }
         } else {
-            configComponent = myCreateVisitor.create(element, context);
+            configComponent = new CreateVisitor().create(element, context);
         }
         return configComponent;
     }
@@ -270,7 +268,7 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
         return new AbsoluteOrderingImpl( model );
     }
     
-    public ValidatorId createValidatorId(){
+    public FacesValidatorId createValidatorId(){
         return new ValidatorIdImpl( model );
     }
     

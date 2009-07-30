@@ -55,8 +55,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
@@ -178,6 +180,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                             offset <= definition.getEndOffset())) {
                         item = (CsmVariable) csmObject;
                     }
+                }
+            } else if (CsmClassifierResolver.getDefault().isForwardClass(csmObject)) {
+                CsmClassifier cls = CsmClassifierResolver.getDefault().getOriginalClassifier((CsmClassifier)csmObject, csmFile);
+                if (CsmKindUtilities.isOffsetable(cls)) {
+                    item = (CsmOffsetable) cls;
                 }
             }
         } else if (CsmKindUtilities.isNamespace(csmObject)) {

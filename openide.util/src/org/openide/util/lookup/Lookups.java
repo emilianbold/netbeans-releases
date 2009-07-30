@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -90,6 +90,14 @@ public class Lookups {
     public static Lookup fixed(Object... objectsToLookup) {
         if (objectsToLookup == null) {
             throw new NullPointerException();
+        }
+
+        if (objectsToLookup.length == 0) {
+            return Lookup.EMPTY;
+        }
+
+        if (objectsToLookup.length == 1) {
+            return singleton(objectsToLookup[0]);
         }
 
         return new SimpleLookup(Arrays.asList(objectsToLookup));
@@ -293,7 +301,7 @@ public class Lookups {
             return (Class<? extends T>)instance.getClass();
         }
 
-        public boolean equals(Object object) {
+        public @Override boolean equals(Object object) {
             if (object instanceof LookupItem) {
                 return instance == ((LookupItem) object).getInstance();
             }
@@ -301,7 +309,7 @@ public class Lookups {
             return false;
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return instance.hashCode();
         }
     }

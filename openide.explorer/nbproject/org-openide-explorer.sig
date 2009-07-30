@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 6.16.1
+#Version 6.18.1
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -1236,7 +1236,7 @@ meth public void addVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removeVetoableChangeListener(java.beans.VetoableChangeListener)
 supr java.lang.Object
-hfds SCHEDULE_REMOVE_ASYNCH,SELECTION_SYNC_DELAY,actions,exploredContext,listener,propertySupport,rootContext,selectedNodes,selectionProcessor,selectionSyncTask,serialPersistentFields,serialVersionUID,vetoableSupport,weakListener
+hfds LOCK,SCHEDULE_REMOVE_ASYNCH,SELECTION_SYNC_DELAY,actions,exploredContext,listener,propertySupport,rootContext,selectedNodes,selectionProcessor,selectionSyncTask,serialPersistentFields,serialVersionUID,vetoableSupport,weakListener
 hcls Listener
 
 CLSS public abstract interface static org.openide.explorer.ExplorerManager$Provider
@@ -1505,6 +1505,12 @@ meth public void setEnabled(boolean)
 supr org.openide.explorer.view.TreeView
 hfds serialVersionUID
 
+CLSS public abstract interface org.openide.explorer.view.CheckableNode
+meth public abstract boolean isCheckEnabled()
+meth public abstract boolean isCheckable()
+meth public abstract java.lang.Boolean isSelected()
+meth public abstract void setSelected(java.lang.Boolean)
+
 CLSS public org.openide.explorer.view.ChoiceView
 cons public ChoiceView()
 intf java.io.Externalizable
@@ -1554,7 +1560,7 @@ meth public void setListPreferredWidth(int)
 meth public void setPreferredSize(java.awt.Dimension)
 meth public void setProperties(org.openide.nodes.Node$Property[])
 supr org.openide.explorer.view.ListView
-hfds controlledTableView,listener,manager,prefSize,table,tableChanging,wlpc
+hfds controlledTableView,listener,manager,pchl,prefSize,table,tableChanging
 hcls Listener
 
 CLSS public org.openide.explorer.view.ListView
@@ -1736,8 +1742,8 @@ meth public void setPopupAllowed(boolean)
 meth public void setProperties(org.openide.nodes.Node$Property[])
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds allowedDragActions,allowedDropActions,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,manager,managerListener,model,outline,popupFactory,popupListener,rowModel,treeModel,wlpc,wlvc
-hcls NodeOutlineModel,OutlinePopupFactory,OutlineViewOutline,PopupAction,PopupAdapter,TableSelectionListener
+hfds allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,manager,managerListener,model,nodesColumnLabel,outline,popupFactory,popupListener,rowModel,treeModel,wlpc,wlvc
+hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineViewOutline,PopupAction,PopupAdapter,TableSelectionListener
 
 CLSS public org.openide.explorer.view.TableView
 cons public TableView()
@@ -1770,6 +1776,7 @@ cons public TreeTableView()
 cons public TreeTableView(org.openide.explorer.view.NodeTableModel)
 fld protected javax.swing.JTable treeTable
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
+meth protected void showSelection(javax.swing.tree.TreePath[])
 meth public boolean requestFocusInWindow()
 meth public final int getTableAutoResizeMode()
 meth public final int getTableColumnPreferredWidth(int)
@@ -1816,6 +1823,7 @@ meth public boolean requestFocusInWindow()
 meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
 meth public int getSelectionMode()
+meth public java.awt.Insets getInsets()
 meth public void addNotify()
 meth public void collapseNode(org.openide.nodes.Node)
 meth public void expandAll()
@@ -1834,8 +1842,8 @@ meth public void setUseSubstringInQuickSearch(boolean)
 meth public void updateUI()
 meth public void validate()
 supr javax.swing.JScrollPane
-hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,manager,managerListener,popupListener,quickSearchUsingSubstring,serialVersionUID,treeModel,visHolder,wlpc,wlvc
-hcls CursorR,DummyTransferHandler,ExplorerTree,PopupAdapter,PopupSupport,TreePropertyListener,VisualizerHolder
+hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,manager,managerListener,originalScrollMode,popupListener,quickSearchUsingSubstring,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
+hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,SearchPanel,TreePropertyListener,VisualizerHolder
 
 CLSS public org.openide.explorer.view.Visualizer
 meth public static javax.swing.tree.TreeNode findVisualizer(org.openide.nodes.Node)

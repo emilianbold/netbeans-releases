@@ -98,7 +98,114 @@ made subject to such option by the copyright holder.
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myNamedAction'/>
                     <attr name='displayName' stringvalue='Name1'/>
                 </file>
+                <file name="testCallback.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.CallbackActionTest.myListener'/>
+                    <attr name='displayName' stringvalue='org/openide/awt/TestBundle#Callback'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.CallbackActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='somekey'/>
+                </file>
+                <file name="testContext.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>
+                    <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#Context'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="org.openide.awt.ContextActionTest$Openable"/>
+                </file>
+                <file name="testInjectContext.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.Actions.inject'/>
+                    <attr name='injectable' stringvalue='org.openide.awt.ContextActionInjectTest$Context'/>
+                    <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#NumberLover'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="java.lang.Integer"/>
+                </file>
+                <file name="testInjectContextMulti.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.Actions.inject'/>
+                    <attr name='injectable' stringvalue='org.openide.awt.ContextActionInjectTest$MultiContext'/>
+                    <attr name="selectionType" stringvalue="ANY"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#NumberLover'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="java.lang.Number"/>
+                </file>
+                <file name="testInjectContextLookup.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionInjectTest$LookupContext'/>
+                    <attr name="selectionType" stringvalue="ANY"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#NumberLover'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="java.lang.Number"/>
+                </file>
+                <file name="testContextNoKey.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>
+                    <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#Context'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name="type" stringvalue="org.openide.awt.ContextActionTest$Openable"/>
+                </file>
+                <file name="testContextEnabler.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>
+                    <attr name='enabler' methodvalue='org.openide.awt.ContextActionTest.getEnabler'/>
+                    <attr name="selectionType" stringvalue="ANY"/>
+                    <attr name='displayName' bundlevalue='org/openide/awt/TestBundle#Context'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="org.openide.awt.ContextActionTest$Openable"/>
+                </file>
             </folder>
+        </folder>
+        <folder name="async">
+            <file name="none.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                <attr name='delegate' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+            </file>
+            <file name="true-always.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                <attr name='delegate' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="true.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
+                <attr name='fallback' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='key' stringvalue='delete'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="true-context.instance">
+               <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+               <attr name="type" stringvalue="org.netbeans.api.actions.Openable"/>
+               <attr name="selectionType" stringvalue="ANY"/>
+               <attr name="delegate" newvalue="org.openide.awt.AsynchronousTest$CAC"/>
+               <attr name="key" stringvalue="KeyInActionMap"/>
+               <attr name="surviveFocusChange" boolvalue="false"/>
+               <attr name="displayName" stringvalue="anything"/>
+               <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="false.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
+                <attr name='fallback' newvalue='org.openide.awt.AsynchronousTest$AC'/>
+                <attr name='key' stringvalue='delete'/>
+                <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                <attr name="asynchronous" boolvalue="false"/>
+            </file>
         </folder>
     </folder> 
 </filesystem>

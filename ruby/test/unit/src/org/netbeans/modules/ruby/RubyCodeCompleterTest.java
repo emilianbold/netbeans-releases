@@ -275,10 +275,14 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/completion/lib/globals.rb", "$^m # input");
     }
 
-//    FileObject getTestGlobalsClassPath() {
-//        return getTestFile("testfiles/completion/lib");
-//    }
-//
+    FileObject getTestGlobalsClassPath() {
+        return getTestFile("testfiles/completion/lib");
+    }
+
+    void doGlobalsSetup() {
+        RubyIndexer.userSourcesTest = true;
+    }
+
     public void testAttributes() throws Exception {
         checkCompletion("testfiles/completion/lib/song.rb", "ss.^");
     }
@@ -299,7 +303,11 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
     public void testPredefConstantsComletion__FILE__() throws Exception {
         checkCompletion("testfiles/predef_constants.rb", "__FILE__.cho^");
     }
-
+//
+//    void doPredefConstantsComletion__FILE__Setup() {
+//        RubyIndexer.userSourcesTest = true;
+//    }
+//
     // #threw NPE from RubyDeclarationFinder
     public void testUnkownInTheBlock() throws Exception {
         // TODO: it actually tries to infer wrongly upon the 'arr', but should

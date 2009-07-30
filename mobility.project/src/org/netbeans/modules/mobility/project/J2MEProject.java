@@ -453,7 +453,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             new J2MEActionProvider( this, helper ),
             new J2MEPhysicalViewProvider(this, helper, refHelper, configHelper),
             new J2MECustomizerProvider( this, helper, refHelper, configHelper),
-            new J2MEClassPathProvider(helper, getRequestProcessor()),
+            new J2MEClassPathProvider(helper),
             new CompiledSourceForBinaryQuery(this, helper),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),

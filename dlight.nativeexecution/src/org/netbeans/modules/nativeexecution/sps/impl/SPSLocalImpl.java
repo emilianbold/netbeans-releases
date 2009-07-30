@@ -56,6 +56,7 @@ import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
@@ -88,7 +89,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         }
 
         privpCmd = "bin/nativeexecution/" + path + "/privp"; // NOI18N
-        InstalledFileLocator fl = InstalledFileLocator.getDefault();
+        InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File file = fl.locate(privpCmd, null, false);
 
         if (file == null || !file.exists()) {

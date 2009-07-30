@@ -1157,107 +1157,12 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
             }
         }
     }
-
+    
+    /** Replaced by RubyBracesMatcher */
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
-        BaseDocument doc = (BaseDocument)document;
-
-        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
-
-        if (ts != null) {
-            ts.move(offset);
-
-            if (!ts.moveNext()) {
-                return OffsetRange.NONE;
-            }
-
-            Token<?extends RubyTokenId> token = ts.token();
-
-            if (token == null) {
-                return OffsetRange.NONE;
-            }
-
-            TokenId id = token.id();
-
-            if (id == RubyTokenId.WHITESPACE) {
-                // ts.move(offset) gives the token to the left of the caret.
-                // If you have the caret right at the beginning of a token, try
-                // the token to the right too - this means that if you have
-                //  "   |def" it will show the matching "end" for the "def".
-                offset++;
-                ts.move(offset);
-
-                if (ts.moveNext() && (ts.offset() <= offset)) {
-                    token = ts.token();
-                    id = token.id();
-                }
-            }
-
-            if (id == RubyTokenId.QUOTED_STRING_BEGIN) {
-                // Heredocs should be treated specially
-                if (token.text().toString().startsWith("<<")) {
-                    return LexUtilities.findHeredocEnd(ts, token);
-                }
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.QUOTED_STRING_BEGIN,
-                    RubyTokenId.QUOTED_STRING_END);
-            } else if (id == RubyTokenId.QUOTED_STRING_END) {
-                String s = token.text().toString();
-                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-                    if (r != OffsetRange.NONE) {
-                        return r;
-                    }
-                    ts.move(offset);
-                }
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.QUOTED_STRING_BEGIN,
-                    RubyTokenId.QUOTED_STRING_END);
-            } else if (id == RubyTokenId.STRING_BEGIN) {
-                // Heredocs should be treated specially
-                if (token.text().toString().startsWith("<<")) {
-                    return LexUtilities.findHeredocEnd(ts, token);
-                }
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
-            } else if (id == RubyTokenId.STRING_END) {
-                String s = token.text().toString();
-                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-                    if (r != OffsetRange.NONE) {
-                        return r;
-                    }
-                    ts.move(offset);
-                }
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
-            } else if (id == RubyTokenId.REGEXP_BEGIN) {
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
-            } else if (id == RubyTokenId.REGEXP_END) {
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
-            } else if (id == RubyTokenId.LPAREN) {
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
-            } else if (id == RubyTokenId.RPAREN) {
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
-            } else if (id == RubyTokenId.LBRACE) {
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
-            } else if (id == RubyTokenId.RBRACE) {
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
-            } else if (id == RubyTokenId.LBRACKET) {
-                return LexUtilities.findFwd(doc, ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
-            } else if (id == RubyTokenId.DO && !LexUtilities.isEndmatchingDo(doc, ts.offset())) {
-                // No matching dot for "do" used in conditionals etc.
-                return OffsetRange.NONE;
-            } else if (id == RubyTokenId.RBRACKET) {
-                return LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
-            } else if (id.primaryCategory().equals("keyword")) {
-                if (LexUtilities.isBeginToken(id, doc, ts)) {
-                    return LexUtilities.findEnd(doc, ts);
-                } else if ((id == RubyTokenId.END) || LexUtilities.isIndentToken(id)) { // Find matching block
-
-                    return LexUtilities.findBegin(doc, ts);
-                }
-            }
-        }
-
         return OffsetRange.NONE;
     }
-
+    
     /**
     * Hook called after a character *ch* was backspace-deleted from
     * *doc*. The function possibly removes bracket or quote pair if

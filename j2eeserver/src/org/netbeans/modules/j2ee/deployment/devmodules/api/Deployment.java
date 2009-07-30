@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import org.netbeans.api.j2ee.core.Profile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
@@ -256,15 +258,23 @@ public final class Deployment {
                 String msg = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule");
                 throw new DeploymentException(msg);
             }
-            ServerInstance serverInstance = server.getServerInstance();
-            if (server == null || serverInstance == null) {
+
+            try {
+                org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance serverInstance =
+                        Deployment.getDefault().getServerInstance(server.getServerInstance().getUrl());
+                if (server == null || serverInstance == null) {
+                    String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
+                    throw new DeploymentException(msg);
+                }
+                Descriptor desc = serverInstance.getDescriptor();
+                if (desc == null || desc.isLocal()) {
+                    TargetServer targetserver = new TargetServer(deploymentTarget);
+                    targetserver.undeploy(progress, startServer);
+                }
+            } catch (InstanceRemovedException ex) {
                 String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
                 throw new DeploymentException(msg);
             }
-
-            TargetServer targetserver = new TargetServer(deploymentTarget);
-
-            targetserver.undeploy(progress, startServer);
         } catch (Exception ex) {
             String msg = NbBundle.getMessage (Deployment.class, "MSG_UndeployFailed", ex.getLocalizedMessage ());
             LOGGER.log(Level.INFO, null, ex);

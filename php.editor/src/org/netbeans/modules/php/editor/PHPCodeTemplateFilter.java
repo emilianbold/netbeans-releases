@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.Future;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -67,7 +66,10 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
         try {
-            ParserManager.parse(Collections.singleton(Source.create(component.getDocument())), this);
+            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
+            if (!f.isDone()) {
+                f.cancel(true);
+            }
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }

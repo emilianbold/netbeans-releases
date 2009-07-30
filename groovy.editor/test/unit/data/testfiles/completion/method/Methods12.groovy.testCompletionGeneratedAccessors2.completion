@@ -3,6 +3,6 @@ new Test().set|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     setAge(Object)                  [PUBLIC]   void
-METHOD     setMetaClass(MetaClass)         [PUBLIC]   void
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     setName(String)                 [PUBLIC]   void
 METHOD     setProperty(String, Object)     [PUBLIC]   void

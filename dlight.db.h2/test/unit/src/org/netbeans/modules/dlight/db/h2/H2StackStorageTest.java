@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.db.h2;
 
 import java.sql.SQLException;
@@ -57,8 +56,11 @@ public class H2StackStorageTest extends CommonStackDataStorageTests {
         }
     }
 
-    protected void flush(StackDataStorage db) {
-        ((H2DataStorage)db).flush();
+    protected boolean shutdownStorage(StackDataStorage db) {
+        return ((H2DataStorage) db).shutdown();
     }
 
+    protected void flush(StackDataStorage db) {
+        ((H2DataStorage) db).flush();
+    }
 }

@@ -64,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -110,7 +111,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
+                || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
             synchronized (this) {
                 this.resources = null;
             }
@@ -130,7 +132,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
 
         if (pluginsDir == null || !pluginsDir.equals(currentPluginsDir)) {
-            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}",
+                    new Object[] {pluginsDir, currentPluginsDir});
             this.pluginsDir = currentPluginsDir;
         }
 
@@ -153,7 +156,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         File oldGlobalPluginsDir = globalPluginsDir;
         File currentGlobalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
         if (globalPluginsDir == null || !globalPluginsDir.equals(currentGlobalPluginsDir)) {
-            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}",
+                    new Object[] {pluginsDir, currentPluginsDir});
             this.globalPluginsDir = currentGlobalPluginsDir;
         }
 
@@ -194,14 +198,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             if (file.isDirectory() && (names == null || names.contains(name))) {
                 // lib directories of installed plugins
                 addLibs(file, result);
-                // sources of installed plugins
-                addSources(file, result);
             }
         }
     }
 
     private static void addLibs(File root, List<PathResourceImplementation> result) {
-        File[] jars = new File(root, "lib").listFiles(); // NOI18N
+        File[] jars = new File(root, SourceCategory.LIB.getRelativePath()).listFiles();
         if (jars != null) {
             for (File f : jars) {
                 try {
@@ -216,14 +218,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                     assert false : mue;
                 }
             }
-        }
-    }
-
-    // XXX I am handling plugin sources as 'library' for owning project, is that correct?
-    private static void addSources(File root, List<PathResourceImplementation> result) {
-        SourceRoots sourceRoots = new SourceRoots(null, FileUtil.toFileObject(root));
-        for (URL url : sourceRoots.getRootURLs()) {
-            result.add(ClassPathSupport.createResource(url));
         }
     }
 

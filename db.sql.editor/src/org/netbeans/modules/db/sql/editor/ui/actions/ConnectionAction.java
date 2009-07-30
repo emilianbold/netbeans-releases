@@ -43,6 +43,8 @@ package org.netbeans.modules.db.sql.editor.ui.actions;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.DefaultFocusTraversalPolicy;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -56,6 +58,7 @@ import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -65,6 +68,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -91,15 +95,17 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
     private static final class ConnectionContextAwareDelegate extends ContextAwareDelegate {
 
+        private final Lookup actionContext;
         private ToolbarPresenter toolbarPresenter;
 
         public ConnectionContextAwareDelegate(ConnectionAction parent, Lookup actionContext) {
             super(parent, actionContext);
+            this.actionContext = actionContext;
         }
 
         @Override
         public Component getToolbarPresenter() {
-            toolbarPresenter = new ToolbarPresenter();
+            toolbarPresenter = new ToolbarPresenter(actionContext);
             toolbarPresenter.setSQLExecution(getSQLExecution());
             return toolbarPresenter;
         }
@@ -129,12 +135,14 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
     private static final class ToolbarPresenter extends JPanel {
 
+       private final Lookup actionContext;
         private JComboBox combo;
         private JLabel comboLabel;
         private DatabaseConnectionModel model;
 
-        public ToolbarPresenter() {
+        public ToolbarPresenter(final Lookup actionContext) {
             initComponents();
+            this.actionContext = actionContext;
         }
 
         @Override
@@ -151,6 +159,26 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             setLayout(new BorderLayout(4, 0));
             setBorder(new EmptyBorder(0, 2, 0, 8));
             setOpaque(false);
+            setFocusTraversalPolicyProvider(true);
+           setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
+              @Override
+              public Component getDefaultComponent(Container aContainer) {
+                 final EditorCookie ec = actionContext.lookup(
+                       EditorCookie.class);
+                 if (ec != null) {
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (panes != null) {
+                       for (JEditorPane pane : panes) {
+                          if (pane.isShowing()) {
+                             return pane;
+                          }
+                       }
+                    }
+                 }
+
+                 return null;
+              }
+           });
 
             combo = new JComboBox();
             combo.addItemListener(new ItemListener() {

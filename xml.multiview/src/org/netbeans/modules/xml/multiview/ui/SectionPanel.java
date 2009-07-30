@@ -56,7 +56,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * This class represents a panel of a section that can be expanded / collapsed.

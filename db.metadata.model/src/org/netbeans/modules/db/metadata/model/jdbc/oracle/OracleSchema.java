@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 - 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc.oracle;
@@ -101,7 +101,11 @@ public class OracleSchema extends JDBCSchema {
     }
 
     private Set<String> getRecycleBinTables(DatabaseMetaData dmd) {
+        String driverName = null;
+        String driverVer = null;
         try {
+            driverName = dmd.getDriverName();
+            driverVer = dmd.getDriverVersion();
             if (dmd.getDatabaseMajorVersion() < 10) {
                 return Collections.emptySet();
             }
@@ -120,9 +124,11 @@ public class OracleSchema extends JDBCSchema {
                 stmt.close();
             }
             return result;
+        } catch (AbstractMethodError ame) {
+            LOGGER.log(Level.INFO, "Error while analyzing the recycle bin. JDBC Driver: " + driverName + "(" + driverVer + ")", ame);
         } catch (SQLException e) {
-            LOGGER.log(Level.INFO, "Error while analyzing the recycle bin", e);
-            return Collections.emptySet();
+            LOGGER.log(Level.INFO, "Error while analyzing the recycle bin. JDBC Driver: " + driverName + "(" + driverVer + ")", e);
         }
+        return Collections.emptySet();
     }
 }

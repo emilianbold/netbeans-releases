@@ -59,7 +59,8 @@ public class RepositoryThreadManager {
     private RequestProcessor processor;
     
     private Set<Thread> threads = new CopyOnWriteArraySet<Thread>();
-    private final Object threadsWaitLock = new String("threadsWaitLock"); // NOI18N
+    private static final class ThreadsWaitLock {}
+    private final Object threadsWaitLock = new ThreadsWaitLock();
     private boolean finished = false;
     
     private int currThread = 0;

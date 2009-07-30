@@ -48,6 +48,7 @@ import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
@@ -65,6 +66,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
     private final String id;
+    private final ExecutionEnvironment execEnv;
     // Immutable listeners list.
     private final Collection<ChangeListener> listeners;
     private final Object stateLock;
@@ -78,12 +80,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
-        id = info.getCommandLineForShell();
+        execEnv = info.getExecutionEnvironment();
+        id = execEnv.toString() + ' ' + info.getCommandLineForShell();
         stateLock = new String("StateLock: " + id); // NOI18N
 
         HostInfo hinfo = null;
         try {
-            hinfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
+            hinfo = HostInfoUtils.getHostInfo(execEnv);
         } catch (CancellationException ex) {
             // no logging for cancellation
         } catch (InterruptedIOException ex) {
@@ -100,7 +103,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 new ArrayList<ChangeListener>(ll));
     }
 
-    public NativeProcess createAndStart() {
+    public final NativeProcess createAndStart() throws IOException {
         try {
             if (hostInfo == null) {
                 throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
@@ -115,6 +118,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
             setState(State.ERROR);
             interrupt();
+            throw new IOException(ex.getMessage());
         }
 
         return this;
@@ -122,7 +126,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     abstract protected void create() throws Throwable;
 
-    protected boolean isInterrupted() {
+    protected final boolean isInterrupted() {
         try {
             Thread.sleep(0);
         } catch (InterruptedException ex) {
@@ -134,9 +138,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         return isInterrupted;
     }
 
-    protected void interrupt() {
+    protected final void interrupt() {
         isInterrupted = true;
         destroy();
+    }
+
+    public final ExecutionEnvironment getExecutionEnvironment() {
+        return execEnv;
     }
 
     public final int getPID() throws IOException {
@@ -184,7 +192,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      * @return string that identifies the <tt>AbstractNativeProcess</tt>.
      */
     @Override
-    public String toString() {
+    public final String toString() {
         return (id == null) ? super.toString() : id.trim();
     }
 

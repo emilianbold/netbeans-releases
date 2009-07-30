@@ -154,7 +154,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         // NB issue #113388
         if (removeHtmlTags != null && title.startsWith("<html>")) {
             title = removeHtmlTags.matcher(title).replaceAll("");
-            title = Utilities.replaceString(title, "&nbsp;", "");
+            title = title.replace("&nbsp;", "");
         }
 
         Component c = findTabAt(idx);
@@ -164,7 +164,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         }
 
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
-            Utilities.replaceString(title, "</html>", "&nbsp;&nbsp;</html>") //NOI18N
+            title.replace("</html>", "&nbsp;&nbsp;</html>") //NOI18N
             : title + "  ";
         if (!title.equals(getTitleAt(idx))) {
             super.setTitleAt(idx, nue);

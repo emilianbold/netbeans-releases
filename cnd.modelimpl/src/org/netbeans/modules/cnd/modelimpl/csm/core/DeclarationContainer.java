@@ -86,8 +86,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 public class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
     private final TreeMap<CharSequence, Object> declarations;
-    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
-    private Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
+    private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+    private final Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
     // empty stub
     private static final DeclarationContainer EMPTY = new DeclarationContainer() {
 

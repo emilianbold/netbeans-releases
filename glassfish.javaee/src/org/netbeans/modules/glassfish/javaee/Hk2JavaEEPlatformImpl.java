@@ -43,18 +43,22 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -164,7 +168,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;   // TODO - the support is there - need to find the right classpath then change to true
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
-                return false;    //TODO - when the support becomes available, change to true
+                return true;
             }
         }
         
@@ -231,31 +235,44 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         return new File[0];
     }
 
-    /**
-     * 
-     * @return 
-     */
-    public Set getSupportedSpecVersions() {
-        Logger.getLogger("glassfish-javaee").log(Level.INFO,"programmer calling deprecated API", new Exception("deprectaed API usage")); // NOI18N
-        return pf.getSupportedSpecVersions();
-    }
-
     @Override
     public Set<Profile> getSupportedProfiles() {
-        return pf.getSupportedProfiles();
+        return getCorrectedProfileSet();
     }
     
     @Override
     public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
-        return pf.getSupportedProfiles();
+        return getCorrectedProfileSet();
     }
-    /**
-     * 
-     * @return 
-     */
-    public Set getSupportedModuleTypes() {
-        return pf.getSupportedModuleTypes();
+
+    private Set<Profile> getCorrectedProfileSet() {
+        Set<Profile> retVal = pf.getSupportedProfiles();
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
+        File descriminator = new File(gfRootStr,"modules/appclient-server-core.jar");
+        if (!descriminator.exists()) {
+            retVal.remove(Profile.JAVA_EE_6_FULL);
+        }
+        return retVal;
     }
+
+    @Override
+    public Set<Type> getSupportedTypes() {
+        Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+        // TODO -- remove once the deploy to remote stuff in in place
+        if (null == dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
+            return Collections.EMPTY_SET;
+        }
+        Set<Type> retVal = pf.getSupportedTypes();
+        Set<Profile> ps = getCorrectedProfileSet();
+        if (ps.contains(Profile.JAVA_EE_6_WEB) && !ps.contains(Profile.JAVA_EE_6_FULL)) {
+            retVal.remove(Type.CAR);
+            retVal.remove(Type.EAR);
+            retVal.remove(Type.EJB);
+            retVal.remove(Type.RAR);
+        }
+        return retVal;
+    }
+
     
     /**
      * 
@@ -334,9 +351,51 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Lookup getLookup() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         Lookup baseLookup = Lookups.fixed(gfRootStr);
-        return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); // "J2EE/DeploymentPlugins/gfv3/Lookup"); //NOI18N
+        return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); 
 //
 //        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
 //        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
+    }
+    /* return the string within quotes
+     **/
+    private String quotedString(String s){
+        return "\""+s+"\"";
+    }
+    @Override
+    public String getToolProperty(String toolName, String propertyName) {
+        if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
+            File root = new File(dm.getProperties().getGlassfishRoot());
+            String domainPath = dm.getProperties().getDomainDir();
+            if (J2eePlatform.TOOL_PROP_MAIN_CLASS.equals(propertyName)) {
+                return "org.glassfish.appclient.client.AppClientFacade"; // NOI18N
+            }
+            if (J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS.equals(propertyName)) {
+                return "${j2ee.appclient.tool.args}"; // NOI18N
+            }
+            if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -javaagent:");
+                 sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath())); 
+                  sb.append("=mode=acscript,arg=-configxml,arg=");
+                  sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath())); 
+                  sb.append(",client=jar=");
+//                  sb.append(""); // path to /tmp/test/ApplicationClient1Client.jar
+//                   sb.append(" -jar ");
+//                    sb.append(""); // path to /tmp/test/ApplicationClient1Client.jar
+                return sb.toString();
+            }
+            if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
+                FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dm.getProperties().getDomainDir())));
+                if (location == null) {
+                    return null;
+                }
+                return (FileUtil.toFile(location).getAbsolutePath())+File.separator+"generated"+File.separator+"xml"; // NOI18N
+            }
+            if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
+                return null; // "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() +
+                // "/config/sun-acc.xml").getAbsolutePath()); // NOI18N
+            }
+        }
+        return null;
     }
 }

@@ -21,7 +21,7 @@ METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -42,6 +42,7 @@ METHOD     getProperty(String)             [PUBLIC]   Object
 METHOD     getResolveStrategy()            [PUBLIC]   int
 METHOD     getThisObject()                 [PUBLIC]   Object
 METHOD     grep(Object)                               Collection
+METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
@@ -50,6 +51,7 @@ METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                  [PUBLIC]   boolean
 METHOD     iterator()                                 Iterator
+METHOD     metaClass(Closure)                         MetaClass
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
 METHOD     print(Object)                              void
@@ -60,17 +62,20 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
+METHOD     respondsTo(String)                         List
+METHOD     respondsTo(String, Object)                 List
 METHOD     run()                           [PUBLIC]   void
 METHOD     setDelegate(Object)             [PUBLIC]   void
 METHOD     setDirective(int)               [PUBLIC]   void
-METHOD     setMetaClass(MetaClass)         [PUBLIC]   void
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     setProperty(String, Object)     [PUBLIC]   void
 METHOD     setResolveStrategy(int)         [PUBLIC]   void
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
+METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
-METHOD     toString()                      [PUBLIC]   String
+METHOD     toString()                                 String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object[])                              Object

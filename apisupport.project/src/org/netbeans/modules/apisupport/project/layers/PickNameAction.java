@@ -108,9 +108,13 @@ public class PickNameAction extends CookieAction {
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
             EditableProperties ep = Util.loadProperties(properties);
-            ep.setProperty(f.getPath(), name);
+            final String key = LayerUtils.generateBundleKeyForFile(f.getPath());
+            ep.setProperty(key, name);
             Util.storeProperties(properties, ep);
-            f.setAttribute("SystemFileSystem.localizingBundle", bundlePath.substring(0, bundlePath.length() - ".properties".length()).replace('/', '.')); // NOI18N
+            f.setAttribute("displayName", "bundlevalue:"
+                    + bundlePath.substring(0, bundlePath.length() - ".properties".length())   // NOI18N
+                    .replace('/', '.')  // NOI18N
+                    + "#" + key); // NOI18N
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }

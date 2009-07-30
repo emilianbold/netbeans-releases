@@ -142,7 +142,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 break;
         }
         shortcut.setPath(file.getAbsolutePath());
-        return null;
+        return file;
     }
     
     protected void createURLShortcut(InternetShortcut shortcut) throws NativeException {

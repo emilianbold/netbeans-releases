@@ -41,14 +41,10 @@
 
 package org.netbeans.performance.languages.actions;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import java.io.File;
-
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -61,7 +57,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreatePHPProjectTest extends PerformanceTestCase {
 
-    private NewPHPProjectNameLocationStepOperator wizard_location;
+    private NewProjectWizardOperator wizard;
     public String category, project, project_name, project_type,  editor_name;
     
     public CreatePHPProjectTest(String testName)
@@ -95,21 +91,14 @@ public class CreatePHPProjectTest extends PerformanceTestCase {
     public void prepare(){
         repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
         repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
-        wizard.next();
-        wizard_location = new NewPHPProjectNameLocationStepOperator();
-        project_name = project_type + "_" + System.currentTimeMillis();
-        wizard_location.typeProjectName(project_name);
-        String directory = CommonUtilities.getTempDir() + "createdProjects"
-                + File.separator + project_name;
-        wizard_location.typeSourcesFolder(directory);
         wizard.next();
     }
     
     public ComponentOperator open(){
-        wizard_location.finish();
+        wizard.finish();
         return null;
     }
     

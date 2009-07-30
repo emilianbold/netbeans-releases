@@ -47,8 +47,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  *
  * @author ondra.vrabec
+ * @author Marian Petras
  */
 public final class TestUtilities {
+
+    private static final String hexadecimalChars = "0123456789abcdef";  //NOI18N
+
     private TestUtilities () {}
 
     /**
@@ -57,9 +61,70 @@ public final class TestUtilities {
      * @return file's location in a SVNUrl format
      */
     public static String formatFileURL (File file) {
+        String path = file.getAbsolutePath();
         String url;
-        url = ("file:///" + file.getAbsolutePath().replaceAll("\\\\", "/")).replace("file:////", "file:///");
+        url = ("file:///" + encodeToUrlFormat(path.replace('\\', '/')))
+              .replace("file:////", "file:///");
         return url;
+    }
+
+    public static String formatPathURL(String path) {
+        return encodeToUrlFormat(path);
+    }
+
+    public static String encodeToUrlFormat(String path) {
+        StringBuilder buf = new StringBuilder(path.length() + 4);
+        encodeToUrlFormat(path, buf);
+        return buf.toString();
+    }
+
+    public static void encodeToUrlFormat(String path, StringBuilder buf) {
+        final int length = path.length();
+
+        for (int i = 0; i < length; i++) {
+            char c = path.charAt(i);
+            if (isLegalPathChar(c)) {
+                buf.append(c);
+            } else {
+                appendEncoded(c, buf);
+            }
+        }
+    }
+
+    private static void appendEncoded(int c, StringBuilder buf) {
+
+        /*
+         * Encode by UTF-8 encoding to one, two, three or four bytes, then
+         * encode each byte using the common URI syntax (e.g. "%20"):
+         */
+
+        if (c < 0x0080) {                                      // 1 byte (ASCII)
+            appendEncodedByte(         c & 0x00007f,          buf);
+
+        } else if (c < 0x0800) {                               // 2 bytes
+            appendEncodedByte(0xc0 | ((c & 0x0007c0) >>>  6), buf);
+            appendEncodedByte(0x80 |  (c & 0x00003f)        , buf);
+
+        } else if (c < 0x10000) {                              // 3 bytes
+            appendEncodedByte(0xe0 | ((c & 0x00f000) >>> 12), buf);
+            appendEncodedByte(0x80 | ((c & 0x000fc0) >>>  6), buf);
+            appendEncodedByte(0x80 |  (c & 0x00003f)        , buf);
+
+        } else {                                               // 4 bytes
+            appendEncodedByte(0xf0 | ((c & 0x1c0000) >>> 18), buf);
+            appendEncodedByte(0x80 | ((c & 0x03f000) >>> 12), buf);
+            appendEncodedByte(0x80 | ((c & 0x000fc0) >>>  6), buf);
+            appendEncodedByte(0x80 |  (c & 0x00003f)        , buf);
+
+        }
+    }
+
+    private static void appendEncodedByte(int c, StringBuilder buf) {
+        assert c < 0x100;
+
+        buf.append('%');
+        buf.append(hexadecimalChars.charAt((c & 0xf0) >>> 4));
+        buf.append(hexadecimalChars.charAt( c & 0x0f)       );
     }
 
     private static boolean isEncodedByte(char c, String s, int i) {
@@ -119,4 +184,15 @@ public final class TestUtilities {
             throw new RuntimeException(e);
         }
     }
+
+    private static boolean isLegalPathChar(char c) {
+        return isAlnumChar(c) || ("/-_.!~*'():@&=+$,".indexOf(c) != -1);//NOI18N
+    }
+
+    private static boolean isAlnumChar(char c) {
+        return ((c >= 'a') && (c <= 'z'))
+               || ((c >= 'A') && (c <= 'Z'))
+               || ((c >= '0') && (c <= '9'));
+    }
+
 }

@@ -203,4 +203,9 @@ public class KenaiException extends IOException {
         }
         return errors;
     }
+
+    @Override
+    public String toString() {
+        return errorResponse==null?super.toString(): super.toString() + ". Server response=" + errorResponse; //NOI18N
+    }
 }

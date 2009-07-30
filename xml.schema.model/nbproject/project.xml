@@ -56,6 +56,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -68,20 +76,12 @@ made subject to such option by the copyright holder.
                 <!-- Dependencies for a source root with tests: -->
                 <test-type>
                     <name>unit</name>
-                    <!-- A dependency on a module or its tests: -->
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -91,6 +91,21 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
                         <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

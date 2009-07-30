@@ -76,7 +76,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.Repository;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -358,7 +357,6 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     servlet.addInitParam(param);
                     servlet.setLoadOnStartup(new BigInteger("2"));//NOI18N
 
-
                     ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
                     mapping.setServletName(panel.getServletName());//NOI18N
                     mapping.setUrlPattern(panel.getURLPattern());//NOI18N
@@ -367,29 +365,16 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     
                     if (panel.addTLDs()){
                         try{
-                            CreateCapability create;
-                            if (ddRoot.getVersion().equals(ddRoot.VERSION_2_3)){
-                                create  = ddRoot;
-                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld"));     //NOI18N
-                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld"));     //NOI18N
-                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld"));   //NOI18N
-                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld")); //NOI18N
-                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld"));   //NOI18N
+                            JspConfig jspConfig = ddRoot.getSingleJspConfig();
+                            if (jspConfig==null){
+                                jspConfig = (JspConfig)ddRoot.createBean("JspConfig");
+                                ddRoot.setJspConfig(jspConfig);
                             }
-                            else {
-                                JspConfig jspConfig = ddRoot.getSingleJspConfig();
-                                if (jspConfig==null){
-                                    jspConfig = (JspConfig)ddRoot.createBean("JspConfig");
-                                    ddRoot.setJspConfig(jspConfig);
-                                }
-                                create = jspConfig;
-                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld"));  //NOI18N
-                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld"));  //NOI18N
-                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld"));    //NOI18N
-                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld"));  //NOI18N
-                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld"));    //NOI18N
-                            }
-                            
+                            jspConfig.addTaglib(createTaglib(jspConfig, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld"));  //NOI18N
+                            jspConfig.addTaglib(createTaglib(jspConfig, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld"));  //NOI18N
+                            jspConfig.addTaglib(createTaglib(jspConfig, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld"));    //NOI18N
+                            jspConfig.addTaglib(createTaglib(jspConfig, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld"));  //NOI18N
+                            jspConfig.addTaglib(createTaglib(jspConfig, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld"));    //NOI18N
                         }
                         catch (VersionNotSupportedException e){
                             Logger.getLogger("global").log(Level.WARNING, null, e);
@@ -404,8 +389,6 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                         welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
                     }
                     ddRoot.write(dd);
-                    
-                    
                 }
                 catch (ClassNotFoundException cnfe){
                     Exceptions.printStackTrace(cnfe);

@@ -894,24 +894,6 @@ public class IpeUtils {
     }
 
     /**
-     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
-     *
-     * @return true if the gdb module is enabled, false if missing or disabled
-     */
-    public static boolean isGdbEnabled() {
-        if (!CndUtils.isStandalone()) {
-            Iterator iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
-            while (iter.hasNext()) {
-                ModuleInfo info = (ModuleInfo) iter.next();
-                if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Check if the dbxgui module is enabled. Don't show the dbxgui line if it isn't.
      *
      * @return true if the dbxgui module is enabled, false if missing or disabled

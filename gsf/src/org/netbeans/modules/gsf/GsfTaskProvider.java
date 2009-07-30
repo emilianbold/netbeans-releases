@@ -110,13 +110,13 @@ public class GsfTaskProvider extends PushTaskScanner  {
     // the tasklist is open...
     private static GsfTaskProvider INSTANCE;
     public GsfTaskProvider() {
-        this(LanguageRegistry.getInstance().getLanguagesDisplayName());
+        this(null);
         INSTANCE = this;
     }
     
     private GsfTaskProvider(String languageList) {
-        super(NbBundle.getMessage(GsfTaskProvider.class, "GsfTasks", languageList),
-              NbBundle.getMessage(GsfTaskProvider.class, "GsfTasksDesc", languageList), null);
+        super(NbBundle.getMessage(GsfTaskProvider.class, "GsfTasks"),
+              NbBundle.getMessage(GsfTaskProvider.class, "GsfTasksDesc"), null);
     }
 
     @Override

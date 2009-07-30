@@ -38,12 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -51,14 +48,17 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -121,42 +121,41 @@ public final class CommonTasksSupport {
                     }
                     return result;
                 }
-                CommandLineHelper helper = CommandLineHelper.getInstance(dstExecEnv);
-                String dstFileNameEscaped = helper.toShellPath(dstFileName);
+
+                String trgFileName;
+
+                if (dstExecEnv.isLocal() && Utilities.isWindows()) {
+                    trgFileName = WindowsSupport.getInstance().convertToShellPath(dstFileName);
+                } else {
+                    trgFileName = dstFileName;
+                }
+
                 try {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("cat >%s", dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("cat >\"%s\"", trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
 
                     OutputStream os = np.getOutputStream();
-                    InputStream es = np.getErrorStream();
 
                     result = transferFileContent(localFile, os);
 
-                    BufferedReader br = new BufferedReader(new InputStreamReader(es));
-                    String errorLine;
-
-                    while ((errorLine = br.readLine()) != null) {
-                        if (error != null) {
-                            try {
-                                error.append(errorLine);
-                            } catch (IOException ex) {
-                            }
-                        }
+                    if (error != null) {
+                        error.append(ProcessUtils.readProcessErrorLine(np));
                     }
-
                     result += np.waitFor();
                 } catch (IOException ex) {
                     if (error != null) {
                         error.append(ex.getMessage() == null ? ex.toString() : ex.getMessage()); // NOI18N
                     }
                 }
+
                 if (result == 0) {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("chmod 0%03o %s", mask, dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("chmod 0%03o \"%s\"", mask, trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
                     result += np.waitFor();
                 }
+
                 return result;
             }
         };
@@ -290,6 +289,55 @@ public final class CommonTasksSupport {
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Creating directory " + dirname); // NOI18N
+        return execService.run();
+    }
+
+    /**
+     * Sends the signal to the process.
+     *
+     * @param execEnv  execution environment of the process
+     * @param pid  pid of the process
+     * @param signal  signal number
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the signal task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, int signal, final Writer error) {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+
+        boolean isWindows = false;
+        HostInfo hostInfo = null;
+        if (execEnv.isLocal()) {
+            try {
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                isWindows = hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+            } catch (IOException ex) {
+                // should not happen, it's localhost!
+            } catch (CancellationException ex) {
+                // should not happen, it's localhost!
+            }
+        }
+
+        if (isWindows) {
+            npb.setExecutable(hostInfo.getShell()).setArguments(
+                    "-c", "kill", String.valueOf(-signal), String.valueOf(pid)); // NOI18N
+        } else {
+            npb.setExecutable("/bin/kill").setArguments( // NOI18N
+                    String.valueOf(-signal), String.valueOf(pid));
+        }
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Sending signal to " + pid); // NOI18N
         return execService.run();
     }
 

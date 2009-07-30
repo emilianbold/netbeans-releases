@@ -47,12 +47,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
@@ -69,7 +72,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -90,10 +92,20 @@ public final class EjbViewController {
     private final String ejbClass;
     private final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     private String displayName;
+    private ClasspathInfo cpInfo;
     
     public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) {
         this.ejbClass = ejbClass;
         this.ejbModule = ejbModule;
+
+        FileObject[] javaSources = ejbModule.getJavaSources();
+        if (javaSources.length > 0) {
+            cpInfo = ClasspathInfo.create(
+                    ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
+                    );
+        }
     }
     
     public String getDisplayName() {
@@ -117,10 +129,13 @@ public final class EjbViewController {
     }
     
     public void delete(boolean deleteClasses) throws IOException {
+
+        Profile profile = ejbModule.getJ2eeProfile();
+        boolean isEE5orEE6 = Profile.JAVA_EE_5.equals(profile) ||
+                             Profile.JAVA_EE_6_FULL.equals(profile) || 
+                             Profile.JAVA_EE_6_WEB.equals(profile);
         
-        boolean isEE5 = EjbProjectConstants.JAVA_EE_5_LEVEL.equals(ejbModule.getJ2eePlatformVersion());
-        
-        if (!isEE5) {
+        if (!isEE5orEE6) {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) throws Exception {
                     EjbJar ejbJar = metadata.getRoot();
@@ -183,7 +198,19 @@ public final class EjbViewController {
                 ejbModule
                 );
     }
-    
+
+    public String getEjbClass(){
+        return ejbClass;
+    }
+
+    public org.netbeans.modules.j2ee.api.ejbjar.EjbJar getEjbModule(){
+        return ejbModule;
+    }
+
+    public ClasspathInfo getClasspathInfo(){
+        return cpInfo;
+    }
+
     public DataObject getBeanDo() {
         return getDataObject(ejbClass);
     }
@@ -335,17 +362,22 @@ public final class EjbViewController {
     }
     
     private FileObject findFileObject(final String className) {
-        FileObject beanFO = null;
+        final FileObject[] result = new FileObject[1];
         try {
-            beanFO = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-                public FileObject run(EjbJarMetadata metadata) throws IOException {
-                    return metadata.findResource(Utils.toResourceName(className));
+            JavaSource javaSource = JavaSource.create(cpInfo);
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(className);
+                    if (typeElement != null) {
+                        result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                    }
                 }
-            });
+            }, true);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        return beanFO;
+        return result[0];
     }
     
     private void deleteClasses() {

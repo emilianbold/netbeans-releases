@@ -409,6 +409,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case WHITESPACE:
                                 case NEW_LINE:
                                 case LINE_COMMENT:
+                                case DOXYGEN_LINE_COMMENT:
                                 case BLOCK_COMMENT:
                                 case DOXYGEN_COMMENT:
                                     break;
@@ -2028,6 +2029,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         }
                     case WHITESPACE:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                         // just skip them
@@ -2230,6 +2232,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case QUESTION:
                 case WHITESPACE:
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
                 case SEMICOLON:

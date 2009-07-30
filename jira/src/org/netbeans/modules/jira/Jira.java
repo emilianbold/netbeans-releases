@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -67,6 +68,7 @@ public class Jira {
     private Set<JiraRepository> repositories;
 
     private static final Object REPOSITORIES_LOCK = new Object();
+    private static String REPOSITORIES_STORE;
 
     private JiraRepositoryConnector jrc;
     private static Jira instance;
@@ -90,6 +92,8 @@ public class Jira {
     public static Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
+            REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
+            new File(REPOSITORIES_STORE).getParentFile().mkdirs();
         }
         return instance;
     }
@@ -121,8 +125,8 @@ public class Jira {
         synchronized(REPOSITORIES_LOCK) {
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
-                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
                 getStoredRepositories().add(repository);
+                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
             }
             BugtrackingRuntime
                     .getInstance()
@@ -132,13 +136,11 @@ public class Jira {
     }
 
     public void removeRepository(JiraRepository repository) {
-        JiraConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            BugtrackingRuntime
-                    .getInstance()
-                    .getTaskRepositoryManager()
-                    .addRepository(repository.getTaskRepository());
+            JiraConfig.getInstance().removeRepository(repository.getDisplayName());
+            BugtrackingRuntime br = BugtrackingRuntime.getInstance();
+            br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
     }
 
@@ -164,6 +166,15 @@ public class Jira {
             }
         }
         return repositories;
+    }
+
+    public JiraRepository getRepository(String name) {
+        for(JiraRepository repo : getRepositories()) {
+            if(repo.getDisplayName().equals(name)) {
+                return repo;
+            }
+        }
+        return null;
     }
 
     public JiraRepositoryConnector getRepositoryConnector() {

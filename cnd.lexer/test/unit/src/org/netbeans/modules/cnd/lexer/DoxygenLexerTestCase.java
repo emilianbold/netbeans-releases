@@ -62,7 +62,7 @@ public class DoxygenLexerTestCase extends NbTestCase {
     }
 
     public void testNextToken() {
-        String text = "< @param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()}";
+        String text = "< @param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()} \\tag_object \\ not_tag @ not_tag2";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, DoxygenTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
@@ -85,6 +85,15 @@ public class DoxygenLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "Aaa");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.HASH, "#");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "()}");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "()} ");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.TAG, "\\tag_object");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "\\");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "not_tag");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "@");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "not_tag2");
     }
 }

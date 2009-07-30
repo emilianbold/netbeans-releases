@@ -40,13 +40,16 @@ package org.netbeans.modules.dlight.perfan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.dataprovider.MemoryMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.THAMetric;
 import org.netbeans.modules.dlight.perfan.dataprovider.TimeMetric;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
@@ -65,10 +68,12 @@ import org.openide.util.NbBundle;
 public final class SunStudioDCConfiguration
         implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
-    private static final String CPU_TABLE_NAME = "SunStudioCPUDetailedData";//NOI18N
-    private static final String SYNC_TABLE_NAME = "SunStudioSyncDetailedData";//NOI18N
-    private static final String MEM_TABLE_NAME = "SunStudioMemDetailedData";//NOI18N
-    public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null);    // NOI18N
+    private static final String CPU_TABLE_NAME = "SunStudioCPUDetailedData"; // NOI18N
+    private static final String SYNC_TABLE_NAME = "SunStudioSyncDetailedData"; // NOI18N
+    private static final String MEM_TABLE_NAME = "SunStudioMemDetailedData"; // NOI18N
+    private static final String DATARACE_TABLE_NAME = "SunStudioDataRacesDetailedData"; // NOI18N
+    private static final String DEADLOCKS_TABLE_NAME = "SunStudioDeadlocksDetailedData"; // NOI18N
+    public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null); // NOI18N
     public static final Column c_eUser =
             new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(),
             TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),
@@ -101,9 +106,16 @@ public final class SunStudioDCConfiguration
             new Column(MemoryMetric.LeakBytesMetric.getMetricID(),
             MemoryMetric.LeakBytesMetric.getMetricValueClass(),
             MemoryMetric.LeakBytesMetric.getMetricDisplayedName(), null);
+    public static final Column c_Deadlocks =
+            new Column(THAMetric.DeadlockMetric.getMetricID(),
+            THAMetric.DeadlockMetric.getMetricValueClass(),
+            THAMetric.DeadlockMetric.getMetricDisplayedName(), null);
+    public static final Column c_Datarace =
+            new Column(THAMetric.RaceMetric.getMetricID(),
+            THAMetric.RaceMetric.getMetricValueClass(),
+            THAMetric.RaceMetric.getMetricDisplayedName(), null);
     public static final Column c_ulockSummary = new Column("user_lock", Long.class, loc("SSDataCollector.ColumnName.user_lock"), null); // NOI18N
     public static final Column c_threadsCount = new Column("ss_threads", Long.class, loc("SSDataCollector.ColumnName.threads"), null); // NOI18N
-
 
     static {
         SunStudioDCConfigurationAccessor.setDefault(new SunStudioDCConfigurationAccessorImpl());
@@ -128,15 +140,17 @@ public final class SunStudioDCConfiguration
         MEMORY,
         SYNCSUMMARY,
         MEMSUMMARY,
+        DATARACES,
+        DEADLOCKS,
     }
-    private final List<CollectedInfo> collectedInfoList = new ArrayList<CollectedInfo>();
+    private final Set<CollectedInfo> collectedInfo = EnumSet.noneOf(CollectedInfo.class);
 
     /**
      * Creates new SunStudio Data Collector Configuration which should collect information <code>info</code>
      * @param info information to be collected
      */
     public SunStudioDCConfiguration(CollectedInfo info) {
-        collectedInfoList.add(info);
+        collectedInfo.add(info);
     }
 
     public static final DataTableMetadata getSyncTableMetadata(Column... columns) {
@@ -152,6 +166,16 @@ public final class SunStudioDCConfiguration
     public static final DataTableMetadata getMemTableMetadata(Column... columns) {
         return getTableMetadata(MEM_TABLE_NAME,
                 columns, Arrays.asList(c_leakCount, c_leakSize));
+    }
+
+    public static final DataTableMetadata getDataRaceTableMetadata(Column... columns) {
+        return getTableMetadata(DATARACE_TABLE_NAME,
+                columns, Arrays.asList(c_Datarace));
+    }
+
+    public static final DataTableMetadata getDeadlockTableMetadata(Column... columns) {
+        return getTableMetadata(DEADLOCKS_TABLE_NAME,
+                columns, Arrays.asList(c_Deadlocks));
     }
 
     private static DataTableMetadata getTableMetadata(String tableName, Column[] columns, final List<Column> allowedColumns) {
@@ -184,15 +208,15 @@ public final class SunStudioDCConfiguration
         return SunStudioIDsProvider.DATA_COLLECTOR_ID;
     }
 
-    List<CollectedInfo> getCollectedInfoList() {
-        return collectedInfoList;
+    Set<CollectedInfo> getCollectedInfo() {
+        return collectedInfo;
     }
 
     private static final class SunStudioDCConfigurationAccessorImpl extends SunStudioDCConfigurationAccessor {
 
         @Override
-        public List<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
-            return configuration.getCollectedInfoList();
+        public Set<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
+            return configuration.getCollectedInfo();
         }
 
         public String getCPUTableName() {
@@ -205,6 +229,14 @@ public final class SunStudioDCConfiguration
 
         public String getMemTableName() {
             return MEM_TABLE_NAME;
+        }
+
+        public String getDeadlockTableName() {
+            return DEADLOCKS_TABLE_NAME;
+        }
+
+        public String getDataraceTableName() {
+            return DATARACE_TABLE_NAME;
         }
     }
 

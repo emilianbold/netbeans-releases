@@ -169,13 +169,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     public void clearModel () {
-        System.out.println("clear model");
         rModel.setContent(null);
     }
 
     public void cancel () {
         cancelTask();
-        System.out.println("cancel");
         rModel.setContent(null);
     }
 
@@ -251,7 +249,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
         // or at least what's already cached
         addIssues(BugtrackingUtil.getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(repository), criteria), ids);
-        populateModel(criteria, false);
+        populateModel(criteria, false, true);
     }
 
     private void addIssues(Issue[] issues, Set<String> ids) {
@@ -267,7 +265,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         }
     }
 
-    private void populateModel(final String criteria, boolean fullList) {
+    private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
         ArrayList<PopupItem> modelList = new ArrayList<PopupItem>();
         for (PopupItem item : currentHitlist) {
             modelList.add(item);
@@ -275,7 +273,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
                 modelList.add(new PopupItem() {
                     @Override
                     void invoke() {
-                        populateModel(criteria, true);
+                        populateModel(criteria, true, addSearchItem);
                     }
                     @Override
                     String getDisplayText() {
@@ -285,7 +283,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
                 break;
             }
         }
-        modelList.add(new SearchItem(criteria));
+        if(addSearchItem) {
+            modelList.add(new SearchItem(criteria));
+        }
         rModel.setContent(modelList);
     }
 
@@ -546,7 +546,6 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
     private  class SearchItem extends PopupItem {
         private String criteria;
-
         public SearchItem(String criteria) {
             this.criteria = criteria;
         }
@@ -563,7 +562,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
                     Issue[] issues = repository.simpleSearch(criteria);
                     addIssues(issues, ids);
-                    populateModel(criteria, false);
+                    populateModel(criteria, false, currentHitlist.size() > 0);
 
                     ResultsModel.getInstance().cacheIssues(repository, issues); // XXX wasting response time?
                 }

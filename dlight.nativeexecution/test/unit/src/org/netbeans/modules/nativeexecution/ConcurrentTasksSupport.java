@@ -129,7 +129,7 @@ public class ConcurrentTasksSupport {
         public Runnable newTask();
     }
 
-    public static class Counters {
+    public static final class Counters {
         private final ConcurrentMap<String, AtomicInteger> counters =
                 new ConcurrentHashMap<String, AtomicInteger>();
 

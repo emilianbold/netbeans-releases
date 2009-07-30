@@ -64,7 +64,6 @@ import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -131,11 +130,17 @@ public class SvnConfigFiles implements PreferenceChangeListener {
      * Creates a new instance
      */
     private SvnConfigFiles() {      
-        Config.getGlobal().setEscape(false); // do not escape characters
-        // copy config file
-        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
-        // get the system servers file 
-        svnServers = loadSystemIniFile("servers");
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Subversion.class.getClassLoader());
+        try {
+            Config.getGlobal().setEscape(false); // do not escape characters
+            // copy config file
+            config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
+            // get the system servers file
+            svnServers = loadSystemIniFile("servers");
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
@@ -144,8 +149,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
      *
      * @return the SvnConfigFiles instance
      */
-    public static SvnConfigFiles getInstance() {
-        
+    public static synchronized SvnConfigFiles getInstance() {
         //T9Y - singleton is not required - always create new instance of this class
         String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
         if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {

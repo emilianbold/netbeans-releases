@@ -72,7 +72,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String ARTIFACTID = "artifactId";//NOI18N
     private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
     private static final String GROUPID = "groupId";//NOI18N
-    private Project project;
+    private final Project project;
     private static final String CLASSNAME = "className";//NOI18N
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
@@ -105,8 +105,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
     public Map<String, String> createReplacements(String actionName, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
-        String relPath = null;
-        SourceGroup group = null;
+        Tuple tuple = new Tuple(null, null);
         FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
         //read global variables defined in the IDE
@@ -120,44 +119,16 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         if (fos.length > 0) {
             fo = fos[0];
             Sources srcs = project.getLookup().lookup(Sources.class);
-            SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
-                for (int i = 0; i < grp.length; i++) {
-                    relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-                    if (relPath != null) {
-                        group = grp[i];
-                        replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
-                        replaceMap.put(CLASSNAME, fo.getName());
-                        String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
-                        if (pack != null) { //#141175
-                            replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
-                        } else {
-                            replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
-                        }
-                        break;
-                    }
-                }
+                tuple = checkSG(srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), replaceMap, fo);
             }
-            //TODO refactor to reuse in both java and groovy mimetype
-            grp = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
             if ("text/x-groovy".equals(fo.getMIMEType())) {//NOI18N
-                for (int i = 0; i < grp.length; i++) {
-                    relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-                    if (relPath != null) {
-                        group = grp[i];
-                        replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
-                        replaceMap.put(CLASSNAME, fo.getName());
-                        String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
-                        if (pack != null) { //#141175
-                            replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
-                        } else {
-                            replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
-                        }
-                        break;
-                    }
-                }
+                tuple = checkSG(srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY), replaceMap, fo);
             }
-            if (relPath == null) {
+            if ("text/x-scala".equals(fo.getMIMEType())) {//NOI18N
+                tuple = checkSG(srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA), replaceMap, fo);
+            }
+            if (tuple.relPath == null) {
                 replaceMap.put(CLASSNAME_EXT, "");//NOI18N
                 replaceMap.put(CLASSNAME, "");//NOI18N
                 replaceMap.put(PACK_CLASSNAME, "");//NOI18N
@@ -172,12 +143,17 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(METHOD_NAME, method.getMethodName());
         }
 
-        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName())) {
+        if (tuple.group != null &&
+                //TODO not nice, how to figure in a better way? by source classpath?
+                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()) ||
+                 MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(tuple.group.getName()) ||
+                 MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(tuple.group.getName())
+                )) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
         }
-        if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
+        if (tuple.group != null && MavenSourcesImpl.NAME_SOURCE.equals(tuple.group.getName()) &&
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
             String withExt = replaceMap.get(CLASSNAME_EXT);
@@ -188,6 +164,37 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             }
         }
         return replaceMap;
+    }
+
+    private static Tuple checkSG(SourceGroup[] grp, HashMap<String, String> replaceMap, FileObject fo) {
+        String relPath = null;
+        SourceGroup group = null;
+        for (int i = 0; i < grp.length; i++) {
+            relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
+            if (relPath != null) {
+                group = grp[i];
+                replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                replaceMap.put(CLASSNAME, fo.getName());
+                String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
+                if (pack != null) { //#141175
+                    replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
+                } else {
+                    replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
+                }
+                break;
+            }
+        }
+        return new Tuple(relPath, group);
+    }
+
+    private static class Tuple {
+        final String relPath;
+        final SourceGroup group;
+        public Tuple(String path, SourceGroup sg) {
+            relPath = path;
+            group = sg;
+        }
+
     }
 
     public static Map<String, String> readVariables() {
@@ -269,6 +276,11 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     //TODO this only applies to groovy files with main() method.
                     // we should have a way to execute any groovy script? how?
                     // running groovy tests is another specialized usecase.
+                    return action + ".main";
+                }
+                if ("text/x-scala".equals(fo.getMIMEType())) {
+                    //TODO this only applies to scala files with main() method.
+                    // we should have a way to execute any scala script? how?
                     return action + ".main";
                 }
             }

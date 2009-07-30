@@ -247,6 +247,7 @@ public class PathFileSet extends DataType implements ResourceCollection, Selecto
                 String[] includedClusters = path.list();
                 for (String clusterName : includedClusters) {
                     log("ClusterPathSet: scanning pathelement '" + clusterName + "'.", Project.MSG_VERBOSE);
+                    scanner.setErrorOnMissingDir(false);
                     scanner.setBasedir(clusterName);
                     scanner.setSelectors(selectors.getSelectors(getProject()));
                     if (include != null) {

@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private HashMap<URL, Res> results;
     
     /** Creates a new instance of MavenBinaryForSourceQueryImpl */
@@ -104,21 +104,24 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 MavenProject mav = project.getOriginalMavenProject();
                 String src = mav.getBuild() != null ? mav.getBuild().getSourceDirectory() : null;
                 String testSrc = mav.getBuild() != null ? mav.getBuild().getTestSourceDirectory() : null;
-                File srcFile = FileUtil.normalizeFile(new File(src));
-                File testSrcFile = FileUtil.normalizeFile(new File(testSrc));
-                if (srcFile.equals(fil) || testSrcFile.equals(fil)) {
-                    toReturn = new Res(testSrcFile.equals(fil), project);
-                } else {
+                File srcFile = src != null ? FileUtil.normalizeFile(new File(src)) : null;
+                File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
+                toReturn = checkRoot(fil, srcFile, testSrcFile);
+                if (toReturn == null) {
                     URI[] gens = project.getGeneratedSourceRoots();
                     for (URI gen : gens) {
-                        File genfil = new File(gen);
-                        genfil = FileUtil.normalizeFile(genfil);
-                        if (genfil.equals(fil)) {
-                            // assume generated sources are not test..
-                            toReturn = new Res(false, project);
+                        // assume generated sources are not test..
+                        toReturn = checkRoot(fil, gen, null);
+                        if (toReturn != null) {
                             break;
                         }
                     }
+                }
+                if (toReturn == null) {
+                    toReturn = checkRoot(fil, project.getScalaDirectory(false), project.getScalaDirectory(true));
+                }
+                if (toReturn == null) {
+                    toReturn = checkRoot(fil, project.getGroovyDirectory(false), project.getGroovyDirectory(true));
                 }
                 if (toReturn != null) {
                     results.put(url, toReturn);
@@ -131,6 +134,23 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         }
         return null;
     }
+
+    private Res checkRoot(File root, File source, File test) {
+        if (source != null && source.equals(root)) {
+            return new Res(false, project);
+        }
+        if (test != null && test.equals(root)) {
+            return new Res(true, project);
+        }
+        return null;
+    }
+
+    private Res checkRoot(File root, URI source, URI test) {
+        return checkRoot(root,
+                         source != null ? FileUtil.normalizeFile(new File(source)) : null,
+                         test != null ? FileUtil.normalizeFile(new File(test)) : null);
+    }
+
     
     private static class Res implements BinaryForSourceQuery.Result {
         private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();

@@ -42,11 +42,9 @@ package org.netbeans.modules.php.editor.index;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -60,14 +58,21 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.PredefinedSymbols;
-import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -130,6 +135,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     static final String FIELD_INCLUDE = "include"; //NOI18N
     static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
     static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+    static final String FIELD_NAMESPACE = "ns"; //NOI18N
 
     static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
@@ -150,6 +156,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         FIELD_IDENTIFIER_DECLARATION,
         FIELD_VAR,
         FIELD_TOP_LEVEL,
+        FIELD_NAMESPACE
     };
 
     public String getPersistentUrl(File file) {
@@ -162,8 +169,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
             Exceptions.printStackTrace(ex);
             return file.getPath();
         }
-
     }
+
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
@@ -171,533 +178,108 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (r.getProgram() == null) {
                 return;
             }
-            IndexingSupport support = IndexingSupport.getInstance(context);
-            TreeAnalyzer analyzer = new TreeAnalyzer(indexable, r, support);
-            analyzer.analyze();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-    }
-
-    private static class TreeAnalyzer {
-        private final Indexable indexable;
-        private final PHPParseResult result;
-        private final IndexingSupport support;
-
-        public TreeAnalyzer(Indexable indexable, PHPParseResult result, IndexingSupport support) {
-            this.indexable = indexable;
-            this.result = result;
-            this.support = support;
-        }
-
-        public void analyze() throws IOException {
-            Program root = result.getProgram();
-            IndexerVisitor indexerVisitor = new IndexerVisitor(support, indexable, root);
-            root.accept(indexerVisitor);
-            indexerVisitor.addIdentifierPairs();
-
-            List<? extends IndexDocument> documents = indexerVisitor.getAllDocuments();
-            assert documents.size() > 0;
-            final IndexDocument defaultDocument = documents.get(0);
-
             String processedFileURL = null;
             try {
-                processedFileURL = result.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                processedFileURL = r.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
 
-            if (processedFileURL != null) {
-                final String processedFileAbsPath = processedFileURL.substring("file:".length());
-                final StringBuilder includes = new StringBuilder();
-                for (Statement statement : root.getStatements()){
-                    new DefaultTreePathVisitor() {
-                        @Override
-                        public void visit(Assignment node) {
-                            List<ASTNode> path = getPath();
-                            boolean indexVariableEnabled = true;
-                            for (ASTNode aSTNode : path) {
-                                if (aSTNode instanceof FunctionDeclaration) {
-                                    indexVariableEnabled = false;
-                                    break;
-                                }
-                            }
-                            if (indexVariableEnabled) {
-                                indexVarsInAssignment(node, defaultDocument);
-                            }
-                            super.visit(node);
-                        }
-
-                        @Override
-                        public void visit(Include node) {
-                            Include include = (Include) node;
-                            Expression argExpression = include.getExpression();
-
-                            if (argExpression instanceof ParenthesisExpression) {
-                                ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
-                                argExpression = parenthesisExpression.getExpression();
-                            }
-
-                            if (argExpression instanceof Scalar) {
-                                Scalar scalar = (Scalar) argExpression;
-                                String rawInclude = scalar.getStringValue();
-
-                                // check if the string is really quoted
-                                if (isQuotedString(rawInclude)) {
-                                    String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath, dequote(rawInclude));
-                                    includes.append(incl + ";"); //NOI18N
-                                }
-                            }
-
-                            super.visit(node);
-                        }
-                    }.scan(statement);
-                }
-
-                defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false, true);
-            }
-
-            // add all documents to the indexing support
-            for(IndexDocument d : documents) {
-                support.addDocument(d);
-            }
-        }
-    } // End of TreeAnalyzer class
-
-
-    private static class IndexerVisitor extends DefaultTreePathVisitor {
-        private final IndexingSupport support;
-        private final Indexable indexable;
-        private final Program root;
-
-        private final List<IndexDocument> documents = new LinkedList<IndexDocument>();
-        private final IndexDocument defaultDocument;
-        private final IndexDocument identifierDocument;
-
-        private final Map<String, IdentifierSignature> identifiers = new HashMap<String, IdentifierSignature>();
-
-        public IndexerVisitor(IndexingSupport support, Indexable indexable, Program root) {
-            this.support = support;
-            this.indexable = indexable;
-            this.root = root;
-
-            this.defaultDocument = support.createDocument(indexable);
-            this.documents.add(defaultDocument);
-
-            this.identifierDocument = support.createDocument(indexable);
-            this.documents.add(identifierDocument);
-        }
-
-        public List<? extends IndexDocument> getAllDocuments() {
-            addIdentifierPairs();
-            return documents;
-        }
-
-        private void addIdentifierPairs() {
-            for (IdentifierSignature idSign : identifiers.values()) {
-                identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
-            }
-            identifiers.clear();
-        }
-
-        @Override
-        public void visit(Scalar node) {
-            if (node.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(node.getStringValue())) {
-                IdentifierSignature.add(node.getStringValue(), identifiers);
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(Identifier node) {
-            IdentifierSignature.add(node, identifiers);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(ClassDeclaration node) {
-            // create a new document for each class
-            IndexDocument classDocument = support.createDocument(indexable);
-            documents.add(classDocument);
-
-            indexClass((ClassDeclaration) node, classDocument, root);
-            List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-            IdentifierSignature.add(node, Utils.getPropertyTags(root, node), idSignatures);
-            for (IdentifierSignature idSign : idSignatures) {
-                identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(FunctionDeclaration node) {
-            if (getPath().get(0) instanceof MethodDeclaration){
-                super.visit(node);
+            if (processedFileURL == null) {
                 return;
             }
-
-            indexFunction((FunctionDeclaration)node, defaultDocument, root);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(ExpressionStatement node) {
-            indexConstant(node, defaultDocument);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(InterfaceDeclaration node) {
-            IndexDocument ifaceDocument = support.createDocument(indexable);
-            documents.add(ifaceDocument);
-
-            indexInterface((InterfaceDeclaration) node, ifaceDocument, root);
-            List<IdentifierSignature> idSignatures = new ArrayList<IdentifierSignature>();
-            IdentifierSignature.add(node, idSignatures);
-            for (IdentifierSignature idSign : idSignatures) {
-                identifierDocument.addPair(FIELD_IDENTIFIER_DECLARATION, idSign.getSignature(), true, true);
-            }
-            super.visit(node);
-        }
-    } // End of IndexerVisitor class
-    private static void indexClass(ClassDeclaration classDeclaration, IndexDocument document, Program root) {
-        StringBuilder classSignature = new StringBuilder();
-        String className = classDeclaration.getName().getName();
-        classSignature.append(className.toLowerCase() + ";"); //NOI18N
-        classSignature.append(className + ";"); //NOI18N
-        classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
-
-        String superClass = CodeUtils.extractSuperClassName(classDeclaration);
-
-        classSignature.append(superClass + ";"); //NOI18N
-        document.addPair(FIELD_CLASS, classSignature.toString(), true, true);
-        document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true, true);
-        boolean isConstructor = false;
-        for (Statement statement : classDeclaration.getBody().getStatements()){
-            if (statement instanceof MethodDeclaration) {
-                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                String methName = CodeUtils.extractMethodName(methodDeclaration);
-                if (PredefinedSymbols.MAGIC_METHODS.keySet().contains(methName) &&
-                        "__construct".equalsIgnoreCase(methName)) {//NOI18N
-                    isConstructor = true;
-                    indexConstructor(classDeclaration, methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
-                }
-                indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
-
-            } else if (statement instanceof FieldsDeclaration) {
-                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                indexFieldsDeclaration(fieldsDeclaration, document, root);
-            } else if (statement instanceof ConstantDeclaration) {
-                ConstantDeclaration constDeclaration = (ConstantDeclaration) statement;
-
-                for (Identifier id : constDeclaration.getNames()){
-                    StringBuilder signature = new StringBuilder();
-                    signature.append(id.getName() + ";");
-                    signature.append(constDeclaration.getStartOffset() + ";");
-                    document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
-                }
-            }
-        }
-        if (!isConstructor) {
-            isConstructor = true;
-            indexConstructor(classDeclaration, null, BodyDeclaration.Modifier.PUBLIC, document, root);
-        }
-        for (PHPDocVarTypeTag tag : Utils.getPropertyTags(root, classDeclaration)) {
-            String name = tag.getVariable().getValue();
-            if (name.charAt(0) == '$') {  //NOI18N
-                name = name.substring(1);
-            }
-            // TODO if the property has defined more types, then it should be reflected
-            String signature = createFieldsDeclarationRecord(name, tag.getTypes().get(0).getValue(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
-            document.addPair(FIELD_FIELD, signature, false, true);
-        }
-    }
-
-    private static void indexInterface(InterfaceDeclaration ifaceDecl, IndexDocument document, Program root) {
-        StringBuilder ifaceSign = new StringBuilder();
-        ifaceSign.append(ifaceDecl.getName().getName().toLowerCase() + ";"); //NOI18N
-        ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
-        ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
-
-        for (Iterator<Expression> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
-            Expression id = it.next();
-            ifaceSign.append(CodeUtils.extractTypeName(id));
-
-            if (it.hasNext()){
-                ifaceSign.append(',');
-            }
-        }
-
-        ifaceSign.append(';');
-        document.addPair(FIELD_IFACE, ifaceSign.toString(), true, true);
-        document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true, true);
-
-        for (Statement statement : ifaceDecl.getBody().getStatements()){
-            if (statement instanceof MethodDeclaration) {
-                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-                indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document, root);
-            } else if (statement instanceof FieldsDeclaration) {
-                FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                indexFieldsDeclaration(fieldsDeclaration, document, root);
-            } else if (statement instanceof ConstantDeclaration) {
-                ConstantDeclaration constDeclaration = (ConstantDeclaration) statement;
-
-                for (Identifier id : constDeclaration.getNames()){
-                    StringBuilder signature = new StringBuilder();
-                    signature.append(id.getName() + ";");
-                    signature.append(constDeclaration.getStartOffset() + ";");
-                    document.addPair(FIELD_CLASS_CONST, signature.toString(), false, true);
-                }
-            }
-
-        }
-    }
-
-    private static void indexFieldsDeclaration(FieldsDeclaration fieldsDeclaration, IndexDocument document, Program root) {
-        for (SingleFieldDeclaration field : fieldsDeclaration.getFields()) {
-            if (field.getName().getName() instanceof Identifier) {
-                Identifier identifier = (Identifier) field.getName().getName();
-                String type = getFieldTypeFromPHPDoc(field, root);
-                String signature = createFieldsDeclarationRecord(identifier.getName(), type, fieldsDeclaration.getModifier(), field.getStartOffset());
-                document.addPair(FIELD_FIELD, signature, false, true);
-            }
-        }
-    }
-
-    private static String createFieldsDeclarationRecord(String name, String type, int modifier, int offset) {
-        StringBuilder fieldSignature = new StringBuilder();
-        fieldSignature.append(name + ";"); //NOI18N
-        fieldSignature.append(offset + ";"); //NOI18N
-        fieldSignature.append(modifier + ";"); //NOI18N
-        if (type != null){
-            fieldSignature.append(type);
-        }
-        fieldSignature.append(";"); //NOI18N
-        return fieldSignature.toString();
-    }
-
-    private static void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
-        if (assignment.getLeftHandSide() instanceof Variable) {
-            Variable var = (Variable) assignment.getLeftHandSide();
-            String varType = CodeUtils.extractVariableType(assignment);
-            String varName = CodeUtils.extractVariableName(var);
-            if (varName != null) {
-                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-
-                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                    StringBuilder signature = new StringBuilder();
-                    signature.append(varName.toLowerCase() + ";" + varName + ";");
-
-                    if (varType != null) {
-                        signature.append(varType);
-                    }
-
-                    signature.append(";"); //NOI18N
-                    signature.append(var.getStartOffset() + ";");
-                    document.addPair(FIELD_VAR, signature.toString(), true, true);
-                    document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true, true);
-                }
-            }
-        }
-
-        if (assignment.getRightHandSide() instanceof Assignment) {
-            Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
-            indexVarsInAssignment(embeddedAssignment, document);
-        }
-    }
-
-    private static void indexConstant(Statement statement, IndexDocument document) {
-        ExpressionStatement exprStmt = (ExpressionStatement) statement;
-        Expression expr = exprStmt.getExpression();
-
-        if (expr instanceof FunctionInvocation) {
-            FunctionInvocation invocation = (FunctionInvocation) expr;
-            Identifier id = CodeUtils.extractIdentifier(invocation.getFunctionName().getName());
-            if (id instanceof Identifier) {
-                if ("define".equals(id.getName())) {
-                    if (invocation.getParameters().size() >= 2) {
-                        Expression paramExpr = invocation.getParameters().get(0);
-
-                        if (paramExpr instanceof Scalar) {
-                            String constName = ((Scalar) paramExpr).getStringValue();
-
-                            // check if const name is really quoted
-                            if (isQuotedString(constName)) {
-                                String defineVal = dequote(constName);
-                                StringBuilder signature = new StringBuilder();
-                                signature.append(defineVal.toLowerCase());
-                                signature.append(';');
-                                signature.append(defineVal);
-                                signature.append(';');
-                                signature.append(invocation.getStartOffset());
-                                signature.append(';');
-                                document.addPair(FIELD_CONST,  signature.toString(), true, true);
-                                document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true, true);
-                            }
-                        }
+            PHPIndex.clearNamespaceCache();
+            List<IndexDocument> documents = new LinkedList<IndexDocument>();
+            IndexingSupport support = IndexingSupport.getInstance(context);
+            Model model = ModelFactory.getModel(r);
+            final FileScope fileScope = model.getFileScope();
+            IndexDocument reverseIdxDocument = support.createDocument(indexable);
+            documents.add(reverseIdxDocument);
+            for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
+                IndexDocument classDocument = support.createDocument(indexable);
+                documents.add(classDocument);
+                classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
+                classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
+                for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
+                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
+                            IdentifierSignature.create(methodScope).getSignature(), true, true);
+                    if (methodScope.isConstructor()) {
+                        classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
                     }
                 }
-            }
-        }
-    }
-
-    private static void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document, Program root) {
-        StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
-        signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration, root));
-
-        document.addPair(FIELD_BASE, signature.toString(), true, true);
-        document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true, true);
-    }
-
-    /**
-     * @param classDeclaration
-     * @param functionDeclaration maybe be null (actually for fake - if
-     * constructor doesn't exists then indexed as if existed with no parameters)
-     * @param modifiers
-     * @param document
-     */
-    private static void indexConstructor(ClassDeclaration classDeclaration,FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document, Program root) {
-        String className = CodeUtils.extractClassName(classDeclaration);
-        StringBuilder signature = new StringBuilder();
-        int paramCount = (functionDeclaration != null) ? functionDeclaration.getFormalParameters().size() : 0;
-        int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : classDeclaration.getStartOffset();
-        signature.append(getBaseSignatureForFunctionDeclaration(className,paramCount, offset, functionDeclaration, root));
-        signature.append(modifiers + ";"); //NOI18N
-
-        document.addPair(FIELD_CONSTRUCTOR, signature.toString(), false, true);
-    }
-
-    private static void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document, Program root) {
-        StringBuilder signature = new StringBuilder();
-        signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration, root));
-        signature.append(modifiers + ";"); //NOI18N
-
-        document.addPair(FIELD_METHOD, signature.toString(), false, true);
-    }
-
-    private static String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration, Program root) {
-        String fncName = functionDeclaration.getFunctionName().getName();
-        int paramCount = functionDeclaration.getFormalParameters().size();
-        int offset = (functionDeclaration != null) ? functionDeclaration.getStartOffset() : 0;
-        return getBaseSignatureForFunctionDeclaration(fncName, paramCount, offset, functionDeclaration, root);
-    }
-
-    /**
-     * @param fncName
-     * @param paramCount
-     * @param offset
-     * @param functionDeclaration maybe null just in case when paramCount == 0
-     * @return
-     */
-    private static String getBaseSignatureForFunctionDeclaration(String fncName, int paramCount, int offset,
-            FunctionDeclaration functionDeclaration, Program root) {
-        assert functionDeclaration != null || paramCount == 0;
-        StringBuilder signature = new StringBuilder();
-        signature.append(fncName + ";");
-        StringBuilder defaultArgs = new StringBuilder();
-        for (int i = 0; i < paramCount; i++) {
-            assert functionDeclaration != null;
-            FormalParameter param = functionDeclaration.getFormalParameters().get(i);
-            String paramName = CodeUtils.getParamDisplayName(param);
-            signature.append(paramName);
-            if (i < paramCount - 1) {
-                signature.append(",");
-            }
-            if (param.getDefaultValue() != null) {
-                if (defaultArgs.length() > 0) {
-                    defaultArgs.append(',');
+                Collection<? extends MethodScope> declaredConstructors = classScope.getDeclaredConstructors();
+                if (declaredConstructors.isEmpty()) {
+                    classDocument.addPair(FIELD_CONSTRUCTOR,classScope.getDefaultConstructorIndexSignature(), false, true);
                 }
-                defaultArgs.append(Integer.toString(i));
+                for (FieldElement fieldElement : classScope.getDeclaredFields()) {
+                    classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), false, true);
+                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
+                            IdentifierSignature.create(fieldElement).getSignature(), true, true);
+
+                }
+                for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
+                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
+                            IdentifierSignature.create(constantElement).getSignature(), true, true);
+                }
             }
-        }
-        signature.append(';');
-        signature.append(offset + ";"); //NOI18N
-        signature.append(defaultArgs + ";");
-        String type = functionDeclaration != null ? getReturnTypeFromPHPDoc(functionDeclaration, root) : null;
-        if (type == null) {
-            final String typeArray[] = new String[1];
-            DefaultVisitor defaultVisitor = new DefaultVisitor() {
+            for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
+                IndexDocument classDocument = support.createDocument(indexable);
+                documents.add(classDocument);
+                classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
+                classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
+                for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
+                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
+                            IdentifierSignature.create(methodScope).getSignature(), true, true);
+                }
+                for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
+                    reverseIdxDocument.addPair(FIELD_IDENTIFIER_DECLARATION,
+                            IdentifierSignature.create(constantElement).getSignature(), true, true);
+                }
+            }
+
+            IndexDocument defaultDocument = support.createDocument(indexable);
+            documents.add(defaultDocument);
+            for (FunctionScope functionScope : ModelUtils.getDeclaredFunctions(fileScope)) {
+                defaultDocument.addPair(FIELD_BASE, functionScope.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, functionScope.getName().toLowerCase(), true, true);
+            }
+            for (ConstantElement constantElement : ModelUtils.getDeclaredConstants(fileScope)) {
+                defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
+            }
+            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
+                if (nsElement.isDefaultNamespace()){
+                    continue; // do not index default ns
+                }
+                
+                defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
+            }
+            final IndexDocument identifierDocument = support.createDocument(indexable);
+            documents.add(identifierDocument);
+            Program program = r.getProgram();
+            Visitor identifierVisitor = new DefaultVisitor() {
                 @Override
-                public void visit(ReturnStatement node) {
-                    Expression expression = node.getExpression();
-                    if (expression instanceof ClassInstanceCreation) {
-                        ClassInstanceCreation instanceCreation = (ClassInstanceCreation)expression;
-                        typeArray[0] = CodeUtils.extractClassName(instanceCreation.getClassName());
-                    }
+                public void visit(Identifier identifier) {
+                    IdentifierSignature idSign = IdentifierSignature.createIdentifier(identifier);
+                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
+                    super.visit(identifier);
                 }
             };
-
-            defaultVisitor.scan(functionDeclaration);
-            if (typeArray[0] != null) {
-                type = typeArray[0];
-            }
+            program.accept(identifierVisitor);
+            for (IndexDocument d : documents) {
+                support.addDocument(d);
+            }            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
-            signature.append(type);
-        }
-        signature.append(";"); //NOI18N
-        return signature.toString();
-    }
-
-
-    private static String getReturnTypeFromPHPDoc(FunctionDeclaration functionDeclaration, Program root) {
-        return getTypeFromPHPDoc(functionDeclaration, PHPDocTag.Type.RETURN, root);
-    }
-
-    private static String getFieldTypeFromPHPDoc(SingleFieldDeclaration field, Program root) {
-        return getTypeFromPHPDoc(field, PHPDocTag.Type.VAR, root);
-    }
-
-    private static String getTypeFromPHPDoc(ASTNode node, PHPDocTag.Type tagType, Program root) {
-        Comment comment = Utils.getCommentForNode(root, node);
-
-        if (comment instanceof PHPDocBlock) {
-            PHPDocBlock phpDoc = (PHPDocBlock) comment;
-
-            for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == tagType) {
-                    String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
-
-                    if (parts.length > 0) {
-                        String type = parts[0].split("\\;", 2)[0];
-                        return type;
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    static boolean isQuotedString(String txt) {
-        if (txt.length() < 2) {
-            return false;
-        }
-
-        char firstChar = txt.charAt(0);
-        return firstChar == txt.charAt(txt.length() - 1) && firstChar == '\'' || firstChar == '\"';
-    }
-
-    static String dequote(String string){
-        assert isQuotedString(string);
-        return string.substring(1, string.length() - 1);
     }
 
     public File getPreindexedData() {
-        return null;
-    }
-
-    private static FileObject preindexedDb;
-
-    /** For testing only */
-    public static void setPreindexedDb(FileObject preindexedDb) {
-        PHPIndexer.preindexedDb = preindexedDb;
-    }
-
-    public FileObject getPreindexedDb() {
         return null;
     }
 
@@ -719,7 +301,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 2;
+        public static final int VERSION = 6;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
@@ -763,7 +345,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : deleted) {
@@ -775,7 +357,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {
@@ -787,23 +369,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
         
         private boolean isPhpFile(FileObject file) {
-            FileObject fo = null;
-            String ext = file.getExt();
-            synchronized (EXT2FO) {
-                fo = (ext != null) ? EXT2FO.get(ext) : null;
-                if (fo == null) {
-                    try {
-                        fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
-                        if (ext != null && fo != null) {
-                            EXT2FO.put(ext, fo);
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            assert fo != null;
-            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(fo, PHPLanguage.PHP_MIME_TYPE));
+            return PHPLanguage.PHP_MIME_TYPE.equals(FileUtil.getMIMEType(file, PHPLanguage.PHP_MIME_TYPE));
         }
     } // End of Factory class
 }

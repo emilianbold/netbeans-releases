@@ -370,7 +370,7 @@ made subject to such option by the copyright holder.
                 <!-- TODO: remove the web.core.syntax dep. -
                 just JspSyntaxSupport.getAutocompletedEndTag(int offset) needs it -->
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.web.facelets</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
                 <package>org.netbeans.modules.html.editor</package>
                 <!-- TODO: fix, just because of JspSyntaxSupport.getAutocompletedEndTag -->
                 <package>org.netbeans.modules.html.editor.completion</package>

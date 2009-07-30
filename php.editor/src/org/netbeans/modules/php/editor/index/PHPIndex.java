@@ -50,7 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +67,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -76,13 +78,14 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndex {
-
+    private static Collection<IndexedNamespace> namespacesCache = null;
     private static final Logger LOG = Logger.getLogger(PHPIndex.class.getName());
 
     /** Set property to true to find ALL functions regardless of file includes */
@@ -92,7 +95,7 @@ public class PHPIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR};
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
 
     private final QuerySupport index;
 
@@ -123,6 +126,7 @@ public class PHPIndex {
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
+        Collection<IndexedInterface> interfaces = new ArrayList<IndexedInterface>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
 
         // search through the top leve elements
@@ -132,12 +136,49 @@ public class PHPIndex {
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
         findClasses(result, nameKind, prefix, classes);
+        //TODO: for some reason doesn't work - check
+        //findInterfaces(result, nameKind, prefix, interfaces);
         findTopVariables(result, nameKind, prefix, vars);
         elements.addAll(functions);
         elements.addAll(constants);
         elements.addAll(classes);
+        elements.addAll(interfaces);
         elements.addAll(vars);
         return elements;
+    }
+
+    protected void findInterfaces(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedInterface> interfaces) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_IFACE);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                String ifaceName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!ifaceName.toLowerCase().startsWith(name.toLowerCase())) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!ifaceName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
+                }
+                //TODO: handle search kind
+                int offset = sig.integer(2);
+                List<String> ifaces = Collections.emptyList();
+                if (sig.string(3) != null && sig.string(3).trim().length() > 0) {
+                    ifaces = Arrays.asList(sig.string(3).split(","));//NOI18N
+                }
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedInterface indexedInterface = new IndexedInterface(ifaceName,
+                        useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), ifaces.toArray(new String[ifaces.size()]), offset, 0);
+                interfaces.add(indexedInterface);
+            }
+        }
     }
 
     protected void findClasses(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedClass> classes) {
@@ -163,7 +204,13 @@ public class PHPIndex {
                 int offset = sig.integer(2);
                 String superClass = sig.string(3);
                 superClass = superClass.length() == 0 ? null : superClass;
-                IndexedClass clazz = new IndexedClass(className, null, this, map.getUrl().toString(), superClass, offset, 0);
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                List<String> ifaces = Collections.emptyList();
+                if (sig.string(5) != null && sig.string(5).trim().length() > 0) {
+                    ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
+                }
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, ifaces, offset, 0);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }
@@ -222,7 +269,9 @@ public class PHPIndex {
                 }
                 int offset = sig.integer(3);
                 String arguments = sig.string(2);
-                IndexedFunction func = new IndexedFunction(funcName, null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
+                String namespaceName = sig.string(6);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedFunction func = new IndexedFunction(funcName, null, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
                 int[] optionalArgs = extractOptionalArgs(sig.string(4));
                 func.setOptionalArgs(optionalArgs);
                 //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
@@ -263,7 +312,6 @@ public class PHPIndex {
                 vars.add(var);
             }
         }
-
     }
 
     private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
@@ -355,161 +403,135 @@ public class PHPIndex {
     }
 
     /** returns constnats of a class. */
-    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
-        Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
-       
-        // #147730 - prefer the current file
+    public Collection<IndexedClassMember<IndexedConstant>> getAllTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
+        Map<String, IndexedClassMember<IndexedConstant>> constants = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
-        Set<String> currentFileClasses = new HashSet<String>();
-
-        for (String className : getClassAncestors(context, typeName)) {
-            //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant const0 : getClassConstants(context, className, name, kind)) {
+        Collection<IndexedType> types = getTypeAncestors(context, typeName);
+        if (currentFile != null) {
+            // #147730 - prefer the current file
+            types = preferTypeElementsFromCurrentFile(currentFile, types);
+        }
+        for (IndexedType type : types) {
+            for (IndexedClassMember<IndexedConstant> classMember : getTypeConstants(context, type, name, kind)) {
+                IndexedConstant const0 = classMember.getMember();
                 String constantName = const0.getName();
-                if (!constants.containsKey(constantName) || className.equals(typeName)){
-                    constants.put(constantName, const0);
-                    
-                    if (currentFile != null && currentFile.equals(const0.getFileObject())) {
-                        currentFileClasses.add(className);
-                    }
+                if (!constants.containsKey(constantName) || type.getName().equals(typeName)) {
+                    constants.put(constantName, classMember);
                 }
             }
-        }
-
-        Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
-
-        if (interfaceTree != null){
-            for (IndexedInterface iface : interfaceTree){
-                for (IndexedConstant constant : getClassConstants(context, iface.getName(), name, kind)){
-                    String constantName = constant.getName();
-                    
-                    if (!constants.containsKey(constantName) || iface.getName().equals(typeName)){
-                        constants.put( constantName,constant);
-                    }
-                }
-            }
-        }
-
-        Collection<IndexedConstant> result = constants.values();
-        filterClassMembers(result, currentFileClasses, currentFile);
-        return result;
+        }        
+        return constants.values();
     }
 
     /** returns all methods of a class or an interface. */
-    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
-        
-        // #147730 - prefer the current file
-        FileObject currentFile = (context != null) ? context.getSnapshot().getSource().getFileObject() : null;
-        Set<String> currentFileClasses = new HashSet<String>();
-
-        for (String className : getClassAncestors(context, typeName)) {
-            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            
-            for (IndexedFunction method : getMethods(context, className, name, kind, mask)){
+    public Collection<IndexedClassMember<IndexedFunction>> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        Map<String, IndexedClassMember<IndexedFunction>> methods = new TreeMap<String, IndexedClassMember<IndexedFunction>>();
+        FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
+        Collection<IndexedType> types = getTypeAncestors(context, typeName);
+        if (currentFile != null) {
+            // #147730 - prefer the current file
+            types = preferTypeElementsFromCurrentFile(currentFile, types);
+        }
+        for (IndexedType type : types) {
+            int mask = type.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            for (IndexedClassMember<IndexedFunction> classMember : getMethods(context, type, name, kind, mask)) {
+                IndexedFunction method = classMember.getMember();
                 String methodName = method.getName();
-                
-                if (!methods.containsKey(methodName) || className.equals(typeName)){
-                    methods.put(methodName, method);
-                    try {                        
-                        URI sourceURI = currentFile != null ? currentFile.getURL().toURI() : null;
-                        if (sourceURI != null && sourceURI.equals(URI.create(method.getFilenameUrl()))) {
-                            currentFileClasses.add(className);
-                        }
-                    } catch (FileStateInvalidException fileStateInvalidException) {
-                        Exceptions.printStackTrace(fileStateInvalidException);
-                    } catch (URISyntaxException uRISyntaxException) {
-                        Exceptions.printStackTrace(uRISyntaxException);
-                    }
+                if (!methods.containsKey(methodName) || type.getName().equals(typeName)) {
+                    methods.put(methodName, classMember);
                 }
             }
-        }
-        
-        Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, typeName);
-
-        if (interfaceTree != null){
-            for (IndexedInterface iface : interfaceTree){
-                String ifaceName = iface.getName();
-
-                for (IndexedFunction method : getMethods(context, ifaceName, name, kind, attrMask)) {
-                    String methodName = method.getName();
-
-                    if (!methods.containsKey(methodName) || ifaceName.equals(typeName)) {
-                        methods.put(methodName, method);
-                    }
-                }
-            }
-        }
-
-        Collection<IndexedFunction> result = methods.values();
-        filterClassMembers(result, currentFileClasses, currentFile);
-        return result;
+        }        
+        return methods.values();
     }
 
     /** returns all fields of a class or an interface. */
-    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
-        
-        // #147730 - prefer the current file
+    public Collection<IndexedClassMember<IndexedConstant>> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        Map<String, IndexedClassMember<IndexedConstant>> fields = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
-        Set<String> currentFileClasses = new HashSet<String>();
+        Collection<IndexedType> types = getClassAncestors(context, typeName);
+        if (currentFile != null) {
+            // #147730 - prefer the current file
+            types = preferTypeElementsFromCurrentFile(currentFile, types);
+        }
 
-        for (String className : getClassAncestors(context, typeName)) {
-            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant field : getFields(context, className, name, kind, mask)) {
+        for (IndexedType type : types) {
+            if (type instanceof IndexedInterface) {
+                continue;//interface can't contain fields
+            }
+            int mask = type.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            for (IndexedClassMember<IndexedConstant> classMember: getFields(context, type, name, kind, mask)) {
+                IndexedConstant field = classMember.getMember();
                 String fieldName = field.getName();
-                
-                if (!fields.containsKey(fieldName) || className.equals(typeName)){
-                    fields.put(fieldName, field);
-                }
-                
-                if (currentFile != null && field != null && currentFile.equals(field.getFileObject())) {
-                    currentFileClasses.add(className);
+                if (!fields.containsKey(fieldName) || type.getName().equals(typeName)) {
+                    fields.put(fieldName, classMember);
                 }
             }
         }
-
-        Collection<IndexedConstant> result = fields.values();
-        filterClassMembers(result, currentFileClasses, currentFile);
-        return result;
+        return fields.values();
     }
 
-//    /** Current file for the context or <code>null</code> */
-//    private File getCurrentFile(PHPParseResult context) {
-//        context.getSnapshot().getSource().getFileObject().
-//        if (context != null && context.getFile() != null) {
-//            return context.getFile().getFile();
-//        }
-//        return null;
-//    }
+    public static <T extends IndexedElement> Collection<T> toMembers(final Collection<? extends IndexedClassMember<T>> classMembers) {
+        List<T> retval = new ArrayList<T>();
+        for (IndexedClassMember<T> classMember : classMembers) {
+            retval.add(classMember.getMember());
+        }
+        return retval;
+    }
 
-    // #147730 - prefer the current file
-    private void filterClassMembers(Collection<? extends IndexedElement> elements, Set<String> currentFileClasses, FileObject currentFile) {
-        if (elements.size() > 0 && currentFileClasses.size() > 0) {
-            for (Iterator<? extends IndexedElement> it = elements.iterator(); it.hasNext();) {
-                IndexedElement method = it.next();
-                if (currentFileClasses.contains(method.getIn())
-                        && !currentFile.equals(method.getFileObject())) {
-                    it.remove();
-                }
+    /**
+     * return collection with original elements or subset. Two elements with the same name are preserved both
+     * just in case if both of them come from different file and none of those files isn't the same
+     * as a file provided as a parameter preferedFo. For two elements with the same name is removed
+     * the one that comes from different file than parameter while the second one (which will be preserved) 
+     * comes from the preferedFo file.
+     */
+    private static <T extends IndexedType> Collection<T> preferTypeElementsFromCurrentFile(FileObject preferedFo, Collection<T> all) {
+        Parameters.notNull("fileObject", preferedFo);
+        Collection<T> retval = new ArrayList<T>();
+        Collection<String> typeNamesForCurrentFile = new HashSet<String>();
+        for (T indexedElement : all) {
+            assert indexedElement instanceof IndexedClass || indexedElement instanceof IndexedInterface;
+            FileObject fo = indexedElement.getFileObject();
+            if (fo != null && fo.equals(preferedFo)) {
+                typeNamesForCurrentFile.add(indexedElement.getName());
             }
         }
+        for (T indexedElement : all) {
+            if (typeNamesForCurrentFile.contains(indexedElement.getName())) {
+                FileObject fo = indexedElement.getFileObject();
+                if (fo == null || fo.equals(preferedFo)) {
+                    retval.add(indexedElement);
+                }
+            } else {
+                retval.add(indexedElement);
+            }
+        }
+        return retval;
+    }
+
+    public Collection<IndexedType> getTypeAncestors(PHPParseResult context, String typeName) {
+        Collection<IndexedType> types = new ArrayList<IndexedType>();
+        types.addAll(getClassAncestors(context, typeName));
+        types.addAll(getInterfaceAncestors(context, typeName));
+        return types;
     }
 
     /** return a list of all superclasses of the given class.
      *  The head item will be the queried class, otherwise it not safe to rely on the element order
      */
     @NonNull
-    public Collection<String>getClassAncestors(PHPParseResult context, String className){
+    public Collection<IndexedType>getClassAncestors(PHPParseResult context, String className){
         return getClassAncestors(context, className, new TreeSet<String>());
     }
 
     @NonNull
-    private Collection<String>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
-        Collection<String> ancestors = new TreeSet<String>();
+    private  Collection<IndexedType>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
+        Collection<IndexedType> ancestors = new ArrayList<IndexedType>();
+        List<String> interfaces = Collections.emptyList();
 
         if (processedClasses.contains(className)) {
-            return Collections.<String>emptyList(); //TODO: circular reference, warn the user
+            return Collections.<IndexedType>emptyList(); //TODO: circular reference, warn the user
         }
 
         processedClasses.add(className);
@@ -518,9 +540,9 @@ public class PHPIndex {
         
         if (classes != null) {
             for (IndexedClass clazz : classes) {
-                ancestors.add(clazz.getName());
+                ancestors.add(clazz);
                 String parent = clazz.getSuperClass();
-
+                interfaces = clazz.getInterfaces();
                 if (parent != null) {
                     assumedParents.add(parent);
                 }
@@ -530,12 +552,52 @@ public class PHPIndex {
         for (String parent : assumedParents){
             ancestors.addAll(getClassAncestors(context, parent, processedClasses));
         }
-
+        for (String ifaceName : interfaces) {
+            Collection<IndexedInterface> interfaceTree = getInterfaceAncestors(context, ifaceName);
+            for (IndexedInterface indexedInterface : interfaceTree) {
+                ancestors.add(indexedInterface);
+            }
+        }
         return ancestors;
     }
 
+    public Collection<IndexedInterface> getInterfaceAncestors(PHPParseResult context, String ifaceName) {
+        return getInterfaceAncestors(context, ifaceName, new LinkedHashMap<String, IndexedInterface>());
+    }
+
+    private Collection<IndexedInterface> getInterfaceAncestors(PHPParseResult context, String ifaceName, Map<String, IndexedInterface> result) {
+        for (IndexedInterface iface : getInterfaces(context, ifaceName, QuerySupport.Kind.EXACT)){
+            IndexedInterface oldValue = result.put(iface.getName(), iface);
+            if (oldValue == null) {
+                for (String inheritedIfaceName : iface.getInterfaces()) {
+                    getInterfaceAncestors(context, inheritedIfaceName, result);
+                }
+            }
+        }
+        return result.values();
+    }
+
+
+    public Collection<IndexedClassMember<IndexedConstant>> getTypeConstants(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind) {
+        Collection<IndexedClassMember<IndexedConstant>> retval = new ArrayList<IndexedClassMember<IndexedConstant>>();
+        Collection<IndexedConstant> constants = getTypeConstants(context, type.getName(), name, kind);
+        for (IndexedConstant indexedConstant : constants) {
+            String name1 = type.getName();
+            String name2 = indexedConstant.getIn();
+            if (name1.equals(name2)) {
+                FileObject fo1 = type.getFileObject();
+                FileObject fo2 = indexedConstant.getFileObject();
+                // #147730 - prefer the current file
+                if (fo1 == null || fo2 == null || fo1 == fo2) {
+                    retval.add(new IndexedClassMember<IndexedConstant>(type, indexedConstant));
+                }
+            }
+        }
+        return retval;
+
+    }
     /** returns local constnats of a class. */
-    public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
+    public Collection<IndexedConstant> getTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Map<String, IndexResult> signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
 
@@ -576,7 +638,7 @@ public class PHPIndex {
                 String args = sig.string(1);
                 int offset = sig.integer(2);
 
-                IndexedFunction func = new IndexedFunction(funcName, funcName,
+                IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(6),
                         this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
@@ -589,6 +651,23 @@ public class PHPIndex {
         }
 
         return methods;
+    }
+    public Collection<IndexedClassMember<IndexedFunction>> getMethods(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind, int attrMask) {
+        Collection<IndexedClassMember<IndexedFunction>> retval = new ArrayList<IndexedClassMember<IndexedFunction>>();
+        Collection<IndexedFunction> methods = getMethods(context, type.getName(), name, kind, attrMask);
+        for (IndexedFunction indexedFunction : methods) {
+            String name1 = type.getName();
+            String name2 = indexedFunction.getIn();
+            if (name1.equals(name2)) {
+                FileObject fo1 = type.getFileObject();
+                FileObject fo2 = indexedFunction.getFileObject();
+                // #147730 - prefer the current file
+                if (fo1 == null || fo2 == null || fo1 == fo2) {
+                    retval.add(new IndexedClassMember<IndexedFunction>(type, indexedFunction));
+                }
+            }
+        }
+        return retval;
     }
 
     /** returns methods of a class. */
@@ -626,6 +705,23 @@ public class PHPIndex {
         return methods;
     }
 
+    public Collection<IndexedClassMember<IndexedConstant>> getFields(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind, int attrMask) {
+        Collection<IndexedClassMember<IndexedConstant>> retval = new ArrayList<IndexedClassMember<IndexedConstant>>();
+        Collection<IndexedConstant> constants = getFields(context, type.getName(), name, kind, attrMask);
+        for (IndexedConstant indexedConstant : constants) {
+            String name1 = type.getName();
+            String name2 = indexedConstant.getIn();
+            if (name1.equals(name2)) {
+                FileObject fo1 = type.getFileObject();
+                FileObject fo2 = indexedConstant.getFileObject();
+                // #147730 - prefer the current file
+                if (fo1 == null || fo2 == null || fo1 == fo2) {
+                    retval.add(new IndexedClassMember<IndexedConstant>(type, indexedConstant));
+                }
+            }
+        }
+        return retval;
+    }
     /** returns fields of a class. */
     public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
         Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
@@ -765,6 +861,69 @@ public class PHPIndex {
         return constants;
     }
 
+    public static void clearNamespaceCache() {
+        synchronized(CLUSTER_URL) {
+            namespacesCache = null;
+        }
+    }
+    public Collection<IndexedNamespace> getNamespaces(PHPParseResult context, String name) {
+        Collection<IndexedNamespace> retval = new ArrayList<IndexedNamespace>();
+        synchronized(CLUSTER_URL) {
+            if (namespacesCache == null) {
+                Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
+                for (IndexedNamespace namespace : getNamespacesImpl(context, "", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX)) {//NOI18N
+                    final String fqn = namespace.getFullyQualifiedName();
+                    IndexedNamespace original = null;
+                    QualifiedName qn = QualifiedName.create(fqn);
+                    while (original == null && !qn.isDefaultNamespace()) {
+                        original = namespacesMap.put(qn.toFullyQualified().toString().toLowerCase(), new IndexedNamespace(qn.toName().toString(), qn.toNamespaceName().toString()));
+                        qn = qn.toNamespaceName();
+                    }
+                }
+                namespacesCache = namespacesMap.values();
+            }
+        }
+        String lowCaseName = name.toLowerCase();
+        for (IndexedNamespace indexedNamespace : namespacesCache) {
+            if (indexedNamespace.getName().toLowerCase().startsWith(lowCaseName)) {
+                retval.add(indexedNamespace);
+            }
+        }
+        return retval;
+    }
+    public Collection<IndexedNamespace> getNamespacesImpl(PHPParseResult context, String name, QuerySupport.Kind kind) {
+        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_NAMESPACE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_NAMESPACE);
+
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_NAMESPACE);
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String nsName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!nsName.startsWith(name)) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!nsName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
+                }
+                String namespaceName = sig.string(2);
+                IndexedNamespace namespace = new IndexedNamespace(nsName, namespaceName);
+                //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                namespaces.add(namespace);
+            }
+        }
+        return namespaces;
+    }
+
     public Set<FileObject> filesWithIdentifiers(String identifierName) {
         final Set<FileObject> result = new HashSet<FileObject>();
         
@@ -872,9 +1031,13 @@ public class PHPIndex {
                 //TODO: handle search kind
 
                 int offset = sig.integer(2);
-                String interfaces[] = sig.string(3).split(","); //NOI18N
+                String interfaces[] = sig.string(3).trim().length() == 0 ?
+                    new String[0] : sig.string(3).split(","); //NOI18N
 
-                IndexedInterface iface = new IndexedInterface(ifaceName, null,
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+
+                IndexedInterface iface = new IndexedInterface(ifaceName, useNamespaceName ? namespaceName : null,
                         this, map.getUrl().toString(), interfaces, offset, 0);
 
                 //iface.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
@@ -886,33 +1049,6 @@ public class PHPIndex {
         return ifaces;
     }
 
-    private Collection<IndexedInterface> getInterfaceTree(PHPParseResult context, String ifaceName) {
-        Collection<IndexedInterface> ifacesByName = new ArrayList<IndexedInterface>();
-        Collection<String> alreadyProcessed = new ArrayList<String>();
-        Collection<String> unprocessedIfaces = new TreeSet<String>(Collections.singleton(ifaceName));
-
-        while (!unprocessedIfaces.isEmpty()){
-            Collection<String> newInterfaces = new TreeSet<String>();
-
-            for (String rawIface: unprocessedIfaces) {
-                for (IndexedInterface iface : getInterfaces(context, rawIface, QuerySupport.Kind.EXACT)){
-                    ifacesByName.add(iface);
-                    alreadyProcessed.add(iface.getName());
-
-                    for (String inheritedIfaceName : iface.getInterfaces()){
-                        if (!alreadyProcessed.contains(inheritedIfaceName)){
-                            newInterfaces.add(inheritedIfaceName);
-                        }
-                    }
-                }
-            }
-
-            unprocessedIfaces.clear();
-            unprocessedIfaces.addAll(newInterfaces);
-        }
-
-        return ifacesByName;
-    }
 
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
         assert !filePath.startsWith("file:");

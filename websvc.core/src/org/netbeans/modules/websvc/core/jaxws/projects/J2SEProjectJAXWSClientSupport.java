@@ -46,17 +46,17 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -103,21 +103,18 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     }
 
     public FileObject getWsdlFolder(boolean create) throws IOException {
-        //EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        assert ep!=null;
-        String metaInfStr = ep.getProperty("meta.inf.dir"); //NOI18N
-        if (metaInfStr.contains("$")) { 
-            // have no access to property evaluator
-            String srcDir = ep.getProperty("src.dir"); //NOI18N
-            metaInfStr = (srcDir == null ? "src" : srcDir) + "/META-INF"; //NOI18N
+        if (create) {
+            FileObject metaInfDir = PersistenceLocation.createLocation(project);
+            if (metaInfDir != null) {
+                return FileUtil.createFolder(metaInfDir, WSDL_FOLDER);
+            }
+        } else {
+            FileObject metaInfDir = PersistenceLocation.getLocation(project);
+            if (metaInfDir != null) {
+                return metaInfDir.getFileObject(WSDL_FOLDER);
+            }
         }
-        String wsdlFolderStr = metaInfStr + "/" + WSDL_FOLDER; // NOI18N
-        FileObject wsdlFolder = project.getProjectDirectory().getFileObject(wsdlFolderStr);
-        if (wsdlFolder == null && create) {
-            wsdlFolder = FileUtil.createFolder(project.getProjectDirectory(), wsdlFolderStr);
-        }
-        return wsdlFolder;
+        return null;
     }
 
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
@@ -133,8 +130,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     
     protected void addJaxWs20Library() {
         ClassPath classPath = null;
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         if (sourceGroups!=null && sourceGroups.length>0) {
             FileObject srcRoot = sourceGroups[0].getRootFolder();
             ClassPath compileClassPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
@@ -146,12 +142,14 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
             webServiceClass = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
         }
         if (webServiceClass==null) {
-            // add JAX-WS 2.1 if WsImport is not on classpath
-            ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-            Library jaxwslib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-            if ((pce!=null) && (jaxwslib != null)) {
+            // add Metro library if WebServiceFeature.class
+            Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
+            if ((sourceGroups.length > 0) && (metroLib != null)) {
                 try {
-                    pce.addLibrary(jaxwslib);
+                    ProjectClassPathModifier.addLibraries(
+                            new Library[] {metroLib},
+                            sourceGroups[0].getRootFolder(),
+                            ClassPath.COMPILE);
                 } catch (IOException ex) {
                     ErrorManager.getDefault().log(ex.getMessage());
                 }

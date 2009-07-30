@@ -97,6 +97,21 @@ made subject to such option by the copyright holder.
                 <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
                 <attr name="mavenLicenseURL" stringvalue="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
             </file>
+            <file name="license-mit.txt" url="licenses/mit-license.txt">
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
+                <attr name="mavenLicenseURL" stringvalue="http://www.opensource.org/licenses/mit-license.php"/>
+            </file>
+            <file name="license-glp20.txt" url="licenses/gpl20-license.txt">
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
+                <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/gpl-2.0.html"/>
+            </file>
+            <file name="license-glp30.txt" url="licenses/gpl30-license.txt">
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
+                <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/gpl-3.0.html"/>
+            </file>
         </folder>
         
     </folder>

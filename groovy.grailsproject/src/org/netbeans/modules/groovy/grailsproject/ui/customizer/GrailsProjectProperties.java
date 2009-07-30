@@ -78,6 +78,8 @@ public class GrailsProjectProperties {
 
     private String debugBrowser;
 
+    private String vmOptions;
+
     public GrailsProjectProperties(Project project) {
         assert project instanceof GrailsProject;
         this.project = (GrailsProject) project;
@@ -139,6 +141,17 @@ public class GrailsProjectProperties {
         this.port = port;
     }
 
+    public String getVmOptions() {
+        if (vmOptions == null) {
+            vmOptions = config.getVmOptions();
+        }
+        return vmOptions;
+    }
+
+    public void setVmOptions(String vmOptions) {
+        this.vmOptions = vmOptions;
+    }
+
     public String getDebugBrowser() {
         if (debugBrowser == null) {
             debugBrowser = config.getDebugBrowser();
@@ -174,6 +187,8 @@ public class GrailsProjectProperties {
         if (port != null) {
             config.setPort(port);
         }
+
+        config.setVmOptions(vmOptions);
 
         EnvironmentItem item = (EnvironmentItem) getEnvironmentModel().getSelectedItem();
         if (item != null) {

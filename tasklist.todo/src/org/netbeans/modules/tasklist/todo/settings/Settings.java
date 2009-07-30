@@ -85,6 +85,7 @@ final public class Settings {
         ext2comments.put( "CXX", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "CC", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "H", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "HPP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "HTML", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "HTM", new CommentTags( "<!--", "-->")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "XML", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N

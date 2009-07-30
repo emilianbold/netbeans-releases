@@ -127,8 +127,6 @@ public class Subversion {
     }
 
     private void init() {
-        loadIniParserClassesWorkaround();
-
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
@@ -139,19 +137,6 @@ public class Subversion {
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
-    }
-
-    /**
-     * Ini4j uses context classloader to load classes, use this as a workaround.
-     */
-    private void loadIniParserClassesWorkaround() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        try {
-            SvnConfigFiles.getInstance();   // triggers ini4j initialization
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
     }
 
     private void cleanup() {
@@ -208,6 +193,8 @@ public class Subversion {
                                String username,
                                String password,
                                int handledExceptions) throws SVNClientException {
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
@@ -216,7 +203,7 @@ public class Subversion {
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
         String username = ""; // NOI18N
         String password = ""; // NOI18N
-        
+
         SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
         if(kenaiSupport.isKenai(repositoryUrl.toString())) {
             PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(false);
@@ -238,6 +225,8 @@ public class Subversion {
                                String username,
                                String password,
                                SvnProgressSupport support) throws SVNClientException {
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -258,6 +247,10 @@ public class Subversion {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
         for (File root : roots) {
+            // XXX #168094 logging
+            if (!SvnUtils.isManaged(root)) {
+                Subversion.LOG.warning("getClient: unmanaged file in context: " + root.getAbsoluteFile()); //NOI18N
+            }
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
                 break;
@@ -267,7 +260,15 @@ public class Subversion {
         }
 
         assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!"; // NOI18N
-
+        if (repositoryUrl == null) {
+            // XXX #168094 logging
+            // preventing NPE in getClient(repositoryUrl, support)
+            StringBuilder sb = new StringBuilder("Cannot determine repositoryRootUrl for selected context:"); //NOI18N
+            for (File root : roots) {
+                sb.append("\n").append(root.getAbsolutePath());         //NOI18N
+            }
+            throw new SVNClientException(sb.toString());
+        }
         return getClient(repositoryUrl, support);
     }
 
@@ -289,6 +290,8 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         if(attachListeners) {
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
@@ -301,10 +304,6 @@ public class Subversion {
             }
             return noUrlClientWithoutListeners;
         }
-    }
-
-    public FilesystemHandler getFileSystemHandler() {
-        return filesystemHandler;
     }
 
     public void versionedFilesChanged() {
@@ -504,14 +503,31 @@ public class Subversion {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
+            return;
+        }
 
+        File original = null;
         try {
-            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
+            original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
+            if (original == null) {
+                throw new IOException("Unable to get BASE revision of " + workingCopy);
+            }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
+        } finally {
+            if (original != null) {
+                try {
+                    original.delete();
+                } catch (Exception ex) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("Failed to delete temporary file "  //NOI18N
+                                    + original.getAbsolutePath());
+                    }
+                    //otherwise ignore the exception - leave the file as it is
+                }
+            }
         }
     }
     

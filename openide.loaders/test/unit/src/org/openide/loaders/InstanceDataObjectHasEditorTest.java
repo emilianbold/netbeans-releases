@@ -43,6 +43,7 @@ package org.openide.loaders;
 
 import java.util.Date;
 import java.io.*;
+import javax.swing.Action;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -55,17 +56,22 @@ import org.openide.util.*;
  */
 public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCase {
     private FileObject fo;
+    private Action openAction;
     
     
     public InstanceDataObjectHasEditorTest (String testName) {
         super (testName);
     }
     
+    @Override
     protected void setUp () throws java.lang.Exception {
         clearWorkDir ();
 
         // initialize modules
         Lookup.getDefault().lookup(ModuleInfo.class);
+
+        FileObject a = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
+        openAction = (Action) a.getAttribute("instanceCreate");
     }
 
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {
@@ -77,9 +83,8 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         assertNull ("It does not have editor cookie", obj.getCookie (EditorCookie.class));
         
         Object o = obj.getNodeDelegate ().getPreferredAction ();
-        Class c = o == null ? Object.class : o.getClass ();
         
-        if (c == org.openide.actions.OpenAction.class) {
+        if (o == openAction) {
             fail ("Default actions should not be open on SFS: " + o);
         }
     }
@@ -97,9 +102,7 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         assertNotNull ("It has editor cookie", obj.getCookie (EditorCookie.class));
 
         Object o = obj.getNodeDelegate ().getPreferredAction ();
-        Class c = o == null ? Object.class : o.getClass ();
-        
-        assertEquals ("Default actions should be open on non-SFS", org.openide.actions.OpenAction.class, c);
+        assertEquals ("Default actions should be open on non-SFS", openAction, o);
     }
     
     public void testSettingsFileOnNonSFSAfterCopyShouldHaveEditor () throws Exception {
@@ -133,9 +136,8 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         assertNotNull ("It has editor cookie", obj.getCookie (EditorCookie.class));
 
         Object o = obj.getNodeDelegate ().getPreferredAction ();
-        Class c = o == null ? Object.class : o.getClass ();
         
-        assertEquals ("Default actions should be open on non-SFS", org.openide.actions.OpenAction.class, c);
+        assertEquals ("Default actions should be open on non-SFS", openAction, o);
     }
 
     private FileObject createSettings (FileObject root, String name) throws IOException {

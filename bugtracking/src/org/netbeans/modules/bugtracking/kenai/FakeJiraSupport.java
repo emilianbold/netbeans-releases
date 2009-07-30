@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -183,15 +184,7 @@ public class FakeJiraSupport {
                 new HelpCtx(FakeJiraSupport.class), 
                 null);
         if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.YES_OPTION) {
-            try {
-                ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
-                Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-                CallableSystemAction a = CallableSystemAction.findObject(clz, true);
-                a.putValue("InitialTab", "available"); // NOI18N
-                a.performAction ();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            BugtrackingUtil.openPluginManager();
         }
     }
 
@@ -215,8 +208,9 @@ public class FakeJiraSupport {
         }
         List<QueryResultHandle> getQueryResults() {
             if(results == null) {
-                results = new ArrayList<QueryResultHandle>(1);
-                results.add(new FakeJiraQueryResultHandle());
+                List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
+                r.add(new FakeJiraQueryResultHandle());
+                results = r;
             }
             return results; 
         }

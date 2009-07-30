@@ -98,7 +98,7 @@ public class KenaiTest extends NbTestCase {
     public void testQueryTopComponent() throws Throwable {
         KenaiRepository repo = KenaiConnector.repo;
 
-        LogHandler openedHandler = new LogHandler("opened", LogHandler.Compare.ENDS_WITH);
+        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
 
         QueryAction.openQuery(null, repo, true);
         openedHandler.waitUntilDone();
@@ -127,7 +127,7 @@ public class KenaiTest extends NbTestCase {
         KenaiRepository repo = KenaiConnector.repo;
         repo.queries.add(new KenaiQuery(repo));
 
-        LogHandler openedHandler = new LogHandler("opened", LogHandler.Compare.ENDS_WITH);
+        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
         LogHandler savedHandler = new LogHandler("saved queries.", LogHandler.Compare.ENDS_WITH);
 
         QueryAction.openQuery(null, repo, true);

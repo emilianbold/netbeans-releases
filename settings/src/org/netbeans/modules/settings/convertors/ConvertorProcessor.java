@@ -131,7 +131,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                 boolvalue("xmlproperties.preventStoring", !reg.autostore());
             commaSeparated(f, reg.ignoreChanges()).write();
         }
-        return false;
+        return true;
     }
 
     /** Copied from FileEntityResolver from o.n.core module.

@@ -131,19 +131,20 @@ import org.openide.util.NbBundle;
  */
 public class JSFClientGenerator {
     
-    private static final String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
+    private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
+    private static final String WELCOME_JSF_FL_PAGE = "template-client.xhtml";  //NOI18N
     private static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_BUSY_IMAGE = "busy.gif"; //NOI18N
     static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static final String FACADE_SUFFIX = "Facade"; //NOI18N
     static final int PROGRESS_STEP_COUNT = 8;
     
-    public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
+    public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, final boolean genSessionBean, int progressIndex) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
         
-//        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
         String simpleControllerName = controllerFileObject.getName();
         
         String progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Controller_Pre", simpleControllerName + ".java");//NOI18N
@@ -153,12 +154,9 @@ public class JSFClientGenerator {
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String jsfFolder = jsfFolderBase.length() > 0 ? jsfFolderBase + "/" + jsfFolderName : jsfFolderName;
         
-//        String simpleConverterName = converterFileObject.getName();
         String simpleConverterName = simpleEntityName + "Converter";
         
-//        String jpaControllerSuffix = "JpaController"; //NOI18N
         String jpaControllerClass = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + jpaControllerFileObject.getName();
-//        String simpleJpaControllerName = simpleEntityName + jpaControllerSuffix;
         
         String utilPackage = ((controllerPackage == null || controllerPackage.length() == 0) ? "" : controllerPackage + ".") + PersistenceClientIterator.UTIL_FOLDER_NAME;
         
@@ -186,14 +184,6 @@ public class JSFClientGenerator {
         }
         final FileObject jsfRoot = FileUtil.createFolder(pagesRootFolder, jsfFolder);
         
-//        int lastIndexOfController = controllerClass.lastIndexOf("Controller");
-//        String controllerSuffix = controllerClass.substring(lastIndexOfController);
-//        String converterSuffix = controllerSuffix.replace("Controller", "Converter");
-//        String simpleConverterName = simpleEntityName + converterSuffix; //NOI18N
-//        int converterNameAttemptIndex = 1;
-//        while (pkg.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
-//            simpleConverterName += "_" + converterNameAttemptIndex++;
-//        }
         String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
 
@@ -242,11 +232,6 @@ public class JSFClientGenerator {
             }
             throw new IOException(msg);
         }
-        
-        //now done in JpaControllerGenerator
-//        if (arrEntityClassFO[0] != null) {
-//            addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
-//        }
             
         final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
@@ -280,23 +265,22 @@ public class JSFClientGenerator {
         
         String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, controllerFileObject);
         
-        if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
-//            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-            String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-//            Charset encoding = FileEncodingQuery.getDefaultEncoding();
-            content = content.replaceAll("__ENCODING__", projectEncoding);
-            FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
-            JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
+        if (wm.getDocumentBase().getFileObject(WELCOME_JSF_JSP_PAGE) == null) {
+            if(wm.getDocumentBase().getFileObject(WELCOME_JSF_FL_PAGE)==null)//also there is no default facelet
+            {
+                String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_JSP_PAGE), "UTF-8"); //NOI18N
+                content = content.replaceAll("__ENCODING__", projectEncoding);
+                FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_JSP_PAGE);//NOI18N
+                JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
+            }
         }
         
-        //FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
         if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
-        //final String styleHrefPrefix = wm.getContextPath() + "/faces/" + (jsfFolderBase.length() > 0 ? jsfFolderBase + "/" : "");
         final String rootRelativePathToWebFolder = wm.getContextPath() + "/faces/";
         
         if (pagesRootFolder.getFileObject(JSFCRUD_JAVASCRIPT) == null) {
@@ -339,7 +323,7 @@ public class JSFClientGenerator {
         progressPanel.setText(progressMsg);
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerPackage, controllerClass, simpleConverterName, 
-                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, jpaControllerPackage, jpaControllerClass, utilPackage);
+                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, jpaControllerPackage, jpaControllerClass, genSessionBean, utilPackage);
         
         progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", simpleConverterName + ".java"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
@@ -347,7 +331,7 @@ public class JSFClientGenerator {
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
         converterFileObject = generateConverter(converterFileObject, controllerFileObject, pkg, controllerClass, simpleControllerName, entityClass, 
-                simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, isInjection);
+                simpleEntityName, idGetter.get(0), managedBean, jpaControllerClass, genSessionBean, isInjection);
         
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
             (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
@@ -358,7 +342,7 @@ public class JSFClientGenerator {
         progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/List.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
-        generateListJsp(project, jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleAndScriptTags, entities, controllerPackage);
+        generateListJsp(project, jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleAndScriptTags, entities, controllerPackage, genSessionBean);
         
         progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/New.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
@@ -386,7 +370,7 @@ public class JSFClientGenerator {
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateDetailJsp(project, controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, entities, controllerPackage);
+                generateDetailJsp(project, controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, entities, controllerPackage, genSessionBean);
             }
         }, true);
         
@@ -402,9 +386,9 @@ public class JSFClientGenerator {
 
     private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
-        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-        //String indexjspString = "faces/" + WELCOME_JSF_PAGE;
-        
+        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_JSP_PAGE); //NOI18N
+        FileObject indexfl = documentBase.getFileObject(WELCOME_JSF_FL_PAGE);
+
         if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
             String endLine = System.getProperty("line.separator"); //NOI18N
@@ -469,11 +453,76 @@ public class JSFClientGenerator {
                 return true;
             }
         }
+        else if(indexfl!=null)
+        {
+            String content = JSFFrameworkProvider.readResource(indexfl.getInputStream(), projectEncoding); //NO18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+
+            //insert style and script tags if not already present
+            if (content.indexOf(styleAndScriptTags) == -1) {
+                String justTitleEnd = "</title>"; //NOI18N
+                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
+            }
+
+            //make sure <f:view> is outside of <html>
+            String html = "<html>";
+            String htmlEnd = "</html>";
+            int htmlIndex = content.indexOf(html);
+            int htmlEndIndex = content.indexOf(htmlEnd);
+            if (htmlIndex != -1 && htmlEndIndex != -1) {
+                String fview = "<f:view>";
+                String fviewEnd = "</f:view>";
+                int fviewIndex = content.indexOf(fview);
+                if (fviewIndex != -1 && fviewIndex > htmlIndex) {
+                    content = content.replace(fview, ""); //NOI18N
+                    content = content.replace(fviewEnd, ""); //NOI18N
+                    String fviewPlusHtml = fview + endLine + html;
+                    String htmlEndPlusFviewEnd = htmlEnd + endLine + fviewEnd;
+                    content = content.replace(html, fviewPlusHtml); //NOI18N
+                    content = content.replace(htmlEnd, htmlEndPlusFviewEnd); //NOI18N
+                }
+            }
+
+            String find = "Hello from the Facelets client template!"; //NOI18N
+            if ( content.indexOf(find) > -1){
+                StringBuffer replace = new StringBuffer();
+                String findForm = "<h:form>";
+                boolean needsForm = content.indexOf(findForm) == -1;
+                if (needsForm) {
+                    replace.append(findForm);
+                    replace.append(endLine);
+                }
+                replace.append(find);
+                replace.append(endLine);
+                StringBuffer replaceCrux = new StringBuffer();
+                replaceCrux.append("    <br/>");                        //NOI18N
+                replaceCrux.append(endLine);
+                String managedBeanName = getManagedBeanName(simpleEntityName);
+                replaceCrux.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
+                replaceCrux.append("Show All " + simpleEntityName + " Items");
+                replaceCrux.append("\"/>");
+                replaceCrux.append(endLine);
+                if (content.indexOf(replaceCrux.toString()) > -1) {
+                    //return, indicating welcomeJsp exists
+                    return true;
+                }
+                replace.append(replaceCrux);
+                if (needsForm) {
+                    replace.append("</h:form>");
+                    replace.append(endLine);
+                }
+                content = content.replace(find, replace.toString()); //NOI18N
+                JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
+                //return, indicating welcomeJsp exists
+                return true;
+            }
+        }
         return false;
     }
 
     private static void generateListJsp(Project project, final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
-            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleAndScriptTags, List<String> entities, String controllerPackage) throws FileStateInvalidException, IOException {
+            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleAndScriptTags, List<String> entities, String controllerPackage, boolean useSessionBean) throws FileStateInvalidException, IOException {
         final String tableVarName = JsfForm.getFreeTableVarName("item", entities); //NOI18N
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
@@ -509,7 +558,7 @@ public class JSFClientGenerator {
                 + "<h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                 + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
-                + "<h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
+                + "<h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + "."+(useSessionBean ? "remove" : "destroy")+"'}'\">\n"
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                 + "</h:commandLink>\n </h:column>\n";
         JavaSource javaSource = JavaSource.create(classpathInfo);
@@ -674,7 +723,7 @@ public class JSFClientGenerator {
     }
 
     private static void generateDetailJsp(Project project, CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
-            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, List<String> entities, String controllerPackage) throws FileStateInvalidException, IOException {
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, List<String> entities, String controllerPackage, boolean useSessionBean) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
         final Charset encoding = JpaControllerUtil.getProjectEncoding(project, jsfRoot);
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -695,7 +744,7 @@ public class JSFClientGenerator {
         JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass, entities, jsfUtilClass);
         detailSb.append("</h:panelGrid>\n");
         detailSb.append("<br />\n"
-                + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
+                + "<h:commandLink action=\"#{" + fieldName + "."+(useSessionBean ? "remove" : "destroy")+"}\" value=\"Destroy\">\n"
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke}\" />\n"
                 + "</h:commandLink>\n"
                 + "<br />\n"
@@ -894,6 +943,7 @@ public class JSFClientGenerator {
             final ElementHandle<ExecutableElement> idGetter,
             final String managedBeanName,
             final String jpaControllerClass,
+            final boolean useSessionBean,
             final boolean isInjection) throws IOException {
 
         final boolean[] embeddable = new boolean[] { false };
@@ -969,11 +1019,11 @@ public class JSFClientGenerator {
         }
         if (embeddable[0]) {
             getAsObjectBody.append(idPropertyType[0] + " id = getId(string);\n");
-            getAsObjectBody.append(controllerVariable + "\n return controller.find" + simpleEntityName + "(id);");
+            getAsObjectBody.append(controllerVariable + "\n return controller.find" + (useSessionBean ? "" : simpleEntityName) + "(id);");
         } else {
             getAsObjectBody.append(createIdFieldDeclaration(idPropertyType[0], "string") + "\n"
                     + controllerVariable
-                    + "\n return controller.find" + simpleEntityName + "(id);");
+                    + "\n return controller.find" + (useSessionBean ? "" : simpleEntityName) + "(id);");
         }
         
         final MethodModel getAsObject = MethodModel.create(
@@ -1163,6 +1213,7 @@ public class JSFClientGenerator {
             final EmbeddedPkSupport embeddedPkSupport,
             final String jpaControllerPackage,
             final String jpaControllerClass,
+            final boolean useSessionBean,
             final String utilPackage) throws IOException {
         
             final String[] idPropertyType = new String[1];
@@ -1209,7 +1260,6 @@ public class JSFClientGenerator {
                     
                     int privateModifier = java.lang.reflect.Modifier.PRIVATE;
                     int publicModifier = java.lang.reflect.Modifier.PUBLIC;
-//                    int publicStaticModifier = publicModifier + java.lang.reflect.Modifier.STATIC;
                     
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName, entityClass, privateModifier, null, null);
                    
@@ -1221,35 +1271,31 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "converter", converterClass, privateModifier, null, null);
                     
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "pagingInfo", utilPackage + ".PagingInfo", privateModifier, null, null);
-                    
+
+                    if(useSessionBean)
+                    {
+                        //need to use transaction api
+                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, new JpaControllerUtil.AnnotationInfo[]{new JpaControllerUtil.AnnotationInfo("javax.annotation.Resource")});
+                    }
+
                     String bodyText;
                     MethodInfo methodInfo;
                     
                     String managedBeanName = getManagedBeanName(simpleEntityName);
                     bodyText = "FacesContext facesContext = FacesContext.getCurrentInstance();\n" +
-                            "jpaController = (" + simpleEntityName + "JpaController) facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n" +
+                            "jpaController = (" + simpleEntityName + (useSessionBean ? FACADE_SUFFIX : "JpaController") + ") facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n" +
                             "pagingInfo = new PagingInfo();\n" +
                             "converter = new " + simpleConverterName + "();";
                     methodInfo = new MethodInfo("<init>", publicModifier, "void", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, methodInfo);
                     
                     bodyText = "if pagingInfo.getItemCount() == -1) {\n" +
-                            "pagingInfo.setItemCount(jpaController.get" + simpleEntityName + "Count());\n" +
+                            "pagingInfo.setItemCount(jpaController."+ (useSessionBean ? "findAll().size()" :  "get" + simpleEntityName + "Count()")+");\n" +
                             "}\n" +
                             "return pagingInfo;";
                     methodInfo = new MethodInfo("getPagingInfo", publicModifier, utilPackage + ".PagingInfo", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
 
-//                    StringBuffer updateRelatedInCreate = new StringBuffer();
-//                    StringBuffer updateRelatedInEditPre = new StringBuffer();
-//                    StringBuffer attachRelatedInEdit = new StringBuffer();
-//                    StringBuffer updateRelatedInEditPost = new StringBuffer();
-//                    StringBuffer updateRelatedInDestroy = new StringBuffer();
-//                    StringBuffer initRelatedInCreate = new StringBuffer();
-//                    StringBuffer illegalOrphansInCreate = new StringBuffer();
-//                    StringBuffer illegalOrphansInEdit = new StringBuffer();
-//                    StringBuffer illegalOrphansInDestroy = new StringBuffer();
-//                    StringBuffer initCollectionsInCreate = new StringBuffer();  //useful in case user removes listbox from New.jsp
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -1257,25 +1303,44 @@ public class JSFClientGenerator {
                     String jpaExceptionsPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? JpaControllerIterator.EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + JpaControllerIterator.EXCEPTION_FOLDER_NAME;
                     
                     String illegalOrphanExceptionClass = jpaExceptionsPackage + ".IllegalOrphanException";
-                    
-                    boolean methodThrowsIllegalOrphanExceptionInCreate = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "create", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
-                    boolean methodThrowsIllegalOrphanExceptionInEdit = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "edit", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
-                    boolean methodThrowsIllegalOrphanExceptionInDestroy = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "destroy", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
-                    
-                    String[] importFqs = (methodThrowsIllegalOrphanExceptionInCreate || methodThrowsIllegalOrphanExceptionInEdit || methodThrowsIllegalOrphanExceptionInDestroy) ? new String[]{
-                                "java.lang.reflect.InvocationTargetException",
-                                "java.lang.reflect.Method",
-                                "javax.faces.FacesException",
-                                utilPackage + ".JsfUtil",
-                                jpaExceptionsPackage + ".NonexistentEntityException",
-                                illegalOrphanExceptionClass
-                    } : new String[]{
-                                "java.lang.reflect.InvocationTargetException",
-                                "java.lang.reflect.Method",
-                                "javax.faces.FacesException",
-                                utilPackage + ".JsfUtil",
-                                jpaExceptionsPackage + ".NonexistentEntityException"
-                    };
+
+                    String[] importFqs = null;
+                    boolean methodThrowsIllegalOrphanExceptionInCreate = false;
+                    boolean methodThrowsIllegalOrphanExceptionInEdit = false;
+                    boolean methodThrowsIllegalOrphanExceptionInDestroy = false;
+                    if(!useSessionBean)
+                    {
+                        methodThrowsIllegalOrphanExceptionInCreate = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "create", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                        methodThrowsIllegalOrphanExceptionInEdit = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "edit", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                        methodThrowsIllegalOrphanExceptionInDestroy = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, useSessionBean ? "remove" : "destroy", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+
+                        importFqs = (methodThrowsIllegalOrphanExceptionInCreate || methodThrowsIllegalOrphanExceptionInEdit || methodThrowsIllegalOrphanExceptionInDestroy) ? new String[]{
+                                    "java.lang.reflect.InvocationTargetException",
+                                    "java.lang.reflect.Method",
+                                    "javax.faces.FacesException",
+                                    utilPackage + ".JsfUtil",
+                                    jpaExceptionsPackage + ".NonexistentEntityException",
+                                    illegalOrphanExceptionClass
+                        } : new String[]{
+                                    "java.lang.reflect.InvocationTargetException",
+                                    "java.lang.reflect.Method",
+                                    "javax.faces.FacesException",
+                                    utilPackage + ".JsfUtil",
+                                    jpaExceptionsPackage + ".NonexistentEntityException"
+                        };
+                    }
+                    else
+                    {
+                        importFqs = new String[]{
+                                    "java.lang.reflect.InvocationTargetException",
+                                    "java.lang.reflect.Method",
+                                    "javax.faces.FacesException",
+                                    "javax.annotation.Resource",
+                                    "javax.transaction.UserTransaction",
+                                    utilPackage + ".JsfUtil"
+                        };
+
+                    }
                     CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
@@ -1285,261 +1350,15 @@ public class JSFClientGenerator {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, idPropertyType[0]);
                     }
 
-//                    String oldMe = null;
-//            
-                    // <editor-fold desc=" all relations ">
-//                    for(Iterator<ElementHandle<ExecutableElement>> it = allRelMethods.iterator(); it.hasNext();) {
-//                        ElementHandle<ExecutableElement> handle = it.next();
-//                        ExecutableElement m = handle.resolve(workingCopy);
-//                        int multiplicity = JpaControllerUtil.isRelationship(workingCopy, m, isFieldAccess);
-//                        ExecutableElement otherSide = JpaControllerUtil.getOtherSideOfRelation(workingCopy, m, isFieldAccess);
-//
-//                        if (otherSide != null) {
-//                            TypeElement relClass = (TypeElement)otherSide.getEnclosingElement();
-//                            boolean isRelFieldAccess = JpaControllerUtil.isFieldAccess(relClass);
-//                            int otherSideMultiplicity = JpaControllerUtil.isRelationship(workingCopy, otherSide, isRelFieldAccess);
-//                            TypeMirror t = m.getReturnType();
-//                            TypeMirror tstripped = JpaControllerUtil.stripCollection(t, workingCopy.getTypes());
-//                            boolean isCollection = t != tstripped;
-//                            String relType = tstripped.toString();
-//                            String simpleRelType = JpaControllerUtil.simpleClassName(relType); //just "Pavilion"
-//                            String relTypeReference = simpleRelType;
-//                            String mName = m.getSimpleName().toString();
-//                            String otherName = otherSide.getSimpleName().toString();
-//                            String relFieldName = JpaControllerUtil.getPropNameFromMethod(mName);
-//                            String otherFieldName = JpaControllerUtil.getPropNameFromMethod(otherName);
-//                            
-//                            boolean columnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
-//                            boolean relColumnNullable = JpaControllerUtil.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
-//                            
-//                            String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
-//                            String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
-//                            
-////                            if (!isCollection && !controllerClass.startsWith(entityClass + "Controller")) {
-////                                modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
-////                            }
-//                            
-//                            ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(workingCopy, isFieldAccess, relClass);
-//                            String refOrMergeString = JpaControllerGenerator.getRefOrMergeString(relIdGetterElement, relFieldToAttach);
-//                            
-//                            if (isCollection) {
-//                                initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
-//                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n" +
-//                                        "}\n");
-//
-//                                
-////                                modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
-//                                
-//                                initRelatedInCreate.append("List<" + relTypeReference + "> attached" + mName.substring(3) + " = new ArrayList<" + relTypeReference + ">();\n" +
-//                                        "for (" + relTypeReference + " " + relFieldToAttach + " : " + fieldName + "." + mName + "()) {\n" +
-//                                        relFieldToAttach + " = " + refOrMergeString +
-//                                        "attached" + mName.substring(3) + ".add(" + relFieldToAttach + ");\n" +
-//                                        "}\n" +
-//                                        fieldName + ".s" + mName.substring(1) + "(attached" + mName.substring(3) + ");\n"
-//                                        );
-//                            }
-//                            else {
-//                                initRelatedInCreate.append(relTypeReference + " " + scalarRelFieldName + " = " + fieldName + "." + mName +"();\n" +
-//                                    "if (" + scalarRelFieldName + " != null) {\n" +
-//                                    scalarRelFieldName + " = " + refOrMergeString +
-//                                    fieldName + ".s" + mName.substring(1) + "(" + scalarRelFieldName + ");\n" +
-//                                    "}\n");
-//                            }
-//                            
-//                            String relrelInstanceName = "old" + otherName.substring(3) + "Of" + scalarRelFieldName.substring(0, 1).toUpperCase() + (scalarRelFieldName.length() > 1 ? scalarRelFieldName.substring(1) : "");
-//                            String relrelGetterName = otherName;
-//                            
-//                            if (!columnNullable && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE && multiplicity == JpaControllerUtil.REL_TO_ONE) {
-//                                illegalOrphansInCreate.append(
-//                                        relTypeReference + " " + scalarRelFieldName + "OrphanCheck = " + fieldName + "." + mName +"();\n" +
-//                                                            "if (" + scalarRelFieldName + "OrphanCheck != null) {\n");
-//                                illegalOrphansInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "OrphanCheck." + relrelGetterName + "();\n");
-//                                illegalOrphansInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
-//                                        "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "OrphanCheck + \" already has an item of type " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please make another selection for the " + scalarRelFieldName + " field.\");\n" +
-//                                                "illegalOrphans = true;\n" +
-//                                        "}\n");
-//                                illegalOrphansInCreate.append("}\n");
-//                            }
-//                            
-//                            updateRelatedInCreate.append( (isCollection ? "for(" + relTypeReference + " " + scalarRelFieldName + " : " + fieldName + "." + mName + "()){\n" :
-//                                                            "if (" + scalarRelFieldName + " != null) {\n"));
-//                                                            //if 1:1, be sure to orphan the related entity's current related entity
-//                            if (otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE){
-//                                if (multiplicity != JpaControllerUtil.REL_TO_ONE || columnNullable) { //no need to declare relrelInstanceName if we have already examined it in the 1:1 orphan check
-//                                    updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "." + relrelGetterName + "();\n");
-//                                }
-//                                if (multiplicity == JpaControllerUtil.REL_TO_ONE) {
-//                                    if (columnNullable) {
-//                                        updateRelatedInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
-//                                        relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
-//                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
-//                                        "}\n");    
-//                                    }
-//                                }
-//                            }
-//                            
-//                            updateRelatedInCreate.append( ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? scalarRelFieldName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-//                                                            scalarRelFieldName + "." + otherName + "().add(" + fieldName +");\n") +
-//                                                        scalarRelFieldName + " = em.merge(" + scalarRelFieldName +");\n");
-//                            if (multiplicity == JpaControllerUtil.REL_TO_MANY && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE){
-//                                updateRelatedInCreate.append("if " + relrelInstanceName + " != null) {\n" +
-//                                        relrelInstanceName + "." + mName + "().remove(" + scalarRelFieldName + ");\n" +
-//                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" +
-//                                        "}\n");
-//                            }
-//                            updateRelatedInCreate.append("}\n");
-//                            
-//                            if (oldMe == null) {
-//                                oldMe = "persistent" + simpleEntityName;
-//                                String oldMeStatement = simpleEntityName + " " + oldMe + " = em.find(" +
-//                                simpleEntityName + ".class, " + fieldName + "." + idGetterName[0] + "());\n";
-//                                updateRelatedInEditPre.append("\n " + oldMeStatement);
-//                            }
-//                            
-//                            if (isCollection) {
-//                                String relFieldOld = relFieldName + "Old";
-//                                String relFieldNew = relFieldName + "New";
-//                                String oldScalarRelFieldName = relFieldOld + relTypeReference;
-//                                String newScalarRelFieldName = relFieldNew + relTypeReference;
-//                                String oldOfNew = "old" + otherName.substring(3) + "Of" + newScalarRelFieldName.substring(0, 1).toUpperCase() + newScalarRelFieldName.substring(1);
-//                                updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldOld + " = " + oldMe + "." + mName + "();\n");
-//                                updateRelatedInEditPre.append("Collection <" + relTypeReference + "> " + relFieldNew + " = " + fieldName + "." + mName + "();\n");
-//                                if (!relColumnNullable && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) {
-//                                    illegalOrphansInEdit.append(
-//                                            "for(" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
-//                                            "if (!" + relFieldNew + ".contains(" + oldScalarRelFieldName + ")) {\n" +
-//                                            "addErrorMessage(\"You must retain " + relTypeReference + " \" + " + oldScalarRelFieldName + " + \" since its " + otherFieldName + " field is not nullable.\");\n" +
-//                                            "illegalOrphans = true;\n" +
-//                                            "}\n" +
-//                                            "}\n");
-//                                }
-//                                String relFieldToAttachInEdit = newScalarRelFieldName + "ToAttach";
-//                                String refOrMergeStringInEdit = JpaControllerGenerator.getRefOrMergeString(relIdGetterElement, relFieldToAttachInEdit);
-//                                String attachedRelFieldNew = "attached" + mName.substring(3) + "New";
-//                                attachRelatedInEdit.append("List<" + relTypeReference + "> " + attachedRelFieldNew + " = new ArrayList<" + relTypeReference + ">();\n" +
-//                                        "for (" + relTypeReference + " " + relFieldToAttachInEdit + " : " + relFieldNew + ") {\n" +
-//                                        relFieldToAttachInEdit + " = " + refOrMergeStringInEdit +
-//                                        attachedRelFieldNew + ".add(" + relFieldToAttachInEdit + ");\n" +
-//                                        "}\n" +
-//                                        relFieldNew + " = " + attachedRelFieldNew + ";\n" +
-//                                        fieldName + ".s" + mName.substring(1) + "(" + relFieldNew + ");\n"
-//                                        );
-//                                if (otherSideMultiplicity == JpaControllerUtil.REL_TO_MANY || relColumnNullable) {
-//                                    updateRelatedInEditPost.append(
-//                                        "for (" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
-//                                        "if (!" + relFieldNew + ".contains(" + oldScalarRelFieldName + ")) {\n" +
-//                                        ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? oldScalarRelFieldName + ".s" + otherName.substring(1) + "(null);\n" :
-//                                            oldScalarRelFieldName + "." + otherName + "().remove(" + fieldName + ");\n") +
-//                                        oldScalarRelFieldName + " = em.merge(" + oldScalarRelFieldName + ");\n" +
-//                                        "}\n" +
-//                                        "}\n");
-//                                }
-//                                updateRelatedInEditPost.append("for (" + relTypeReference + " " + newScalarRelFieldName + " : " + relFieldNew + ") {\n" +
-//                                "if (!" + relFieldOld + ".contains(" + newScalarRelFieldName + ")) {\n" +
-//                                ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? simpleEntityName + " " + oldOfNew + " = " + newScalarRelFieldName + "." + relrelGetterName + "();\n" +
-//                                    newScalarRelFieldName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-//                                    newScalarRelFieldName + "." + otherName + "().add(" + fieldName +");\n") +
-//                                newScalarRelFieldName + " = em.merge(" + newScalarRelFieldName + ");\n");
-//                                if (otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) {
-//                                    updateRelatedInEditPost.append("if " + oldOfNew + " != null && !" + oldOfNew + ".equals(" + fieldName + ")) {\n" +
-//                                        oldOfNew + "." + mName + "().remove(" + newScalarRelFieldName + ");\n" +
-//                                        oldOfNew + " = em.merge(" + oldOfNew + ");\n" +
-//                                        "}\n");
-//                                }
-//                                updateRelatedInEditPost.append("}\n}\n");
-//                            } else {
-//                                updateRelatedInEditPre.append("\n" + relTypeReference + " " + scalarRelFieldName + "Old = " + oldMe + "." + mName + "();\n");
-//                                updateRelatedInEditPre.append(relTypeReference + " " + scalarRelFieldName + "New = " + fieldName + "." + mName +"();\n");
-//                                if (!relColumnNullable && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) {
-//                                    illegalOrphansInEdit.append(
-//                                        "if(" + scalarRelFieldName + "Old != null && !" + scalarRelFieldName + "Old.equals(" + scalarRelFieldName + "New)) {\n" +
-//                                        "addErrorMessage(\"You must retain " + relTypeReference + " \" + " + scalarRelFieldName + "Old + \" since its " + otherFieldName + " field is not nullable.\");\n" +
-//                                        "illegalOrphans = true;\n" +
-//                                        "}\n");
-//                                }
-//                                String refOrMergeStringInEdit = JpaControllerGenerator.getRefOrMergeString(relIdGetterElement, scalarRelFieldName + "New"); 
-//                                attachRelatedInEdit.append("if (" + scalarRelFieldName + "New != null) {\n" +
-//                                    scalarRelFieldName + "New = " + refOrMergeStringInEdit +
-//                                    fieldName + ".s" + mName.substring(1) + "(" + scalarRelFieldName + "New);\n" +
-//                                    "}\n");
-//                                if (otherSideMultiplicity == JpaControllerUtil.REL_TO_MANY || relColumnNullable) {
-//                                     updateRelatedInEditPost.append(   
-//                                        "if(" + scalarRelFieldName + "Old != null && !" + scalarRelFieldName + "Old.equals(" + scalarRelFieldName + "New)) {\n" +
-//                                        ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? scalarRelFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
-//                                            scalarRelFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-//                                        scalarRelFieldName + "Old = em.merge(" + scalarRelFieldName +"Old);\n}\n");
-//                                }
-//                                if (multiplicity == JpaControllerUtil.REL_TO_ONE && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE && !columnNullable) {
-//                                    illegalOrphansInEdit.append(
-//                                        "if(" + scalarRelFieldName + "New != null && !" + scalarRelFieldName + "New.equals(" + scalarRelFieldName + "Old)) {\n");
-//                                    illegalOrphansInEdit.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "New." + relrelGetterName + "();\n" + 
-//                                                "if (" + relrelInstanceName + " != null) {\n" + 
-//                                                "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "New + \" already has an item of type " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please make another selection for the " + scalarRelFieldName + " field.\");\n" +
-//                                                "illegalOrphans = true;\n" +
-//                                                "}\n");
-//                                    illegalOrphansInEdit.append("}\n");
-//                                }
-//                                updateRelatedInEditPost.append(
-//                                    "if(" + scalarRelFieldName + "New != null && !" + scalarRelFieldName + "New.equals(" + scalarRelFieldName + "Old)) {\n");
-//                                if (multiplicity == JpaControllerUtil.REL_TO_ONE && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE && columnNullable) {
-//                                    updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "New." + relrelGetterName + "();\n" + 
-//                                            "if (" + relrelInstanceName + " != null) {\n" + 
-//                                            relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
-//                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
-//                                            "}\n");
-//                                }
-//                                updateRelatedInEditPost.append(
-//                                    ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? scalarRelFieldName + "New.s" + otherName.substring(1) + "(" + fieldName + ");\n" :
-//                                        scalarRelFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
-//                                    scalarRelFieldName + "New = em.merge(" + scalarRelFieldName + "New);\n}\n"
-//                                    );
-//                            } 
-//                            
-//                            if (otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE && !relColumnNullable) {
-//                                String orphanCheckCollection = relFieldName + "OrphanCheck";
-//                                String orphanCheckScalar = isCollection ? orphanCheckCollection + relTypeReference : relFieldName + "OrphanCheck";
-//                                illegalOrphansInDestroy.append(
-//                                        (isCollection ? "Collection<" + relTypeReference + "> " + orphanCheckCollection : relTypeReference + " " + orphanCheckScalar) + " = " + fieldName + "." + mName +"();\n" +
-//                                        (isCollection ? "for(" + relTypeReference + " " + orphanCheckScalar + " : " + orphanCheckCollection : "if (" + orphanCheckScalar + " != null") + ") {\n" +
-//                                        "addErrorMessage(\"This " + simpleEntityName + " (\" + " +  fieldName + " + \") cannot be destroyed since the " + relTypeReference + " \" + " + orphanCheckScalar + " + \" in its " + relFieldName + " field has a non-nullable " + otherFieldName + " field.\");\n" +
-//                                        "illegalOrphans = true;\n" +
-//                                        "}\n");
-//                            }
-//                            if (otherSideMultiplicity == JpaControllerUtil.REL_TO_MANY || relColumnNullable) {
-//                                updateRelatedInDestroy.append( (isCollection ? "Collection<" + relTypeReference + "> " + relFieldName : relTypeReference + " " + scalarRelFieldName) + " = " + fieldName + "." + mName +"();\n" +
-//                                        (isCollection ? "for(" + relTypeReference + " " + scalarRelFieldName + " : " + relFieldName : "if (" + scalarRelFieldName + " != null") + ") {\n" +
-//                                        ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? scalarRelFieldName + ".s" + otherName.substring(1) + "(null);\n" :
-//                                            scalarRelFieldName + "." + otherName + "().remove(" + fieldName +");\n") +
-//                                        scalarRelFieldName + " = em.merge(" + scalarRelFieldName +");\n}\n\n");
-//                            }
-//                            
-////                            if (multiplicity == JpaControllerUtil.REL_TO_MANY) {
-////                                importFqs = new String[]{"java.util.Arrays",
-////                                            "java.util.Collection"
-////                                  };
-////                                for (String importFq : importFqs) {
-////                                    modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
-////                                }
-////                                
-////                            }
-//                            
-//                        } else {
-//                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot detect other side of a relationship.");
-//                        }
-//
-//                    }
-                    // </editor-fold>
                     
-                    bodyText = "return JsfUtil.getSelectItems(jpaController.find" + simpleEntityName + "Entities(), false);";
+                    bodyText = "return JsfUtil.getSelectItems(jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities()")+", false);";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "ItemsAvailableSelectMany", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    bodyText = "return JsfUtil.getSelectItems(jpaController.find" + simpleEntityName + "Entities(), true);";
+                    bodyText = "return JsfUtil.getSelectItems(jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities()")+", true);";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "ItemsAvailableSelectOne", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-                    
-//                    String getFromReqParamMethod = "get" + simpleEntityName + "FromRequest";
-                    
+                                        
                     bodyText = "if (" + fieldName + " == null) {\n" +
                             fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", converter, null);\n" +
                             "}\n" + 
@@ -1561,20 +1380,10 @@ public class JSFClientGenerator {
                             "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-                    
-//                    String BEGIN = isInjection ? "utx.begin();" : "em.getTransaction().begin();";
-//                    String COMMIT = isInjection ? "utx.commit();" : "em.getTransaction().commit();";
-//                    String ROLLBACK = isInjection ? "utx.rollback();" : "em.getTransaction().rollback();";
-                    
+                                        
                     String newEntityStringVar = "new" + simpleEntityName + "String";
                     String entityStringVar = fieldName + "String";
                     
-//                    if (illegalOrphansInCreate.length() > 0) {
-//                        illegalOrphansInCreate.insert(0, "boolean illegalOrphans = false;\n");
-//                        illegalOrphansInCreate.append("if (illegalOrphans) {\n" +
-//                                "return null;\n" +
-//                                "}\n");
-//                    }
                     
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
@@ -1587,34 +1396,21 @@ public class JSFClientGenerator {
                         }
                     }
 
-//                    boolean isGenerated = JpaControllerUtil.isGenerated(workingCopy, idGetterElement, isFieldAccess);
-//                    bodyText = initCollectionsInCreate.toString() +
-//                            codeToPopulatePkFields.toString() +
-//                            illegalOrphansInCreate.toString() +
-//                            "EntityManager em = null;\n" + 
-//                            "try {\n " + BEGIN + "\n " + 
-//                            "em = getEntityManager();\n" +
-//                            initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
-//                            "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-//                            "} catch (Exception ex) {\n try {\n" +
-//                            (isGenerated ? "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" : 
-//                            "if (find" + simpleEntityName + "(" + fieldName + "." + idGetterName[0] + "()) != null) {\n" +
-//                            "addErrorMessage(\"" + simpleEntityName + " \" + " + fieldName + " + \" already exists.\");\n" +
-//                            "} else {\n" +
-//                            "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + 
-//                            "}\n") +
-//                            ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
-//                            "}\nreturn null;\n} " +   //NOI18N
-//                            "finally {\n if (em != null) {\nem.close();\n}\n }\n" + 
-//                            "return listSetup();";
 
-                    bodyText = "try {\n" +
+
+                    bodyText =
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
                             "jpaController.create(" + fieldName + ");\n" +
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInCreate ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
@@ -1644,14 +1440,7 @@ public class JSFClientGenerator {
 
                     entityStringVar = fieldName + "String";
                     String currentEntityStringVar = "current" + simpleEntityName + "String";
-                    
-//                    if (illegalOrphansInEdit.length() > 0) {
-//                        illegalOrphansInEdit.insert(0, "boolean illegalOrphans = false;\n");
-//                        illegalOrphansInEdit.append("if (illegalOrphans) {\n" +
-//                                "utx.rollback();\n" +
-//                                "return null;\n" +
-//                                "}\n");
-//                    }                    
+                
                     
                     bodyText = codeToPopulatePkFields.toString() + 
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
@@ -1663,39 +1452,26 @@ public class JSFClientGenerator {
                             "}\n" +
                             "return outcome;\n" +
                             "}\n";
-//                    bodyText += "EntityManager em = null;\n" + 
-//                        "try {\n " + BEGIN + "\n" + 
-//                        "em = getEntityManager();\n" +
-//                        updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + attachRelatedInEdit.toString() +
-//                        fieldName + " = em.merge(" + fieldName + ");\n " + 
-//                        updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
-//                        "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
-//                        "} catch (Exception ex) {\n try {\n String msg = ex.getLocalizedMessage();\n" + 
-//                        "if (msg != null && msg.length() > 0) {\n" +
-//                        "addErrorMessage(msg);\n" +
-//                        "}\n" +
-//                        "else if (" + getFromReqParamMethod + "() == null) {\n" +
-//                        "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
-//                        ROLLBACK +
-//                        "\nreturn listSetup();\n" +
-//                        "}\n" +
-//                        "else {\n" +
-//                        "addErrorMessage(\"A persistence error occurred.\");\n" +
-//                        "}\n" +
-//                        ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
-//                        "}\nreturn null;\n} " +   //NOI18N
-//                        "finally {\n if (em != null) {\nem.close();\n}\n }\n" +  //NOI18N
-//                        "return detailSetup();";
-                    bodyText += "try {\n" +
+
+                    bodyText +=
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
                             "jpaController.edit(" + fieldName + ");\n" +
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
-                            "} catch (NonexistentEntityException ne) {\n" +
-                            "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
-                            "return listSetup();\n" +
+                            (useSessionBean ? 
+                                ("") :
+                                ("} catch (NonexistentEntityException ne) {\n" +
+                                "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
+                                "return listSetup();\n")
+                            ) +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
@@ -1703,68 +1479,34 @@ public class JSFClientGenerator {
                     methodInfo = new MethodInfo("edit", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-//                    if (illegalOrphansInDestroy.length() > 0) {
-//                        illegalOrphansInDestroy.insert(0, "boolean illegalOrphans = false;\n");
-//                        illegalOrphansInDestroy.append("if (illegalOrphans) {\n" +
-//                                ROLLBACK + "\n" +
-//                                "return null;\n" +
-//                                "}\n");
-//                    }
-                    
-//                    String refOrMergeStringInDestroy = "em.merge(" + fieldName + ");\n";
-//                    if (idGetterElement != null) {
-//                        refOrMergeStringInDestroy = "em.getReference(" + simpleEntityName + ".class, ";
-//                        if (embeddable[0]) {
-//                            refOrMergeStringInDestroy += "new " + simpleConverterName + "().getId(idAsString));\n";
-//                        }
-//                        else {
-//                            refOrMergeStringInDestroy += "id);\n";
-//                        }
-//                    }
-//                    bodyText = "EntityManager em = null;\n" + 
-//                        "try {\n " + BEGIN + "\n" + 
-//                        "em = getEntityManager();\n" +
-//                        "String idAsString = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
-//                        "try {\n " + 
-//                        (embeddable[0] ? "" : createIdFieldDeclaration(idPropertyType[0], "idAsString") + "\n") + 
-//                        fieldName + " = " + refOrMergeStringInDestroy + 
-//                        fieldName + "." + idGetterName[0] + "();\n" +
-//                        "} catch (EntityNotFoundException enfe) {\n" +
-//                        "addErrorMessage(\"The " + fieldName + " with id \" + idAsString + \" no longer exists.\");\n" +
-//                        "String notFoundOutcome = relatedControllerOutcome();\n" +
-//                        "if (notFoundOutcome == null) {\n" +
-//                        "notFoundOutcome = listSetup();\n" +
-//                        "}\n" +
-//                        ROLLBACK + "\n" +
-//                        "return notFoundOutcome;\n" +
-//                        "}\n" + 
-//                        illegalOrphansInDestroy.toString() +
-//                        updateRelatedInDestroy.toString() + 
-//                        "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
-//                        "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
-//                        "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
-//                        "}\nreturn null;\n} " +   //NOI18N
-//                        "finally {\n if (em != null) {\nem.close();\n}\n }\n" +  //NOI18N
-//                        relatedControllerOutcomeSwath + 
-//                            "return listSetup();";
+
                     bodyText = "String idAsString = JsfUtil.getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                             (embeddable[0] ? simpleIdPropertyType + " id = converter.getId(idAsString);" : createIdFieldDeclaration(idPropertyType[0], "idAsString")) +
                             "\n";
-                    bodyText += "try {\n" +
-                            "jpaController.destroy(id);\n" +
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
+                    bodyText += 
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
+                            "jpaController."+(useSessionBean ? "remove(jpaController.find(id))" : "destroy(id)")+";\n" +
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
-                            "} catch (NonexistentEntityException ne) {\n" +
-                            "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
-                            "return relatedOrListOutcome();\n" +
+                            (useSessionBean ?
+                                ("") :
+                                ("} catch (NonexistentEntityException ne) {\n" +
+                                "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
+                                "return relatedOrListOutcome();\n")
+                            ) +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
                             "return relatedOrListOutcome();";
-                    methodInfo = new MethodInfo("destroy", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+                    methodInfo = new MethodInfo((useSessionBean ? "remove" : "destroy"), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                     
                     bodyText = "String relatedControllerOutcome = relatedControllerOutcome();\n" +
@@ -1776,10 +1518,10 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     TypeInfo listOfEntityType = new TypeInfo("java.util.List", new String[]{entityClass});
-                    
+
                     bodyText = "if (" + fieldName + "Items == null) {\n" +
                             "getPagingInfo();\n" +
-                            fieldName + "Items = jpaController.find" + simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem());\n" +
+                            fieldName + "Items = jpaController.find" + (useSessionBean ? "Range(new int[]{pagingInfo.getFirstItem(), pagingInfo.getFirstItem() + pagingInfo.getBatchSize()})" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
                             "}\n" +
                             "return " + fieldName + "Items;";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "Items", publicModifier, listOfEntityType, null, null, null, bodyText, null, null);
@@ -1842,7 +1584,6 @@ public class JSFClientGenerator {
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                             "createSetup();\n" +
-                            //"throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
                             "}\n";
                     methodInfo = new MethodInfo("validateCreate", publicModifier, "void", null, new String[]{"javax.faces.context.FacesContext", "javax.faces.component.UIComponent", "java.lang.Object"}, new String[]{"facesContext", "component", "value"}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    

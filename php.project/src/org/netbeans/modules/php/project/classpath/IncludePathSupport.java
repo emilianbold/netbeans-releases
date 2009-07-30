@@ -39,104 +39,28 @@
 
 package org.netbeans.modules.php.project.classpath;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  * @author Petr Hrebejk, Tomas Mysik
  */
-public class IncludePathSupport extends BaseIncludePathSupport {
+public class IncludePathSupport extends BaseProjectPathSupport {
 
     private static final Set<String> WELL_KNOWN_PATHS = new HashSet<String>(Arrays.asList(
             "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"));
 
-    private final PropertyEvaluator evaluator;
-    private final ReferenceHelper referenceHelper;
-    private final AntProjectHelper antProjectHelper;
-
-    public  IncludePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper,
-            AntProjectHelper antProjectHelper) {
-        assert evaluator != null;
-        assert referenceHelper != null;
-        assert antProjectHelper != null;
-
-        this.evaluator = evaluator;
-        this.referenceHelper = referenceHelper;
-        this.antProjectHelper = antProjectHelper;
+    public IncludePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper, AntProjectHelper antProjectHelper) {
+        super(evaluator, referenceHelper, antProjectHelper);
     }
 
-    public Iterator<Item> itemsIterator(String propertyValue) {
-        // XXX more performance friendly impl. would return a lazzy iterator
-        return itemsList(propertyValue).iterator();
-    }
-
-    public List<Item> itemsList(String propertyValue) {
-        String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
-        List<Item> items = new ArrayList<Item>(pe.length);
-        for (String p : pe) {
-            Item item = null;
-            if (WELL_KNOWN_PATHS.contains(p)) {
-                // some well know classpath
-                item = Item.create(p);
-            } else {
-                File f = null;
-                String eval = evaluator.evaluate(p);
-                if (eval != null) {
-                    f = antProjectHelper.resolveFile(eval);
-                }
-                if (f == null || !f.exists()) {
-                    item = Item.createBroken(eval, p);
-                } else {
-                    item = Item.create(eval, p);
-                }
-            }
-            items.add(item);
-        }
-        return items;
-    }
-
-    /** Converts list of classpath items into array of Strings.
-     * !! This method creates references in the project !!
-     */
-    public String[] encodeToStrings(Iterator<Item> classpath) {
-        List<String> result = new ArrayList<String>();
-        while (classpath.hasNext()) {
-            Item item = classpath.next();
-            String reference = item.getReference();
-            switch (item.getType()) {
-                case FOLDER:
-                    if (reference == null) {
-                        // new file
-                        File file = new File(item.getFilePath());
-                        // pass null as expected artifact type to always get file reference
-                        reference = referenceHelper.createForeignFileReference(file, null);
-                        item.property = reference;
-                    }
-                    break;
-            }
-            if (reference != null) {
-                result.add(reference);
-            }
-        }
-
-        String[] items = new String[result.size()];
-        for (int i = 0; i < result.size(); i++) {
-            if (i < result.size() - 1) {
-                items[i] = result.get(i) + ":"; // NOI18N
-            } else  {
-                items[i] = result.get(i);
-            }
-        }
-        return items;
+    @Override
+    protected boolean isWellKnownPath(String p) {
+        return WELL_KNOWN_PATHS.contains(p);
     }
 }

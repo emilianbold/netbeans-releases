@@ -659,12 +659,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; // NOI18N //XXX need constants
+        String params = getUrlParameters();
+        String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
+
+        final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 URL url;
                 try {
-                    url = new URL(repoURL);
+                    url = new URL(urlString);
                 } catch (MalformedURLException ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
                     return;

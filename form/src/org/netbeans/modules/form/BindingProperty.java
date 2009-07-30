@@ -72,7 +72,7 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
     private Property converterProperty;
 
     public BindingProperty(RADComponent metacomp, BindingDescriptor desc) {
-        super(desc.getPath(), MetaBinding.class, desc.getDisplayName(), desc.getShortDescription());
+        super(desc.getPath(), MetaBinding.class, desc.getDisplayName(), FormProperty.getDescriptionWithType(desc.getShortDescription(), desc.getValueType()));
         bindingComponent = metacomp;
         bindingDescriptor = desc;
         FormProperty prop = (FormProperty)bindingComponent.getPropertyByName(bindingDescriptor.getPath());

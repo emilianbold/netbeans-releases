@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
@@ -71,14 +72,15 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean afterExtends) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, afterExtends);
     }
     
     private ElementHandle<TypeElement> handle;
     private EnumSet<ElementKind> kinds;
     private Source source;
     private boolean insideNew;
+    private boolean afterExtends;
     private String name;
     private String simpleName;
     private String pkgName;
@@ -86,12 +88,13 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private CharSequence sortText;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean afterExtends) {
         super(substitutionOffset);
         this.handle = handle;
         this.kinds = kinds;
         this.source = source;
         this.insideNew = insideNew;
+        this.afterExtends = afterExtends;
         this.name = handle.getQualifiedName();
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
@@ -116,7 +119,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                             TypeElement e = handle.resolve(controller);
                             Elements elements = controller.getElements();
                             if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
-                                if (isOfKind(e, kinds) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
+                                if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
                                     delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
                             }
                         }

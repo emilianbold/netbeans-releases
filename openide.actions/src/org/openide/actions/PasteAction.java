@@ -204,7 +204,7 @@ public final class PasteAction extends CallbackSystemAction {
             new ActionPT(t, ev.getActionCommand());
         } else {
             Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null,
-                              new IllegalStateException("No paste types available when performing paste action")); // NOI18N
+                              new IllegalStateException("No paste types available when performing paste action. ActionEvent: " + ev)); // NOI18N
         }
     }
 

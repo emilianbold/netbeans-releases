@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbcore;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -63,8 +64,8 @@ public class EjbInjectionTargetQueryImplementation implements InjectionTargetQue
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(controller.getFileObject());
         final String fqn = typeElement.getQualifiedName().toString();
         if (ejbModule != null && 
-                !ejbModule.getJ2eePlatformVersion().equals("1.3") && 
-                !ejbModule.getJ2eePlatformVersion().equals("1.4")) {
+                !Profile.J2EE_13.equals(ejbModule.getJ2eeProfile()) &&
+                !Profile.J2EE_14.equals(ejbModule.getJ2eeProfile())) {
             boolean isEjb = false;
             try {
                  isEjb = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {

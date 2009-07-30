@@ -41,6 +41,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.*;
+import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -50,6 +51,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -58,6 +60,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  * Html completion results finder
@@ -92,6 +95,9 @@ public class HtmlCompletionQuery extends UserTask {
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
         Parser.Result parserResult = resultIterator.getParserResult(offset);
+        if (parserResult == null) {
+            return;
+        }
         if (parserResult.getSnapshot().getMimeType().equals("text/html")) {
             //proceed only on html content
             this.completionResult = query((HtmlParserResult) parserResult);
@@ -108,7 +114,7 @@ public class HtmlCompletionQuery extends UserTask {
         Snapshot snapshot = parserResult.getSnapshot();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         lowerCase = usesLowerCase(parserResult, astOffset);
-        isXHtml = org.netbeans.editor.ext.html.dtd.Utils.isXHTMLPublicId(dtd.getIdentifier());
+        isXHtml = parserResult.getHtmlVersion().isXhtml();
 
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
@@ -116,8 +122,10 @@ public class HtmlCompletionQuery extends UserTask {
 
         int diff = ts.move(astOffset);
         if (ts.moveNext()) {
-            if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS)) {
+            if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS ||
+                    ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL)) {
                 //looks like we are on a boundary of a text or whitespace, need the previous token
+                //or we are just before tag closing symbol
                 if (!ts.movePrevious()) {
                     //we cannot get previous token
                     return null;
@@ -137,20 +145,27 @@ public class HtmlCompletionQuery extends UserTask {
         int itemOffset = item.offset(hi);
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
+        String itemText = preText;
         if (diff < preText.length()) {
             preText = preText.substring(0, astOffset - itemOffset);
         }
         TokenId id = item.id();
         boolean inside = ts.offset() < astOffset; // are we inside token or between tokens?
 
-        Collection<HtmlCompletionItem> result = null;
+        Collection<CompletionItem> result = null;
         int len = 1;
 
         //adjust the astOffset if at the end of the file
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
-        AstNode root = parserResult.root();
-        AstNode node = AstNodeUtils.findDescendant(root, searchAstOffset);
+        AstNode node = parserResult.findLeaf(searchAstOffset);
+        if(node == null) {
+            return null;
+        }
+        AstNode root = node.getRootNode();
+
+        //namespace is null for html content
+        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -171,17 +186,42 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = documentItemOffset;
             //we are inside a tagname, the real content is the position before the tag
             astOffset -= (preText.length() + 1); // +"<" len
-            Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-            result = translateTags(documentItemOffset - 1,
-                    filterElements(openTags, preText),
-                    filterElements(dtd.getElementList(null),
-                    preText));
+
+            result = new ArrayList<CompletionItem>();
+
+            if (namespace == null) {
+                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+
+                result.addAll(translateTags(documentItemOffset - 1,
+                        filterElements(openTags, preText),
+                        filterElements(dtd.getElementList(null),
+                        preText)));
+            }
+                
+            //extensions
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                result.addAll(e.completeOpenTags(context));
+            }
+
 
         } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
             //complete open tags with no prefix
             anchor = offset;
-            Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-            result = translateTags(offset - 1, openTags, dtd.getElementList(null));
+            result = new ArrayList<CompletionItem>();
+
+            if (namespace == null) {
+                Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+                result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
+            }
+            
+            //extensions
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                Collection<CompletionItem> items = e.completeOpenTags(context);
+                result.addAll(items);
+            }
+
 
         } else if ((id == HTMLTokenId.TEXT && preText.endsWith("</")) ||
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
@@ -195,45 +235,55 @@ public class HtmlCompletionQuery extends UserTask {
             result = getPossibleEndTags(node, offset, preText);
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-            //TODO: fix end tag autocompletion
-//            result = getAutocompletedEndTag(parserResult, offset, dtd);
+            anchor = offset;
+            result = getAutocompletedEndTag(node, astOffset, offset);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
-
-            if(node.type() == AstNode.NodeType.UNKNOWN_TAG) {
-                //nothing to complete in an unknown tag
-                return null;
-            }
-
-            //should be open tag if not unknown
-            assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
-
-            DTD.Element tag = node.getDTDElement();
             String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
             len = prefix.length();
-            List possible = tag.getAttributeList(prefix); // All attribs of given tag
-            Collection<String> existingAttrsNames = node.getAttributeKeys();
-
-            String wordAtCursor = (item == null) ? null : item.text().toString();
-            // #BUGFIX 25261 because of being at the end of document the
-            // wordAtCursor must be checked for null to prevent NPE
-            // below
-            if (wordAtCursor == null) {
-                wordAtCursor = "";
-            }
-
-            List<DTD.Attribute> attribs = new ArrayList<DTD.Attribute>();
-            for (Iterator i = possible.iterator(); i.hasNext();) {
-                DTD.Attribute attr = (DTD.Attribute) i.next();
-                String aName = attr.getName();
-                if (aName.equals(prefix) ||
-                        (!existingAttrsNames.contains(isXHtml ? aName : aName.toUpperCase()) &&
-                        !existingAttrsNames.contains(isXHtml ? aName : aName.toLowerCase(Locale.ENGLISH))) || (wordAtCursor.equals(aName) && prefix.length() > 0)) {
-                    attribs.add(attr);
-                }
-            }
             anchor = offset - len;
-            result = translateAttribs(anchor, attribs, tag);
+
+            if (namespace != null) {
+                //extensions
+                Collection<CompletionItem> items = new ArrayList<CompletionItem>();
+                HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
+                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                    items.addAll(e.completeAttributes(context));
+                }
+                result = items;
+            } else {
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+                    //nothing to complete in an unknown tag
+                    return null;
+                }
+                //should be open tag if not unknown
+                assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
+
+                DTD.Element tag = node.getDTDElement();
+                List possible = tag.getAttributeList(prefix); // All attribs of given tag
+                Collection<String> existingAttrsNames = node.getAttributeKeys();
+
+                String wordAtCursor = (item == null) ? null : item.text().toString();
+                // #BUGFIX 25261 because of being at the end of document the
+                // wordAtCursor must be checked for null to prevent NPE
+                // below
+                if (wordAtCursor == null) {
+                    wordAtCursor = "";
+                }
+
+                List<DTD.Attribute> attribs = new ArrayList<DTD.Attribute>();
+                for (Iterator i = possible.iterator(); i.hasNext();) {
+                    DTD.Attribute attr = (DTD.Attribute) i.next();
+                    String aName = attr.getName();
+                    if (aName.equals(prefix) ||
+                            (!existingAttrsNames.contains(isXHtml ? aName : aName.toUpperCase()) &&
+                            !existingAttrsNames.contains(isXHtml ? aName : aName.toLowerCase(Locale.ENGLISH))) || (wordAtCursor.equals(aName) && prefix.length() > 0)) {
+                        attribs.add(attr);
+                    }
+                }
+
+                result = translateAttribs(anchor, attribs, tag);
+            }
 
 
         } else if (id == HTMLTokenId.VALUE || id == HTMLTokenId.OPERATOR || id == HTMLTokenId.WS) {
@@ -274,7 +324,7 @@ public class HtmlCompletionQuery extends UserTask {
                     return null;
                 }
 
-                result = new ArrayList<HtmlCompletionItem>();
+                result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
                     anchor = offset;
@@ -311,8 +361,10 @@ public class HtmlCompletionQuery extends UserTask {
         }
 
         return result == null ? null : new CompletionResult(result, anchor);
- 
+
     }
+
+    
 
     private boolean usesLowerCase(HtmlParserResult result, int astOffset) {
         //find first open tag for the given offset and check its name case
@@ -320,42 +372,38 @@ public class HtmlCompletionQuery extends UserTask {
         return node != null ? Character.isLowerCase(node.name().charAt(0)) : true;
     }
 
-    private List<HtmlCompletionItem> addEndTag(String tagName, String preText, int offset) {
+    private List<CompletionItem> addEndTag(String tagName, String preText, int offset) {
         int commonLength = getLastCommonCharIndex("</" + tagName + ">", isXHtml ? preText.trim() : preText.toUpperCase().trim()); //NOI18N
         if (commonLength == -1) {
             commonLength = 0;
         }
         if (commonLength == preText.trim().length()) {
             tagName = isXHtml ? tagName : (lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName);
-            return Collections.singletonList(HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
+            return Collections.singletonList((CompletionItem) HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
         }
         return null;
     }
 
-//    public List getAutocompletedEndTag(Document doc, int offset, DTD dtd) {
-//        List l = new ArrayList();
-//        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-//        try {
-//            SyntaxElement elem = sup.getElementChain(offset - 1);
-//            if (elem != null && elem.getType() == SyntaxElement.TYPE_TAG) {
-//                String tagName = ((SyntaxElement.Named) elem).getName();
-//                //check if the tag has required endtag
-//                Element dtdElem = dtd.getElement(tagName);
-//                if (!((SyntaxElement.Tag) elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
-//                    if (dtdElem != null) {
-//                        //change case
-//                        tagName = lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName.toUpperCase(Locale.ENGLISH);
-//                    }
-//
-//                    CompletionItem eti = HtmlCompletionItem.createAutocompleteEndTag(tagName, offset);
-//                    l.add(eti);
-//                }
-//            }
-//        } catch (BadLocationException e) {
-//            //just ignore
-//        }
-//        return l;
-//    }
+    public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset) {
+        //check for open tags only
+        //the test node.endOffset() == astOffset is required since the given node
+        //is the most leaf OPEN TAG node for the position. But if there is some
+        //unresolved (no-DTD) node at the position it would autocomplete the open
+        //tag: <div> <bla>| + ACC would complete </div>
+        if (node.type() == AstNode.NodeType.OPEN_TAG && node.endOffset() == astOffset) {
+            //I do not check if the tag is closed already since
+            //when more tags of the same type are nested,
+            //the matches can be created so the current node
+            //appear to be matched even if the user just typed it
+
+            //test if the tag is an empty tag <div/> and whether the open tag has forbidden end tag
+            if (!node.isEmpty() && !AstNodeUtils.hasForbiddenEndTag(node)) {
+                return Collections.singletonList((CompletionItem) HtmlCompletionItem.createAutocompleteEndTag(node.name(), documentOffset));
+            }
+        }
+        return Collections.emptyList();
+    }
+
     private int getLastCommonCharIndex(String base, String pattern) {
         int i = 0;
         for (; i < base.length() && i < pattern.length(); i++) {
@@ -367,7 +415,7 @@ public class HtmlCompletionQuery extends UserTask {
         return i;
     }
 
-    private List<HtmlCompletionItem> translateCharRefs(int offset, List refs) {
+    private List<CompletionItem> translateCharRefs(int offset, List refs) {
         List result = new ArrayList(refs.size());
         String name;
         for (Iterator i = refs.iterator(); i.hasNext();) {
@@ -378,8 +426,8 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
-    private List<HtmlCompletionItem> getPossibleEndTags(AstNode leaf, int offset, String prefix) {
-        List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
+    private List<CompletionItem> getPossibleEndTags(AstNode leaf, int offset, String prefix) {
+        List<CompletionItem> items = new ArrayList<CompletionItem>();
 
         int order = 0;
         for (;;) {
@@ -387,8 +435,8 @@ public class HtmlCompletionQuery extends UserTask {
                 break;
             }
             //if dtd element and doesn't have forbidden end tag
-            //leaf.getDTDElement() == null may happen for text ast node elements for example
-            if (leaf.getDTDElement() != null && !AstNodeUtils.hasForbiddenEndTag(leaf)) {
+            if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf)) &&
+                    leaf.type() == AstNode.NodeType.OPEN_TAG) {
                 String tagName = leaf.name();
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
@@ -427,8 +475,8 @@ public class HtmlCompletionQuery extends UserTask {
         return filtered;
     }
 
-    List<HtmlCompletionItem> translateTags(int offset, Collection<DTD.Element> possible, Collection<DTD.Element> all) {
-        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(all.size());
+    List<CompletionItem> translateTags(int offset, Collection<DTD.Element> possible, Collection<DTD.Element> all) {
+        List<CompletionItem> result = new ArrayList<CompletionItem>(all.size());
         all.removeAll(possible); //remove possible elements
         for (DTD.Element e : possible) {
             result.add(item4Element(e, offset, true));
@@ -445,8 +493,8 @@ public class HtmlCompletionQuery extends UserTask {
         return HtmlCompletionItem.createTag(name, offset, name, possible);
     }
 
-    List<HtmlCompletionItem> translateAttribs(int offset, List<DTD.Attribute> attribs, DTD.Element tag) {
-        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(attribs.size());
+    List<CompletionItem> translateAttribs(int offset, List<DTD.Attribute> attribs, DTD.Element tag) {
+        List<CompletionItem> result = new ArrayList<CompletionItem>(attribs.size());
         String tagName = tag.getName() + "#"; // NOI18N
         for (DTD.Attribute attrib : attribs) {
             String name = attrib.getName();
@@ -483,10 +531,10 @@ public class HtmlCompletionQuery extends UserTask {
 
     public static class CompletionResult {
 
-        private Collection<HtmlCompletionItem> items;
+        private Collection<CompletionItem> items;
         int anchor;
 
-        CompletionResult(Collection<HtmlCompletionItem> items, int anchor) {
+        CompletionResult(Collection<CompletionItem> items, int anchor) {
             this.items = items;
             this.anchor = anchor;
         }
@@ -495,7 +543,7 @@ public class HtmlCompletionQuery extends UserTask {
             return anchor;
         }
 
-        public Collection<HtmlCompletionItem> getItems() {
+        public Collection<CompletionItem> getItems() {
             return items;
         }
     }

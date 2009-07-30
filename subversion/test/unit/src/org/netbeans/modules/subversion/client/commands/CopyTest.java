@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -60,11 +60,44 @@ public class CopyTest extends AbstractCommandTest {
     }
     
     public void testCopyURL2URL() throws Exception {                                        
-        File file = createFile("file");
+        testCopyURL2URL("file", "filecopy");
+    }
+
+    public void testCopyURL2URLWithAtSign() throws Exception {
+        testCopyURL2URL("file1", "@filecopy");
+        testCopyURL2URL("file2", "file@copy");
+        testCopyURL2URL("file3", "filecopy@");
+    }
+
+    public void testCopyURLWithAtSign2URL() throws Exception {
+        testCopyURL2URL("@file", "filecopy1");
+        testCopyURL2URL("fi@le", "filecopy2");
+        testCopyURL2URL("file@", "filecopy3");
+    }
+
+    public void testCopyURL2URLInDir() throws Exception {
+        testCopyURL2URL("folder/file", "filecopy");
+    }
+
+    public void testCopyURL2URLWithAtSignInDir() throws Exception {
+        testCopyURL2URL("folder/file1", "@filecopy");
+        testCopyURL2URL("folder/file2", "file@copy");
+        testCopyURL2URL("folder/file3", "filecopy@");
+    }
+
+    public void testCopyURLWithAtSign2URLInDir() throws Exception {
+        testCopyURL2URL("folder/@file", "filecopy1");
+        testCopyURL2URL("folder/fi@le", "filecopy2");
+        testCopyURL2URL("folder/file@", "filecopy3");
+    }
+
+    private void testCopyURL2URL(String srcPath, String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         add(file);
         commit(file);
                 
-        File filecopy = createFile("filecopy");
+        File filecopy = createFile(renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), getFileUrl(filecopy), "copy", SVNRevision.HEAD);
@@ -75,9 +108,27 @@ public class CopyTest extends AbstractCommandTest {
         
         assertNotifiedFiles(new File[] {});
     }        
-    
+
     public void testCopyURL2URLPrevRevision() throws Exception {                                        
-        File file = createFile("file");
+        testCopyURL2URLPrevRevision("file", "filecopy");
+    }
+
+    public void testCopyURL2URLWithAtSignPrevRevision() throws Exception {
+        testCopyURL2URLPrevRevision("file1", "@filecopy");
+        testCopyURL2URLPrevRevision("file2", "file@copy");
+        testCopyURL2URLPrevRevision("file3", "filecopy@");
+    }
+
+    public void testCopyURLWithAtSign2URLPrevRevision() throws Exception {
+        testCopyURL2URLPrevRevision("@file", "filecopy1");
+        testCopyURL2URLPrevRevision("fi@le", "filecopy2");
+        testCopyURL2URLPrevRevision("file@", "filecopy3");
+    }
+
+    private void testCopyURL2URLPrevRevision(String srcPath,
+                                             String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         write(file, 1);
         add(file);
         commit(file);
@@ -85,7 +136,7 @@ public class CopyTest extends AbstractCommandTest {
         write(file, 2);
         commit(getWC());        
         
-        File filecopy = createFile("filecopy");
+        File filecopy = createFile(renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), getFileUrl(filecopy), "copy", prevRev);
@@ -98,12 +149,45 @@ public class CopyTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});
     }        
 
-    public void testCopyFile2URL() throws Exception {                                        
-        File file = createFile("file");
+    public void testCopyFile2URL() throws Exception {
+        testCopyFile2URL("file", "filecopy");
+    }
+
+    public void testCopyFile2URLInDir() throws Exception {
+        testCopyFile2URL("folder/file", "filecopy");
+    }
+
+    public void testCopyFileWithAtSign2URL() throws Exception {
+        testCopyFile2URL("@file", "filecopy1");
+        testCopyFile2URL("fi@le", "filecopy2");
+        testCopyFile2URL("file@", "filecopy3");
+    }
+
+    public void testCopyFile2URLWithAtSign() throws Exception {
+        testCopyFile2URL("file1", "@filecopy");
+        testCopyFile2URL("file2", "file@copy");
+        testCopyFile2URL("file3", "filecopy@");
+    }
+
+    public void testCopyFileWithAtSign2URLInDir() throws Exception {
+        testCopyFile2URL("folder/@file", "filecopy1");
+        testCopyFile2URL("folder/fi@le", "filecopy2");
+        testCopyFile2URL("folder/file@", "filecopy3");
+    }
+
+    public void testCopyFile2URLWithAtSignInDir() throws Exception {
+        testCopyFile2URL("folder/file1", "@filecopy");
+        testCopyFile2URL("folder/file2", "file@copy");
+        testCopyFile2URL("folder/file3", "filecopy@");
+    }
+
+    public void testCopyFile2URL(String srcPath, String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         add(file);
         commit(file);
                 
-        File filecopy = createFile("filecopy");
+        File filecopy = createFile(renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.copy(file, getFileUrl(filecopy), "copy");
@@ -114,12 +198,45 @@ public class CopyTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});
     }        
     
-    public void testCopyURL2File() throws Exception {                                        
-        File file = createFile("file");
+    public void testCopyURL2File() throws Exception {
+        testCopyURL2File("file", "filecopy");
+    }
+
+    public void testCopyURL2FileInDir() throws Exception {
+        testCopyURL2File("folder/file", "filecopy");
+    }
+
+    public void testCopyURLWithAtSign2File() throws Exception {
+        testCopyURL2File("@file", "filecopy1");
+        testCopyURL2File("fi@le", "filecopy2");
+        testCopyURL2File("file@", "filecopy3");
+    }
+
+    public void testCopyURL2FileWithAtSign() throws Exception {
+        testCopyURL2File("file1", "@filecopy");
+        testCopyURL2File("file2", "file@copy");
+        testCopyURL2File("file3", "filecopy@");
+    }
+
+    public void testCopyURLWithAtSign2FileInDir() throws Exception {
+        testCopyURL2File("folder/@file", "filecopy1");
+        testCopyURL2File("folder/fi@le", "filecopy2");
+        testCopyURL2File("folder/file@", "filecopy3");
+    }
+
+    public void testCopyURL2FileWithAtSignInDir() throws Exception {
+        testCopyURL2File("folder/file1", "@filecopy");
+        testCopyURL2File("folder/file2", "file@copy");
+        testCopyURL2File("folder/file3", "filecopy@");
+    }
+
+    private void testCopyURL2File(String srcPath, String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         add(file);
         commit(file);
                 
-        File filecopy = createFile("filecopy");
+        File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
         
         ISVNClientAdapter c = getNbClient();
@@ -130,8 +247,26 @@ public class CopyTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {filecopy});        
     }        
     
-    public void testCopyURL2FilePrevRevision() throws Exception {                                        
-        File file = createFile("file");
+    public void testCopyURL2FilePrevRevision() throws Exception {
+        testCopyURL2FilePrevRevision("file", "filecopy");
+    }
+
+    public void testCopyURL2FileWithAtSignPrevRevision() throws Exception {
+        testCopyURL2FilePrevRevision("file1", "@filecopy");
+        testCopyURL2FilePrevRevision("file2", "file@copy");
+        testCopyURL2FilePrevRevision("file3", "filecopy@");
+    }
+
+    public void testCopyURLWithAtSign2FilePrevRevision() throws Exception {
+        testCopyURL2FilePrevRevision("@file", "filecopy1");
+        testCopyURL2FilePrevRevision("fi@le", "filecopy2");
+        testCopyURL2FilePrevRevision("file@", "filecopy3");
+    }
+
+    private void testCopyURL2FilePrevRevision(String srcPath,
+                                              String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         write(file, 1);
         add(file);
         commit(file);
@@ -139,7 +274,7 @@ public class CopyTest extends AbstractCommandTest {
         write(file, 2);
         commit(getWC());        
                         
-        File filecopy = createFile("filecopy");
+        File filecopy = createFile(renameFile(srcPath, targetFileName));
         filecopy.delete();
         
         ISVNClientAdapter c = getNbClient();

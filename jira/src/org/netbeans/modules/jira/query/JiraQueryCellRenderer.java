@@ -45,7 +45,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private final JiraQuery query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
-    private static Icon hookIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/hook.png"));    // NOI18N
+    private static Icon subtaskIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/subtask.png"));    // NOI18N
 
     private final IssueTable issueTable;
     private boolean resetRowHeight;
@@ -69,9 +69,10 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
                 renderer.setIcon(icon);
                 return renderer;
-            } else {
-                renderer.setIcon(null);
             }
+//            else {
+//                renderer.setIcon(null);
+//            }
             return renderer;
         }
 
@@ -82,7 +83,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         TableCellStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
-            
+            panel.setFontSize(table.getFont(), panel.north);
             if(query.isSaved()) {
                 style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
             } else {
@@ -110,6 +111,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             return panel;
         } else if(issue.isSubtask() ) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
+            panel.setFontSize(table.getFont(), panel.south);
 
             if(query.isSaved()) {
                 style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
@@ -201,7 +203,17 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             add(south, BorderLayout.SOUTH);
             north.setFont(defaultIssueRenderer.getFont());
             south.setFont(defaultIssueRenderer.getFont());
-            south.setIcon(hookIcon);
+            south.setIcon(subtaskIcon);
+        }
+        void setFontSize(Font defaultFont, RendererLabel defaultLabel) {
+            Font smalerFont = new Font(defaultFont.getName(), defaultFont.getStyle(), (int) (defaultFont.getSize() * .85));
+            if(defaultLabel == north) {
+                north.setFont(defaultFont);
+                south.setFont(smalerFont);
+            } else {
+                north.setFont(smalerFont);
+                south.setFont(defaultFont);
+            }
         }
     }
 

@@ -122,6 +122,8 @@ public class Reformatter implements ReformatTask {
                         }
                     });
                 }
+                if (controller == null)
+                    return;
                 controller.toPhase(JavaSource.Phase.PARSED);
             } catch (Exception ex) {
                 controller = null;

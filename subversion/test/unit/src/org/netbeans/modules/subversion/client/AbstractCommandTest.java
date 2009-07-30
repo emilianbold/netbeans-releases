@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client;
@@ -49,10 +49,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.subversion.AbstractSvnTest;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.FileUtils;
@@ -62,8 +70,10 @@ import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 //import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
@@ -176,38 +186,73 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
     }
         
     protected void assertNotifiedFiles(File... files) {
-        Set<File> notifiedFiles = fileNotifyListener.getFiles();
+
+        Collection<File> sortedExpectedFiles = relativizeAndSortFiles(files);
+        Collection<File> sortedNotifierFiles = relativizeAndSortFiles(fileNotifyListener.getFiles());
         
-        if(files.length != notifiedFiles.size()) {
-            String prefix = getWC().getAbsolutePath();
-            StringBuffer sb = new StringBuffer();
-            sb.append("Expected files: \n");
-            for (File file : files) {
-                sb.append("\t");
-                if (prefix.equals(file.getAbsolutePath())) {
-                    sb.append(".");
-                } else {
-                    sb.append(file.getAbsolutePath().substring(prefix.length() + 1));
-                }
-                sb.append("\n");
-            }
-            sb.append("Notified files: \n");
-            for (File file : notifiedFiles) {
-                sb.append("\t");
-                if (prefix.equals(file.getAbsolutePath())) {
-                    sb.append(".");
-                } else {
-                    sb.append(file.getAbsolutePath().substring(prefix.length() + 1));
-                }
-                sb.append("\n");
-            }    
-            String l = sb.toString();
-            Subversion.LOG.warning("assertNotifiedFiles: \n" + l);
-            fail(l);
+        if (!sortedExpectedFiles.equals(sortedNotifierFiles)) {
+            String expectedNames = makeFilesList(sortedExpectedFiles);
+            String actualNames   = makeFilesList(sortedNotifierFiles);
+
+            System.err.println("Expected files: " + expectedNames);
+            System.err.println("Notifier files: " + actualNames);
+
+            String failureMsg = format("File lists do not match:", expectedNames, actualNames);
+            Subversion.LOG.warning("assertNotifiedFiles: " + failureMsg);
+            fail(failureMsg);
         }
-        for (File f : files) {
-            if(!notifiedFiles.contains(f)) fail("missing notification for file " + f);   
-        }        
+    }
+
+    private Collection<File> relativizeAndSortFiles(File[] files) {
+        return relativizeAndSortFiles(Arrays.asList(files));
+    }
+
+    private Collection<File> relativizeAndSortFiles(Collection<File> files) {
+        if (files.isEmpty()) {
+            return Collections.<File>emptyList();
+        }
+
+        final File wc = getWC();
+
+        List<File> result = new ArrayList<File>(files.size());
+        for (File file : files) {
+            result.add(getRelativePath(wc, file));
+        }
+        return sortFiles(result);
+    }
+
+    private static Collection<File> sortFiles(Collection<File> files) {
+
+        final class FileComparator implements Comparator<File> {
+            public int compare(File f1, File f2) {
+                return f1.compareTo(f2);
+            }
+        }
+
+        if (files.isEmpty()) {
+            return Collections.<File>emptyList();
+        }
+        if (files.size() == 1) {
+            return Collections.singletonList(files.iterator().next());
+        }
+
+        SortedSet<File> sortedFiles = new TreeSet<File>(new FileComparator());
+        sortedFiles.addAll(files);
+        return sortedFiles;
+    }
+
+    private static String makeFilesList(Collection<File> files) {
+        if (files.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder buf = new StringBuilder(120);
+        String separator = "";
+        for (File file : files) {
+            buf.append(separator).append(file.getPath());
+            separator = ", ";
+        }
+        return buf.toString();
     }
 
     protected class FileNotifyListener implements ISVNNotifyListener {
@@ -250,8 +295,85 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
         return file;
     }
 
-    protected ISVNClientAdapter getNbClient() throws Exception {        
-        ISVNClientAdapter c = SvnClientTestFactory.getInstance().createSvnClient();
+    protected static String renameFile(String path, String requestedName) {
+        File currentFile = new File(path);
+        File parentDir = currentFile.getParentFile();
+        File renamedFile = (parentDir == null) ? new File(requestedName)
+                                               : new File(parentDir, requestedName);
+        return renamedFile.getPath();
+    }
+
+    protected void createAndAddParentFolders(String path) throws Exception {
+        checkIsRelativePath(path);
+        File parentFolder = new File(path).getParentFile();
+        if (parentFolder != null) {
+            createAndAddFolder(parentFolder);
+        }
+    }
+
+    private void createAndAddFolder(File folder) throws Exception {
+        File parent = folder.getParentFile();
+        if (parent != null) {
+            createAndAddFolder(parent);
+        }
+
+        File absFolder = createFolder(folder.getPath());
+
+        if (!isVersioned(absFolder)) {
+            getNbClient().addDirectory(absFolder, false);
+        }
+    }
+
+    protected void createAndCommitParentFolders(String path) throws Exception {
+        checkIsRelativePath(path);
+        File parentFolder = new File(path).getParentFile();
+        if (parentFolder != null) {
+            createAndCommitFolder(parentFolder);
+        }
+    }
+
+    private void createAndCommitFolder(File folder) throws Exception {
+        File parent = folder.getParentFile();
+        if (parent != null) {
+            createAndCommitFolder(parent);
+        }
+
+        File absFolder = createFolder(folder.getPath());
+
+        if (!isVersioned(absFolder)) {
+            getReferenceClient().addDirectory(absFolder, false);
+        }
+
+        if (!isCommitted(absFolder)) {
+            getReferenceClient().commit(new File[] {absFolder},
+                                 "added directory " + absFolder.getPath(),
+                                 false);
+        }
+    }
+
+    private boolean isVersioned(File file) throws Exception {
+        ISVNStatus[] statusValues = getFullWorkingClient().getStatus(new File[]{file});
+        return !((statusValues.length == 1)
+               && (statusValues[0].getTextStatus() == SVNStatusKind.UNVERSIONED));
+    }
+
+    private boolean isCommitted(File file) throws Exception {
+        ISVNStatus[] statusValues = getFullWorkingClient().getStatus(new File[]{file});
+        if (statusValues.length == 1) {
+            if (statusValues[0].getTextStatus() == SVNStatusKind.ADDED) {
+                return false;
+            }
+            if (statusValues[0].getTextStatus() == SVNStatusKind.NORMAL) {
+                return true;
+            }
+        }
+
+        throw new IllegalStateException("Unexpected state of file " + file
+                                        + ": " + statusValues);
+    }
+
+    protected SvnClient getNbClient() throws Exception {
+        SvnClient c = SvnClientTestFactory.getInstance().createSvnClient();
         fileNotifyListener = new FileNotifyListener();
         c.addNotifyListener(fileNotifyListener);
         return c;

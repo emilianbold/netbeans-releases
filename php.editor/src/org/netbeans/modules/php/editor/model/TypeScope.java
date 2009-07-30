@@ -45,6 +45,13 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 /**
  * @author Radek Matous
  */
+/*
+ * TODO:
+ * Namespaces must be involved in:
+ * TypeScope: Collection<? extends InterfaceScope> getSuperInterfaces();
+ * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
+ * ClassScope: Collection<? extends ClassScope> getSuperClasses();
+ */
 public interface TypeScope extends Scope {
     PhpModifiers getPhpModifiers();
     /**
@@ -63,6 +70,7 @@ public interface TypeScope extends Scope {
     Collection<? extends ClassConstantElement> getDeclaredConstants();
     Collection<? extends ClassConstantElement> getInheritedConstants();
     Collection<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends String> getSuperInterfaceNames();
 
     Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
     Collection<? extends MethodScope> findInheritedMethods(final String queryName);

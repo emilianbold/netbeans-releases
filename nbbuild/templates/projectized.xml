@@ -54,6 +54,16 @@ made subject to such option by the copyright holder.
             <isset property="proxy.port"/>
         </and>
     </condition>
+
+    <property name="ant.file.1" location="${ant.file}"/>
+    <property name="ant.file.2" location="${nb_all}/${ant.project.name}/build.xml"/>
+    <fail message="Please keep the Ant project name the same as the project's directory name: ${ant.file.1} vs. ${ant.file.2}">
+        <condition>
+            <not>
+                <equals arg1="${ant.file.1}" arg2="${ant.file.2}"/>
+            </not>
+        </condition>
+    </fail>
     
     <target name="-init-proxy" if="proxy.host+port">
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
@@ -181,6 +191,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             </and>
         </condition>
         <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
+            <condition>
+                <or>
+                    <available file="nbproject/build-impl.xml"/>
+                    <available file="nbproject/genfiles.properties"/>
+                    <available file="nbproject/platform.properties"/>
+                    <available file="nbproject/suite.properties"/>
+                </or>
+            </condition>
+        </fail>
     </target>
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
@@ -659,7 +679,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
               output="xml"
               outputFile="${report.file}"
               failOnError="true"
-              jvmargs="-Xmx256m">
+              jvmargs="-Xmx800m">
             <auxClasspath path="${findbugs.class.path}" />
             <sourcePath path="${src.dir}" />
             <class location="${build.classes.dir}" />

@@ -1029,10 +1029,18 @@ exists or setup the property manually. For example like this:
             </xsl:comment>
             
             <target name="run">
-                <xsl:attribute name="depends">dist,run-deploy,run-tool,run-jar,run-display-browser</xsl:attribute>
+                <xsl:attribute name="depends">dist,run-deploy,run-tool2,old-run-jar,run-display-browser</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
             </target>
             
+            <target name="old-run-jar">
+                <xsl:attribute name="depends">dist,run-deploy</xsl:attribute>
+                <xsl:attribute name="description">Run a main class.</xsl:attribute>
+                <xsl:attribute name="if">j2ee.appclient.tool.args</xsl:attribute>
+                <antcall target="run-tool"/>
+                <antcall target="run-jar"/>
+            </target>
+
             <target name="run-jar">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
@@ -1071,6 +1079,28 @@ exists or setup the property manually. For example like this:
                 </java>
             </target>
             
+            <target name="run-tool2">
+                <xsl:attribute name="depends">init,run-deploy,-as-retrieve-option-workaround</xsl:attribute>
+                <xsl:attribute name="description">Run a main class.</xsl:attribute>
+                <xsl:attribute name="unless">j2ee.appclient.tool.args</xsl:attribute>
+                <mkdir dir="${{dist.dir}}/{$name}Client"/>
+                <copy file="${{dist.jar}}" todir="${{dist.dir}}/{$name}Client"/>
+                <java fork="true" jar="${{client.jar}}">
+                    <xsl:attribute name="dir">${work.dir}</xsl:attribute>
+                    <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}}"/>
+                    <jvmarg line="${{run.jvmargs.param}}"/>
+                    <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->
+                    <arg line="${{application.args.param}}"/>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                </java>
+            </target>
+
             <target name="run-single">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>

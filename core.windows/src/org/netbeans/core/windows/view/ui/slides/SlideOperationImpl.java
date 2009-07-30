@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -88,7 +89,7 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
     
     SlideOperationImpl(int type, Component component, String side, 
          SlidingFx effect, boolean requestsActivation) {
-        this.type = type; 
+        this.type = type;
         this.component = component;
         this.effect = effect;
         this.requestsActivation = requestsActivation;
@@ -130,7 +131,9 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
                 break;
             case SLIDE_RESIZE:
                 component.setBounds(finishBounds);
-                ((JComponent)component).revalidate();
+                component.doLayout();
+                JComponent c = (JComponent) ((Container)component).getComponent(0);
+                c.revalidate();
                 break;
         }
     }

@@ -305,13 +305,15 @@ public final class ParserQueue {
     private static ParserQueue instance = new ParserQueue(false);
     private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
     private volatile State state;
-    private final Object suspendLock = new Object();
+    private static final class SuspendLock {}
+    private final Object suspendLock = new SuspendLock();
 
     // do not need UIDs for ProjectBase in parsing data collection
     private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
     private final AtomicInteger serial = new AtomicInteger(0);
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
 
@@ -789,6 +791,8 @@ public final class ParserQueue {
         }
     }
 
+    private static final class ProjectWaitLock {}
+
     /*package*/ void waitEmpty(ProjectBase project) {
         if (TraceFlags.TRACE_CLOSE_PROJECT) {
             System.err.println("Waiting Empty Project " + project.getName()); // NOI18N
@@ -801,7 +805,7 @@ public final class ParserQueue {
             synchronized (projectLocks) {
                 prjWaitEmptyLock = projectLocks.get(project);
                 if (prjWaitEmptyLock == null) {
-                    prjWaitEmptyLock = new Object();
+                    prjWaitEmptyLock = new ProjectWaitLock();
                     projectLocks.put(project, prjWaitEmptyLock);
                 }
             }

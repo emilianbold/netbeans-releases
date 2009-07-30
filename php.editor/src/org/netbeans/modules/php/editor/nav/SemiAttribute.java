@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -253,7 +254,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        Identifier className = (node.getClassName() != null) ? CodeUtils.extractIdentifier(node.getClassName()) : null;
+        Identifier className = (node.getClassName() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getClassName()) : null;
         AttributedElement ae = null;
         if (className != null) {
             String name = className.getName();
@@ -296,14 +297,17 @@ public class SemiAttribute extends DefaultVisitor {
             }
         }
         Identifier parameterType = (node.getParameterType() != null) ? 
-            CodeUtils.extractIdentifier(node.getParameterType()) : null;
-        String name = parameterType.getName();
-        if (name != null) {
-            Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
-            if (!namedGlobalElements.isEmpty()) {
-                node2Element.put(parameterType, lookup(name, Kind.CLASS));
-            } else {
-                node2Element.put(parameterType, lookup(name, Kind.IFACE));
+            CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
+
+        if (parameterType != null){
+            String name = parameterType.getName();
+            if (name != null) {
+                Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
+                if (!namedGlobalElements.isEmpty()) {
+                    node2Element.put(parameterType, lookup(name, Kind.CLASS));
+                } else {
+                    node2Element.put(parameterType, lookup(name, Kind.IFACE));
+                }
             }
         }
         
@@ -356,7 +360,7 @@ public class SemiAttribute extends DefaultVisitor {
             } else {
                 if (par instanceof StaticMethodInvocation) {
                     StaticMethodInvocation smi = (StaticMethodInvocation) par;
-                    final String clsName = CodeUtils.extractClassName(smi);
+                    final String clsName = CodeUtils.extractUnqualifiedClassName(smi);
                     Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,clsName);
                     if (!nn.isEmpty()) {
                         String contextClassName = clsName;
@@ -414,7 +418,7 @@ public class SemiAttribute extends DefaultVisitor {
         node2Element.put(node, ce);
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractUnqualifiedName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -440,13 +444,13 @@ public class SemiAttribute extends DefaultVisitor {
 
         node2Element.put(node, ce);
         Identifier superClsName = (node.getSuperClass() != null) ?
-            CodeUtils.extractIdentifier(node.getSuperClass()) : null;
+            CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
         if (superClsName != null) {
             ce.superClass = (ClassElement) lookup(superClsName.getName(), Kind.CLASS);
         }
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractUnqualifiedName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -534,7 +538,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(StaticConstantAccess node) {
-        String clsName = CodeUtils.extractClassName(node);
+        String clsName = CodeUtils.extractUnqualifiedClassName(node);
         if (clsName.equals("self")) {//NOI18N
             ClassElement c = getCurrentClassElement();
             if (c != null) {
@@ -555,7 +559,7 @@ public class SemiAttribute extends DefaultVisitor {
             for (AttributedElement ell : nn) {
                 ClassElement ce = (ClassElement)ell;
                 if (ce != null && ce.getName().equals(clsName)) {
-                    String name = CodeUtils.extractClassName(node);
+                    String name = CodeUtils.extractUnqualifiedClassName(node);
                     AttributedElement thisEl = ce.lookup(name, Kind.CONST);
                     node2Element.put(node.getClassName(), ce);
                     node2Element.put(node, thisEl);
@@ -571,9 +575,9 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(StaticFieldAccess node) {
         Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,
-                CodeUtils.extractClassName(node));
+                CodeUtils.extractUnqualifiedClassName(node));
         if (!nn.isEmpty()) {
-            String contextClassName = CodeUtils.extractClassName(node);
+            String contextClassName = CodeUtils.extractUnqualifiedClassName(node);
             if ("parent".equals(contextClassName)) {
                 contextClassName = getContextSuperClassName();
             } else if ("self".equals(contextClassName)) {
@@ -793,7 +797,7 @@ public class SemiAttribute extends DefaultVisitor {
                 ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
                 node2Element.put(node, ce);
                 Identifier superClsName = (node.getSuperClass() != null) ?
-                    CodeUtils.extractIdentifier(node.getSuperClass()) : null;
+                    CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
 
                 if (superClsName != null) {
                     ce.superClass = (ClassElement) lookup(superClsName.getName(), Kind.CLASS);
@@ -1161,20 +1165,23 @@ public class SemiAttribute extends DefaultVisitor {
             }
             PHPIndex index = PHPIndex.get(info);
             int attrs = PHPIndex.ANY_ATTR;
-
             switch(k) {
                 case CONST:
-                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
+                    
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
+                    IndexedConstant m = classMember.getMember();
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.CONST, m);
                 } break;
                 case FUNC:
-                for (IndexedFunction m : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                    IndexedFunction m = classMember.getMember();
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
+                    IndexedConstant m = classMember.getMember();
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);

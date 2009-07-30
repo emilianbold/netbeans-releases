@@ -643,4 +643,60 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    print *, example\n" +
                 "end");
     }
+
+    public void testModuleInterface() {
+        setLoadDocumentText(
+                "module QUADRUPLE_PRECISION\n" +
+                "interface operator (+)\n" +
+                "  module procedure LONGADD\n" +
+                "  module procedure QC_ADD\n" +
+                "end interface\n" +
+                "end module QUADRUPLE_PRECISION"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect function indent (free form)",
+                "module QUADRUPLE_PRECISION\n" +
+                "    interface operator (+)\n" +
+                "        module procedure LONGADD\n" +
+                "        module procedure QC_ADD\n" +
+                "    end interface\n" +
+                "end module QUADRUPLE_PRECISION"
+                );
+    }
+    public void testColonInParen() {
+        setLoadDocumentText(
+                "do I = 1, 15\n" +
+                "  if (STR2(I:I) /= \" \") then\n" +
+                "    exit\n" +
+                "  end if\n" +
+                "end do");
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "do I = 1, 15\n" +
+                "    if (STR2(I:I) /= \" \") then\n" +
+                "        exit\n" +
+                "    end if\n" +
+                "end do");
+    }
+
+    public void testStatementContinuation() {
+        setLoadDocumentText(
+                "pure function big_plus_big(x, y) result(bb)\n" +
+                "  if (x % digit(nr_of_digits) /= 0 .or. & \n" +
+                "  y % digit(nr_of_digits) /= 0) then\n" +
+                "  return\n" +
+                "end if\n" +
+                "end function big_plus_big");
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "pure function big_plus_big(x, y) result(bb)\n" +
+                "    if (x % digit(nr_of_digits) /= 0 .or. &\n" +
+                "        y % digit(nr_of_digits) /= 0) then\n" +
+                "        return\n" +
+                "    end if\n" +
+                "end function big_plus_big");
+    }
 }
