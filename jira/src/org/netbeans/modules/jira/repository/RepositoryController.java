@@ -295,6 +295,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         task[0] = rp.create(new Runnable() {
             public void run() {
                 handle.start();
+                panel.connectionLabel.setVisible(false);
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
                 panel.enableFields(false);
@@ -309,7 +310,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             getHttpPassword());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
-                    repository.getExecutor().execute(cmd, false);
+                    repository.getExecutor().execute(cmd, false, false, true);
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
                             Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
@@ -319,6 +320,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                         }
                         validateError = true;
                         fireDataChanged();
+                    } else {
+                        panel.connectionLabel.setVisible(true);
                     }
                 } finally {
                     panel.enableFields(true);
