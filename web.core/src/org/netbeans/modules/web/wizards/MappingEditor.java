@@ -75,17 +75,17 @@ public class MappingEditor extends JPanel implements ActionListener {
     private JCheckBox[] cb;
     private Dialog dialog;
     private DialogDescriptor editDialog;
-    private final static String URL = "URL";
-    private final static String SERVLET = "SERVLET";
-    private final static String SELECT_SERVLET = "SELECT";
-    private static FilterMappingData fmd;
-    private static boolean haveNames = true;
-    private static boolean OK = false;
+    private static final String URL = "URL";
+    private static final String SERVLET = "SERVLET";
+    private static final String SELECT_SERVLET = "SELECT";
+    private FilterMappingData fmd;
+    private boolean haveNames = true;
+    private boolean OK = false;
     private static final long serialVersionUID = 4947167720581796971L;
 
     /**  Creates new form MappingEditor */
     public MappingEditor(FilterMappingData fmd, String[] servletNames) {
-        MappingEditor.fmd = fmd;
+        this.fmd = fmd;
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MappingEditor.class, "ACSD_filter_mappings_edit"));
         initComponents(servletNames);
     }
