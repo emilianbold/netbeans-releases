@@ -2022,14 +2022,7 @@ public class Reformatter implements ReformatTask {
         public Boolean visitBinary(BinaryTree node, Void p) {
             int alignIndent = cs.alignMultilineBinaryOp() ? col : -1;
             scan(node.getLeftOperand(), p);
-            spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
-            if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
-                col += tokens.token().length();
-                lastBlankLines = -1;
-                lastBlankLinesTokenIndex = -1;
-                tokens.moveNext();
-            }
-            wrapTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
+            wrapOperatorAndTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
             return true;
         }
 
@@ -2037,12 +2030,8 @@ public class Reformatter implements ReformatTask {
         public Boolean visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             int alignIndent = cs.alignMultilineTernaryOp() ? col : -1;
             scan(node.getCondition(), p);
-            wrapToken(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, QUESTION);
-            spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
-            scan(node.getTrueExpression(), p);
-            wrapToken(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, COLON);
-            spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
-            scan(node.getFalseExpression(), p);
+            wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+            wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
             return true;
         }
 
@@ -2773,6 +2762,83 @@ public class Reformatter implements ReformatTask {
                     spaces(spacesCnt, true);
                     indent = old;
                     ret = col;
+                    scan(tree, null);
+                    break;
+            }
+            return ret;
+        }
+
+        private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, Tree tree) {
+            int ret = -1;
+            switch (wrapStyle) {
+                case WRAP_ALWAYS:
+                    int old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
+                    newline();
+                    indent = old;
+                    ret = col;
+                    if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                        col += tokens.token().length();
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        tokens.moveNext();
+                    }
+                    spaces(spacesCnt);
+                    scan(tree, null);
+                    break;
+                case WRAP_IF_LONG:
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
+                    spaces(spacesCnt, true);
+                    indent = old;
+                    ret = col;
+                    wrapDepth++;
+                    if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                        col += tokens.token().length();
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        tokens.moveNext();
+                    }
+                    spaces(spacesCnt);
+                    scan(tree, null);
+                    wrapDepth--;
+                    if (col > rightMargin && (wrapDepth == 0 || c <= rightMargin)) {
+                        rollback(index, c, d);
+                        old = indent;
+                        if (alignIndent >= 0)
+                            indent = alignIndent;
+                        newline();
+                        indent = old;
+                        ret = col;
+                        if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                            col += tokens.token().length();
+                            lastBlankLines = -1;
+                            lastBlankLinesTokenIndex = -1;
+                            tokens.moveNext();
+                        }
+                        spaces(spacesCnt);
+                        scan(tree, null);
+                    }
+                    break;
+                case WRAP_NEVER:
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
+                    spaces(spacesCnt, true);
+                    indent = old;
+                    ret = col;
+                    if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                        col += tokens.token().length();
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        tokens.moveNext();
+                    }
+                    spaces(spacesCnt);
                     scan(tree, null);
                     break;
             }
