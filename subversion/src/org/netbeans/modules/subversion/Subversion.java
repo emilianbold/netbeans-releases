@@ -193,8 +193,6 @@ public class Subversion {
                                String username,
                                String password,
                                int handledExceptions) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
@@ -225,8 +223,6 @@ public class Subversion {
                                String username,
                                String password,
                                SvnProgressSupport support) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -290,8 +286,6 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         if(attachListeners) {
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();

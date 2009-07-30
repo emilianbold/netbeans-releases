@@ -187,6 +187,8 @@ public class SvnClientFactory {
     private void setup() {
         try {
             String factoryType = System.getProperty("svnClientAdapterFactory");
+            // ping config file copying
+            SvnConfigFiles.getInstance();
 
             if(factoryType == null ||
                factoryType.trim().equals("") ||
