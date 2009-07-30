@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
@@ -54,6 +55,10 @@ public final class DeadlockVisualizerFactory implements VisualizerFactory<Deadlo
     }
 
     public Visualizer<DeadlockVisualizerConfiguration> create(DeadlockVisualizerConfiguration configuration, VisualizerDataProvider provider) {
-        return new DeadlockVisualizer(configuration, provider);
+        if (provider instanceof ThreadAnalyzerDataProvider) {
+            return new DeadlockVisualizer(configuration, (ThreadAnalyzerDataProvider) provider);
+        } else {
+            return null;
+        }
     }
 }

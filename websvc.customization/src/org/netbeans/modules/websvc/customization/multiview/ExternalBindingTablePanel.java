@@ -84,7 +84,7 @@ import org.openide.util.WeakListeners;
  */
 public class ExternalBindingTablePanel extends DefaultTablePanel{
     private static final String[] columnName = {NbBundle.getMessage(ExternalBindingTablePanel.class,
-            "TITLE_CUSTOMIZATION_FILES")};
+            "LBL_CUSTOMIZATION_FILES")};
     private EBTableModel model;
     private String previousDirectory = "";
     private static final FileFilter XML_FILE_FILTER = new XmlFileFilter();
@@ -97,9 +97,9 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
     public ExternalBindingTablePanel(EBTableModel model, Node node) {
         super(model);
         getTable().getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExternalBindingTablePanel.class,
-            "TITLE_CUSTOMIZATION_FILES"));
+            "LBL_CUSTOMIZATION_FILES"));
         getTable().getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExternalBindingTablePanel.class,
-            "TITLE_CUSTOMIZATION_FILES"));
+            "LBL_CUSTOMIZATION_FILES"));
         this.model = model;
         this.node = node;
         this.editButton.setVisible(false); //can't edit an entry
