@@ -619,6 +619,7 @@ class J2SEActionProvider implements ActionProvider {
                 classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
+                assert files != null : "findTestSources () can't be null: " + project.getTestSourceRoots().getRoots();   //NOI18N
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
