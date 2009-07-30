@@ -90,21 +90,24 @@ public class PredefinedPanel extends javax.swing.JPanel {
         List<String> definesList = compiler.getSystemPreprocessorSymbols();
         Collections.sort(definesList, new Comparator<String>() {
             public int compare(String s1, String s2) {
-                return trim(s1).compareToIgnoreCase(trim(s2));
+                //return trim(s1).compareToIgnoreCase(trim(s2));
+                return s1.compareToIgnoreCase(s2);
             }
-            private String trim(String s) {
-                if (s == null) {
-                    return s;
-                } else {
-                    int start = 0;
-                    for (int i = 0; i < s.length(); i++) {
-                        if (s.charAt(i) == '_') {
-                            start++;
-                        }
-                    }
-                    return (start == 0) ? s : s.substring(start);
-                }
-            }
+// though useful in some situations (due to the absence of search),
+// such sort order is counter-intuitive 
+//            private String trim(String s) {
+//                if (s == null) {
+//                    return s;
+//                } else {
+//                    int start = 0;
+//                    for (int i = 0; i < s.length(); i++) {
+//                        if (s.charAt(i) == '_') {
+//                            start++;
+//                        }
+//                    }
+//                    return (start == 0) ? s : s.substring(start);
+//                }
+//            }
         });
 //        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
 
