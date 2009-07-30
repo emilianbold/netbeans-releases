@@ -820,7 +820,7 @@ TestSupport.prototype = {
                         this.updatepage('rawContent', '');
                         this.updatepage('rawContent', this.printPretty(content));
                     } else {
-                        if(this.currentMethod == 'GET')
+                        if(this.currentMethod == 'GET' && this.currentMimeType != 'application/json')
                             this.updatepage('rawContent', this.createIFrameForUrl(this.currentValidUrl));
                         else
                             this.updatepage('rawContent', content);
