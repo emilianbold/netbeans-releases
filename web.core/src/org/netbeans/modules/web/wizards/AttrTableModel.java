@@ -118,7 +118,7 @@ public class AttrTableModel extends AbstractTableModel {
             newRowIndex++;
         }
         data = data2; 
-        numRows = --numRows; 
+        numRows--;
     }
 
     public void setData(String name, String value, boolean required, boolean rtexpr, int row) { 

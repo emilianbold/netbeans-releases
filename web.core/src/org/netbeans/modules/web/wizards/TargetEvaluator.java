@@ -55,7 +55,6 @@ class TargetEvaluator extends Evaluator {
 
     private List<String> pathItems = null;
     private DeployData deployData = null;
-    private String errorMessage = null;
     private String fileName;
     private String className;
 
@@ -65,11 +64,7 @@ class TargetEvaluator extends Evaluator {
     }
 
     String getErrorMessage() {
-        if (errorMessage == null) {
-            return "";
-        } else {
-            return errorMessage;
-        }
+        return "";
     }
 
     /**
