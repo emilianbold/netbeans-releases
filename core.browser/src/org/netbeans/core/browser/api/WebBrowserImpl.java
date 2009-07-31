@@ -67,6 +67,7 @@ import org.mozilla.interfaces.nsICookieManager;
 import org.mozilla.interfaces.nsICookieManager2;
 import org.mozilla.interfaces.nsISimpleEnumerator;
 import org.mozilla.interfaces.nsISupports;
+import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.BrowserCallback;
 import org.netbeans.core.browser.BrowserManager;
 import org.netbeans.core.browser.BrowserPanel;
@@ -195,6 +196,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         try {
             browser.load(url);
         } catch( MozillaRuntimeException ex ) {
+            //invalid URL
+            Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
+        } catch( XPCOMException ex ) {
+            //invalid URL
             Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
         }
     }
@@ -239,7 +244,11 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void forward() {
         if( !isInitialized() )
             return;
-        browser.goForward();
+        try {
+            browser.goForward();
+        } catch( MozillaRuntimeException e ) {
+            LOG.log(Level.FINE, null, e);
+        }
     }
 
     @Override
@@ -253,7 +262,11 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void backward() {
         if( !isInitialized() )
             return;
-        browser.goBack();
+        try {
+            browser.goBack();
+        } catch( MozillaRuntimeException e ) {
+            LOG.log(Level.FINE, null, e);
+        }
     }
 
     @Override

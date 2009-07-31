@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -94,8 +95,13 @@ public class ConfFilesNodeFactory implements NodeFactory {
         }
 
         public Node node(String key) {
-            if (key == CONF_FILES) {
-                return J2eeProjectView.createConfigFilesView(jp.getMetaInf());
+            if (key.equals(CONF_FILES)) {
+                FileObject metaInf = jp.getMetaInf();
+                if (metaInf != null){
+                    return J2eeProjectView.createConfigFilesView(metaInf);
+                } else {
+                    return null;
+                }
             }
             assert false: "No node for key: " + key; // NOI18N
             return null;

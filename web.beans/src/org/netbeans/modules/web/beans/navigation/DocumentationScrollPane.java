@@ -71,11 +71,14 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
+ *  Based on  DocumentationScrollPane at java.navigation
  *
- *  @author  Martin Roskanin, Dusan Balek
+ *  @author  ads
  */
 public class DocumentationScrollPane extends JScrollPane {
 
+    private static final long serialVersionUID = -8672029782033541392L;
+    
     private static final String BACK = "org/netbeans/modules/java/navigation/resources/back.png"; //NOI18N
     private static final String FORWARD = "org/netbeans/modules/java/navigation/resources/forward.png"; //NOI18N
     private static final String GOTO_SOURCE = "org/netbeans/modules/java/navigation/resources/open_source_in_editor.png"; //NOI18N
@@ -382,17 +385,8 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private class BrowserButton extends JButton {
-        public BrowserButton() {
-            setBorderPainted(false);
-            //setFocusPainted(false);
-        }
-        
-        public BrowserButton(String text){
-            super(text);
-            setBorderPainted(false);
-            //setFocusPainted(false);
-        }
-        
+        private static final long serialVersionUID = 3572084819036272122L;
+
         public BrowserButton(Icon icon){
             super(icon);
             setBorderPainted(false);
@@ -402,8 +396,6 @@ public class DocumentationScrollPane extends JScrollPane {
         public @Override void setEnabled(boolean b) {
             super.setEnabled(b);
         }
-        
-        
     }
 
     private class MouseEventListener extends MouseAdapter {        
@@ -441,6 +433,8 @@ public class DocumentationScrollPane extends JScrollPane {
     }
 
     private class DocPaneAction extends AbstractAction {
+        private static final long serialVersionUID = -5754757066129335109L;
+        
         private int action;
         
         private DocPaneAction(int action) {

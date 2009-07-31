@@ -75,7 +75,4 @@ public interface WebBeansModelProvider {
     List<AnnotationMirror> getBindings( Element element , 
             AbstractModelImplementation impl );
 
-    AnnotationMirror getDeploymentType( Element element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
-
 }

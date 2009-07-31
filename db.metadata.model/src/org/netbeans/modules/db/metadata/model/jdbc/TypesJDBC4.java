@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 - 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,68 +37,61 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.sql.Types;
-
-/**
- * This is a type-safe enumeration wrapper around java.sql.Types
- *
- * @author David Van Couvering
+/** Copy of JDK1.6 java.sql.Types
  */
-public enum SQLType {
-    // Fixed length types
-    BIT(Types.BIT),
-    TINYINT(Types.TINYINT),
-    SMALLINT(Types.SMALLINT),
-    INTEGER(Types.INTEGER),
-    BIGINT(Types.BIGINT),
-    FLOAT(Types.FLOAT),
-    REAL(Types.REAL),
-    DOUBLE(Types.DOUBLE),
-    NUMERIC(Types.NUMERIC),
-    DECIMAL(Types.DECIMAL),
-    CHAR(Types.CHAR),
-    DATE(Types.DATE),
-    TIME(Types.TIME),
-    TIMESTAMP(Types.TIMESTAMP),
-    NULL(Types.NULL),
-    OTHER(Types.OTHER),
-    JAVA_OBJECT(Types.JAVA_OBJECT),
-    DISTINCT(Types.DISTINCT),
-    REF(Types.REF),
-    DATALINK(Types.DATALINK),
-    BOOLEAN(Types.BOOLEAN),
-    VARCHAR(Types.VARCHAR),
-    LONGVARCHAR(Types.LONGVARCHAR),
-    BINARY(Types.BINARY),
-    VARBINARY(Types.VARBINARY),
-    LONGVARBINARY(Types.LONGVARBINARY),
-    STRUCT(Types.STRUCT),
-    ARRAY(Types.ARRAY),
-    BLOB(Types.BLOB),
-    CLOB(Types.CLOB),
-    // JDBC 4.0
-    LONGNVARCHAR(-16),
-    NCHAR(-15),
-    NCLOB(2011),
-    NVARCHAR(-9),
-    SQLXML(2009),
-    ROWID(-8);
+public class TypesJDBC4 {
 
-    private final int javasqltype;
-
-    SQLType(int type) {
-        this.javasqltype = type;
-    }
+    //------------------------- JDBC 4.0 -----------------------------------
 
     /**
-     * Get the java.sql.Type type specifier for the given SQLType
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>ROWID</code>
      *
-     * @param type the SQLType type specifier
-     * @return the matching java.sql.Type type specifier
+     * @since 1.6
+     *
      */
-    public static int getJavaSQLType(SQLType type) {
-        return type.javasqltype;
-    }
+    public final static int ROWID = -8;
+
+    /**
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>NCHAR</code>
+     *
+     * @since 1.6
+     */
+    public static final int NCHAR = -15;
+
+    /**
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>NVARCHAR</code>.
+     *
+     * @since 1.6
+     */
+    public static final int NVARCHAR = -9;
+
+    /**
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>LONGNVARCHAR</code>.
+     *
+     * @since 1.6
+     */
+    public static final int LONGNVARCHAR = -16;
+
+    /**
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>NCLOB</code>.
+     *
+     * @since 1.6
+     */
+    public static final int NCLOB = 2011;
+
+    /**
+     * The constant in the Java programming language, sometimes referred to
+     * as a type code, that identifies the generic SQL type <code>XML</code>.
+     *
+     * @since 1.6
+     */
+    public static final int SQLXML = 2009;
+
 }

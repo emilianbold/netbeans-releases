@@ -143,6 +143,6 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
         if ( injectables == null ){
             return null;
         }
-        return getResult(injectables);
+        return getResult(injectables, model );
     }
 }
