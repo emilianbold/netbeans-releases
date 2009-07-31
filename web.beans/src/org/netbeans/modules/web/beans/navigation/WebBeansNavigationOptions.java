@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,36 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.beans.navigation;
 
-import java.util.Set;
+import java.awt.Rectangle;
 
-import org.netbeans.api.java.source.ElementHandle;
-import org.openide.filesystems.FileObject;
-
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.swing.Icon;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
- * The interface representing Java elements in hierarchy and members pop up windows.
- * 
- * Copy of JavaElement at java.navigation
- * 
  * @author ads
+ *
  */
-public interface JavaElement {
-    String getName();    
-    Set<Modifier> getModifiers();
-    ElementKind getElementKind();
-    String getLabel();
-    String getFQNLabel();
-    String getTooltip();
-    Icon getIcon();
-    ElementJavadoc getJavaDoc();
-    void gotoElement();
-    FileObject getFileObject();
-    ElementHandle<?> getElementHandle();
+final class WebBeansNavigationOptions {
+
+    static boolean isCaseSensitive() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public static boolean isShowFQN() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public static void setCaseSensitive( boolean selected ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public static void setShowFQN( boolean selected ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public static void setLastBounds( Rectangle bounds ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public static Rectangle getLastBounds() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

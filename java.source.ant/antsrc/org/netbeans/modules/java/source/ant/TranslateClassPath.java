@@ -97,8 +97,16 @@ public class TranslateClassPath extends Task {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
 
+        Object o = getProject().getProperties().get("maven.disableSources");
+        Boolean disableSources;
+        if (o instanceof Boolean) {
+            disableSources = (Boolean) o;
+        } else {
+            disableSources = Boolean.FALSE;
+        }        
+        
         for (String path : PropertyUtils.tokenizePath(classpath)) {
-            File[] files = translateEntry(path);
+            File[] files = translateEntry(path, disableSources);
 
             if (files.length == 0) {
                 //TODO: log
@@ -119,7 +127,7 @@ public class TranslateClassPath extends Task {
         return cp.toString();
     }
     
-    private File[] translateEntry(String path) throws BuildException {
+    private File[] translateEntry(String path, Boolean disableSources) throws BuildException {
         File entryFile = new File(path);
         try {
             URL entry = FileUtil.urlForArchiveOrDir(entryFile);
@@ -127,7 +135,7 @@ public class TranslateClassPath extends Task {
             SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
             boolean appendEntry = false;
 
-            if (r.preferSources() && r.getRoots().length > 0) {
+            if (!disableSources && r.preferSources() && r.getRoots().length > 0) {
                 List<File> translated = new LinkedList<File>();
                 
                 for (FileObject source : r.getRoots()) {

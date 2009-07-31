@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 public class DeadlockImplTest {
 
     @Test
-    public void testParse() {
+    public void testFromErprint() {
         List<DeadlockImpl> deadlocks = DeadlockImpl.fromErprint(new String[] {
         "",
         "Deadlock #1, Potential deadlock",
