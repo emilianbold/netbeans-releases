@@ -545,7 +545,10 @@ public class Outline extends ETable {
                 }
                 int handleStart = ins.left + (nd * DefaultOutlineCellRenderer.getNestingWidth());
                 int handleEnd = ins.left + handleStart + handleWidth;
-                //TODO: Translate x/y to position of column if non-0
+                // Translate 'x' to position of column if non-0:
+                int columnStart = getCellRect(row, column, false).x;
+                handleStart += columnStart;
+                handleEnd += columnStart;
                 
                 if ((me.getX() > ins.left && me.getX() >= handleStart && me.getX() <= handleEnd) ||
                      me.getClickCount() > 1) {
