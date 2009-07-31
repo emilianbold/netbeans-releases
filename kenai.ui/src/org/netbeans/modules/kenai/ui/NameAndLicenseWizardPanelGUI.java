@@ -55,6 +55,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -357,6 +359,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 projectNameTextFieldFocusLost(evt);
             }
         });
+        projectNameTextField.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent evt) {
+                projectNameTextFieldKeyPressed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -643,6 +650,13 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void autoCommitActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoCommitActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_autoCommitActionPerformed
+
+    private void projectNameTextFieldKeyPressed(KeyEvent evt) {//GEN-FIRST:event_projectNameTextFieldKeyPressed
+        if (prjNameCheckMessage!=null) {
+            prjNameCheckMessage = null;
+            panel.fireChangeEvent();
+        }
+    }//GEN-LAST:event_projectNameTextFieldKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel additionalDescription;
