@@ -297,6 +297,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
                 params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
 
+                //#168551
+                params.put("maven.disableSources", Boolean.TRUE); //NOI18N
+
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
                     String action2Quick = action2Quick(actionName);
@@ -482,6 +485,10 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
 
             params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
+
+            //#168551
+            params.put("maven.disableSources", Boolean.TRUE);  //NOI18N
+
             String action2Quick = action2Quick(actionName);
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
