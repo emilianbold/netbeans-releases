@@ -241,7 +241,11 @@ made subject to such option by the copyright holder.
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>
     <debugger>
-        <tool name="dbx"/>
-        <version flags="-V" />
+        <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>
