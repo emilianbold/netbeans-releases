@@ -515,11 +515,18 @@ public class Outline extends ETable {
     
     public TreePath getClosestPathForLocation(int x, int y) {
         Insets i = getInsets();
+        TreePath tp;
         if (i != null) {
-            return getLayoutCache().getPathClosestTo(x - i.left, y - i.top);
+            tp = getLayoutCache().getPathClosestTo(x - i.left, y - i.top);
         } else {
-            return getLayoutCache().getPathClosestTo(x,y);
+            tp = getLayoutCache().getPathClosestTo(x,y);
         }
+        int row = getLayoutCache().getRowForPath(tp);
+        // The UI row needs to be converted to the model row.
+        row = convertRowIndexToModel(row);
+        // Now we can get the correct path from the model row:
+        tp = getLayoutCache().getPathForRow(row);
+        return tp;
     }
     
     @Override
