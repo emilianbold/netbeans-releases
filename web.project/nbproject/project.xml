@@ -525,6 +525,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.portalpack.commons</friend>
                 <friend>org.netbeans.modules.portalpack.commons.palette</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.wizards</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
                 <friend>org.netbeans.modules.gwt4nb</friend>
                 <package>org.netbeans.modules.web.project.api</package>

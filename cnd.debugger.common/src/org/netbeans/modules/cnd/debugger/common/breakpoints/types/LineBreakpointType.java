@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,35 +37,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
-public class StackTraceImpl implements StackTrace {
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpointPanel;
+import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.openide.util.NbBundle;
 
-    private final List<Stack> stacks = new ArrayList<Stack>();
-    private final long timestamp;
+/**
+ * Implementation of a line breakpoint.
+ *
+ * @author   Egor Ushakov
+ */
+public class LineBreakpointType extends BreakpointType {
 
-    public StackTraceImpl(long timestamp) {
-        this.timestamp = timestamp;
+    public String getCategoryDisplayName() {
+        return NbBundle.getMessage(LineBreakpointType.class,
+                    "CTL_Common_breakpoint_events_category_name"); // NOI18N
     }
-
-    public List<Stack> getStackTrace() {
-        return stacks;
+    
+    public JComponent getCustomizer() {
+        return new LineBreakpointPanel ();
     }
-
-    public void addStack(Stack stack) {
-        stacks.add(stack);
+    
+    @Override
+    public String getTypeDisplayName() {
+        return NbBundle.getMessage(LineBreakpointType.class, "CTL_Common_Line_Breakpoint"); // NOI18N
     }
-
-    public long getTimeStamp() {
-        return timestamp;
+    
+    /**
+     *  Tell debuggercore if this should be the default breakpoint.
+     *
+     *  Currently we always return false because we want to defer to FunctionBreakpointType.
+     *  Eventually, this class and FunctionBreakpointType should both become smart enough
+     *  that FBT is the default if the cursor is inside a function and LBT if its outside
+     *  of a function (in both cases, its false if the current file in the editor isn't a
+     *  C, C++, or Fortran file)
+     */
+    public boolean isDefault() {	
+	return false;	// do false for now because FunctionBreakpointType currently
+			// overrides this anyway.
     }
 }
+

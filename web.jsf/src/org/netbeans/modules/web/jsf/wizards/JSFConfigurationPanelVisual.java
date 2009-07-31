@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Pisl, Radko Najman
+ * @author  Petr Pisl, Radko Najman, alexeybutenko
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
@@ -167,6 +167,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void updatePreferredLanguages() {
         boolean faceletsPresent = false;
         Library jsfLibrary = null;
+        if (panel.getLibraryType()==null)
+            return;
         if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
             jsfLibrary = panel.getLibrary();
         } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NEW) {
@@ -179,7 +181,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 faceletsPresent = true;
             }
         }
-        if (jsfLibrary !=null) {
+        if (jsfLibrary != null) {
             List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
             try {
                 faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
@@ -191,10 +193,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
 
         preferredLanguages.clear();
-        preferredLanguages.add("JSP"); //NOI18N
+        preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.JSP.getName()); 
         if (faceletsPresent) {
-            preferredLanguages.add(0,"Facelets"); //NOI18N
-            panel.setEnableFacelets(true);
+            if (!customizer)
+                panel.setEnableFacelets(true);
+
+            if (panel.isEnableFacelets())
+                preferredLanguages.add(0,JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
+            else 
+                preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
         } else {
             panel.setEnableFacelets(false);
         }
@@ -527,6 +534,9 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             components[i].setEnabled(enable);
         }
         
+        cbPreferredLang.setEnabled(true);
+        jLabel1.setEnabled(true);
+        
         components = libPanel.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
@@ -630,7 +640,8 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 File[] cp;
                 J2eePlatform platform = null;
                 try {
-                    platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                    if (serverInstanceID != null)
+                        platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                 } catch (InstanceRemovedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -742,7 +753,12 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     public boolean packageJars(){
         return cbPackageJars.isSelected();
     }
-    
+
+    protected String getPreferredLanguage() {
+        return (String) cbPreferredLang.getSelectedItem();
+    }
+
+
     private void updateLibrary(){
         if (cbLibraries.getItemCount() == 0)
             rbRegisteredLibrary.setEnabled(false);

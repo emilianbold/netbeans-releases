@@ -56,7 +56,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -193,8 +192,6 @@ public class Subversion {
                                String username,
                                String password,
                                int handledExceptions) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
@@ -225,8 +222,6 @@ public class Subversion {
                                String username,
                                String password,
                                SvnProgressSupport support) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -290,8 +285,6 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         if(attachListeners) {
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();

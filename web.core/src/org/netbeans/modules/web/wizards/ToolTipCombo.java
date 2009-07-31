@@ -68,7 +68,7 @@ class ToolTipCombo extends JComboBox {
         }
     }
 
-    class PathRenderer extends JLabel implements ListCellRenderer {
+    static class PathRenderer extends JLabel implements ListCellRenderer {
         private static final long serialVersionUID = 1323260132420573174L;
 
         public PathRenderer() {

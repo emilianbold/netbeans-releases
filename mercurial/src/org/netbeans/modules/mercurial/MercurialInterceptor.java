@@ -333,7 +333,14 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
             // refresh all at once
             Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-            filesToRefresh.add(fileToRefresh);
+            if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
+                if ("dirstate".equals(fileToRefresh.getName())) {
+                    // XXX handle dirstate events
+                    Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
+                }
+            } else {
+                filesToRefresh.add(fileToRefresh);
+            }
         } else {
             // refresh one by one
             File parent = fileToRefresh.getParentFile();

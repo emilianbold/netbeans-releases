@@ -341,7 +341,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
     }
 
-    private class FileObjectComparator implements java.util.Comparator<FileObject> {
+    private static class FileObjectComparator implements java.util.Comparator<FileObject> {
         public int compare(FileObject fo1, FileObject fo2) {
             return fo1.getName().compareTo(fo2.getName());
         }

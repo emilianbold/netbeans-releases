@@ -943,9 +943,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             ai = (AccessorInfo) value;
-            if (ai == null) {
-                throw new IllegalStateException();
-            }
             String cellEditorValue = ai == null ? null: ai.name;
             return super.getTableCellEditorComponent(table, cellEditorValue, isSelected, row, column);
         }
@@ -955,7 +952,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             String cellEditorValue = (String) super.getCellEditorValue();
             Object retVal;
             if (cellEditorValue == null || cellEditorValue.length() == 0) {
-                if (ai != null || (ai.name != null && ai.name.length() > 0)) {
+                if (ai != null && ai.name != null && ai.name.length() > 0) {
                     ai.name = null;
                     ai.accessor = null;
                     ai.accessorToolTip = null;

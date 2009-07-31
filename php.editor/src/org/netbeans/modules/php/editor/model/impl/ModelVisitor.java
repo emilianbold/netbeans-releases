@@ -272,10 +272,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(Scalar scalar) {
         String stringValue = scalar.getStringValue();
-        if (scalar.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
-            //if (!stringValue.equals("false") && !stringValue.equals("true")) {//NOI18N
+        if (stringValue != null && stringValue.trim().length() > 0 &&
+                scalar.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
             occurencesBuilder.prepare(Kind.CONSTANT, scalar, fileScope);
-        //}
         }
         super.visit(scalar);
     }

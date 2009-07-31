@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
@@ -103,5 +104,19 @@ public class PhpUnitTest extends NbTestCase {
         assertTrue(matcher.matches());
         assertEquals("/usr/share/php/PHPUnit/Framework/TestSuite.php", matcher.group(1));
         assertEquals("385", matcher.group(2));
+    }
+
+    public void testRelPath() {
+        final File testFile = new File("/tmp/a.php");
+        final File sourceFile = new File("/home/b.php");
+        final String abs = "ABS/";
+        final String rel = "REL/";
+        final String suff = "/SUFF";
+
+        String relPath = PhpUnit.getRelPath(testFile, sourceFile, abs, rel, suff, false);
+        assertEquals(rel + ".." + sourceFile.getAbsolutePath() + suff, relPath);
+
+        relPath = PhpUnit.getRelPath(testFile, sourceFile, abs, rel, suff, true);
+        assertEquals(abs + sourceFile.getAbsolutePath() + suff, relPath);
     }
 }

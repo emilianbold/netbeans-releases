@@ -39,41 +39,55 @@
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.api.stack.Deadlock;
+import org.netbeans.modules.dlight.api.stack.DeadlockThreadSnapshot;
 
 /**
  * @author Alexey Vladykin
  */
-public final class DataRace {
+public final class DeadlockImpl implements Deadlock {
 
-    private final long vaddr;
+    private final int id;
+    private final boolean actual;
 
-    public DataRace(long vaddr) {
-        this.vaddr = vaddr;
+    public DeadlockImpl(int id) {
+        this.id = id;
+        this.actual = false;
     }
 
-    public long vaddr() {
-        return vaddr;
+    public boolean isActual() {
+        return actual;
     }
 
-    private static final Pattern RACE_PATTERN = Pattern.compile("Race #\\d+, Vaddr: (.+)"); // NOI18N
+    public List<DeadlockThreadSnapshot> getThreadStates() {
+        return Collections.emptyList();
+    }
 
-    public static List<DataRace> parseDataRaces(String[] erprint) {
-        List<DataRace> races = new ArrayList<DataRace>();
+    @Override
+    public String toString() {
+        return "Deadlock #" + id + " (" + (actual? "actual" : "potential") + ")"; // NOI18N
+    }
+
+    private static final Pattern DEADLOCK_PATTERN = Pattern.compile("^Deadlock #(\\d+)"); // NOI18N
+
+    public static List<DeadlockImpl> fromErprint(String[] erprint) {
+        List<DeadlockImpl> deadlocks = new ArrayList<DeadlockImpl>();
         for (String line : erprint) {
-            Matcher m = RACE_PATTERN.matcher(line);
-            if (m.matches()) {
-                long vaddr;
+            Matcher m = DEADLOCK_PATTERN.matcher(line);
+            if (m.find()) {
+                int id;
                 try {
-                    vaddr = Long.parseLong(m.group(1), 16);
+                    id = Integer.parseInt(m.group(1));
                 } catch (NumberFormatException ex) {
-                    vaddr = -1;
+                    id = -1;
                 }
-                races.add(new DataRace(vaddr));
+                deadlocks.add(new DeadlockImpl(id));
             }
         }
-        return races;
+        return deadlocks;
     }
 }

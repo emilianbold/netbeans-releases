@@ -344,7 +344,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             }
         }
     }
-    
+
     private void hideConfigPanel() {
 	jLabelConfig.setText(""); //NOI18N
 	jPanelConfig.removeAll();
