@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.util;
+package org.netbeans.modules.php.api.phpmodule;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -47,8 +47,9 @@ import org.openide.util.Utilities;
 /**
  * Base class for all PHP based programs (scripts).
  * @author Tomas Mysik
+ * @since 1.9
  */
-public class PhpProgram {
+public abstract class PhpProgram {
     protected static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
     private static final String[] NO_PARAMETERS = new String[0];
 
@@ -91,32 +92,46 @@ public class PhpProgram {
     }
 
     /**
+     * Get PHP program, never <code>null</code>.
      * @return PHP program, never <code>null</code>.
      */
-    public String getProgram() {
+    public final String getProgram() {
         return program;
     }
 
     /**
+     * Get parameters, can be an empty array but never <code>null</code>.
      * @return parameters, can be an empty array but never <code>null</code>.
      */
-    public String[] getParameters() {
-        return parameters;
+    public final String[] getParameters() {
+        return parameters.clone();
     }
 
     /**
+     * Get the full command, in the original form (just without leading and trailing whitespaces).
      * @return the full command, in the original form (just without leading and trailing whitespaces).
      */
-    public String getFullCommand() {
+    public final String getFullCommand() {
         return fullCommand;
     }
 
     /**
-     * @return <code>true</code> if program is set, <code>false</code> otherwise.
+     * Return <code>true</code> if program is {@link #validate() valid), <code>false</code> otherwise.
+     * @return <code>true</code> if program is {@link #validate() valid), <code>false</code> otherwise.
+     * @see #validate()
+     * @see InvalidPhpProgramException
      */
-    public boolean isValid() {
-        return StringUtils.hasText(program);
+    public final boolean isValid() {
+        return validate() == null;
     }
+
+    /**
+     * Get the error message if the PHP program is not valid or <code>null</code> if it's valid.
+     * @return the error message if the PHP program is not valid or <code>null</code> if it's valid.
+     * @see #isValid()
+     * @see InvalidPhpProgramException
+     */
+    public abstract String validate();
 
     @Override
     public String toString() {
@@ -128,5 +143,18 @@ public class PhpProgram {
         sb.append(Arrays.asList(parameters));
         sb.append("]"); // NOI18N
         return sb.toString();
+    }
+
+    /**
+     * Exception which can be used if a PHP program is not valid.
+     * @see PhpProgram#isValid()
+     * @see PhpProgram#validate()
+     */
+    public static final class InvalidPhpProgramException extends Exception {
+        private static final long serialVersionUID = -831989756418354L;
+
+        public InvalidPhpProgramException(String message) {
+            super(message);
+        }
     }
 }

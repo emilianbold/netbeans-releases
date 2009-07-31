@@ -60,11 +60,12 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,11 +136,25 @@ public final class PhpUnit extends PhpProgram {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PhpUnit(String command) {
+    private PhpUnit(String command) {
         super(command);
+    }
+
+    public static PhpUnit getDefault() throws InvalidPhpProgramException {
+        String command = PhpOptions.getInstance().getPhpUnit();
+        String error = validate(command);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
+        }
+        return new PhpUnit(command);
+    }
+
+    public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
+        String error = validate(command);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
+        }
+        return new PhpUnit(command);
     }
 
     public File getWorkingDirectory() {
@@ -456,6 +471,29 @@ public final class PhpUnit extends PhpProgram {
 
     private static String getFilename(String filename, int i) {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
+    }
+
+    @Override
+    public String validate() {
+        if (!StringUtils.hasText(getProgram())) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_NoPhpUnit");
+        }
+
+        File file = new File(getProgram());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitCannotRead");
+        }
+        return null;
+    }
+
+    public static String validate(String command) {
+        return new PhpUnit(command).validate();
     }
 
     public static final class Files {

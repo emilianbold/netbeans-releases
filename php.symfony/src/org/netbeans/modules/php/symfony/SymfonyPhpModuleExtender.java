@@ -45,9 +45,9 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -67,7 +67,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         SymfonyScript symfonyScript = null;
         try {
             symfonyScript = SymfonyScript.getDefault();
-        } catch (InvalidSymfonyScriptException ex) {
+        } catch (InvalidPhpProgramException ex) {
             // should not happen, must be handled in the wizard
             Exceptions.printStackTrace(ex);
         }
@@ -125,7 +125,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
     public String getErrorMessage() {
         try {
             SymfonyScript.getDefault();
-        } catch (InvalidSymfonyScriptException ex) {
+        } catch (InvalidPhpProgramException ex) {
             return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return getPanel().getErrorMessage();

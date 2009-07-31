@@ -51,19 +51,17 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
-import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -125,13 +123,17 @@ public abstract class FrameworkCommandSupport {
      * @return {@ExternalProcessBuilder process builder} or <code>null</code> if something is wrong.
      */
     protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        PhpProgram phpInterpreter = new PhpProgram(Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter());
-        if (!phpInterpreter.isValid()) {
+        PhpInterpreter phpInterpreter;
+        try {
+            phpInterpreter = PhpInterpreter.getDefault();
+        } catch (InvalidPhpProgramException ex) {
             if (warnUser) {
-                UiUtils.invalidScriptProvided(NbBundle.getMessage(FrameworkCommandSupport.class, "MSG_InvalidPhpInterpreter"));
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             }
             return null;
         }
+        assert phpInterpreter.isValid() : "php interpreter must be valid";
+
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter.getProgram());
         for (String param : phpInterpreter.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);

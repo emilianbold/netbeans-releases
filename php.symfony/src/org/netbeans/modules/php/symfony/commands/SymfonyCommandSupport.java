@@ -57,11 +57,11 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyScript;
-import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -107,7 +107,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         SymfonyScript symfonyScript = null;
         try {
             symfonyScript = SymfonyScript.forPhpModule(phpModule, warnUser);
-        } catch (InvalidSymfonyScriptException ex) {
+        } catch (InvalidPhpProgramException ex) {
             if (warnUser) {
                 UiUtils.invalidScriptProvided(
                         ex.getMessage(),
