@@ -76,7 +76,7 @@ public class KenaiServiceTest extends NbTestCase {
     @Override
     public void setUp() {
         try {
-            System.setProperty("kenai.com.url", "http://testkenai.com");
+            System.setProperty("kenai.com.url", "https://testkenai.com");
             if (servicesChecker == null) {
                 final String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "services.data";
                 System.out.println(_fileName);
