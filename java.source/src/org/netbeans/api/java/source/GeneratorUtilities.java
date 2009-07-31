@@ -500,14 +500,13 @@ public final class GeneratorUtilities {
 
     public <T extends Tree> T importComments(final T original, CompilationUnitTree cut) {
         try {
-/*
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
             return (T) translator.translate(original);
-*/
 
 
+/*
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
@@ -533,6 +532,7 @@ public final class GeneratorUtilities {
             instance.collect(seq, copy);
 
             return original;
+*/
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
