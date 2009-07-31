@@ -69,7 +69,7 @@ public final class EventSetWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void resume(com.sun.jdi.event.EventSet a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void resume(com.sun.jdi.event.EventSet a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
         try {
             a.resume();
         } catch (com.sun.jdi.InternalException ex) {
@@ -77,6 +77,8 @@ public final class EventSetWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (java.lang.IllegalThreadStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
         }
     }
 

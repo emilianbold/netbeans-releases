@@ -101,7 +101,14 @@ public final class JDBCUtils {
             case Types.REF: return SQLType.REF;
             case Types.DATALINK: return SQLType.DATALINK;
             case Types.BOOLEAN: return SQLType.BOOLEAN;
+            case TypesJDBC4.LONGNVARCHAR: return SQLType.LONGVARCHAR;
+            case TypesJDBC4.NCHAR: return SQLType.CHAR;
+            case TypesJDBC4.NCLOB: return SQLType.CLOB;
+            case TypesJDBC4.NVARCHAR: return SQLType.VARCHAR;
+//            case TypesJDBC4.SQLXML: return SQLType.SQLXML;
+//            case TypesJDBC4.ROWID: return SQLType.ROWID;
             default:
+                Logger.getLogger(JDBCUtils.class.getName()).log(Level.WARNING, "Unknown JDBC column type: " + type + ". Returns null.");
                 return null;
         }
     }

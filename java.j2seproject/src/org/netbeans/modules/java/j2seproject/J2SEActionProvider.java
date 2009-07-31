@@ -514,7 +514,7 @@ class J2SEActionProvider implements ActionProvider {
         };
         final Action action = new Action();
 
-        if (this.needJavaModelActions.contains(command) || isCompileOnSaveEnabled) {
+        if (this.needJavaModelActions.contains(command) || (isCompileOnSaveEnabled && this.bkgScanSensitiveActions.contains(command))) {
             //Always have to run with java model
             ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command));   //NOI18N
         }

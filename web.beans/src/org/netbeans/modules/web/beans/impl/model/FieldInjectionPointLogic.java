@@ -96,10 +96,11 @@ abstract class FieldInjectionPointLogic {
     {
         Set<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
-        return getResult(injectables);
+        return getResult(injectables, modelImpl );
     }
 
-    protected Element getResult( Set<Element> injectables )
+    protected Element getResult( Set<Element> injectables , 
+            WebBeansModelImplementation model )
             throws AmbiguousDependencyException
     {
         /*
@@ -114,6 +115,10 @@ abstract class FieldInjectionPointLogic {
          * 2) Several elements set means ambiguous dependency.    
          */
         filterBeans( injectables );
+        PoliciesTypeFilter<Element> filter = PoliciesTypeFilter.get( 
+                Element.class);
+            filter.init( model );
+            filter.filter( injectables );
         if ( injectables.size() ==1 ){
             return injectables.iterator().next();
         }
@@ -256,10 +261,10 @@ abstract class FieldInjectionPointLogic {
             types.addAll( typesWithBindings );
         }
         
-        DeploymentTypeFilter<TypeElement> filter = DeploymentTypeFilter.get( 
+        /*PoliciesTypeFilter<TypeElement> filter = PoliciesTypeFilter.get( 
                 TypeElement.class);
         filter.init( modelImpl );
-        filter.filter( types );
+        filter.filter( types );*/
         result.addAll( types );
         
         /*
@@ -284,10 +289,10 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         
-        DeploymentTypeFilter<Element> deploymentFilter = DeploymentTypeFilter.get( 
-                Element.class);
-        deploymentFilter.init( modelImpl );
-        deploymentFilter.filter( productionElements );
+        /*PoliciesTypeFilter<Element> filter = PoliciesTypeFilter.get( 
+            Element.class);
+        filter.init( modelImpl );
+        filter.filter( productionElements );*/
         
         result.addAll( productionElements );
         return result;

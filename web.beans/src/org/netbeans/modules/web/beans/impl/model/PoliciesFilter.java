@@ -40,11 +40,8 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
@@ -53,23 +50,23 @@ import javax.lang.model.element.TypeElement;
  * @author ads
  *
  */
-class DeploymentTypeFilter<T extends Element> extends Filter<T> {
+class PoliciesTypeFilter<T extends Element> extends Filter<T> {
     
-    static <T extends Element> DeploymentTypeFilter<T> get(Class<T> clazz )
+    static <T extends Element> PoliciesTypeFilter<T> get(Class<T> clazz )
     {
         assertElement(clazz);
         if ( clazz.equals(TypeElement.class )){
-            return (DeploymentTypeFilter<T>) 
-                new DeploymentTypeFilter<TypeElement>( TypeElement.class );
+            return (PoliciesTypeFilter<T>) 
+                new PoliciesTypeFilter<TypeElement>( TypeElement.class );
         }
         else if ( clazz.equals(Element.class )){
-            return (DeploymentTypeFilter<T>) 
-            new DeploymentTypeFilter<Element>( Element.class );
+            return (PoliciesTypeFilter<T>) 
+            new PoliciesTypeFilter<Element>( Element.class );
         }
         return null;
     }
     
-    private DeploymentTypeFilter( Class<T> clazz ){
+    private PoliciesTypeFilter( Class<T> clazz ){
         myClass = clazz;
     }
     
@@ -88,50 +85,6 @@ class DeploymentTypeFilter<T extends Element> extends Filter<T> {
     
     private WebBeansModelImplementation getImplementation(){
         return myModel;
-    }
-
-    static AnnotationMirror getDeploymentType( Element element,
-            WebBeansModelImplementation model )
-    {
-        // Ask ONLY annotations for element itself. Not inherited.
-        List<? extends AnnotationMirror> annotationMirrors = 
-            element.getAnnotationMirrors();
-        Set<AnnotationMirror> deploymentTypes = new HashSet<AnnotationMirror>();
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            if ( isDeploymentType(annotationMirror)){
-                deploymentTypes.add( annotationMirror );
-            }
-            else if ( isStereotype(annotationMirror)){
-                AnnotationMirror deploymentType = getDeploymentType( 
-                        annotationMirror );
-                if ( deploymentType != null ){
-                    deploymentTypes.add( deploymentType );
-                }
-            }
-        }
-        if ( deploymentTypes.size() == 0 && ( element instanceof TypeElement )){
-            TypeElement superclass = model.getHelper().
-                getSuperclass((TypeElement)element);
-            if ( superclass!= null ){
-                return getDeploymentType( superclass , model );
-            }
-        }
-        else if ( deploymentTypes.size() > 1 ){
-            // TODO : throws exception 
-        }
-        return deploymentTypes.iterator().next();
-    }
-    
-    static AnnotationMirror getDeploymentType( AnnotationMirror stereotype ){
-        return null;
-    }
-    
-    static boolean isDeploymentType( AnnotationMirror annotation){
-        return false;
-    }
-    
-    static boolean isStereotype( AnnotationMirror annotation ){
-        return false;
     }
     
     private Class<T> myClass;
