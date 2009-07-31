@@ -38,12 +38,19 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import java.awt.Component;
+import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JTextArea;
+import javax.swing.Renderer;
 import org.netbeans.modules.dlight.api.stack.Deadlock;
 import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * @author Alexey Vladykin
@@ -53,6 +60,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView msview;
+    private Task refreshTask;
 
     public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, ThreadAnalyzerDataProvider dataProvider) {
         this.configuration = configuration;
@@ -63,9 +71,10 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         return configuration;
     }
 
-    public JComponent getComponent() {
+    public synchronized JComponent getComponent() {
         if (msview == null) {
-            msview = new MasterSlaveView<Deadlock>(dataProvider.getDeadlocks(), null);
+            msview = new MasterSlaveView<Deadlock>();
+            msview.setSlaveRenderer(new DeadlockRenderer());
         }
         return msview;
     }
@@ -74,7 +83,31 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         return DefaultVisualizerContainer.getInstance();
     }
 
-    public void refresh() {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    public synchronized void refresh() {
+        if (refreshTask == null) {
+            final MasterSlaveView view = (MasterSlaveView) getComponent();
+            refreshTask = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final List<? extends Deadlock> deadlocks = dataProvider.getDeadlocks();
+                    UIThread.invoke(new Runnable() {
+                        public void run() {
+                            view.setMasterData(deadlocks);
+                        }
+                    });
+                    refreshTask = null;
+                }
+            });
+        }
+    }
+
+    private static class DeadlockRenderer extends JTextArea implements Renderer {
+
+        public void setValue(Object aValue, boolean isSelected) {
+            setText(aValue.toString());
+        }
+
+        public Component getComponent() {
+            return this;
+        }
     }
 }

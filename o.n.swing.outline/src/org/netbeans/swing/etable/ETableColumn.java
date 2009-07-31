@@ -144,7 +144,10 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
      *        column, number 2 means second etc.
      * @param ascending true means ascending
      * @since 1.3
+     * @deprecated This method has no effect if the column was not already sorted before.
+     *             Use {@link ETableColumnModel#setColumnSorted(org.netbeans.swing.etable.ETableColumn, boolean, int)} instead.
      */
+    @Deprecated
     public void setSorted(int rank, boolean ascending) {
         if (!isSortingAllowed() && (rank != 0 || comparator != null)) {
             throw new IllegalStateException("Cannot sort an unsortable column.");
@@ -168,6 +171,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     /**
      * Rank value 1 means that this is the most important column
      * (with respect to the table sort), value 2 means second etc.
+     * Please note: the column has to be already sorted when calling this method.
      * @param newRank value 1 means that this is the most important sorted
      *        column, number 2 means second etc.
      * @since 1.3
