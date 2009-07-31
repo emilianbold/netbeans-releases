@@ -954,12 +954,11 @@ public class ETable extends JTable {
      * Convert indices of selected rows to model.
      */
     private int[] getSelectedRowsInModel() {
-        int inView[] = getSelectedRows();
-        int result[] = new int[inView.length];
-        for (int i = 0; i < inView.length; i++) {
-            result[i] = convertRowIndexToModel(inView[i]);
+        int rows[] = getSelectedRows();
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = convertRowIndexToModel(rows[i]);
         }
-        return result;
+        return rows;
     }
     
     /**
