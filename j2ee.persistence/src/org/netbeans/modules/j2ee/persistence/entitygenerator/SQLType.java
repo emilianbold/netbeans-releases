@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -249,11 +249,19 @@ class SQLType {
                 new Class[0], false),
             new SQLType(Types.CHAR, "CHAR",         //NOI18N
                 new Class[] {java.lang.String.class, Character.class, Character.TYPE}, true),
+            new SQLType(TypesJDBC4.NCHAR, "CHAR",         //NOI18N
+                new Class[] {java.lang.String.class, Character.class, Character.TYPE}, true),
             new SQLType(Types.LONGVARCHAR, "LONGVARCHAR",   //NOI18N
+                new Class[] {java.lang.String.class}, true),
+            new SQLType(TypesJDBC4.LONGNVARCHAR, "LONGNVARCHAR",   //NOI18N
                 new Class[] {java.lang.String.class}, true),
             new SQLType(Types.VARCHAR, "VARCHAR",           //NOI18N
                 new Class[] {java.lang.String.class}, true),
+            new SQLType(TypesJDBC4.NVARCHAR, "VARCHAR",           //NOI18N
+                new Class[] {java.lang.String.class}, true),
             new SQLType(Types.CLOB, "CLOB",                 //NOI18N
+                new Class[] {java.lang.String.class}, false),
+            new SQLType(TypesJDBC4.NCLOB, "CLOB",                 //NOI18N
                 new Class[] {java.lang.String.class}, false),
             new SQLType(Types.DATE, "DATE",                 //NOI18N
                 new Class[] {java.sql.Date.class}, false),
