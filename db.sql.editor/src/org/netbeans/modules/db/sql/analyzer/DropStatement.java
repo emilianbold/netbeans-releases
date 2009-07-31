@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,38 +36,53 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.db.sql.analyzer;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
-import org.netbeans.modules.db.sql.editor.StringUtils;
-import org.netbeans.modules.db.sql.lexer.SQLTokenId;
+import java.util.Map.Entry;
+import java.util.SortedMap;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Skrivanek
  */
-public class SQLStatementAnalyzer {
+public class DropStatement extends SQLStatement {
 
-    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
-        seq.moveStart ();
-        if ( ! seq.moveNext ()) {
-            return null;
-        }
-        if (seq.token () != null && SQLTokenId.WHITESPACE.equals (seq.token ().id ())) {
-            seq.moveNext ();
-        }
-        if (isKeyword ("SELECT", seq)) { // NOI18N
-            return SQLStatementKind.SELECT;
-        } else if (isKeyword ("INSERT", seq)) {  //NOI18N
-            return SQLStatementKind.INSERT;
-        } else if (isKeyword("DROP", seq)) {  //NOI18N
-            return SQLStatementKind.DROP;
-        }
-        return null;
+    private final SQLStatementKind kind;
+    int startOffset, endOffset;
+    private final QualIdent table;
+    private final SortedMap<Integer, DropContext> offset2Context;
+
+    DropStatement(SQLStatementKind kind, int startOffset, int endOffset, QualIdent table, SortedMap<Integer, DropContext> offset2Context) {
+        this.kind = kind;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.table = table;
+        this.offset2Context = offset2Context;
     }
 
-    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
-        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
+    public SQLStatementKind getKind() {
+        return kind;
+    }
+
+    public QualIdent getTable() {
+        return table;
+    }
+
+    public DropContext getContextAtOffset(int offset) {
+        DropContext result = null;
+        for (Entry<Integer, DropContext> entry : offset2Context.entrySet()) {
+            if (offset >= entry.getKey()) {
+                result = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    public enum DropContext {
+
+        DROP,
+        TABLE
     }
 }
