@@ -413,8 +413,8 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String removeTags(String body) {
         String tmp = body;
-        tmp.replaceAll("\r\n", "\n"); // NOI18N
-        tmp.replaceAll("\r", "\n"); // NOI18N
+        tmp = tmp.replaceAll("\r\n", "\n"); // NOI18N
+        tmp = tmp.replaceAll("\r", "\n"); // NOI18N
         return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
@@ -781,7 +781,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
 
-    private class Fader {
+    private static class Fader {
 
         private JComponent target;
         private Timer timer = new Timer(50, new ActionListener() {

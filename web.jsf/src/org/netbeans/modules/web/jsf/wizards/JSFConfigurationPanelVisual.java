@@ -640,7 +640,8 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 File[] cp;
                 J2eePlatform platform = null;
                 try {
-                    platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                    if (serverInstanceID != null)
+                        platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                 } catch (InstanceRemovedException ex) {
                     Exceptions.printStackTrace(ex);
                 }

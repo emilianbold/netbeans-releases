@@ -40,6 +40,9 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.List;
 import org.junit.Test;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.modules.dlight.api.stack.ThreadSnapshot.MemoryAccessType;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import static org.junit.Assert.*;
 
 /**
@@ -48,7 +51,7 @@ import static org.junit.Assert.*;
 public class DataraceImplTest {
 
     @Test
-    public void testParse() {
+    public void testFromErprint() {
         List<DataraceImpl> dataraces = DataraceImpl.fromErprint(new String[]{
         "",
         "Total Races:  1 Experiment:  /tmp/dlight_av202691/experiment_2.er",
@@ -88,5 +91,22 @@ public class DataraceImplTest {
 
         DataraceImpl r1 = dataraces.get(0);
         assertEquals(0x804a040, r1.getAddress());
+        assertEquals(2, r1.getThreadDumps().size());
+
+        ThreadDump td1 = r1.getThreadDumps().get(0);
+        assertEquals(2, td1.getThreadStates().size());
+        assertEquals(MemoryAccessType.WRITE, td1.getThreadStates().get(0).getMemoryAccessType());
+        assertEquals(5, td1.getThreadStates().get(0).getStack().size());
+        assertEquals("clone", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
+        assertEquals("work", td1.getThreadStates().get(0).getStack().get(4).getFunction().getName());
+        assertEquals(54, td1.getThreadStates().get(0).getStack().get(4).getOffset());
+        assertEquals("pi_pthreads.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(4)).getFileName());
+        assertEquals(5, td1.getThreadStates().get(1).getStack().size());
+
+        ThreadDump td2 = r1.getThreadDumps().get(1);
+        assertEquals(2, td2.getThreadStates().size());
+        assertEquals(MemoryAccessType.WRITE, td2.getThreadStates().get(0).getMemoryAccessType());
+        assertEquals(5, td2.getThreadStates().get(0).getStack().size());
+        assertEquals(4, td2.getThreadStates().get(1).getStack().size());
     }
 }
