@@ -40,10 +40,9 @@ package org.netbeans.modules.dlight.tha;
 
 import java.awt.Component;
 import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JTextArea;
 import javax.swing.Renderer;
 import org.netbeans.modules.dlight.api.stack.Deadlock;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -59,7 +58,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
-    private MasterSlaveView msview;
+    private MasterSlaveView<Deadlock> msview;
     private Task refreshTask;
 
     public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, ThreadAnalyzerDataProvider dataProvider) {
@@ -71,7 +70,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         return configuration;
     }
 
-    public synchronized JComponent getComponent() {
+    public synchronized MasterSlaveView<Deadlock> getComponent() {
         if (msview == null) {
             msview = new MasterSlaveView<Deadlock>();
             msview.setSlaveRenderer(new DeadlockRenderer());
@@ -85,7 +84,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     public synchronized void refresh() {
         if (refreshTask == null) {
-            final MasterSlaveView view = (MasterSlaveView) getComponent();
+            final MasterSlaveView<Deadlock> view = getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     final List<? extends Deadlock> deadlocks = dataProvider.getDeadlocks();
@@ -100,14 +99,27 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-    private static class DeadlockRenderer extends JTextArea implements Renderer {
+    private static class DeadlockRenderer implements Renderer {
+
+        private List<FunctionCall> stack;
 
         public void setValue(Object aValue, boolean isSelected) {
-            setText(aValue.toString());
+            if (aValue instanceof Deadlock) {
+                Deadlock d = (Deadlock) aValue;
+                stack = d.getThreadStates().get(0).getHeldLockCallStack();
+//                StringBuilder buf = new StringBuilder();
+//                buf.append(d).append('\n');
+//                for (DeadlockThreadSnapshot dts : d.getThreadStates()) {
+//                    buf.append("\tThread:\n");
+//                    buf.append("\t\tLock held:\t0x").append(Long.toHexString(dts.getHeldLockAddress())).append('\n');
+//                    buf.append("\t\tLock requested:\t0x").append(Long.toHexString(dts.getRequestedLockAddress())).append('\n');
+//                }
+                //setText(buf.toString());
+            }
         }
 
         public Component getComponent() {
-            return this;
+            return StackPanelFactory.newStackPanel(stack);
         }
     }
 }
