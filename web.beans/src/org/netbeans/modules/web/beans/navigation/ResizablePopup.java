@@ -38,37 +38,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.beans.navigation;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.RootPaneContainer;
+
+import org.openide.windows.WindowManager;
 
 /**
- *
- * Copy of JavaTreeCellRenderer at java.navigation.
+ * Copied from ResizablePopup at java.navigation. 
  *
  * @author ads
  */
-public final class JavaTreeCellRenderer extends DefaultTreeCellRenderer {
-    private static final long serialVersionUID = 8126878473944648830L;
-
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
-        boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value,
-                sel, expanded, leaf, row, hasFocus);
-
-        if (!sel) {
-            setBackgroundNonSelectionColor(tree.getBackground());
+public final class ResizablePopup {   
+    static final String HELP_COOKIE = "help"; // NOI18N
+    
+    private static final WindowListener windowListener = new WindowAdapter() {
+        
+        public void windowClosing(WindowEvent windowEvent) {
+            cleanup(windowEvent.getWindow());
         }
 
-        if (value instanceof JavaElement) {
-            label.setIcon(((JavaElement) value).getIcon());
-            label.setToolTipText(((JavaElement) value).getTooltip());
+        private void cleanup(Window window) {
+            window.setVisible(false);
+            if (window instanceof RootPaneContainer) {
+                ((RootPaneContainer) window).setContentPane(new JPanel());
+            }
+            window.removeWindowListener(this);
+            window.dispose();
         }
+        
+        /*private boolean aboutToShowHelp(Window window) {
+            if (window instanceof RootPaneContainer) {
+                JComponent rootPane = ((RootPaneContainer) window).getRootPane();
+                if (Boolean.TRUE.equals(rootPane.getClientProperty(HELP_COOKIE))) {
+                    rootPane.putClientProperty(HELP_COOKIE, null);
+                    return true;
+                }
+            }
+            return false;
+        }*/
+    };
 
-        return label;
+    public static JDialog getDialog() {
+        JDialog dialog = new JDialog(WindowManager.getDefault().getMainWindow(), 
+                "", false) 
+        {
+            private static final long serialVersionUID = -2488334519927160789L;
+
+            public void setVisible(boolean visible) {
+                boolean wasVisible = isVisible();
+                if (wasVisible && !visible) {
+                    WebBeansNavigationOptions.setLastBounds(getBounds());
+                }
+                super.setVisible(visible);
+            }
+        };
+        //dialog.setUndecorated(true);
+        // TODO : dialog.setBounds(WebBeansNavigationOptions.getLastBounds());
+        dialog.addWindowListener(windowListener);
+        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+        return dialog;
     }
 }

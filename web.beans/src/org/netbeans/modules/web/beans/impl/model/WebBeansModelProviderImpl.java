@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -150,25 +152,25 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
     public List<AnnotationMirror> getBindings( Element element ,
-        AbstractModelImplementation iml )
+        AbstractModelImplementation modelImpl )
     {
-        // TODO Auto-generated method stub
-        return null;
+        WebBeansModelImplementation impl = getImplementation( modelImpl);
+        if ( impl == null ){
+            return Collections.emptyList();
+        }
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        List<? extends AnnotationMirror> annotations = impl.getHelper().
+            getCompilationController().getElements().getAllAnnotationMirrors( element);
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType type = annotationMirror.getAnnotationType();
+            TypeElement annotationElement = (TypeElement)type.asElement();
+            if ( isBinding( annotationElement , impl.getHelper()) ){
+                result.add( annotationMirror );
+            }
+        }
+        return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getDeploymentType(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public AnnotationMirror getDeploymentType( Element element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException
-    {
-        WebBeansModelImplementation model = getImplementation( impl );
-        if ( impl == null ){
-            return null;
-        }
-        return DeploymentTypeFilter.getDeploymentType(element , model );
-    }
-    
     private WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
