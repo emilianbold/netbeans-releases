@@ -54,6 +54,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.border.EmptyBorder;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
@@ -107,6 +108,7 @@ public class PresenceIndicator {
     
     private PresenceIndicator() {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
+        label.setBorder(new EmptyBorder(0, 5, 0, 5));
         label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
         helper = new MouseL();
         label.addMouseListener(helper);
