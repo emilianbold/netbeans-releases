@@ -61,10 +61,10 @@ public final class PhpInterpreter extends PhpProgram {
     }
 
     /**
-     * Get the default, <b>valid only</b> PHP interpreter.
-     * @return the default, <b>valid only</b> PHP interpreter.
-     * @throws org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException if PHP interpreter is not valid.
-     *         The reason can be found in the {@link org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException#getLocalizedMessage exception's message}.
+     * Get the {@link PhpOptions#getPhpInterpreter() default}, <b>valid only</b> PHP interpreter.
+     * @return the {@link PhpOptions#getPhpInterpreter() default}, <b>valid only</b> PHP interpreter.
+     * @throws PhpProgram.InvalidPhpProgramException if PHP interpreter is not valid.
+     *         The reason can be found in the {@link PhpProgram.InvalidPhpProgramException#getLocalizedMessage exception's message}.
      */
     public static PhpInterpreter getDefault() throws InvalidPhpProgramException {
         String command = Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter();
