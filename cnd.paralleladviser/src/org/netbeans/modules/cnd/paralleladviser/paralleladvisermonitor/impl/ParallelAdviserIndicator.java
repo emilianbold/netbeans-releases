@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
@@ -84,6 +86,8 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -107,8 +111,7 @@ import org.openide.util.NbBundle;
 
     @Override
     public void updated(List<DataRow> data) {
-        int processorsNumber = Runtime.getRuntime().availableProcessors();
-        if (processorsNumber <= 1) {
+        if (highLoadFinder.getProcessorsNumber() <= 1) {
             // no need to parallelize application on machine with single core processor.
             return;
         }
@@ -120,7 +123,7 @@ import org.openide.util.NbBundle;
             SunStudioDataCollector collector = new SunStudioDataCollector();
 
             for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
-                if((Double)functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks/2) {
+                if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks / 2) {
                     break;
                 }
                 CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionCall.getFunction().getQuilifiedName());
@@ -244,19 +247,20 @@ import org.openide.util.NbBundle;
         }
     }
 
-    private static class CpuHighLoadIntervalFinder {
+    private class CpuHighLoadIntervalFinder {
 
         private static final int INTERVAL_OF_HIGH_LOAD_BOUND = 10;
         private int intervalOfHighLoad;
         private int ticks;
         private double processorUtilizationSum;
+        private int processorsNumber;
 
         public CpuHighLoadIntervalFinder() {
             intervalOfHighLoad = 0;
             ticks = 0;
             processorUtilizationSum = 0;
+            processorsNumber = 0;
         }
-        static int processorsNumber = Runtime.getRuntime().availableProcessors();
 
         public boolean isHighLoadInterval() {
             return (intervalOfHighLoad > 0) && (intervalOfHighLoad % INTERVAL_OF_HIGH_LOAD_BOUND == 0);
@@ -266,27 +270,45 @@ import org.openide.util.NbBundle;
             return processorUtilizationSum / ticks;
         }
 
+        public int getProcessorsNumber() {
+            if (processorsNumber == 0) {
+                processorsNumber = 1;
+                DLightTarget target = getTarget();
+                if (target != null) {
+                    HostInfo hostInfo = null;
+                    try {
+                        hostInfo = HostInfoUtils.getHostInfo(target.getExecEnv());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (hostInfo != null) {
+                        processorsNumber = hostInfo.getCpuNum();
+                    }
+                }
+            }
+            return processorsNumber;
+        }
+
         public void update(List<DataRow> data) {
             for (DataRow dataRow : data) {
                 ticks++;
                 processorUtilizationSum += (Float) dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
             }
 
-            if (isSingleThreadOnOneProcessorHighLoaded(data, processorsNumber)) {
+            if (isSingleThreadOnOneProcessorHighLoaded(data)) {
                 intervalOfHighLoad++;
             } else {
                 intervalOfHighLoad = 0;
             }
         }
 
-        private static boolean isSingleThreadOnOneProcessorHighLoaded(List<DataRow> data, int processorsNumber) {
-
-            //HostInfoUtils
-
+        private boolean isSingleThreadOnOneProcessorHighLoaded(List<DataRow> data) {
             for (DataRow dataRow : data) {
                 double utime = (Float) dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
                 int threads = (Integer) dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
-                if (threads == 1 && 90 < utime * processorsNumber) {
+                if (threads == 1 && 90 < utime * getProcessorsNumber()) {
                     return true;
                 }
             }
