@@ -113,60 +113,72 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
+                    final boolean fullSilentInstaller = isJDK6U15orLater();                                        
                     final boolean javadbBundled = getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
-                    if(jre!=null) {
-                        if(javadbBundled) {
-                            overallProgress.addChild(jdkProgress,    progress.COMPLETE * 6 / 7);
-                            overallProgress.addChild(javadbProgress, progress.COMPLETE * 1 / 7);
-                        } else {
-                            overallProgress.addChild(jdkProgress, progress.COMPLETE);
-                        }
+                    
+                    if(fullSilentInstaller) {
+                        LogManager.log("    perform full silent installation...");
+                        overallProgress.addChild(jdkProgress, progress.COMPLETE);
                     } else {
-                        if(javadbBundled) {
-                            overallProgress.addChild(jdkProgress, progress.COMPLETE * 4 / 7 );
-                            overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 7);
-                            overallProgress.addChild(javadbProgress, progress.COMPLETE * 1 / 7);
+                        //before jdk6u15 there were separate jre and javadb installers
+                        if(jre!=null) {
+                            if(javadbBundled) {
+                                overallProgress.addChild(jdkProgress,    progress.COMPLETE * 6 / 7);
+                                overallProgress.addChild(javadbProgress, progress.COMPLETE * 1 / 7);
+                            } else {
+                                overallProgress.addChild(jdkProgress, progress.COMPLETE);
+                            }
                         } else {
-                            overallProgress.addChild(jdkProgress, progress.COMPLETE * 3 / 5 );
-                            overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 5);
+                            if(javadbBundled) {
+                                overallProgress.addChild(jdkProgress, progress.COMPLETE * 4 / 7 );
+                                overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 7);
+                                overallProgress.addChild(javadbProgress, progress.COMPLETE * 1 / 7);
+                            } else {
+                                overallProgress.addChild(jdkProgress, progress.COMPLETE * 3 / 5 );
+                                overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 5);
+                            }
                         }
                     }
-                    results = runJDKInstallerWindows(location, installer, jdkProgress);
+                    results = runJDKInstallerWindows(location, installer, jdkProgress);                    
                     if(results.getErrorCode()==0) {
                         getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
                                 "" + true);
                     }
                     addUninsallationJVM(results, location);
                     
-                    if(!progress.isCanceled() && results.getErrorCode()==0) {
-                        if(jre == null) {
-                            jreInstallation = true;
-                            final File jreInstaller = findJREWindowsInstaller();
-                            if(jreInstaller!=null) {
-                                results = runJREInstallerWindows(jreInstaller, jreProgress);                                
-                                addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
-                                if(results.getErrorCode()==0) {
-                                    getProduct().setProperty(JRE_INSTALLED_WINDOWS_PROPERTY,
-                                            "" + true);                                    
-                                }
-                            }
+                    if(fullSilentInstaller) {
+                        if (jre==null) {
+                            configureJREProductWindows(results);
                         } else {
-                            LogManager.log("... jre " + getProduct().getVersion() +
-                                    " is already installed, skipping its configuration");
+                              LogManager.log("... jre " + getProduct().getVersion() +
+                                        " is already installed, skipping its configuration");
+                        }
+                        configureJavaDBProductWindows(results);
+                    } else {
+                        //before jdk6u15(with fullSilentInstaller) there were separate jre and javadb installers
+                        if(!progress.isCanceled() && results.getErrorCode()==0) {
+                            if(jre == null) {
+                                jreInstallation = true;
+                                final File jreInstaller = findJREWindowsInstaller();
+                                if(jreInstaller!=null) {
+                                    results = runJREInstallerWindows(jreInstaller, jreProgress);
+                                    configureJREProductWindows(results);
+                                }
+                            } else {
+                                LogManager.log("... jre " + getProduct().getVersion() +
+                                        " is already installed, skipping its configuration");
+                            }
+                        }
+                        if (!progress.isCanceled() && javadbBundled && results.getErrorCode()==0) {
+                            final File javadbInstaller = findJavaDBWindowsInstaller();
+                            if (javadbInstaller != null) {
+                                javadbInstallation = true;
+                                getProduct().setProperty(JAVADB_INSTALLER_LOCATION_PROPERTY, javadbInstaller.getAbsolutePath());
+                                results = runJavaDBInstallerWindows(javadbInstaller, javadbProgress);
+                                configureJavaDBProductWindows(results);
+                            }
                         }
                     }
-                    if (!progress.isCanceled() && javadbBundled && results.getErrorCode()==0) {                        
-                        final File javadbInstaller = findJavaDBWindowsInstaller();                        
-                        if (javadbInstaller != null) {
-                            javadbInstallation = true;
-                            getProduct().setProperty(JAVADB_INSTALLER_LOCATION_PROPERTY, javadbInstaller.getAbsolutePath());
-                            results = runJavaDBInstallerWindows(javadbInstaller, javadbProgress);
-                            if (results.getErrorCode() == 0) {
-                                getProduct().setProperty(JAVADB_INSTALLED_WINDOWS_PROPERTY,
-                                        "" + true);
-                            }
-                        }
-                    }                    
                 } else {
                     LogManager.log("... jdk " + getProduct().getVersion() +
                             " is already installed, skipping JDK and JRE configuration");
@@ -355,6 +367,25 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     private boolean isJDK6U10orLater() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_10"));
+    }
+    private boolean isJDK6U15orLater() {       
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15"));
+    }
+
+    private void configureJREProductWindows(ExecutionResults results) {
+        LogManager.log(" configuring JRE Product...");
+        addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
+        if(results.getErrorCode()==0) {
+               getProduct().setProperty(JRE_INSTALLED_WINDOWS_PROPERTY,
+                    "" + true);
+        }
+    }
+    private void configureJavaDBProductWindows(ExecutionResults results) {
+        if(results.getErrorCode()==0) {
+            LogManager.log(" configuring JavaDB Product...");
+            getProduct().setProperty(JAVADB_INSTALLED_WINDOWS_PROPERTY,
+                        "" + true);
+        }
     }
             
     private ExecutionResults runJREInstallerWindows(File jreInstaller, Progress progress) throws InstallationException {
