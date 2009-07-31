@@ -44,17 +44,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
@@ -65,7 +61,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik
@@ -74,10 +69,8 @@ public abstract class FrameworkCommandSupport {
 
     public static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
 
-    protected static final Logger LOGGER = Logger.getLogger(FrameworkCommandSupport.class.getName());
-
-    // @GuardedBy(CACHE)
-    private static final Map<PhpModule, FrameworkCommandSupport> CACHE = new WeakHashMap<PhpModule, FrameworkCommandSupport>();
+    // @GuardedBy(COMMANDS_CACHE)
+    private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
     private static final ExecutionDescriptor COMMAND_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
             .frontWindow(true)
@@ -90,14 +83,28 @@ public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(this)
     private PluginListener pluginListener;
-    // @GuardedBy(this)
-    private List<FrameworkCommand> commands;
+
+    protected FrameworkCommandSupport(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
+    }
 
     /**
      * Get the name of the framework; it's used in the UI for selecting a command.
      * @return the name of the framework.
+     * @since 1.8
      */
-    protected abstract String getFrameworkName();
+    public abstract String getFrameworkName();
+
+    /**
+     * Run command for the given command descriptor.
+     * @param commandDescriptor descriptor for the selected framework command
+     * @since 1.8
+     * @see #runCommand()
+     * @see RunCommand
+     * @see CommandDescriptor
+     */
+    public abstract void runCommand(CommandDescriptor commandDescriptor);
 
     /**
      * Get options path for {@link ExecutionDescriptor execution descriptor}, can be <code>null</code>.
@@ -116,53 +123,27 @@ public abstract class FrameworkCommandSupport {
      * Get the framework commands. Typically in this method script is called and its output is parsed,
      * so the list of {@link FrameworkCommand commands} can be returned.
      * @return list of {@link FrameworkCommand commands}, can be <code>null</code> (typically if any error occurs).
-     * @throws InterruptedException if any error occurs.
-     * @throws ExecutionException if any error occurs.
      */
-    protected abstract List<FrameworkCommand> getFrameworkCommandsInternal() throws InterruptedException, ExecutionException;
+    protected abstract List<FrameworkCommand> getFrameworkCommandsInternal();
 
     /**
-     * Get {@link FrameworkCommandSupport} for the given PHP module. Only one instance per PHP module
-     * is created and returned, can return <code>null</code> if there's no {@link Factory} for the given PHP module.
-     * @param phpModule PHP module for which the command support is needed
-     * @return {@link FrameworkCommandSupport} or <code>null</code> if there's no {@link Factory} for the given PHP module.
-     * @see Factory
+     * Get {@link PhpModule PHP module} for which this framework command support is created.
+     * @return {@link PhpModule PHP module} for which this framework command support is created, never <code>null</code>.
+     * @since 1.8
      */
-    public static FrameworkCommandSupport forPhpModule(PhpModule phpModule) {
-        Parameters.notNull("phpModule", phpModule);
-
-        FrameworkCommandSupport commandSupport = null;
-        synchronized (CACHE) {
-            commandSupport = CACHE.get(phpModule);
-        }
-        if (commandSupport == null) {
-            for (FrameworkCommandSupport.Factory factory : getFrameworkCommandSupportFactories()) {
-                commandSupport = factory.create(phpModule);
-                if (commandSupport != null) {
-                    synchronized (CACHE) {
-                        CACHE.put(phpModule, commandSupport);
-                    }
-                    break;
-                }
-            }
-        }
-        return commandSupport;
-    }
-
-    private static List<FrameworkCommandSupport.Factory> getFrameworkCommandSupportFactories() {
-        return new ArrayList<FrameworkCommandSupport.Factory>(Lookups.forPath(PhpFrameworks.FRAMEWORK_PATH).lookupAll(FrameworkCommandSupport.Factory.class));
-    }
-
-    protected FrameworkCommandSupport(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public PhpModule getPhpModule() {
+        return phpModule;
     }
 
     /**
-     * Get framework commands, can be empty but never <code>null</code>.
-     * @return list of {@link FrameworkCommand framework commands}.
+     * Get framework commands, can be empty or <code>null</code> if not known already.
+     * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
-    public synchronized List<FrameworkCommand> getFrameworkCommands() {
+    public List<FrameworkCommand> getFrameworkCommands() {
+        List<FrameworkCommand> commands;
+        synchronized (COMMANDS_CACHE) {
+            commands = COMMANDS_CACHE.get(phpModule);
+        }
         return commands;
     }
 
@@ -197,14 +178,7 @@ public abstract class FrameworkCommandSupport {
     }
 
     final void refreshFrameworkCommands() {
-        List<FrameworkCommand> freshCommands = null;
-        try {
-            freshCommands = getFrameworkCommandsInternal();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
+        List<FrameworkCommand> freshCommands = getFrameworkCommandsInternal();
 
         synchronized (this) {
             if (pluginListener == null) {
@@ -213,13 +187,15 @@ public abstract class FrameworkCommandSupport {
                 // weakly referenced + hardcoded for now
                 FileUtil.addFileChangeListener(pluginListener, new File(folder, "plugins")); // NOI18N
             }
-            commands = freshCommands;
+        }
+        synchronized (COMMANDS_CACHE) {
+            COMMANDS_CACHE.put(phpModule, freshCommands);
         }
     }
 
     /**
      * Refresh framework commands in background.
-     * @param post {@link Runnable} taht is run afterwards.
+     * @param post {@link Runnable} that is run afterwards, can be <code>null</code>.
      */
     public final void refreshFrameworkCommandsLater(final Runnable post) {
         EXECUTOR.submit(new Runnable() {
@@ -284,12 +260,11 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Show the panel with framework commands with possibility to run any.
-     * @param runCommandListener {@link RunCommandListener listener} that is run when command is invoked.
-     * @since 1.5
+     * @since 1.8
+     * @see #runCommand(CommandDescriptor)
      */
-    public void runCommand(RunCommandListener runCommandListener) {
-        Parameters.notNull("runCommandListener", runCommandListener);
-        FrameworkCommandChooser.open(phpModule, getFrameworkName(), runCommandListener);
+    public void runCommand() {
+        FrameworkCommandChooser.open(this);
     }
 
     private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
@@ -363,29 +338,15 @@ public abstract class FrameworkCommandSupport {
         }
 
         private void changed() {
-            synchronized (FrameworkCommandSupport.this) {
-                commands = null;
+            synchronized (COMMANDS_CACHE) {
+                COMMANDS_CACHE.remove(getPhpModule());
             }
         }
     }
 
     /**
-     * Factory for creating {@link FrameworkCommandSupport}.
-     */
-    protected interface Factory {
-        /**
-         * Create {@link FrameworkCommandSupport} for the provided PHP module; can return <code>null</code>
-         * if this the particular implementation is not interested in it (typically only project's framework implementation
-         * will return an instance).
-         * @param phpModule PHP module
-         * @return {@link FrameworkCommandSupport} for the provided PHP module or <code>null</code>.
-         */
-        FrameworkCommandSupport create(PhpModule phpModule);
-    }
-
-    /**
      * Descriptor for the selected framework command.
-     * @see FrameworkCommandChooser#open(PhpModule, String, FrameworkCommandSupport.RunCommandListener)
+     * @see FrameworkCommandChooser#open(FrameworkCommandSupport)
      */
     public static final class CommandDescriptor {
 
@@ -416,10 +377,10 @@ public abstract class FrameworkCommandSupport {
     }
 
     /**
-     * Listener that is run when a command is invoked.
-     * @since 1.5
+     * Command that is run when a command is invoked.
+     * @since 1.8
      */
-    public static interface RunCommandListener {
+    public static interface RunCommand {
 
         /**
          * Called when a command is to be run.

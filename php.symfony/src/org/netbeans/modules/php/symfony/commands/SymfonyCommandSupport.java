@@ -42,8 +42,11 @@ package org.netbeans.modules.php.symfony.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -58,7 +61,6 @@ import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileUtil;
@@ -70,20 +72,27 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class SymfonyCommandSupport extends FrameworkCommandSupport {
+    private static final Logger LOGGER = Logger.getLogger(SymfonyCommandSupport.class.getName());
+
     static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
     static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
 
-    protected SymfonyCommandSupport(PhpModule phpModule) {
+    public SymfonyCommandSupport(PhpModule phpModule) {
         super(phpModule);
     }
 
-    public static SymfonyCommandSupport forCreatingProject(PhpModule phpModule) {
-        return new SymfonyCommandSupport(phpModule);
+    @Override
+    public String getFrameworkName() {
+        return NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_Symfony");
     }
 
     @Override
-    protected String getFrameworkName() {
-        return NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_Symfony");
+    public void runCommand(CommandDescriptor commandDescriptor) {
+        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        ExecutionDescriptor descriptor = getDescriptor();
+        String displayName = getOutputTitle(commandDescriptor);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+        service.run();
     }
 
     @Override
@@ -122,7 +131,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return externalProcessBuilder;
     }
 
-    protected List<FrameworkCommand> getFrameworkCommandsInternal() throws InterruptedException, ExecutionException {
+    protected List<FrameworkCommand> getFrameworkCommandsInternal() {
         ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
             return null;
@@ -140,8 +149,14 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         List<FrameworkCommand> freshCommands = Collections.emptyList();
         ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
-        if (task.get().intValue() == 0) {
-            freshCommands = new ArrayList<FrameworkCommand>(lineProcessor.getCommands());
+        try {
+            if (task.get().intValue() == 0) {
+                freshCommands = new ArrayList<FrameworkCommand>(lineProcessor.getCommands());
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return freshCommands;
     }
@@ -178,15 +193,6 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
 
         public void reset() {
-        }
-    }
-
-    public static class SymfonyFactory implements Factory {
-        public FrameworkCommandSupport create(PhpModule phpModule) {
-            if (SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-                return new SymfonyCommandSupport(phpModule);
-            }
-            return null;
         }
     }
 }

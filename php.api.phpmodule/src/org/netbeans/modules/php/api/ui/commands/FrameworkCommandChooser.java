@@ -79,7 +79,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.CommandDescriptor;
 import org.openide.DialogDescriptor;
@@ -106,23 +105,20 @@ public final class FrameworkCommandChooser extends JPanel {
     private static final Map<String, Map<FrameworkCommand, ParameterContainer>> PROJECT_TO_TASK
             = new HashMap<String, Map<FrameworkCommand, ParameterContainer>>();
 
-    private final PhpModule phpModule;
+    private final FrameworkCommandSupport frameworkCommandSupport;
 
     private final List<FrameworkCommand> allTasks = new ArrayList<FrameworkCommand>();
-    private final String frameworkName;
     private final JTextField taskParametersComboBoxEditor;
 
     private JButton runButton;
     private boolean refreshNeeded;
 
-    private FrameworkCommandChooser(PhpModule phpModule, final JButton runButton, final String frameworkName) {
-        assert phpModule != null;
+    private FrameworkCommandChooser(FrameworkCommandSupport frameworkCommandSupport, final JButton runButton) {
+        assert frameworkCommandSupport != null;
         assert runButton != null;
-        assert frameworkName != null;
 
-        this.phpModule = phpModule;
+        this.frameworkCommandSupport = frameworkCommandSupport;
         this.runButton = runButton;
-        this.frameworkName = frameworkName;
 
         initComponents();
         taskParametersComboBoxEditor = (JTextField) taskParametersComboBox.getEditor().getEditorComponent();
@@ -147,15 +143,17 @@ public final class FrameworkCommandChooser extends JPanel {
         updatePreview();
     }
 
-    public static void open(final PhpModule phpModule, String frameworkName, final FrameworkCommandSupport.RunCommandListener runCommandListener) {
-        assert runCommandListener != null;
+    public static void open(final FrameworkCommandSupport frameworkCommandSupport) {
+        assert frameworkCommandSupport != null;
         assert EventQueue.isDispatchThread() : "must be called from EDT";
 
+        final String frameworkName = frameworkCommandSupport.getFrameworkName();
         final JButton runButton = new JButton(getMessage("FrameworkCommandChooser.runButton")); // NOI18N
-        final FrameworkCommandChooser chooserPanel = new FrameworkCommandChooser(phpModule, runButton, frameworkName);
-        String title = getMessage("FrameworkCommandChooser.title", frameworkName, phpModule.getDisplayName()); // NOI18N
+        final FrameworkCommandChooser chooserPanel = new FrameworkCommandChooser(frameworkCommandSupport, runButton);
+        String title = getMessage("FrameworkCommandChooser.title", frameworkName, frameworkCommandSupport.getPhpModule().getDisplayName()); // NOI18N
 
-        runButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName)); // NOI18N
+        runButton.getAccessibleContext().setAccessibleDescription(
+                getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName)); // NOI18N
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -168,7 +166,8 @@ public final class FrameworkCommandChooser extends JPanel {
 
         final JButton refreshButton = new JButton();
         Mnemonics.setLocalizedText(refreshButton, getMessage("FrameworkCommandChooser.refreshButton")); // NOI18N
-        refreshButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));  // NOI18N
+        refreshButton.getAccessibleContext().setAccessibleDescription(
+                getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));  // NOI18N
         refreshButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
@@ -218,7 +217,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 FrameworkCommandChooser.lastTask = task.getCommand();
                 chooserPanel.storeParameters();
 
-                runCommandListener.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug));
+                frameworkCommandSupport.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug));
             }
         });
 
@@ -317,7 +316,7 @@ public final class FrameworkCommandChooser extends JPanel {
     }
 
     private Map<FrameworkCommand, ParameterContainer> getTasksToParams() {
-        String prjDir = phpModule.getSourceDirectory().getPath();
+        String prjDir = frameworkCommandSupport.getPhpModule().getSourceDirectory().getPath();
         Map<FrameworkCommand, ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
         if (result == null) {
             result = new HashMap<FrameworkCommand, ParameterContainer>();
@@ -357,7 +356,7 @@ public final class FrameworkCommandChooser extends JPanel {
      * box.
      */
     private void storeParameters() {
-        String prjDir = phpModule.getSourceDirectory().getPath();
+        String prjDir = frameworkCommandSupport.getPhpModule().getSourceDirectory().getPath();
         Map<FrameworkCommand, ParameterContainer> taskToParams = PROJECT_TO_TASK.get(prjDir);
         if (taskToParams == null) {
             taskToParams = new HashMap<FrameworkCommand, ParameterContainer>();
@@ -389,7 +388,7 @@ public final class FrameworkCommandChooser extends JPanel {
     /** Reloads all tasks for the current project. */
     private boolean reloadAllTasks() {
         allTasks.clear();
-        List<FrameworkCommand> commands = FrameworkCommandSupport.forPhpModule(phpModule).getFrameworkCommands();
+        List<FrameworkCommand> commands = frameworkCommandSupport.getFrameworkCommands();
         if (commands != null) {
             allTasks.addAll(commands);
             return false;
@@ -425,9 +424,9 @@ public final class FrameworkCommandChooser extends JPanel {
             taskParamLabel, taskParametersComboBox, taskHint
         };
         setEnabled(comps, false);
-        matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkName)}); // NOI18N
+        matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkCommandSupport.getFrameworkName())}); // NOI18N
 
-        FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(new Runnable() {
+        frameworkCommandSupport.refreshFrameworkCommandsLater(new Runnable() {
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {

@@ -46,7 +46,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
@@ -87,7 +86,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
 
         // prefetch commands
-        FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(null);
+        SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
