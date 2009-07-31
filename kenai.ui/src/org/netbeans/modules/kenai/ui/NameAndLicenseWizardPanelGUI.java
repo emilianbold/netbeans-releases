@@ -553,11 +553,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         additionalDescription.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.additionalDescription.AccessibleContext.accessibleDescription")); // NOI18N
         autoCommit.setSelected(true);
         Mnemonics.setLocalizedText(autoCommit, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.autoCommit.text"));
-        autoCommit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                autoCommitActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -646,10 +641,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         panel.fireChangeEvent();
     }//GEN-LAST:event_browseActionPerformed
-
-    private void autoCommitActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoCommitActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_autoCommitActionPerformed
 
     private void projectNameTextFieldKeyPressed(KeyEvent evt) {//GEN-FIRST:event_projectNameTextFieldKeyPressed
         if (prjNameCheckMessage!=null) {
