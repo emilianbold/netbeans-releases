@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,8 @@ package org.netbeans.modules.dbschema.util;
 
 import java.util.ResourceBundle;
 import java.sql.Types;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SQLTypeUtil extends Object {
 
@@ -70,6 +72,7 @@ public class SQLTypeUtil extends Object {
 				return getString("SQL_BINARY"); //NOI18N
 			case Types.BIT:
 				return getString("SQL_BIT"); //NOI18N
+                        case TypesJDBC4.NCHAR:
 			case Types.CHAR:
 				return getString("SQL_CHAR"); //NOI18N
 			case Types.DATE:
@@ -84,6 +87,7 @@ public class SQLTypeUtil extends Object {
 				return getString("SQL_INTEGER"); //NOI18N
 			case Types.LONGVARBINARY:
 				return getString("SQL_LONGVARBINARY"); //NOI18N
+                        case TypesJDBC4.LONGNVARCHAR:
 			case Types.LONGVARCHAR:
 				return getString("SQL_LONGVARCHAR"); //NOI18N
 			case Types.NULL:
@@ -104,6 +108,7 @@ public class SQLTypeUtil extends Object {
 				return getString("SQL_TINYINT"); //NOI18N
 			case Types.VARBINARY:
 				return getString("SQL_VARBINARY"); //NOI18N
+                        case TypesJDBC4.NVARCHAR:
 			case Types.VARCHAR:
 				return getString("SQL_VARCHAR"); //NOI18N
 			case Types.JAVA_OBJECT:
@@ -116,11 +121,13 @@ public class SQLTypeUtil extends Object {
 				return getString("SQL_ARRAY"); //NOI18N
 			case Types.BLOB:
 				return getString("SQL_BLOB"); //NOI18N
+                        case TypesJDBC4.NCLOB:
 			case Types.CLOB:
 				return getString("SQL_CLOB"); //NOI18N
 			case Types.REF:
 				return getString("SQL_REF"); //NOI18N
 			default:
+                                Logger.getLogger(SQLTypeUtil.class.getName()).log(Level.WARNING, "Unknown JDBC column type: " + sqlType + ". Returns null.");
 				return getString("SQL_UNKNOWN"); //NOI18N
 		}
 	}
@@ -158,6 +165,9 @@ public class SQLTypeUtil extends Object {
 			case Types.LONGVARCHAR:
 			case Types.VARCHAR:
 			case Types.VARBINARY:
+                        case TypesJDBC4.NCHAR:
+                        case TypesJDBC4.NVARCHAR:
+                        case TypesJDBC4.LONGNVARCHAR:
 				return true;
 		}
 
@@ -177,6 +187,7 @@ public class SQLTypeUtil extends Object {
                case Types.VARBINARY:
                case Types.LONGVARBINARY:
                case Types.OTHER:
+               case TypesJDBC4.NCLOB:
                    return true;
            }
 
