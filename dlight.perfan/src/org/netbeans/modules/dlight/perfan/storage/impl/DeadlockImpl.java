@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
@@ -49,9 +48,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.stack.Deadlock;
 import org.netbeans.modules.dlight.api.stack.DeadlockThreadSnapshot;
 import org.netbeans.modules.dlight.api.stack.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
-import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 
 /**
  * @author Alexey Vladykin
@@ -84,7 +81,6 @@ public final class DeadlockImpl implements Deadlock {
     private static final Pattern DEADLOCK_PATTERN = Pattern.compile("Deadlock\\s+#(\\d+),\\s+(Actual|Potential)\\s+deadlock"); // NOI18N
     private static final Pattern THREAD_PATTERN = Pattern.compile("\\s+Thread\\s+#\\d+"); // NOI18N
     private static final Pattern LOCK_PATTERN = Pattern.compile("\\s+Lock being (held|requested):\\s+0x([0-9a-fA-F]+)"); // NOI18N
-    private static final Pattern FUNCTION_PATTERN = Pattern.compile("(\\S+)\\s+\\+\\s+0x([0-9a-fA-F]+)(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
 
     public static List<DeadlockImpl> fromErprint(String[] lines) {
         List<DeadlockImpl> deadlocks = new ArrayList<DeadlockImpl>();
@@ -98,14 +94,14 @@ public final class DeadlockImpl implements Deadlock {
         return deadlocks;
     }
 
-    private static DeadlockImpl parseDeadlock(ListIterator<String> it, Matcher deadlockMatch) {
+    private static DeadlockImpl parseDeadlock(ListIterator<String> it, Matcher firstLineMatch) {
         int id;
         try {
-            id = Integer.parseInt(deadlockMatch.group(1));
+            id = Integer.parseInt(firstLineMatch.group(1));
         } catch (NumberFormatException ex) {
             id = -1;
         }
-        boolean actual = deadlockMatch.group(2).equals("Actual"); // NOI18N
+        boolean actual = firstLineMatch.group(2).equals("Actual"); // NOI18N
 
         List<DeadlockThreadSnapshot> threads = new ArrayList<DeadlockThreadSnapshot>();
         while (it.hasNext()) {
@@ -119,11 +115,11 @@ public final class DeadlockImpl implements Deadlock {
         return new DeadlockImpl(id, actual, threads);
     }
 
-    private static DeadlockThreadSnapshot parseThreadSnapshot(ListIterator<String> it, Matcher threadMatch) {
+    private static DeadlockThreadSnapshot parseThreadSnapshot(ListIterator<String> it, Matcher firstLineMatch) {
         long oldLockAddress = parseLockAddress(it.next(), "held"); // NOI18N
-        List<FunctionCall> oldLockStack = parseStack(it);
+        List<FunctionCall> oldLockStack = FunctionCallImpl.parseStack(it);
         long newLockAddress = parseLockAddress(it.next(), "requested"); // NOI18N
-        List<FunctionCall> newLockStack = parseStack(it);
+        List<FunctionCall> newLockStack = FunctionCallImpl.parseStack(it);
         return new DeadlockThreadSnapshotImpl(oldLockAddress, oldLockStack, newLockAddress, newLockStack);
     }
 
@@ -136,49 +132,6 @@ public final class DeadlockImpl implements Deadlock {
             }
         }
         return -1;
-    }
-
-    private static List<FunctionCall> parseStack(ListIterator<String> it) {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-        String line = it.next();
-        if (line.trim().startsWith("Stack:")) { // NOI18N
-            result.add(parseFunctionCall(line));
-            while (it.hasNext()) {
-                line = it.next();
-                if (8 <= line.length() - line.trim().length()) {
-                    // stack lines start with some tabs and many spaces
-                    result.add(parseFunctionCall(line));
-                } else {
-                    it.previous();
-                    break;
-                }
-            }
-            Collections.reverse(result);
-        }
-        return result;
-    }
-
-    private static FunctionCall parseFunctionCall(String line) {
-        Matcher m = FUNCTION_PATTERN.matcher(line);
-        if (m.find()) {
-            FunctionImpl func = new FunctionImpl(m.group(1), m.group(1).hashCode());
-
-            long lineNumber = -1;
-            if (m.group(3) != null) {
-                try {
-                    lineNumber = Long.parseLong(m.group(3));
-                } catch (NumberFormatException ex) {
-                }
-            }
-            FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
-            if (m.group(4) != null) {
-                call.setFileName(m.group(4));
-            }
-
-            return call;
-        } else {
-            return null;
-        }
     }
 
     private static class DeadlockThreadSnapshotImpl implements DeadlockThreadSnapshot {
