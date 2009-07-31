@@ -72,6 +72,7 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -226,15 +227,17 @@ class AST2Bytecode {
                                     // There are errors, give it up.
                                     return null;
                                 }
-                                TypeElement te;
                                 String array = "";
                                 while (type.getKind() == TypeKind.ARRAY) {
                                     type = ((ArrayType) type).getComponentType();
                                     array += "[]";
                                 }
-                                if (type.getKind() == TypeKind.DECLARED) {
-                                    te = (TypeElement) types.asElement(type);
-                                } else if (type.getKind() == TypeKind.TYPEVAR) {
+                                TypeKind k = type.getKind();
+                                if (k == TypeKind.DECLARED) {
+                                    TypeElement te = (TypeElement) types.asElement(type);
+                                    methodClassType = ElementUtilities.getBinaryName(te)+array;
+                                } else if (k == TypeKind.TYPEVAR) {
+                                    TypeElement te;
                                     TypeParameterElement tpe = (TypeParameterElement) types.asElement(type);
                                     List<? extends TypeMirror> exts = tpe.getBounds();
                                     if (exts.size() == 1) {
@@ -247,11 +250,13 @@ class AST2Bytecode {
                                     } else {
                                         return null; // Unsupported
                                     }
+                                    methodClassType = ElementUtilities.getBinaryName(te)+array;
+                                } else if (type instanceof PrimitiveType) {
+                                    methodClassType = type.toString()+array;
                                 } else {
-                                    ErrorManager.getDefault().notify(new IllegalStateException("Unexpected type "+type+" in "+treeNodes));
+                                    ErrorManager.getDefault().notify(new IllegalStateException("Unexpected type "+type+" of kind "+type.getKind()+" in "+treeNodes));
                                     return null;
                                 }
-                                methodClassType = ElementUtilities.getBinaryName(te)+array;
                             }
                         }
                         if (methodNameInBytecode != null) {

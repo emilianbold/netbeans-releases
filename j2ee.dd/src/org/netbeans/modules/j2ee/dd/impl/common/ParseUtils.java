@@ -76,7 +76,12 @@ public class ParseUtils {
             is.close();
             String message = ex.getMessage();
             if (message != null && message.startsWith(EXCEPTION_PREFIX)) {
-                return message.substring(EXCEPTION_PREFIX.length());
+                String versionStr = message.substring(EXCEPTION_PREFIX.length());
+                if ("".equals(versionStr) || "null".equals(versionStr)) { // NOI18N
+                    return null;
+                } else {
+                    return versionStr;
+                }
             } else {
                 throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotParse"), ex);
             }
