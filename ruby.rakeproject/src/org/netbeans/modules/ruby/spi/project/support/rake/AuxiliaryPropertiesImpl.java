@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 
 /**

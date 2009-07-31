@@ -112,7 +112,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        CountingSecurityManager.assertCounts("About 1000 * 7?", 7000, len);
+        CountingSecurityManager.assertCounts("About 1000 * 4?", 4000, len);
     }
 
     public void testGetNodesForAFolderExtxml() throws Exception {
@@ -124,7 +124,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        CountingSecurityManager.assertCounts("About 1000 * 15?", 15000, len);
+        CountingSecurityManager.assertCounts("About 1000 * 11?", 11000, len);
     }
 
     public Long call() throws Exception {

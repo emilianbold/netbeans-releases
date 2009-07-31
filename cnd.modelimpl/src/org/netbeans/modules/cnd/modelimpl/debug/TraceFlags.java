@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 
 /**
  * A common place for tracing flags that are used by several classes

@@ -75,7 +75,6 @@ public class ListenerGenerator {
     boolean isRequest;
     boolean isRequestAttr;
 
-    private JavaSource clazz;
     private GenerationUtils gu;
 
     /** Creates a new instance of ListenerGenerator */
@@ -89,8 +88,6 @@ public class ListenerGenerator {
     }
 
     public void generate(JavaSource clazz) throws IOException {
-        this.clazz = clazz;
-
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -111,7 +108,6 @@ public class ListenerGenerator {
         };
         ModificationResult result = clazz.runModificationTask(task);
         result.commit();
-
 
 //        if (isContext) addContextListenerMethods();
 //        if (isContextAttr) addContextAttrListenerMethods();

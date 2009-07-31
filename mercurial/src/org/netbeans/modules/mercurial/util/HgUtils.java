@@ -301,7 +301,21 @@ public class HgUtils {
         }
         return path;
     }
-    
+
+    /**
+     * Tells whether the given string is {@code null} or empty.
+     * A string is considered empty if it consists only of spaces (and possibly
+     * other spacing characters). The current implementation checks just for
+     * spaces, future implementations may also check for other spacing
+     * characters.
+     *
+     * @param  string to be verified or {@code null}
+     * @return  {@code true} if the string is {@null} or empty,
+     *          {@code false} otherwise
+     */
+    public static boolean isNullOrEmpty(String str) {
+        return (str == null) || (str.trim().length() == 0);
+    }
     
     /**
      * fixIniFilePathsOnWindows - converts '\' to '\\' in paths in IniFile on Windows
@@ -916,8 +930,7 @@ itor tabs #66700).
      * @return void
      */
     public static void forceStatusRefresh(File file) {
-        if (Mercurial.getInstance().isAdministrative(file)) return;
-        
+        if (isAdministrative(file)) return;
         try {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
 
@@ -1314,4 +1327,19 @@ itor tabs #66700).
         return retval;
     }
 
+    /**
+     * Tests <tt>.hg</tt> directory itself.
+     */
+    public static boolean isAdministrative(File file) {
+        String name = file.getName();
+        return isAdministrative(name) && file.isDirectory();
+    }
+
+    public static boolean isAdministrative(String fileName) {
+        return fileName.equals(".hg"); // NOI18N
+    }
+
+    public static boolean hgExistsFor(File file) {
+        return new File(file, ".hg").exists();
+    }
 }

@@ -341,20 +341,20 @@ final class DesignResourceMap extends ResourceMap {
                     col = new LinkedList<MultiDataObject.Entry>();
                 col.add(dobj.getPrimaryEntry());
                 col.addAll(dobj.secondaryEntries());
-            }
-            try {
-                String baseName = dobj.getName() + "_"; // NOI18N
-                for (FileObject fo : dobj.getPrimaryFile().getParent().getChildren()) {
-                    String fileName = fo.getNameExt();
-                    if (fileName.endsWith(".properties") && fileName.startsWith(baseName)) { // NOI18N
-                        DataObject dobj2 = DataObject.find(fo);
-                        if (dobj2 instanceof PropertiesDataObject) {
-                            col.add(((MultiDataObject)dobj2).getPrimaryEntry());
+                try {
+                    String baseName = dobj.getName() + "_"; // NOI18N
+                    for (FileObject fo : dobj.getPrimaryFile().getParent().getChildren()) {
+                        String fileName = fo.getNameExt();
+                        if (fileName.endsWith(".properties") && fileName.startsWith(baseName)) { // NOI18N
+                            DataObject dobj2 = DataObject.find(fo);
+                            if (dobj2 instanceof PropertiesDataObject) {
+                                col.add(((MultiDataObject)dobj2).getPrimaryEntry());
+                            }
                         }
                     }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
         DesignResourceMap parent = getDesignParent();

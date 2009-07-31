@@ -149,10 +149,7 @@ public class ProjectUtilities {
                 if (!wm.isEditorMode(mode)) {
                     continue;
                 }
-                for (TopComponent tc : mode.getTopComponents()) {
-                    if (!tc.isOpened()) {
-                        continue;
-                    }
+                for (TopComponent tc : wm.getOpenedTopComponents(mode)) {
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);
 
                 if (dobj != null) {

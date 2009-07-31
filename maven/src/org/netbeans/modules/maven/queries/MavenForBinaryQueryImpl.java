@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -57,6 +58,7 @@ import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -73,7 +75,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation,
         JavadocForBinaryQueryImplementation {
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private final HashMap<String, BinResult> map;
     /** Creates a new instance of MavenSourceForBinaryQueryImpl */
     public MavenForBinaryQueryImpl(NbMavenProjectImpl proj) {
@@ -200,26 +202,37 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getSrcRoot() {
-        Collection<FileObject> toReturn = new ArrayList<FileObject>();
+        Collection<FileObject> toReturn = new HashSet<FileObject>();
         List srcRoots = project.getOriginalMavenProject().getCompileSourceRoots();
         Iterator it = srcRoots.iterator();
         while (it.hasNext()) {
             String item = (String)it.next();
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(item)));
+            FileObject fo = FileUtilities.convertStringToFileObject(item);
             if (fo != null) {
                 toReturn.add(fo);
             }
         }
         URI[] genRoots = project.getGeneratedSourceRoots();
         for (int i = 0; i < genRoots.length; i++) {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(genRoots[i])));
+            FileObject fo = FileUtilities.convertURItoFileObject(genRoots[i]);
             if (fo != null) {
                 toReturn.add(fo);
             }
         }
+//        URI scala = project.getScalaDirectory(false);
+//        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
+//        if (scalafo != null) {
+//            toReturn.add(scalafo);
+//        }
+//        URI groovy = project.getGroovyDirectory(false);
+//        FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
+//        if (groovyfo != null) {
+//            toReturn.add(groovyfo);
+//        }
+
         URI[] res = project.getResources(false);
         for (int i = 0; i < res.length; i++) {
-            FileObject fo = FileUtil.toFileObject(new File(res[i]));
+            FileObject fo = FileUtilities.convertURItoFileObject(res[i]);
             if (fo != null) {
                 boolean ok = true;
                 //#166655 resource root cannot contain the real java/xxx roots
@@ -238,19 +251,30 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getTestSrcRoot() {
-        Collection<FileObject> toReturn = new ArrayList<FileObject>();
+        Collection<FileObject> toReturn = new HashSet<FileObject>();
         List srcRoots = project.getOriginalMavenProject().getTestCompileSourceRoots();
         Iterator it = srcRoots.iterator();
         while (it.hasNext()) {
             String item = (String)it.next();
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(item)));
+            FileObject fo = FileUtilities.convertStringToFileObject(item);
             if (fo != null) {
                 toReturn.add(fo);
             }
         }
+//        URI scala = project.getScalaDirectory(true);
+//        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
+//        if (scalafo != null) {
+//            toReturn.add(scalafo);
+//        }
+//        URI groovy = project.getGroovyDirectory(true);
+//        FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
+//        if (groovyfo != null) {
+//            toReturn.add(groovyfo);
+//        }
+
         URI[] res = project.getResources(true);
         for (int i = 0; i < res.length; i++) {
-            FileObject fo = FileUtil.toFileObject(new File(res[i]));
+            FileObject fo = FileUtilities.convertURItoFileObject(res[i]);
             if (fo != null) {
                 boolean ok = true;
                 //#166655 resource root cannot contain the real java/xxx roots

@@ -16,28 +16,6 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
-                    // due to compatibility with servlet2.3
-                    public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public int sizeTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
-                    public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_3_0);
-                    }
                     public void setJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) {
                         if (value==null) setJspConfig(new org.netbeans.modules.j2ee.dd.api.web.JspConfig[]{});
                         else setJspConfig(new org.netbeans.modules.j2ee.dd.api.web.JspConfig[]{value});
@@ -813,5 +791,13 @@ public void setUrlPattern(String value) {
             <namespace>http://java.sun.com/xml/ns/javaee</namespace>
             <bean-name>DispatcherType</bean-name>
             <wrapper-class>java.lang.String</wrapper-class>
+        </meta-element>
+        <meta-element>
+            <dtd-name>absoluteOrderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>AbsoluteOrdering</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering
+            </implements>
         </meta-element>
 </metaDD>

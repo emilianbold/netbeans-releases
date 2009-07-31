@@ -68,4 +68,7 @@ public interface WebAppParseProxy {
     Map<String, String[]> getTaglibMap(boolean useEditor) throws IOException;
     
     URLClassLoader getWAClassLoader();
+
+    // #146242
+    boolean isValid();
 }

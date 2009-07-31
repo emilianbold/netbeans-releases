@@ -51,8 +51,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler.Pair;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -122,17 +124,9 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of GCC on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_SOLARIS_INTEL);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("/usr/include");
@@ -186,16 +180,9 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of GNU on Mac");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_MACOSX);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
 
@@ -256,17 +243,9 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("C:/MinGW/bin/../lib/gcc/mingw32/3.4.5/../../../../include");
@@ -334,17 +313,9 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of TDM MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW_TDM", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("D:/tec/mingw/include");
@@ -404,17 +375,9 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of Cygwin on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
@@ -439,4 +402,14 @@ public class GNUCCCCompilerTest {
         assert (golden.equals(out));
     }
 
+    private static final class MyGNUCCCompiler  extends GNUCCCompiler {
+        Pair pair = new Pair();
+        protected MyGNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+            super(env, flavor, kind, name, displayName, path);
+        }
+        @Override
+        protected String normalizePath(String path) {
+            return path;
+        }
+    }
 }

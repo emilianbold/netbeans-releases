@@ -5,9 +5,6 @@
 
 <!--
 For now, web-fragment is defined exactly the same way as web-app.
-I believe the XSD for web-fragment should be changed before final release
-of Java EE 6 specification.
-TODO: adapt this to final version of web-fragment XSD
 -->
   
             <dtd-name>web-fragment</dtd-name>
@@ -101,6 +98,15 @@ TODO: adapt this to final version of web-fragment XSD
                         if (values==null || values.length==0) return null;
                         else return values[0];
                     }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering newAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
+                    }
+                    public void setAbsoluteOrdering(org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
+                    }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] getAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
+                    }
             </user-code>
         </meta-element>
         <meta-element>
@@ -142,19 +148,19 @@ TODO: adapt this to final version of web-fragment XSD
                 </implements>
                 <user-code>
 public String getServletName() {
-    return (String)this.getValue(SERVLET_NAME, 0);
+    return this.sizeServletName() > 0 ? (String)this.getValue(SERVLET_NAME, 0) : null;
 }
 
 public void setServletName(String value) {
-    this.setValue(SERVLET_NAME, 0, value);
+    setServletNames(value != null ? new String[]{value} : new String[]{});
 }
 
 public String getUrlPattern() {
-    return (String)this.getValue(URL_PATTERN, 0);
+    return this.sizeUrlPattern() > 0 ? (String)this.getValue(URL_PATTERN, 0) : null;
 }
 
 public void setUrlPattern(String value) {
-    this.setValue(URL_PATTERN, 0, value);
+    setUrlPatterns(value != null ? new String[]{value} : new String[]{});
 }
                 </user-code>
         </meta-element>
@@ -822,5 +828,37 @@ public void setUrlPattern(String value) {
             <namespace>http://java.sun.com/xml/ns/javaee</namespace>
             <bean-name>DispatcherType</bean-name>
             <wrapper-class>java.lang.String</wrapper-class>
+        </meta-element>
+        <meta-element>
+            <dtd-name>absoluteOrderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>AbsoluteOrdering</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering
+            </implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>orderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrdering</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrdering
+            </implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>ordering-orderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrderingItems</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingItems
+            </implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>ordering-othersType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrderingOthersItem</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingOthersItem
+            </implements>
         </meta-element>
 </metaDD>

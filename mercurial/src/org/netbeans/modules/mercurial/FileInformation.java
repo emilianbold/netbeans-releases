@@ -190,6 +190,15 @@ public class FileInformation implements Serializable {
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY |
             FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY;
     
+    public static final int COUNTER_NEW_FILES = 0;
+    public static final int COUNTER_DELETED_FILES = 1;
+    public static final int COUNTER_MODIFIED_FILES = 2;
+    public static final int COUNTER_CONFLICTED_FILES = 3;
+    private static final int COUNTER_FLAT_NEW_FILES = 4;
+    private static final int COUNTER_FLAT_DELETED_FILES = 5;
+    private static final int COUNTER_FLAT_MODIFIED_FILES = 6;
+    private static final int COUNTER_FLAT_CONFLICTED_FILES = 7;
+    private static final int COUNTER_MAX_INDEX = COUNTER_CONFLICTED_FILES;
     
     /**
      * Status constant.
@@ -206,6 +215,8 @@ public class FileInformation implements Serializable {
      */ 
     private final boolean   isDirectory;
     
+    private final int[] counters = new int[(COUNTER_MAX_INDEX + 1) * 2];
+
     /**
      * For deserialization purposes only.
      */ 
@@ -218,6 +229,7 @@ public class FileInformation implements Serializable {
         this.status = status;
         this.entry = entry;
         this.isDirectory = isDirectory;
+        initializeCounters();
     }
 
     FileInformation(int status, boolean isDirectory) {
@@ -246,17 +258,8 @@ public class FileInformation implements Serializable {
      * is not versioned or its entry is invalid
      */
     public FileStatus getStatus(File file) {
-        if (entry == null && file != null) {
-            readEntry(file);
-        }
         return entry;
     }
-    
-    private void readEntry(File file) {
-        // Fetches File info from .svn directory:
-        // entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
-        entry = null;       // TODO: read your detailed information about the file here, or disregard the entry field
-    }    
 
     /**
      * Returns localized text representation of status.
@@ -348,5 +351,87 @@ public class FileInformation implements Serializable {
 
     public String toString() {
         return "Text: " + status + " " + getStatusText(status); // NOI18N
+    }
+
+    boolean addToCounter (int counterType, int value, boolean directChild) {
+        assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
+        boolean importantCounterChanged = false;
+        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) {
+            synchronized (counters) {
+                int mostImportantCounter = getMostImportantCounter(false, Collections.EMPTY_SET);
+                counters[counterType] += value;
+                if (directChild) {
+                    counters[counterType + 1 + COUNTER_MAX_INDEX] += value;
+                }
+                assert counters[counterType] >= 0;
+                importantCounterChanged = mostImportantCounter != getMostImportantCounter(false, Collections.EMPTY_SET);
+            }
+        }
+        return importantCounterChanged;
+    }
+
+    int getCounter (int counterType, boolean onlyDirectChildren) {
+        assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
+        int counterValue = -1;
+        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) {
+            synchronized (counters) {
+                counterValue = counters[onlyDirectChildren ? COUNTER_MAX_INDEX + 1 + counterType : counterType];
+            }
+        }
+        return counterValue;
+    }
+
+    int getMoreImportantCounter (int counter, boolean onlyDirectChildren, Set<FileInformation> exclusions) {
+        int mostImportantCounter;
+        synchronized (counters) {
+            mostImportantCounter = getMostImportantCounter(onlyDirectChildren, exclusions);
+        }
+        if (counter >= 0 && counter <= COUNTER_MAX_INDEX && counter > mostImportantCounter) {
+            mostImportantCounter = counter;
+        }
+        return mostImportantCounter;
+    }
+
+    private void initializeCounters () {
+        if (!isDirectory) {
+            synchronized (counters) {
+                if ((status & STATUS_VERSIONED_CONFLICT) != 0) {
+                    counters[COUNTER_CONFLICTED_FILES] = counters[COUNTER_FLAT_CONFLICTED_FILES] = 1;
+                } else if ((status & (STATUS_VERSIONED_REMOVEDLOCALLY | STATUS_VERSIONED_DELETEDLOCALLY)) != 0) {
+                    counters[COUNTER_DELETED_FILES] = counters[COUNTER_FLAT_DELETED_FILES] = 1;
+                } else if ((status & (STATUS_VERSIONED_ADDEDLOCALLY | STATUS_NOTVERSIONED_NEWLOCALLY)) != 0) {
+                    counters[COUNTER_NEW_FILES] = counters[COUNTER_FLAT_NEW_FILES] = 1;
+                } else if ((status & STATUS_VERSIONED_MODIFIEDLOCALLY) != 0) {
+                    counters[COUNTER_MODIFIED_FILES] = counters[COUNTER_FLAT_MODIFIED_FILES] = 1;
+                }
+            }
+        }
+    }
+
+    private int getMostImportantCounter(boolean onlyDirectChildren, Set<FileInformation> exclusions) {
+        int mostImportantCounter = -1;
+        int counterBase = onlyDirectChildren ? COUNTER_MAX_INDEX + 1 : 0;
+        int exclusionsConflicted = 0;
+        int exclusionsModified = 0;
+        for (FileInformation info : exclusions) {
+            if ((info.getStatus() & STATUS_VERSIONED_CONFLICT) != 0) {
+                ++exclusionsConflicted;
+            }
+            if ((info.getStatus() & (STATUS_VERSIONED_REMOVEDLOCALLY
+                    | STATUS_VERSIONED_DELETEDLOCALLY
+                    | STATUS_VERSIONED_ADDEDLOCALLY
+                    | STATUS_NOTVERSIONED_NEWLOCALLY
+                    | STATUS_VERSIONED_MODIFIEDLOCALLY)) != 0) {
+                ++exclusionsModified;
+            }
+        }
+        if (counters[counterBase + COUNTER_CONFLICTED_FILES] - exclusionsConflicted > 0) {
+            mostImportantCounter = COUNTER_CONFLICTED_FILES;
+        } else if (counters[counterBase + COUNTER_DELETED_FILES]
+                + counters[counterBase + COUNTER_NEW_FILES]
+                + counters[counterBase + COUNTER_MODIFIED_FILES] - exclusionsModified > 0) {
+            mostImportantCounter = COUNTER_MODIFIED_FILES;
+        }
+        return mostImportantCounter;
     }
 }

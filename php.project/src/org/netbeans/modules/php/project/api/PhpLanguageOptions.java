@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.php.project.api;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
@@ -76,21 +74,13 @@ public final class PhpLanguageOptions {
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
 
         if (file != null) {
-            PhpProject phpProject = getPhpProject(file);
+            PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(file);
             if (phpProject != null) {
                 shortTagsEnabled = ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
                 aspTagsEnabled = ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
             }
         }
         return new Properties(shortTagsEnabled, aspTagsEnabled);
-    }
-
-    private static PhpProject getPhpProject(FileObject file) {
-        Project project = FileOwnerQuery.getOwner(file);
-        if (project instanceof PhpProject) {
-            return (PhpProject) project;
-        }
-        return null;
     }
 
     /**

@@ -108,7 +108,7 @@ public class TransportTestCase extends RemoteTestBase {
     public void testCopyTo() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
         FileWriter fstream = new FileWriter(localFile);
-        StringBuffer sb = new StringBuffer("File from "); //NOI18N
+        StringBuilder sb = new StringBuilder("File from "); //NOI18N
         try {
             InetAddress addr = InetAddress.getLocalHost();
             sb.append( addr.getHostName() );

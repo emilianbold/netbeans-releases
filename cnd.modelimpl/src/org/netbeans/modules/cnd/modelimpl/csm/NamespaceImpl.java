@@ -98,7 +98,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations;
     
     private final TreeMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> nsDefinitions;
-    private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     
     private final boolean global;
@@ -574,6 +574,15 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     private ProjectBase _getProject() {
+        Object o = projectRef;
+        if (o instanceof ProjectBase) {
+            return (ProjectBase) o;
+        } else if (o instanceof Reference) {
+            ProjectBase prj = (ProjectBase)((Reference) o).get();
+            if (prj != null) {
+                return prj;
+            }
+        }
         projectLock.readLock().lock();
         try {
             ProjectBase prj = null;

@@ -101,7 +101,8 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 hasRemote,
                 hasLocal,
                 methodsNode == null ? hasLocal : methodsNode.isLocal(),
-                methodsNode == null ? hasRemote : !methodsNode.isLocal(),
+                methodsNode == null ? hasRemote : methodsNode.isRemote(),
+                ejbMethodController.allowsNoInterface(),
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }

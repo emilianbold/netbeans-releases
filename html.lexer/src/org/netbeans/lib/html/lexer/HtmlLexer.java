@@ -177,6 +177,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_STYLE_CONTENT_ENDTAG = 40; //after </ in style content
     
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
+
+    private static final int ISI_EL_DELIMITER = 42; //after $ or # in text
+    private static final int ISI_EL = 44; //inside EL but before }
         
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
@@ -338,6 +341,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISA_REF;
                             lexerSubState = ISI_TEXT;
                             break;
+                        case '#':
+                        case '$':
+                            lexerState = ISI_EL_DELIMITER;
+                            break;
                         default:
                             lexerState = ISI_TEXT;
                             break;
@@ -354,9 +361,39 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                 return token(HTMLTokenId.TEXT);
                             }
                             break;
+                        case '#':
+                        case '$':
+                            lexerState = ISI_EL_DELIMITER;
+                            break;
                     }
                     break;
-                    
+
+                case ISI_EL_DELIMITER:
+                    if(actChar == '{') {
+                        //found beginning of EL
+                        if(input.readLength() > 2) {
+                            input.backup(2); //backup ${
+                            lexerState = INIT;
+                            return token(HTMLTokenId.TEXT);
+                        } else {
+                            //no text before, we can switch to EL
+                            lexerState = ISI_EL;
+                            break;
+                        }
+                    } else {
+                        lexerState = ISI_TEXT;
+                    }
+                    break;
+
+                case ISI_EL:
+                    if(actChar == '}') {
+                        //end of EL
+                        lexerState = INIT;
+                        return token(HTMLTokenId.TEXT);
+                    } else {
+                        break;
+                    }
+
                 case ISI_ERROR:      // DONE
                     lexerState = INIT;
                     return token(HTMLTokenId.ERROR);
@@ -978,6 +1015,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
+            case ISI_EL_DELIMITER:
+            case ISI_EL:
                 return token(HTMLTokenId.TEXT);
                 
             case ISA_REF:

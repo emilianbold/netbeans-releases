@@ -56,35 +56,103 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance"/>
             <file name="org-netbeans-core-ui-options-filetypes-OpenAsAction.instance"/>
-            <file name="org-openide-actions-CopyAction.instance"/>
-            <file name="org-openide-actions-CutAction.instance"/>
-            <file name="org-openide-actions-DeleteAction.instance"/>
-            <file name="org-openide-actions-FindAction.instance"/>
+            <file name="org-openide-actions-CopyAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="copy-to-clipboard"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/copy.gif"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Copy"/>
+            </file>
+            <file name="org-openide-actions-CutAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="cut-to-clipboard"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/cut.gif"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Cut"/>
+            </file>
+            <file name="org-openide-actions-DeleteAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="delete"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/delete.gif"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Delete"/>
+                <attr name="asynchronous" boolvalue="true"/>
+            </file>
+            <file name="org-openide-actions-FindAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="org.openide.actions.FindAction"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/find.gif"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Find"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
             <file name="org-openide-actions-GotoAction.instance"/>
             <file name="org-openide-actions-PasteAction.instance"/>
             <file name="org-openide-actions-RedoAction.instance"/>
-            <file name="org-openide-actions-ReplaceAction.instance"/>
+            <file name="org-openide-actions-ReplaceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                <attr name="key" stringvalue="org.openide.actions.ReplaceAction"/>
+                <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Replace"/>
+            </file>
             <file name="org-openide-actions-UndoAction.instance"/>
         </folder>
 
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            <file name="org-openide-actions-EditAction.instance"/>
+            <file name="org-openide-actions-EditAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' methodvalue='org.openide.awt.Actions.performer'/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/awt/Bundle#Edit'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Editable"/>
+            </file>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
             <file name="org-openide-actions-InstantiateAction.instance"/>
             <file name="org-openide-actions-MoveDownAction.instance"/>
             <file name="org-openide-actions-MoveUpAction.instance"/>
             <file name="org-openide-actions-NewAction.instance"/>
-            <file name="org-openide-actions-OpenAction.instance"/>
+            <file name="org-openide-actions-OpenAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' methodvalue='org.openide.awt.Actions.performer'/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/awt/Bundle#Open'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Openable"/>
+            </file>
+            <file name="org-openide-actions-CloseAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' methodvalue='org.openide.awt.Actions.performer'/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/awt/Bundle#Close'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Closable"/>
+            </file>
             <file name="org-openide-actions-PopupAction.instance"/>
-            <file name="org-openide-actions-PrintAction.instance"/>
+            <file name="org-openide-actions-PrintAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' methodvalue='org.openide.awt.Actions.performer'/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/awt/Bundle#Print'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Printable"/>
+            </file>
             <file name="org-openide-actions-PageSetupAction.instance"/>
             <file name="org-openide-actions-FileSystemRefreshAction.instance"/>
             <file name="org-openide-actions-RenameAction.instance"/>
             <file name="org-openide-actions-ReorderAction.instance"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <file name="org-openide-actions-SaveAction.instance"/>
+            <file name="org-openide-actions-SaveAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' newvalue='org.openide.actions.SaveAction'/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/actions/Bundle#Save'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="iconBase" stringvalue='org/openide/resources/actions/save.png'/>
+                <attr name="type" stringvalue="org.openide.cookies.SaveCookie"/>
+            </file>
             <file name="org-openide-actions-SaveAsAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.SaveAsAction.create"/>
                 <attr name="instanceClass" stringvalue="org.openide.util.ContextAwareAction"/>
@@ -92,7 +160,15 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-PropertiesAction.instance"/>
             <file name="org-openide-actions-FileSystemAction.instance"/>
             <file name="org-openide-actions-ToolsAction.instance"/>
-            <file name="org-openide-actions-ViewAction.instance"/>
+            <file name="org-openide-actions-ViewAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' methodvalue='org.openide.awt.Actions.performer'/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/awt/Bundle#View'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Viewable"/>
+            </file>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-JumpNextAction.instance"/>
             <file name="org-netbeans-core-actions-JumpPrevAction.instance"/>

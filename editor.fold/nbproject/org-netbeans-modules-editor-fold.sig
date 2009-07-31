@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.9.1
+#Version 1.10.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -61,7 +61,7 @@ meth public void toggle(org.netbeans.api.editor.fold.Fold)
 meth public void unlock()
 supr java.lang.Object
 hfds apiPackageAccessorRegistered,execution
-hcls 1,ApiPackageAccessorImpl
+hcls ApiPackageAccessorImpl
 
 CLSS public final org.netbeans.api.editor.fold.FoldHierarchyEvent
 meth public int getAddedFoldCount()
@@ -160,5 +160,5 @@ meth public static boolean isBoundsValid(int,int,int,int)
 meth public void removeFromHierarchy(org.netbeans.api.editor.fold.Fold,org.netbeans.spi.editor.fold.FoldHierarchyTransaction)
 supr java.lang.Object
 hfds impl,spiPackageAccessorRegistered
-hcls 1,SpiPackageAccessorImpl
+hcls SpiPackageAccessorImpl
 

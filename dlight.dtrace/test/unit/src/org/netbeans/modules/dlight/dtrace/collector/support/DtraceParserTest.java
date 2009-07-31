@@ -47,10 +47,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
@@ -148,22 +149,27 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+        public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
             fail("Parser is not expected to call this method");
             return null;
         }
 
-        public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+        public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
             fail("Parser is not expected to call this method");
             return null;
         }
 
-        public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
             fail("Parser is not expected to call this method");
             return null;
         }
 
-        public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
             fail("Parser is not expected to call this method");
             return null;
         }

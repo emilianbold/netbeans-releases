@@ -93,7 +93,9 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
-        log.log(Level.FINEST, "start element with the name " + element);//NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "start element with the name " + element);//NOI18N
+        }
         if (element.equals(TOOL_ELEMENT)) {
             String toolName = atts.getValue(TOOL_NAME_ATTRIBUTE);
             boolean b = atts.getValue(TOOL_ENABLED_ATTRIBUTE).equals(TRUE_VALUE);
@@ -103,7 +105,9 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
-        log.log(Level.FINEST, "end element with the name " + element);//NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "end element with the name " + element);//NOI18N
+        }
         if (element.equals(PROFILE_ON_RUN_ELEMENT)) {
             boolean b = currentText.equals(TRUE_VALUE);
             gizmoOptions.getProfileOnRun().setValue(b);

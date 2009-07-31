@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
@@ -76,7 +77,7 @@ public class BugzillaConfiguration {
                 conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
             }
         };
-        repository.getExecutor().execute(cmd);
+        repository.getExecutor().execute(cmd, true, false);
         if(!cmd.hasFailed()) {
             return conf[0];
         }
@@ -262,6 +263,17 @@ public class BugzillaConfiguration {
         } else {
             return rc.getTargetMilestones(product);
         }
+    }
+
+    /**
+     * Returns the bugzilla repositories version 
+     * @return
+     */
+    public BugzillaVersion getInstalledVersion() {
+        if(rc == null) {
+            return null;
+        }
+        return rc.getInstallVersion();
     }
 
 }

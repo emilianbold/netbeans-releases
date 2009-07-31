@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.22.1
+#Version 1.25.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -51,6 +51,8 @@ fld public final static java.lang.String ARTIFACT_TYPE_FOLDER = "folder"
 fld public final static java.lang.String ARTIFACT_TYPE_JAR = "jar"
 fld public final static java.lang.String COMMAND_DEBUG_FIX = "debug.fix"
 fld public final static java.lang.String COMMAND_JAVADOC = "javadoc"
+fld public final static java.lang.String SOURCES_HINT_MAIN = "main"
+fld public final static java.lang.String SOURCES_HINT_TEST = "test"
 fld public final static java.lang.String SOURCES_TYPE_JAVA = "java"
 fld public final static java.lang.String SOURCES_TYPE_RESOURCES = "resources"
 supr java.lang.Object
@@ -58,6 +60,7 @@ supr java.lang.Object
 CLSS public org.netbeans.api.java.project.classpath.ProjectClassPathModifier
 meth public static boolean addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean addLibraries(org.netbeans.api.project.libraries.Library[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static boolean addProjects(org.netbeans.api.project.Project[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean addRoots(java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean addRoots(java.net.URL[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean removeAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
@@ -109,6 +112,7 @@ meth protected abstract boolean removeLibraries(org.netbeans.api.project.librari
 meth protected abstract boolean removeRoots(java.net.URL[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected abstract java.lang.String[] getExtensibleClassPathTypes(org.netbeans.api.project.SourceGroup)
 meth protected abstract org.netbeans.api.project.SourceGroup[] getExtensibleSourceGroups()
+meth protected boolean addProjects(org.netbeans.api.project.Project[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected boolean addRoots(java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected boolean removeRoots(java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected final java.lang.String performSharabilityHeuristics(java.net.URI,org.netbeans.spi.project.support.ant.AntProjectHelper) throws java.io.IOException,java.net.URISyntaxException

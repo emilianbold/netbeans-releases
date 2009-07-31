@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,7 +55,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
  * @author Tomas Stupka
  */
 class Commandline {
-    
+
     private Process           cli;
     private BufferedReader    ctOutput;
     private BufferedReader    ctError;
@@ -99,8 +99,8 @@ class Commandline {
         }        
         Subversion.LOG.fine("cli: Process destroyed");
     }
-    
-    void exec(SvnCommand command) throws IOException {        
+
+    void exec(SvnCommand command) throws IOException {
         canceled = false;
         command.prepareCommand();        
         
@@ -143,6 +143,7 @@ class Commandline {
             }     
             if(canceled) return;
             cli.waitFor();
+            command.commandCompleted(cli.exitValue());
         } catch (InterruptedException ie) {
             Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
         } catch (InterruptedIOException ie) {

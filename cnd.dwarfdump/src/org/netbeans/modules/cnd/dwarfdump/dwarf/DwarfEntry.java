@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ACCESS;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
@@ -78,7 +79,7 @@ public class DwarfEntry {
         return abbriviationTableEntry.getKind();
     }
     
-    public String getName() {
+    public String getName() throws IOException {
         if (name == null) {
             Object nameAttr = getAttributeValue(ATTR.DW_AT_name);
             name = (nameAttr == null) ? "" : stripComments((String)nameAttr); // NOI18N
@@ -87,7 +88,7 @@ public class DwarfEntry {
         return name;
     }
     
-    public String getQualifiedName() {
+    public String getQualifiedName() throws IOException {
         if (qualifiedName == null) {
             DwarfEntry specification = getSpecification();
             
@@ -101,7 +102,7 @@ public class DwarfEntry {
         return qualifiedName;
     }
     
-    private String constructQualifiedName() {
+    private String constructQualifiedName() throws IOException {
         if (parent == null) {
             return getName();
         }
@@ -135,7 +136,7 @@ public class DwarfEntry {
         return str.trim();
     }
     
-    public void setQualifiedName(String qualifiedName) {
+    public void setQualifiedName(String qualifiedName) throws IOException {
         this.qualifiedName = qualifiedName;
         
         DwarfEntry origin = getAbstractOrigin();
@@ -149,11 +150,11 @@ public class DwarfEntry {
         }
     }
     
-    public String getType() {
+    public String getType() throws IOException {
         return compilationUnit.getType(this);
     }
     
-    public int getUintAttributeValue(ATTR attr) {
+    public int getUintAttributeValue(ATTR attr) throws IOException {
         Object value = getAttributeValue(attr);
         
         if (value == null) {
@@ -168,11 +169,11 @@ public class DwarfEntry {
         return result;
     }
     
-    public Object getAttributeValue(ATTR attr) {
+    public Object getAttributeValue(ATTR attr) throws IOException {
         return getAttributeValue(attr, true);
     }
     
-    public Object getAttributeValue(ATTR attr, boolean recursive) {
+    public Object getAttributeValue(ATTR attr, boolean recursive) throws IOException {
         Object attrValue = null;
         
         // Get the index of this attribute from the abbriviation table entry
@@ -222,7 +223,7 @@ public class DwarfEntry {
      * (via DW_AT_specification).
      * Note that this works only after all entries have been read.
      */
-    public DwarfEntry getDefinition() {
+    public DwarfEntry getDefinition() throws IOException {
         return compilationUnit.getDefinition(this);
     }
     
@@ -231,7 +232,7 @@ public class DwarfEntry {
      * (via DW_AT_specification).
      * Note that this works only after all entries have been read.
      */
-    public DwarfEntry getSpecification() {
+    public DwarfEntry getSpecification() throws IOException {
         Object o = getAttributeValue(ATTR.DW_AT_specification);
         if( o instanceof Integer ) {
             return compilationUnit.getEntry(((Integer) o).intValue());
@@ -239,7 +240,7 @@ public class DwarfEntry {
         return null;
     }
     
-    public DwarfEntry getAbstractOrigin() {
+    public DwarfEntry getAbstractOrigin() throws IOException {
         Object o = getAttributeValue(ATTR.DW_AT_abstract_origin);
         if (o instanceof Integer) {
             return compilationUnit.getEntry(((Integer)o).intValue());
@@ -268,11 +269,11 @@ public class DwarfEntry {
         return refference;
     }
     
-    public String getParametersString() {
+    public String getParametersString() throws IOException {
         return getParametersString(true);
     }
     
-    public String getParametersString(boolean withNames) {
+    public String getParametersString(boolean withNames) throws IOException {
         ArrayList<DwarfEntry> params = getParameters();
         StringBuilder paramStr = new StringBuilder(); // NOI18N
         DwarfEntry param = null;
@@ -302,7 +303,7 @@ public class DwarfEntry {
         return paramStr.toString();
     }
     
-    public DwarfDeclaration getDeclaration() {
+    public DwarfDeclaration getDeclaration() throws IOException {
         TAG kind = getKind();
         String aName = getQualifiedName();
         String type = getType();
@@ -325,19 +326,19 @@ public class DwarfEntry {
         return new DwarfDeclaration(kind.toString(), declarationString, getDeclarationFilePath(), declarationPosition);
     }
     
-    public int getLine() {
+    public int getLine() throws IOException {
         return getUintAttributeValue(ATTR.DW_AT_decl_line);
     }
     
-    public int getColumn() {
+    public int getColumn() throws IOException {
         return getUintAttributeValue(ATTR.DW_AT_decl_column);
     }
     
-    public ArrayList<DwarfEntry> getParameters() {
+    public ArrayList<DwarfEntry> getParameters() throws IOException {
         ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
-        ArrayList<DwarfEntry> children = getChildren();
+        ArrayList<DwarfEntry> aChildren = getChildren();
         
-        for (DwarfEntry child: children) {
+        for (DwarfEntry child: aChildren) {
             if (child.isParameter() && !child.isArtifitial()) {
                 result.add(child);
             }
@@ -346,11 +347,11 @@ public class DwarfEntry {
         return result;
     }
     
-    public ArrayList<DwarfEntry> getMembers() {
+    public ArrayList<DwarfEntry> getMembers() throws IOException {
         ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
-        ArrayList<DwarfEntry> children = getChildren();
+        ArrayList<DwarfEntry> aChildren = getChildren();
         
-        for (DwarfEntry child: children) {
+        for (DwarfEntry child: aChildren) {
             if (child.isMember() && !child.isArtifitial()) {
                 result.add(child);
             }
@@ -380,17 +381,17 @@ public class DwarfEntry {
         return st.toString();
     }
 
-    public boolean isArtifitial() {
+    public boolean isArtifitial() throws IOException {
         Object isArt = getAttributeValue(ATTR.DW_AT_artificial);
         return ((isArt != null) && ((Boolean)isArt).booleanValue());
     }
     
-    public boolean hasAbastractOrigin() {
+    public boolean hasAbastractOrigin() throws IOException {
         Object abastractOrigin = getAttributeValue(ATTR.DW_AT_abstract_origin);
         return (abastractOrigin != null);
     }
     
-    public boolean isExternal() {
+    public boolean isExternal() throws IOException {
         Object result = getAttributeValue(ATTR.DW_AT_external);
         return ((result != null) && ((Boolean)result).booleanValue());
     }
@@ -400,7 +401,7 @@ public class DwarfEntry {
     }
     
     
-    public ACCESS getAccessibility() {
+    public ACCESS getAccessibility() throws IOException {
         Object result = getAttributeValue(ATTR.DW_AT_accessibility);
         return (result == null) ? null : ACCESS.get(((Number)result).intValue());
     }
@@ -416,17 +417,17 @@ public class DwarfEntry {
         return !kind.equals(TAG.DW_TAG_inheritance);
     }
     
-    public boolean isEntryDefinedInFile(int fileEntryIdx) {
+    public boolean isEntryDefinedInFile(int fileEntryIdx) throws IOException {
         int fileIdx = getUintAttributeValue(ATTR.DW_AT_decl_file);
         return (fileIdx == fileEntryIdx);
     }
     
-    public String getDeclarationFilePath() {
+    public String getDeclarationFilePath() throws IOException {
         int fileIdx = (Integer)getUintAttributeValue(ATTR.DW_AT_decl_file);
         return (fileIdx <= 0) ? null : compilationUnit.getStatementList().getFilePath(fileIdx);
     }
     
-    public String getTypeDef() {
+    public String getTypeDef() throws IOException {
         if (getKind().equals(TAG.DW_TAG_typedef)) {
             return getType();
         }

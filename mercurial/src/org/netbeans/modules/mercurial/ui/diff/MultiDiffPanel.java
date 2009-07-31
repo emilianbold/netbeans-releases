@@ -1,4 +1,4 @@
-/*
+/*//GEN-LINE:initComponents
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.mercurial.ui.diff;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.versioning.spi.VCSContext;
-
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
-import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -53,14 +52,10 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
-import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
@@ -72,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
 import org.openide.ErrorManager;
-
 import javax.swing.*;
 import java.io.*;
 import java.awt.*;
@@ -140,7 +134,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         currentType = initialType;
         initComponents();
         setupComponents();
-        refreshSetups();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         refreshStatuses();
@@ -396,20 +389,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         executeStatusSupport = new HgProgressSupport() {
             public void perform() {                                                
                 StatusAction.executeStatus(context, this);
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshSetups();
-                    }
-                    
-                });
+                refreshSetups();
             }
         };
         File repositoryRoot = HgUtils.getRootFile(context);
         executeStatusSupport.start(rp, repositoryRoot, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
-    }                    
-
-    private void onUpdateButton() {
-        UpdateAction.update(context);
     }
     
     private void onCommitButton() {
@@ -488,72 +472,85 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             prepareTask.cancel();
         }
 
-        File [] files;
+        int status;
         switch (currentType) {
         case Setup.DIFFTYPE_LOCAL:
-            displayStatuses = FileInformation.STATUS_LOCAL_CHANGE;
+            status = FileInformation.STATUS_LOCAL_CHANGE;
             break;
         case Setup.DIFFTYPE_REMOTE:
-            displayStatuses = FileInformation.STATUS_REMOTE_CHANGE; 
+            status = FileInformation.STATUS_REMOTE_CHANGE;
             break;
         case Setup.DIFFTYPE_ALL:
-            displayStatuses = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE; 
+            status = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
             break;
         default:
             throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
         }
-        files = HgUtils.getModifiedFiles(context, displayStatuses);
-        
-        setups = computeSetups(files);
-        boolean propertyColumnVisible = false;
-        for (Setup setup : setups) {
-            if (setup.getPropertyName() != null) {
-                propertyColumnVisible = true;
-                break;
+        File [] files = HgUtils.getModifiedFiles(context, status);
+        final int localDisplayStatuses = status;
+        final Setup[] localSetups = computeSetups(files);
+        Runnable runnable = new Runnable() {
+            public void run() {
+                displayStatuses = localDisplayStatuses;
+                setups = localSetups;
+                boolean propertyColumnVisible = false;
+                for (Setup setup : setups) {
+                    if (setup.getPropertyName() != null) {
+                        propertyColumnVisible = true;
+                        break;
+                    }
+                }
+                fileTable.setColumns(propertyColumnVisible ? new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION} : new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION});
+                fileTable.setTableModel(setupToNodes(setups));
+                if (setups.length == 0) {
+                    String noContentLabel;
+                    switch (currentType) {
+                        case Setup.DIFFTYPE_LOCAL:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
+                            break;
+                        case Setup.DIFFTYPE_REMOTE:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
+                            break;
+                        case Setup.DIFFTYPE_ALL:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
+                            break;
+                        default:
+                            throw new IllegalStateException("Unknown DIFF type:" + currentType);
+                    }
+                    setups = null;
+                    fileTable.setTableModel(new Node[0]);
+                    fileTable.getComponent().setEnabled(false);
+                    fileTable.getComponent().setPreferredSize(null);
+                    Dimension dim = fileTable.getComponent().getPreferredSize();
+                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    diffView = null;
+                    diffView = new NoContentPanel(noContentLabel);
+                    setBottomComponent();
+                    nextAction.setEnabled(false);
+                    prevAction.setEnabled(false);
+                    revalidate();
+                    repaint();
+                } else {
+                    fileTable.getComponent().setEnabled(true);
+                    fileTable.getComponent().setPreferredSize(null);
+                    Dimension dim = fileTable.getComponent().getPreferredSize();
+                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    setDiffIndex(0, 0);
+                    dpt = new DiffPrepareTask(setups);
+                    prepareTask = RequestProcessor.getDefault().post(dpt);
+                }
             }
-        }
-        fileTable.setColumns(propertyColumnVisible ? 
-                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION } :
-                new String[] { DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION }
-        );
-        fileTable.setTableModel(setupToNodes(setups));
-
-        if (setups.length == 0) {
-            String noContentLabel;
-            switch (currentType) {
-            case Setup.DIFFTYPE_LOCAL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
-                break;
-            case Setup.DIFFTYPE_REMOTE:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
-                break;
-            case Setup.DIFFTYPE_ALL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
-                break;
-            default:
-                throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
-            }
-            setups = null;
-            fileTable.setTableModel(new Node[0]);
-            fileTable.getComponent().setEnabled(false);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            diffView = null;
-            diffView = new NoContentPanel(noContentLabel);
-            setBottomComponent();
-            nextAction.setEnabled(false);
-            prevAction.setEnabled(false);
-            revalidate();
-            repaint();
+        };
+        if (EventQueue.isDispatchThread()) {
+            runnable.run();
         } else {
-            fileTable.getComponent().setEnabled(true);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            setDiffIndex(0, 0);
-            dpt = new DiffPrepareTask(setups);
-            prepareTask = RequestProcessor.getDefault().post(dpt);
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException ex) {
+                Mercurial.LOG.log(Level.FINE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Mercurial.LOG.log(Level.FINE, null, ex);
+            }
         }
     }
 
@@ -646,11 +643,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
 
     private class RefreshViewTask implements Runnable {
         public void run() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    refreshSetups();
-                }
-            });
+            refreshSetups();
         }
     }
     
@@ -659,7 +652,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
         controlsToolBar = new javax.swing.JToolBar();
@@ -804,14 +797,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>                        
 
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
         onRefreshButton();
-    }//GEN-LAST:event_refreshButtonActionPerformed
+    }                                             
     
     
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify                     
     private javax.swing.JButton commitButton;
     private javax.swing.JToolBar controlsToolBar;
     private javax.swing.JPanel jPanel1;
@@ -823,7 +816,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     private javax.swing.JButton prevButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JSplitPane splitPane;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
     
     /** Interprets property blob. */
     static final class Property {

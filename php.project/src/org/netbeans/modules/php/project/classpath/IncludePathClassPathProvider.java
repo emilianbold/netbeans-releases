@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
 
 /**
- * Provides ClassPath for php files on include path
+ * Provides ClassPath for php files on include path.
  */
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {

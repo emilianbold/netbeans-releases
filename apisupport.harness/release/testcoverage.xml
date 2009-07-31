@@ -102,7 +102,7 @@ Current java platform setup is:
 
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}" timeout="${test.timeout}">
             <batchtest todir="${build.test.unit.results.dir}">
-                <fileset dir="${build.test.unit.classes.dir}">
+                <fileset dir="${build.test.unit.classes.dir}" erroronmissingdir="false">
                     <include name="**/*Test.class"/>
                 </fileset>
 

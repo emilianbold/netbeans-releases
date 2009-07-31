@@ -43,6 +43,8 @@ package org.openide.util;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -54,6 +56,8 @@ import javax.swing.event.ChangeListener;
  * @author Andrei Badea
  */
 public final class ChangeSupport {
+
+    private static final Logger LOG = Logger.getLogger(ChangeSupport.class.getName());
 
     // not private because used in unit tests
     final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
@@ -79,6 +83,9 @@ public final class ChangeSupport {
     public void addChangeListener(ChangeListener listener) {
         if (listener == null) {
             return;
+        }
+        if (LOG.isLoggable(Level.FINE) && listeners.contains(listener)) {
+            LOG.log(Level.FINE, "diagnostics for #167491", new IllegalStateException("Added " + listener + " multiply"));
         }
         listeners.add(listener);
     }

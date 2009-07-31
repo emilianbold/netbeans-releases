@@ -61,6 +61,12 @@ public abstract class ActionsBridge extends Object {
     protected abstract void invokeAction(Action action, ActionEvent ev);
 
     public static void doPerformAction(CallableSystemAction action, final ActionsBridge.ActionRunnable r) {
+        implPerformAction(action, r);
+    }
+    public static void doPerformAction(Action action, final ActionsBridge.ActionRunnable r) {
+        implPerformAction(action, r);
+    }
+    private static void implPerformAction(Action action, final ActionsBridge.ActionRunnable r) {
         assert java.awt.EventQueue.isDispatchThread() : "Action " + action.getClass().getName() +
         " may not be invoked from the thread " + Thread.currentThread().getName() +
         ", only the event queue: http://www.netbeans.org/download/4_1/javadoc/OpenAPIs/apichanges.html#actions-event-thread";
@@ -83,13 +89,25 @@ public abstract class ActionsBridge extends Object {
      */
     public static abstract class ActionRunnable implements Action {
         final ActionEvent ev;
-        final SystemAction action;
+        final Action action;
         final boolean async;
 
         public ActionRunnable(ActionEvent ev, SystemAction action, boolean async) {
+            this(ev, (Action)action, async);
+        }
+        public ActionRunnable(ActionEvent ev, Action action, boolean async) {
             this.ev = ev;
             this.action = action;
             this.async = async;
+        }
+
+        public static ActionRunnable create(ActionEvent ev, Action a, boolean async) {
+            return new ActionRunnable(ev, a, async) {
+                @Override
+                protected void run() {
+                    action.actionPerformed(ev);
+                }
+            };
         }
 
         public final boolean needsToBeSynchronous() {

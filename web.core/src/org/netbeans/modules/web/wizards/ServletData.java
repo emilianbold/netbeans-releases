@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
@@ -59,555 +58,554 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 
 // PENDING - it would be better to have a FilterData which extends
 // ServletData, and keep the filter specific code in that class. 
-
 /** 
  * Deployment data validator object for servlets. 
  * @author ana.von.klopp@sun.com
  */
-class ServletData extends DeployData { 
+class ServletData extends DeployData {
 
     private static final Logger LOG = Logger.getLogger(ServletData.class.getName());
     private static final Pattern VALID_URI_PATTERN = Pattern.compile("[-_.!~*'();/?:@&=+$,a-zA-Z0-9]+"); // NOI18N
-
-    private String errorMessage = null; 
-    private String name = null; 
+    private String errorMessage = null;
+    private String name = null;
     // These are URL mappings - they're used by both Servlets and Filters
-    private String[] urlMappings = null; 
+    private String[] urlMappings = null;
     // These are mappings to servlet names - used by Filters only
-    private List<FilterMappingData> filterMappings = null; 
-    private String[][] initparams = null; 
-    private boolean paramOK = true; 
+    private List<FilterMappingData> filterMappings = null;
+    private String[][] initparams = null;
+    private boolean paramOK = true;
     private String duplicitParam = null;
-    private FileType fileType = null; 
-    private boolean addToDD=true;
+    FileType fileType = null;
 
     ServletData(FileType fileType) {
-	this.fileType = fileType; 
-    } 
-
-    String getName() { 
-	if(name == null) return ""; 
-	return name; 
-    } 
-
-    void setName(String name) { 
-	if(name != this.name) { 
-	    if(fileType == FileType.FILTER)
-		updateFilterMappings(getName(), name); 
-	    this.name = name; 
-	} 
+        this.fileType = fileType;
     }
 
-    String[] getServletNames() { 
-	if(webApp == null) return new String[0]; 
-	Servlet[] ss = webApp.getServlet();
-	String[] names = new String[ss.length]; 
-	for (int i=0; i<ss.length; i++) {
-	    try { 
-		names[i] = ss[i].getServletName(); 
-	    }
-	    catch(Exception e) {
-                LOG.log(Level.FINE, "error", e);
-		names[i] = ""; 
-	    } 
-	}
-	return names; 
-    } 
+    String getName() {
+        if (name == null) {
+            return "";
+        }
+        return name;
+    }
 
-    private List<String> getUrlPatterns () {
-	if(webApp == null) { 
-	    return new ArrayList<String>();
-	}
+    void setName(String name) {
+        if (name != this.name) {
+            if (fileType == FileType.FILTER) {
+                updateFilterMappings(getName(), name);
+            }
+            this.name = name;
+        }
+    }
+
+    String[] getServletNames() {
+        if (webApp == null) {
+            return new String[0];
+        }
+        Servlet[] ss = webApp.getServlet();
+        String[] names = new String[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            try {
+                names[i] = ss[i].getServletName();
+            } catch (Exception e) {
+                LOG.log(Level.FINE, "error", e);
+                names[i] = "";
+            }
+        }
+        return names;
+    }
+
+    private List<String> getUrlPatterns() {
+        if (webApp == null) {
+            return new ArrayList<String>();
+        }
         ServletMapping[] maps = webApp.getServletMapping();
         List<String> l = new ArrayList<String>();
-        for (int i=0;i<maps.length;i++) {
+        for (int i = 0; i < maps.length; i++) {
             l.add(maps[i].getUrlPattern());
         }
         return l;
     }
-    
-    List<FilterMappingData> getFilterMappings() { 
-	if(webApp == null) { 
-	    return Collections.emptyList();
-	} 
-	if(filterMappings != null) { 
-	    return filterMappings; 
-	}
 
-	LOG.finer("Creating the filter mapping list"); //NOI18N
-	FilterMapping[] fm = webApp.getFilterMapping();
+    List<FilterMappingData> getFilterMappings() {
+        if (filterMappings != null) {
+            return filterMappings;
+        }
+        if (webApp == null) {
+            return new ArrayList<FilterMappingData>();
+        }
+
+        LOG.finer("Creating the filter mapping list"); //NOI18N
+        FilterMapping[] fm = webApp.getFilterMapping();
         LOG.finer("Order of mappings according to DD APIs"); //NOI18N
-        for(int i=0; i<fm.length; ++i) 
+        for (int i = 0; i < fm.length; ++i) {
             LOG.finer("Servlet name: " + fm[i].getFilterName()); //NOI18N
+        }
+        filterMappings = new ArrayList<FilterMappingData>();
+        filterMappings.add(new FilterMappingData(getName()));
 
-	filterMappings = new ArrayList<FilterMappingData>(); 
-	filterMappings.add(new FilterMappingData(getName())); 
+        String string;
+        String[] d = null;
+        FilterMappingData fmd;
+        FilterMappingData.Dispatcher[] dispatchList;
 
-	String string; 
-	String[] d = null; 
-	FilterMappingData fmd; 
-	FilterMappingData.Dispatcher[] dispatchList; 
+        for (int i = 0; i < fm.length; i++) {
+            fmd = new FilterMappingData();
+            fmd.setName(fm[i].getFilterName());
 
-	for (int i=0; i<fm.length; i++) {
-	    fmd = new FilterMappingData(); 
-	    fmd.setName(fm[i].getFilterName()); 
-	    
-	    string = fm[i].getUrlPattern();
-	    if(string == null || string.length() == 0) { 
-		fmd.setType(FilterMappingData.Type.SERVLET); 
-		fmd.setPattern(fm[i].getServletName()); 
-	    } 
-	    else {
-		fmd.setType(FilterMappingData.Type.URL); 
-		fmd.setPattern(string); 
-	    } 
-	    
-	    try { 
-		if(fm[i].sizeDispatcher() == 0) { 
-		    filterMappings.add(fmd); 
-		    continue; 
-		}
-	    }
-	    catch(Exception ex) { 
+            string = fm[i].getUrlPattern();
+            if (string == null || string.length() == 0) {
+                fmd.setType(FilterMappingData.Type.SERVLET);
+                fmd.setPattern(fm[i].getServletName());
+            } else {
+                fmd.setType(FilterMappingData.Type.URL);
+                fmd.setPattern(string);
+            }
+
+            try {
+                if (fm[i].sizeDispatcher() == 0) {
+                    filterMappings.add(fmd);
+                    continue;
+                }
+            } catch (Exception ex) {
                 LOG.log(Level.FINE, "error", ex);
-		// Not supported
-		filterMappings.add(fmd); 
-		continue; 
-	    } 
+                // Not supported
+                filterMappings.add(fmd);
+                continue;
+            }
 
-	    try { 
-		d = fm[i].getDispatcher(); 
-	    }
-	    catch(Exception ex) { 
+            try {
+                d = fm[i].getDispatcher();
+            } catch (Exception ex) {
                 LOG.log(Level.FINE, "error", ex);
-                
-		// PENDING ... 
-		// Servlet 2.3
-	    } 
-	    if(d == null) 
-		
-		dispatchList = new FilterMappingData.Dispatcher[0];
-	    else { 
-		dispatchList = new FilterMappingData.Dispatcher[d.length];
-		for(int j=0; j<d.length; ++j) { 
-		    dispatchList[j] = FilterMappingData.Dispatcher.findDispatcher(d[j]); 
-		    LOG.finer("Dispatch: " + dispatchList[j]);//NOI18N
-		}
-	    } 
-	    fmd.setDispatcher(dispatchList); 
-	    filterMappings.add(fmd); 
-	} 
-	return filterMappings; 
-    } 
+
+            // PENDING ...
+            // Servlet 2.3
+            }
+            if (d == null) {
+                dispatchList = new FilterMappingData.Dispatcher[0];
+            } else {
+                dispatchList = new FilterMappingData.Dispatcher[d.length];
+                for (int j = 0; j < d.length; ++j) {
+                    dispatchList[j] = FilterMappingData.Dispatcher.findDispatcher(d[j]);
+                    LOG.finer("Dispatch: " + dispatchList[j]);//NOI18N
+                }
+            }
+            fmd.setDispatcher(dispatchList);
+            filterMappings.add(fmd);
+        }
+        return filterMappings;
+    }
 
     void setFilterMappings(List<FilterMappingData> fmds) {
-	filterMappings = fmds; 
+        filterMappings = fmds;
     }
-	
-    private void updateFilterMappings(String oldName, String newName) { 
-	Iterator<FilterMappingData> i = getFilterMappings().iterator();
-	while(i.hasNext()) { 
-	    FilterMappingData fmd = i.next();
-	    if(fmd.getName().equals(oldName)) fmd.setName(newName); 
-	}
-    } 
 
-    private boolean isNameUnique() { 
-	if(webApp == null) return true; 
-	Servlet[] ss = webApp.getServlet();
-	for (int i=0; i<ss.length; i++) {
-	    if(name.equals(ss[i].getServletName())) { 
-		return false; 
-	    }
-	}
-
-	Filter[] ff = webApp.getFilter();
-	for (int i=0; i<ff.length; i++) {
-	    if(name.equals(ff[i].getFilterName())) { 
-		return false; 
-	    }
-	}
-	return true; 
-    } 
-
-    String[] getUrlMappings() { 
-	if(urlMappings == null) return new String[0]; 
-	return urlMappings; 
+    private void updateFilterMappings(String oldName, String newName) {
+        Iterator<FilterMappingData> i = getFilterMappings().iterator();
+        while (i.hasNext()) {
+            FilterMappingData fmd = i.next();
+            if (fmd.getName().equals(oldName)) {
+                fmd.setName(newName);
+            }
+        }
     }
-    
+
+    private boolean isNameUnique() {
+        if (webApp == null) {
+            return true;
+        }
+        Servlet[] ss = webApp.getServlet();
+        for (int i = 0; i < ss.length; i++) {
+            if (name.equals(ss[i].getServletName())) {
+                return false;
+            }
+        }
+
+        Filter[] ff = webApp.getFilter();
+        for (int i = 0; i < ff.length; i++) {
+            if (name.equals(ff[i].getFilterName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    String[] getUrlMappings() {
+        if (urlMappings == null) {
+            return new String[0];
+        }
+        return urlMappings;
+    }
+
     String createDDServletName(String className) {
-        if (webApp==null) return null;
+        if (webApp == null) {
+            return null;
+        }
         String result = className;
-        Servlet servlet = (Servlet) webApp.findBeanByName("Servlet","ServletName",result); //NOI18N
-        while (servlet!=null) {
+        Servlet servlet = (Servlet) webApp.findBeanByName("Servlet", "ServletName", result); //NOI18N
+        while (servlet != null) {
             result = findNextId(result);
-            servlet = (Servlet) webApp.findBeanByName("Servlet","ServletName",result); //NOI18N
+            servlet = (Servlet) webApp.findBeanByName("Servlet", "ServletName", result); //NOI18N
         }
         setName(result);
         return result;
     }
-    
+
     void createDDServletMapping(String servletName) {
-        if (webApp==null) return;
+        if (webApp == null) {
+            return;
+        }
         String result = getRFC2396URI("/" + servletName);
-        ServletMapping mapping = (ServletMapping) webApp.findBeanByName("ServletMapping","UrlPattern",result); //NOI18N
-        while (mapping!=null) {
+        ServletMapping mapping = (ServletMapping) webApp.findBeanByName("ServletMapping", "UrlPattern", result); //NOI18N
+        while (mapping != null) {
             result = findNextId(result);
-            mapping = (ServletMapping) webApp.findBeanByName("ServletMapping","UrlPattern",result); //NOI18N
+            mapping = (ServletMapping) webApp.findBeanByName("ServletMapping", "UrlPattern", result); //NOI18N
         }
         urlMappings = new String[]{result};
     }
-    
+
     /** Compute the next proper value for the id
      */
     private String findNextId(String id) {
-        char ch = id.charAt(id.length()-1);
-        String result=null;
+        char ch = id.charAt(id.length() - 1);
         if (Character.isDigit(ch)) {
-            String lastDigit = id.substring(id.length()-1);
-            int num = new Integer(lastDigit).intValue()+1;
-            result=id.substring(0,id.length()-1)+new Integer(num).toString();
+            String lastDigit = id.substring(id.length() - 1);
+            int num = new Integer(lastDigit).intValue() + 1;
+            return id.substring(0, id.length() - 1) + num;
         } else {
-            return result=id+"_1"; //NOI18N
+            return id + "_1"; //NOI18N
         }
-        return result;
     }
-    
 
-    String getUrlMappingsAsString() { 
-	if(urlMappings == null || urlMappings.length == 0 ) return ""; //NOI18N
-	StringBuffer buf = new StringBuffer(); 
-	int index = 0; 
-	while(index<urlMappings.length-1) { 
-	    buf.append(urlMappings[index]); 
-	    buf.append(", "); //NOI18N
-	    index++; 
-	} 
+    String getUrlMappingsAsString() {
+        if (urlMappings == null || urlMappings.length == 0) {
+            return ""; //NOI18N
+        }
+        StringBuffer buf = new StringBuffer();
+        int index = 0;
+        while (index < urlMappings.length - 1) {
+            buf.append(urlMappings[index]);
+            buf.append(", "); //NOI18N
+            index++;
+        }
 
         buf.append(urlMappings[index]);
-	return buf.toString(); 
-    } 
+        return buf.toString();
+    }
 
-    void parseUrlMappingString(String raw) { 
-	urlMappings = null; 
-	StringTokenizer st = new StringTokenizer(raw, ",");
-	List<String> list = new ArrayList<String>(); 
+    void parseUrlMappingString(String raw) {
+        urlMappings = null;
+        StringTokenizer st = new StringTokenizer(raw, ",");
+        List<String> list = new ArrayList<String>();
 
-	while(st.hasMoreTokens()) { 
-	    String mapping = st.nextToken().trim(); 
-	    if(mapping.length() == 0) 
-		continue; 
-	    list.add(mapping); 
-	} 
+        while (st.hasMoreTokens()) {
+            String mapping = st.nextToken().trim();
+            if (mapping.length() == 0) {
+                continue;
+            }
+            list.add(mapping);
+        }
 
-	urlMappings = new String[list.size()];
+        urlMappings = new String[list.size()];
         list.toArray(urlMappings);
-    } 
+    }
 
-    String[][] getInitParams() { 
-	if(initparams == null) return new String[0][2]; 
-	return initparams; 
-    } 
+    String[][] getInitParams() {
+        if (initparams == null) {
+            return new String[0][2];
+        }
+        return initparams;
+    }
 
-    void setInitParams(String[][] initparams, boolean paramOK, String duplicitParam) { 
-	this.initparams = initparams; 
-	this.paramOK = paramOK; 
+    void setInitParams(String[][] initparams, boolean paramOK, String duplicitParam) {
+        this.initparams = initparams;
+        this.paramOK = paramOK;
         this.duplicitParam = duplicitParam;
-    } 
+    }
 
     boolean isValid() {
-	errorMessage = new String(); 
-	if(webApp == null) return true;
-        if (!isAddToDD()) return true;
+        errorMessage = "";
+        //if (webApp == null) {
+        //    return true;
+        //}
+        //if (!makeEntry()) return true;
 
-	if(getName().length() == 0) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_name"); 
-	    return false; 
-	} 
+        if (getName().length() == 0) {
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_name");
+            return false;
+        }
 
-	if(!isNameUnique()) { 
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_name_unique"); 
-	    return false; 
-	} 
+        if (!isNameUnique()) {
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_name_unique");
+            return false;
+        }
 
-	if(fileType == FileType.SERVLET) { 
-	    if(!checkMappingsForServlet()) return false; 
-            if(!checkServletDuplicitMappings()) return false; 
-	} 
-	else if(fileType == FileType.FILTER) { 
-	    if(!checkMappingsForFilter()) return false; 
-	}
-	
-	if(!paramOK) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_invalid_param"); 
-	    return false; 
-	}
-
-	if(duplicitParam != null) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_duplicit_param", duplicitParam);
-	    return false;
-	}
-        
-	return true; 
-    }
-
-
-    private boolean checkMappingsForServlet() { 
-	errorMessage = new String();
-        String[] mappings = getUrlMappings();
-	if(mappings == null || mappings.length == 0) { 
-	    LOG.finer("No URL mappings"); //NOI18N
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
-	    return false; 
-	}
-        for (int i=0;i<mappings.length;i++) {
-            String errMessage = checkServletMappig(mappings[i]);
-            if (errMessage!=null) {
-                errorMessage = errMessage; 
-                return false; 
+        if (fileType == FileType.SERVLET) {
+            if (!checkMappingsForServlet()) {
+                return false;
+            }
+            if (!checkServletDuplicitMappings()) {
+                return false;
+            }
+        } else if (fileType == FileType.FILTER) {
+            if (!checkMappingsForFilter()) {
+                return false;
             }
         }
-	return true; 
+
+        if (!paramOK) {
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_invalid_param");
+            return false;
+        }
+
+        if (duplicitParam != null) {
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_duplicit_param", duplicitParam);
+            return false;
+        }
+
+        return true;
     }
-    
-    private boolean checkServletDuplicitMappings() { 
-	errorMessage = new String(); 
+
+    private boolean checkMappingsForServlet() {
+        errorMessage = "";
+        String[] mappings = getUrlMappings();
+        if (mappings == null || mappings.length == 0) {
+            LOG.finer("No URL mappings"); //NOI18N
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping");
+            return false;
+        }
+        for (int i = 0; i < mappings.length; i++) {
+            String errMessage = checkServletMappig(mappings[i]);
+            if (errMessage != null) {
+                errorMessage = errMessage;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkServletDuplicitMappings() {
+        errorMessage = "";
         String[] newMappings = getUrlMappings();
         List<String> urlPatterns = getUrlPatterns();
-        for (int i=0;i<newMappings.length;i++) {
+        for (int i = 0; i < newMappings.length; i++) {
             Iterator<String> it = urlPatterns.iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 String urlPattern = it.next();
                 if (newMappings[i].equals(urlPattern)) {
                     LOG.finer("Duplicit URL mappings"); //NOI18N
-                    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_url_pattern_unique"); 
+                    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_url_pattern_unique");
                     return false;
                 }
             }
             // new Url Patterns need to be compare to each other 
             urlPatterns.add(newMappings[i]);
         }
-	return true; 
+        return true;
     }
 
-    private boolean checkMappingsForFilter() { 
-	errorMessage = new String(); 
-	if(filterMappings == null || filterMappings.size() == 0) { 
- 	    LOG.finer("No mappings"); //NOI18N
-	    errorMessage =  NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
-	    return false; 
-	}
-	Iterator<FilterMappingData> i = getFilterMappings().iterator(); 
-	boolean found = false; 
-	while(i.hasNext()) { 
-	    FilterMappingData fmd = i.next();
-	    if(fmd.getName().equals(getName())) { 
-		found = true; 
-		break;
-	    }
-	}
-	if(!found) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
-	    return false; 
-	}
-	return true; 
-    } 
+    private boolean checkMappingsForFilter() {
+        errorMessage = "";
+        if (filterMappings == null || filterMappings.size() == 0) {
+            LOG.finer("No mappings"); //NOI18N
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping");
+            return false;
+        }
+        Iterator<FilterMappingData> i = getFilterMappings().iterator();
+        boolean found = false;
+        while (i.hasNext()) {
+            FilterMappingData fmd = i.next();
+            if (fmd.getName().equals(getName())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping");
+            return false;
+        }
+        return true;
+    }
 
-    void createDDEntries() { 
-	if(webApp == null) return; 
+    void createDDEntries() {
+        if (webApp == null) {
+            return;
+        }
 
-	if(fileType == FileType.SERVLET) { 
-	    boolean added = addServlet(); 
-	    if(added) { 
-		addUrlMappings(); 
-		try {
-		    writeChanges();
-		}
-                catch (IOException ex) {
+        if (fileType == FileType.SERVLET) {
+            boolean added = addServlet();
+            if (added) {
+                addUrlMappings();
+                try {
+                    writeChanges();
+                } catch (IOException ex) {
                     LOG.log(Level.FINE, "error", ex);
-		}
-	    }
-	} 
-	else if(fileType == FileType.FILTER) { 
-	    boolean added = addFilter(); 
-	    if(added) { 
-		addFilterMappings(); 
-		try {
-		    writeChanges();
                 }
-                catch (IOException ex) {
+            }
+        } else if (fileType == FileType.FILTER) {
+            boolean added = addFilter();
+            if (added) {
+                addFilterMappings();
+                try {
+                    writeChanges();
+                } catch (IOException ex) {
                     LOG.log(Level.FINE, "error", ex);
-		}
-	    }
-	} 
+                }
+            }
+        }
     }
 
-
-    private boolean addServlet() { 
-	if(webApp == null) return false; 
-	Servlet s; 
-	try { 
-	    s = (Servlet)webApp.createBean("Servlet"); //NOI18N
-	} 
-	catch(ClassNotFoundException cnfe) {
+    private boolean addServlet() {
+        if (webApp == null) {
+            return false;
+        }
+        Servlet s;
+        try {
+            s = (Servlet) webApp.createBean("Servlet"); //NOI18N
+        } catch (ClassNotFoundException cnfe) {
             LOG.log(Level.FINE, "servlet creation error", cnfe);
-	    return false; 
-	} 
+            return false;
+        }
 
-	s.setServletName(name); 
-	s.setServletClass(className); 
+        s.setServletName(name);
+        s.setServletClass(className);
 
-	int numInitParams = getInitParams().length; 
-	for(int i=0; i<numInitParams; ++i) { 
-	    InitParam param; 
-	    try { 
-		param = (InitParam)s.createBean("InitParam"); //NOI18N
-	    } 
-
-	    catch(ClassNotFoundException cnfe) { 
+        int numInitParams = getInitParams().length;
+        for (int i = 0; i < numInitParams; ++i) {
+            InitParam param;
+            try {
+                param = (InitParam) s.createBean("InitParam"); //NOI18N
+            } catch (ClassNotFoundException cnfe) {
                 LOG.log(Level.FINE, "servlet init parameter creation error", cnfe);
-		continue; 
-	    } 
+                continue;
+            }
 
-	    param.setParamName(initparams[i][0]); 
-	    param.setParamValue(initparams[i][1]); 
-	    s.addInitParam(param); 
-	} 
+            param.setParamName(initparams[i][0]);
+            param.setParamValue(initparams[i][1]);
+            s.addInitParam(param);
+        }
 
-	webApp.addServlet(s);
-	return true; 
+        webApp.addServlet(s);
+        return true;
     }
 
-
-    private boolean addFilter() { 
-	if(webApp == null) return false; 
-	Filter f; 
-	try { 
-	    f = (Filter)webApp.createBean("Filter"); //NOI18N
-	} 
-	catch(ClassNotFoundException cnfe) {
+    private boolean addFilter() {
+        if (webApp == null) {
+            return false;
+        }
+        Filter f;
+        try {
+            f = (Filter) webApp.createBean("Filter"); //NOI18N
+        } catch (ClassNotFoundException cnfe) {
             LOG.log(Level.FINE, "filter creation error", cnfe);
-	    return false; 
-	} 
+            return false;
+        }
 
-	f.setFilterName(name); 
-	f.setFilterClass(className); 
+        f.setFilterName(name);
+        f.setFilterClass(className);
 
-	int numInitParams = getInitParams().length; 
-	for(int i=0; i<numInitParams; ++i) { 
-	    InitParam param; 
-	    try { 
-		param = (InitParam)f.createBean("InitParam"); //NOI18N
-	    } 
-
-	    catch(ClassNotFoundException cnfe) { 
+        int numInitParams = getInitParams().length;
+        for (int i = 0; i < numInitParams; ++i) {
+            InitParam param;
+            try {
+                param = (InitParam) f.createBean("InitParam"); //NOI18N
+            } catch (ClassNotFoundException cnfe) {
                 LOG.log(Level.FINE, "filter init parameter creation error", cnfe);
-		continue; 
-	    } 
+                continue;
+            }
 
-	    param.setParamName(initparams[i][0]); 
-	    param.setParamValue(initparams[i][1]); 
-	    f.addInitParam(param); 
-	} 
+            param.setParamName(initparams[i][0]);
+            param.setParamValue(initparams[i][1]);
+            f.addInitParam(param);
+        }
 
-	webApp.addFilter(f);
-	return true; 
+        webApp.addFilter(f);
+        return true;
     }
 
-
-    private void addUrlMappings() { 
-	if(webApp == null) return; 
-	int numMappings = getUrlMappings().length; 
-	for(int i=0; i<numMappings; ++i) { 
-	    ServletMapping m; 
-	    try { 
-		m = (ServletMapping)webApp.createBean("ServletMapping"); //NOI18N
-	    } 
-	    catch(ClassNotFoundException cnfe) { 
+    private void addUrlMappings() {
+        if (webApp == null) {
+            return;
+        }
+        int numMappings = getUrlMappings().length;
+        for (int i = 0; i < numMappings; ++i) {
+            ServletMapping m;
+            try {
+                m = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+            } catch (ClassNotFoundException cnfe) {
                 LOG.log(Level.FINE, "error", cnfe);
-		return; 
-	    } 
-	    m.setServletName(name); 
-	    m.setUrlPattern(urlMappings[i]);
-	    webApp.addServletMapping(m);
-	}
+                return;
+            }
+            m.setServletName(name);
+            m.setUrlPattern(urlMappings[i]);
+            webApp.addServletMapping(m);
+        }
     }
 
-    private void addFilterMappings() { 
-	if(webApp == null) return; 
+    private void addFilterMappings() {
+        if (webApp == null) {
+            return;
+        }
 
-	// filterMappings cannot be null, or of size zero
-	int numFilterMappings = filterMappings.size(); 
-	Iterator<FilterMappingData> iterator = filterMappings.iterator();
+        // filterMappings cannot be null, or of size zero
+        int numFilterMappings = filterMappings.size();
+        Iterator<FilterMappingData> iterator = filterMappings.iterator();
 
-	FilterMapping[] fm = new FilterMapping[numFilterMappings]; 
+        FilterMapping[] fm = new FilterMapping[numFilterMappings];
 
-	for(int i=0; i<numFilterMappings; ++i) { 
-	    FilterMappingData fmd = iterator.next();
+        for (int i = 0; i < numFilterMappings; ++i) {
+            FilterMappingData fmd = iterator.next();
 
-	    try { 
-		fm[i] = (FilterMapping)webApp.createBean("FilterMapping"); //NOI18N
-	    } 
-	    catch(ClassNotFoundException cnfe) { 
+            try {
+                fm[i] = (FilterMapping) webApp.createBean("FilterMapping"); //NOI18N
+            } catch (ClassNotFoundException cnfe) {
                 LOG.log(Level.FINE, "filter mapping creation error", cnfe);
-		return; 
-	    } 
+                return;
+            }
 
-	    fm[i].setFilterName(fmd.getName()); 
-	    if(fmd.getType() == FilterMappingData.Type.URL) { 
-		fm[i].setUrlPattern(fmd.getPattern()); 
-	    } 
-	    else {
-		fm[i].setServletName(fmd.getPattern()); 
-	    }
+            fm[i].setFilterName(fmd.getName());
+            if (fmd.getType() == FilterMappingData.Type.URL) {
+                fm[i].setUrlPattern(fmd.getPattern());
+            } else {
+                fm[i].setServletName(fmd.getPattern());
+            }
 
-	    int length = fmd.getDispatcher().length; 
-	    if(length == 0) { 
-		LOG.finer("No dispatcher, continue"); //NOI18N
-		continue; 
-	    }
+            int length = fmd.getDispatcher().length;
+            if (length == 0) {
+                LOG.finer("No dispatcher, continue"); //NOI18N
+                continue;
+            }
 
-	    String[] s = new String[length]; 
-	    FilterMappingData.Dispatcher[] d = fmd.getDispatcher(); 
-	    for(int j=0; j<length; ++j) { 
-		s[j] = d[j].toString(); 
-	    }
-	    try { 
-		fm[i].setDispatcher(s); 
-	    }
-	    catch(Exception e) {
+            String[] s = new String[length];
+            FilterMappingData.Dispatcher[] d = fmd.getDispatcher();
+            for (int j = 0; j < length; ++j) {
+                s[j] = d[j].toString();
+            }
+            try {
+                fm[i].setDispatcher(s);
+            } catch (Exception e) {
                 LOG.log(Level.FINE, "Failed to set dispatcher", e);
-		// do nothing, wrong version
-	    }
-	}
-	webApp.setFilterMapping(fm);
-    }
-    
-    
-    void setAddToDD(boolean addToDD){
-        this.addToDD=addToDD;
-    }
-    
-    boolean isAddToDD() {
-        return addToDD;
+            // do nothing, wrong version
+            }
+        }
+        webApp.setFilterMapping(fm);
     }
 
     String getErrorMessage() {
-	return errorMessage; 
-    } 
+        return errorMessage;
+    }
 
     private String checkServletMappig(String uri) {
         if (!uri.matches("[\\*/].*")) { //NOI18N
-            return NbBundle.getMessage(ServletData.class,"MSG_WrongUriStart");
-        } else if (uri.length()>1  && uri.endsWith("/")) {
-            return NbBundle.getMessage(ServletData.class,"MSG_WrongUriEnd");
+            return NbBundle.getMessage(ServletData.class, "MSG_WrongUriStart");
+        } else if (uri.length() > 1 && uri.endsWith("/")) {
+            return NbBundle.getMessage(ServletData.class, "MSG_WrongUriEnd");
         } else if (uri.matches(".*\\*.*\\*.*")) { //NOI18N
-            return NbBundle.getMessage(ServletData.class,"MSG_TwoAsterisks");
+            return NbBundle.getMessage(ServletData.class, "MSG_TwoAsterisks");
         } else if (uri.matches("..*\\*..*")) { //NOI18N
-            return NbBundle.getMessage(ServletData.class,"MSG_AsteriskInTheMiddle"); 
-        } else if (uri.length() > 1
-                && !isRFC2396URI(uri.substring(1))) {
-            return NbBundle.getMessage(ServletData.class,"MSG_WrongUri");
+            return NbBundle.getMessage(ServletData.class, "MSG_AsteriskInTheMiddle");
+        } else if (uri.length() > 1 && !isRFC2396URI(uri.substring(1))) {
+            return NbBundle.getMessage(ServletData.class, "MSG_WrongUri");
         }
         return null;
     }
@@ -633,6 +631,5 @@ class ServletData extends DeployData {
     private static boolean isRFC2396URI(String uri) {
         return VALID_URI_PATTERN.matcher(uri).matches();
     }
-    
 }
 

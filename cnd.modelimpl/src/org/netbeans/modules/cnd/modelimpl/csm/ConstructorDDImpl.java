@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
-    private List<CsmExpression> initializers;
+    private final List<CsmExpression> initializers;
     
     public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
         super(ast, cls, visibility, register, register);

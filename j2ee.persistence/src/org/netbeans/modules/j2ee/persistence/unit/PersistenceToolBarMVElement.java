@@ -296,7 +296,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             Object result = DialogDisplayer.getDefault().notify(nd);
             
             if (result == NotifyDescriptor.OK_OPTION) {
-                String version=PersistenceUtils.getJPAVersion(project);
+                String version=puDataObject.getPersistence().getVersion();
                 PersistenceUnit punit = null;
                 if(Persistence.VERSION_2_0.equals(version))
                 {
@@ -374,6 +374,13 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
                 puDataObject.removePersistenceUnit(punit);
             }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            //according to jpa 2.0 there should be at least one persistence unit
+            boolean disable=puDataObject.getPersistence().sizePersistenceUnit()<=1 && puDataObject.getPersistence().getVersion().equals(Persistence.VERSION_2_0);
+            return !disable;
         }
     }
 }

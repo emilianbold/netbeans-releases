@@ -58,7 +58,8 @@ public final class LLDataCollectorConfiguration
 
     private static final String NAME = "LLTool";//NOI18N
 
-    public static final Column  threads_count = new DataTableMetadata.Column("threads", Integer.class); // NOI18N
+    public static final Column LOCKS_COUNT = new DataTableMetadata.Column("locks", Integer.class); // NOI18N
+    public static final Column threads_count = new DataTableMetadata.Column("threads", Integer.class); // NOI18N
 
     public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
             "lltool_cpu", Arrays.asList( // NOI18N
@@ -73,7 +74,7 @@ public final class LLDataCollectorConfiguration
 
     public static final DataTableMetadata SYNC_TABLE = new DataTableMetadata(
             "lltool_sync", Arrays.asList( // NOI18N
-            new DataTableMetadata.Column("locks", Integer.class), // NOI18N
+            LOCKS_COUNT,
             threads_count),
             null);
 

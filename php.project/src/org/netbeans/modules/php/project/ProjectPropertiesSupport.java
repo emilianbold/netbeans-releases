@@ -44,14 +44,20 @@ import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.api.Pair;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -88,6 +94,10 @@ public final class ProjectPropertiesSupport {
 
     public static void addWeakPropertyEvaluatorListener(PhpProject project, PropertyChangeListener listener) {
         project.addWeakPropertyEvaluatorListener(listener);
+    }
+
+    public static void addWeakIgnoredFoldersListener(PhpProject project, ChangeListener listener) {
+        project.addWeakIgnoredFoldersListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -196,6 +206,10 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
     }
 
+    public static Set<FileObject> getIgnoredFolders(PhpProject project) {
+        return project.getIgnoredFolders();
+    }
+
     /**
      * @return run as type, {@link PhpProjectProperties.RunAsType#LOCAL} is the default.
      */
@@ -292,16 +306,16 @@ public final class ProjectPropertiesSupport {
      *         as well as invalid local paths
      */
     public static List<Pair<String, String>> getDebugPathMapping(PhpProject project) {
-        List<String> remotes = PhpProjectUtils.explode(
+        List<String> remotes = StringUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        List<String> locals = PhpProjectUtils.explode(
+        List<String> locals = StringUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         int remotesSize = remotes.size();
         int localsSize = locals.size();
         List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
         for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
-            if (PhpProjectUtils.hasText(remotePath)) {
+            if (StringUtils.hasText(remotePath)) {
                 // if user has only 1 path and local == sources => property is not stored at all!
                 String l = ""; // NOI18N
                 if (i < localsSize) {
@@ -338,10 +352,48 @@ public final class ProjectPropertiesSupport {
      */
     public static Pair<String, Integer> getDebugProxy(PhpProject project) {
         String host = getString(project, PhpProjectProperties.DEBUG_PROXY_HOST, null);
-        if (!PhpProjectUtils.hasText(host)) {
+        if (!StringUtils.hasText(host)) {
             return null;
         }
         return Pair.of(host, getInt(project, PhpProjectProperties.DEBUG_PROXY_PORT, PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT));
+    }
+
+    /**
+     * Get PHP frameworks that are in the given PHP project.
+     * @return PHP frameworks that are in the given PHP project.
+     */
+    public static List<PhpFrameworkProvider> getFrameworks(PhpProject project) {
+        // XXX: improve performance
+        List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
+        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        assert phpModule != null;
+        for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+            if (frameworkProvider.isInPhpModule(phpModule)) {
+                frameworks.add(frameworkProvider);
+            }
+        }
+        return frameworks;
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitBootstrap(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP);
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitConfiguration(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_CONFIGURATION);
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitSuite(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_SUITE);
     }
 
     /**
@@ -388,6 +440,14 @@ public final class ProjectPropertiesSupport {
             }
         }
         return defaultValue;
+    }
+
+    private static File getFile(PhpProject project, String property) {
+        String file = project.getEvaluator().getProperty(property);
+        if (!StringUtils.hasText(file)) {
+            return null;
+        }
+        return project.getHelper().resolveFile(file);
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {

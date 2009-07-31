@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.wizards;
 
 /**
@@ -51,14 +50,13 @@ class Editable {
     private String editable;
 
     private Editable(String editable) {
-	this.editable = editable;
+        this.editable = editable;
     }
 
     @Override
     public String toString() {
         return editable;
     }
-
     public static final Editable BOTH = new Editable("both");
     public static final Editable VALUE = new Editable("value");
     public static final Editable NEITHER = new Editable("neither");

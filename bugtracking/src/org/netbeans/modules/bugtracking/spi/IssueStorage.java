@@ -134,8 +134,8 @@ class IssueStorage {
             throw ioe;
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finished storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
-            try { if(dos != null) dos.close(); } catch (Exception e) {}
-            try { if(is != null) is.close(); } catch (Exception e) {}
+            try { if(dos != null) dos.close(); } catch (IOException e) {}
+            try { if(is != null) is.close(); } catch (IOException e) {}
         }
     }
 
@@ -428,8 +428,10 @@ class IssueStorage {
             dos = getDataOutputStream(new File(storage, STORAGE_FILE), false);
             writeString(dos, STORAGE_VERSION);
             dos.flush();
-        } catch (Exception e) {
+        } catch (IOException e) {
             BugtrackingManager.LOG.log(Level.INFO, null, e);
+        } catch (InterruptedException ie) {
+            BugtrackingManager.LOG.log(Level.INFO, null, ie);
         } finally {
             if (dos != null) {
                 try { dos.close(); } catch (IOException e) { }
@@ -471,7 +473,6 @@ class IssueStorage {
         File file = new File(folder, id + ISSUE_SUFIX);
         if(!file.exists()) return null;
         ZipInputStream zis = new ZipInputStream(new BufferedInputStream(getFileInputStream(file)));
-        ZipEntry entry = new ZipEntry(file.getName());
         zis.getNextEntry();
         return new DataInputStream(zis);
     }

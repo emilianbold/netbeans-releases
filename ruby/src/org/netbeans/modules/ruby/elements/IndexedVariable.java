@@ -91,17 +91,15 @@ public class IndexedVariable extends IndexedElement {
         this.smart = smart;
     }
 
-    // XXX - Parsing API
-//    @Override
-//    public String getIn() {
-//        if (in == null) {
-//            if (fileUrl != null) {
-//                in = fileUrl.substring(fileUrl.lastIndexOf('/')+1);
-//            }
-//        }
-//
-//        return in;
-//    }
+    @Override
+    public String getIn() {
+        if (in == null) {
+            if (file != null) {
+                in = file.getNameExt();
+            }
+        }
+        return in;
+    }
 
     @Override
     public boolean equals(Object obj) {

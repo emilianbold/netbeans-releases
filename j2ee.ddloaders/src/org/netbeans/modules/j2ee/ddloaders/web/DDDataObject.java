@@ -46,6 +46,7 @@ import java.awt.Dialog;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,7 +86,8 @@ import org.openide.util.Exceptions;
 
 /** Represents a DD object in the Repository.
  *
- * @author  mkuchtiak
+ * @author mkuchtiak
+ * @author Petr Slechta
  */
 public class DDDataObject extends  DDMultiViewDataObject
     implements DDChangeListener, ChangeListener, PropertyChangeListener {
@@ -99,6 +101,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** Property name for documentDTD property */
     public static final String PROP_DOCUMENT_DTD = "documentDTD";   // NOI18N
     public static final String HELP_ID_PREFIX_OVERVIEW="dd_multiview_overview_"; //NOI18N
+    public static final String HELP_ID_PREFIX_ORDERING="dd_multiview_ordering_"; //NOI18N
     public static final String HELP_ID_PREFIX_SERVLETS="dd_multiview_servlets_"; //NOI18N
     public static final String HELP_ID_PREFIX_FILTERS="dd_multiview_filters_"; //NOI18N
     public static final String HELP_ID_PREFIX_PAGES="dd_multiview_pages_"; //NOI18N
@@ -689,11 +692,11 @@ public class DDDataObject extends  DDMultiViewDataObject
 
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[] {
-            new DDView(this,MULTIVIEW_OVERVIEW),
-            new DDView(this,MULTIVIEW_SERVLETS),
-            new DDView(this,MULTIVIEW_FILTERS),
-            new DDView(this,MULTIVIEW_PAGES),
-            new DDView(this,MULTIVIEW_REFERENCES),
+            new DDView(this, MULTIVIEW_OVERVIEW),
+            new DDView(this, MULTIVIEW_SERVLETS),
+            new DDView(this, MULTIVIEW_FILTERS),
+            new DDView(this, MULTIVIEW_PAGES),
+            new DDView(this, MULTIVIEW_REFERENCES),
             new DDView(this, MULTIVIEW_SECURITY)
         };
     }
@@ -712,15 +715,15 @@ public class DDDataObject extends  DDMultiViewDataObject
         public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
             DDDataObject dObj = (DDDataObject)getDataObject();
             if (name.equals(MULTIVIEW_OVERVIEW)) {
-                return new OverviewMultiViewElement(dObj,0);
+                return new OverviewMultiViewElement(dObj, 0);
             } else if (name.equals(MULTIVIEW_SERVLETS)) {
-                return new ServletsMultiViewElement(dObj,1);
+                return new ServletsMultiViewElement(dObj, 1);
             } else if (name.equals(MULTIVIEW_FILTERS)) {
-                return new FiltersMultiViewElement(dObj,2);
+                return new FiltersMultiViewElement(dObj, 2);
             } else if(name.equals(MULTIVIEW_PAGES)) {
-                return new PagesMultiViewElement(dObj,3);
+                return new PagesMultiViewElement(dObj, 3);
             } else if(name.equals(MULTIVIEW_REFERENCES)) {
-                return new ReferencesMultiViewElement(dObj,4);
+                return new ReferencesMultiViewElement(dObj, 4);
             } else if (name.equals(MULTIVIEW_SECURITY)) {
                 return new SecurityMultiViewElement(dObj, 5);
             }
@@ -801,7 +804,10 @@ public class DDDataObject extends  DDMultiViewDataObject
      */
     @Override
     public boolean isDeleteAllowed() {
-        return WebApp.VERSION_2_5.equals(getWebApp().getVersion());
+        String version = getWebApp().getVersion();
+        if (version == null) return true; // defensive tactics
+        BigDecimal ver = new BigDecimal(version);
+        return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
     }
     /** Enable to access Active element 
      */

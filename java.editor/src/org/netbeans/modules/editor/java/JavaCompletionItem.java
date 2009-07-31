@@ -557,6 +557,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
+        public void defaultAction(JTextComponent component) {
+            if (component != null) {
+                Completion.get().hideDocumentation();
+                if (inPackageStatement || Utilities.getJavaCompletionAutoPopupTriggers().indexOf('.') < 0)
+                    Completion.get().hideCompletion();
+                int caretOffset = component.getSelectionEnd();
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            }
+        }
+
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : "."); //NOI18N
         }
@@ -1953,10 +1963,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         doc.remove(offset2, length);
                         if (insertName) {
                             doc.insertString(pos.getOffset(), simpleName + text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() + simpleName.length() + text2.indexOf('('));
+                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         } else {
                             doc.insertString(pos.getOffset(), text2, null);
-                            position [0] = doc.createPosition(offset2 + text2.indexOf('('));
+                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         }
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N

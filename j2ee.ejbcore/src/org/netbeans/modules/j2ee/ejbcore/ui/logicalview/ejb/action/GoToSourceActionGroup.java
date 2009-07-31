@@ -55,6 +55,8 @@ import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -79,7 +81,7 @@ public class GoToSourceActionGroup extends EJBActionGroup {
 
     protected Action[] grouped() {
 
-        final FileObject[] results = new FileObject[5];
+        final DataObject[] results = new DataObject[5];
         
         Node node = getActivatedNodes()[0];
         if (node == null) {
@@ -103,11 +105,21 @@ public class GoToSourceActionGroup extends EJBActionGroup {
             model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass[0]);
-                    results[EJB_CLASS] = ejb.getEjbClass() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getEjbClass()));
-                    results[REMOTE] = ejb.getRemote() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getRemote()));
-                    results[LOCAL] = ejb.getLocal() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getLocal()));
-                    results[HOME] = ejb.getHome() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getHome()));
-                    results[LOCAL_HOME] = ejb.getLocalHome() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getLocalHome()));
+                    try {
+                        results[EJB_CLASS] = ejb.getEjbClass() == null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getEjbClass())));
+                    } catch (DataObjectNotFoundException ex) {}
+                    try {
+                        results[REMOTE] = ejb.getRemote() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getRemote())));
+                    } catch (DataObjectNotFoundException ex) {}
+                    try {
+                        results[LOCAL] = ejb.getLocal() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getLocal())));
+                    } catch (DataObjectNotFoundException ex) {}
+                    try {
+                        results[HOME] = ejb.getHome() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getHome())));
+                    } catch (DataObjectNotFoundException ex) {}
+                    try {
+                        results[LOCAL_HOME] = ejb.getLocalHome() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getLocalHome())));
+                    } catch (DataObjectNotFoundException ex) {}
                     return null;
                 }
             });

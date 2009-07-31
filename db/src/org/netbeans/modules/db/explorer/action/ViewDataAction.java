@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.action;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.DialogDisplayer;
@@ -70,10 +72,12 @@ public class ViewDataAction extends QueryAction {
             RequestProcessor.getDefault().post(
                 new Runnable() {
                     public void run() {
+                        String expression = null;
                         try {
-                            String expression = getDefaultQuery(activatedNodes);
+                            expression = getDefaultQuery(activatedNodes);
                             SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression, true);
                         } catch(Exception exc) {
+                            Logger.getLogger(ViewDataAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage() + " while executing expression " + expression, exc); // NOI18N
                             String message = NbBundle.getMessage (ViewDataAction.class, "ShowDataError", exc.getMessage()); // NOI18N
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         }

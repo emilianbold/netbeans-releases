@@ -70,7 +70,7 @@ public class Bugzilla {
     private static final Object REPOSITORIES_LOCK = new Object();
     private static Bugzilla instance;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
     private BugzillaCorePlugin bcp;
@@ -142,16 +142,16 @@ public class Bugzilla {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;
         }
-        BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
+            BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         }
     }
 
     public void removeRepository(BugzillaRepository repository) {
-        BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
+            BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
     }
 

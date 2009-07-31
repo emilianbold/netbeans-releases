@@ -48,6 +48,9 @@ package org.netbeans.modules.jumpto.file;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
@@ -82,7 +85,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     private String oldText;
     /* package */ long time;
 
-    private FileDescription selectedFile;
+    private FileDescription[] selectedFile;
 
     private final SearchHistory searchHistory;
 
@@ -510,10 +513,11 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     }        
     
     public void setSelectedFile() {
-        selectedFile = ((FileDescription) resultList.getSelectedValue());
+        List<FileDescription> list = new ArrayList(Arrays.asList(resultList.getSelectedValues()));
+        selectedFile = list.toArray(new FileDescription[0]);
     }
 
-    public FileDescription getSelectedFile() {
+    public FileDescription[] getSelectedFiles() {
         return selectedFile;
     }
 

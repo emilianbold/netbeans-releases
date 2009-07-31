@@ -37,6 +37,7 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -99,19 +100,25 @@ public final class RubyIndexerHelper {
      * @param doc
      * @return An updated signature, or null if this method should be removed from index
      */
-    public static String getMethodSignature(AstElement child, Node root,
-            int flags, String signature, FileObject fo, Snapshot snapshot) {
-        if (snapshot == null) { // tests?
+    public static String getMethodSignature(AstElement child, int flags,
+            String signature, FileObject fo, ContextKnowledge knowledge) {
+        
+        if (knowledge.getParserResult().getSnapshot() == null) { // tests?
             return signature;
         }
+
+        ParserResult parserResult = knowledge.getParserResult();
+        Node root = knowledge.getRoot();
 
         try {
             String hashNames = "";
             int originalFlags = flags;
 
-            List<String> callseq = null;
-            if (isRubyStubs(fo) || TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                callseq = getCallSeq(child, snapshot);
+            List<String> rdocs = null;
+            if (isRubyStubs(fo)) {
+                rdocs = getCallSeq(child, parserResult.getSnapshot());
+            } else if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+                rdocs = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), root);
             }
 
             // See if the method takes blocks
@@ -147,10 +154,10 @@ public final class RubyIndexerHelper {
             // or even mandatory - do some or all of the descriptions
             // include a block?
             String blockArgs = null;
-            if (callseq != null) {
+            if (rdocs != null) {
                 boolean seenBlock = false;
                 boolean seenNonBlock = false;
-                for (String line : callseq) {
+                for (String line : rdocs) {
                     // Does this line imply a block?
                     // Look for methods(args) { ...
                     // or  method { ...
@@ -212,6 +219,7 @@ public final class RubyIndexerHelper {
             //    yield self if block_given?
             // RDoc :yield: clauses should be specificed on the line of the starting
             // element - the def
+            Snapshot snapshot = parserResult.getSnapshot();
             int lineStart = GsfUtilities.getRowStart(snapshot.getText(), child.getNode().getPosition().getStartOffset());
             int lineEnd = GsfUtilities.getRowEnd(snapshot.getText(), lineStart);
             String line = snapshot.getText().subSequence(lineStart, lineEnd).toString();
@@ -321,7 +329,7 @@ public final class RubyIndexerHelper {
 
             RubyType returnType = child.getType().isKnown()
                     ? child.getType()
-                    : getReturnTypes(root, child, callseq);
+                    : getReturnTypes(child, rdocs, knowledge);
 
             if (returnType.isKnown()) {
                 child.setType(returnType);
@@ -459,14 +467,16 @@ public final class RubyIndexerHelper {
         return signature;
 
     }
-    static String getMethodSignatureForUserSources(Node root, AstElement methodElement, String signature, int flags, Snapshot snapshot) {
+    static String getMethodSignatureForUserSources( AstElement methodElement,
+            String signature, int flags, ContextKnowledge knowledge) {
+
         RubyType type = methodElement.getType();
         if (!type.isKnown()) {
-            List<String> callSeq = null;
+            List<String> rdocs = null;
             if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                callSeq = getCallSeq(methodElement, snapshot);
+                rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodElement.getNode());
             }
-            type = getReturnTypes(root, methodElement, callSeq);
+            type = getReturnTypes(methodElement, rdocs, knowledge);
         }
         if (type.isKnown()) {
             methodElement.setType(type);
@@ -475,7 +485,7 @@ public final class RubyIndexerHelper {
         return signature;
     }
 
-    private static RubyType getReturnTypes(Node root, AstElement methodElement, List<String> callseq) {
+    private static RubyType getReturnTypes(AstElement methodElement, List<String> callseq, ContextKnowledge knowledge) {
 
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
@@ -486,8 +496,7 @@ public final class RubyIndexerHelper {
         
         if (TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             AstPath path = new AstPath();
-            path.descend(root);
-            ContextKnowledge knowledge = new ContextKnowledge(null, root);
+            path.descend(knowledge.getRoot());
             RubyTypeInferencer typeInferencer = RubyTypeInferencer.create(knowledge);
             return typeInferencer.inferType(methodElement.getNode());
         }

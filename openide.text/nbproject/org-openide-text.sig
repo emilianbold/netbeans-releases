@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 6.21.1
+#Version 6.22.1
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -896,10 +896,12 @@ meth public org.openide.util.actions.SystemAction[] getContextActions()
  anno 0 java.lang.Deprecated()
 meth public void destroy() throws java.io.IOException
 meth public void setDisplayName(java.lang.String)
+meth public void setHidden(boolean)
+ anno 0 java.lang.Deprecated()
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
@@ -1008,7 +1010,9 @@ meth protected void componentOpened()
 meth protected void componentShowing()
 meth public boolean canClose()
 meth public boolean requestDefaultFocus()
+ anno 0 java.lang.Deprecated()
 meth public boolean requestFocusInWindow()
+ anno 0 java.lang.Deprecated()
 meth public int getPersistenceType()
 meth public java.awt.Dimension getPreferredSize()
 meth public javax.swing.Action[] getActions()
@@ -1017,13 +1021,13 @@ meth public org.openide.awt.UndoRedo getUndoRedo()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public org.openide.windows.CloneableTopComponent getComponent()
 meth public void ensureVisible()
-meth public void open(org.openide.windows.Workspace)
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public void requestFocus()
+ anno 0 java.lang.Deprecated()
 meth public void updateName()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr org.openide.windows.CloneableTopComponent
-hfds HELP_ID,LOG,TIMER,cursorPosition,customComponent,customToolbar,doInitialize,initialized,serialVersionUID,support
+hfds CLOSE_LAST_LOCK,HELP_ID,LOG,RP,RPPostprocessing,TIMER,cursorPosition,customComponent,customToolbar,doInitialize,initialized,sb,serialVersionUID,support
 hcls DoInitialize
 
 CLSS public abstract org.openide.text.CloneableEditorSupport
@@ -1079,7 +1083,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_LOAD_TASK,LOCK_PRINTING,PROP_PANE,RP,RPPostprocessing,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,revertingUndoOrReloading,undoRedo
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_LOAD_TASK,LOCK_PRINTING,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,sb,undoRedo
 hcls BeforeModificationEdit,BeforeSaveEdit,CESUndoRedoManager,DelegateIOExc,FilterUndoableEdit,Listener,PlainEditorKit,SearchBeforeModificationEdit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -1111,14 +1115,20 @@ meth public abstract void show(int,int)
  anno 0 java.lang.Deprecated()
 meth public boolean equals(java.lang.Object)
 meth public boolean isBreakpoint()
+ anno 0 java.lang.Deprecated()
 meth public int getLineNumber()
 meth public int hashCode()
 meth public java.lang.String getText()
 meth public void markCurrentLine()
+ anno 0 java.lang.Deprecated()
 meth public void markError()
+ anno 0 java.lang.Deprecated()
 meth public void setBreakpoint(boolean)
+ anno 0 java.lang.Deprecated()
 meth public void unmarkCurrentLine()
+ anno 0 java.lang.Deprecated()
 meth public void unmarkError()
+ anno 0 java.lang.Deprecated()
 supr org.openide.text.Line
 hfds assigned,breakpoint,current,docL,error,lineParts,listener,serialVersionUID
 hcls FindAnnotationPosition,LR,Part
@@ -1186,6 +1196,7 @@ meth public void setParagraphAttributes(int,int,javax.swing.text.AttributeSet,bo
 supr org.openide.text.FilterDocument
 
 CLSS public abstract org.openide.text.IndentEngine
+ anno 0 java.lang.Deprecated()
 cons public IndentEngine()
 meth protected boolean acceptMimeType(java.lang.String)
 meth public abstract int indentLine(javax.swing.text.Document,int)
@@ -1206,11 +1217,17 @@ CLSS public abstract org.openide.text.Line
 cons public Line(java.lang.Object)
 cons public Line(org.openide.util.Lookup)
 fld public final static int SHOW_GOTO = 2
+ anno 0 java.lang.Deprecated()
 fld public final static int SHOW_REUSE = 4
+ anno 0 java.lang.Deprecated()
 fld public final static int SHOW_REUSE_NEW = 5
+ anno 0 java.lang.Deprecated()
 fld public final static int SHOW_SHOW = 1
+ anno 0 java.lang.Deprecated()
 fld public final static int SHOW_TOFRONT = 3
+ anno 0 java.lang.Deprecated()
 fld public final static int SHOW_TRY_SHOW = 0
+ anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROP_LINE_NUMBER = "lineNumber"
 innr public abstract static Part
 innr public abstract static Set
@@ -1507,6 +1524,12 @@ fld public final static int CLOSE_LAST = 1
 fld public final static int PERSISTENCE_ALWAYS = 0
 fld public final static int PERSISTENCE_NEVER = 2
 fld public final static int PERSISTENCE_ONLY_OPENED = 1
+fld public final static java.lang.String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"
+fld public final static java.lang.String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"
+fld public final static java.lang.String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"
+fld public final static java.lang.String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"
+fld public final static java.lang.String PROP_SLIDING_DISABLED = "netbeans.winsys.tc.sliding_disabled"
+fld public final static java.lang.String PROP_UNDOCKING_DISABLED = "netbeans.winsys.tc.undocking_disabled"
 innr public abstract interface static Cloneable
 innr public abstract interface static Registry
 innr public static NodeName

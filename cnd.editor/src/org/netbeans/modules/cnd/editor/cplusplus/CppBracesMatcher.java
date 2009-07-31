@@ -132,19 +132,25 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
             if (sequences.size()>1) {
                 seq = sequences.get(sequences.size() - 2);
                 seq.move(originOffset);
-                if (seq.moveNext()){
-                    if (seq.token().id() == CppTokenId.BLOCK_COMMENT ||
-                        seq.token().id() == CppTokenId.LINE_COMMENT) {
-                        return null;
+                if (seq.moveNext()) {
+                    switch ((CppTokenId)seq.token().id()) {
+                        case BLOCK_COMMENT:
+                        case LINE_COMMENT:
+                        case DOXYGEN_LINE_COMMENT:
+                        case DOXYGEN_COMMENT:
+                            return null;
                     }
                 }
             } else {
                 return null;
             }
         } else {
-            if (seq.token().id() == CppTokenId.BLOCK_COMMENT ||
-                seq.token().id() == CppTokenId.LINE_COMMENT) {
-                return null;
+            switch ((CppTokenId)seq.token().id()) {
+                case BLOCK_COMMENT:
+                case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
+                case DOXYGEN_COMMENT:
+                    return null;
             }
         }
         return seq;

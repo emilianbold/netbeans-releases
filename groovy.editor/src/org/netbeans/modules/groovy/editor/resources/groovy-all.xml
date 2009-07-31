@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/1.5.7/groovy-all-1.5.7.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/1.6.3/groovy-all-1.6.3.pom</resource>
     </volume>
     
 </library>

@@ -68,6 +68,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     
     /** Delegating component */
     private HtmlBrowser browserComponent;
+    private HtmlBrowser.Factory browserFactory;
     
 
     // initialization ....................................................................................
@@ -83,7 +84,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Creates new html browser with toolbar and status line.
     */
     public HtmlBrowserComponent(boolean toolbar, boolean statusLine) {
-        this (null, toolbar, statusLine);
+        this (IDESettings.getWWWBrowser(), toolbar, statusLine);
     }
 
     /**
@@ -92,7 +93,8 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     public HtmlBrowserComponent(HtmlBrowser.Factory fact, boolean toolbar, boolean statusLine) {
         setName (""); // NOI18N
         setLayout (new BorderLayout ());
-        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), "Center"); // NOI18N
+        this.browserFactory = fact;
+        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), BorderLayout.CENTER);
 
         browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
@@ -100,9 +102,13 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         if (browserComponent.getBrowserComponent() != null) {
             putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
         }
-        setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser"));
+        setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser")); //NOI18N
+        //don't use page title for display name as it can be VERY long
+        setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
+        setDisplayName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
     }
     
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_ONLY_OPENED;
     }
@@ -111,23 +117,24 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         if (!HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ())) return;
         String title = browserComponent.getBrowserImpl().getTitle ();
         if ((title == null) || (title.length () < 1)) return;
-        HtmlBrowserComponent.this.setName (title);
-        HtmlBrowserComponent.this.setDisplayName(title);
+        setToolTipText(title);
     }    
     
     /** always open this top component in our special mode, if
     * no mode for this component is specified yet */
+    @Override
     public void open() {
         // do not open this component if this is dummy browser
-        if (browserComponent.getBrowserComponent() == null)
+        if (null != browserComponent && browserComponent.getBrowserComponent() == null)
             return;
-        
+
         // behave like superclass
         super.open();
     }
-    
+
     /** Serializes browser component -> writes Replacer object which
     * holds browser content and look. */
+    @Override
     protected Object writeReplace ()
     throws java.io.ObjectStreamException {
         return new BrowserReplacer (this);
@@ -136,6 +143,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     /* Deserialize this top component. Now it is here for backward compatibility
     * @param in the stream to deserialize from
     */
+    @Override
     public void readExternal (ObjectInput in)
     throws IOException, ClassNotFoundException {
         super.readExternal (in);
@@ -146,21 +154,50 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     // TopComponent support ...................................................................
 
+    @Override
     protected CloneableTopComponent createClonedObject () {
-        HtmlBrowserComponent bc = new HtmlBrowserComponent();  // PENDING: this should pass all three params to create the same browser
+        HtmlBrowserComponent bc = new HtmlBrowserComponent(browserFactory, isToolbarVisible(), isStatusLineVisible());
         bc.setURL (getDocumentURL ());
         return bc;
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(HtmlBrowserComponent.class);
     }
 
+    @Override
     protected void componentActivated () {
-        browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
+        if( null != browserComponent )
+            browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
         super.componentActivated ();
     }
 
+    @Override
+    protected void componentClosed() {
+        if( null != browserComponent ) {
+            browserComponent.getBrowserImpl().removePropertyChangeListener(this);
+            browserComponent.getBrowserImpl().dispose();
+        }
+        removeAll();
+        browserComponent = null;
+    }
+
+    @Override
+    protected void componentOpened() {
+        if( null == browserComponent ) {
+            add (browserComponent = new HtmlBrowser (browserFactory, true, true), BorderLayout.CENTER);
+
+            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+            // Ensure closed browsers are not stored:
+            if (browserComponent.getBrowserComponent() != null) {
+                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+            }
+        }
+    }
+
+    @Override
     public java.awt.Image getIcon () {
         return new ImageIcon (HtmlBrowser.class.getResource ("/org/openide/resources/html/htmlView.gif")).getImage ();   // NOI18N
     }
@@ -235,6 +272,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         browserComponent.setToolbarVisible (v);
     }
 
+    @Override
     protected java.lang.String preferredID() {
         return "HtmlBrowserComponent"; //NOI18N
     }
@@ -277,7 +315,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
         statLine = in.readBoolean ();
         toolbar = in.readBoolean ();
         url = (URL) in.readObject ();
-        
+
     }
 
 

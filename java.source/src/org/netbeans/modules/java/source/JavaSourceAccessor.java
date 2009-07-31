@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -239,7 +241,8 @@ public abstract class JavaSourceAccessor {
     
     
     public abstract CompilationInfoImpl getCompilationInfoImpl (final CompilationInfo info);
-    
+
+    public abstract @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used);
     
     /**
      * Invalidates given {@link CompilationInfo}

@@ -232,13 +232,13 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_PRAGMA, "pragma");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "omp");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_START, "omp");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "parallel");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_PARALLEL, "parallel");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FOR, "for");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_FOR, "for");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "shared");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_SHARED, "shared");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "array");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.COMMA, ",");
@@ -252,7 +252,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "dim");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRIVATE, "private");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_PRIVATE, "private");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "ii");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.COMMA, ",");

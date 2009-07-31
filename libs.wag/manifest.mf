@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.libs.wag/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/wag/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.5
+OpenIDE-Module-Specification-Version: 0.6
 OpenIDE-Module-Layer: org/netbeans/libs/wag/layer.xml
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Requires: org.openide.modules.ModuleFormat2

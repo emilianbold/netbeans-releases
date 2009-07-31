@@ -86,4 +86,19 @@ public class RubyRenameHandlerTest extends RubyTestBase {
         // Issue 141872
         checkRenameSections("testfiles/rename1.rb", "c^");
     }
+
+
+    public void testIssue155028() throws Exception {
+        // test that renaming works with also other occurences than
+        // assigments (for local variables)
+        checkRenameSections("testfiles/rename_iz155028.rb", "acnst^rs.delete(String)");
+    }
+
+    public void testIssue155028_2() throws Exception {
+        checkRenameSections("testfiles/rename_iz155028.rb", "#{acns^trs.join");
+    }
+
+    public void testIssue155028_3() throws Exception {
+        checkRenameSections("testfiles/rename_iz155028.rb", "span patt^ern");
+    }
 }

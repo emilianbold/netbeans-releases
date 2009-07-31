@@ -75,7 +75,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
@@ -84,9 +83,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
-import org.netbeans.modules.bugtracking.patch.ContextualPatch;
-import org.netbeans.modules.bugtracking.patch.Patch;
-import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -102,8 +98,11 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -312,17 +311,28 @@ public class BugtrackingUtil {
         }
         return context;
     }
-
-    public static void applyPatch(File patch, File context) {
-        try {
-            ContextualPatch cp = ContextualPatch.create(patch, context);
-            cp.patch(false);
-        } catch (PatchException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
+//
+//    public static void applyPatch(File patch, File context) {
+//        try {
+//            ContextualPatch cp = ContextualPatch.create(patch, context);
+//            cp.patch(false);
+//        } catch (PatchException ex) {
+//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+//        }
+//    }
+//
+//    public static boolean isPatch(FileObject fob) throws IOException {
+//        boolean isPatch = false;
+//        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
+//        try {
+//            isPatch = (Patch.parse(reader).length > 0);
+//        } finally {
+//            reader.close();
+//        }
+//        return isPatch;
+//    }
 
     /**
      * Recursively deletes all files and directories under a given file/directory.
@@ -386,7 +396,7 @@ public class BugtrackingUtil {
                || FileUtil.toFileObject(file).equals(fileObj);
 
         if (fileObj == null) {
-            fileObj = FileUtil.toFileObject(file);
+            fileObj = getFileObjForFileOrParent(file);
         } else if (file == null) {
             file = FileUtil.toFile(fileObj);
         }
@@ -417,6 +427,24 @@ public class BugtrackingUtil {
             assert fileObj != null;      //every non-folder should have a parent
             return FileUtil.toFile(fileObj);    //whether it is null or non-null
         }
+    }
+
+    private static FileObject getFileObjForFileOrParent(File file) {
+        FileObject fileObj = FileUtil.toFileObject(file);
+        if (fileObj != null) {
+            return fileObj;
+        }
+
+        File closestParentFile = file.getParentFile();
+        while (closestParentFile != null) {
+            fileObj = FileUtil.toFileObject(closestParentFile);
+            if (fileObj != null) {
+                return fileObj;
+            }
+            closestParentFile = closestParentFile.getParentFile();
+        }
+
+        return null;
     }
 
     public static File getLargerContext(Project project) {
@@ -594,15 +622,16 @@ public class BugtrackingUtil {
         scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
-    public static boolean isPatch(FileObject fob) throws IOException {
-        boolean isPatch = false;
-        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
+    public static void openPluginManager() {
         try {
-            isPatch = (Patch.parse(reader).length > 0);
-        } finally {
-            reader.close();
+            ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
+            Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
+            CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+            a.putValue("InitialTab", "available"); // NOI18N
+            a.performAction ();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return isPatch;
     }
     
 }

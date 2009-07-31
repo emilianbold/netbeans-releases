@@ -46,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +94,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             writableFolder = writableFolder.getParentFile();
         }
         
-        boolean isWritable = Utils.isFolderWritable(writableFolder);
+        boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
             if (IS_WARNING_LOGGABLE) {
                 LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root isn't writable"));//NOI18N

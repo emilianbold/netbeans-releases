@@ -40,12 +40,11 @@
 package org.netbeans.modules.php.project.util;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -53,10 +52,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -76,17 +79,6 @@ public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
 
     private PhpProjectUtils() {
-    }
-
-    /**
-     * Return <code>true</code> if the String is not <code>null</code>
-     * and has any character after trimming.
-     * @param input input String.
-     * @return <code>true</code> if the String is not <code>null</code>
-     *         and has any character after trimming.
-     */
-    public static boolean hasText(String input) {
-        return input != null && input.trim().length() > 0;
     }
 
     /**
@@ -121,33 +113,6 @@ public final class PhpProjectUtils {
         } catch (ParserConfigurationException ex) {
             throw new SAXException("Cannot create SAX parser", ex);
         }
-    }
-
-    public static String implode(List<String> items, String delimiter) {
-        assert items != null;
-        assert delimiter != null;
-
-        if (items.isEmpty()) {
-            return ""; // NOI18N
-        }
-
-        StringBuilder buffer = new StringBuilder(200);
-        boolean first = true;
-        for (String s : items) {
-            if (!first) {
-                buffer.append(delimiter);
-            }
-            buffer.append(s);
-            first = false;
-        }
-        return buffer.toString();
-    }
-
-    public static List<String> explode(String string, String delimiter) {
-        if (!hasText(string)) {
-            return Collections.<String>emptyList();
-        }
-        return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 
     /**
@@ -203,5 +168,48 @@ public final class PhpProjectUtils {
             fileObjects[i] = groups[i].getRootFolder();
         }
         return fileObjects;
+    }
+
+    // XXX see AssertionError at HtmlIndenter.java:68
+    // NbReaderProvider.setupReaders(); cannot be called because of deps
+    /**
+     * Reformat the file.
+     * @param file file to reformat.
+     */
+    public static void reformatFile(final File file) throws IOException {
+        FileObject testFileObject = FileUtil.toFileObject(file);
+        assert testFileObject != null : "No fileobject for " + file;
+
+        final DataObject dataObject = DataObject.find(testFileObject);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        assert ec != null : "No editorcookie for " + testFileObject;
+
+        Document doc = ec.openDocument();
+        assert doc instanceof BaseDocument;
+
+        // reformat
+        final BaseDocument baseDoc = (BaseDocument) doc;
+        final Reformat reformat = Reformat.get(baseDoc);
+        reformat.lock();
+        try {
+            // seems to be synchronous but no info in javadoc
+            baseDoc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        reformat.reformat(0, baseDoc.getLength());
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
+                    }
+                }
+            });
+        } finally {
+            reformat.unlock();
+        }
+
+        // save
+        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+        if (saveCookie != null) {
+            saveCookie.save();
+        }
     }
 }

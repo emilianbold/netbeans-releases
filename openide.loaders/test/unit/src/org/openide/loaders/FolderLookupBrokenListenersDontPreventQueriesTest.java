@@ -43,6 +43,7 @@ package org.openide.loaders;
 
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -52,7 +53,6 @@ import org.openide.util.LookupListener;
 
 public class FolderLookupBrokenListenersDontPreventQueriesTest extends NbTestCase implements LookupListener {
     private Lookup.Result<?> res;
-    private FolderLookup lkp;
     private FileObject fo;
     private int listenerVisited;
 
@@ -71,8 +71,6 @@ public class FolderLookupBrokenListenersDontPreventQueriesTest extends NbTestCas
         clearWorkDir();
         
         fo = FileUtil.createFolder(FileUtil.getConfigRoot(), getName());
-        DataFolder df = DataFolder.findFolder(fo);
-        lkp = new FolderLookup(df);
     }
 
     @Override
@@ -87,11 +85,14 @@ public class FolderLookupBrokenListenersDontPreventQueriesTest extends NbTestCas
         amIBrokenYesYouAre();
     }
 
+    @RandomlyFails // NB-Core-Build #2892
     public void testIssue163315() throws Exception {
         FileObject ioe = FileUtil.createData(fo, "java-io-IOException.instance");
         FileObject iae = FileUtil.createData(fo, "java-lang-IllegalArgumentException.instance");
 
-        res = lkp.getLookup().lookupResult(Exception.class);
+        @SuppressWarnings("deprecation")
+        Lookup lkp = new FolderLookup(DataFolder.findFolder(fo)).getLookup();
+        res = lkp.lookupResult(Exception.class);
         assertEquals("Two items found", 2, res.allInstances().size());
         res.addLookupListener(this);
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -87,11 +87,12 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -239,7 +240,7 @@ public class WebProjectUtilities {
         FileObject webFO = projectDir.createFolder(DEFAULT_DOC_BASE_FOLDER);
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
 
-        createWebXml(j2eeProfile, createData.isWebXmlRequired(), webInfFO);
+        DDHelper.createWebXml(j2eeProfile, createData.isWebXmlRequired(), webInfFO);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element data = h.getPrimaryConfigurationData(true);
@@ -321,39 +322,16 @@ public class WebProjectUtilities {
         return h;
     }
 
-    public static void createWebXml(Profile j2eeProfile, boolean webXmlRequired, FileObject dir) throws IOException {
-        String webXmlTemplate = null;
-        if ((Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) && webXmlRequired) {
-            webXmlTemplate = "web-3.0.xml"; //NOI18N
-        } else if (Profile.JAVA_EE_5 == j2eeProfile) {
-            webXmlTemplate = "web-2.5.xml"; //NOI18N
-        } else if (Profile.J2EE_14 == j2eeProfile) {
-            webXmlTemplate = "web-2.4.xml"; //NOI18N
-        } else if (Profile.J2EE_13 == j2eeProfile) {
-            webXmlTemplate = "web-2.3.xml"; //NOI18N
-        }
-
-        if (webXmlTemplate == null)
-            return;
-
-        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-        String webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + webXmlTemplate));
-        if (webXMLContent != null) {
-            final String webXmlText = webXMLContent;
-            FileObject webXML = FileUtil.createData(dir, "web.xml"); //NOI18N
-            FileLock lock = webXML.lock();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-            try {
-                bw.write(webXmlText);
-            } finally {
-                bw.close();
-                lock.releaseLock();
-            }
-        }
-    }
-
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
+
+        if (dd == null) {
+            FileObject indexJsp = createIndexJSP(webRoot);
+            if (indexJsp != null)
+                resultSet.add(indexJsp);
+            return resultSet;
+        }
+
         try {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();

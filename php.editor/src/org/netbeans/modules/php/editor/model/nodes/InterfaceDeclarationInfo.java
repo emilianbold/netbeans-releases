@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -67,6 +68,11 @@ public class InterfaceDeclarationInfo extends ASTNodeInfo<InterfaceDeclaration> 
     public String getName() {
         InterfaceDeclaration ifaceDeclaration = getOriginalNode();
         return ifaceDeclaration.getName().getName();
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getOriginalNode().getName());
     }
 
     @Override

@@ -132,7 +132,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
             File output = File.createTempFile("dlight", ".d"); // NOI18N
             BufferedWriter w = new BufferedWriter(new FileWriter(output));
             try {
-                w.write("#!/usr/sbin/dtrace -ZCs\n"); // NOI18N
+                w.write("#!/usr/sbin/dtrace -ZCqs\n"); // NOI18N
                 for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                     DtraceDataCollector ddc = entry.getValue();
                     BufferedReader r = new BufferedReader(new FileReader(ddc.getLocalScriptPath()));

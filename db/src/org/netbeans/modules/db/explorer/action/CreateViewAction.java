@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.MessageFormat;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -50,7 +47,6 @@ import org.netbeans.modules.db.explorer.dlg.AddViewDialog;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -71,14 +67,7 @@ public class CreateViewAction extends BaseAction {
         DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
         if (dbconn != null) {
-            Connection conn = dbconn.getConnection();
-            try {
-                if (conn != null) {
-                    enabled = !conn.isClosed();
-                }
-            } catch (SQLException e) {
-                Exceptions.printStackTrace(e);
-            }
+            enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
         }
 
         return enabled;
@@ -116,10 +105,9 @@ public class CreateViewAction extends BaseAction {
 
             Specification spec = connection.getConnector().getDatabaseSpecification();
 
-            // Create and execute command
-            AddViewDialog dlg = new AddViewDialog(spec, schemaName);
-            if (dlg.run()) {
-                SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
+            boolean viewAdded = AddViewDialog.showDialogAndCreate(spec, schemaName);
+            if (viewAdded) {
+                SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
             }
         } catch(Exception exc) {
             DbUtilities.reportError(NbBundle.getMessage (CreateViewAction.class, "ERR_UnableToCreateView"), exc.getMessage()); // NOI18N

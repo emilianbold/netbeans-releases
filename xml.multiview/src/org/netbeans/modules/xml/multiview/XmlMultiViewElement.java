@@ -50,7 +50,6 @@ import org.openide.util.lookup.ProxyLookup;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 
 /**
  * XmlMultiviewElement.java

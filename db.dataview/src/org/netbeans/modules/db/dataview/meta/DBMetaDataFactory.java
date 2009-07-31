@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -175,6 +177,11 @@ public final class DBMetaDataFactory {
             }
             String schemaName = rsMeta.getSchemaName(i);
             String catalogName = rsMeta.getCatalogName(i);
+            if (schemaName.trim().length() == 0 && catalogName.equals(tableName)) {
+                // a workaround for SQLite
+                // suppose the catalog shouldn't be same if schema is not supported
+                catalogName = ""; // NOI18N
+            }
             String key = catalogName + schemaName + tableName;
             if (key.equals("")) {
                 key = noTableName;
@@ -204,7 +211,17 @@ public final class DBMetaDataFactory {
             String colName = rsMeta.getColumnName(i);
             int position = i;
             int scale = rsMeta.getScale(i);
-            int precision = rsMeta.getPrecision(i);
+            int precision;
+            try {
+                precision = rsMeta.getPrecision(i);
+            } catch (NumberFormatException nfe) {
+                // Oracle classes12.jar driver throws NumberFormatException while getting precision
+                // let's ignore it and set Integer.MAX_VALUE as fallback and log it
+                precision = Integer.MAX_VALUE;
+                Logger.getLogger(DBMetaDataFactory.class.getName()).log(Level.FINE,
+                        "Oracle classes12.jar driver throws NumberFormatException while getting precision, use Integer.MAX_VALUE as fallback.", // NOI18N
+                        nfe);
+            }
 
             boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
             String displayName = rsMeta.getColumnLabel(i);
@@ -337,10 +354,10 @@ public final class DBMetaDataFactory {
             newTable.setPrimaryKey(keys);
 
             // now loop through all the columns flagging the primary keys
-            List columns = newTable.getColumnList();
+            List<DBColumn> columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = (DBColumn) columns.get(i);
+                    DBColumn col = columns.get(i);
                     if (keys.contains(col.getName())) {
                         col.setPrimaryKey(true);
                     }
@@ -366,10 +383,10 @@ public final class DBMetaDataFactory {
             }
 
             // now loop through all the columns flagging the foreign keys
-            List columns = newTable.getColumnList();
+            List<DBColumn> columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = (DBColumn) columns.get(i);
+                    DBColumn col = columns.get(i);
                     if (foreignKeysSet.contains(col.getName())) {
                         col.setForeignKey(true);
                     }

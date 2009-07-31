@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
+import javax.swing.JMenuBar;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -64,9 +65,10 @@ import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileWizardOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -78,7 +80,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.AttachWindowAction;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.CutAction;
 import org.netbeans.jellytools.actions.DeleteAction;
@@ -86,7 +88,7 @@ import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.PasteAction;
 import org.netbeans.jellytools.actions.ViewAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -109,6 +111,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -194,7 +197,7 @@ public class IDEValidation extends JellyTestCase {
         String javaApplicationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
         npwo.selectProject(javaApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.btFinish().pushNoBlock();
@@ -253,7 +256,7 @@ public class IDEValidation extends JellyTestCase {
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
         String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
-        NewFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
         // wait package node is created
         Node sample1Node = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), SAMPLE1_PACKAGE_NAME);
         
@@ -262,13 +265,13 @@ public class IDEValidation extends JellyTestCase {
         // "Java Main Class"
         String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Main.java"); // NOI18N
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE1_CLASS_NAME);
         nameStepOper.finish();
         // check class is opened in Editor
         new EditorOperator(SAMPLE1_FILE_NAME);
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
-        nameStepOper = new NewFileNameLocationStepOperator();
+        nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE2_CLASS_NAME);
         nameStepOper.finish();
         // check class is opened in Editor and then close all documents
@@ -394,7 +397,7 @@ public class IDEValidation extends JellyTestCase {
         String addDriverItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddNewDriver");
         // open a dialog to add a new JDBC driver
         new ActionNoBlock(null, addDriverItem).perform(driversNode);
-        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddDriverDialogTitle");
+        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "AddDriverDialogTitle");
         new NbDialogOperator(addDriverTitle).cancel();
         
         // wait until the wait node dismiss and after that start waiting for JDBC_ODBC Bridge node
@@ -437,20 +440,16 @@ public class IDEValidation extends JellyTestCase {
      * - open and close Javadoc Index Search top component (main menu item Tools|Javadoc Index Search)
      */
     public void testMainMenu() {
+        MainWindowOperator.getDefault().maximize();
         // open and close New Project wizard
-        int oldDispatchingModel = JemmyProperties.getCurrentDispatchingModel();
-        try {
-            NewProjectWizardOperator.invoke().close();
-        } catch (TimeoutExpiredException e) {
-            // if not succed try it second time in Robot mode
-            // push Escape key to ensure there is no open menu
-            MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
-            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-            NewProjectWizardOperator.invoke().close();
-        } finally {
-            // set previous dispatching model
-            JemmyProperties.setCurrentDispatchingModel(oldDispatchingModel);
-        }
+        NewProjectWizardOperator.invoke().close();
+        
+        //workaround for issue 166989
+        if (System.getProperty("os.name").equals("Mac OS X"))
+            try {
+                new NbDialogOperator("Warning").close();
+            } catch (TimeoutExpiredException e) {
+            }
         /*
         // open Tools|Javadoc Index Search
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
@@ -665,7 +664,7 @@ public class IDEValidation extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         // call Build|Compile main menu item
-        new CompileAction().perform(sampleClass1Node);
+        new CompileJavaAction().perform(sampleClass1Node);
         // "SampleProject (compile-single)"
         String compileSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
@@ -984,7 +983,7 @@ public class IDEValidation extends JellyTestCase {
             stt.start();
             debuggerStarted = true;
             // start debugging
-            new DebugAction().performMenu(sampleClass1Node);
+            new DebugJavaFileAction().performMenu(sampleClass1Node);
             // check the first breakpoint reached
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds
@@ -1079,7 +1078,7 @@ public class IDEValidation extends JellyTestCase {
       * - set Wrap Lines to "false"
       * - close Options window
       */
-    public void testOptionsClassicView() {
+/*    public void testOptionsClassicView() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
         optionsOper.switchToClassicView();
         // set exact comparator because in Japanese there is conflict with Filesystem settings
@@ -1103,7 +1102,7 @@ public class IDEValidation extends JellyTestCase {
         new Property(pso, wrapLinesLabel).setValue("false");
         optionsOper.close();
     }
-    
+*/
     /** Test CVS Lite
      * - from main menu invoke "Versioning|CVS|Checkout"
      * - wait for Checkout dialog and close it
@@ -1120,8 +1119,8 @@ public class IDEValidation extends JellyTestCase {
         String checkoutItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle",
                 "CTL_MenuItem_Checkout_Label");
-        new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
-
+        //new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem);
         String checkoutTitle = Bundle.getString(
                 "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle",
                 "BK0007");
@@ -1181,14 +1180,14 @@ public class IDEValidation extends JellyTestCase {
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
         String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
-        NewFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
         Node xmlNode = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), "xml"); //NOI18N
         // "XML"
         String xmlCategory = Bundle.getString("org.netbeans.api.xml.resources.Bundle", "Templates/XML");
         // "XML Document"
         String xmlDocument = Bundle.getString("org.netbeans.modules.xml.resources.Bundle", "Templates/XML/XMLDocument.xml");
         NewFileWizardOperator.invoke(xmlNode, xmlCategory, xmlDocument);
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName("XMLDocument");  // NOI18N
         nameStepOper.next();
         nameStepOper.finish();

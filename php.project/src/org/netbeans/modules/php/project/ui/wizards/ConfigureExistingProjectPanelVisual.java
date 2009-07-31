@@ -59,7 +59,6 @@ import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
-import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -68,11 +67,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     private static final long serialVersionUID = 976589754127753213L;
 
     ConfigureExistingProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
-        // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_ProjectNameLocation"));
-        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0); // NOI18N
-        // Step name (actually the whole list for reference).
-        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
+        super(wizardPanel);
 
         initComponents();
         projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);

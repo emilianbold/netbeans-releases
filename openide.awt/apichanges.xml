@@ -47,6 +47,74 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.asynchronous">
+        <api name="awt"/>
+        <summary>Support for asynchronous actions</summary>
+        <version major="7" minor="12"/>
+        <date day="30" month="7" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            The layer definition used by factory methods for
+            <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+            context</a>
+            and
+            <a href="@TOP@/org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">
+            callback</a>
+            and
+            <a href="@TOP@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">
+                alwaysEnabledAction</a>
+            were enhanced to understand <code>&lt;attr name="asynchronous" boolvalue="true"/&gt;</code>
+            attribute. This extends these new factories with capabilities
+            already present in old <code>SystemAction</code>, thus makes
+            it easier to migrate from old to new while retaining compatible
+            behaviour.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="168547"/>
+    </change>
+    <change id="HtmlBrowser.dispose">
+        <api name="awt"/>
+        <summary>Added dispose() method.</summary>
+        <version major="7" minor="11"/>
+        <date day="15" month="7" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added method dispose() to HtmlBrowser.Impl class which should be invoked
+            when the browser component is no longer needed. The method is needed
+            for embedded browser to release native component(s). The default
+            implementation does nothing.
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="167901"/>
+    </change>
+    <change id="Actions.context">
+        <api name="awt"/>
+        <summary>Context Aware Action Factories</summary>
+        <version major="7" minor="10"/>
+        <date day="1" month="7" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Two new factory methods for creating
+            <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+            context</a>
+            and
+            <a href="@TOP@/org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">
+            callback</a>
+            actions and bunch of
+            <a href="@TOP@/org/netbeans/api/actions/package-summary.html">
+            context interfaces</a>.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <class package="org.netbeans.api.actions" name="Openable"/>
+        <class package="org.netbeans.api.actions" name="Closable"/>
+        <class package="org.netbeans.api.actions" name="Editable"/>
+        <class package="org.netbeans.api.actions" name="Viewable"/>
+        <class package="org.netbeans.api.actions" name="Printable"/>
+        <issue number="166658"/>
+    </change>
     <change id="Hide-close-button-in-CloseButtonTabbedPane">
         <api name="awt"/>
         <summary>API to hide close button in CloseButtonTabbedPane</summary>

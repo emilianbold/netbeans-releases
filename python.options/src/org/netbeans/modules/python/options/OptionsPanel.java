@@ -13,11 +13,16 @@ package org.netbeans.modules.python.options;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.python.api.PythonOptions;
 import org.netbeans.modules.python.debugger.actions.JpyDbgView;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -110,20 +115,31 @@ public class OptionsPanel extends javax.swing.JPanel
       headerColorBtn.setFont(font) ;
     }
 
-    private void chooseFont( JButton button )
-    {
-    Font font;
+    private void chooseFont(JButton button) {
+        Font font = button.getFont();
+        PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
+        if (pe != null) {
+            // use NB font chooser
+            if (font != null) {
+                pe.setValue(font);
+            }
+            DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(),
+                    NbBundle.getMessage(OptionsPanel.class, "LBL_FontChooser"));
+            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                font = (Font) pe.getValue();
+            }
 
-	    font = new FontSelectorDialog(
-					  JOptionPane.getFrameForComponent(
-					  button) , button.getFont() ).getSelectedFont() ;
+        } else {
+            // fallback to own font chooser
+            font = new FontSelectorDialog(JOptionPane.getFrameForComponent(button),
+                    button.getFont()).getSelectedFont();
+        }
 
-	    if(font != null)
-	    {
-		     setFont(font);
-		     updateFonts( font );
-	    }
-
+        if (font != null) {
+            setFont(font);
+            updateFonts(font);
+        }
     }
 
     boolean valid() {

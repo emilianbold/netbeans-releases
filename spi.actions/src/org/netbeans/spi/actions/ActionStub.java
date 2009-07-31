@@ -152,4 +152,14 @@ class ActionStub<T> extends NbAction implements LookupListener, ContextAwareActi
     protected NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return parent.createStub(actionContext);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o.getClass() == getClass() && parent.equals(((ActionStub<?>) o).parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return parent.hashCode() * 37;
+    }
 }

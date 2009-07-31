@@ -41,6 +41,7 @@
 
 package org.openide.windows;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,20 +50,23 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Keymap;
-import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.Actions;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -75,6 +79,58 @@ public class TopComponentTest extends NbTestCase {
     
     public TopComponentTest(String testName) {
         super(testName);
+    }
+
+    public void testCanTCGarbageCollectWhenActionInMap() {
+        TopComponent tc = new TopComponent();
+        class CAA extends AbstractAction implements
+                ContextAwareAction {
+            public void actionPerformed(ActionEvent arg0) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Action createContextAwareInstance(Lookup actionContext) {
+                return this;
+            }
+
+        }
+        ContextAwareAction del = new CAA();
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, "DisplayName", null, true);
+        Action a = context.createContextAwareInstance(tc.getLookup());
+        tc.getActionMap().put("key", a);
+
+        WeakReference<Object> ref = new WeakReference<Object>(tc);
+        tc = null;
+        a = null;
+        del = null;
+        context = null;
+        assertGC("Can the component GC?", ref);
+    }
+    public void testCanTCGarbageCollectWhenActionInMapAndAssignLookup() {
+        TopComponent tc = new TopComponent();
+        class CAA extends AbstractAction implements
+                ContextAwareAction {
+            public void actionPerformed(ActionEvent arg0) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Action createContextAwareInstance(Lookup actionContext) {
+                return this;
+            }
+
+        }
+        tc.associateLookup(Lookups.fixed(tc.getActionMap(), tc));
+        ContextAwareAction del = new CAA();
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, "DisplayName", null, true);
+        Action a = context.createContextAwareInstance(tc.getLookup());
+        tc.getActionMap().put("key", a);
+
+        WeakReference<Object> ref = new WeakReference<Object>(tc);
+        tc = null;
+        a = null;
+        del = null;
+        context = null;
+        assertGC("Can the component GC?", ref);
     }
 
     /**

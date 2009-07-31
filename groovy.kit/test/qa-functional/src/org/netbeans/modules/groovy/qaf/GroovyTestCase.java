@@ -48,11 +48,11 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -254,7 +254,7 @@ public abstract class GroovyTestCase extends JellyTestCase {
         }
         npwo.next();
         // project name & location selection step
-        NewProjectNameLocationStepOperator op = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator op = new NewJavaProjectNameLocationStepOperator();
         op.txtProjectName().setText(name);
         if (ProjectType.SAMPLE.equals(getProjectType())) {
             op.txtLocation().setText(getWorkDirPath());
@@ -344,7 +344,7 @@ public abstract class GroovyTestCase extends JellyTestCase {
 
     protected void buildProject() {
         OutputOperator oo = OutputOperator.invoke();
-        new BuildProjectAction().performPopup(getProjectRootNode());
+        new BuildJavaProjectAction().performPopup(getProjectRootNode());
         oo.getOutputTab(getProjectName()).waitText("BUILD SUCCESSFUL"); //NOI18N
     }
 

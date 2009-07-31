@@ -72,6 +72,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.jira.Jira;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -84,6 +85,7 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
+    private JiraIssueFinder issueFinder;
     private MouseAdapter listener;
     private NewCommentHandler newCommentHandler;
 
@@ -108,6 +110,9 @@ public class CommentsPanel extends JPanel {
                 }
             }
         };
+
+        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
+        assert issueFinder != null;
     }
 
     public void setIssue(NbJiraIssue issue) {
@@ -199,9 +204,8 @@ public class CommentsPanel extends JPanel {
         textPane.setText(comment);
         StackTraceSupport.addHyperlinks(textPane);
 
-        // PENDING
         // Issues/bugs
-        int[] pos = new int[0];//IssueFinder.getIssueSpans(comment);
+        int[] pos = issueFinder.getIssueSpans(comment);
         if (pos.length > 0) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
             Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
@@ -258,10 +262,11 @@ public class CommentsPanel extends JPanel {
     }
 
     private class IssueAction {
-        void openIssue(final String key) {
+        void openIssue(final String hyperlinkText) {
+            final String issueKey = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Issue is = issue.getRepository().getIssue(key);
+                    Issue is = issue.getRepository().getIssue(issueKey);
                     if (is != null) {
                         is.open();
                     }

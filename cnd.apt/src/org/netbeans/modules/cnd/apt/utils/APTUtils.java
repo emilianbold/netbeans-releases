@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
-    
+
     static {
         // command line param has priority for logging
         String level = System.getProperty("org.netbeans.modules.cnd.apt.level"); // NOI18N
@@ -93,7 +93,7 @@ public class APTUtils {
             }
         }
     }
-    
+
     /** Creates a new instance of APTUtils */
     private APTUtils() {
     }
@@ -335,21 +335,6 @@ public class APTUtils {
         return token != null && token.getTextID().equals(VA_ARGS_TOKEN.getTextID());
     }
     
-    public static boolean isStartCondition(Token token) {
-        return isStartCondition(token.getType());
-    }
-    
-    public static boolean isStartCondition(int/*APTTokenTypes*/ ttype) {
-        switch (ttype) {
-            case APTTokenTypes.IFDEF:
-            case APTTokenTypes.IFNDEF:
-            case APTTokenTypes.IF:
-                return true;
-            default:
-                return false;
-        }
-    }
-    
     public static boolean isStartConditionNode(int/*APT.Type*/ ntype) {
         switch (ntype) {
             case APT.Type.IFDEF:
@@ -388,20 +373,12 @@ public class APTUtils {
                 return false;
         }
     }
-    
-    public static boolean isConditionsBlockToken(Token token) {
-        assert (token != null);
-        return isConditionsBlockToken(token.getType());
-    }
-    
-    public static boolean isConditionsBlockToken(int/*APTTokenTypes*/ ttype) {
-        switch (ttype) {
-            case APTTokenTypes.IFDEF:
-            case APTTokenTypes.IFNDEF:
-            case APTTokenTypes.IF:
-            case APTTokenTypes.ELIF:
-            case APTTokenTypes.ELSE:
-            case APTTokenTypes.ENDIF:
+
+    public static boolean isEndConditionNode(int/*APT.Type*/ ntype) {
+        switch (ntype) {
+            case APT.Type.ELIF:
+            case APT.Type.ELSE:
+            case APT.Type.ENDIF:
                 return true;
             default:
                 return false;

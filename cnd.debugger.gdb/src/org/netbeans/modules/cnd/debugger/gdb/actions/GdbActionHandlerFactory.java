@@ -41,24 +41,36 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.compilers.GNUDebuggerTool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
-public class GdbActionHandlerFactory implements ProjectActionHandlerFactory {
+public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
 
-    public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-        switch (type) {
-            case DEBUG:
-            case DEBUG_LOAD_ONLY:
-            case DEBUG_STEPINTO:
-                return true;
-            default:
-                return false;
+    @Override
+    public boolean canHandle(Type type, Configuration conf) {
+        if (!super.canHandle(type, conf)) {
+            return false;
         }
+
+        if (conf instanceof MakeConfiguration) {
+            MakeConfiguration mc = (MakeConfiguration)conf;
+            final CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return false;
+            }
+            return true;
+            //return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
+        }
+        return false;
     }
 
     public ProjectActionHandler createHandler() {

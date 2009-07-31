@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.text;
 
 import java.awt.Component;
@@ -1676,10 +1677,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
                                                  getUndoRedo().discardAllEdits();
-                                                 // Insert before-save undo event to enable unmodifying undo
-                                                 ERR.fine("task-undoableEditHappened");
-                                                 getUndoRedo().undoableEditHappened(new UndoableEditEvent(CloneableEditorSupport.this,
-                                                                                                          new BeforeSaveEdit(lastSaveTime)));
                                                  ERR.fine("task-check already modified");
                                                  // #57104 - if modified previously now it should become unmodified
                                                  if (isAlreadyModified()) {
@@ -2124,17 +2121,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
     }
-
-    private StringBuffer sb;
-
-    String getLog () {
-        if (sb != null) {
-            return sb.toString();
-        } else {
-            return "";
-        }
-    }
-
+    
     /** Is called under getLock () to close the document.
      */
     private boolean doCloseDocument() {
@@ -2159,19 +2146,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         fireEvent = true;
         setDoc(null, false);
         kit = null;
-        
-        if (sb == null) {
-            sb = new StringBuffer(1024);
-        }
-        sb.append("\n++ [" + Integer.toHexString(System.identityHashCode(this)) + "]"
-        + " CES.doCloseDocument"
-        + " kit SET to null"
-        + " Thread:[" + Thread.currentThread().getName() + "]");
-        Exception ex = new Exception();
-        StringWriter sw = new StringWriter(500);
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        sb.append("\n" + sw.toString());
         
         getUndoRedo().discardAllEdits();
         updateLineSet(true);
@@ -3120,7 +3094,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (myDoc == null) {
                 throw new javax.swing.undo.CannotRedoException(); // NOI18N
             }
-
+            
             support.justRevertedToNotModified = false;
             new RenderUndo(0, myDoc);
 
@@ -3170,6 +3144,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public void discardAllEdits() {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(5, myDoc);
+            // Insert before-save undo event to enable unmodifying undo
+            undoableEditHappened(new UndoableEditEvent(support, support.new BeforeSaveEdit(support.lastSaveTime)));
         }
 
         @Override

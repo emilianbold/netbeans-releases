@@ -71,7 +71,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private final File projectFolder;
     private List<PathResourceImplementation> resources;
     private final PropertyEvaluator evaluator;
-    private AtomicBoolean dirty = new AtomicBoolean ();
+    private AtomicBoolean dirty = new AtomicBoolean();
     private final List<String> propertyNames;
 
     /**
@@ -85,21 +85,21 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         this.projectFolder = projectFolder;
         this.evaluator = evaluator;
         this.propertyNames = Arrays.asList(propertyNames);
-        this.resources = this.getPath ();
+        resources = getPath();
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
-        assert this.resources != null;
-        return this.resources;
+        assert resources != null;
+        return resources;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener (listener);
+        support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener (listener);
+        support.removePropertyChangeListener(listener);
     }
 
 
@@ -120,13 +120,13 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         List<PathResourceImplementation> newRoots = getPath();
         boolean fire = false;
         synchronized (this) {
-            if (!this.resources.equals(newRoots)) {
-                this.resources = newRoots;
+            if (!resources.equals(newRoots)) {
+                resources = newRoots;
                 fire = true;
             }
         }
         if (fire) {
-            support.firePropertyChange (PROP_RESOURCES,null,null);
+            support.firePropertyChange(PROP_RESOURCES, null, null);
         }
     }
 
@@ -136,7 +136,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             String prop = evaluator.getProperty(p);
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
-                    File f = PropertyUtils.resolveFile(this.projectFolder, piece);
+                    File f = PropertyUtils.resolveFile(projectFolder, piece);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
                         result.add(ClassPathSupport.createResource(entry));
@@ -146,8 +146,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                 }
             }
         }
-        
         return Collections.unmodifiableList(result);
     }
-
 }

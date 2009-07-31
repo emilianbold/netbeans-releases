@@ -95,7 +95,7 @@ public final class Statistics {
             numberOfCalls = 0;
         }
 
-        public String toString() {
+        public @Override String toString() {
             return description + ": " + numberOfCalls + " calls in " + elapsedTime + "ms";//NOI18N
         }
 		

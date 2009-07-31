@@ -222,18 +222,18 @@ public class JavacParser extends Parser {
             FileObject fo = source.getFileObject();
             if (fo != null) {
                 //fileless Source -- ie. debugger watch CC etc
-                filter = JavaFileFilterQuery.getFilter(source.getFileObject());
-            }
-            try {
-                final DataObject dobj = DataObject.find(source.getFileObject());
-                ec = dobj.getCookie(EditorCookie.Observable.class);
-                if (ec == null) {
-                    LOGGER.log(Level.FINE,
-                        String.format("File: %s has no EditorCookie.Observable", //NOI18N
-                        FileUtil.getFileDisplayName (source.getFileObject())));
+                filter = JavaFileFilterQuery.getFilter(fo);
+                try {
+                    final DataObject dobj = DataObject.find(fo);
+                    ec = dobj.getCookie(EditorCookie.Observable.class);
+                    if (ec == null) {
+                        LOGGER.log(Level.FINE,
+                            String.format("File: %s has no EditorCookie.Observable", //NOI18N
+                            FileUtil.getFileDisplayName (fo)));
+                    }
+                } catch (DataObjectNotFoundException e) {
+                    LOGGER.log(Level.FINE,"Invalid DataObject",e);
                 }
-            } catch (DataObjectNotFoundException e) {
-                LOGGER.log(Level.FINE,"Invalid DataObject",e);
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
@@ -493,9 +493,15 @@ public class JavacParser extends Parser {
                 long start = System.currentTimeMillis();
                 // XXX - this might be with wrong encoding
                 Iterable<? extends CompilationUnitTree> trees = currentInfo.getJavacTask().parse(new JavaFileObject[] {currentInfo.jfo});
-                assert trees != null : "Did not parse anything";        //NOI18N
+                if (trees == null) {
+                    LOGGER.info( "Did not parse anything for: " + currentInfo.jfo.toUri()); //NOI18N
+                    return Phase.MODIFIED;
+                }
                 Iterator<? extends CompilationUnitTree> it = trees.iterator();
-                assert it.hasNext();
+                if (!it.hasNext()) {
+                    LOGGER.info( "Did not parse anything for: " + currentInfo.jfo.toUri()); //NOI18N
+                    return Phase.MODIFIED;
+                }
                 CompilationUnitTree unit = it.next();
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
@@ -553,7 +559,7 @@ public class JavacParser extends Parser {
                 currentPhase = Phase.UP_TO_DATE;
             }
         } catch (CouplingAbort a) {
-            TreeLoader.dumpCouplingAbort(a, currentInfo.jfo);
+            TreeLoader.dumpCouplingAbort(a, null);
             currentInfo.needsRestart = true;
             return currentPhase;            
         } catch (CancelAbort ca) {

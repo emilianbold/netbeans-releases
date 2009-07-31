@@ -97,16 +97,17 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
-        RemoteClient remoteClient = getRemoteClient(remoteLog);
-        download(remoteClient, remoteLog, getProject().getName(), true, sources, selectedFiles);
+        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
+        RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
+        download(remoteClient, remoteLog, downloadOperationMonitor, getProject().getName(), true, sources, selectedFiles);
     }
 
     public String getDisplayName() {
         return DISPLAY_NAME;
     }
 
-    public static void download(RemoteClient remoteClient, InputOutput remoteLog, String projectName, boolean showDownloadDialog,
-            FileObject sources, FileObject... filesToDownload) {
+    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
+            boolean showDownloadDialog, FileObject sources, FileObject... filesToDownload) {
         String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -123,7 +124,13 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             if (forDownload.size() > 0) {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-                progressHandle.start();
+                operationMonitor.progressHandle = progressHandle;
+                int workUnits = getWorkUnits(forDownload);
+                if (workUnits > 0) {
+                    progressHandle.start(workUnits);
+                } else {
+                    progressHandle.start();
+                }
                 transferInfo = remoteClient.download(sources, forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));

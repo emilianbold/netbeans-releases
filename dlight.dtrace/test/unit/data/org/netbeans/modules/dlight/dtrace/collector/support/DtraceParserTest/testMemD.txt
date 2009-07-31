@@ -1,20 +1,16 @@
 7499892113497 1 2 135671736 131068
-1 1 7499892113497
               libc.so.1`malloc+0x5c
               main`_start+0x80
 
 7499892127842 1 2 135671752 131070
-1 1 7499892127842
               libc.so.1`malloc+0x5c
               main`_start+0x80
 
 7499892142566 1 2 135671768 131072
-1 1 7499892142566
               libc.so.1`malloc+0x5c
               main`_start+0x80
 
 7499892193386 1 12 4277863000 131084
-1 1 7499892193386
               ld.so.1`malloc+0xd1
               ld.so.1`tsort+0xa9
               ld.so.1`atexit_fini+0x54
@@ -22,14 +18,12 @@
               libc.so.1`exit+0x12
 
 7499892205053 1 12 4277865232 131096
-1 1 7499892205053
               ld.so.1`malloc+0xd1
               ld.so.1`atexit_fini+0x54
               libc.so.1`_exithandle+0x53
               libc.so.1`exit+0x12
 
 7499892216233 -1 12 4277865232 131084
-1 1 7499892216233
               ld.so.1`free
               ld.so.1`tsort+0x25d
               ld.so.1`atexit_fini+0x54
@@ -37,7 +31,6 @@
               libc.so.1`exit+0x12
 
 7499892231552 -1 12 4277863000 131072
-1 1 7499892231552
               ld.so.1`free
               ld.so.1`call_fini+0x229
               ld.so.1`atexit_fini+0x6f

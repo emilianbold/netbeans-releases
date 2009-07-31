@@ -42,6 +42,7 @@ package org.netbeans.modules.web.webmodule;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.openide.util.Exceptions;
 
 /**
@@ -75,5 +76,8 @@ public abstract class WebModuleAccessor {
         return accessor;
     }
 
+    @Deprecated
     public abstract WebModule createWebModule(WebModuleImplementation spiWebmodule);
+
+    public abstract WebModule createWebModule(WebModuleImplementation2 spiWebmodule);
 }

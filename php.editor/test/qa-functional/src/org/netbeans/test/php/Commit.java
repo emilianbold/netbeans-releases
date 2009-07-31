@@ -39,6 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
+
+/**
+ * edited for 68 (trunk)
+ */
 package org.netbeans.test.php;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -530,7 +534,7 @@ public class Commit extends GeneralPHP
         "// put your code here",
         false,
         true,
-        5,
+        1, //issue 1683650, for 65: ( 5 <= ++iErrorChecks )
         0
       );
 
@@ -558,7 +562,7 @@ public class Commit extends GeneralPHP
         "*/",
         false,
         true,
-        5,
+        1,      //issue 1683650, for 65: ( 5 <= ++iErrorChecks )
         0
       );
 
@@ -691,8 +695,8 @@ public class Commit extends GeneralPHP
         "<?",
         false,
         false,
-        6,
-        1
+        1,//issue 1683650, for 65: ( 5 <= ++iErrorChecks )
+        0
       );
 
     endTest( );

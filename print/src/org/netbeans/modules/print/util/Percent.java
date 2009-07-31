@@ -153,10 +153,12 @@ public final class Percent extends JComboBox implements ActionListener {
 
             if (i != -1) {
                 setValue(percent, i);
-            } else {
+            }
+            else {
                 valueChanged(percent, i);
             }
-        } else {
+        }
+        else {
 //out("  it's invalid value");
             myListener.invalidValue(value);
 //out("    restore.");
@@ -183,7 +185,8 @@ public final class Percent extends JComboBox implements ActionListener {
     public void increaseValue() {
         if (myCurrentValue < THRESHOLD) {
             setValue(myCurrentValue + SUBTRAHEND);
-        } else {
+        }
+        else {
             setValue(myCurrentValue * FACTOR);
         }
     }
@@ -191,7 +194,8 @@ public final class Percent extends JComboBox implements ActionListener {
     public void decreaseValue() {
         if (myCurrentValue > THRESHOLD) {
             setValue(myCurrentValue / FACTOR);
-        } else {
+        }
+        else {
             setValue(myCurrentValue - SUBTRAHEND);
         }
     }
@@ -222,7 +226,7 @@ public final class Percent extends JComboBox implements ActionListener {
         boolean isCustomValue = index != -1;
 //out("  value changed: " + value + " " + isCustomValue);
 
-        if (!isCustomValue && !isValid(value)) {
+        if ( !isCustomValue && !isValid(value)) {
 //out("  it's not valid value");
             return null;
         }
@@ -231,7 +235,8 @@ public final class Percent extends JComboBox implements ActionListener {
 
         if (isCustomValue && myCustoms != null) {
             myCurrentText = myCustoms[index];
-        } else {
+        }
+        else {
             myCurrentText = getPercent(value);
         }
 //out("myCurrentText: " + myCurrentText);
@@ -330,7 +335,6 @@ public final class Percent extends JComboBox implements ActionListener {
     private double myCurrentValue;
     private static final int BOUND_1 = 1000;
     private static final int BOUND_2 = 2000;
-    private static final double FACTOR = 1.09;
     private static final double THRESHOLD = 0.2;
     private static final double SUBTRAHEND = 0.01;
     private static final double MIN_VALUE = 0.01;
@@ -341,4 +345,5 @@ public final class Percent extends JComboBox implements ActionListener {
     private static final String DECREASE = "decrease"; // NOI18N
     private static final double YUZ = 100.0;
     private static final String PERCENT = "%"; // NOI18N
+    public static final double FACTOR = 1.09;
 }

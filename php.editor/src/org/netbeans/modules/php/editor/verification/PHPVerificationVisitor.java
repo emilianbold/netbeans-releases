@@ -281,8 +281,8 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult) context.parserResult,
-                        className, fname, QuerySupport.Kind.EXACT, Modifier.PUBLIC);
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
+                        className, fname, QuerySupport.Kind.EXACT, Modifier.PUBLIC));
                 
                 assumeParamsPassedByRefInitialized(functions, node.getMethod());
             }
@@ -301,13 +301,13 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         if (maintainVarStack) {
-            String className = CodeUtils.extractClassName(node);
+            String className = CodeUtils.extractUnqualifiedClassName(node);
             String fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult) context.parserResult,
+                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.index.getAllMethods((PHPParseResult) context.parserResult,
                         className, fname, QuerySupport.Kind.EXACT,
-                        Modifier.PUBLIC | Modifier.STATIC);
+                        Modifier.PUBLIC | Modifier.STATIC));
                 
                 assumeParamsPassedByRefInitialized(functions, node.getMethod());
             }
@@ -441,7 +441,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        String type = CodeUtils.extractTypeName(node);
+        String type = CodeUtils.extractUnqualifiedTypeName(node);
         Variable var = node.getVariable();
         varStack.addVariableDefinition(var, type);
         super.visit(node);

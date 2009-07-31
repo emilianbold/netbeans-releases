@@ -25,7 +25,7 @@ public final class DisassemblyAction extends CallableSystemAction {
 
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/cnd/debugger/gdb/resources/disassembly.png"; // NOI18N
+        return "org/netbeans/modules/cnd/debugger/common/resources/disassembly.png"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

@@ -134,8 +134,8 @@
                 <friend>org.netbeans.modules.dlight</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
+                <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
-                <friend>org.netbeans.modules.dlight.derby.support</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
@@ -143,6 +143,7 @@
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>

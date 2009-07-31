@@ -40,18 +40,20 @@
 package org.netbeans;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import junit.framework.TestCase;
+import org.fakepkg.FakeIfceHidden;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 
-public class ProxyClassLoaderTest extends TestCase {
+public class ProxyClassLoaderTest extends SetupHid {
 
     public ProxyClassLoaderTest(String name) {
         super(name);
@@ -185,4 +187,84 @@ public class ProxyClassLoaderTest extends TestCase {
         assertEquals(Arrays.asList(new URL(b, "3a/p/3"), new URL(b, "3b/p/3")), Collections.list(cl4.getResources("p/3")));
     }
 
+    public void testAlienClassloader() throws Exception {
+        URL u;
+
+        final class Loader extends ProxyClassLoader {
+
+            ClassLoader l;
+
+            public Loader(String... publicPackages) throws MalformedURLException {
+                super(new ClassLoader[0], true);
+                addCoveredPackages(Arrays.asList(publicPackages));
+            }
+
+            @Override
+            public URL findResource(String name) {
+                if ("org/fakepkg/Something.txt".equals(name)) {
+                    URL u = ModuleFactoryAlienTest.class.getResource("/org/fakepkg/resource1.txt");
+                    assertNotNull("text found", u);
+                    return u;
+                }
+                return null;
+            }
+
+            @Override
+            public Enumeration<URL> findResources(String name) {
+                return Enumerations.empty();
+            }
+
+            @Override
+            protected Class<?> doLoadClass(String pkg, String name) {
+                if (name.equals("org.fakepkg.FakeIfce")) {
+                    return FakeIfceHidden.class;
+                }
+                return null;
+            }
+
+            @Override
+            protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                Class c = findLoadedClass(name);
+                if (c != null) {
+                    return c;
+                }
+                if (l != null) {
+                    try {
+                        c = l.loadClass(name);
+                        if (resolve) {
+                            resolveClass(c);
+                        }
+                        return c;
+                    } catch (ClassNotFoundException x) {}
+                }
+                return super.loadClass(name, resolve);
+            }
+
+            @Override
+            public String toString() {
+                return "Alien[test]";
+            }
+        }
+
+        File j1 = new File(jars, "simple-module.jar");
+        ClassLoader l1 = new URLClassLoader(new URL[] { j1.toURI().toURL() });
+
+        Loader loader = new Loader("org.bar", "org.fakepkg");
+        File jar = new File(jars, "depends-on-simple-module.jar");
+        loader.l = new URLClassLoader(new URL[] { jar.toURI().toURL() }, l1);
+
+
+        Class<?> clazz = loader.loadClass("org.bar.SomethingElse");
+        Class<?> sprclass = loader.loadClass("org.foo.Something");
+
+        assertEquals("Correct parent is used", sprclass, clazz.getSuperclass());
+
+        u = loader.getResource("org/fakepkg/Something.txt");
+        assertNotNull("Resource found", u);
+
+        clazz = loader.loadClass("org.fakepkg.FakeIfce");
+        assertNotNull("Class loaded", clazz);
+        assertEquals("it is our fake class", FakeIfceHidden.class, clazz);
+
+    }
 }

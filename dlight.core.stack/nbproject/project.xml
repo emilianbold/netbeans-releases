@@ -38,13 +38,15 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
+                <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
-                <friend>org.netbeans.modules.dlight.derby.support</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.core.stack.api</package>
                 <package>org.netbeans.modules.dlight.core.stack.api.support</package>

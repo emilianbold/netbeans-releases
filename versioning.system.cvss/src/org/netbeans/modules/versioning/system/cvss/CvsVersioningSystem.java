@@ -406,7 +406,7 @@ public class CvsVersioningSystem {
      * @param file a file or directory
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
-    static boolean isManaged(File file) {
+    public static boolean isManaged(File file) {
         return VersioningSupport.getOwner(file) instanceof CVS && !Utils.isPartOfCVSMetadata(file);
     }
 
@@ -429,12 +429,10 @@ public class CvsVersioningSystem {
             LOG.fine(" cached as unversioned");
             return null;
         }
-        File metadataRoot = null;
         if (Utils.isPartOfCVSMetadata(file)) {
             LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
                 if (file.getName().equals(FILENAME_CVS) && (file.isDirectory() || !file.exists())) {
-                    metadataRoot = file;
                     file = file.getParentFile();
                     LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
                     break;
@@ -464,11 +462,6 @@ public class CvsVersioningSystem {
         if(done.size() > 0) {
             LOG.log(Level.FINE, " storing unversioned");
             unversionedParents.addAll(done);
-        }
-        if (topmost == null && metadataRoot != null) {
-            // metadata folder is considered managed, too; see #159453
-            CvsVersioningSystem.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
-            topmost = metadataRoot;
         }
         if(LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });

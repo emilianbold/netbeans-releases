@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -67,17 +67,28 @@ public class UpdateTest extends AbstractCommandTest {
 //        }        
     }
     
-    public void testUpdateFile() throws Exception {                                                
-                        
-        File wc1 = createFolder("wc1");
-        File file1 = createFile(wc1, "file");
+    public void testUpdateFile() throws Exception {
+        testUpdateFile("wc1", "wc2", "file");
+    }
+
+    public void testUpdateFileWithAtSign1() throws Exception {
+        testUpdateFile("wc11", "wc21", "@file");
+        testUpdateFile("wc12", "wc22", "fi@le");
+        testUpdateFile("wc13", "wc23", "file@");
+    }
+
+    private void testUpdateFile(String folder1Name,
+                                String folder2Name,
+                                String fileName) throws Exception {
+        File wc1 = createFolder(folder1Name);
+        File file1 = createFile(wc1, fileName);
         write(file1, 1);
         importFile(wc1);
         assertStatus(SVNStatusKind.NORMAL, wc1);
         assertStatus(SVNStatusKind.NORMAL, file1);
                         
-        File wc2 = createFolder("wc2");      
-        File file2 = new File(wc2, "file");
+        File wc2 = createFolder(folder2Name);
+        File file2 = new File(wc2, fileName);
         
         SVNUrl url = getTestUrl().appendPath(wc1.getName());
         ISVNClientAdapter c = getNbClient();         
@@ -104,18 +115,29 @@ public class UpdateTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {file1});
     }    
     
-    public void testUpdateFilePrevRevision() throws Exception {                                                
-                        
-        File wc1 = createFolder("wc1");
-        File file1 = createFile(wc1, "file");
+    public void testUpdateFilePrevRevision() throws Exception {
+        testUpdateFilePrevRevision("wc1", "wc2", "file");
+    }
+
+    public void testUpdateFileWithAtSignPrevRevision() throws Exception {
+        testUpdateFilePrevRevision("wc11", "wc21", "@file");
+        testUpdateFilePrevRevision("wc12", "wc22", "fi@le");
+        testUpdateFilePrevRevision("wc13", "wc23", "file@");
+    }
+
+    private void testUpdateFilePrevRevision(String folder1Name,
+                                            String folder2Name,
+                                            String fileName) throws Exception {
+        File wc1 = createFolder(folder1Name);
+        File file1 = createFile(wc1, fileName);
         write(file1, 1);
         importFile(wc1);
                         
         assertStatus(SVNStatusKind.NORMAL, wc1);
         assertStatus(SVNStatusKind.NORMAL, file1);
                                         
-        File wc2 = createFolder("wc2");      
-        File file2 = new File(wc2, "file");
+        File wc2 = createFolder(folder2Name);
+        File file2 = new File(wc2, fileName);
         
         SVNUrl url = getTestUrl().appendPath(wc1.getName());
         ISVNClientAdapter c = getNbClient();         

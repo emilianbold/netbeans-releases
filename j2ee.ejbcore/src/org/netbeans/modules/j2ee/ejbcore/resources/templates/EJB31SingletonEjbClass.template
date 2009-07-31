@@ -1,0 +1,20 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Licenses/license-${project.license}.txt">
+
+package ${package};
+
+import javax.ejb.Singleton;
+
+/**
+ *
+ * @author ${user}
+ */
+@Singleton
+public class ${name} {
+    
+    // Add business logic below. (Right-click in editor and choose
+    // "Insert Code > Add Business Method")
+ 
+}

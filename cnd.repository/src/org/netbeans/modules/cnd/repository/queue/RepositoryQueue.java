@@ -72,7 +72,7 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     }
     
     @Override
-    protected void doReplaceAddLast(Key key, Persistent value, Entry existent) {
+    protected void doReplaceAddLast(Key key, Persistent value, Entry<Key, Persistent> existent) {
         super.doReplaceAddLast(key, value, existent);
         queue.remove(existent);
         queue.addLast(existent);
@@ -88,17 +88,17 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
      * (if its accept returns true, entry should be removed)
      * @return a set of objects that are removed from queue
      */
-    public Collection<RepositoryQueue.Entry> clearQueue (Filter filter) {
+    public Collection<RepositoryQueue.Entry<Key, Persistent>> clearQueue (Filter filter) {
        synchronized (lock) {
-	   Collection<RepositoryQueue.Entry> removed = new ArrayList<Entry>();
+	   Collection<RepositoryQueue.Entry<Key, Persistent>> removed = new ArrayList<Entry<Key, Persistent>>();
 	   // collecting entried to remove
-	   for( Entry entry : map.values() ) {
+	   for( Entry<Key, Persistent> entry : map.values() ) {
 	       if( filter.accept(entry.getKey(), entry.getValue()) ) {
 		   removed.add(entry);
 	       }
 	   }
 	   // remove entries
-	   for( Entry entry : removed ) {
+	   for( Entry<Key, Persistent> entry : removed ) {
 	       remove(entry.getKey());
 	   }
 	   return removed;

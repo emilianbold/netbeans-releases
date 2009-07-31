@@ -438,14 +438,41 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
                     case KW_STRUCTURE:
                     case KW_INTERFACE:
                     case KW_FUNCTION:
-                    case KW_MODULE:
                     case KW_UNION:
-                    case KW_TYPE:
                     case KW_ENUM:
                     case KW_MAP:
                         indent = getTokenIndent(startToken) + getShiftWidth();
                         break;
-
+                    case KW_TYPE:
+                    {
+                        TokenItem next = findImportantToken(startToken.getNext(), null, false);
+                        if (next != null && next.getTokenID() == LPAREN) {
+                            indent = getTokenIndent(startToken);
+                        } else {
+                            indent = getTokenIndent(startToken) + getShiftWidth();
+                        }
+                        break;
+                    }
+                    case KW_MODULE:
+                    {
+                        TokenItem next = findImportantToken(startToken.getNext(), null, false);
+                        if (next != null) {
+                            switch (next.getTokenID()) {
+                                case KW_PROCEDURE:
+                                case KW_FUNCTION:
+                                case KW_SUBROUTINE:
+                                    indent = getTokenIndent(startToken);
+                                    break;
+                                default:
+                                    indent = getTokenIndent(startToken) + getShiftWidth();
+                                    break;
+                            }
+                            break;
+                        } else {
+                           indent = getTokenIndent(startToken) + getShiftWidth();
+                            break;
+                        }
+                    }
                     case KW_ELSEIF:
                         indent = getTokenIndent(startToken) + getShiftWidth();
                         break;

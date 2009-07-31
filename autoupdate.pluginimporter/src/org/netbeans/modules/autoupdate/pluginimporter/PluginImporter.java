@@ -99,10 +99,15 @@ public class PluginImporter {
         plugins = foundPlugins;
     }
 
+    public void reinspect () {
+        inspected = false;
+        inspect();
+    }
     private void inspect () {
         if (inspected) {
             return ;
         }
+        long start = System.currentTimeMillis();
         installed = new HashSet<UpdateElement> ();
         toImport = new HashSet<UpdateElement> ();
         toInstall = new HashSet<UpdateElement> ();
@@ -175,6 +180,8 @@ public class PluginImporter {
                 broken.add (el);
             }
         }
+        long end = System.currentTimeMillis();
+        LOG.log (Level.INFO, "Inspecting plugins took " + (end - start) + " ms"); // NOI18N
 
         inspected = true;
     }

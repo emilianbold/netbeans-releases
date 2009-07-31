@@ -258,9 +258,6 @@ public class APTTraceUtils {
             case APT.Type.UNDEF:
                 str = "UNDEF"; // NOI18N
                 break;
-            case APT.Type.CONDITION_CONTAINER:
-                str = "CONDITION_CONTAINER"; // NOI18N
-                break;
             case APT.Type.IFDEF:
                 str = "IFDEF"; // NOI18N
                 break;

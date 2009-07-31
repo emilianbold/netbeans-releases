@@ -73,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -127,10 +128,12 @@ public class ProjectsRootNode extends AbstractNode {
         }
     }
         
+    @Override
     public String getName() {
         return ( "OpenProjects" ); // NOI18N
     }
     
+    @Override
     public String getDisplayName() {
         if ( this.bundle == null ) {
             this.bundle = NbBundle.getBundle( ProjectsRootNode.class );
@@ -138,14 +141,17 @@ public class ProjectsRootNode extends AbstractNode {
         return bundle.getString( "LBL_OpenProjectsNode_Name" ); // NOI18N
     }
     
+    @Override
     public boolean canRename() {
         return false;
     }
         
+    @Override
     public Node.Handle getHandle() {        
         return new Handle(type);
     }
     
+    @Override
     public Action[] getActions( boolean context ) {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
@@ -434,14 +440,28 @@ public class ProjectsRootNode extends AbstractNode {
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
         private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
+        private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
-                setProjectFiles();
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
+                fsRefreshTask.schedule(DELAY);
             }
             public @Override void fileFolderCreated(FileEvent fe) {
-                setProjectFiles();
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
+                fsRefreshTask.schedule(DELAY);
             }
         };
+        private final RequestProcessor.Task fsRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                setProjectFiles();
+            }
+        });
 
         public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
@@ -768,6 +788,42 @@ public class ProjectsRootNode extends AbstractNode {
             });
         }
 
+        @Override
+        public Object getValue(String attributeName) {
+            if ("customDelete".equals(attributeName)) {
+                return true;
+            }
+            return super.getValue(attributeName);
+        }
+
+        @Override
+        public boolean canDestroy() {
+            Project p = getLookup().lookup(Project.class);
+            if (p == null) {
+                return false;
+            }
+            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+
+            String[] sa = ap != null ? ap.getSupportedActions() : new String[0];
+            int k = sa.length;
+
+            for (int i = 0; i < k; i++) {
+                if (ActionProvider.COMMAND_DELETE.equals(sa[i])) {
+                    return ap.isActionEnabled(ActionProvider.COMMAND_DELETE, getLookup());
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            Project p = getLookup().lookup(Project.class);
+            if (p == null) {
+                return;
+            }
+            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+            ap.invokeAction(ActionProvider.COMMAND_DELETE, getLookup());
+        }
     } // end of BadgingNode
     private static final class BadgingLookup extends ProxyLookup {
         public BadgingLookup(Lookup... lkps) {

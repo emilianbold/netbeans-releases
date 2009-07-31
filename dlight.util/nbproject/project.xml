@@ -51,13 +51,14 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
                 <friend>org.netbeans.modules.dlight.core</friend>
                 <friend>org.netbeans.modules.dlight.core.ui</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
+                <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
-                <friend>org.netbeans.modules.dlight.derby.support</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
@@ -65,6 +66,8 @@
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>

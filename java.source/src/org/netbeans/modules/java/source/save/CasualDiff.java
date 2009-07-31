@@ -782,14 +782,45 @@ public class CasualDiff {
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
-        localPointer = diffList(filterHidden(oldT.stats), filterHidden(newT.stats), oldT.pos + 1, est, Measure.MEMBER, printer);
+        List<JCTree> oldstats = filterHidden(oldT.stats);
+        localPointer = diffList(oldstats, filterHidden(newT.stats), oldT.pos + 1, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
+/*
+            JCTree tree = oldstats.get(oldstats.size() - 1);
+            localPointer = adjustLocalPointer(localPointer, comments.getComments(oldT), CommentSet.RelativePosition.INNER);
+            CommentSet cs = comments.getComments(tree);
+            localPointer = adjustLocalPointer(localPointer, cs, CommentSet.RelativePosition.INLINE);            
+            localPointer = adjustLocalPointer(localPointer, cs, CommentSet.RelativePosition.TRAILING);            
+*/
             copyTo(localPointer, localPointer = endPos(oldT));
         }
         printer.undent(old);
         return localPointer;
     }
+
+    private int adjustLocalPointer(int localPointer, CommentSet cs, CommentSet.RelativePosition position) {
+        if (cs == null) return localPointer;
+        List<Comment> cl = cs.getComments(position);
+        if (!cl.isEmpty()) {
+            for (Comment comment : cl) {
+                localPointer = Math.max(comment.endPos(), localPointer);
+            }
+        }
+        return localPointer;
+    }
+
+    private boolean isComment(JavaTokenId tid) {
+        switch (tid) {
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case JAVADOC_COMMENT:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
 
     protected int diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT, int[] bounds) {
         int localPointer = bounds[0];

@@ -53,6 +53,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String SOURCES = "Sources"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
+    public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
+    public static final String PHP_UNIT = "phpUnit"; // NOI18N
 
     private final String name;
 
@@ -81,6 +83,18 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_PhpIncludePath"),
                     null,
                     categories);
+        } else if (IGNORE_PATH.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    IGNORE_PATH,
+                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_IgnorePath"),
+                    null,
+                    categories);
+        } else if (PHP_UNIT.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    PHP_UNIT,
+                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_PhpUnit"),
+                    null,
+                    categories);
         }
         assert toReturn != null : "No category for name: " + name;
         return toReturn;
@@ -95,6 +109,10 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps, category);
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerPhpIncludePath(category, uiProps);
+        } else if (IGNORE_PATH.equals(nm)) {
+            return new CustomizerIgnorePath(category, uiProps);
+        } else if (PHP_UNIT.equals(nm)) {
+            return new CustomizerPhpUnit(category, uiProps);
         }
         return new JPanel();
     }
@@ -106,8 +124,16 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static CompositePanelProviderImpl createRunConfig() {
         return new CompositePanelProviderImpl(RUN);
     }
-    
+
     public static CompositePanelProviderImpl createPhpIncludePath() {
         return new CompositePanelProviderImpl(PHP_INCLUDE_PATH);
+    }
+
+    public static CompositePanelProviderImpl createIgnorePath() {
+        return new CompositePanelProviderImpl(IGNORE_PATH);
+    }
+
+    public static CompositePanelProviderImpl createPhpUnit() {
+        return new CompositePanelProviderImpl(PHP_UNIT);
     }
 }

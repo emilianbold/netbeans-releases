@@ -50,7 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractButton;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -127,8 +129,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter.getTableHeader().setReorderingAllowed(false);
         actionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        actionsTable.setDefaultRenderer(ShortcutCell.class, new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
-
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getModel().setSearchText(searchField.getText());
@@ -192,6 +192,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         actionsTable.addMouseListener(new ButtonCellMouseListener(actionsTable));
         TableColumn column = actionsTable.getColumnModel().getColumn(1);
         column.setCellEditor(new ButtonCellEditor(getModel()));
+        column.setCellRenderer(new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
         setColumnWidths();
 
         popup.add(new ShortcutPopupPanel(actionsTable, popup));
@@ -212,7 +213,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
                             if (searched(shortcut, searchText))
-                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(shortcut), category, ""});
+                                getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
                         }
                     }
                 }
@@ -271,11 +272,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     private void refreshProfileCombo() {
         String currentProfile = getModel().getCurrentProfile();
         List keymaps = getModel().getProfiles();
-        cbProfile.removeAllItems();
-        int i;
-        int k = keymaps.size();
-        for (i = 0; i < k; i++)
-            cbProfile.addItem(keymaps.get(i));
+        ComboBoxModel model = new DefaultComboBoxModel(keymaps.toArray());
+        cbProfile.setModel(model);
         cbProfile.setSelectedItem(currentProfile);
     }
 
@@ -502,14 +500,14 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             int row = table.rowAtPoint(p);
             int col = table.columnAtPoint(p);
             Object valueAt = table.getValueAt(row, col);
-            if (valueAt instanceof ShortcutCell) {
+            if (col == 1) {
+                ShortcutCellPanel scCell = (ShortcutCellPanel) table.getCellRenderer(row, col).getTableCellRendererComponent(table, valueAt, true, true, row, col);
                 Rectangle cellRect = table.getCellRect(row, col, false);
-                ShortcutCell scCell = (ShortcutCell) valueAt;
                 JButton button = scCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
-//                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
-//                    button.dispatchEvent(buttonEvent);
-//                    button.doClick();
+                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
+                    button.dispatchEvent(buttonEvent);
+                    e.consume();
 
                     boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
                     ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];

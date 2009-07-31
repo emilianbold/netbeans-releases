@@ -4,5 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/j2ee/Bundle.propert
 OpenIDE-Module-Layer: org/netbeans/modules/maven/j2ee/layer.xml
 OpenIDE-Module-Public-Packages: -
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 

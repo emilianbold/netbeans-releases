@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -192,10 +193,11 @@ public class EclipseProjectReference {
             // an exception was thrown; pretend proj is uptodate
             return;
         }
-        if (!(ep.getProjectTypeFactory() instanceof ProjectTypeUpdater)) {
+        ProjectTypeFactory factory = ep.getProjectTypeFactory();
+        if (!(factory instanceof ProjectTypeUpdater)) {
             assert false : "project with <eclipse> data in project.xml is upgradable"; //NOI18N
+            return;
         }
-        ProjectTypeUpdater updater = (ProjectTypeUpdater)getEclipseProject(false).getProjectTypeFactory();
         
         // resolve classpath containers
         ep.resolveContainers(importProblems, true);
@@ -204,7 +206,7 @@ public class EclipseProjectReference {
         ep.setupEnvironmentVariables(importProblems);
         
         // perform update
-        key = updater.update(project, importModel, key, importProblems);
+        key = ((ProjectTypeUpdater) factory).update(project, importModel, key, importProblems);
         write(project, this);
     }
 

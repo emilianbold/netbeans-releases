@@ -1638,6 +1638,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 return oldActions;
             } else if (getItem().getFolder().isDiskFolder()) {
                 for (int i = 0; i < oldActions.length; i++) {
+                    String key = null; // Some actions are now openide.awt.GenericAction. Use key instead
+                    if (oldActions[i] != null) {
+                        key = (String)oldActions[i].getValue("key"); // NOI18N
+                    }
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
@@ -1645,7 +1649,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //                        newActions.add(null);
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
-                    } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
+                    } else if (key != null && key.equals("delete")) { // NOI18N
                         newActions.add(createDeleteAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                         newActions.add(SystemAction.get(PropertiesItemAction.class));
@@ -1656,6 +1660,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 return newActions.toArray(new Action[newActions.size()]);
             } else {
                 for (int i = 0; i < oldActions.length; i++) {
+                    String key = null; // Some actions are now openide.awt.GenericAction. Use key instead
+                    if (oldActions[i] != null) {
+                        key = (String)oldActions[i].getValue("key"); // NOI18N
+                    }
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(null);
@@ -1668,7 +1676,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         newActions.add(createRenameAction());
                     } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                         newActions.add(SystemAction.get(PropertiesItemAction.class));
-                    } else if (oldActions[i] != null && oldActions[i] instanceof DeleteAction) {
+                    } else if (key != null && key.equals("delete")) { // NOI18N
                         newActions.add(SystemAction.get(RemoveItemAction.class));
                         newActions.add(createDeleteAction());
                     } else {

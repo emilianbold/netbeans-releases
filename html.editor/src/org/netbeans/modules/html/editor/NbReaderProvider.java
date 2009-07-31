@@ -100,6 +100,10 @@ public class NbReaderProvider implements ReaderProvider {
         }
     }
 
+    public boolean isXMLContent(String identifier) {
+        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+    }
+    
     private void invalidate() {
         if( valid ) {
             valid = false;

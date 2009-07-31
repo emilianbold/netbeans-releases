@@ -113,17 +113,16 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     @Override
     public void visit(StaticFieldAccess staticFieldAccess) {
         Variable field = staticFieldAccess.getField();        
-        String className = CodeUtils.extractClassName(staticFieldAccess);
+        String className = CodeUtils.extractUnqualifiedClassName(staticFieldAccess);
         if (className.equals("self")) {//NOI18N
             className = insideClsName;
         }
         int modifiers = (insideClsName.equals(className)) ? PHPIndex.ANY_ATTR : 
             BodyDeclaration.Modifier.PUBLIC;
 
-        List<String> classNames = new ArrayList<String>();        
-        List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (String clazzName : context.index.getClassAncestors(null, className)) {
+        for (IndexedElement indexedElement : context.index.getClassAncestors(null, className)) {
+            String clazzName = indexedElement.getName();
             flds = getFields(context.index, clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;

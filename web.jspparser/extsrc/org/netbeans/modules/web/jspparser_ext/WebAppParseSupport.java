@@ -498,6 +498,17 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return waClassLoader;
     }
 
+    public boolean isValid() {
+        boolean valid = wmRoot != null
+                && wmRoot.isValid()
+                && webInf != null
+                && webInf.isValid();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Checking validity - WM root: {0}, WEB-INF: {1}, valid: {2}", new Object[] {wmRoot, webInf, valid});
+        }
+        return valid;
+    }
+
     public class RRef {
         JspParserAPI.ParseResult result;
     }

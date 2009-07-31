@@ -543,6 +543,17 @@ public class FileStatusCache {
     }
 
     /**
+     * Returns only a cached map of modified files, will not access I/O.
+     * @param changed out parameter. If the cached map is not up-of-date, changed[0] will be set to true, otherwise false
+     * @return
+     */
+    Map<File, FileInformation> getAllModifiedFilesCached(final boolean changed[]) {
+        changed[0] = cacheProvider.modifiedFilesChanged();
+        return cacheProvider.getCachedValues();
+    }
+
+
+    /**
      * Refreshes given directory and all subdirectories.
      *
      * @param dir directory to refresh

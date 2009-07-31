@@ -228,9 +228,11 @@ public class JSFConfigUtilities {
         if (webModule != null) {
             // looking for WEB-INF/faces-config.xml
             FileObject baseDir = webModule.getDocumentBase();
-            FileObject fileObject = baseDir.getFileObject(DEFAULT_FACES_CONFIG_PATH);
-            if (fileObject != null)
-                files.add(DEFAULT_FACES_CONFIG_PATH);
+            if (baseDir != null) {
+                FileObject fileObject = baseDir.getFileObject(DEFAULT_FACES_CONFIG_PATH);
+                if (fileObject != null)
+                    files.add(DEFAULT_FACES_CONFIG_PATH);
+            }
             if (deploymentDesc != null) {
                 InitParam param = null;
                 try{

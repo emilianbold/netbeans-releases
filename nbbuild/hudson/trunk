@@ -29,7 +29,7 @@ rm -f netbeans/nb.cluster.*
 cd ..
 
 # Try to build all tests in the system to make sure they at least compile.
-ant -Dtest.fail.on.error=false build-test-dist
+#ant -Dtest.fail.on.error=false build-test-dist
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
 TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"

@@ -43,7 +43,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -63,9 +63,9 @@ public class ErrorNode extends LeafNode {
     private JPanel panel;
     private final JLabel lblMessage;
     private final LinkButton btnRefresh;
-    private final ActionListener defaultAction;
+    private final Action defaultAction;
 
-    public ErrorNode( String text, ActionListener refreshAction ) {
+    public ErrorNode( String text, Action refreshAction ) {
         super( null );
         this.defaultAction = refreshAction;
         btnRefresh = new LinkButton(NbBundle.getMessage(ErrorNode.class, "LBL_Retry"), refreshAction); //NOI18N
@@ -93,7 +93,7 @@ public class ErrorNode extends LeafNode {
     }
 
     @Override
-    protected ActionListener getDefaultAction() {
+    protected Action getDefaultAction() {
         return defaultAction;
     }
 }

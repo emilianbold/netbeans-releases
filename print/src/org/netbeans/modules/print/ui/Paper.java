@@ -121,7 +121,8 @@ final class Paper extends JComponent {
 
         if (myIsPainting) {
             setPreferredSize(new Dimension((int) Math.floor((myPaperWidth + SHADOW_WIDTH) * myScale), (int) Math.floor((myPaperHeight + SHADOW_WIDTH) * myScale)));
-        } else {
+        }
+        else {
             setPreferredSize(new Dimension(myPaperWidth, myPaperHeight));
         }
     }

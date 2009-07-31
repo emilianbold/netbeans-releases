@@ -2,7 +2,6 @@
 
 ## Run commit validation test for visual web cluster
 ## (http://wiki.netbeans.org/wiki/view/VWSanityTestInstructions).
-## Results are added to xtest/instance/results.
 
 set -x
 

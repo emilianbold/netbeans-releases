@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -69,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 // TODO finish migration towards being an abstract class
 import org.openide.util.lookup.Lookups;
@@ -77,7 +77,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class PlatformImpl extends J2eePlatformImpl {
     
-    private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
+    private static final Set<J2eeModule.Type> MODULE_TYPES = new HashSet<J2eeModule.Type>();
     protected static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS_WITH_5 = new HashSet();
     // Appserver version strings.
@@ -661,17 +661,16 @@ public class PlatformImpl extends J2eePlatformImpl {
     public Set/*<String>*/ getSupportedSpecVersions() {        
         return SPEC_VERSIONS_WITH_5;
     }
-    
+
     /**
-     * Return a list of supported J2EE module types. Use module types defined in the
-     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
-     * class.
-     *
-     * @return list of supported J2EE module types.
+     * {@inheritDoc}
      */
-    public Set/*<Object>*/ getSupportedModuleTypes() {
+    @Override
+    public Set<Type> getSupportedTypes() {
         return MODULE_TYPES;
     }
+
+
     
     public Set/*<String>*/ getSupportedJavaPlatformVersions() {
         Set versions = new HashSet();

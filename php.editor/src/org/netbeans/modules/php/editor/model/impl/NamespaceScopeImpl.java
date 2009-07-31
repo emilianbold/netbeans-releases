@@ -43,8 +43,8 @@ import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -73,13 +73,13 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         return retval;
     }
 
-    NamespaceScopeImpl(FileScopeImpl inScope, ASTNodeInfo<NamespaceDeclaration> info) {
+    NamespaceScopeImpl(FileScopeImpl inScope, NamespaceDeclarationInfo info) {
         super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         isDefault = false;
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope) {
-        super(inScope, "default",inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
+        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
         isDefault = true;
     }
 
@@ -87,7 +87,6 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     void addElement(ModelElementImpl element) {
         super.addElement(element);
     }
-
 
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
         return filter(getElements(), new ElementFilter<ModelElement>() {
@@ -160,5 +159,22 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
 
     public FileScopeImpl getFileScope() {
         return (FileScopeImpl) getInScope();
+    }
+
+    public QualifiedName getQualifiedName() {
+        QualifiedName qualifiedName = QualifiedName.create(this);
+        return qualifiedName;
+    }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        QualifiedName qualifiedName = getQualifiedName();
+        String name = qualifiedName.toName().toString();
+        String namespaceName = qualifiedName.toNamespaceName().toString();
+        sb.append(name.toLowerCase()).append(";");//NOI18N
+        sb.append(name).append(";");//NOI18N
+        sb.append(namespaceName).append(";");//NOI18N
+        return sb.toString();
     }
 }

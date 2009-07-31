@@ -51,6 +51,13 @@ import java.io.IOException;
 public abstract class NativeProcess extends Process {
 
     /**
+     * Returns execution environment of the process.
+     *
+     * @return execution environment of the process.
+     */
+    public abstract ExecutionEnvironment getExecutionEnvironment();
+
+    /**
      * Returns PID of the underlaying system process.<br>
      * @return PID of the underlaying system process.
      * @throws IllegalStateException if no PID was obtained prior to method

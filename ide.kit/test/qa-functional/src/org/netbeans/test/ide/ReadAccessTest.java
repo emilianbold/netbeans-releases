@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -87,6 +88,7 @@ public class ReadAccessTest extends JellyTestCase {
     
     public static Test suite() throws IOException {
         CountingSecurityManager.initialize("none", CountingSecurityManager.Mode.CHECK_READ, null);
+        System.setProperty(NbModuleSuite.class.getName() + ".level", "FINEST");
 
         NbTestSuite suite = new NbTestSuite();
         {

@@ -68,6 +68,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -366,19 +367,19 @@ public class AttachmentsPanel extends JPanel {
                 public void run() {
                     try {
                         File file = saveToTempFile(attachment);
-                        FileObject fob = FileUtil.toFileObject(file);
                         boolean isPatch = false;
                         try {
-                            isPatch = BugtrackingUtil.isPatch(fob);
+                            isPatch = PatchUtils.isPatch(file);
                         } catch (IOException ioex) {
                             Jira.LOG.log(Level.INFO, null, ioex);
                         }
                         if (isPatch && shouldApplyPatch(attachment.getFilename())) {
                             File context = BugtrackingUtil.selectPatchContext();
                             if (context != null) {
-                                BugtrackingUtil.applyPatch(file, context);
+                                PatchUtils.applyPatch(file, context);
                             }
                         } else {
+                            FileObject fob = FileUtil.toFileObject(file);
                             DataObject dob = DataObject.find(fob);
                             OpenCookie open = dob.getCookie(OpenCookie.class);
                             if (open != null) {

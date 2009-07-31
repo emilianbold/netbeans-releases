@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <!--
     <folder name="Actions">
@@ -15,12 +15,20 @@
     -->
   <folder name="Windows2">
     <folder name="Components">
-      <file name="VisualizerTopComponentTopComponent.settings" url="VisualizerTopComponentTopComponentSettings.xml"/>
+            <file name="CallStackTopComponent.settings" url="CallStackTopComponentSettings.xml"/>
+            <file name="ThreadMapTopComponent.settings" url="ThreadMapTopComponentSettings.xml"/>
+            <file name="VisualizerTopComponentTopComponent.settings" url="VisualizerTopComponentTopComponentSettings.xml"/>
     </folder>
     <folder name="Modes">
+      <folder name="editor">
+        <file name="ThreadMapTopComponent.wstcref" url="ThreadMapTopComponentWstcref.xml"/>
+      </folder>
       <folder name="output">
         <file name="VisualizerTopComponentTopComponent.wstcref" url="VisualizerTopComponentTopComponentWstcref.xml">
           <attr name="position" intvalue="4100"/>
+        </file>
+        <file name="CallStackTopComponent.wstcref" url="CallStackTopComponentWstcref.xml">
+          <attr name="position" intvalue="4200"/>
         </file>
       </folder>
     </folder>
@@ -32,10 +40,37 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-actions-VisualizerTopComponentAction.instance"/>
             </file>
             -->
-    </folder>
+        <!-- for testing only
+        <folder name="Profile">
+            <attr name="position" intvalue="1500"/>
+            <file name="ThreadMapAction.shadow">
+                <attr name="position" intvalue="700"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-visualizers-ThreadMapAction.instance"/>
+            </file>
+        </folder>
+        -->
+        <!--
+        <file name="CallStackAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-visualizers-CallStackAction.instance"/>
+        </file>
+        -->
+     </folder>
   </folder>
   <folder name="Actions">
-    <folder name ="Window">
+    <folder name="Window">
+      <file name="org-netbeans-modules-dlight-visualizers-CallStackAction.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dlight.visualizers.resources.Bundle"/>
+        <attr name="component" methodvalue="org.netbeans.modules.dlight.visualizers.CallStackTopComponent.findInstance"/>
+        <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.visualizers.Bundle#CTL_CallStackAction"/>
+        <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+      </file>
+      <file name="org-netbeans-modules-dlight-visualizers-ThreadMapAction.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dlight.visualizers.resources.Bundle"/>
+        <attr name="component" methodvalue="org.netbeans.modules.dlight.visualizers.ThreadMapTopComponent.findInstance"/>
+        <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.visualizers.Bundle#CTL_ThreadMapAction"/>
+        <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/visualizers/resources/threadsWindow.png"/>
+        <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+      </file>
       <file name="org-netbeans-modules-dlight-visualizers-VisualizerDetailedActivateAction.instance">
         <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
         <attr name="component" methodvalue="org.netbeans.modules.dlight.visualizers.VisualizerTopComponentTopComponent.findInstance"/>

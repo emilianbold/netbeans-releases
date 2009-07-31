@@ -40,54 +40,23 @@
 package org.netbeans.test.mobility.popUpMenuActions;
 
 //<editor-fold desc="imports">
-import java.awt.PopupMenu;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.MenuElement;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jemmy.operators.ButtonOperator.ButtonByLabelFinder;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.ButtonOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.PaletteOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
-import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator.JCheckBoxMenuItemByLabelFinder;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonMenuItemOperator;
-import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.ide.ProjectSupport;
 //</editor-fold>
 
@@ -253,7 +222,7 @@ public class NavigatorPopUpTests extends JellyTestCase {
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         //op.setObjectName(name); //TODO !!! doesn't work with some file types. It doesn;t change the name
         JTextFieldOperator tfo = new JTextFieldOperator(op, 0);
         tfo.setText(name);
@@ -271,7 +240,7 @@ public class NavigatorPopUpTests extends JellyTestCase {
             ProjectsTabOperator.invoke();
         }
         if (tryCompile) {
-            CompileAction ca = new CompileAction();
+            CompileJavaAction ca = new CompileJavaAction();
             MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
             stt.start();
             ProjectsTabOperator.invoke();
