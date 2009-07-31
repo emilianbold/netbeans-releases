@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -87,6 +88,10 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         this (IDESettings.getWWWBrowser(), toolbar, statusLine);
     }
 
+    private HtmlBrowserComponent(boolean toolbar, boolean statusLine, URL url) {
+        this (IDESettings.getWWWBrowser(), toolbar, statusLine);
+        urlToLoad = url;
+    }
     /**
     * Creates new html browser.
     */
@@ -94,14 +99,14 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         setName (""); // NOI18N
         setLayout (new BorderLayout ());
         this.browserFactory = fact;
-        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), BorderLayout.CENTER);
-
-        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-        // Ensure closed browsers are not stored:
-        if (browserComponent.getBrowserComponent() != null) {
-            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-        }
+//        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), BorderLayout.CENTER);
+//
+//        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+//
+//        // Ensure closed browsers are not stored:
+//        if (browserComponent.getBrowserComponent() != null) {
+//            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+//        }
         setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser")); //NOI18N
         //don't use page title for display name as it can be VERY long
         setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
@@ -125,8 +130,9 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     @Override
     public void open() {
         // do not open this component if this is dummy browser
-        if (null != browserComponent && browserComponent.getBrowserComponent() == null)
+        if (null != browserComponent && browserComponent.getBrowserComponent() == null) {
             return;
+        }
 
         // behave like superclass
         super.open();
@@ -168,14 +174,41 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     @Override
     protected void componentActivated () {
+        if( null == browserComponent ) {
+            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
+
+            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+            // Ensure closed browsers are not stored:
+            if (browserComponent.getBrowserComponent() != null) {
+                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+            }
+        }
         if( null != browserComponent )
             browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
         super.componentActivated ();
+        SwingUtilities.invokeLater( new Runnable() {
+
+            public void run() {
+                setEnableHome(enableHome);
+                setEnableLocation(enableLocation);
+                setToolbarVisible(toolbarVisible);
+                setStatusLineVisible(statusVisible);
+                if( null != strUrlToLoad ) {
+                    setURL(strUrlToLoad);
+                } else if( null != urlToLoad ) {
+                    setURL(urlToLoad);
+                }
+            }
+        });
     }
 
     @Override
     protected void componentClosed() {
         if( null != browserComponent ) {
+            toolbarVisible = isToolbarVisible();
+            statusVisible = isStatusLineVisible();
+            urlToLoad = browserComponent.getBrowserImpl().getURL();
             browserComponent.getBrowserImpl().removePropertyChangeListener(this);
             browserComponent.getBrowserImpl().dispose();
         }
@@ -185,16 +218,6 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     @Override
     protected void componentOpened() {
-        if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, true, true), BorderLayout.CENTER);
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
-        }
     }
 
     @Override
@@ -205,14 +228,21 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     // public methods ....................................................................................
 
+    private String strUrlToLoad = null;
     /**
     * Sets new URL.
     *
     * @param str URL to show in this browser.
     */
     public void setURL (String str) {
+        if( null == browserComponent ) {
+            strUrlToLoad = str;
+            return;
+        }
         browserComponent.setURL (str);
     }
+
+    private URL urlToLoad;
 
     /**
     * Sets new URL.
@@ -220,6 +250,10 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * @param url URL to show in this browser.
     */
     public void setURL (final URL url) {
+        if( null == browserComponent ) {
+            urlToLoad = url;
+            return;
+        }
         browserComponent.setURL (url);
     }
 
@@ -227,27 +261,43 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Gets current document url.
     */
     public final URL getDocumentURL () {
+        if( null == browserComponent )
+            return urlToLoad;
         return browserComponent.getDocumentURL ();
     }
 
+    private boolean enableHome = true;
     /**
     * Enables/disables Home button.
     */
     public final void setEnableHome (boolean b) {
+        if( null == browserComponent ) {
+            enableHome = b;
+            return;
+        }
+
         browserComponent.setEnableHome (b);
     }
 
+    private boolean enableLocation = true;
     /**
     * Enables/disables location.
     */
     public final void setEnableLocation (boolean b) {
+        if( null == browserComponent ) {
+            enableLocation = b;
+            return;
+        }
         browserComponent.setEnableLocation (b);
     }
 
+    private boolean statusVisible = true;
     /**
     * Gets status line state.
     */
     public boolean isStatusLineVisible () {
+        if( null == browserComponent )
+            return statusVisible;
         return browserComponent.isStatusLineVisible ();
     }
 
@@ -255,13 +305,20 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Shows/hides status line.
     */
     public void setStatusLineVisible (boolean v) {
+        if( null == browserComponent ) {
+            statusVisible = v;
+            return;
+        }
         browserComponent.setStatusLineVisible (v);
     }
 
+    private boolean toolbarVisible = true;
     /**
     * Gets status toolbar.
     */
     public boolean isToolbarVisible () {
+        if( null == browserComponent )
+            return toolbarVisible;
         return browserComponent.isToolbarVisible ();
     }
 
@@ -269,12 +326,34 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Shows/hides toolbar.
     */
     public void setToolbarVisible (boolean v) {
+        if( null == browserComponent ) {
+            toolbarVisible = v;
+            return;
+        }
         browserComponent.setToolbarVisible (v);
     }
 
     @Override
     protected java.lang.String preferredID() {
         return "HtmlBrowserComponent"; //NOI18N
+    }
+
+    void setURLAndOpen( URL url ) {
+        if( null == browserComponent ) {
+            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
+
+            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+            // Ensure closed browsers are not stored:
+            if (browserComponent.getBrowserComponent() != null) {
+                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+            }
+        }
+        browserComponent.setURL(url);
+        if( null != browserComponent.getBrowserComponent() ) {
+            open();
+            requestActive();
+        }
     }
 
 public static final class BrowserReplacer implements java.io.Externalizable {
@@ -342,8 +421,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
             Logger.getLogger(HtmlBrowserComponent.class.getName()).log(Level.WARNING, null, exc);
         }
         
-        bComp = new HtmlBrowserComponent(statLine, toolbar);
-        bComp.setURL (url);
+        bComp = new HtmlBrowserComponent(statLine, toolbar, url);
         return bComp;
     }
 

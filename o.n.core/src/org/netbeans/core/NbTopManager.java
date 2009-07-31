@@ -642,9 +642,7 @@ public abstract class NbTopManager {
          * @param url URL to be shown
          */
         private void showUrl(URL url) {
-            brComp.open();
-            brComp.requestActive();
-            brComp.setURL(url);
+            brComp.setURLAndOpen(url);
         }
 
         /**
