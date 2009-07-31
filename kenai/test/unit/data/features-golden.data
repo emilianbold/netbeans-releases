@@ -31,9 +31,9 @@ https://testkenai.com/projects/golden-project-1/lists/issues/archive
 golden-project-1bugzilla
 ISSUES
 Bugzilla
-https://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
+http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
 bugzilla
-https://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1&order=Importance&limit=25
+http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1&order=Importance&limit=25
 source-code-repository
 SOURCE
 Source Code Repository
@@ -43,9 +43,9 @@ https://testkenai.com/projects/golden-project-1/sources/source-code-repository/s
 jira
 ISSUES
 Issue Tracking
-https://testkenai.com/jira/browse/GOLDEN_PROJECT_1
+http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
 jira
-https://testkenai.com/jira/browse/GOLDEN_PROJECT_1
+http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
 downloads
 DOWNLOADS
 Downloads
