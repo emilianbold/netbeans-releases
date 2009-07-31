@@ -57,14 +57,12 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -102,11 +100,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        String phpInterpreter = Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter();
-        if (phpInterpreter == null) {
-            if (warnUser) {
-                UiUtils.invalidScriptProvided(NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidPhpInterpreter"));
-            }
+        ExternalProcessBuilder externalProcessBuilder = super.getProcessBuilder(warnUser);
+        if (externalProcessBuilder == null) {
             return null;
         }
         SymfonyScript symfonyScript = null;
@@ -122,7 +117,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
         assert symfonyScript.isValid();
 
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter)
+        externalProcessBuilder = externalProcessBuilder
                 .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .addArgument(symfonyScript.getProgram());
         for (String param : symfonyScript.getParameters()) {

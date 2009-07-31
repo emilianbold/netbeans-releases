@@ -53,12 +53,17 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
+import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -114,10 +119,25 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Get the process builder for running framework commands or <code>null</code> if something is wrong.
+     * The default implmentation returns {@ExternalProcessBuilder process builder} with PHP interpreter
+     * with all its parameters (specified in Tools > Options > PHP).
      * @param warnUser <code>true</code> if user should be warned (e.g. the script is incorrect), <code>false</code> otherwise
      * @return {@ExternalProcessBuilder process builder} or <code>null</code> if something is wrong.
      */
-    protected abstract ExternalProcessBuilder getProcessBuilder(boolean warnUser);
+    protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
+        PhpProgram phpInterpreter = new PhpProgram(Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter());
+        if (!phpInterpreter.isValid()) {
+            if (warnUser) {
+                UiUtils.invalidScriptProvided(NbBundle.getMessage(FrameworkCommandSupport.class, "MSG_InvalidPhpInterpreter"));
+            }
+            return null;
+        }
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter.getProgram());
+        for (String param : phpInterpreter.getParameters()) {
+            externalProcessBuilder = externalProcessBuilder.addArgument(param);
+        }
+        return externalProcessBuilder;
+    }
 
     /**
      * Get the framework commands. Typically in this method script is called and its output is parsed,

@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  * Base class for all PHP based programs (scripts).
  * @author Tomas Mysik
  */
-public abstract class PhpProgram {
+public class PhpProgram {
     protected static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
     private static final String[] NO_PARAMETERS = new String[0];
 
