@@ -96,7 +96,7 @@ public final class MasterSlaveView<T> extends JSplitPane implements ListSelectio
 
     private void showDetails(Object masterItem, boolean keepDividerPos) {
         slave = null;
-        if (slaveRenderer != null) {
+        if (masterItem != null && slaveRenderer != null) {
             slaveRenderer.setValue(masterItem, true);
             slave = slaveRenderer.getComponent();
         }
