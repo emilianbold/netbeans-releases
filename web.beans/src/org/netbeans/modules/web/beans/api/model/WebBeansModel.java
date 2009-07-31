@@ -176,19 +176,6 @@ public final class WebBeansModel {
         return getProvider().getBindings( element , getModelImplementation());
     }
     
-    /**
-     * Returns deployment type for <code>element</code>.
-     * <code>element</code> could be variable ( injection point , producer field ),
-     * type element ( bean type with binding ) and production method. 
-     * @param element element with bindings
-     * @return deployment type for <code>element</code>    
-     */
-    public AnnotationMirror getDeploymentType( Element element ) 
-        throws WebBeansModelException
-    {
-        return getProvider().getDeploymentType( element , getModelImplementation());
-    }
-    
     public AbstractModelImplementation getModelImplementation(){
         return myImpl;
     }
