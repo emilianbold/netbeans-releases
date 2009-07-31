@@ -804,7 +804,9 @@ public class DDDataObject extends  DDMultiViewDataObject
      */
     @Override
     public boolean isDeleteAllowed() {
-        BigDecimal ver = new BigDecimal(getWebApp().getVersion());
+        String version = getWebApp().getVersion();
+        if (version == null) return true; // defensive tactics
+        BigDecimal ver = new BigDecimal(version);
         return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
     }
     /** Enable to access Active element 
