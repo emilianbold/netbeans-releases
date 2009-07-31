@@ -61,7 +61,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 import java.io.IOException;
@@ -498,48 +497,25 @@ public final class GeneratorUtilities {
         return (T) translator.translate(original);
     }
 
-    public <T extends Tree> T importComments(final T original, CompilationUnitTree cut) {
+    public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
             return (T) translator.translate(original);
-
-
-/*
-            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
+            
+            /*JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
-            if (original != null && !original.equals(cut)) {
-                final boolean result[] = new boolean[]{false};
-                TreeScanner ts = new TreeScanner() {
-                    @Override
-                    public void scan(JCTree tree) {
-                        if (original.equals(tree)) {
-                            result[0] = true;
-                        }
-                        super.scan(tree);
-                    }
-                };
-                ts.scan((JCTree) cut);
-                if (!result[0]) {
-                    seq = copy.getTreeUtilities().tokensFor(original);
-                }
-            }
-            
-
-            CommentCollector instance = CommentCollector.getInstance();            
+            CommentCollector instance = CommentCollector.getInstance();
             instance.collect(seq, copy);
 
-            return original;
-*/
-
+            return original;*/
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return original;
     }
-        
     
     
     // private implementation --------------------------------------------------

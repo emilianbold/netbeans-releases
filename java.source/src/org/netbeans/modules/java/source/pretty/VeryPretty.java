@@ -1786,9 +1786,8 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    private void printPrecedingComments(JCTree tree, boolean printWhitespace) {        
+    private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
-        System.out.println("Requiresting PC: " + tree.getKind() + " >>> " + tree + "\npc founds: " + commentSet);
         if (!commentSet.getPrecedingComments().isEmpty()) {
             for (Comment c : commentSet.getPrecedingComments())
                 printComment(c, true, printWhitespace);
