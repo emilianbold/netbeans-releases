@@ -561,11 +561,13 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             if (wm!=null) {
                 if (target==null || !target.startsWith(TAG_FILE_FOLDER))
                     folderTextField.setText(TAG_FILE_FOLDER+"/"); // NOI18N
-                else folderTextField.setText( target == null ? "" : target ); // NOI18N
+                else
+                    folderTextField.setText(target);
             } else {
                  if (target==null || !target.startsWith(TAG_FILE_IN_JAVALIB_FOLDER))
                      folderTextField.setText(TAG_FILE_IN_JAVALIB_FOLDER+"/"); // NOI18N
-                 else folderTextField.setText( target == null ? "" : target ); // NOI18N
+                 else
+                     folderTextField.setText(target);
             }
         } else if (FileType.TAGLIBRARY.equals(fileType) && target==null) {
             if (wm==null) folderTextField.setText(TLD_IN_JAVALIB_FOLDER+"/"); // NOI18N
@@ -631,7 +633,6 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
 
         // removing multiple slashes
         java.util.StringTokenizer tokens = new java.util.StringTokenizer(norm,"/");
-        java.util.List list = new java.util.ArrayList();
         StringBuffer buf = new StringBuffer(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
