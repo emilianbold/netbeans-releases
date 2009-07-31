@@ -154,7 +154,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
                 // chooser to appear in the list of steps.
                 steps[i] = jc.getName();
             }
-	    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i));
+	    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
 	    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
 	}	
     }
@@ -272,7 +272,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     
     public String name() {
         return NbBundle.getMessage (ServletIterator.class, "TITLE_x_of_y",
-        new Integer (index + 1), new Integer (panels.length));
+            index + 1, panels.length);
     }
     
     // If the user has elected to place the file in a regular

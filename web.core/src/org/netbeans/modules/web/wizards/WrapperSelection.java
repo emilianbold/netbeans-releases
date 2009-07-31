@@ -59,11 +59,9 @@ public class WrapperSelection implements WizardDescriptor.Panel {
      * just use getComponent().
      */
     private WrapperPanel component;
-    private transient TemplateWizard wizard;
     
     /** Create the wizard panel descriptor. */
     public WrapperSelection(TemplateWizard wizard) {
-        this.wizard=wizard;
     }
     
     // Get the visual component for the panel. In this template, the component
