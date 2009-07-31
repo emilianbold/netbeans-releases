@@ -61,13 +61,16 @@ import org.openide.util.NbBundle;
  */
 public class IsOverriddenAnnotation extends Annotation {
     
-    private StyledDocument document;
-    private Position pos;
-    private String shortDescription;
-    private AnnotationType type;
-    private List<ElementDescription> declarations;
+    private final StyledDocument document;
+    private final Position pos;
+    private final String shortDescription;
+    private final AnnotationType type;
+    private final List<ElementDescription> declarations;
     
     public IsOverriddenAnnotation(StyledDocument document, Position pos, AnnotationType type, String shortDescription, List<ElementDescription> declarations) {
+        //#166351 -- null pos for some reason
+        assert pos != null;
+
         this.document = document;
         this.pos = pos;
         this.type = type;

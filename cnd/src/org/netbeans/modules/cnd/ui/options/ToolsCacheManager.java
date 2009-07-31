@@ -85,7 +85,7 @@ public final class ToolsCacheManager {
         }
     }
 
-    public void setHosts(List<ServerRecord> list) {
+    public void setHosts(Collection<? extends ServerRecord> list) {
         if (serverUpdateCache == null) {
             serverUpdateCache = new ServerUpdateCache();
         }

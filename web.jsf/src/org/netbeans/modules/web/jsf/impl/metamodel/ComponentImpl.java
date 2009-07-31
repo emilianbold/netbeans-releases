@@ -40,10 +40,15 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 
 
@@ -51,28 +56,50 @@ import org.netbeans.modules.web.jsf.api.metamodel.Component;
  * @author ads
  *
  */
-class ComponentImpl extends PersistentObject implements Component {
+class ComponentImpl extends PersistentObject implements Component,  Refreshable {
 
     ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
     {
         super(helper, typeElement);
-        // TODO Auto-generated constructor stub
+        boolean valid = refresh(typeElement);
+        assert valid;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
      */
     public String getComponentClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return myClass;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
      */
     public String getComponentType() {
-        // TODO Auto-generated method stub
-        return null;
+        return myType;
     }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.Refreshable#refresh(javax.lang.model.element.TypeElement)
+     */
+    public boolean refresh( TypeElement type ) {
+        Map<String, ? extends AnnotationMirror> types = 
+            getHelper().getAnnotationsByType(getHelper().
+                    getCompilationController().getElements().getAllAnnotationMirrors(type));
+        AnnotationMirror annotationMirror = types.get(
+                "javax.faces.component.FacesComponent");          // NOI18N
+        if (annotationMirror == null) {
+            return false;
+        }
+        AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectString( "value", null );                     // NOI18N
+        ParseResult parseResult = parser.parse(annotationMirror);
+        myType = parseResult.get( "value" , String.class );       // NOI18N
+        myClass = type.getQualifiedName().toString();
+        return true;
+    }
+    
+    private String myType;
+    private String myClass;
 
 }

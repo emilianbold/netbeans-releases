@@ -46,10 +46,10 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectTestBase;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.PLATFORM_ACTIVE;
 import static org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties.RAILS_ENV;

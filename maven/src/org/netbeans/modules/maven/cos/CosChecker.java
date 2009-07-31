@@ -98,7 +98,7 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
-public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
+public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
@@ -108,6 +108,11 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
     public static ExecutionResultChecker createResultChecker() {
         return new COSExChecker();
     }
+
+    public static ProjectOpenedHook createCoSHook(Project prj) {
+        return new CosPOH(prj);
+    }
+
     private final Project project;
 
     public CosChecker(Project prj) {
@@ -236,10 +241,10 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
             if ((NbMavenProject.TYPE_JAR.equals(
                     config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName)) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName))) ||
                     RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName))) {
-                long stamp = getLastCoSLastTouch(config, true);
+                    DEBUG_MAIN.equals(actionName)) {
+                long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {
@@ -258,7 +263,15 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                 if (RUN_MAIN.equals(actionName) ||
                     DEBUG_MAIN.equals(actionName)) {
-                    params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
+                    FileObject selected = config.getSelectedFileObject();
+                    ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                    ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
+                    String path = srcs.getResourceName(selected);
+                    if (path == null) {
+                        //#160776 only files on source classpath pass through
+                        return true;
+                    }
+                    params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
                 } else {
                     //only for the case of running the project itself, relevant for the run/debug-project action and
                     //jar packaging
@@ -283,6 +296,9 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
                 //make sure to run with the proper jdk
                 ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
                 params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
+
+                //#168551
+                params.put("maven.disableSources", Boolean.TRUE); //NOI18N
 
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
@@ -357,12 +373,15 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
                 //now we have a source file, need to convert to testSource..
                 String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
                 path = path.replace(selected.getNameExt(), nameExt);
-                ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
-                ClassPath cp = ClassPathSupport.createProxyClassPath(cps);
-                FileObject testFo = cp.findResource(path);
-                if (testFo != null) {
-                    selected = testFo;
-                }
+            }
+            ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
+            ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
+            FileObject testFo = testcp.findResource(path);
+            if (testFo != null) {
+                selected = testFo;
+            } else {
+                //#160776 only files on source classpath pass through
+                return true;
             }
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
 
@@ -466,6 +485,10 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
             params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
 
             params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
+
+            //#168551
+            params.put("maven.disableSources", Boolean.TRUE);  //NOI18N
+
             String action2Quick = action2Quick(actionName);
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
@@ -694,7 +717,7 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
         return null;
     }
 
-    private static void touchProject(Project project) {
+    static void touchProject(Project project) {
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
             MavenProject mvn = prj.getMavenProject();
@@ -711,20 +734,29 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
         }
     }
 
-    @Override
-    protected void projectOpened() {
-        touchProject(project);
-    }
+    static class CosPOH extends ProjectOpenedHook {
 
-    @Override
-    protected void projectClosed() {
-        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-        if (prj != null) {
-            MavenProject mvn = prj.getMavenProject();
-            deleteCoSTimeStamp(mvn, true);
-            deleteCoSTimeStamp(mvn, false);
+        private final Project project;
 
-            //TODO also delete the IDE generated class files now?
+        CosPOH(Project prj) {
+            project = prj;
+        }
+
+        @Override
+        protected void projectOpened() {
+            touchProject(project);
+        }
+
+        @Override
+        protected void projectClosed() {
+            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                MavenProject mvn = prj.getMavenProject();
+                deleteCoSTimeStamp(mvn, true);
+                deleteCoSTimeStamp(mvn, false);
+
+                //TODO also delete the IDE generated class files now?
+            }
         }
     }
 

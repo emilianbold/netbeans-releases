@@ -46,7 +46,6 @@ import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.beans.PropertyChangeSupport;
@@ -103,8 +102,6 @@ public class FileStatusCache {
     
     private Mercurial     hg;
     
-    private Set<FileSystem> filesystemsToRefresh;
-    
     FileStatusCache() {
         this.hg = Mercurial.getInstance();
         cacheProvider = new DiskMapTurboProvider();
@@ -130,19 +127,6 @@ public class FileStatusCache {
         Set<File> files = getScannedFiles(dir, null).keySet();
         return files.toArray(new File[files.size()]);
     }
-
-    /**
-     * Check if this context has at least one file with the passed in status
-     * May call I/O operations.
-     *
-     * @param context context to examine
-     * @param includeStatus file status to check for
-     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
-     */
-    public boolean containsFileOfStatus(VCSContext context, int includeStatus){
-        return containsFileOfStatus(context, includeStatus, false);
-    }
-
 
     /**
      * Check if this context has at least one file with the passed in status
@@ -299,7 +283,7 @@ public class FileStatusCache {
      * @see FileInformation
      */
     public FileInformation getStatus(File file) {
-        if (file.isDirectory() && (hg.isAdministrative(file) || HgUtils.isIgnored(file)))
+        if (file.isDirectory() && (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)))
             return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
@@ -315,8 +299,7 @@ public class FileStatusCache {
         if (file.isDirectory()) {
             return refresh(file, REPOSITORY_STATUS_UNKNOWN);
         } else {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE
-, false);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
         }
     }
     
@@ -397,7 +380,7 @@ public class FileStatusCache {
         Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0} {1}", new Object[] {file, callStatus}); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
-        if (hg.isAdministrative(file))
+        if (HgUtils.isAdministrative(file))
             return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
 
         File rootManagedFolder = hg.getRepositoryRoot(file);
@@ -443,10 +426,6 @@ public class FileStatusCache {
      */
     public FileInformation refresh(File file, FileStatus repositoryStatus) {
         return refresh(file, repositoryStatus, false);
-    }
-    
-    public FileInformation refreshForce(File file, FileStatus repositoryStatus) {
-        return refresh(file, repositoryStatus, true);
     }
  
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
@@ -659,17 +638,6 @@ public class FileStatusCache {
             }
         }
     }
-
-    /**
-     * Refreshes information about a given file or directory ONLY if its status is already cached. The
-     * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases.
-     *
-     * @param file
-     * @param repositoryStatus
-     */
-    public void refreshCached(File file, FileStatus repositoryStatus) {
-        refresh(file, repositoryStatus);
-    }
     
     /**
      * Refreshes status of the specified file or all files inside the 
@@ -772,41 +740,6 @@ public class FileStatusCache {
         changed[0] = cacheProvider.modifiedFilesChanged();
         return cacheProvider.getCachedValues();
     }
-
-    /**
-     * Refreshes given directory and all subdirectories.
-     *
-     * @param dir directory to refresh
-     */
-    void directoryContentChanged(File dir) {
-        Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (originalFiles != null) {
-            for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-        }
-    }
-    
-    /**
-     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
-     */
-    void cleanUp() {
-        Map<File, FileInformation> files = cacheProvider.getAllModifiedValues();
-        for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
-            File file = entry.getKey();
-            FileInformation info = entry.getValue();
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                // remove entries that were excluded but no longer exist
-                // cannot simply call refresh on excluded files because of 'excluded on server' status
-                if (!exists(file)) {
-                    refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                }
-            }
-        }
-    }
     
     // --- Private methods ---------------------------------------------------
     
@@ -841,7 +774,7 @@ public class FileStatusCache {
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
         
         Mercurial.LOG.log(Level.FINE, "scanFolder(): {0}", dir); // NOI18N
-        if (hg.isAdministrative(dir)) {
+        if (HgUtils.isAdministrative(dir)) {
             folderFiles.put(dir, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
             return folderFiles;
         }
@@ -851,7 +784,7 @@ public class FileStatusCache {
             // Only interested in looking for Hg managed dirs
             for (File file : files) {
                 if (file.isDirectory() && hg.getRepositoryRoot(file) != null){
-                    if (hg.isAdministrative(file) || HgUtils.isIgnored(file)){
+                    if (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)){
                         Mercurial.LOG.log(Level.FINE, "scanFolder NotMng Ignored Dir {0}: exclude SubDir: {1}", // NOI18N
                             new Object[]{dir.getAbsolutePath(), file.getName()});
                         folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
@@ -890,7 +823,15 @@ public class FileStatusCache {
         
         if(interestingFiles == null){
             try {
+                long startTime = 0;
+                if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+                    startTime = System.currentTimeMillis();
+                    Mercurial.STATUS_LOG.fine("scanFolder: start for " + dir.getAbsolutePath());
+                }
                 interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+                if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+                    Mercurial.STATUS_LOG.fine("scanFolder: finishes for " + dir.getAbsolutePath() + " after " + (System.currentTimeMillis() - startTime));
+                }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "scanFolder() getInterestingStatus Exception: dir: {0} {1}", new Object[]{dir.getAbsolutePath(), ex.toString()}); // NOI18N
                 return folderFiles;
@@ -903,7 +844,7 @@ public class FileStatusCache {
             if (HgUtils.isPartOfMercurialMetadata(file)) continue;
             
             if (file.isDirectory()) {
-                if (hg.isAdministrative(file) || HgUtils.isIgnored(file)) {
+                if (HgUtils.isAdministrative(file) || HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "scanFolder Mng Dir {0}: exclude Dir: {1}", // NOI18N
                             new Object[]{dir.getAbsolutePath(), file.getName()});
                     folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
@@ -945,26 +886,6 @@ public class FileStatusCache {
     
     public void notifyFileChanged(File file) {
         fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
-    }
-
-    public void refreshDirtyFileSystems() {
-        Set<FileSystem> filesystems = getFilesystemsToRefresh();
-        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-        synchronized (filesystems) {
-            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-            filesystems.clear();
-        }
-        for (int i = 0; i < filesystemsToRefresh.length; i++) {
-            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-            filesystemsToRefresh[i].refresh(true);
-        }
-    }
-    
-    private Set<FileSystem> getFilesystemsToRefresh() {
-        if(filesystemsToRefresh == null) {
-            filesystemsToRefresh = new HashSet<FileSystem>();
-        }
-        return filesystemsToRefresh;
     }
     
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {

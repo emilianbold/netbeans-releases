@@ -246,7 +246,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             public void run() {
                 DownloadState state = AddServerLocationVisualPanel.this.downloadState;
                 boolean licenseAccepted = agreeCheckBox.isSelected();
-                boolean writableLoc = AddServerLocationPanel.canCreate(new File(hk2HomeTextField.getText()));
+                File val = new File(hk2HomeTextField.getText().trim());
+                boolean writableLoc = AddServerLocationPanel.canCreate(val) || val.canWrite();
                 String buttonTextKey = 
                         state == DownloadState.DOWNLOADING ? "LBL_CancelDownload" : 
                         state == DownloadState.COMPLETED ? "LBL_DownloadComplete" : "LBL_DownloadNow";
@@ -358,12 +359,12 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(agreeCheckBox)
                         .add(2, 2, 2)
-                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE))
+                    .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -421,7 +422,8 @@ private void agreeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         if(state == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
         } else {
-            boolean writableLoc = AddServerLocationPanel.canCreate(new File(hk2HomeTextField.getText()));
+            File val = new File(hk2HomeTextField.getText().trim());
+            boolean writableLoc = AddServerLocationPanel.canCreate(val) || val.canWrite();
             downloadButton.setEnabled(agreeCheckBox.isSelected() && writableLoc);
         }
 }//GEN-LAST:event_agreeCheckBoxActionPerformed

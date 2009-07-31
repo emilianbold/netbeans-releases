@@ -51,6 +51,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -75,7 +76,9 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
 
             nbProject = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH).getParentFile();
             assert nbProject != null : "NB metadata folder was not found for project: " + project;
-            VisibilityQuery.getDefault().addChangeListener(this);
+
+            VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
+            visibilityQuery.addChangeListener(WeakListeners.change(this, visibilityQuery));
         }
 
         public boolean acceptDataObject(DataObject object) {

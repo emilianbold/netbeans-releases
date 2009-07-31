@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -123,14 +124,18 @@ public final class RubyType {
     }
 
     public RubyType(String... types) {
-        assert !Arrays.asList(types).contains(null) : "cannot add arrays with null realType member";
-        this.realTypes = new LinkedHashSet<String>(Arrays.asList(types));
+        this(Arrays.asList(types));
+    }
+
+    public RubyType(Collection<String> types) {
+        assert !types.contains(null) : "cannot add arrays with null realType member";
+        this.realTypes = new LinkedHashSet<String>(types);
     }
 
     private RubyType(final String realType) {
         assert realType != null : "cannot add null realType";
         checkType(realType);
-        this.realTypes = Collections.singleton(realType);
+        this.realTypes = new LinkedHashSet<String>(Collections.singleton(realType));
     }
 
     /**

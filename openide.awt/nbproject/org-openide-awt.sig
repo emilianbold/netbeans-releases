@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 7.3.1
+#Version 7.8.1
 
 CLSS public java.awt.Canvas
 cons public Canvas()
@@ -467,10 +467,30 @@ meth public abstract boolean imageUpdate(java.awt.Image,int,int,int,int,int)
 
 CLSS public abstract interface java.io.Serializable
 
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
 intf java.lang.annotation.Annotation
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected Enum(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public Object()
@@ -1619,6 +1639,29 @@ meth public void mousePressed(java.awt.event.MouseEvent)
 meth public void mouseReleased(java.awt.event.MouseEvent)
 supr java.awt.event.MouseAdapter
 
+CLSS public abstract org.openide.awt.Notification
+cons public Notification()
+meth public abstract void clear()
+supr java.lang.Object
+
+CLSS public abstract org.openide.awt.NotificationDisplayer
+cons public NotificationDisplayer()
+innr public final static !enum Priority
+meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener,org.openide.awt.NotificationDisplayer$Priority)
+meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,javax.swing.JComponent,javax.swing.JComponent,org.openide.awt.NotificationDisplayer$Priority)
+meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener)
+meth public static org.openide.awt.NotificationDisplayer getDefault()
+supr java.lang.Object
+hcls NotificationImpl,SimpleNotificationDisplayer
+
+CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
+fld public final static org.openide.awt.NotificationDisplayer$Priority HIGH
+fld public final static org.openide.awt.NotificationDisplayer$Priority LOW
+fld public final static org.openide.awt.NotificationDisplayer$Priority NORMAL
+meth public static org.openide.awt.NotificationDisplayer$Priority valueOf(java.lang.String)
+meth public static org.openide.awt.NotificationDisplayer$Priority[] values()
+supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
+
 CLSS public org.openide.awt.SpinButton
 cons public SpinButton()
 fld protected boolean arrowsOrientation
@@ -1775,19 +1818,29 @@ meth public abstract void splitChanged(org.openide.awt.SplittedPanel$SplitChange
 
 CLSS public abstract org.openide.awt.StatusDisplayer
 cons protected StatusDisplayer()
+fld public final static int IMPORTANCE_ANNOTATION = 1000
+fld public final static int IMPORTANCE_ERROR_HIGHLIGHT = 700
+fld public final static int IMPORTANCE_FIND_OR_REPLACE = 800
+fld public final static int IMPORTANCE_INCREMENTAL_FIND = 900
+innr public abstract interface static Message
 meth public abstract java.lang.String getStatusText()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void setStatusText(java.lang.String)
+meth public org.openide.awt.StatusDisplayer$Message setStatusText(java.lang.String,int)
 meth public static org.openide.awt.StatusDisplayer getDefault()
 supr java.lang.Object
 hfds INSTANCE
 hcls Trivial
 
+CLSS public abstract interface static org.openide.awt.StatusDisplayer$Message
+meth public abstract void clear(int)
+
 CLSS public abstract interface org.openide.awt.StatusLineElementProvider
 meth public abstract java.awt.Component getStatusLineElement()
 
 CLSS public org.openide.awt.TabbedPaneFactory
+fld public final static java.lang.String NO_CLOSE_BUTTON = "noCloseButton"
 fld public final static java.lang.String PROP_CLOSE = "close"
 meth public static javax.swing.JTabbedPane createCloseButtonTabbedPane()
 supr java.lang.Object

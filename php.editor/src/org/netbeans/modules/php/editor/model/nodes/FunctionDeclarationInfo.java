@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -70,6 +71,11 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
     public String getName() {
         FunctionDeclaration functionDeclaration = getOriginalNode();
         return functionDeclaration.getFunctionName().getName();
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getOriginalNode().getFunctionName());
     }
 
     @Override

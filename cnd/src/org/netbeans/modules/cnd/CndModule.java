@@ -118,7 +118,9 @@ public class CndModule extends ModuleInstall {
                 Process process = pb.start();
                 // We need to wait for the process completion
                 if (process.waitFor() != 0) {
-                    log.log(Level.WARNING, "chmod failed: " + commands); // NOI18N
+                    if (log.isLoggable(Level.WARNING)) {
+                        log.log(Level.WARNING, "chmod failed: " + commands); // NOI18N
+                    }
                 }
             } catch (Exception ex) {
                 log.log(Level.WARNING, "chmod failed: " + commands, ex); // NOI18N

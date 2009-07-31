@@ -55,8 +55,6 @@ import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditParentAction;
 import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameAction;
 import org.openide.actions.PropertiesAction;
-
-
 import org.openide.util.actions.SystemAction;
 
 /**

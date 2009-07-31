@@ -402,7 +402,7 @@ final class ModifierPanel {
         if (ModifierEditor.FULL_CUSTOM_EDITOR == type || ModifierEditor.OTHERS_MODIFIERS_CUSTOM_EDITOR == type) {
             mask |= OTHERS_MASK;
             for (int i = 0; i < MODIFIER_COUNT; i++) {
-                if (checks[i].isSelected() & checks[i].isEnabled())
+                if (checks[i].isSelected() && checks[i].isEnabled())
                     newValue |= MODIFIER_VALUES[i];
             }
         }

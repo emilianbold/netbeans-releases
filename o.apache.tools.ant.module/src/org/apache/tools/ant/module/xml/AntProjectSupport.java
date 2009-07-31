@@ -59,14 +59,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -82,8 +77,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener,
-    /*FileChangeListener,*/ PropertyChangeListener {
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, PropertyChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(AntProjectSupport.class.getName());
     
     private FileObject fo;
 
@@ -91,7 +87,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private Throwable exception = null;
     private boolean parsed = false;
     private Reference<StyledDocument> styledDocRef = null;
-    private final Object parseLock; // see init()
+    private final Object parseLock;
 
     private final ChangeSupport cs = new ChangeSupport(this);
     private Reference<EditorCookie.Observable> editorRef;
@@ -120,7 +116,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     editorRef = new WeakReference<EditorCookie.Observable>(editor);
                 }
             } catch (DataObjectNotFoundException donfe) {
-                AntModule.err.notify(ErrorManager.INFORMATIONAL, donfe);
+                LOG.log(Level.INFO, "no editor for " + fo, donfe);
             }
         }
         return editor;
@@ -258,7 +254,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private void parseDocument () {
         assert Thread.holdsLock(parseLock); // so it is OK to use documentBuilder
         FileObject file = getFileObject ();
-        AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + file);
+        LOG.log(Level.FINE, "AntProjectSupport.parseDocument: fo={0}", file);
         try {
             if (documentBuilder == null) {
                 documentBuilder = createDocumentBuilder();
@@ -297,8 +293,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             // leave projDoc the way it is...
             exception = e;
             if (!(exception instanceof SAXParseException)) {
-                AntModule.err.annotate(exception, ErrorManager.UNKNOWN, "Strange parse error in " + this, null, null, null); // NOI18N
-                AntModule.err.notify(ErrorManager.INFORMATIONAL, exception);
+                LOG.log(Level.INFO, "Strange parse error in " + this, exception);
             }
         }
         fireChangeEvent(false);
@@ -352,7 +347,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private RequestProcessor.Task task = null;
     
     protected void fireChangeEvent(boolean delay) {
-        AntModule.err.log ("AntProjectSupport.fireChangeEvent: fo=" + fo);
+        LOG.log(Level.FINE, "AntProjectSupport.fireChangeEvent: fo={0}", fo);
         ChangeFirer f = new ChangeFirer();
         synchronized (this) {
             if (task == null) {
@@ -365,7 +360,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private final class ChangeFirer implements Runnable {
         public ChangeFirer() {}
         public void run () {
-            AntModule.err.log ("AntProjectSupport.ChangeFirer.run");
+            LOG.log(Level.FINE, "AntProjectSupport.ChangeFirer.run: fo={0}", fo);
             synchronized (AntProjectSupport.this) {
                 if (task == null) {
                     return;
@@ -395,32 +390,8 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
-    public void fileDeleted(FileEvent p1) {
-        // Hmm, not our problem.
-    }
-    
-    public void fileDataCreated(FileEvent p1) {
-        // ignore
-    }
-    
-    public void fileFolderCreated(FileEvent p1) {
-        // ignore
-    }
-    
-    public void fileRenamed(FileRenameEvent p1) {
-        // ignore
-    }
-    
-    public void fileAttributeChanged(FileAttributeEvent p1) {
-        // ignore
-    }
-    
-    public void fileChanged(FileEvent p1) {
-        invalidate ();
-    }
-    
     protected final void invalidate () {
-        AntModule.err.log ("AntProjectSupport.invalidate: fo=" + fo);
+        LOG.log(Level.FINE, "AntProjectSupport.invalidate: fo={0}", fo);
         parsed = false;
         fireChangeEvent(true);
     }

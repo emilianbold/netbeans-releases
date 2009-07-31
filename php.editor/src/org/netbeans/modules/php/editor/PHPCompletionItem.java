@@ -54,10 +54,16 @@ import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletion
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
+import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -71,11 +77,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected static ImageIcon keywordIcon = null;
     protected final CompletionRequest request;
     private final ElementHandle element;
+    private QualifiedNameKind generateAs;
 
-    PHPCompletionItem(ElementHandle element, CompletionRequest request) {
+    PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
         this.element = element;
         keywordIcon = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
+        this.generateAs = generateAs;
+    }
+
+    PHPCompletionItem(ElementHandle element, CompletionRequest request) {
+        this(element,request,null);
     }
 
     public int getAnchorOffset() {
@@ -137,6 +149,36 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public String getCustomInsertTemplate() {
+        StringBuilder template = new StringBuilder();
+        ElementHandle elem = getElement();
+        if (elem instanceof IndexedFullyQualified) {
+            IndexedFullyQualified ifq = (IndexedFullyQualified) elem;
+            final QualifiedName qn = QualifiedName.create(request.prefix);
+            if (generateAs == null) {
+                generateAs = qn.getKind();
+            } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
+                    ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
+                generateAs = QualifiedNameKind.FULLYQUALIFIED;
+            }
+            switch(generateAs) {
+                case FULLYQUALIFIED:
+                    template.append(ifq.getFullyQualifiedName());
+                    break;
+                case QUALIFIED:
+                    final String fqn = ifq.getFullyQualifiedName();
+                    int indexOf = fqn.toLowerCase().indexOf(qn.toNamespaceName().toString().toLowerCase());
+                    if (indexOf != -1) {
+                        template.append(fqn.substring(indexOf == 0 ? 1 : indexOf));
+                        break;
+                    }
+                case UNQUALIFIED:
+                    template.append(getName());
+                    break;
+            }
+
+            return template.toString();
+        } 
         return null;
     }
 
@@ -303,6 +345,57 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class NamespaceItem extends PHPCompletionItem {
+        NamespaceItem(IndexedNamespace namespace, CompletionRequest request, QualifiedNameKind generateAs) {
+            super(namespace, request, generateAs);
+        }
+        NamespaceItem(IndexedNamespace namespace, CompletionRequest request) {
+            this(namespace, request, null);
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return -10001;
+        }
+
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            return getIndexedNamespace().getName();
+        }
+
+        IndexedNamespace getIndexedNamespace() {
+            return (IndexedNamespace) getElement();
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.PACKAGE;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            String namespaceName = getIndexedNamespace().getNamespaceName();
+            if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                formatter.appendText(namespaceName);
+                return formatter.getText();
+            }
+
+            return null;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+    }
+
     static class ConstantItem extends PHPCompletionItem {
         private IndexedConstant constant = null;
 
@@ -312,10 +405,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            IndexedConstant constant = ((IndexedConstant)getElement());
+            IndexedConstant cons = ((IndexedConstant)getElement());
             formatter.name(getKind(), true);
 
-            if (constant.isResolved()){
+            if (cons.isResolved()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
                 formatter.emphasis(false);
@@ -335,11 +428,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     static class ClassItem extends PHPCompletionItem {
         private boolean endWithDoubleColon;
-        ClassItem(IndexedClass clazz, CompletionRequest request) {
-            this(clazz, request, false);
-        }
-        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon) {
-            super(clazz, request);
+        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon, QualifiedNameKind generateAs) {
+            super(clazz, request, generateAs);
             this.endWithDoubleColon = endWithDoubleColon;
         }
 
@@ -349,16 +439,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getCustomInsertTemplate() {
+            final String superTemplate = super.getCustomInsertTemplate();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
-                builder.append(getName());
+                if (superTemplate != null) {
+                    builder.append(superTemplate);
+                } else {
+                    builder.append(getName());
+                }
                 builder.append("::${cursor}"); //NOI18N
                 return builder.toString();
             }
-            return super.getCustomInsertTemplate();
+            return superTemplate;
         }
-
-
     }
 
     public static ImageIcon getInterfaceIcon() {
@@ -371,6 +464,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         InterfaceItem(IndexedInterface iface, CompletionRequest request) {
             super(iface, request);
         }
+        InterfaceItem(IndexedInterface iface, CompletionRequest request, QualifiedNameKind generateAs) {
+            super(iface, request, generateAs);
+        }
 
         public ElementKind getKind() {
             return ElementKind.CLASS;
@@ -382,6 +478,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             return INTERFACE_ICON;
         }
+
 
         @Override
         public ImageIcon getIcon() {
@@ -544,6 +641,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getElement() instanceof IndexedFunction && getElement().getIn() != null) {
+                String namespaceName = ((IndexedFunction)getElement()).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    formatter.appendText(namespaceName);
+                    return formatter.getText();
+                }
+            } 
+            return super.getRhsHtml(formatter);
+        }
+
+
+        @Override
         public String getName() {
             String in = getElement().getIn();
             return (in != null) ? in : super.getName();
@@ -573,7 +683,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(getName());
+            String superTemplate = super.getCustomInsertTemplate();
+            if (superTemplate != null) {
+                template.append(superTemplate);
+            } else {
+                template.append(getName());
+            }
+
             template.append("("); //NOI18N
 
             List<String> params = getInsertParams();

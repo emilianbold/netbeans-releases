@@ -542,18 +542,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.ide.integration"), // NOI18N
                     e);
         }
-        /*
+        
 /////////////////////////////////////////////////////////////////////////////
         try {
-            progress.setDetail(getString("CL.uninstall.delete.domain")); // NOI18N
+            progress.setDetail(getString("CL.uninstall.stop.domain")); // NOI18N
 
-            GlassFishUtils.deleteDomain(directory, DOMAIN_NAME);
+            GlassFishUtils.stopDomain(directory, DOMAIN_NAME);
         } catch (IOException e) {
             throw new UninstallationException(
-                    getString("CL.uninstall.error.delete.domain"), // NOI18N
+                    getString("CL.uninstall.error.stop.domain"), // NOI18N
                     e);
         }
-
+        /*
 /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.extra.files")); // NOI18N
@@ -600,6 +600,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         }
         */
+        try {
+            progress.setDetail(getString("CL.uninstall.stop.derby")); // NOI18N
+            GlassFishUtils.stopDerby(directory);
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.stop.derby"), // NOI18N
+                    e);
+        } catch (NoSuchMethodError e) {
+            //TODO
+        }
 /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -623,10 +633,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/glassfish/mod/wizard.xml"; // NOI18N
-    /*
+    
     public static final String DOMAIN_NAME =
             "domain1"; // NOI18N
-    
+    /*
     public static final String ASENV_BAT_TEMPLATE =
             "lib/install/templates/asenv.bat.template"; // NOI18N
     public static final String ASENV_BAT =
@@ -976,7 +986,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "imq/etc/imqenv.conf"; // NOI18N
     */
     public static final String JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3.installRoot"; // NOI18N
+            "-Dorg.glassfish.v3ee6.installRoot"; // NOI18N
     
     public static final String PRODUCT_ID =
             "GFMOD"; // NOI18N

@@ -42,6 +42,8 @@
  */
 package org.openide.awt;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.util.Utilities;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -240,11 +242,31 @@ public final class Mnemonics extends Object {
      */
     private static void setMnemonicIndex(Object item, int index) {
         if (item instanceof AbstractButton) {
-            ((AbstractButton) item).setDisplayedMnemonicIndex(index);
+            AbstractButton b = (AbstractButton) item;
+            b.putClientProperty(PROP_DISPLAYED_MNEMONIC_INDEX, index);
+            b.removePropertyChangeListener(PROP_DISPLAYED_MNEMONIC_INDEX, MNEMONIC_INDEX_LISTENER);
+            b.setDisplayedMnemonicIndex(index);
+            b.addPropertyChangeListener(PROP_DISPLAYED_MNEMONIC_INDEX, MNEMONIC_INDEX_LISTENER);
         } else if (item instanceof JLabel) {
             ((JLabel) item).setDisplayedMnemonicIndex(index);
         }
     }
+    private static final String PROP_TEXT = "text"; // NOI18N
+    private static final String PROP_MNEMONIC = "mnemonic"; // NOI18N
+    private static final String PROP_DISPLAYED_MNEMONIC_INDEX = "displayedMnemonicIndex"; // NOI18N
+    private static final PropertyChangeListener MNEMONIC_INDEX_LISTENER = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            AbstractButton b = (AbstractButton) evt.getSource();
+            if (b.getDisplayedMnemonicIndex() == -1) {
+                Integer mnemonic = (Integer) b.getClientProperty(PROP_MNEMONIC);
+                Integer index = (Integer) b.getClientProperty(PROP_DISPLAYED_MNEMONIC_INDEX);
+                if (mnemonic != null && index != null && Utilities.compareObjects(b.getText(), b.getClientProperty(PROP_TEXT))) {
+                    b.setMnemonic(mnemonic);
+                    b.setDisplayedMnemonicIndex(index);
+                }
+            }
+        }
+    };
 
     /**
      * Wrapper for AbstractButton/JLabel.setText
@@ -253,7 +275,9 @@ public final class Mnemonics extends Object {
      */
     private static void setText(Object item, String text) {
         if (item instanceof AbstractButton) {
-            ((AbstractButton) item).setText(text);
+            AbstractButton b = (AbstractButton) item;
+            b.putClientProperty(PROP_TEXT, text);
+            b.setText(text);
         } else {
             ((JLabel) item).setText(text);
         }
@@ -276,7 +300,9 @@ public final class Mnemonics extends Object {
         }
 
         if (item instanceof AbstractButton) {
-            ((AbstractButton) item).setMnemonic(mnem);
+            AbstractButton b = (AbstractButton) item;
+            b.putClientProperty(PROP_MNEMONIC, mnem);
+            b.setMnemonic(mnem);
         } else {
             ((JLabel) item).setDisplayedMnemonic(mnem);
         }

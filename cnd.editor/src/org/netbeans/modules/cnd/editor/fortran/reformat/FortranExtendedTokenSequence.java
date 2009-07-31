@@ -306,17 +306,26 @@ public class FortranExtendedTokenSequence {
 
     /*package local*/ boolean hasLineToken(FortranTokenId tokenId){
         int index = ts.index();
+        boolean hasContinuation = false;
         try {
             while(ts.moveNext()){
                 switch (ts.token().id()) {
+                    case NEW_LINE:
+                        if (hasContinuation) {
+                            break;
+                        }
+                        return false;
                     case LINE_COMMENT_FIXED:
                     case LINE_COMMENT_FREE:
                     case PREPROCESSOR_DIRECTIVE:
-                    case NEW_LINE:
                         return false;
+                    case AMPERSAND:
+                        hasContinuation = true;
+                        break;
                     case WHITESPACE:
                         break;
                     default:
+                        hasContinuation = false;
                         if (ts.token().id() == tokenId) {
                             return true;
                         }
@@ -332,17 +341,26 @@ public class FortranExtendedTokenSequence {
 
     /*package local*/ FortranTokenId hasLineToken(FortranTokenId ... tokenId){
         int index = ts.index();
+        boolean hasContinuation = false;
         try {
             while(ts.moveNext()){
                 switch (ts.token().id()) {
+                    case NEW_LINE:
+                        if (hasContinuation) {
+                            break;
+                        }
+                        return null;
                     case LINE_COMMENT_FIXED:
                     case LINE_COMMENT_FREE:
                     case PREPROCESSOR_DIRECTIVE:
-                    case NEW_LINE:
                         return null;
+                    case AMPERSAND:
+                        hasContinuation = true;
+                        break;
                     case WHITESPACE:
                         break;
                     default:
+                        hasContinuation = false;
                         for(FortranTokenId t: tokenId){
                             if (ts.token().id() == t) {
                                 return t;

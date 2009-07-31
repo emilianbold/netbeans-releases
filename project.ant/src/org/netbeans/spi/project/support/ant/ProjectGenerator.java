@@ -41,14 +41,18 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -112,13 +116,22 @@ public class ProjectGenerator {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
                 public AntProjectHelper run() throws IOException {
-                    Project prj = ProjectManager.getDefault().findProject(directory);
-                    if (prj != null) {
-                        throw new IllegalArgumentException("Already a project " + prj.getClass().getName() + " in " + directory); // NOI18N
-                    }
+                    directory.refresh();
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
                         throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
+                    }
+                    Project prj = ProjectManager.getDefault().findProject(directory);
+                    if (prj != null && prj.getProjectDirectory().getChildren().length == 0) {
+                        // #139769: try to cleanse ProjectManager's cache of it.
+                        AntProjectHelper h = AntBasedProjectFactorySingleton.getHelperFor(prj);
+                        if (h != null) {
+                            h.notifyDeleted();
+                            prj = ProjectManager.getDefault().findProject(directory);
+                        }
+                    }
+                    if (prj != null) {
+                        throw new IllegalArgumentException("Already a " + prj.getClass().getName() + " in " + directory); // NOI18N
                     }
                     projectXml = FileUtil.createData(directory, AntProjectHelper.PROJECT_XML_PATH);
                     Document doc = XMLUtil.createDocument("project", AntProjectHelper.PROJECT_NS, null, null); // NOI18N
@@ -144,27 +157,36 @@ public class ProjectGenerator {
                             FileUtil.createData(f);
                         }
                     }
-                    FileLock lock = projectXml.lock();
+                    OutputStream os = projectXml.getOutputStream();
                     try {
-                        OutputStream os = projectXml.getOutputStream(lock);
-                        try {
-                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                        } finally {
-                            os.close();
-                        }
+                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                     } finally {
-                        lock.releaseLock();
+                        os.close();
                     }
                     // OK, disk file project.xml has been created.
                     // Load the project into memory and mark it as modified.
                     ProjectManager.getDefault().clearNonProjectCache();
-                    Project p = ProjectManager.getDefault().findProject(directory);
+                    ByteArrayOutputStream diagStream = new ByteArrayOutputStream();
+                    Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
+                    diagHandler.setLevel(Level.ALL);
+                    Level oldLevel = AntBasedProjectFactorySingleton.LOG.getLevel();
+                    AntBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
+                    AntBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
+                    Project p;
+                    try {
+                        p = ProjectManager.getDefault().findProject(directory);
+                    } finally {
+                        AntBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
+                        AntBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
+                        diagHandler.close();
+                    }
                     if (p == null) {
                         // Something is wrong, it is not being recognized.
                         for (AntBasedProjectType abpt : Lookup.getDefault().lookupAll(AntBasedProjectType.class)) {
                             if (abpt.getType().equals(type)) {
                                 // Well, the factory was there.
-                                throw new IllegalArgumentException("For some reason the folder " + directory + " with a new project of type " + type + " is still not recognized"); // NOI18N
+                                throw new IllegalArgumentException("For some reason the folder " + directory +
+                                        " with a new project of type " + type + " is still not recognized:\n" + diagStream); // NOI18N
                             }
                         }
                         throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N

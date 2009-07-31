@@ -103,6 +103,13 @@ public final class Archetype {
     }
     
     public String getName() {
+        //#166884
+        if ("${project.artifactId}".equals(name)) { //NOI18N
+            return artifactId;
+        }
+        if (name != null && name.trim().length() == 0) {
+            return artifactId;
+        }
         return name;
     }
     

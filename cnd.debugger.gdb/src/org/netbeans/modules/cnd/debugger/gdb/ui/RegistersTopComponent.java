@@ -44,7 +44,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
     private static RegistersTopComponent instance;
     /** path to the icon used by the component and its open action */
     // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
-    static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/gdb/resources/registers.png"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/common/resources/registers.png"; // NOI18N
 
     private static final String PREFERRED_ID = "RegistersTopComponent"; // NOI18N
     

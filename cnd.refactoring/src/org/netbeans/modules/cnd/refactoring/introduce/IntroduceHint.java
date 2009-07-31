@@ -82,7 +82,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
     }
 
 //    private static final Set<GeneratorUtils.TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(GeneratorUtils.TypeKind.ERROR, GeneratorUtils.TypeKind.NONE, GeneratorUtils.TypeKind.OTHER, GeneratorUtils.TypeKind.VOID, GeneratorUtils.TypeKind.EXECUTABLE);
-    private static final Set<CppTokenId> WHITESPACES = EnumSet.of(CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.ESCAPED_LINE, CppTokenId.ESCAPED_WHITESPACE, CppTokenId.BLOCK_COMMENT, CppTokenId.LINE_COMMENT, CppTokenId.DOXYGEN_COMMENT);
+    private static final Set<CppTokenId> WHITESPACES = EnumSet.of(CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.ESCAPED_LINE, CppTokenId.ESCAPED_WHITESPACE, CppTokenId.BLOCK_COMMENT, CppTokenId.LINE_COMMENT, CppTokenId.DOXYGEN_COMMENT, CppTokenId.DOXYGEN_LINE_COMMENT);
 
     static int[] ignoreWhitespaces(CsmContext info, int start, int end) {
         TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(info.getDocument(), start, true, false);

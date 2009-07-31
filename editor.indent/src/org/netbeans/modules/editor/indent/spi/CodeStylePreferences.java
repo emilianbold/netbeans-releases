@@ -60,6 +60,7 @@ import org.netbeans.modules.editor.indent.ProxyPreferences;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 
 /**
@@ -207,38 +208,42 @@ public final class CodeStylePreferences {
         }
     };
     
-    private static CodeStylePreferences getPreferences(Object obj, String mimeType) {
-        synchronized (cache) {
-            Map<String, CodeStylePreferences> csps = cache.get(obj);
-            CodeStylePreferences csp = csps != null ? csps.get(mimeType) : null;
-            if (csp == null) {
-                Document doc;
-                FileObject file;
+    private static CodeStylePreferences getPreferences(final Object obj, final String mimeType) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<CodeStylePreferences>() {
+            public CodeStylePreferences run() {
+                synchronized (cache) {
+                    Map<String, CodeStylePreferences> csps = cache.get(obj);
+                    CodeStylePreferences csp = csps != null ? csps.get(mimeType) : null;
+                    if (csp == null) {
+                        Document doc;
+                        FileObject file;
 
-                if (obj instanceof FileObject) {
-                    doc = null;
-                    file = (FileObject) obj;
-                } else {
-                    doc = (Document) obj;
-                    file = findFileObject(doc);
-                }
+                        if (obj instanceof FileObject) {
+                            doc = null;
+                            file = (FileObject) obj;
+                        } else {
+                            doc = (Document) obj;
+                            file = findFileObject(doc);
+                        }
 
-                csp = new CodeStylePreferences(
-                        findProjectPreferences(file), 
-                        mimeType, 
-                        doc == null ? null : new WeakReference<Document>(doc),
-                        file == null ? "no file" : file.getPath()); //NOI18N
-                if (csps == null) {
-                    csps = new HashMap<String, CodeStylePreferences>();
-                    cache.put(obj, csps);
+                        csp = new CodeStylePreferences(
+                                findProjectPreferences(file),
+                                mimeType,
+                                doc == null ? null : new WeakReference<Document>(doc),
+                                file == null ? "no file" : file.getPath()); //NOI18N
+                        if (csps == null) {
+                            csps = new HashMap<String, CodeStylePreferences>();
+                            cache.put(obj, csps);
+                        }
+                        csps.put(mimeType, csp);
+                    }
+
+                    return csp;
                 }
-                csps.put(mimeType, csp);
             }
-
-            return csp;
-        }
+        });
     }
-
+    
     private CodeStylePreferences(Preferences projectRoot, String mimeType, Reference<Document> refDoc, String filePath) {
         this.projectRoot = projectRoot;
         this.mimeType = mimeType;

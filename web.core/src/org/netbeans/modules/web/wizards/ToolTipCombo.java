@@ -53,34 +53,34 @@ class ToolTipCombo extends JComboBox {
     private static final long serialVersionUID = 1189442122448524856L;
 
     ToolTipCombo(Object[] o) {
-	super(o);
-	this.setRenderer(new PathRenderer());
-	addItemListener(new ItemListener() { 
-		public void itemStateChanged(ItemEvent evt) { 
-		    if(evt.getStateChange() == ItemEvent.SELECTED) { 
-			setToolTipText(evt.getItem().toString()); 
-		    }
-		}
-	    }); 
-	if(o != null && o.length > 1) 
-	    setToolTipText(o[0].toString()); 
+        super(o);
+        this.setRenderer(new PathRenderer());
+        addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent evt) {
+                if (evt.getStateChange() == ItemEvent.SELECTED) {
+                    setToolTipText(evt.getItem().toString());
+                }
+            }
+        });
+        if (o != null && o.length > 1) {
+            setToolTipText(o[0].toString());
+        }
     }
-	    
-    class PathRenderer extends JLabel implements ListCellRenderer { 
 
+    static class PathRenderer extends JLabel implements ListCellRenderer {
         private static final long serialVersionUID = 1323260132420573174L;
-        
-	public PathRenderer() {
-	    setOpaque(true);
-	}
 
-	public Component getListCellRendererComponent(JList list,
-                Object value, int index, boolean isSelected, boolean cellHasFocus)
-        {
-	    setText(value.toString());
-	    setToolTipText(value.toString()); 
-	    return this;
-	}
+        public PathRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setText(value.toString());
+            setToolTipText(value.toString());
+            return this;
+        }
     }
 } 
 

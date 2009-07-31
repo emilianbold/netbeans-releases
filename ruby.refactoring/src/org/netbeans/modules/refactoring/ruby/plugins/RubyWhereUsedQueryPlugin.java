@@ -298,7 +298,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 
         protected Collection<ModificationResult> process(ParserResult parserResult) {
             if (isCancelled()) {
-                return null;
+                return Collections.<ModificationResult>emptySet();
             }
 
             Error error = null;

@@ -39,7 +39,9 @@
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
@@ -49,6 +51,8 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** 
  * DataProvider links two things:
@@ -62,31 +66,60 @@ import org.openide.util.Lookup;
  */
 public final class DataProvidersManager {
 
-    private static DataProvidersManager instance = null;
-    private Collection<? extends VisualizerDataProviderFactory> allVisualizerDataProviders;
-    private Collection<VisualizerDataProvider> activeVisualizerDataProviders;
-    private static final Logger log = DLightLogger.getLogger(DataProvidersManager.class);
+    private final static Logger log = DLightLogger.getLogger(DataProvidersManager.class);
+    private final static DataProvidersManager instance = new DataProvidersManager();
+    private final LookupListener lookupListener;
+    private final Collection<VisualizerDataProviderFactory> allVisualizerDataProviders;
+    private final Lookup.Result<VisualizerDataProviderFactory> lookupResult;
+    private final Collection<VisualizerDataProvider> activeVisualizerDataProviders;
 
     private DataProvidersManager() {
-        allVisualizerDataProviders = Lookup.getDefault().lookupAll(VisualizerDataProviderFactory.class);
+        allVisualizerDataProviders = new ArrayList<VisualizerDataProviderFactory>();
+        lookupResult = Lookup.getDefault().lookupResult(VisualizerDataProviderFactory.class);
+
+        lookupListener = new LookupListener() {
+
+            public void resultChanged(LookupEvent ev) {
+                synchronized (allVisualizerDataProviders) {
+                    Collection<? extends VisualizerDataProviderFactory> newSet = lookupResult.allInstances();
+                    allVisualizerDataProviders.retainAll(newSet);
+
+                    for (VisualizerDataProviderFactory<?> f : newSet) {
+                        if (!allVisualizerDataProviders.contains(f)) {
+                            Collection<DataModelScheme> supportedSchemes = f.getProvidedDataModelScheme();
+                            if (supportedSchemes != null) {
+                                allVisualizerDataProviders.add(f);
+                                log.log(Level.FINE, "New VisualizerDataProvider factory registered for the following schemas: {0}", // NOI18N
+                                        Arrays.toString(supportedSchemes.toArray(new DataModelScheme[0])));
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        lookupResult.addLookupListener(lookupListener);
+        lookupListener.resultChanged(null);
+
         activeVisualizerDataProviders = new ArrayList<VisualizerDataProvider>();
-        log.fine(allVisualizerDataProviders.size() + " data provider(s) found!"); // NOI18N
     }
 
     public static DataProvidersManager getInstance() {
-        if (instance == null) {
-            instance = new DataProvidersManager();
-        }
-
         return instance;
     }
 
-    public VisualizerDataProvider getDataProviderFor(DataModelScheme dataModel){
-        for (VisualizerDataProviderFactory providerFactory : allVisualizerDataProviders) {
-            if (providerFactory.provides(dataModel)) {
-                VisualizerDataProvider newProvider = providerFactory.create();
-                activeVisualizerDataProviders.add(newProvider);
-                return newProvider;
+    public VisualizerDataProvider getDataProviderFor(DataModelScheme dataModel) {
+        synchronized (allVisualizerDataProviders) {
+            for (VisualizerDataProviderFactory providerFactory : allVisualizerDataProviders) {
+                try {
+                    if (providerFactory.provides(dataModel)) {
+                        VisualizerDataProvider newProvider = providerFactory.create();
+                        activeVisualizerDataProviders.add(newProvider);
+                        return newProvider;
+                    }
+                } catch (Throwable th) {
+                    log.log(Level.FINE, "Exeption in getDataProviderFor " + dataModel, th); // NOI18N
+                }
             }
         }
         return null;

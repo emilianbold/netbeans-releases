@@ -277,7 +277,7 @@ public class PluginIndexManager {
     /**
      * find the plugins which are behind the given goal prefix.
      * @param prefix
-     * @return A string composed of groupId and artifactId separated by "|"
+     * @return A string composed of groupId and artifactId and version separated by "|"
      * @throws java.lang.Exception
      */
     public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
@@ -294,7 +294,7 @@ public class PluginIndexManager {
             Hit hit = (Hit) it.next();
             Document doc = hit.getDocument();
             String id = doc.getField(FIELD_ID).stringValue();
-            toRet.add(id.substring(0, id.lastIndexOf('|') - 1)); //NOI18N
+            toRet.add(id);
         }
         return toRet;
     }

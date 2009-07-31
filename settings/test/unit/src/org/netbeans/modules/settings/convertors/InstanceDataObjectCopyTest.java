@@ -43,23 +43,13 @@ package org.netbeans.modules.settings.convertors;
 
 import java.awt.Button;
 import java.util.Date;
-import junit.framework.*;
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import org.openide.*;
+import javax.swing.Action;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
-import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
-import java.util.List;
 
 /**
  *
@@ -67,16 +57,20 @@ import java.util.List;
  */
 public class InstanceDataObjectCopyTest extends org.netbeans.junit.NbTestCase {
     private FileObject fo;
+    private Action openAction;
     
     
     public InstanceDataObjectCopyTest (String testName) {
         super (testName);
     }
     
+    @Override
     protected void setUp () throws java.lang.Exception {
         clearWorkDir ();
         Lookup.getDefault().lookup(ModuleInfo.class);
         
+        FileObject a = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
+        openAction = (Action) a.getAttribute("instanceCreate");
     }
 
     public void testSettingsFileOnNonSFSAfterCopyShouldHaveEditor () throws Exception {
@@ -115,9 +109,7 @@ public class InstanceDataObjectCopyTest extends org.netbeans.junit.NbTestCase {
         assertNotNull ("It has editor cookie", obj.getCookie (EditorCookie.class));
 
         Object o = obj.getNodeDelegate ().getPreferredAction ();
-        Class c = o == null ? Object.class : o.getClass ();
-        
-        assertEquals ("Default actions should be open on non-SFS", org.openide.actions.OpenAction.class, c);
+        assertEquals ("Default actions should be open on non-SFS", openAction, o);
     }
 
     private FileObject createSettings (FileObject root, String name) throws IOException {

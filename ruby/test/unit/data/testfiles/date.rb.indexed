@@ -21,7 +21,7 @@ Searchable Keys:
   method : <<(n)|DOCUMENTED|
   method : <=>(other)|DOCUMENTED|;;Fixnum|NilClass;
   method : ===(other)|DOCUMENTED|;;TrueClass|FalseClass;
-  method : >>(n)|DOCUMENTED|
+  method : >>(n)|DOCUMENTED|;;Date;
   method : _dump(limit)|DOCUMENTED|
   method : _load(str)|DOCUMENTED|STATIC|
   method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|;;Fixnum;
@@ -86,9 +86,9 @@ Searchable Keys:
   method : sec_fraction|DOCUMENTED|PRIVATE|
   method : sec|DOCUMENTED|PRIVATE|
   method : start|DOCUMENTED|
-  method : step(limit,step)|DOCUMENTED|
+  method : step(limit,step)|DOCUMENTED|;;Date;
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
-  method : succ|DOCUMENTED|
+  method : succ|DOCUMENTED|;;Date;
   method : time_to_day_fraction(h,min,s)|DOCUMENTED|STATIC|
   method : time|DOCUMENTED|PRIVATE|
   method : to_s|DOCUMENTED|;;String;

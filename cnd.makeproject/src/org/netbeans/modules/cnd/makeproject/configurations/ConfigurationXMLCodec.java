@@ -709,14 +709,18 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(CPP_STYLE_COMMENTS_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(OUTPUT_ELEMENT)) {
+            String output = currentText;
+            if (descriptorVersion <= 51 && output.indexOf("{PLATFORM}") >= 0) { // NOI18N
+                output = output.replace("PLATFORM", "CND_PLATFORM"); // See IZ 167305 // NOI18N
+            }
             if (currentLinkerConfiguration != null) {
-                currentLinkerConfiguration.getOutput().setValue(getString(currentText));
+                currentLinkerConfiguration.getOutput().setValue(getString(output));
             }
             if (currentArchiverConfiguration != null) {
-                currentArchiverConfiguration.getOutput().setValue(getString(currentText));
+                currentArchiverConfiguration.getOutput().setValue(getString(output));
             }
             if (currentPackagingConfiguration != null) {
-                currentPackagingConfiguration.getOutput().setValue(getString(currentText));
+                currentPackagingConfiguration.getOutput().setValue(getString(output));
             }
         } else if (element.equals(LINKER_KPIC_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

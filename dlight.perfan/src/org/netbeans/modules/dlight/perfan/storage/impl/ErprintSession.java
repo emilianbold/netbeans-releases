@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
@@ -146,6 +146,24 @@ public class ErprintSession {
         }
     }
 
+    public List<DataraceImpl> getDataRaces(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getDataRaces();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
+    public List<DeadlockImpl> getDeadlocks(boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getDeadlocks();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
     public String[] getCallersCallees(int limit) {
         // TODO: implemet
         return new String[0];
@@ -160,7 +178,7 @@ public class ErprintSession {
         }
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall, boolean restart) throws IOException {
+    public FunctionStatistic getFunctionStatistic(FunctionCallWithMetric functionCall, boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getFunctionStatistic(functionCall);

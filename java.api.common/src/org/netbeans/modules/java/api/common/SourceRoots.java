@@ -504,15 +504,21 @@ public final class SourceRoots {
         //@GuardedBy(SourceRoots.this)
         private final Set<File> files = new HashSet<File>();
         private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
+        private File tmsVclv;
 
         public void add(File f) {
             if (!files.contains(f)) {
                 files.add(f);
+                tmsVclv = f;
                 FileUtil.addFileChangeListener(weakFilesListener, f);
+                tmsVclv = null;
+                if (!files.contains (f))
+                    throw new IllegalStateException ();
             }
         }
 
         public void removeFileListeners() {
+            if (tmsVclv != null) throw new IllegalStateException ();
             for(File f : files) {
                 FileUtil.removeFileChangeListener(weakFilesListener, f);
             }

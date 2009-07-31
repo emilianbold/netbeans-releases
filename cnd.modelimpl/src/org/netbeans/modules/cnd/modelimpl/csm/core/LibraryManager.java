@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public final class LibraryManager {
 
-    private static LibraryManager instance = new LibraryManager();
+    private static final LibraryManager instance = new LibraryManager();
 
     public static LibraryManager getInstance() {
         return instance;
@@ -80,7 +80,8 @@ public final class LibraryManager {
     private LibraryManager() {
     }
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     public void shutdown(){
         librariesEntries.clear();
@@ -89,7 +90,7 @@ public final class LibraryManager {
     /**
      * Returns collection of artificial libraries used in project
      */
-    public Collection<LibProjectImpl> getLibraries(ProjectImpl project) {
+    public List<LibProjectImpl> getLibraries(ProjectImpl project) {
         List<LibProjectImpl> res = new ArrayList<LibProjectImpl>();
         CsmUID<CsmProject> projectUid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
@@ -223,7 +224,10 @@ public final class LibraryManager {
         if (file != null) {
             return baseProject;
         }
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 break;
             }
@@ -237,7 +241,10 @@ public final class LibraryManager {
     }
 
     private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, File searchFor) {
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 ((ProjectBase) prj).ensureFilesCreated();
                 ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor);
@@ -258,12 +265,17 @@ public final class LibraryManager {
             return null;
         }
         set.add(baseProject);
-        for (String folder : folders) {
+        int folderSize = folders.size();
+        for (int i = 0; i < folderSize; i++) {
+            String folder = folders.get(i);
             if (baseProject.isMySource(folder)) {
                 return baseProject;
             }
         }
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 break;
             }
@@ -276,7 +288,10 @@ public final class LibraryManager {
     }
 
     private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, List<String> folders) {
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 ProjectBase res = searchInProjectRoots((ProjectBase) prj, folders);
                 if (res != null) {

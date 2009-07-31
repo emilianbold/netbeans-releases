@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
-    // Do not change arbitrary - consult with layer's folder OptionsExport 
+    // Do not change arbitrary - consult with layer's folder OptionsExport
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
@@ -134,7 +134,7 @@ public final class RemoteConnections {
         return Collections.unmodifiableList(names);
     }
 
-    /** can be null */
+    /** Can be null. */
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
@@ -145,7 +145,7 @@ public final class RemoteConnections {
         return null;
     }
 
-    /** can be null */
+    /** Can be null. */
     public RemoteConfigurationPanel getConfigurationPanel(ConfigManager.Configuration cfg) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             RemoteConfigurationPanel configurationPanel = provider.getRemoteConfigurationPanel(cfg);
@@ -156,7 +156,7 @@ public final class RemoteConnections {
         return null;
     }
 
-    /** can be null */
+    /** Can be null. */
     public String getConfigurationType(ConfigManager.Configuration cfg) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             RemoteConfigurationPanel remoteConfigurationPanel = provider.getRemoteConfigurationPanel(cfg);
@@ -205,7 +205,7 @@ public final class RemoteConnections {
         return null;
     }
 
-    /** can be null */
+    /** Can be null. */
     public RemoteConfiguration createRemoteConfiguration(String type, ConfigManager.Configuration configuration) {
         assert type != null;
         for (RemoteConnectionProvider provider : getConnectionProviders()) {

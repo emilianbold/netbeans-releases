@@ -62,6 +62,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -463,7 +464,7 @@ public class AttachmentsPanel extends JPanel {
                     public void run() {
                         try {
                             File file = saveToTempFile(attachment);
-                            BugtrackingUtil.applyPatch(file, context);
+                            PatchUtils.applyPatch(file, context);
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
                         } finally {

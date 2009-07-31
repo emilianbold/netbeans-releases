@@ -75,7 +75,7 @@ public class WebSetup extends JellyTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        CommonUtilities.buildProject("TestWebProject");
+        //CommonUtilities.buildProject("TestWebProject");
     }
   
     public void testOpenWebFoldersProject() {
@@ -85,7 +85,7 @@ public class WebSetup extends JellyTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        CommonUtilities.buildProject("PerformanceTestFolderWebApp");
+       // CommonUtilities.buildProject("PerformanceTestFolderWebApp");
     }
         
     public void testCloseTaskWindow() {

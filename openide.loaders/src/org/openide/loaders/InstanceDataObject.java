@@ -50,7 +50,6 @@ import java.util.logging.*;
 import org.openide.ServiceType;
 import org.openide.actions.DeleteAction;
 import org.openide.cookies.*;
-import org.openide.cookies.InstanceCookie.Of;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
@@ -442,6 +441,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     private UpdatableNode un;
+
+    private final String warningMessage() {
+        Object by = getPrimaryFile().getAttribute("layers"); // NOI18N
+        if (by instanceof Object[]) {
+            by = Arrays.toString((Object[])by);
+        }
+        return "Cannot get class for " + getPrimaryFile() + " defined by " + by; // NOI18N
+    }
+
+
     /** allows to swap original node */
     private final class UpdatableNode extends FilterNode {
         public UpdatableNode(Node n) {
@@ -735,7 +744,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
         if (delegateIC == null) return this.getClass();
-        return delegateIC.instanceClass ();
+        try {
+            return delegateIC.instanceClass ();
+        } catch (ClassNotFoundException ex) {
+            Exceptions.attachMessage(ex, warningMessage());
+            throw ex;
+        } catch (IOException ex) {
+            Exceptions.attachMessage(ex, warningMessage());
+            throw ex;
+        }
     }
 
     /** Query if this instance can create object of given type.

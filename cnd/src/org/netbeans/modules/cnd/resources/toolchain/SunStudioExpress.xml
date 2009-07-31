@@ -242,6 +242,10 @@ made subject to such option by the copyright holder.
     </make>
     <debugger>
         <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
     </debugger>
 </toolchaindefinition>

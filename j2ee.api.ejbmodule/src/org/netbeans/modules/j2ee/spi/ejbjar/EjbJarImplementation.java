@@ -47,7 +47,9 @@ import org.openide.filesystems.FileObject;
 
 /**
  * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.EjbJar}.
+ * 
  * @see EjbJarFactory
+ * @deprecated implement {@link EjbJarImplementation2}
  */
 public interface EjbJarImplementation {
 

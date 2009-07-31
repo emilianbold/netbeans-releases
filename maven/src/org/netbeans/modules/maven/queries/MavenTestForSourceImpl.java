@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
     
                                                           
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     /** Creates a new instance of MavenTestForSourceImpl */
     public MavenTestForSourceImpl(NbMavenProjectImpl proj) {
         project = proj;

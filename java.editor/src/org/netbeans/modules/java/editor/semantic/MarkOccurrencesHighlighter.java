@@ -392,7 +392,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
         if (   el != null
                 && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
-                && !Utilities.isKeyword(tree)
+                && !Utilities.isNonCtorKeyword(tree)
                 && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && isEnabled(node, el)
                 || (insideJavadoc && isEnabled(node, el))) {

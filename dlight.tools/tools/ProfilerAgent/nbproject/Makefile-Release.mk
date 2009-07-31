@@ -16,15 +16,18 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=gfortran
+AS=as
 
 # Macros
-PLATFORM=GNU-Linux-x86
+CND_PLATFORM=GNU-Linux-x86
+CND_CONF=Release
+CND_DISTDIR=dist
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/Release/${PLATFORM}
+OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -40,6 +43,9 @@ CXXFLAGS=
 # Fortran Compiler Flags
 FFLAGS=
 
+# Assembler Flags
+ASFLAGS=
+
 # Link Libraries and Options
 LDLIBSOPTIONS=-lpthread -ldl -lrt
 
@@ -48,9 +54,9 @@ LDLIBSOPTIONS=-lpthread -ldl -lrt
 	${MAKE}  -f nbproject/Makefile-Release.mk prof_agent.so
 
 prof_agent.so: ${OBJECTFILES}
-	${LINK.c} -shared -o prof_agent.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} ldscript.txt -shared -o prof_agent.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/prof_agent.o: prof_agent.c 
+${OBJECTDIR}/prof_agent.o: nbproject/Makefile-${CND_CONF}.mk prof_agent.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/prof_agent.o prof_agent.c

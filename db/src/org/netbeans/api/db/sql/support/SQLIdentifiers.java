@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.api.db.sql.support;
@@ -291,10 +291,14 @@ public final class SQLIdentifiers {
         }
 
         private static String getQuoteString(DatabaseMetaData dbmd) {
-            String quoteStr = "\"";
+            String quoteStr = "\""; // NOI18N
 
             try {
                 quoteStr = dbmd.getIdentifierQuoteString().trim();
+                // avoid empty quoteStr; if makes endless CC
+                if (quoteStr.length() == 0) {
+                    quoteStr = "\""; // NOI18N
+                }
             } catch ( SQLException e ) {
                 LOGGER.log(Level.WARNING, "DatabaseMetaData.getIdentifierQuoteString()"
                         + " failed (" + e.getMessage() + "). " +

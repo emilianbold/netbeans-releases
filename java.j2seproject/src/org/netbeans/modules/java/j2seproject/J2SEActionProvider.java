@@ -65,6 +65,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JButton;
@@ -73,9 +75,11 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -96,6 +100,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -119,6 +124,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -191,6 +197,9 @@ class J2SEActionProvider implements ActionProvider {
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
 
+    /**Set of commands which need java model up to date*/
+    final Set<String> needJavaModelActions;
+
     /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
     private Set<String> dirty = null;
 
@@ -226,6 +235,13 @@ class J2SEActionProvider implements ActionProvider {
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
             COMMAND_DEBUG_STEP_INTO
+        ));
+
+        this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            COMMAND_DEBUG,            //debuger blocks during backgroun scan, todo fix debuger
+            COMMAND_DEBUG_SINGLE,     //debuger blocks during backgroun scan, todo fix debuger
+            COMMAND_DEBUG_STEP_INTO,  //debuger blocks during backgroun scan, todo fix debuger
+            JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
 
         this.updateHelper = updateHelper;
@@ -370,16 +386,35 @@ class J2SEActionProvider implements ActionProvider {
             return ;
         }
 
-        final Runnable action = new Runnable () {
+        final boolean isCompileOnSaveEnabled = J2SEProjectUtil.isCompileOnSaveEnabled(project);
+        final AtomicReference<Thread> caller = new AtomicReference<Thread>(Thread.currentThread());
+        final AtomicBoolean called = new AtomicBoolean(false);
+
+        class  Action implements Runnable {
+
+            /**
+             * True when the action always requires access to java model
+             */
+            private boolean needsJavaModel = true;
+            /**
+             * When true getTargetNames accesses java model, when false
+             * the default walues (possibly incorrect) are used.
+             */
+            private boolean doJavaChecks = true;
+
             public void run () {
+                if (!needsJavaModel && caller.get() != Thread.currentThread()) {
+                    return;
+                }
+                called.set(true);
                 Properties p = new Properties();
                 String[] targetNames;
 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(command, context, p, doJavaChecks);
                 if (targetNames == null) {
                     return;
                 }
-                if (J2SEProjectUtil.isCompileOnSaveEnabled(project)) {
+                if (isCompileOnSaveEnabled) {
                     if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                         showBuildActionWarning(context);
                         return ;
@@ -477,19 +512,56 @@ class J2SEActionProvider implements ActionProvider {
                 }
             }
         };
+        final Action action = new Action();
 
-        if (this.bkgScanSensitiveActions.contains(command)) {
+        if (this.needJavaModelActions.contains(command) || isCompileOnSaveEnabled) {
+            //Always have to run with java model
             ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command));   //NOI18N
         }
+        else if (this.bkgScanSensitiveActions.contains(command)) {
+            //Run without model if not yet ready
+            try {
+                action.needsJavaModel = false;
+                invokeByJavaSource(action);
+                if (!called.get()) {
+                    action.doJavaChecks = false;
+                    action.run();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         else {
+            //Does not need java model
             action.run();
         }
+    }
+    //where
+    private static void invokeByJavaSource (final Runnable runnable) throws IOException {
+        Parameters.notNull("runnable", runnable);   //NOI18N
+        final ClasspathInfo info = ClasspathInfo.create(JavaPlatform.getDefault().getBootstrapLibraries(),
+            ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]));
+        final JavaSource js = JavaSource.create(info);
+        js.runWhenScanFinished(new org.netbeans.api.java.source.Task<CompilationController>() {
+            public void run(final CompilationController controller) throws Exception {
+                runnable.run();
+            }
+        }, true);
+    }
+
+    /**
+     * Compatibility
+     *
+     */
+    String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        return getTargetNames(command, context, p, true);
     }
 
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
-    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (Arrays.asList(platformSensitiveActions).contains(command)) {
             final String activePlatformId = this.project.evaluator().getProperty("platform.active");  //NOI18N
             if (J2SEProjectUtil.getActivePlatform (activePlatformId) == null) {
@@ -547,6 +619,7 @@ class J2SEActionProvider implements ActionProvider {
                 classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
+                assert files != null : "findTestSources () can't be null: " + project.getTestSourceRoots().getRoots();   //NOI18N
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
@@ -573,7 +646,13 @@ class J2SEActionProvider implements ActionProvider {
             // not ep.getProperty(MAIN_CLASS), since it is permissible for the default pseudoconfig
             // to define a main class - in this case an active config need not override it.
             String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
-            MainClassStatus result = isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
+            MainClassStatus result;
+            if (doJavaChecks) {
+                result = isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
+            }
+            else {
+                result = MainClassStatus.SET_AND_VALID;
+            }
             if (context.lookup(J2SEConfigurationProvider.Config.class) != null) {
                 // If a specific config was selected, just skip this check for now.
                 // XXX would ideally check that that config in fact had a main class.
@@ -631,82 +710,100 @@ class J2SEActionProvider implements ActionProvider {
             clazz = clazz.replace('/','.');
             final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
                 MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
-            final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
-            if (!hasMainClassFromTest && mainClasses.isEmpty()) {
-                if (AppletSupport.isApplet(file)) {
+            if (doJavaChecks) {
+                final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
+                if (!hasMainClassFromTest && mainClasses.isEmpty()) {
+                    if (AppletSupport.isApplet(file)) {
 
-                    EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String jvmargs = ep.getProperty("run.jvmargs");
+                        EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String jvmargs = ep.getProperty("run.jvmargs");
 
-                    URL url = null;
+                        URL url = null;
 
-                    // do this only when security policy is not set manually
-                    if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) {  //NOI18N
-                        AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
-                        if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                            ep.setProperty("run.jvmargs", "-Djava.security.policy=applet.policy"); //NOI18N
+                        // do this only when security policy is not set manually
+                        if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) {  //NOI18N
+                            AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
+                            if ((jvmargs == null) || (jvmargs.length() == 0)) {
+                                ep.setProperty("run.jvmargs", "-Djava.security.policy=applet.policy"); //NOI18N
+                            } else {
+                                ep.setProperty("run.jvmargs", jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
+                            }
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                            try {
+                                ProjectManager.getDefault().saveProject(project);
+                            } catch (Exception e) {
+                                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
+                            }
+                        }
+
+                        if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
+                            url = copyAppletHTML(file, "html"); //NOI18N
                         } else {
-                            ep.setProperty("run.jvmargs", jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
+                            url = generateAppletHTML(file);
                         }
-                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                        try {
-                            ProjectManager.getDefault().saveProject(project);
-                        } catch (Exception e) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
+                        if (url == null) {
+                            return null;
                         }
-                    }
-
-                    if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
-                        url = copyAppletHTML(file, "html"); //NOI18N
-                    } else {
-                        url = generateAppletHTML(file);
-                    }
-                    if (url == null) {
-                        return null;
-                    }
-                    p.setProperty("applet.url", url.toString()); // NOI18N
-                    if (command.equals (COMMAND_RUN_SINGLE)) {
-                        targetNames = new String[] {"run-applet"}; // NOI18N
-                    } else {
-                        p.setProperty("debug.class", clazz); // NOI18N
-                        targetNames = new String[] {"debug-applet"}; // NOI18N
-                    }
-                } else {
-                    if (isTest) {
-                        //Fallback to normal (non-main-method-based) unit test run
-                        if (command.equals(COMMAND_RUN_SINGLE)) {
-                            targetNames = setupTestSingle(p, files);
+                        p.setProperty("applet.url", url.toString()); // NOI18N
+                        if (command.equals (COMMAND_RUN_SINGLE)) {
+                            targetNames = new String[] {"run-applet"}; // NOI18N
                         } else {
-                            targetNames = setupDebugTestSingle(p, files);
+                            p.setProperty("debug.class", clazz); // NOI18N
+                            targetNames = new String[] {"debug-applet"}; // NOI18N
                         }
                     } else {
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
-                        return null;
-                    }
-                }
-            } else {
-                if (!hasMainClassFromTest) {
-                    if (mainClasses.size() == 1) {
-                        //Just one main class
-                        clazz = mainClasses.iterator().next().getBinaryName();
-                    }
-                    else {
-                        //Several main classes, let the user choose
-                        clazz = showMainClassWarning(file, mainClasses);
-                        if (clazz == null) {
+                        if (isTest) {
+                            //Fallback to normal (non-main-method-based) unit test run
+                            if (command.equals(COMMAND_RUN_SINGLE)) {
+                                targetNames = setupTestSingle(p, files);
+                            } else {
+                                targetNames = setupDebugTestSingle(p, files);
+                            }
+                        } else {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notify(nd);
                             return null;
                         }
                     }
+                } else {
+                    if (!hasMainClassFromTest) {
+                        if (mainClasses.size() == 1) {
+                            //Just one main class
+                            clazz = mainClasses.iterator().next().getBinaryName();
+                        }
+                        else {
+                            //Several main classes, let the user choose
+                            clazz = showMainClassWarning(file, mainClasses);
+                            if (clazz == null) {
+                                return null;
+                            }
+                        }
+                    }
+                    if (command.equals (COMMAND_RUN_SINGLE)) {
+                        p.setProperty("run.class", clazz); // NOI18N
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : (isTest ? new String[] { "run-test-with-main" } : commands.get(COMMAND_RUN_SINGLE));
+                    } else {
+                        p.setProperty("debug.class", clazz); // NOI18N
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : (isTest ? new String[] {"debug-test-with-main"} : commands.get(COMMAND_DEBUG_SINGLE));
+                    }
+                }
+            }
+            else {
+                //The Java model is not ready, we cannot determine if the file is applet or main class or unit test
+                //Acts like everything is main class, maybe for test folder junit is better default?
+                if (clazz == null) {
+                    return null;
                 }
                 if (command.equals (COMMAND_RUN_SINGLE)) {
-                    p.setProperty("run.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : (isTest ? new String[] { "run-test-with-main" } : commands.get(COMMAND_RUN_SINGLE));
+                        p.setProperty("run.class", clazz); // NOI18N
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : (isTest ? new String[] { "run-test-with-main" } : commands.get(COMMAND_RUN_SINGLE));    //NOI18N
                 } else {
                     p.setProperty("debug.class", clazz); // NOI18N
                     String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"debug-test-with-main"} : commands.get(COMMAND_DEBUG_SINGLE));
+                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"debug-test-with-main"} : commands.get(COMMAND_DEBUG_SINGLE));      //NOI18N
                 }
             }
         } else {

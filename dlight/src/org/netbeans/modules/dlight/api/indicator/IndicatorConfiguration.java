@@ -51,10 +51,11 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  */
 public abstract class IndicatorConfiguration {
 
-    private IndicatorMetadata metadata;
+    private final IndicatorMetadata metadata;
     private final int position;
     private final List<VisualizerConfiguration> visualizerConfigurations;
-
+    private String actionDisplayName;
+    private boolean visible;
 
     static {
         IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
@@ -65,9 +66,10 @@ public abstract class IndicatorConfiguration {
      * @param metadata metadata to create Indicator configuration for
      * @param position indicator position
      */
-    public IndicatorConfiguration(IndicatorMetadata metadata, int position) {
+    public IndicatorConfiguration(IndicatorMetadata metadata, int position, boolean visible) {
         this.metadata = metadata;
         this.position = position;
+        this.visible = visible;
         visualizerConfigurations = new ArrayList<VisualizerConfiguration>();
     }
 
@@ -76,7 +78,7 @@ public abstract class IndicatorConfiguration {
      * @param metadata metadata to create Indicator configuration for
      */
     public IndicatorConfiguration(IndicatorMetadata metadata) {
-        this(metadata, 0);
+        this(metadata, 0, true);
     }
 
     /**
@@ -96,6 +98,10 @@ public abstract class IndicatorConfiguration {
         if (configuration != null && !visualizerConfigurations.contains(configuration)) {
             this.visualizerConfigurations.add(configuration);
         }
+    }
+
+    public final void setActionDisplayName(String actionDisplayName) {
+        this.actionDisplayName = actionDisplayName;
     }
 
     /**
@@ -124,6 +130,14 @@ public abstract class IndicatorConfiguration {
         return visualizerConfigurations;
     }
 
+    public final String getActionDisplayName() {
+        return actionDisplayName;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
     private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
 
         @Override
@@ -139,6 +153,11 @@ public abstract class IndicatorConfiguration {
         @Override
         public List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration) {
             return configuration.getVisualizerConfigurations();
+        }
+
+        @Override
+        public String getActionDisplayName(IndicatorConfiguration configuration) {
+            return configuration.getActionDisplayName();
         }
     }
 

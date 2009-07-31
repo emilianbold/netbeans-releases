@@ -121,21 +121,16 @@ public class ResultSetJXTable extends JXTableDecorator {
     }
 
     public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         assert rows != null;
         final TableModel tempModel = createModelFrom(rows);
-        Runnable run = new Runnable() {
-
-            public void run() {
-                setModel(tempModel);
-                if (!columnWidthList.isEmpty()) {
-                    setHeader(ResultSetJXTable.this, columnWidthList);
-                }
-                if (rowHeader != null) {
-                    rowHeader.setTable(ResultSetJXTable.this);
-                }
-            }
-        };
-        SwingUtilities.invokeLater(run);
+        setModel(tempModel);
+        if (!columnWidthList.isEmpty()) {
+            setHeader(ResultSetJXTable.this, columnWidthList);
+        }
+        if (rowHeader != null) {
+            rowHeader.setTable(ResultSetJXTable.this);
+        }
     }
 
     @SuppressWarnings("deprecation")

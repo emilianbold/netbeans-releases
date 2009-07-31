@@ -42,28 +42,15 @@
 package org.netbeans.modules.java.j2seproject.api;
 
 import java.io.File;
-import junit.framework.TestCase;
-import junit.framework.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import java.util.Properties;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -120,17 +107,17 @@ public class J2SEProjectConfigurationsTest extends NbTestCase {
         
         configName = "Test_Config2";
         
-        sharedProps = new Properties();
-        sharedProps.put("sharedPropName", "sharedPropValue");
-        sharedProps.put("$sharedPropNameSpecial", "sharedPropValueSpecial");
-        sharedProps.put("sharedPropName2", "${sharedPropName}");
+        EditableProperties sharedProps2 = new EditableProperties();
+        sharedProps2.put("sharedPropName", "sharedPropValue");
+        sharedProps2.put("$sharedPropNameSpecial", "sharedPropValueSpecial");
+        sharedProps2.put("sharedPropName2", "${sharedPropName}");
         
-        J2SEProjectConfigurations.createConfigurationFiles(prj, configName, sharedProps, null);
+        J2SEProjectConfigurations.createConfigurationFiles(prj, configName, sharedProps2, null);
         
         sharedPropsFO = prjDirFO.getFileObject("nbproject/configs/" + configName + ".properties");
         loadedSharedProps = new Properties();
         loadedSharedProps.load(sharedPropsFO.getInputStream());
-        assertEquals(sharedProps, loadedSharedProps);
+        assertEquals(sharedProps2, loadedSharedProps);
         
         privatePropsFO = prjDirFO.getFileObject("nbproject/private/configs/" + configName + ".properties");
         assertNull(privatePropsFO);

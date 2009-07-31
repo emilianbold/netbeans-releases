@@ -294,6 +294,7 @@ public class BracketCompletion {
             switch (ts.token().id()) {
                 case WHITESPACE:
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                     break;
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:

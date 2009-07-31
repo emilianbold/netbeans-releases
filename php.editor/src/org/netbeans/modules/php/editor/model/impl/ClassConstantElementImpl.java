@@ -31,4 +31,12 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
     public String getNormalizedName() {
         return typeName+super.getNormalizedName();
     }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        return sb.toString();
+    }
 }

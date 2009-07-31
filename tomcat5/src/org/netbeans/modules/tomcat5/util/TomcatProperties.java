@@ -65,6 +65,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -247,7 +248,7 @@ public class TomcatProperties {
         if (!create && !file.exists()) {
             return;
         }
-        EditableProperties antProps = new EditableProperties();
+        EditableProperties antProps = new EditableProperties(false);
         antProps.setProperty("tomcat.home", homeDir.getAbsolutePath()); // NOI18N
         antProps.setProperty("tomcat.url", getWebUrl());                // NOI18N
         antProps.setProperty("tomcat.username", getUsername());         // NOI18N
@@ -667,7 +668,7 @@ public class TomcatProperties {
                     list.add(Utils.fileToUrl(jspApiDoc));
                     list.add(Utils.fileToUrl(servletApiDoc));
                 } else {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
                     if (j2eeDoc != null) {
                         list.add(Utils.fileToUrl(j2eeDoc));
                     }

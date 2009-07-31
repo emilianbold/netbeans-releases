@@ -82,6 +82,21 @@ made subject to such option by the copyright holder.
 
     <folder name="Editors">
         <folder name="text">
+                <folder name="html">
+                    <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">
+                        <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                    </file>
+                    <folder name="CompletionProviders">
+                        <file name="org-netbeans-modules-web-jsf-editor-jspel-JSFELCompletionProvider.instance"/>
+                        <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
+                    </folder>
+                    <folder name="HyperlinkProviders">
+                        <file name="JSFJSPHyperlinkProvider.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.jspel.JSFJSPHyperlinkProvider"/>
+                            <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        </file>
+                    </folder>
+                </folder>
             <folder name="x-jsf+xml">
                 <folder name="HyperlinkProviders">
                     <file name="JSFConfigHyperlinkProvider.instance">
@@ -136,6 +151,11 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJspIterator"/>
+            </file>
+            <!-- Facelet -->
+            <file name="JSP.xhtml" url="templates/simpleFacelets.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
             </file>
             <!-- JSP Document --> 
             <file name="JSPX.jspx" url="templates/JSPDoc.template">

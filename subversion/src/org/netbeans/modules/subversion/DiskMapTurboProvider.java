@@ -72,14 +72,15 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (cachedStoreSerial != storeSerial || cachedValues == null) {
-            cachedValues = new HashMap<File, FileInformation>();
+        if (modifiedFilesChanged() || cachedValues == null) {
+            HashMap<File, FileInformation> modifiedValues = new HashMap<File, FileInformation>();
             if (!cacheStore.isDirectory()) {
                 cacheStore.mkdirs();
             }
             File [] files = cacheStore.listFiles();
             if(files == null) {
-                return Collections.unmodifiableMap(cachedValues);
+                cachedValues = Collections.unmodifiableMap(modifiedValues);
+                return cachedValues;
             }
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -122,7 +123,7 @@ class DiskMapTurboProvider implements TurboProvider {
                             File f = (File) j.next();
                             FileInformation info = (FileInformation) value.get(f);
                             if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                cachedValues.put(f, info);
+                                modifiedValues.put(f, info);
                             }
                         }
                     }
@@ -137,11 +138,22 @@ class DiskMapTurboProvider implements TurboProvider {
                 if (readFailed) file.delete(); // cache file is corrupted, delete it (will be recreated on-demand later)
             }
             cachedStoreSerial = storeSerial;
-            cachedValues = Collections.unmodifiableMap(cachedValues);
+            cachedValues = Collections.unmodifiableMap(modifiedValues);
         }
         return cachedValues;
     }
 
+    Map<File, FileInformation> getCachedValues() {
+        if (cachedValues != null) {
+            return cachedValues;
+        }
+        return Collections.emptyMap();
+    }
+    
+    boolean modifiedFilesChanged() {
+        return cachedStoreSerial != storeSerial;
+    }
+    
     public boolean recognizesAttribute(String name) {
         return ATTR_STATUS_MAP.equals(name);
     }

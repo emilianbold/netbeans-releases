@@ -265,6 +265,7 @@ public enum CppTokenId implements TokenId {
     LINE_COMMENT(null, "comment"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
     DOXYGEN_COMMENT(null, "comment"), // NOI18N
+    DOXYGEN_LINE_COMMENT(null, "comment"), // NOI18N
     
     // Prerpocessor 
     //   - on top level
@@ -291,7 +292,44 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_USER_INCLUDE(null, "preprocessor-user-include-literal"), // NOI18N
     PREPROCESSOR_SYS_INCLUDE(null, "preprocessor-system-include-literal"), // NOI18N
     PREPROCESSOR_IDENTIFIER(null, "preprocessor-identifier"), // NOI18N
-    
+
+    // OpenMP
+    PRAGMA_OMP(null, "pragma-omp"), // NOI18N
+    PRAGMA_OMP_START("omp", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_PARALLEL("parallel", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SECTIONS("sections", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NOWAIT("nowait", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ORDERED("ordered", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SCHEDULE("schedule", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DYNAMIC("dynamic", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_GUIDED("guided", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_RUNTIME("runtime", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SECTION("section", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SINGLE("single", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_MASTER("master", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_CRITICAL("critical", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_BARRIER("barrier", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ATOMIC("atomic", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_FLUSH("flush", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_THREADPRIVATE("threadprivate", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_PRIVATE("private", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_FIRSTPRIVATE("firstprivate", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_LASTPRIVATE("lastprivate", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SHARED("shared", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NONE("none", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_REDUCTION("reduction", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_COPYIN("copyin", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASK("task", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASKWAIT("taskwait", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_COLLAPSE("collapse", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_COPYPRIVATE("copyprivate", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DEFAULT("default", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_STATIC("static", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_IF("if", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_FOR("for", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_AUTO("auto", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NUM_THREADS("num_threads", "pragma-omp-keyword-directive"), // NOI18N
+
     // Errors
     INVALID_COMMENT_END("*/", "error"), // NOI18N
     FLOAT_LITERAL_INVALID(null, "number"); // NOI18N
@@ -316,6 +354,8 @@ public enum CppTokenId implements TokenId {
     public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = "preprocessor-identifier"; // NOI18N
     public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = "preprocessor-user-include-literal"; // NOI18N
     public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = "preprocessor-system-include-literal"; // NOI18N
+    public static final String PRAGMA_OMP_CATEGORY = "pragma-omp"; // NOI18N
+    public static final String PRAGMA_OMP_KEYWORD_DIRECTIVE_CATEGORY = "pragma-omp-keyword-directive"; // NOI18N
   
     private final String fixedText;
 
@@ -436,6 +476,8 @@ public enum CppTokenId implements TokenId {
                 case DOXYGEN_COMMENT:
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3,
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);
+                case DOXYGEN_LINE_COMMENT:
+                    return LanguageEmbedding.create(DoxygenTokenId.language(), 3, 0);
                 case STRING_LITERAL:
                     return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
                 case CHAR_LITERAL:

@@ -10,6 +10,7 @@ import java.util.Vector;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.*;
+import org.openide.util.NbBundle;
 /**
  * A font Selector chooser widget.
  */
@@ -17,20 +18,20 @@ class FontSelectorDialog extends JDialog
 {
 	public FontSelectorDialog(Frame parent, Font font)
 	{
-		super(parent,"font selector",true);
+		super(parent,NbBundle.getMessage(FontSelectorDialog.class, "LBL_FontChooser"),true);
 		init(font);
 	} 
 
 	public FontSelectorDialog(Dialog parent, Font font)
 	{
-		super(parent,"font selector",true);
+		super(parent,NbBundle.getMessage(FontSelectorDialog.class, "LBL_FontChooser"),true);
 		init(font);
 	}
 
 	public FontSelectorDialog(Frame parent, Font font,
 		FontSelectorDialog fontSelector)
 	{
-		super(parent,"font selector",true);
+		super(parent,NbBundle.getMessage(FontSelectorDialog.class, "LBL_FontChooser"),true);
 		this.fontSelector = fontSelector;
 		init(font);
 	} 
@@ -38,7 +39,7 @@ class FontSelectorDialog extends JDialog
 	public FontSelectorDialog(Dialog parent, Font font,
 		FontSelectorDialog fontSelector)
 	{
-		super(parent,"font-selector.title",true);
+		super(parent,NbBundle.getMessage(FontSelectorDialog.class, "LBL_FontChooser"),true);
 		this.fontSelector = fontSelector;
 		init(font);
 	} 
@@ -180,14 +181,14 @@ class FontSelectorDialog extends JDialog
 		buttons.setBorder(new EmptyBorder(12,0,0,0));
 		buttons.add(Box.createGlue());
 
-		ok = new JButton("ok");
+		ok = new JButton(NbBundle.getMessage(FontSelectorDialog.class, "LBL_OK"));
 		ok.addActionListener(new ActionHandler());
 		getRootPane().setDefaultButton(ok);
 		buttons.add(ok);
 
 		buttons.add(Box.createHorizontalStrut(6));
 
-		cancel = new JButton("cancel");
+		cancel = new JButton(NbBundle.getMessage(FontSelectorDialog.class, "LBL_Cancel"));
 		cancel.addActionListener(new ActionHandler());
 		buttons.add(cancel);
 

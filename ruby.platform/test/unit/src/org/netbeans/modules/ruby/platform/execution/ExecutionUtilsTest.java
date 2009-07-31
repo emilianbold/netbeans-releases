@@ -60,7 +60,6 @@ public class ExecutionUtilsTest extends RubyTestBase {
 
     public void testComputeJRubyClassPath() {
         String[] expectedJars = {
-            "bsf.jar",
             "jruby.jar",
             "profile.jar",};
         Arrays.sort(expectedJars);

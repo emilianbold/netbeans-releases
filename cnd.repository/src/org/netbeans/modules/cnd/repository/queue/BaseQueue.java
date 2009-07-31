@@ -142,10 +142,15 @@ public class BaseQueue {
             return ret;
         }
     }
-    
-    protected final Object lock = new Object();
+
+    public BaseQueue(Queue queue) {
+        this.queue = queue;
+    }
+
+    private static final class Lock {}
+    protected final Object lock = new Lock();
     protected StopWatch stopWatch = needsTiming() ? new StopWatch(false) : null;
-    protected Queue queue;
+    protected final Queue queue;
     
     /** Override this to return true in case you need a very simple timing */
     protected boolean needsTiming() {

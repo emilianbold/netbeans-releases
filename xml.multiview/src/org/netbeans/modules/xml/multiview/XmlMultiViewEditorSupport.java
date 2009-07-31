@@ -43,10 +43,8 @@ package org.netbeans.modules.xml.multiview;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -94,7 +92,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
-import java.lang.*;
 
 /**
  * An implementation of <code>DataEditorSupport</code> that is
@@ -768,19 +765,21 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
                 // Check closed top components
                 Set closed = ((Set) evt.getOldValue());
-                closed.removeAll((Set) evt.getNewValue());
-                for (Iterator iterator = closed.iterator(); iterator.hasNext();) {
-                    Object o = iterator.next();
-                    if (o instanceof CloneableTopComponent) {
-                        final CloneableTopComponent topComponent = (CloneableTopComponent) o;
-                        Enumeration en = topComponent.getReference().getComponents();
-                        if (mvtc == topComponent) {
-                            if (en.hasMoreElements()) {
-                                // Remember next cloned top component
-                                mvtc = (CloneableTopComponent) en.nextElement();
-                            } else {
-                                // All cloned top components are closed
-                                notifyClosed();
+                if (closed != null) {
+                    closed.removeAll((Set) evt.getNewValue());
+                    for (Iterator iterator = closed.iterator(); iterator.hasNext();) {
+                        Object o = iterator.next();
+                        if (o instanceof CloneableTopComponent) {
+                            final CloneableTopComponent topComponent = (CloneableTopComponent) o;
+                            Enumeration en = topComponent.getReference().getComponents();
+                            if (mvtc == topComponent) {
+                                if (en.hasMoreElements()) {
+                                    // Remember next cloned top component
+                                    mvtc = (CloneableTopComponent) en.nextElement();
+                                } else {
+                                    // All cloned top components are closed
+                                    notifyClosed();
+                                }
                             }
                         }
                     }

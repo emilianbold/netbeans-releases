@@ -48,12 +48,12 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
-import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import hidden.org.codehaus.plexus.util.StringInputStream;
 import hidden.org.codehaus.plexus.util.StringUtils;
 import java.util.Properties;
@@ -83,8 +83,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
+import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
@@ -98,45 +100,41 @@ import org.xml.sax.SAXException;
  * implementation of ear related netbeans functionality
  * @author Milos Kleint 
  */
-class EarImpl implements EarImplementation,
-                         J2eeApplicationImplementation2,
-                         ModuleChangeReporter,
-                         AdditionalDebuggedProjects {
+class EarImpl implements EarImplementation, EarImplementation2,
+        J2eeApplicationImplementation2,
+        ModuleChangeReporter,
+        AdditionalDebuggedProjects {
 
     private Project project;
     private EarModuleProviderImpl provider;
     private MetadataModel<ApplicationMetadata> metadataModel;
-    private NbMavenProject mavenproject;
-    
+    private final NbMavenProject mavenproject;
+
     /** Creates a new instance of EarImpl */
     EarImpl(Project proj, EarModuleProviderImpl prov) {
         project = proj;
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
-        
+
         provider = prov;
     }
 
-    /** J2EE platform version - one of the constants 
-     * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
-     * @return J2EE platform version
-     */
-    public String getJ2eePlatformVersion() {
+    public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
         String version = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_J2EE_VERSION, true);
         if (version != null) {
-            return version;
+            return Profile.fromPropertiesString(version);
         }
         if (isApplicationXmlGenerated()) {
-            version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, 
-                                              Constants.PLUGIN_EAR, "version", "generate-application-xml"); //NOI18N
+            version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_EAR, "version", "generate-application-xml"); //NOI18N
             // the default version in maven plugin is also 1.3
             //TODO what if the default changes?
             if (version != null) {
                 // 5 is not valid value in netbeans, it's 1.5
                 if ("5".equals(version)) {
-                    return EjbProjectConstants.JAVA_EE_5_LEVEL;
+                    return Profile.JAVA_EE_5;
                 }
-                return version.trim();
+                return Profile.fromPropertiesString(version.trim());
             }
         } else {
             DDProvider prov = DDProvider.getDefault();
@@ -145,7 +143,7 @@ class EarImpl implements EarImplementation,
                 try {
                     Application app = prov.getDDRoot(dd);
                     String appVersion = app.getVersion().toString();
-                    return appVersion;
+                    return Profile.fromPropertiesString(appVersion);
                 } catch (IOException exc) {
                     ErrorManager.getDefault().notify(exc);
                 }
@@ -153,14 +151,18 @@ class EarImpl implements EarImplementation,
         }
         // hardwire?
 //        System.out.println("eariml: getj2eepaltform");
-        return EjbProjectConstants.J2EE_14_LEVEL;
+        return Profile.J2EE_14;
+    }
+
+    public String getJ2eePlatformVersion() {
+        return getJ2eeProfile().toPropertiesString();
     }
 
     /** META-INF folder for the Ear.
      */
     public FileObject getMetaInf() {
-        String appsrcloc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, 
-                                              Constants.PLUGIN_EAR, "earSourceDirectory", "ear");//NOI18N
+        String appsrcloc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_EAR, "earSourceDirectory", "ear");//NOI18N
         if (appsrcloc == null) {
             appsrcloc = "src/main/application";//NOI18N
         }
@@ -190,8 +192,8 @@ class EarImpl implements EarImplementation,
      */
     public FileObject getDeploymentDescriptor() {
         if (isApplicationXmlGenerated()) {
-            String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, 
-                                              Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml");//NOI18N
+            String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml");//NOI18N
             if (generatedLoc == null) {
                 generatedLoc = mavenproject.getMavenProject().getBuild().getDirectory();
             }
@@ -203,8 +205,8 @@ class EarImpl implements EarImplementation,
 //                System.out.println("we don't have the application.xmk generated yet at=" + generatedLoc);
             }
         }
-        String customLoc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, 
-                                              Constants.PLUGIN_EAR, "applicationXml", "ear");//NOI18N
+        String customLoc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_EAR, "applicationXml", "ear");//NOI18N
         if (customLoc != null) {
             FileObject fo = FileUtilities.convertURItoFileObject(FileUtilities.getDirURI(project.getProjectDirectory(), customLoc));
             if (fo != null) {
@@ -230,13 +232,13 @@ class EarImpl implements EarImplementation,
         //TODO this probably means adding the module as dependency to the pom.
         throw new IllegalStateException("Not implemented for maven based projects.");//NOI18N
     }
-    
+
     private boolean isApplicationXmlGenerated() {
-        String str = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, 
-                                                                    Constants.PLUGIN_EAR, 
-                                                                    "generateApplicationXml", //NOI18N
-                                                                    "generate-application-xml");//NOI18N
-            //either the default or explicitly set generation of application.xml file 
+        String str = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_EAR,
+                "generateApplicationXml", //NOI18N
+                "generate-application-xml");//NOI18N
+        //either the default or explicitly set generation of application.xml file
         return (str == null || Boolean.valueOf(str).booleanValue());
     }
 
@@ -295,7 +297,7 @@ class EarImpl implements EarImplementation,
      * @return Iterator through {@link RootedEntry}s
      */
     public Iterator getArchiveContents() throws IOException {
-  //      System.out.println("ear get archive content");
+        //      System.out.println("ear get archive content");
         FileObject fo = getContentDirectory();
         if (fo != null) {
             return new ContentIterator(fo);
@@ -341,14 +343,14 @@ class EarImpl implements EarImplementation,
         }
         if (J2eeModule.APP_XML.equals(location)) {
             try {
-                
+
                 FileObject content = getDeploymentDescriptor();
                 if (content == null) {
 //                    System.out.println("getDeploymentDescriptor.application dd is null");
                     StringInputStream str = new StringInputStream(
-  "<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\" version=\"1.4\">" +//NOI18N
-  "<description>description</description>" +//NOI18N
-  "<display-name>" + mavenproject.getMavenProject().getArtifactId() + "</display-name></application>");//NOI18N
+                            "<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\" version=\"1.4\">" +//NOI18N
+                            "<description>description</description>" +//NOI18N
+                            "<display-name>" + mavenproject.getMavenProject().getArtifactId() + "</display-name></application>");//NOI18N
                     try {
                         return DDProvider.getDefault().getDDRoot(new InputSource(str));
                     } catch (SAXException ex) {
@@ -378,9 +380,6 @@ class EarImpl implements EarImplementation,
             fileNameMapping = "standard"; //NOI18N
         }
 
-        //for jar modules only..
-        String defaultLibBundleDir = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "defaultLibBundleDir", "ear"); //NOI18N
-
         List<J2eeModule> toRet = new ArrayList<J2eeModule>();
         EarImpl.MavenModule[] mm = readPomModules();
         //#162173 order by dependency list, artifacts is unsorted set.
@@ -390,8 +389,7 @@ class EarImpl implements EarImplementation,
                 for (Artifact a : artifactSet) {
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
-                            StringUtils.equals(a.getClassifier(), d.getClassifier()))
-                    {
+                            StringUtils.equals(a.getClassifier(), d.getClassifier())) {
                         File fil = a.getFile();
                         FileObject fo = FileUtil.toFileObject(fil);
                         boolean found = false;
@@ -431,28 +429,45 @@ class EarImpl implements EarImplementation,
         }
         return toRet.toArray(new J2eeModule[toRet.size()]);
     }
-    
+
     public List<Project> getProjects() {
+        MavenProject mp = mavenproject.getMavenProject();
         @SuppressWarnings("unchecked")
-        Iterator<Artifact> it = mavenproject.getMavenProject().getArtifacts().iterator();
+        Set<Artifact> artifactSet = mp.getArtifacts();
+        @SuppressWarnings("unchecked")
+        List<Dependency> deps = mp.getRuntimeDependencies();
         List<Project> toRet = new ArrayList<Project>();
-        while (it.hasNext()) {
-            Artifact elem = it.next();
-            if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
-                File fil = elem.getFile();
-                Project owner = FileOwnerQuery.getOwner(fil.toURI());
-                if (owner != null) {
-                    J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
-                    if (prov != null) {
-                        toRet.add(owner);
+        EarImpl.MavenModule[] mm = readPomModules();
+        //#162173 order by dependency list, artifacts is unsorted set.
+        for (Dependency d : deps) {
+            if ("war".equals(d.getType()) || "ejb".equals(d.getType())) {//NOI18N
+                for (Artifact a : artifactSet) {
+                    if (a.getGroupId().equals(d.getGroupId()) &&
+                            a.getArtifactId().equals(d.getArtifactId()) &&
+                            StringUtils.equals(a.getClassifier(), d.getClassifier())) {
+                        File fil = a.getFile();
+                        FileObject fo = FileUtil.toFileObject(fil);
+                        if (fo != null) {
+                            Project owner = FileOwnerQuery.getOwner(fo);
+                            if (owner != null) {
+                                EarImpl.MavenModule m = findMavenModule(a, mm);
+                                //#162173 respect order in pom configuration.. shall we?
+                                if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
+                                    toRet.add(m.pomIndex, owner);
+                                } else {
+                                    toRet.add(owner);
+                                }
+
+                            }
+                        }
                     }
                 }
             }
         }
         return toRet;
     }
-    
-    
+
+
     File getDDFile(String path) {
 //        System.out.println("getDD file=" + path);
         //TODO what is the actual path.. sometimes don't have any sources for deployment descriptors..
@@ -464,7 +479,7 @@ class EarImpl implements EarImplementation,
         fil = FileUtil.normalizeFile(fil);
         return fil;
     }
-    
+
 
     public void addModuleListener(ModuleListener ml) {
     }
@@ -484,24 +499,24 @@ class EarImpl implements EarImplementation,
         throw new UnsupportedOperationException("Not supported yet.");//NOI18N
     }
 
-    
-    
+
+
     // inspired by netbeans' webmodule codebase, not really sure what is the point
     // of the iterator..
     private static final class ContentIterator implements Iterator {
         private ArrayList<FileObject> ch;
         private FileObject root;
-        
+
         private ContentIterator(FileObject f) {
             this.ch = new ArrayList<FileObject>();
             ch.add(f);
             this.root = f;
         }
-        
+
         public boolean hasNext() {
             return ! ch.isEmpty();
         }
-        
+
         public Object next() {
             FileObject f = ch.get(0);
             ch.remove(0);
@@ -514,37 +529,37 @@ class EarImpl implements EarImplementation,
             }
             return new FSRootRE(root, f);
         }
-        
+
         public void remove() {
             throw new UnsupportedOperationException();
         }
-        
+
     }
-    
+
     private static final class FSRootRE implements J2eeModule.RootedEntry {
         private FileObject f;
         private FileObject root;
-        
+
         FSRootRE(FileObject rt, FileObject fo) {
             f = fo;
             root = rt;
         }
-        
+
         public FileObject getFileObject() {
             return f;
         }
-        
+
         public String getRelativePath() {
             return FileUtil.getRelativePath(root, f);
         }
     }
-    
+
     //TODO
     private class EjbChange implements EjbChangeDescriptor {
         public boolean ejbsChanged() {
             return false;
         }
-        
+
         public String[] getChangedEjbs() {
             return new String[0];
         }
@@ -575,7 +590,7 @@ class EarImpl implements EarImplementation,
      *         specified file name is not known to this J2eeModule.
      */
     public File getDeploymentConfigurationFile(String name) {
-       if (name == null) {
+        if (name == null) {
             return null;
         }
         String path = provider.getConfigSupport().getContentRelativePath(name);
@@ -585,7 +600,7 @@ class EarImpl implements EarImplementation,
         return getDDFile(path);
     }
 
-   /**
+    /**
      * Add a PropertyChangeListener to the listener list.
      * 
      * @param listener PropertyChangeListener
@@ -593,7 +608,7 @@ class EarImpl implements EarImplementation,
     public void addPropertyChangeListener(PropertyChangeListener arg0) {
         //TODO..
     }
-    
+
     /**
      * Remove a PropertyChangeListener from the listener list.
      * 
@@ -602,7 +617,7 @@ class EarImpl implements EarImplementation,
     public void removePropertyChangeListener(PropertyChangeListener arg0) {
         //TODO..
     }
-    
+
     /**
      * Get metadata model of enterprise application.
      */
@@ -612,7 +627,7 @@ class EarImpl implements EarImplementation,
         }
         return metadataModel;
     }
-    
+
 
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == ApplicationMetadata.class) {
@@ -652,7 +667,7 @@ class EarImpl implements EarImplementation,
         for (Object obj : prj.getBuildPlugins()) {
             Plugin plug = (Plugin)obj;
             if (Constants.PLUGIN_EAR.equals(plug.getArtifactId()) &&
-                   Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
+                    Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
                    toRet =  checkConfiguration(prj, plug.getConfiguration());
             }
         }
@@ -661,7 +676,7 @@ class EarImpl implements EarImplementation,
                 for (Object obj : prj.getPluginManagement().getPlugins()) {
                     Plugin plug = (Plugin)obj;
                     if (Constants.PLUGIN_EAR.equals(plug.getArtifactId()) &&
-                        Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
+                            Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
                         toRet = checkConfiguration(prj, plug.getConfiguration());
                         break;
                     }
@@ -675,7 +690,7 @@ class EarImpl implements EarImplementation,
         List<MavenModule> toRet = new ArrayList<MavenModule>();
         if (conf != null && conf instanceof Xpp3Dom) {
             NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
-            Xpp3Dom dom = (Xpp3Dom)conf;
+            Xpp3Dom dom = (Xpp3Dom) conf;
             Xpp3Dom modules = dom.getChild("modules"); //NOI18N
             if (modules != null) {
                 int index = 0;
@@ -784,9 +799,9 @@ class EarImpl implements EarImplementation,
 
 
     private static class ProxyJ2eeModule implements J2eeModuleImplementation2 {
-        private J2eeModule module;
-        private EarImpl.MavenModule mavenModule;
-        private String fileNameMapping;
+        private final J2eeModule module;
+        private final EarImpl.MavenModule mavenModule;
+        private final String fileNameMapping;
 
         ProxyJ2eeModule(J2eeModule module, EarImpl.MavenModule mavModule, String fileNameMapping) {
             this.mavenModule = mavModule;

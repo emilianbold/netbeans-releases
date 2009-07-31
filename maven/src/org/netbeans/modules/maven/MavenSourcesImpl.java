@@ -99,7 +99,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_TESTSOURCE = "2TestSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_SOURCE = "6GeneratedSourceRoot"; //NOI18N
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private final List<ChangeListener> listeners;
     
     private Map<String, SourceGroup> javaGroup;
@@ -437,6 +437,22 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             }
             if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
                 folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
+            }
+        }
+        if (MavenSourcesImpl.TYPE_GROOVY.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = new File(project.getGroovyDirectory(false));
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = new File(project.getGroovyDirectory(true));
+            }
+        }
+        if (MavenSourcesImpl.TYPE_SCALA.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = new File(project.getScalaDirectory(false));
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = new File(project.getScalaDirectory(true));
             }
         }
         if (folder != null) {

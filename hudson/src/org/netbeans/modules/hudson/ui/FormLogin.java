@@ -43,7 +43,7 @@ import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.spi.AcegiAuthorizer;
+import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -64,8 +64,8 @@ public class FormLogin extends JPanel {
         initComponents();
     }
 
-    @ServiceProvider(service=AcegiAuthorizer.class, position=1000)
-    public static class AuthImpl implements AcegiAuthorizer {
+    @ServiceProvider(service=PasswordAuthorizer.class, position=1000)
+    public static class AuthImpl implements PasswordAuthorizer {
 
         public String[] authorize(URL home) {
             FormLogin panel = new FormLogin();

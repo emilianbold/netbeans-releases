@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  * @author Alexander Simon
  */
 public class SourceRootContainer {
-    private Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
+    private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
     
     public SourceRootContainer() {
     }

@@ -40,13 +40,13 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <!-- Hide menu items that belong on Apple's app menu -->
    <folder name="Menu">
 
         <folder name="File">
-            <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
+            <file name="org-netbeans-core-actions-SystemExit.shadow_hidden"/>
         </folder>
 
         <folder name="Tools">
@@ -54,9 +54,19 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="Help">
-            <file name="org-netbeans-core-actions-AboutAction.instance_hidden"/>
+            <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>
         </folder>
         
+    </folder>
+
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-applemenu-MinimizeWindowAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.applemenu.Bundle#MSG_MinimizeWindowAction"/>
+            </file>
+        </folder>
     </folder>
     
     <folder name="Shortcuts">
@@ -64,12 +74,9 @@ made subject to such option by the copyright holder.
         
 
         <!-- On the mac, alt left-right is select, etc. next/prev word-->
-        <file name="A-LEFT.shadow_hidden"/>
-
         <file name="C-LEFT.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
         </file>
-        <file name="A-RIGHT.shadow_hidden"/>
 
         <file name="C-RIGHT.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
@@ -82,8 +89,6 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
         </file>
         
-        <file name="D-BACK_QUOTE.shadow_hidden"/>
-
         <file name="M-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
         </file>
@@ -96,8 +101,8 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
         </file>
 
-        <file name="M-M.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
+        <file name="M-M.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-applemenu-MinimizeWindowAction.instance"/>
         </file>
         <file name="O-G.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>

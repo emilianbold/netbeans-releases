@@ -3,6 +3,7 @@ A:CLASS:[]:ESCAPED{A}:
   condition2:METHOD:[PUBLIC]:ESCAPED{condition2}<font color='#777777'> : ESCAPED{String, Unknown}</font>:
   condition3:METHOD:[PUBLIC]:ESCAPED{condition3}<font color='#777777'> : ESCAPED{Fixnum, String, Float, Unknown}</font>:
   method_as_exit_point:METHOD:[PUBLIC]:ESCAPED{method_as_exit_point}:
+  return_self:METHOD:[PUBLIC]:ESCAPED{return_self}<font color='#777777'> : ESCAPED{A}</font>:
   simple_array:METHOD:[PUBLIC]:ESCAPED{simple_array}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   simple_int:METHOD:[PUBLIC]:ESCAPED{simple_int}<font color='#777777'> : ESCAPED{Fixnum}</font>:
 a:VARIABLE:[]:ESCAPED{a}<font color='#777777'> : ESCAPED{A}</font>:

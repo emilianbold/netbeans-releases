@@ -147,9 +147,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private String bundleKeyForLabel() {
         String bundleKey = null;
         switch (usage.getKind()) {
+            case IFACE:
+                bundleKey = "DSC_IfaceUsages";//NOI18N
+                break;
             case CLASS:
                 bundleKey = "DSC_ClassUsages";//NOI18N
-
                 break;
             case VARIABLE:
                 bundleKey = "DSC_VariableUsages"; // NOI18N

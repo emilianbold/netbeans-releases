@@ -42,14 +42,11 @@ package org.netbeans.jellytools.nodes;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.nodes.ProjectRootNodeTest
  *
@@ -64,19 +61,9 @@ public class ProjectRootNodeTest extends JellyTestCase {
     }
     
     /** method used for explicit testsuite definition */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new ProjectRootNodeTest("testVerifyPopup"));
-        suite.addTest(new ProjectRootNodeTest("testFind"));
-        suite.addTest(new ProjectRootNodeTest("testBuildProject"));
-        suite.addTest(new ProjectRootNodeTest("testCleanProject"));
-        suite.addTest(new ProjectRootNodeTest("testProperties"));
-        return suite;
-         */
+    public static Test suite() {        
         return createModuleTest(ProjectRootNodeTest.class, 
-                "testVerifyPopup", "testFind",
-                "testBuildProject", "testCleanProject",
+                "testVerifyPopup", "testFind",                
                 "testProperties");
     }
     
@@ -107,30 +94,6 @@ public class ProjectRootNodeTest extends JellyTestCase {
     public void testFind() {
         projectRootNode.find();
         new FindInFilesOperator().close();
-    }
-    
-    /** Test buildProject */
-    public void testBuildProject() {
-        MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
-        statusTextTracer.start();
-        projectRootNode.buildProject();
-        // wait status text "Building SampleProject (jar)"
-        statusTextTracer.waitText("jar", true); // NOI18N
-        // wait status text "Finished building SampleProject (jar).
-        statusTextTracer.waitText("jar", true); // NOI18N
-        statusTextTracer.stop();
-    }
-    
-    /** Test cleanProject*/
-    public void testCleanProject() {
-        MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
-        statusTextTracer.start();
-        projectRootNode.cleanProject();
-        // wait status text "Building SampleProject (clean)"
-        statusTextTracer.waitText("clean", true); // NOI18N
-        // wait status text "Finished building SampleProject (clean).
-        statusTextTracer.waitText("clean", true); // NOI18N
-        statusTextTracer.stop();
     }
     
     /** Test properties */

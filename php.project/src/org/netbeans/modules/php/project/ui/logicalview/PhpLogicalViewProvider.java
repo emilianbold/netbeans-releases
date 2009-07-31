@@ -38,23 +38,33 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.actions.FindAction;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -66,6 +76,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -218,7 +229,21 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
-            // honor 57874 contact
+
+            // frameworks
+            PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+            assert phpModule != null;
+            for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+                PhpModuleActionsExtender actionsExtender = frameworkProvider.createActionsExtender(phpModule);
+                if (actionsExtender != null) {
+                    List<? extends Action> frameworkActions = actionsExtender.getActions();
+                    if (!frameworkActions.isEmpty()) {
+                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), frameworkActions));
+                    }
+                }
+            }
+
+            // honor 57874 contract
             actions.add(null);
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
@@ -242,6 +267,79 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private static Children createChildren(PhpProject project) {
            return NodeFactorySupport.createCompositeChildren(project,
                     "Projects/org-netbeans-modules-php-project/Nodes");//NOI18N
+        }
+
+        private static class FrameworkMenu extends AbstractAction implements Presenter.Popup {
+            private static final long serialVersionUID = -238674120253122435L;
+
+            private final String name;
+            private final List<? extends Action> frameworkActions;
+
+            public FrameworkMenu(String name, List<? extends Action> frameworkActions) {
+                super(name, null);
+                assert name != null;
+                assert frameworkActions != null;
+
+                this.name = name;
+                this.frameworkActions = frameworkActions;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                assert false;
+            }
+
+            public JMenuItem getPopupPresenter() {
+                return new FrameworkSubMenu(name, frameworkActions);
+            }
+        }
+
+        private static class FrameworkSubMenu extends JMenu {
+            private static final long serialVersionUID = 9043114612433517414L;
+
+            public FrameworkSubMenu(String name, List<? extends Action> frameworkActions) {
+                super(name);
+                assert name != null;
+                assert frameworkActions != null;
+
+                for (Action action : frameworkActions) {
+                    if (action != null) {
+                        add(toMenuItem(action));
+                    } else {
+                        addSeparator();
+                    }
+                }
+            }
+
+            private static JMenuItem toMenuItem(Action action) {
+                JMenuItem item;
+                if (action instanceof Presenter.Menu) {
+                    item = ((Presenter.Menu) action).getMenuPresenter();
+                } else {
+                    item = new JMenuItem();
+                    Actions.connect(item, action, false);
+                }
+                return item;
+            }
+        }
+    }
+
+    static final class CustomizeProjectAction extends AbstractAction {
+        private static final long serialVersionUID = 423217315757925129L;
+
+        private final PhpProject project;
+        private final String category;
+
+        CustomizeProjectAction(PhpProject project, String category) {
+            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize"));
+
+            assert project != null;
+            assert category != null;
+
+            this.project = project;
+            this.category = category;
+        }
+        public void actionPerformed(ActionEvent e) {
+            project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
         }
     }
 }

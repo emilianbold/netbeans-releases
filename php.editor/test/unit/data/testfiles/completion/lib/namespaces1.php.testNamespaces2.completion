@@ -1,0 +1,4 @@
+Code completion result for source line:
+use C|;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    CNS                                        null

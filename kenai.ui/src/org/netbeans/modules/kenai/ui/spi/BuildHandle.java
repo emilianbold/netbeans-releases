@@ -8,6 +8,7 @@ package org.netbeans.modules.kenai.ui.spi;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
@@ -65,7 +66,7 @@ public abstract class BuildHandle {
      *
      * @return Action to invoke when user pressed Enter key on given build line.
      */
-    public abstract ActionListener getDefaultAction();
+    public abstract Action getDefaultAction();
 
     public abstract void addPropertyChangeListener( PropertyChangeListener l );
 

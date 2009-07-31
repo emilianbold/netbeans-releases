@@ -47,8 +47,8 @@ import java.util.logging.LogRecord;
  * @author tomas
  */
 public class LogHandler extends Handler {
-    private static final long TIMEOUT = 30 * 1000;
-    private final String msg;
+    private long TIMEOUT = 30 * 1000000;
+    private final String messageToWaitFor;
     private boolean done = false;
     private final Compare compare;
     public enum Compare {
@@ -57,20 +57,34 @@ public class LogHandler extends Handler {
     }
 
     public LogHandler(String msg, Compare compare) {
-        this.msg = msg;
-        this.compare = compare;
-        Bugzilla.LOG.addHandler(this);
+        this(msg, compare, -1);
     }
 
+    public LogHandler(String msg, Compare compare, int timeout) {
+        this.messageToWaitFor = msg;
+        this.compare = compare;
+        Bugzilla.LOG.addHandler(this);
+        if(timeout > -1) {
+            TIMEOUT = timeout * 1000;
+        }
+    }
+
+    public void reset() {
+        done = false;
+    }
     @Override
     public void publish(LogRecord record) {
         if(!done) {
+            String message = record.getMessage();
+            if(message == null) {
+                return;
+            }
             switch (compare) {
                 case STARTS_WITH :
-                    done = record.getMessage().startsWith(msg);
+                    done = message.startsWith(messageToWaitFor);
                     break;
                 case ENDS_WITH :
-                    done = record.getMessage().endsWith(msg);
+                    done = message.endsWith(messageToWaitFor);
                     break;
                 default:
                     throw new IllegalStateException("wrong value " + compare);
@@ -81,7 +95,7 @@ public class LogHandler extends Handler {
     public boolean isDone() {
         return done;
     }
-    
+
     @Override
     public void flush() { }
     @Override

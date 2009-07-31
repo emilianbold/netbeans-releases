@@ -59,11 +59,9 @@ public class WrapperSelection implements WizardDescriptor.Panel {
      * just use getComponent().
      */
     private WrapperPanel component;
-    private transient TemplateWizard wizard;
     
     /** Create the wizard panel descriptor. */
     public WrapperSelection(TemplateWizard wizard) {
-        this.wizard=wizard;
     }
     
     // Get the visual component for the panel. In this template, the component
@@ -90,44 +88,9 @@ public class WrapperSelection implements WizardDescriptor.Panel {
         // fireChangeEvent ();
         // and uncomment the complicated stuff below.
     }
-    
-/*
-    public boolean isValid() {
-	if(isListenerSelected()) { 
-	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-	    return true;
-	}
-	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-            org.openide.util.NbBundle.getMessage(ListenerPanel.class,"MSG_noListenerSelected")); 
-	return false; 
-    }
-*/
  
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-/*
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
-    }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-*/
     
     // You can use a settings object to keep track of state.
     // Normally the settings object will be the WizardDescriptor,
@@ -135,9 +98,12 @@ public class WrapperSelection implements WizardDescriptor.Panel {
     // to store information entered by the user.
     public void readSettings(Object settings) {
     }
+
     public void storeSettings(Object settings) {
     }
     
-    boolean isWrapper() {return component.isWrapper();}
+    boolean isWrapper() {
+        return component.isWrapper();
+    }
 
 }

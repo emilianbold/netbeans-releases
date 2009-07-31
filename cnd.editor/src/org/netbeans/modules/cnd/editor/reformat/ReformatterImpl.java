@@ -109,6 +109,7 @@ public class ReformatterImpl {
                 case WHITESPACE:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case LINE_COMMENT:
                 case PRIVATE:
                 case PROTECTED:
@@ -2247,7 +2248,7 @@ public class ReformatterImpl {
                             ts.movePrevious();
                             replaceSegment(addSpace, index);
                             return true;
-                        } else if (ts.token().id() != LINE_COMMENT) {
+                        } else if ((ts.token().id() != LINE_COMMENT && ts.token().id() != DOXYGEN_LINE_COMMENT)) {
                             replaceSegment(addSpace, index);
                             return true;
                         }

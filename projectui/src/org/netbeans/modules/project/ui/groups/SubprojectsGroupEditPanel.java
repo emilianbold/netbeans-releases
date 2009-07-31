@@ -64,6 +64,7 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
                 masterProjectField.setText(d.getAbsolutePath());
             }
         }
+        startPerformingNameChecks(nameField, g.getName());
     }
 
     public void applyChanges() {

@@ -43,7 +43,7 @@ package org.netbeans.modules.jmx.test.mbeanwizard;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -249,7 +249,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         
         // Name and Location wizard execution
         // ----------------------------------
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 mbean.getName(),
                 mbean.getPackage(),
                 mbean.getDescription(),
@@ -292,7 +292,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
      * Select/unselect and update wrapped operations.
      */
     private void updateMBeanOperations(
-            NewFileNameLocationStepOperator nfnlso) {
+            NewJavaFileNameLocationStepOperator nfnlso) {
         
         JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
         // Give the focus to the table operator
@@ -338,7 +338,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
      * Check Operations wizard before MBean operations selection
      */
     private void checkMBeanOperationsWizardBeforeSelection(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
  
         JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
         int rowCount = 0;
@@ -382,7 +382,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
      * Check Operations wizard after MBean operations selection
      */
     protected void checkMBeanOperationsWizardAfterSelection(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
 
         JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
         int rowCount = 0;

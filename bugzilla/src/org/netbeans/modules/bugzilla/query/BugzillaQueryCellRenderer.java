@@ -25,7 +25,6 @@ public class BugzillaQueryCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel renderer = (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        renderer.setIcon(null);
         if(!(value instanceof PriorityProperty)) {
             return renderer;
         }

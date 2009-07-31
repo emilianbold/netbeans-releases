@@ -54,6 +54,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.nodes.Children;
@@ -147,7 +149,6 @@ public class CallEjbDialog {
         final FileObject fileObject = ejbNode.getLookup().lookup(FileObject.class);
         final Project nodeProject = FileOwnerQuery.getOwner(fileObject);
         
-        final boolean remoteInterfaceSelected = panel.isRemoteInterfaceSelected();
         boolean isDefaultRefName = panel.isDefaultRefName();
         final String referencedClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
 
@@ -161,7 +162,7 @@ public class CallEjbDialog {
                             fileObject,
                             referencedClassName,
                             panel.getServiceLocator(),
-                            remoteInterfaceSelected,
+                            panel.getSelectedInterface(),
                             throwExceptions,
                             nodeProject
                             );
@@ -183,7 +184,12 @@ public class CallEjbDialog {
     private class EjbsNode extends AbstractNode {
         public EjbsNode(Project project) {
             super(new EJBListViewChildren(project));
-            setIconBaseWithExtension( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif" ); // NOI18N
+            J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (module != null && module.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)){
+                setIconBaseWithExtension( "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif" ); // NOI18N
+            } else {
+                setIconBaseWithExtension( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif" ); // NOI18N
+            }
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
         }
     }

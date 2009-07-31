@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -67,6 +68,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     private Union2<String/*url*/, FileObject> file;
     private PhpModifiers modifiers;
     private Scope inScope;
+    protected IndexedElement indexedElement;
 
     //new contructors
     ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
@@ -77,6 +79,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this(inScope, element.getName(),Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
                 new OffsetRange(element.getOffset(), element.getOffset()+element.getName().length()),
                 kind, new PhpModifiers(element.getFlags()));
+        this.indexedElement = element;
     }
 
     //old contructors
@@ -137,23 +140,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return getName().toLowerCase();
     }
 
-    public final String getCamelCaseName() {
-        return toCamelCase(getName());
-    }
-
-    static String toCamelCase(String plainName) {
-        char[] retval = new char[plainName.length()];
-        int retvalSize = 0;
-        for (int i = 0; i < retval.length; i++) {
-            char c = plainName.charAt(i);
-            if (Character.isUpperCase(c)) {
-                retval[retvalSize] = c;
-                retvalSize++;
-            }
-        }
-        return String.valueOf(String.valueOf(retval, 0, retvalSize));
-    }
-
     static boolean nameKindMatch(Pattern p, String text) {
         return p.matcher(text).matches();
     }
@@ -170,7 +156,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
-                    if (toCamelCase(text).startsWith(query)) {
+                    if (ModelUtils.toCamelCase(text).startsWith(query)) {
                         return true;
                     }
                     break;
@@ -344,5 +330,17 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
 
     public OffsetRange getOffsetRange(ParserResult result) {
         return getNameRange();
+    }
+
+    public String getIndexSignature() {
+        return null;
+    }
+
+    public QualifiedName getNamespaceName() {
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        if (namespaceScope != null) {
+            return namespaceScope.getQualifiedName();
+        }
+        return QualifiedName.createForDefaultNamespaceName();
     }
 }

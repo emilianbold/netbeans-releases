@@ -75,8 +75,7 @@ plockstat$1:::rw-acquire
 		prefix, tid, arg0, blocker_threads[arg0], this->time/1000, self->thread_wait_time, this->thread_duration);
 #endif
 #if ! QUIET
-	printf("%d %d %d %d %d %d %d\n", timestamp, tid, arg0, blocker_threads[arg0], this->time, self->thread_wait_time, this->thread_duration);
-	printf("%d %d %d", cpu, tid, timestamp); \
+	printf("%d %d %d %d %d %d %d", timestamp, tid, arg0, blocker_threads[arg0], this->time, self->thread_wait_time, this->thread_duration);
 	ustack();
 	printf("\n");
 #endif
@@ -125,8 +124,7 @@ pid$1:libc:pthread_barrier_wait:return
 	self->thread_wait_time += this->time;
 	this->thread_duration = timestamp - (self->thread_start ? self->thread_start : dtrace_start_timestamp);
 #if ! QUIET
-	printf("%d %d %d %d %d %d %d\n", timestamp, tid, arg0, 0, this->time, self->thread_wait_time, this->thread_duration);
-	printf("%d %d %d", cpu, tid, timestamp);
+	printf("%d %d %d %d %d %d %d", timestamp, tid, arg0, 0, this->time, self->thread_wait_time, this->thread_duration);
 	ustack();
 	printf("\n");
 #endif

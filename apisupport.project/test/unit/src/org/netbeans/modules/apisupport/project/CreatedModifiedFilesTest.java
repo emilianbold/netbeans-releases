@@ -420,7 +420,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                     "<folder name=\"Services\">",
                     "<attr name=\"org-example-module1-Other.settings/org-example-module1-Module1UI.settings\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"org-example-module1-LocalizedAndTokenedSettings.xml\">",
-                    "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                    "<attr name=\"displayName\" bundlevalue=\"org.example.module1.resources.Bundle#Services/org-example-module1-LocalizedAndTokened.settings\"/>",
                     "</file>",
                     "<file name=\"org-example-module1-Module1UI.settings\"/>",
                     "<file name=\"org-example-module1-Other.settings\" url=\"org-example-module1-OtherSettings.xml\"/>",

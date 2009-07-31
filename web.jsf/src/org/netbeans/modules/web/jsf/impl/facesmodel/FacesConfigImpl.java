@@ -295,9 +295,7 @@ public class FacesConfigImpl extends IdentifiableComponentImpl implements FacesC
      */
     public List<Component> getComponents() {
         List<FacesComponent> list = getChildren( FacesComponent.class );
-        List<Component> result = new LinkedList<Component>();
-        result.addAll( list );
-        // TODO : add annotations 
+        List<Component> result = new LinkedList<Component>( list );
         return result;
     }
 

@@ -53,6 +53,7 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 
 /**
@@ -71,6 +72,8 @@ public class MultiSplitDivider implements Accessible {
     int cursorPositionCompensation;
     
     private AccessibleContext accessibleContext;
+
+    private boolean isHeavyWeightShowing = false;
 
     public MultiSplitDivider( MultiSplitPane parent, MultiSplitCell first, MultiSplitCell second ) {
         assert null != parent;
@@ -126,7 +129,8 @@ public class MultiSplitDivider implements Accessible {
             cursorPositionCompensation = p.x - rect.x;
         else
             cursorPositionCompensation = p.y - rect.y;
-        
+
+        isHeavyWeightShowing = WindowManagerImpl.getInstance().isHeavyWeightShowing();
         initDragMinMax();
     }
     
@@ -148,6 +152,10 @@ public class MultiSplitDivider implements Accessible {
         
         repaintSplitPane( prevDragLocation );
         repaintSplitPane( currentDragLocation );
+
+        if( isHeavyWeightShowing ) {
+            resize(p);
+        }
     }
     
     private void repaintSplitPane( Point location ) {
@@ -157,15 +165,15 @@ public class MultiSplitDivider implements Accessible {
             splitPane.repaint( rect.x, location.y, rect.width, rect.height );
         }
     }
-    
-    void finishDraggingTo( Point p ) {
+
+    private void resize( Point p ) {
         if( isHorizontal() ) {
             p.x -= cursorPositionCompensation;
             if( p.x < dragMin )
                 p.x = dragMin;
             if( p.x > dragMax )
                 p.x = dragMax;
-            
+
             if( p.x == rect.x ) {
                 //split bar position didn't change
                 return;
@@ -182,10 +190,9 @@ public class MultiSplitDivider implements Accessible {
                 return;
             }
         }
-        currentDragLocation = null;
-    
+
         int dividerSize = getDividerSize();
-        
+
         if( isHorizontal() ) {
             int delta = p.x - rect.x;
             int x = first.getLocation();
@@ -193,11 +200,11 @@ public class MultiSplitDivider implements Accessible {
             int width = first.getSize() + delta;
             int height = rect.height;
             first.layout( x, y, width, height );
-            
+
             x = second.getLocation() + delta;
             width = second.getSize() - delta;
             second.layout( x, y, width, height );
-            
+
             rect.x = p.x;
         } else {
             int delta = p.y - rect.y;
@@ -206,7 +213,7 @@ public class MultiSplitDivider implements Accessible {
             int width = rect.width;
             int height = first.getSize() + delta;
             first.layout( x, y, width, height );
-            
+
             y = second.getLocation() + delta;
             height = second.getSize() - delta;
             second.layout( x, y, width, height );
@@ -214,6 +221,11 @@ public class MultiSplitDivider implements Accessible {
             rect.y = p.y;
         }
         splitPane.splitterMoved();//invalidate();
+    }
+
+    void finishDraggingTo( Point p ) {
+        resize(p);
+        currentDragLocation = null;
     }
     
     private void initDragMinMax() {

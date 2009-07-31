@@ -53,6 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
@@ -116,20 +117,24 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends Children.Keys<Repository> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends Children.Keys implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            BugtrackingManager.getInstance().addPropertyChangeListener(this);
+            RepositoriesSupport.getInstance().addPropertyChangeListener(this);
         }
 
         @Override
-        protected Node[] createNodes(Repository repository) {
-            return new Node[] {repository.getNode()};
+        protected Node[] createNodes(Object key) {
+            if(key instanceof WaitNode) {
+                return new Node[] {(Node)key};
+            }
+            assert key instanceof Repository;
+            return new Node[] {((Repository)key).getNode()};
         }
-        
+
         @Override
         protected void addNotify() {
             super.addNotify();
@@ -143,14 +148,20 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         private void refreshKeys() {
-            List<Repository> l = new ArrayList<Repository>();
-            l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
-            Collections.sort(l, new RepositoryComparator());
-            setKeys(l);
+            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
+            setKeys(Collections.singleton(waitNode));
+            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    List<Repository> l = new ArrayList<Repository>();
+                    l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
+                    Collections.sort(l, new RepositoryComparator());
+                    setKeys(l);
+                }
+            });
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
                 refreshKeys();
             }
         }

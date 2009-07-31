@@ -137,7 +137,36 @@ public class ConnectAction extends BaseAction {
         // when using the progress bar.  The flag is set in the property
         // change listener when the status changes to "failed".          
         boolean failed = false;
-        
+
+        /** Shows notification if DatabaseConnection fails. */
+        final ExceptionListener excListener = new ExceptionListener() {
+
+            public void exceptionOccurred(Exception exc) {
+                if (exc instanceof DDLException) {
+                    LOGGER.log(Level.INFO, null, exc.getCause());
+                } else {
+                    LOGGER.log(Level.INFO, null, exc);
+                }
+
+                String message = null;
+                if (exc instanceof ClassNotFoundException) {
+                    message = MessageFormat.format(NbBundle.getMessage(ConnectAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
+                } else {
+                    StringBuffer buffer = new StringBuffer();
+                    buffer.append(DbUtilities.formatError(NbBundle.getMessage(ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage())); //NOI18N
+                    if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
+                        SQLException sqlEx = ((SQLException) exc.getCause()).getNextException();
+                        while (sqlEx != null) {
+                            buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
+                            sqlEx = sqlEx.getNextException();
+                        }
+                    }
+                    message = buffer.toString();
+                }
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            }
+        };
+
         public void showDialog(final ConnectionNode model, boolean showDialog) {
             DatabaseConnection dbcon = model.getLookup().lookup(DatabaseConnection.class);
             showDialog(dbcon, showDialog);
@@ -150,33 +179,6 @@ public class ConnectAction extends BaseAction {
             String pwd = dbcon.getPassword();
            
             boolean remember = dbcon.rememberPassword();
-
-            final ExceptionListener excListener = new ExceptionListener() {
-                public void exceptionOccurred(Exception exc) {
-                    if (exc instanceof DDLException) {
-                        LOGGER.log(Level.INFO, null, exc.getCause());
-                    } else {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-                    
-                    String message = null;
-                    if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(NbBundle.getMessage (ConnectAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
-                    } else {
-                        StringBuffer buffer = new StringBuffer();
-                        buffer.append(DbUtilities.formatError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage())); //NOI18N
-                        if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
-                            SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
-                            while (sqlEx != null) {
-                                buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
-                                sqlEx = sqlEx.getNextException();
-                            }
-                        }
-                        message = buffer.toString();
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                }
-            };
 
             dbcon.addExceptionListener(excListener);
 
@@ -197,8 +199,9 @@ public class ConnectAction extends BaseAction {
                             schemaPanel.resetProgress();
                             try {
                                 Connection conn = dbcon.getConnection();
-                                if (conn != null && !conn.isClosed())
+                                if (DatabaseConnection.isVitalConnection(conn, null)) {
                                     conn.close();
+                                }
                             } catch (SQLException exc) {
                                 Exceptions.printStackTrace(exc);
                             }
@@ -272,37 +275,32 @@ public class ConnectAction extends BaseAction {
                             dbcon.setPassword(basePanel.getPassword());
                             dbcon.setRememberPassword(basePanel.rememberPassword());
 
-                            try {
-                                if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
-                                    dbcon.connectAsync();
-                                else {
-                                    dbcon.setSchema(schemaPanel.getSchema());
-                                    dbcon.setSchema(schemaPanel.getSchema());
-
-                                    try {
-                                        connector.finishConnect(null, dbcon, dbcon.getConnection());
-                                    } catch (DatabaseException exc) {
-                                        Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                                        return;
-                                    }
-                                    
-                                    DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
-                                    if (realDbcon != null) {
-                                        realDbcon.setPassword(dbcon.getPassword());
-                                        realDbcon.setRememberPassword(
-                                                basePanel.rememberPassword());
-                                    }
-                                    dbcon.setRememberPassword(basePanel.rememberPassword());
-                                    
-                                    if (dlg != null)
-                                        dlg.close();
-
-                                    dbcon.fireConnectionComplete();
-                                }
-                            } catch (SQLException exc) {
-                                //isClosed() method failed, try to connect
+                            if (! DatabaseConnection.isVitalConnection(dbcon.getConnection(), null)) {
                                 dbcon.connectAsync();
+                            } else {
+                                dbcon.setSchema(schemaPanel.getSchema());
+                                dbcon.setSchema(schemaPanel.getSchema());
+
+                                try {
+                                    connector.finishConnect(null, dbcon, dbcon.getConnection());
+                                } catch (DatabaseException exc) {
+                                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                                    DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                                    return;
+                                }
+
+                                DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
+                                if (realDbcon != null) {
+                                    realDbcon.setPassword(dbcon.getPassword());
+                                    realDbcon.setRememberPassword(
+                                            basePanel.rememberPassword());
+                                }
+                                dbcon.setRememberPassword(basePanel.rememberPassword());
+
+                                if (dlg != null)
+                                    dlg.close();
+
+                                dbcon.fireConnectionComplete();
                             }
                             return;
                         }

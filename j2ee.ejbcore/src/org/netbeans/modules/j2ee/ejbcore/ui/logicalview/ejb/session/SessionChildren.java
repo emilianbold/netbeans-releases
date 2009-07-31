@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -71,18 +72,19 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     // indexes into fields with results for model query
     private final static int REMOTE = 0;
     private final static int LOCAL = 1;
+    private final static int BEAN = 2;
 
-    public enum Key {REMOTE, LOCAL};
+    public enum Key {REMOTE, LOCAL, BEAN};
     
     private final ClasspathInfo cpInfo;
     private final String ejbClass;
     private final EjbJar ejbModule;;
     private final SessionMethodController controller;
     
-    public SessionChildren(ClasspathInfo cpInfo, String ejbClass, EjbJar ejbModule) {
-        this.cpInfo = cpInfo;
-        this.ejbClass = ejbClass;
-        this.ejbModule = ejbModule;
+    public SessionChildren(EjbViewController ejbViewController) {
+        this.cpInfo = ejbViewController.getClasspathInfo();
+        this.ejbClass = ejbViewController.getEjbClass();
+        this.ejbModule = ejbViewController.getEjbModule();
         controller = new SessionMethodController(ejbClass, ejbModule.getMetadataModel());
     }
     
@@ -98,7 +100,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     }
     
     private void updateKeys() throws IOException {
-        final boolean[] results = new boolean[] { false, false };
+        final boolean[] results = new boolean[] { false, false, true };
         
         ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
             public Void run(EjbJarMetadata metadata) throws Exception {
@@ -106,6 +108,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
                 if (entity != null) {
                     results[REMOTE] = entity.getRemote() != null;
                     results[LOCAL] = entity.getLocal() != null;
+//                    results[BEAN] = controller.allowsNoInterface();
                 }
                 return null;
             }
@@ -116,6 +119,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
                 List<Key> keys = new ArrayList<Key>();
                 if (results[REMOTE]) { keys.add(Key.REMOTE); }
                 if (results[LOCAL]) { keys.add(Key.LOCAL); }
+                if (results[BEAN]) { keys.add(Key.BEAN); }
                 setKeys(keys);
             }
         });
@@ -129,17 +133,24 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     
     protected Node[] createNodes(Key key) {
         if (Key.LOCAL.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller, controller.getLocalInterfaces(), true);
-            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, true);
+            Children children = new MethodChildren(cpInfo, controller, controller.getLocalInterfaces(), MethodsNode.ViewType.LOCAL);
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.LOCAL);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (Key.REMOTE.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller, controller.getRemoteInterfaces(), false);
-            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, false);
+            Children children = new MethodChildren(cpInfo, controller, controller.getRemoteInterfaces(), MethodsNode.ViewType.REMOTE);
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.REMOTE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
+            return new Node[] { n };
+        }
+        if (Key.BEAN.equals(key)) {
+            Children children = new MethodChildren(cpInfo, controller,Arrays.asList(controller.getBeanClass()), MethodsNode.ViewType.NO_INTERFACE);
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.NO_INTERFACE);
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/MethodContainerIcon.gif");
+            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_BeanMethods"));
             return new Node[] { n };
         }
         return null;

@@ -146,9 +146,9 @@ public final class Kenai {
                 xmppConnection = new XMPPConnection(XMPP_SERVER);
                 try {
                     xmppConnection.connect();
-                    xmppConnection.login(shortName, new String(password));
+                    xmppConnection.login(shortName, new String(password), "NetBeans"); //NOI18N
                 } catch (XMPPException xMPPException) {
-                    new KenaiException(xMPPException);
+                    throw new KenaiException(xMPPException);
                 }
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override
@@ -437,7 +437,7 @@ public final class Kenai {
         return KenaiProject.get(prj);
     }
 
-    private class LazyCollection<I,O> extends AbstractCollection<O> {
+    private static class LazyCollection<I,O> extends AbstractCollection<O> {
 
         private Collection<I> delegate;
 

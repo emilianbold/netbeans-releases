@@ -72,6 +72,36 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/declaration.rb", "File.fil^e?", "stub_file.rb", 12373);
     }
 
+    public void testAttrDeclaration() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :b^az", "attr_declaration.rb", 45);
+    }
+
+    public void testAttrDeclaration2() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 58);
+    }
+
+    public void testAttrDeclaration3() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "b.b^az", "attr_declaration.rb", 26);
+    }
+
+    public void testAttrDeclaration4() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "c.t^hud", "attr_declaration.rb", 114);
+    }
+
+    public void testSymbolToLocalMethod() throws Exception {
+        checkDeclaration("testfiles/symbol_to_method.rb", ":foo_^bar", "symbol_to_method.rb", 59);
+    }
+
+    public void testSymbolToInheritedMethod() throws Exception {
+        checkDeclaration("testfiles/symbol_to_method.rb", ":foo_bar_b^ax", "symbol_to_method_base.rb", 12);
+    }
+
+    public void testSymbolToInheritedField() throws Exception {
+        checkDeclaration("testfiles/symbol_to_method.rb", ":b^ax_field", "symbol_to_method_base.rb", 32);
+    }
+
+
+
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
     //}

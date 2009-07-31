@@ -61,8 +61,8 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
  */
 public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
 
-    private Collection<CsmUID<Tuid>> uids;
-    boolean allowNullsAndSkip;
+    private final Collection<CsmUID<Tuid>> uids;
+    private final boolean allowNullsAndSkip;
 
     public LazyCsmCollection(Collection<CsmUID<Tuid>> uids, boolean allowNullsAndSkip) {
         this.uids = uids;

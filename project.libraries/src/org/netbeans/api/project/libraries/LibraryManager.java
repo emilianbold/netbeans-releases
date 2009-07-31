@@ -225,8 +225,10 @@ public final class LibraryManager {
         synchronized (this) {
             assert l != null;
             if (this.eventId == myId) {
-                cache = l;
-                return cache.toArray(new Library[0]);
+                if (!ProjectManager.mutex().isReadAccess() && !ProjectManager.mutex().isWriteAccess()) {
+                    cache = l;
+                }
+                return l.toArray(new Library[0]);
             }
             else {
                 return l.toArray(new Library[0]);

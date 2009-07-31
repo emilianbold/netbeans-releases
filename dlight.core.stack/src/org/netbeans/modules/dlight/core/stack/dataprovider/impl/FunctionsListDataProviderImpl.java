@@ -44,7 +44,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
@@ -73,12 +73,12 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         attachTo((ServiceInfoDataStorage) storage);
     }
 
-    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         if (functionDescription.getOffsetColumn() == null) {
-            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {
-                FunctionCall call = node.getDeligator();
+                FunctionCallWithMetric call = node.getDeligator();
                 result.add(call);
             }
 
@@ -87,7 +87,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);

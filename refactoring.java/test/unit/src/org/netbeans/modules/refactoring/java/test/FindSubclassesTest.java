@@ -47,7 +47,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import junit.framework.Test;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -98,7 +97,9 @@ public class FindSubclassesTest extends RefPerfTestCase {
         timer.setLevel(Level.FINE);
         timer.addHandler(getHandler());
 
+        // check that no javac created during refactoring is left in the memory
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
+
         FileObject testFile = getProjectDir().getFileObject("/src/simplej2seapp/Main.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -118,6 +119,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
         }, false).get();
         
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+
         RefactoringSession rs = RefactoringSession.create("Session");
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
@@ -139,9 +141,11 @@ public class FindSubclassesTest extends RefPerfTestCase {
         }
         getLog().append(sb);
         System.err.println(sb);
-        wuq[0] = null;
+        
         src = null;
-
+        wuq[0] = null;
+        symbolName[0] = null;
+        
         System.gc(); System.gc();
         Log.assertInstances("Some instances of parser were not GCed");
     }

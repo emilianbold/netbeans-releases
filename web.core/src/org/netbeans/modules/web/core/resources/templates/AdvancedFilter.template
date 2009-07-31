@@ -16,12 +16,21 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+<#if includeDispatcher??>
+import javax.servlet.DispatcherType;
+</#if>
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+<#if classAnnotation??>
+import javax.servlet.annotation.WebFilter;
+</#if>
+<#if includeInitParams??>
+import javax.servlet.annotation.WebInitParam;
+</#if>
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +40,9 @@ import javax.servlet.http.HttpServletResponseWrapper;
  *
  * @author ${user}
  */
+<#if classAnnotation??>
+${classAnnotation}
+</#if>
 public class ${name} implements Filter {
 
     private static final boolean debug = false;

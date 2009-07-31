@@ -45,7 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -76,7 +76,7 @@ public class ParserIssueTest extends NbTestCase {
         new OutputWindowViewAction().perform();
         //build project
         Node n = ProjectsTabOperator.invoke().getProjectRootNode("Sample");
-        new BuildProjectAction().perform(n);
+        new BuildJavaProjectAction().perform(n);
         try {
             Thread.sleep(10000);
         } catch (InterruptedException ie) {

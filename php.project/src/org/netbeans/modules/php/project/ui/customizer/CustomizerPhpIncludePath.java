@@ -40,16 +40,16 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
+import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
+import org.netbeans.modules.php.project.ui.PathUiSupport;
 import javax.swing.JPanel;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -61,21 +61,27 @@ import org.openide.util.NbBundle;
 public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = -8749295793687117024L;
 
-    private final Category category;
-
     public CustomizerPhpIncludePath(Category category, PhpProjectProperties uiProps) {
         initComponents();
 
-        this.category = category;
+        PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            public File getCurrentDirectory() {
+                return LastUsedFolders.getIncludePath();
+            }
+            public void setCurrentDirectory(File currentDirectory) {
+                LastUsedFolders.setIncludePath(currentDirectory);
+            }
+        };
 
         includePathList.setModel(uiProps.getIncludePathListModel());
         includePathList.setCellRenderer(uiProps.getIncludePathListRenderer());
-        IncludePathUiSupport.EditMediator.register(uiProps.getProject(),
+        PathUiSupport.EditMediator.register(uiProps.getProject(),
                                                includePathList,
                                                addFolderButton.getModel(),
                                                removeButton.getModel(),
                                                moveUpButton.getModel(),
-                                               moveDownButton.getModel());
+                                               moveDownButton.getModel(),
+                                               directoryHandler);
     }
 
     /** This method is called from within the constructor to
@@ -95,51 +101,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         moveDownButton = new JButton();
         includePathLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return addFolderButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return addFolderButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return moveDownButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  addFolderButton){
-                    return removeButton;
-                }
-                if(aComponent ==  removeButton){
-                    return moveUpButton;
-                }
-                if(aComponent ==  includePathList){
-                    return addFolderButton;
-                }
-                if(aComponent ==  moveUpButton){
-                    return moveDownButton;
-                }
-                return addFolderButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  removeButton){
-                    return addFolderButton;
-                }
-                if(aComponent ==  moveUpButton){
-                    return removeButton;
-                }
-                if(aComponent ==  addFolderButton){
-                    return includePathList;
-                }
-                if(aComponent ==  moveDownButton){
-                    return moveUpButton;
-                }
-                return moveDownButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         includePathScrollPane.setViewportView(includePathList);
 
@@ -191,8 +153,8 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
                         .add(moveUpButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(moveDownButton))
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
-                .addContainerGap())
+                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
+                .add(0, 0, 0))
         );
 
         includePathScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleName")); // NOI18N

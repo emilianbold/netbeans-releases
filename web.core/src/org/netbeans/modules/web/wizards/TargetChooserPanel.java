@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -77,8 +78,12 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     private SourceGroup[] folders;
     private FileType fileType;
     private TemplateWizard templateWizard;
-    private String j2eeVersion;
-    
+    private Profile j2eeVersion;
+
+    enum PreferredLanguage {
+        JSP,Facelets
+    }
+
     //TODO how to add [,] to the regular expression?
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
 
@@ -88,10 +93,10 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         this.fileType=fileType;
         
         if (FileType.TAG.equals(fileType)) {
-            j2eeVersion = WebModule.J2EE_14_LEVEL;
+            j2eeVersion = Profile.J2EE_14;
             if (folders!=null && folders.length>0) {
                 WebModule wm = WebModule.getWebModule(folders[0].getRootFolder());
-                if (wm!=null) j2eeVersion=wm.getJ2eePlatformVersion();
+                if (wm!=null) j2eeVersion=wm.getJ2eeProfile();
             }
         }
     }
@@ -114,7 +119,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
 
     public boolean isValid() {
         // cannot create tag files in j2ee1.3
-        if (FileType.TAG.equals(fileType) && WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
+        if (FileType.TAG.equals(fileType) && Profile.J2EE_13.equals(j2eeVersion)) {
             templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(TargetChooserPanel.class, "MSG_13notSupported"));
             return false;
@@ -173,6 +178,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType)) {
             if (isSegment()) ext+="f"; //NOI18N
             else if (isXml()) ext+="x"; //NOI18N
+            else if (isFacelets()) ext="xhtml"; //NOI18N
         }
         
         String errorMessage = Utilities.canUseFileName (file, gui.getRelativeTargetFolder(), targetName, ext);
@@ -277,7 +283,11 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     boolean isSegment() {
         return gui.isSegment();
     }
-    
+
+    boolean isFacelets () {
+        return gui.isFacelets();
+    }
+
     String getUri() {
         return gui.getUri();
     }

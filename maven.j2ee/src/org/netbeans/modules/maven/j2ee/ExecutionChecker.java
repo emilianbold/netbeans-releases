@@ -42,10 +42,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -55,11 +57,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
@@ -67,13 +71,18 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.model.profile.Profile;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
@@ -83,7 +92,7 @@ import org.openide.windows.OutputWriter;
  */
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
-    private Project project;
+    private final Project project;
     public static final String DEV_NULL = "DEV-NULL"; //NOI18N
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
@@ -193,8 +202,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
                 if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-                    SelectAppServerPanel panel = new SelectAppServerPanel();
+                    boolean isDefaultGoal = neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
+                    SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal);
                     DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
+                    panel.setNLS(dd.createNotificationLineSupport());
                     Object obj = DialogDisplayer.getDefault().notify(dd);
                     if (obj == NotifyDescriptor.OK_OPTION) {
                         String instanceId = panel.getSelectedServerInstance();
@@ -224,6 +235,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             POHImpl.USG_LOGGER.log(record);
 
                             return true;
+                        } else {
+                            //ignored used now..
+                            if (panel.isIgnored()) {
+                                removeNetbeansDeployFromActionMappings(config.getActionName());
+                                return true;
+                            }
                         }
                     }
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
@@ -274,6 +291,35 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         return check.exists();
     }
 
+    private void removeNetbeansDeployFromActionMappings(String actionName) {
+        try {
+            ModelHandle handle = ModelHandleUtils.createModelHandle(project);
+            NetbeansActionMapping mapp = ModelHandle.getActiveMapping(actionName, project);
+            if (mapp != null) {
+                java.util.Properties props = mapp.getProperties();
+                if (props != null) {
+                    props.remove(Constants.ACTION_PROPERTY_DEPLOY);
+                    ModelHandle.setUserActionMapping(mapp, handle.getActionMappings());
+                    handle.markAsModified(handle.getActionMappings());
+                    ModelHandleUtils.writeModelHandle(handle, project);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (XmlPullParserException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private boolean neitherJettyNorCargo(List<String> goals) {
+        for (String goal : goals) {
+            if (goal.contains("jetty") || goal.contains("cargo")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     private static class DLogger implements Deployment.Logger {
 
@@ -289,9 +335,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private void persistServer(final String iID, final String sID) {
-        FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-
+        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();
                 if (props == null) {
@@ -299,17 +343,52 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     model.getProject().setProperties(props);
                 }
                 props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-            //TODO also tweak the private properties..
-//                privateProf = handle.getNetbeansPrivateProfile();
-//                org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
-//                if (privs == null) {
-//                    privs = handle.getProfileModel().getFactory().createProperties();
-//                    privateProf.setProperties(privs);
-//                }
-//                privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
             }
         };
-        Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+        final ModelOperation<ProfilesModel> profoperation = new ModelOperation<ProfilesModel>() {
+            public void performOperation(ProfilesModel model) {
+                Profile privateProfile = null;
+                List<org.netbeans.modules.maven.model.profile.Profile> lst = model.getProfilesRoot().getProfiles();
+                if (lst != null) {
+                    for (org.netbeans.modules.maven.model.profile.Profile profile : lst) {
+                        if (ModelHandle.PROFILE_PRIVATE.equals(profile.getId())) {
+                            privateProfile = profile;
+                            break;
+                        }
+                    }
+                }
+                if (privateProfile == null) {
+                    privateProfile = model.getFactory().createProfile();
+                    privateProfile.setId(ModelHandle.PROFILE_PRIVATE);
+                    org.netbeans.modules.maven.model.profile.Activation act = model.getFactory().createActivation();
+                    org.netbeans.modules.maven.model.profile.ActivationProperty prop = model.getFactory().createActivationProperty();
+                    prop.setName(ModelHandle.PROPERTY_PROFILE);
+                    prop.setValue("true"); //NOI18N
+                    act.setActivationProperty(prop);
+                    privateProfile.setActivation(act);
+                    model.getProfilesRoot().addProfile(privateProfile);
+                }
+                org.netbeans.modules.maven.model.profile.Properties props = privateProfile.getProperties();
+                if (props == null) {
+                    props = model.getFactory().createProperties();
+                    privateProfile.setProperties(props);
+                }
+                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
+            }
+        };
+
+        final FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        try {
+            fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileObject fo2 = FileUtil.createData(project.getProjectDirectory(), "profiles.xml");
+                    Utilities.performProfilesModelOperations(fo2, Collections.singletonList(profoperation));
+                    Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();

@@ -107,7 +107,11 @@ class RenderKitImpl extends IdentifiableDescriptionGroupImpl implements
         List<FacesClientBehaviorRenderer> list = getChildren( FacesClientBehaviorRenderer.class );
         List<ClientBehaviorRenderer> result = new LinkedList<ClientBehaviorRenderer>();
         result.addAll( list );
-        // TODO : add annotations
+        AbstractJsfModel model = getModel().getModelSource().getLookup().lookup( 
+                AbstractJsfModel.class );
+        if ( model != null && getRenderKitId()!= null ){
+            result.addAll(model.getClientBehaviorRenderers( getRenderKitId() ));
+        }
         return result;
     }
 
@@ -141,7 +145,11 @@ class RenderKitImpl extends IdentifiableDescriptionGroupImpl implements
         List<FacesRenderer> list = getChildren( FacesRenderer.class);
         List<Renderer> result = new LinkedList<Renderer>();
         result.addAll( list );
-        // TODO : add annotations
+        AbstractJsfModel model = getModel().getModelSource().getLookup().lookup( 
+                AbstractJsfModel.class );
+        if ( model != null && getRenderKitId()!= null ){
+            result.addAll(model.getRenderers( getRenderKitId() ));
+        }
         return result;
     }
 

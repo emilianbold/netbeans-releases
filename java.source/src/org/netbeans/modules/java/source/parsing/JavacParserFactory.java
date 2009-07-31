@@ -66,7 +66,10 @@ public class JavacParserFactory extends ParserFactory {
         if (snapshots.size() == 1) {
             final FileObject fo = snapshots.iterator().next().getSource().getFileObject();
             try {
-                if (fo != null && fo.getFileSystem().isDefault() && fo.getAttribute("javax.script.ScriptEngine") != null //NOI18N
+                if (fo == null) {
+                    return null;
+                }
+                if (fo.getFileSystem().isDefault() && fo.getAttribute("javax.script.ScriptEngine") != null //NOI18N
                         && fo.getAttribute("template") == Boolean.TRUE) { //NOI18N
                     // Do not create javac parser for templates
                     return null;
@@ -84,7 +87,7 @@ public class JavacParserFactory extends ParserFactory {
 
     public JavacParser createPrivateParser (final Snapshot snapshot) {
         assert snapshot != null;
-        return new JavacParser(Collections.singletonList(snapshot), true);
+        return snapshot.getSource().getFileObject() != null ? new JavacParser(Collections.singletonList(snapshot), true) : null;
     }
     
     public static JavacParserFactory getDefault () {

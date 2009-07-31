@@ -27,16 +27,15 @@
  */
 package org.netbeans.api.java.source;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,42 +105,181 @@ public class CommentCollectorTest extends NbTestCase {
                 cu.accept(printer, null);
 
                 JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
-                verify(clazz, CommentSet.RelativePosition.PRECEDING,  "/** (COMM1) This comment belongs before class */");
-                verify(clazz, CommentSet.RelativePosition.INNER, "//TODO: (COMM2) This is just right under class (inside)");
 
-                List<JCTree> trees = clazz.getMembers();
-                for (JCTree tree : trees) {
-                    if (tree.toString().contains("String str")) {
-                        verify(tree, CommentSet.RelativePosition.INLINE, "//(COMM7) NOI18N");
-                    } else if (tree.toString().contains("field")) {
-                        verify(tree, CommentSet.RelativePosition.PRECEDING, "/** (COMM3) This belongs to encapsulate field */");
-                    } else if (tree.toString().contains("method")) {
-                        verify(tree, CommentSet.RelativePosition.PRECEDING
-                                ,"//TODO: (COMM4) This is inside the class comment"
-                                ,"/** (COMM5) method which do something */");
-                        verify(tree, CommentSet.RelativePosition.INNER, "//TODO: (COMM6) Implement this method to do something");
+                TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void aVoid) {
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service, "/** (COMM1) This comment belongs before class */");
+                        verify(node, CommentSet.RelativePosition.INNER, service, "//TODO: (COMM2) This is just right under class (inside)");
+                        return super.visitClass(node, aVoid);
                     }
-                }
+
+                    @Override
+                    public Void visitVariable(VariableTree node, Void aVoid) {
+                        if (node.toString().contains("field")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "/** (COMM3) This belongs to encapsulate field */");
+                        }
+                        return super.visitVariable(node, aVoid);
+                    }
+
+                    @Override
+                    public Void visitLiteral(LiteralTree node, Void aVoid) {
+                        if (node.toString().contains("string")) {
+                            verify(node, CommentSet.RelativePosition.INLINE, service, "//(COMM7) NOI18N");
+                        }
+                        return super.visitLiteral(node, aVoid);
+                    }
+
+                    @Override
+                    public Void visitMethod(MethodTree node, Void aVoid) {
+                        if (node.toString().contains("method")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING
+                                    , service, "//TODO: (COMM4) This is inside the class comment"
+                                    , "/** (COMM5) method which do something */");
+                            verify(node.getBody(), CommentSet.RelativePosition.INNER, service, "//TODO: (COMM6) Implement this method to do something");
+                        }
+                        return super.visitMethod(node, aVoid);
+                    }
+                };
+                cu.accept(w, null);
+
             }
 
-            void verify(Tree tree, CommentSet.RelativePosition position, String... comments) {
-                assertNotNull("Comments handler service not null", service);
-                CommentSetImpl set = service.getComments(tree);
-                java.util.List<Comment> cl = set.getComments(position);
-                assertTrue("Unexpected size of " + tree.getKind() + " " 
-                        + position.toString().toLowerCase() + 
-                        " comments.", cl.size() == comments.length);
-                Arrays.sort(comments);
-                for (Comment comment : cl) {
-                    String text = comment.getText().trim();
-                    if (Arrays.binarySearch(comments, text) < 0) {
-                        fail("There is no occurence of " + comment + " within list of required comments");
-                    }
-                }
-            }
+
         };
         src.runModificationTask(task);
 
+    }
+
+
+    public void testMethod() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String origin = "\n" +
+                "import java.io.File;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "\n" +
+                "    void method() {\n" +
+                "        // Test\n" +
+                "        System.out.println(\"Slepitchka\");\n" +
+                "    }\n" +
+                "\n" +
+                "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            protected CommentHandlerService service;
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                CommentCollector cc = CommentCollector.getInstance();
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                cc.collect(workingCopy);
+
+                service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+                CommentPrinter printer = new CommentPrinter(service);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                cu.accept(printer, null);
+
+                JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
+                final boolean[] processed = new boolean[1];
+                TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitIdentifier(IdentifierTree node, Void aVoid) {
+                        if (node.getName().contentEquals("System")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "// Test");
+                            processed[0] = true;
+                        }
+                        return super.visitIdentifier(node, aVoid);
+                    }
+                };
+                clazz.accept(w, null);
+                if (!processed[0]) {
+                    fail("Tree has not been processed!");
+                }
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void testMethod2() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String origin =
+                "public class Origin {\n" +
+                        "    /** * comment * @return 1 */\n" +
+                        "    int method() {\n" +
+                        "        // TODO: Process the button click action. Return value is a navigation\n" +
+                        "        // case name where null will return to the same page.\n" +
+                        "        return 1;\n" +
+                        "    }\n" +
+                        "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            protected CommentHandlerService service;
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                CommentCollector cc = CommentCollector.getInstance();
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                cc.collect(workingCopy);
+
+                service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+                CommentPrinter printer = new CommentPrinter(service);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                cu.accept(printer, null);
+
+                JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
+                TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
+
+                    @Override
+                    public Void visitReturn(ReturnTree node, Void aVoid) {
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                "// TODO: Process the button click action. Return value is a navigation",
+                                "// case name where null will return to the same page."
+                        );
+                        return super.visitReturn(node, aVoid);
+                    }
+
+                    @Override
+                    public Void visitMethod(MethodTree node, Void aVoid) {
+                        if (node.getName().contentEquals("method")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                    "/** * comment * @return 1 */"
+                            );
+                        }
+                        return super.visitMethod(node, aVoid);
+                    }
+
+
+                };
+                clazz.accept(w, null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+
+    void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
+        assertNotNull("Comments handler service not null", service);
+        CommentSet set = service.getComments(tree);
+        java.util.List<Comment> cl = set.getComments(position);
+        assertTrue("Unexpected size of " + tree.getKind() + " "
+                + position.toString().toLowerCase() +
+                " comments.", cl.size() == comments.length);
+        Arrays.sort(comments);
+        for (Comment comment : cl) {
+            String text = comment.getText().trim();
+            if (Arrays.binarySearch(comments, text) < 0) {
+                fail("There is no occurence of " + comment + " within list of required comments");
+            }
+        }
     }
 
     private static class CommentPrinter extends TreeScanner<Void, Void> {
@@ -153,16 +291,26 @@ public class CommentCollectorTest extends NbTestCase {
 
         @Override
         public Void scan(Tree node, Void aVoid) {
-            return super.scan(node, defaultAction(node, aVoid));
+            defaultAction(node, aVoid);
+            return super.scan(node, aVoid);
         }
 
         protected Void defaultAction(Tree node, Void aVoid) {
             CommentSetImpl comments = service.getComments(node);
             if (comments.hasComments()) {
                 String s = node.toString();
-                System.out.println(s.substring(0, Math.min(20, s.length() - 1)).replace("[\n\r]", "") + " |> " + comments + "\n\n");
+                System.out.println(node.getKind()
+                        + ": '"
+                        + s.substring(0, Math.min(20, s.length() - 1)).replace("\n", "\\n").replace("\n\r", "\\n")
+                        + "' |> " + comments + "\n\n");
             }
             return aVoid;
+        }
+
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree node, Void aVoid) {
+            defaultAction(node, aVoid);
+            return super.visitCompilationUnit(node, aVoid);
         }
     }
 

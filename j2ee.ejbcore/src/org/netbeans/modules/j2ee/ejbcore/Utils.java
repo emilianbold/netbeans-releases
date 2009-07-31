@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -255,15 +256,8 @@ public class Utils {
         return filteredResults.toArray(new Project[filteredResults.size()]);
     }
 
-    // TODO: dongmei More check needed
     public static boolean isEE6WebProject(Project enterpriseProject) {
-        /*J2eeModule module = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
-        if (module.getType().equals(J2eeModule.Type.WAR)) { // TODO: dongmei: check EE platform version too
-            return true;
-        } else {
-            return false;
-        }*/
-        return false; 
+        return J2eeProjectCapabilities.forProject(enterpriseProject).isEjb31LiteSupported();
     }
     
     public static boolean isAppClient(Project project) {

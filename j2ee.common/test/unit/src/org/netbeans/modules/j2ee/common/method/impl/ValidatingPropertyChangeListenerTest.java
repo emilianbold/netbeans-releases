@@ -77,6 +77,7 @@ public class ValidatingPropertyChangeListenerTest extends NbTestCase {
                 null,
                 false,
                 true,
+                false,
                 false
                 );
         DialogDescriptor dialogDescriptor = new DialogDescriptor("Test", "Test");
@@ -93,7 +94,8 @@ public class ValidatingPropertyChangeListenerTest extends NbTestCase {
                 null,
                 false,
                 true,
-                true
+                true,
+                false
                 );
         validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList());
         assertFalse(validator.validate());

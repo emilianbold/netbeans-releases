@@ -126,6 +126,9 @@ public class SelectCompletionQueryTest extends NbTestCase {
 
         suite.addTest(new SelectCompletionQueryTest("script"));
 
+        suite.addTest(new SelectCompletionQueryTest("dropTableAll"));
+        suite.addTest(new SelectCompletionQueryTest("dropTableSimple"));
+
         return suite;
     }
 

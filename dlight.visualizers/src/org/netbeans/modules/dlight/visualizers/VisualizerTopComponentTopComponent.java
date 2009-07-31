@@ -42,7 +42,6 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.naming.event.EventDirContext;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;

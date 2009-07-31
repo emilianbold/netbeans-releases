@@ -94,6 +94,6 @@ final class CompletionRequest {
     }
 
     ContextKnowledge createContextKnowledge() {
-        return new ContextKnowledge(index, path.root(), target, astOffset, lexOffset, doc, fileObject);
+        return new ContextKnowledge(index, path.root(), target, astOffset, lexOffset, parserResult);
     }
 }

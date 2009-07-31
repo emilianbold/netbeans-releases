@@ -124,7 +124,7 @@ public final class PhpSourcePath {
                 if (phpDir == null) {
                     throw new RuntimeException("xtest.php.home property has to be set when running within binary distribution");  //NOI18N
                 }
-                File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime");//NOI18N
+                File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime"); // NOI18N
                 if (phpStubs.exists()) {
                     phpStubsFolder = FileUtil.toFileObject(phpStubs);
                 }

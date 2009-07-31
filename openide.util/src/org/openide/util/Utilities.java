@@ -737,7 +737,9 @@ widthcheck:  {
     * @param replaceFrom the substring to be find
     * @param replaceTo the substring to replace it with
     * @return a new string with all occurrences replaced
+     * @deprecated Use {@link String#replace(CharSequence,CharSequence)} instead
     */
+    @Deprecated
     public static String replaceString(String original, String replaceFrom, String replaceTo) {
         int index = 0;
 

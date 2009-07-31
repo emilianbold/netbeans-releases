@@ -54,10 +54,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -72,6 +70,7 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -80,6 +79,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,12 +91,14 @@ import org.xml.sax.SAXException;
  * projects by delegating some functionality to registered Ant project types.
  * @author Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=100)
+@ServiceProvider(service=ProjectFactory.class, position=100)
 public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public static final String PROJECT_XML_PATH = "nbproject/project.xml"; // NOI18N
 
     public static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1"; // NOI18N
+
+    public static final Logger LOG = Logger.getLogger(AntBasedProjectFactorySingleton.class.getName());
     
     /** Construct the singleton. */
     public AntBasedProjectFactorySingleton() {}
@@ -208,32 +210,39 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         if (FileUtil.toFile(projectDirectory) == null) {
+            LOG.log(Level.FINE, "no disk dir {0}", projectDirectory);
             return null;
         }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
         if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
+            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
             return null;
         }
         File projectDiskFile = FileUtil.toFile(projectFile);
         //#63834: if projectFile exists and projectDiskFile does not, do nothing:
         if (projectDiskFile == null) {
+            LOG.log(Level.FINE, "{0} not mappable to file", projectFile);
             return null;
         }
         Document projectXml = loadProjectXml(projectDiskFile);
         if (projectXml == null) {
+            LOG.log(Level.FINE, "could not load {0}", projectDiskFile);
             return null;
         }
         Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
         if (typeEl == null) {
+            LOG.log(Level.FINE, "no <type> in {0}", projectDiskFile);
             return null;
         }
         String type = Util.findText(typeEl);
         if (type == null) {
+            LOG.log(Level.FINE, "no <type> text in {0}", projectDiskFile);
             return null;
         }
         AntBasedProjectType provider = findAntBasedProjectType(type);
         if (provider == null) {
+            LOG.log(Level.FINE, "no provider for {0}", type);
             return null;
         }
         AntProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
@@ -267,7 +276,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         try {
             Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
             Element projectEl = projectXml.getDocumentElement();
-            if (!"project".equals(projectEl.getLocalName()) || !PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
+            if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
+                LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
+                        new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
+                return null;
+            }
+            if (!"project".equals(projectEl.getLocalName())) { // NOI18N
+                LOG.log(Level.FINE, "{0} had wrong root element name {1} when parsed from {2}",
+                        new Object[] {projectDiskFile, projectEl.getLocalName(), baos});
                 return null;
             }
             // #142680: try to cache CRC-32s of project.xml files known to be valid, since validation can be slow.

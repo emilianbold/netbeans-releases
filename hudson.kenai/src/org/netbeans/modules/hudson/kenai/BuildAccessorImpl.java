@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.hudson.kenai;
 
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +46,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -134,7 +134,7 @@ public class BuildAccessorImpl extends BuildAccessor {
         return builds;
     }
 
-    public ActionListener getNewBuildAction(ProjectHandle handle) {
+    public Action getNewBuildAction(ProjectHandle handle) {
         Collection<HudsonInstance> servers = findServers(handle);
         if (servers.isEmpty()) {
             return null;
