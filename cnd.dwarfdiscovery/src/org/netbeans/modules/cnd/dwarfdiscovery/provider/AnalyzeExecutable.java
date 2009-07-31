@@ -187,10 +187,10 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     }
     
     public List<Configuration> analyze(ProjectProxy project, Progress progress) {
-        isStoped = false;
+        isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
-        if (!isStoped){
+        if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -226,7 +226,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             if (source instanceof DwarfSource) {
@@ -236,7 +236,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             File file = new File(path);

@@ -43,7 +43,7 @@ package org.netbeans.modules.php.project.spi;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 

@@ -141,4 +141,10 @@ public class ImportImpl extends SchemaComponentImpl implements Import {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return getModel().toString() + " --import--> " + getSchemaLocation(); // NOI18N
+    }
+
 }

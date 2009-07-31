@@ -49,6 +49,8 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource;
@@ -62,10 +64,12 @@ import org.openide.DialogDisplayer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -115,24 +119,30 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
         // (return them all in the result of this method), populate file
         // contents on the fly, etc.
        
-        FileObject folder = Templates.getTargetFolder( wiz );
-        DataFolder targetFolder = DataFolder.findFolder( folder );
+        FileObject folder = Templates.getTargetFolder(wiz);
+        DataFolder targetFolder = DataFolder.findFolder(folder);
         
         ClassPath classPath = ClassPath.getClassPath(folder,ClassPath.SOURCE);
         String listenerName = wiz.getTargetName();
-        DataObject result=null;
+        DataObject result = null;
         
-        if (classPath!=null) { //NOI18N
-            DataObject template = wiz.getTemplate ();
-            if (listenerName==null) {
-                // Default name.
-                result = template.createFromTemplate (targetFolder);
-            } else {
-                result = template.createFromTemplate (targetFolder, listenerName);
+        if (classPath != null) {
+            Map<String, String> templateParameters = new HashMap<String, String>();
+            if (!panel.createElementInDD() && Utilities.isJavaEE6(wiz)) {
+                templateParameters.put("classAnnotation", AnnotationGenerator.webListener());
             }
-            String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
+
+            DataObject template = wiz.getTemplate();
+            result = template.createFromTemplate(targetFolder, listenerName, templateParameters);
             if (result!=null && panel.createElementInDD()){
+                String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
                 FileObject webAppFo=DeployData.getWebAppFor(folder);
+                if (webAppFo == null) {
+                    WebModule wm = WebModule.getWebModule(folder);
+                    if (wm != null) {
+                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+                    }
+                }
                 WebApp webApp=null;
                 if (webAppFo!=null) {
                     webApp = DDProvider.getDefault().getDDRoot(webAppFo);
@@ -261,9 +271,9 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -279,7 +289,7 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
 
     public String name () {
         return NbBundle.getMessage(ListenerIterator.class, "TITLE_x_of_y",
-            new Integer (index + 1), new Integer (panels.length));
+            index + 1, panels.length);
     }
 
     public boolean hasNext () {

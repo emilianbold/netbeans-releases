@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.db.h2;
 
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
@@ -55,7 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -79,7 +80,6 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final String tmpDir;
     private static final String url;
     private String dbURL;
-
 
     static {
         try {
@@ -122,15 +122,16 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             int newValue = 0;
             for (int i = 0; i < files.length; i++) {
                 String suffix = files[i].getName().substring(generalNameLength);
-                try{
+                try {
                     newValue = Math.max(newValue, Integer.valueOf(suffix));
-                }catch (NumberFormatException e){}
+                } catch (NumberFormatException e) {
+                }
             }
-           dbIndex.getAndSet(newValue);
+            dbIndex.getAndSet(newValue);
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    for (File file : files){
+                    for (File file : files) {
                         Util.deleteLocalDirectory(file);
                     }
                 }
@@ -173,6 +174,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     @Override
     public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
+            if (tdmd == null) {
+                continue;
+            }
             if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
                 if (!createTable(tdmd)) {
                     return false;
@@ -218,25 +222,25 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         }
     }
 
-    public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
         try {
             return stackStorage.getCallers(path, aggregate);
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
-            return new ArrayList<FunctionCall>();
+            return new ArrayList<FunctionCallWithMetric>();
         }
     }
 
-    public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
         try {
             return stackStorage.getCallees(path, aggregate);
         } catch (SQLException ex) {
             logger.log(Level.SEVERE, null, ex);
-            return new ArrayList<FunctionCall>();
+            return new ArrayList<FunctionCallWithMetric>();
         }
     }
 
-    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         return stackStorage.getHotSpotFunctions(metric, limit);
 
     }
@@ -246,7 +250,12 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         return SQL_QUERY_DELIMETER;
     }
 
-    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
+    }
+
+    @Override
+    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 }

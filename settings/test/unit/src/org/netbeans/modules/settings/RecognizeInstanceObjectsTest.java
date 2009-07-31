@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.settings;
 
-import org.netbeans.core.startup.layers.NamedFSServicesLookupTest;
+import org.netbeans.modules.openide.filesystems.RecognizeInstanceFilesTest;
 import org.netbeans.junit.RandomlyFails;
 
 /** Test finding services from manifest and .instance files using FolderLookup.
@@ -50,7 +50,7 @@ import org.netbeans.junit.RandomlyFails;
 // From time to time RecognizeInstanceObjectsTest.testOrderingAttributes fails, no idea why. -jglick
 // And in #417 all the tests deadlocked somewhere in folder ordering, apparently at random.
 @RandomlyFails
-public class RecognizeInstanceObjectsTest extends NamedFSServicesLookupTest{
+public class RecognizeInstanceObjectsTest extends RecognizeInstanceFilesTest{
     public RecognizeInstanceObjectsTest(String name) {
         super(name);
     }

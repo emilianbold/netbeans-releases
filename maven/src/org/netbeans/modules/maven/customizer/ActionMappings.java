@@ -86,7 +86,6 @@ import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -237,8 +236,7 @@ public class ActionMappings extends javax.swing.JPanel {
                         return Boolean.valueOf(val);
                     }
                 }
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                val = props.get(Constants.HINT_USE_EXTERNAL, true, false);
+                val = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -246,8 +244,7 @@ public class ActionMappings extends javax.swing.JPanel {
             }
 
             public void setValue(Boolean value) {
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                boolean hasConfig = props.get(Constants.HINT_USE_EXTERNAL, true, false) != null;
+                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
                 org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
@@ -257,7 +254,7 @@ public class ActionMappings extends javax.swing.JPanel {
                         prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
                         if (hasConfig) {
                         // in this case clean up the auxiliary config
-                            props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                            handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
                         }
                     }
                     handle.markAsModified(handle.getProfileModel());
@@ -274,11 +271,11 @@ public class ActionMappings extends javax.swing.JPanel {
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                        handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
                     }
                     return;
                 }
-                props.put(Constants.HINT_USE_EXTERNAL, value == null ? null : value.toString(), true);
+                handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, value == null ? null : value.toString(), true);
             }
 
             public boolean getDefaultValue() {

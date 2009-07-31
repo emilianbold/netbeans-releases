@@ -444,6 +444,18 @@ public final class LayoutInterval implements LayoutConstants {
         if (getParent() == interval) {
             throw new IllegalArgumentException("Cannot add parent as a sub-interval!"); // NOI18N
         }
+        if (interval.isComponent()) { // Issue 118562
+            LayoutComponent comp = interval.getComponent();
+            for (LayoutInterval subInterval : subIntervals) {
+                if (subInterval.isComponent() && comp.equals(subInterval.getComponent())) {
+                    if (System.getProperty("netbeans.ignore.issue118562") == null) { // NOI18N
+                        throw new IllegalArgumentException("Cannot add a component into a group twice!"); // NOI18N
+                    } else {
+                        return -1;
+                    }
+                }
+            }
+        }
         if (index < 0) {
             index = subIntervals.size();
         }

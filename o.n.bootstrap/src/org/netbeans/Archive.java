@@ -337,7 +337,7 @@ class Archive implements Stamps.Updater {
     }
     
     // template
-    private class Template {
+    private static class Template {
         private int source;
         private byte[] utf;
         

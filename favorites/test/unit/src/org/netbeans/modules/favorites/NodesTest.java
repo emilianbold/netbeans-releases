@@ -74,7 +74,7 @@ public class NodesTest extends NbTestCase {
     }
     
     public void testNoneOfTheNodesHaveShadowLinks () throws Exception {
-        doCheckDepth (Favorites.getNode (), 1);
+        doCheckDepth (FavoritesNode.getNode (), 1);
     }
     
     private void doCheckDepth (Node node, int depth) throws Exception {
@@ -87,7 +87,7 @@ public class NodesTest extends NbTestCase {
         Action remove = Actions.remove();
         
         for (int i = 0; i < arr.length; i++) {
-            File f = Favorites.fileForNode(arr[i]);
+            File f = FavoritesNode.fileForNode(arr[i]);
             //First level (link) has action remove
             //Further level has action add
             Collection set = Arrays.asList (arr[i].getActions(false));

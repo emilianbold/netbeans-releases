@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -592,6 +594,24 @@ public abstract class WindowManager extends Object implements Serializable {
      */
     public boolean isOpenedEditorTopComponent( TopComponent tc ) {
         return false;
+    }
+
+    /**
+     * Convenience method to retrieve the list of all opened TopComponents for
+     * given mode.
+     * @param mode Mode to get the list of TopComponents from.
+     * @return Array of TopComponents that are opened in given mode.
+     * @since 6.28
+     */
+    public TopComponent[] getOpenedTopComponents( Mode mode ) {
+        TopComponent[] allTcs = mode.getTopComponents();
+        List<TopComponent> openedTcs = new ArrayList<TopComponent>(allTcs.length);
+        for( TopComponent tc : allTcs ) {
+            if( tc.isOpened() ) {
+                openedTcs.add(tc);
+            }
+        }
+        return openedTcs.toArray(new TopComponent[openedTcs.size()]);
     }
 
     /**

@@ -43,8 +43,15 @@ function volumeCheckTiger() {
 /* js:pkmk:start */
 function checkSystemversion() {
 	var result = false;
+	var version;	
 	try {
-		result = my.target.systemVersion.ProductVersion >= '10.4';
+		version = my.target.systemVersion.ProductVersion;
+		if(version == 'undefined') {
+			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.4'));
+		} else {
+			result = ( -1 != system.compareVersions(version, '10.4'));
+		}
+	
 	} catch (e) {}
 	
 	if(!result) {
@@ -109,25 +116,20 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>          
             <line choice="ruby"></line>           
-            <line choice="webcommon"></line>
         </line>            
         <line choice="glassfish-v3"></line>
     </choices-outline>
-    <choice id="glassfish-v3" title="glassfish-v3-sun-title" description="glassfish-v3-sun-description" start_selected="true" start_enabled="true" start_visible="true">
+    <choice id="glassfish-v3" title="glassfish-v3-title" description="glassfish-v3-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.glassfish.v3"></pkg-ref>
     </choice>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
     </choice>
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.webcommon"></pkg-ref>
-    </choice>    
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>    
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-sun.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3.pkg</pkg-ref>
 </installer-gui-script>

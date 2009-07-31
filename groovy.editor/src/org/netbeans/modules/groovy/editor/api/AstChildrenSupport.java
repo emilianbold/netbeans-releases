@@ -65,6 +65,7 @@ import org.codehaus.groovy.ast.stmt.SynchronizedStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
+import org.codehaus.groovy.classgen.BytecodeExpression;
 
 /**
  * Visitor for finding direct chidren of AST node
@@ -327,4 +328,8 @@ public class AstChildrenSupport implements GroovyCodeVisitor {
         visitListOfExpressions(cle.getExpressions());
     }
 
+    // added in Groovy 1.6
+    // TODO check this
+    public void visitBytecodeExpression(BytecodeExpression bce) {
+    }
 }

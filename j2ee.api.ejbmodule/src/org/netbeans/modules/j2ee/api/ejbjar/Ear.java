@@ -40,9 +40,10 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.ejbjar.EarAccessor;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
@@ -64,26 +65,34 @@ import org.openide.util.Lookup;
  */
 public final class Ear {
     
-    private final EarImplementation impl;
     private static final Lookup.Result<EarProvider> implementations =
         Lookup.getDefault().lookup(new Lookup.Template<EarProvider>(EarProvider.class));
     
     static  {
         EarAccessor.DEFAULT = new EarAccessor() {
+
+            @Override
             public Ear createEar(EarImplementation spiEar) {
-                return new Ear(spiEar);
+                return new Ear(spiEar, null);
             }
 
-            public EarImplementation getEarImplementation(Ear wm) {
-                return wm == null ? null : wm.impl;
+            @Override
+            public Ear createEar(EarImplementation2 spiEar) {
+                return new Ear(null, spiEar);
             }
         };
     }
-    
-    private Ear (EarImplementation impl) {
-        if (impl == null)
-            throw new IllegalArgumentException ();
+
+    @SuppressWarnings("deprecation")
+    private final EarImplementation impl;
+
+    private final EarImplementation2 impl2;
+
+    @SuppressWarnings("deprecation")
+    private Ear (EarImplementation impl, EarImplementation2 impl2) {
+        assert (impl != null && impl2 == null) || (impl == null && impl2 != null);
         this.impl = impl;
+        this.impl2 = impl2;
     }
     
     /**
@@ -107,14 +116,28 @@ public final class Ear {
     /** J2EE platform version - one of the constants 
      * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
      * @return J2EE platform version
+     * @deprecated use {@link #getJ2eeProfile()}
      */
     public String getJ2eePlatformVersion () {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile().toPropertiesString();
+        }
         return impl.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile();
+        }
+        return Profile.fromPropertiesString(impl.getJ2eePlatformVersion());
     }
     
     /** Deployment descriptor (ejb-jar.xml file) of the ejb module.
      */
     public FileObject getDeploymentDescriptor () {
+        if (impl2 != null) {
+            impl2.getDeploymentDescriptor();
+        }
         return impl.getDeploymentDescriptor();
     }
     
@@ -122,21 +145,33 @@ public final class Ear {
      * @param module the module to be added
      */
     public void addWebModule (WebModule module) {
-        impl.addWebModule (module);
+        if (impl2 != null) {
+            impl2.addWebModule(module);
+        } else {
+            impl.addWebModule (module);
+        }
     }
     
     /** Add j2ee Ejb module into application.
      * @param module the module to be added
      */
     public void addEjbJarModule (EjbJar module) {
-        impl.addEjbJarModule (module);
+        if (impl2 != null) {
+            impl2.addEjbJarModule(module);
+        } else {
+            impl.addEjbJarModule (module);
+        }
     }
     
     /** Add j2ee application client module into application.
      * @param module the module to be added
      */
     public void addCarModule(Car module) {
-        impl.addCarModule(module);
+        if (impl2 != null) {
+            impl2.addCarModule(module);
+        } else {
+            impl.addCarModule(module);
+        }
     }
     
 }

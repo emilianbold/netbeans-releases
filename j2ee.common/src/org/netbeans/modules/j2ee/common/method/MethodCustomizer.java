@@ -61,11 +61,18 @@ public final class MethodCustomizer {
     private final Collection<MethodModel> existingMethods;
     
     // factory should be used to create instances
+    protected MethodCustomizer(String title, MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote,
+            boolean selectLocal, boolean selectRemote, boolean hasReturnType, String  ejbql, boolean hasFinderCardinality,
+            boolean hasExceptions, boolean hasInterfaces, String prefix, Collection<MethodModel> existingMethods) {
+        this(title, methodModel, cpInfo, hasLocal, hasRemote, selectLocal, selectRemote, hasReturnType, ejbql, hasFinderCardinality,
+            hasExceptions, hasInterfaces, false, prefix, existingMethods);
+    }
+
     protected MethodCustomizer(String title, MethodModel methodModel, ClasspathInfo cpInfo, boolean hasLocal, boolean hasRemote, 
             boolean selectLocal, boolean selectRemote, boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, 
-            boolean hasExceptions, boolean hasInterfaces, String prefix, Collection<MethodModel> existingMethods) {
+            boolean hasExceptions, boolean hasInterfaces, boolean allowsNoInterface, String prefix, Collection<MethodModel> existingMethods) {
         this.panel = MethodCustomizerPanel.create(methodModel, cpInfo, hasLocal, hasRemote, selectLocal, selectRemote,
-                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
+                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces, allowsNoInterface);
         
         // A11Y 
         this.panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_AddMethod")); // NOI18N
@@ -86,7 +93,7 @@ public final class MethodCustomizer {
         DialogDescriptor notifyDescriptor = new DialogDescriptor(
                 panel, title, true,
                 DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.PLAIN_MESSAGE,
+                DialogDescriptor.OK_OPTION,
                 null
                 );
         panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor, existingMethods));

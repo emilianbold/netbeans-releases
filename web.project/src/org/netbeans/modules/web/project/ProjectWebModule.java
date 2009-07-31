@@ -47,9 +47,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -57,7 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -71,10 +69,10 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
@@ -84,14 +82,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementat
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.loaders.FileEntry.Folder;
 
 /** A web module implementation on top of project.
  *
  * @author  Pavel Buzek
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-  implements WebModuleImplementation, J2eeModuleImplementation2, ModuleChangeReporter,
-  EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
 //    public static final String FOLDER_CLASSES = "classes";//NOI18N
@@ -110,7 +108,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
   
     private PropertyChangeSupport propertyChangeSupport;
-    private boolean webAppPropChangeLInitialized;
     
     private J2eeModule j2eeModule;
 
@@ -132,8 +129,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
         if (dd == null && !silent 
-                && (J2eeModule.J2EE_13.equals(getJ2eePlatformVersion ()) || 
-                    J2eeModule.J2EE_14.equals(getJ2eePlatformVersion ()))) {
+                && (Profile.J2EE_13.equals(getJ2eeProfile()) ||
+                    Profile.J2EE_14.equals(getJ2eeProfile()))) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -251,7 +248,25 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     FileObject resolveWebInf(String docBaseValue, String webInfValue, boolean silent, boolean useDocBase) {
-        FileObject webInf = webInfValue != null ? helper.getAntProjectHelper().resolveFileObject(webInfValue) : null;
+        FileObject webInf = null;
+        if (webInfValue != null){
+             webInf = helper.getAntProjectHelper().resolveFileObject(webInfValue);
+//             if (webInf == null && forceCreate){
+//                webInf = helper.getAntProjectHelper().getProjectDirectory();
+//                StringTokenizer st = new StringTokenizer(webInfValue, "/");
+//                while (st.hasMoreTokens()) {
+//                    String nameExt = st.nextToken();
+//                    try {
+//                        FileObject tmp = webInf.getFileObject(nameExt, null);
+//                        webInf = tmp != null ? tmp : webInf.createFolder(nameExt);
+//                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                        webInf = null;
+//                        break;
+//                    }
+//                }
+//             }
+        }
 
         //temporary solution for < 6.0 projects
         if (webInf == null) {
@@ -264,7 +279,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
             if (documentBase == null) {
                 return null;
             }
-            webInf = documentBase.getFileObject (FOLDER_WEB_INF);        
+            webInf = documentBase.getFileObject (FOLDER_WEB_INF);
+//            if (webInf == null && forceCreate){
+//                try {
+//                    webInf = documentBase.createFolder(FOLDER_WEB_INF);
+//                } catch (IOException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
         }
 
         if (webInf == null && !silent) {
@@ -504,22 +526,18 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getModuleVersion () {
-        // we don't want to use MetadataModel here as it can block
-        String version = null;
-        try {
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO != null) {
-                WebApp webApp = DDProvider.getDefault().getDDRoot(ddFO);
-                version = webApp.getVersion();
-            }
-        } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        // return a version based on the Java EE version
+        Profile platformVersion = getJ2eeProfile();
+        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
+            return WebApp.VERSION_3_0;
+        } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
+            return WebApp.VERSION_2_5;
+        } else if (Profile.J2EE_14.equals(platformVersion)) {
+            return WebApp.VERSION_2_4;
+        } else {
+            // return 3.0 as default value
+            return WebApp.VERSION_3_0;
         }
-        if (version == null) {
-            // XXX should return a version based on the Java EE version
-            version = WebApp.VERSION_2_5;
-        }
-        return version;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -564,8 +582,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return new String[] {};
     }
 
-    public String getJ2eePlatformVersion () {
-        return helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
+    public Profile getJ2eeProfile () {
+        return Profile.fromPropertiesString(helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty(WebProjectProperties.J2EE_PLATFORM));
     }
     
     public FileObject getDD() {

@@ -194,6 +194,11 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     public boolean isDebuggable(Target target) {
         GlassfishModule commonSupport = getCommonServerSupport();
+        if (null == commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
+            // for now we assume a remote server is started in debug mode... the debugger won't connect
+            // if it isn't... but this help prevent the IDE from attempting to start something that cannot be started.
+            return true;
+        }
         if(commonSupport != null) {
             if(!GlassfishModule.DEBUG_MODE.equals(commonSupport.getInstanceProperties().get(GlassfishModule.JVM_MODE))) {
                 return false;

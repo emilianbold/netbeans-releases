@@ -40,22 +40,28 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -73,13 +79,16 @@ public final class DLightCPUToolConfigurationProvider
         implements DLightToolConfigurationProvider {
 
     public static final int INDICATOR_POSITION = 100;
+    public static final String ID = "dlight.tool.cpu"; // NOI18N
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
+    private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
+    private static final int SECONDS_PER_MINUTE = 60;
 
     public DLightToolConfiguration create() {
-        final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
@@ -155,12 +164,20 @@ public final class DLightCPUToolConfigurationProvider
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
-        IndicatorMetadata indicatorMetadata =
-                new IndicatorMetadata(resultColumns);
-        CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(
-                indicatorMetadata,
-                new HashSet<String>(Arrays.asList(ProcDataProviderConfiguration.SYS_TIME.getColumnName())),
-                INDICATOR_POSITION);
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
+        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION,
+                loc("indicator.title"), 100, // NOI18N
+                Arrays.<GraphDescriptor>asList(
+                new GraphDescriptor(GraphConfig.COLOR_3, loc("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                new DataRowToCpuPlot(
+                Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
+                Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
+        indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
+        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
+                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0)))); // NOI18N
+
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -169,13 +186,15 @@ public final class DLightCPUToolConfigurationProvider
     }
 
     private DataTableMetadata createProfilerTableMetadata() {
+        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
         Column cpuId = new Column("cpu_id", Integer.class, loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
         Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
-        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
+        Column mstate = new Column("mstate", Integer.class, loc("CPUMonitorTool.ColumnName.mstate"), null); // NOI18N
+        Column duration = new Column("duration", Integer.class, loc("CPUMonitorTool.ColumnName.duration"), null); // NOI18N
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-                Arrays.asList(cpuId, threadId, timestamp, stackId), null);
+                Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
     }
 
     private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata) {
@@ -248,5 +267,45 @@ public final class DLightCPUToolConfigurationProvider
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
                 DLightCPUToolConfigurationProvider.class, key, params);
+    }
+
+    private static class DataRowToCpuPlot implements DataRowToPlot {
+
+        private final List<Column> usrColumns;
+        private final List<Column> sysColumns;
+        private int seconds;
+        private int usr;
+        private int sys;
+
+        public DataRowToCpuPlot(List<Column> usrColumns, List<Column> sysColumns) {
+            this.usrColumns = new ArrayList<Column>(usrColumns);
+            this.sysColumns = new ArrayList<Column>(sysColumns);
+        }
+
+        public void addDataRow(DataRow row) {
+            for (String columnName : row.getColumnNames()) {
+                for (Column usrColumn : usrColumns) {
+                    if (usrColumn.getColumnName().equals(columnName)) {
+                        usr = DataUtil.toInt(row.getData(columnName));
+                    }
+                }
+                for (Column sysColumn : sysColumns) {
+                    if (sysColumn.getColumnName().equals(columnName)) {
+                        sys = DataUtil.toInt(row.getData(columnName));
+                    }
+                }
+            }
+        }
+
+        public void tick(float[] data, Map<String, String> details) {
+            ++seconds;
+            data[0] = sys;
+            data[1] = usr;
+            details.put(TIME_DETAIL_ID, formatTime(seconds));
+        }
+    }
+
+    private static String formatTime(int seconds) {
+        return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
     }
 }

@@ -92,7 +92,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     private Map<Kind, List<TreeRule>> presetHints;
     
     public HintsTask() {}
-    
+
     public HintsTask(List<TreeRule> hints) {
         presetHints = new  EnumMap<Kind, List<TreeRule>>(Kind.class);
         
@@ -113,7 +113,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
         return computeHints(info, new TreePath(info.getCompilationUnit()));
     }
     
-    private List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
+    public List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
         Map<Kind, List<TreeRule>> hints = presetHints != null ? presetHints : RulesManager.getInstance().getHints(false);
         
         if (hints.isEmpty()) {

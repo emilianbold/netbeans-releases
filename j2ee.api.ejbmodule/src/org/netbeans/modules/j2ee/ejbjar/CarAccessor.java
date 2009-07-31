@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.ejbjar;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation2;
 
 /* This class provides access to the {@link Car}'s private constructor 
  * from outside in the way that this class is implemented by an inner class of 
@@ -60,9 +61,10 @@ public abstract class CarAccessor {
             ex.printStackTrace();
         }
     }
-    
+
+    @Deprecated
     public abstract Car createCar(CarImplementation spiJar);
 
-    public abstract CarImplementation getCarImplementation (Car jar);
+    public abstract Car createCar(CarImplementation2 spiJar);
 
 }

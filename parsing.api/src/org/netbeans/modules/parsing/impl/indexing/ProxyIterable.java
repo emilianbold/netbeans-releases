@@ -50,9 +50,9 @@ import java.util.NoSuchElementException;
 //@NotThreadSafe
 class ProxyIterable<T> implements Iterable<T> {
 
-    private final Collection<? extends Collection<? extends T>> delegates;
+    private final Collection<? extends Iterable<? extends T>> delegates;
 
-    public ProxyIterable(Collection<? extends Collection<? extends T>> delegates) {
+    public ProxyIterable(Collection<? extends Iterable<? extends T>> delegates) {
         assert delegates != null;
         this.delegates = delegates;
     }
@@ -68,10 +68,10 @@ class ProxyIterable<T> implements Iterable<T> {
 
     private class ProxyIterator<T> implements Iterator<T> {
 
-        private Iterator<? extends Collection< ? extends T>> it;
+        private Iterator<? extends Iterable< ? extends T>> it;
         private Iterator<? extends T> current;
 
-        public ProxyIterator(Iterator<? extends Collection< ? extends T>> it) {
+        public ProxyIterator(Iterator<? extends Iterable< ? extends T>> it) {
             assert it != null;
             this.it = it;
         }

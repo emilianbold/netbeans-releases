@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 7.7.1
+#Version 7.9.1
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -902,6 +902,7 @@ supr java.lang.Object
 
 CLSS public abstract org.openide.nodes.ChildFactory<%0 extends java.lang.Object>
 cons public ChildFactory()
+innr public abstract static Detachable
 meth protected abstract boolean createKeys(java.util.List<{org.openide.nodes.ChildFactory%0}>)
 meth protected final void refresh(boolean)
 meth protected org.openide.nodes.Node createNodeForKey({org.openide.nodes.ChildFactory%0})
@@ -910,6 +911,12 @@ meth protected org.openide.nodes.Node[] createNodesForKey({org.openide.nodes.Chi
 supr java.lang.Object
 hfds observer
 hcls Observer,WaitFilterNode
+
+CLSS public abstract static org.openide.nodes.ChildFactory$Detachable<%0 extends java.lang.Object>
+cons public Detachable()
+meth protected void addNotify()
+meth protected void removeNotify()
+supr org.openide.nodes.ChildFactory<{org.openide.nodes.ChildFactory$Detachable%0}>
 
 CLSS public abstract org.openide.nodes.Children
 cons public Children()
@@ -1330,10 +1337,12 @@ meth public org.openide.util.actions.SystemAction[] getContextActions()
  anno 0 java.lang.Deprecated()
 meth public void destroy() throws java.io.IOException
 meth public void setDisplayName(java.lang.String)
+meth public void setHidden(boolean)
+ anno 0 java.lang.Deprecated()
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
@@ -1420,6 +1429,7 @@ hfds add,currSnapshot,delta,indices,prevSnapshot,serialVersionUID,sourceEntry
 
 CLSS public final org.openide.nodes.NodeNotFoundException
 meth public int getClosestNodeDepth()
+meth public java.lang.String getMessage()
 meth public java.lang.String getMissingChildName()
 meth public org.openide.nodes.Node getClosestNode()
 supr java.io.IOException

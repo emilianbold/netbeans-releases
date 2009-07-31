@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -90,7 +91,8 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     public PersistenceClientSetupPanelVisual(WizardDescriptor wizard) {
         this.wizard = wizard;
         initComponents();
-        
+
+
         JComboBox[] combos = {jpaPackageComboBox, jsfPackageComboBox};
         for (int i = 0; i < combos.length; i++) {
             JTextComponent comboEditor = ((JTextComponent)combos[i].getEditor().getEditorComponent());
@@ -458,6 +460,14 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 jsfFolder.setText("/"+JSFConfigUtilities.getResourcePath(groups,targetFolder,'/',true));
             }
         }
+
+        if(J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported())
+        {
+            //change label if we will generate session beans
+            jpaPackageLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_Jpa_SessionBean_Package")); // NOI18N
+        }
+        //
+
     }
     
     void store(WizardDescriptor settings) {

@@ -71,6 +71,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;

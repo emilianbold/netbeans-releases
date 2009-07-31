@@ -63,20 +63,20 @@ import org.openide.awt.Toolbar;
 public class MainWindowOperatorTest extends JellyTestCase {
 
     public static final String[] tests = {
-        "testGetDefault",
+      /*  "testGetDefault",
         "testMenuBar",
         "testGetSetStatusText",
         "testWaitStatusText",
         "testGetToolbarInt",
         "testGetToolbarString",
         "testGetToolbarCount",
-        "testGetToolbarName",
-        "testGetToolbarButtonInt",
+        "testGetToolbarName",*/
+        "testGetToolbarButtonInt"/*,
         "testGetToolbarButtonString",
         "testPushToolbarPopupMenu",
         "testPushToolbarPopupMenuNoBlock",
         /* this only works with robot on linux "testDragNDropToolbar",*/
-        "testStatusTextTracer"
+        //"testStatusTextTracer"
     };
     
     /** Instance of MainWindowOperator (singleton) to test. */
@@ -174,21 +174,12 @@ public class MainWindowOperatorTest extends JellyTestCase {
     /** Test of getToolbarButton method. Finds Build toolbar and checks if
      * getToolbarButton(1) returns Build Main Project button. */
     public void testGetToolbarButtonInt() {
-        ContainerOperator toolbarOper = mainWindowOper.getToolbar("File"); // NOI18N
-        int saveAllIndex = -1;
-        for(int i = 0; i < mainWindowOper.getToolbarCount(); i++) {
-            if(mainWindowOper.getToolbarButton(toolbarOper, i).getToolTipText().
-                    indexOf(Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll")) > -1) {
-                saveAllIndex = i;
-                break;
-            }
-        }
-        /*
+        ContainerOperator toolbarOper = mainWindowOper.getToolbar("File"); // NOI18N        
+        
         String tooltip = mainWindowOper.getToolbarButton(toolbarOper, 0).getToolTipText();
-        String expected = Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
+        String expected = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_NewFileAction_Tooltip");
         assertTrue("Wrong toolbar button.", tooltip.indexOf(expected) != -1);
-         */
-        assertTrue("No SaveAll button in the toolbar", saveAllIndex > -1);
     }
     
     /** Test of getToolbarButton method. Finds Build toolbar and checks if

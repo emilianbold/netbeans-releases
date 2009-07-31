@@ -168,12 +168,15 @@ final class JUnitOutputReader {
         return testSession;
     }
 
-    synchronized void verboseMessageLogged(final AntEvent event) {
+    void verboseMessageLogged(final AntEvent event) {
         final String msg = event.getMessage();
         if (msg == null) {
             return;
         }
+        verboseMessageLogged(msg);
+    }
 
+    synchronized void verboseMessageLogged(String msg) {
         switch(state){
             case SUITE_STARTED: {
                 if (msg.startsWith(TEST_LISTENER_PREFIX)) {
@@ -330,7 +333,13 @@ final class JUnitOutputReader {
                 }
             }
             case TESTCASE_STARTED: {
-                displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+                int posTestListener = msg.indexOf(TEST_LISTENER_PREFIX);
+                if (posTestListener != -1) {
+                    displayOutput(msg.substring(0, posTestListener), event.getLogLevel() == AntEvent.LOG_WARN);
+                    verboseMessageLogged(msg.substring(posTestListener));
+                } else {
+                    displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+                }
                 break;
             }
         }

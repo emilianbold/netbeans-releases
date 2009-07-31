@@ -255,11 +255,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
         requires = new HashSet<String>();
         methods = new ArrayList<AstMethodElement>();
         haveAccessModifiers = new HashSet<AstClassElement>();
-
         
         AstPath path = new AstPath();
         path.descend(root);
-        ContextKnowledge knowledge = new ContextKnowledge(index, root);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
         this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
@@ -295,6 +294,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
+                    // commented out to fix #168745 - the field needs
+                    // to be added as a child to the class that contains it
+                    // even if there is an attribute_accessor for it.
+                    // (leaving this code here as i don't know what was the original
+                    // reason for excluding it - possibly something i can't think of now)
+                    /**
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
@@ -303,6 +308,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                             break;
                         }
                     }
+                    */
 
                     if (!found) {
                         clz.addChild(co);
@@ -443,19 +449,16 @@ public class RubyStructureAnalyzer implements StructureScanner {
             case MODULE: {
                 Node node = element.getNode();
                 OffsetRange range = AstUtilities.getRange(node);
-                
-                if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
-                    // Only make nested classes/modules foldable, similar to what the java editor is doing
-                    (range.getStart() > Utilities.getRowStart(doc, range.getStart()))) {
-                    
-                    int start = range.getStart();
-                    // Start the fold at the END of the line
-                    start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
-                    int end = range.getEnd();
-                    if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
-                        range = new OffsetRange(start, end);
-                        codeblocks.add(range);
-                    }
+                // note: unlike for java, allowing also folding of
+                // top level classes and modules - in ruby it's fairly common
+                // to have several top level classes in one file (#140247)
+                int start = range.getStart();
+                // Start the fold at the END of the line
+                start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
+                int end = range.getEnd();
+                if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
+                    range = new OffsetRange(start, end);
+                    codeblocks.add(range);
                 }
                 break;
             }
@@ -726,12 +729,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode)argsNode;
-
-                    if (args.size() > 0) {
-                        Node n = args.get(0);
-
+                    for (Node n : args.childNodes()) {
                         if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node)n));
+                            includes.add(AstUtilities.getFqn((Colon2Node) n));
                         } else if (n instanceof INameNode) {
                             includes.add(AstUtilities.getName(n));
                         }
@@ -890,7 +890,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             path.ascend();
         }
     }
-    
+
     /** Analyze the given method and see if it looks like the following
      * common pattern (at least in Rails) :
      * <pre>

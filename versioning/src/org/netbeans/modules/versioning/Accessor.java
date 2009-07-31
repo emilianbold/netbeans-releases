@@ -44,6 +44,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.util.*;
+import org.openide.filesystems.FileObject;
 
 /**
  * Make it possible to hide contructors and factory methods in VCSContext.
@@ -65,5 +66,5 @@ public abstract class Accessor {
         }
     }
     
-    public abstract VCSContext createContextForFiles(Set<File> files);
+    public abstract VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles);
 }

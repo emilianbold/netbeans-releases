@@ -57,6 +57,8 @@ import org.netbeans.editor.ext.html.dtd.DTD.Element;
  */
 public class AstNode {
 
+    public static final String NAMESPACE_PROPERTY = "namespace";
+
     public enum NodeType {
 
         UNKNOWN_TAG, ROOT, COMMENT, DECLARATION, ERROR,
@@ -76,27 +78,29 @@ public class AstNode {
     private Collection<Description> descriptions = null;
     private List<String> stack = null; //for debugging
     private AstNode matchingNode = null;
+    private boolean isEmpty = false;
+    private Map<String, Object> properties;
 
     static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
     }
 
     //TODO - replace the public constructors by factory methods
-
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, List<String> stack) {
-        this(name, nodeType, startOffset, endOffset);
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
+        this(name, nodeType, startOffset, endOffset, isEmpty);
         this.dtdElement = dtdElement;
         this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
         this.content = contentModel != null ? contentModel.getContent() : null;
         this.stack = stack;
     }
 
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
+        this.isEmpty = isEmpty;
     }
 
     public AstNode getMatchingTag() {
@@ -128,12 +132,18 @@ public class AstNode {
     }
 
     public boolean needsToHaveMatchingTag() {
-        if (type() == NodeType.OPEN_TAG) {
-            return !getDTDElement().hasOptionalEnd();
-        } else if (type() == NodeType.ENDTAG) {
-            return !getDTDElement().hasOptionalStart();
+        //non-dtd elements always need to have a pair
+        if (getDTDElement() == null) {
+            return true;
         } else {
-            return false;
+            //dtd elements
+            if (type() == NodeType.OPEN_TAG) {
+                return !getDTDElement().hasOptionalEnd();
+            } else if (type() == NodeType.ENDTAG) {
+                return !getDTDElement().hasOptionalStart();
+            } else {
+                return false;
+            }
         }
     }
 
@@ -283,8 +293,49 @@ public class AstNode {
         return endOffset;
     }
 
+    public int logicalStartOffset() {
+        return getLogicalRange()[0];
+    }
+
+    public int logicalEndOffset() {
+        return getLogicalRange()[1];
+    }
+
     public List<AstNode> children() {
         return children == null ? Collections.EMPTY_LIST : children;
+    }
+
+    public boolean isEmpty() {
+        return isEmpty;
+    }
+
+    public String getNamespacePrefix() {
+        int colonIndex = name().indexOf(':');
+        return colonIndex == -1 ? null : name().substring(0, colonIndex);
+    }
+
+    public String getNameWithoutPrefix() {
+        int colonIndex = name().indexOf(':');
+        return colonIndex == -1 ? name() : name().substring(colonIndex + 1);
+    }
+
+    public Object getProperty(String key) {
+        return properties == null ? null : properties.get(key);
+    }
+
+    public synchronized void setProperty(String key, Object value) {
+        if (properties == null) {
+            properties = new HashMap<String, Object>();
+        }
+        properties.put(key, value);
+    }
+
+    public AstNode getRootNode() {
+        if (this instanceof RootAstNode) {
+            return this;
+        } else {
+            return parent().getRootNode();
+        }
     }
 
     void addChild(AstNode child) {
@@ -321,13 +372,13 @@ public class AstNode {
             b.append(type() == NodeType.OPEN_TAG ? "<" : "");
             b.append(type() == NodeType.ENDTAG ? "</" : "");
         }
-        if(name() != null) {
+        if (name() != null) {
             b.append(name());
         }
         if (isTag) {
             b.append('>');
         } else {
-            if(name() != null) {
+            if (name() != null) {
                 b.append(':');
             }
             b.append(type());
@@ -494,11 +545,10 @@ public class AstNode {
     private static class RootAstNode extends AstNode {
 
         private static String ROOT_NODE_NAME = "root"; //NOI18N
-
         private DTD dtd;
 
         RootAstNode(int startOffset, int endOffset, DTD dtd) {
-            super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset);
+            super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset, false);
             this.dtd = dtd;
         }
 
@@ -506,7 +556,5 @@ public class AstNode {
         public List<Element> getAllPossibleElements() {
             return dtd.getElementList(null);
         }
-
-
     }
 }

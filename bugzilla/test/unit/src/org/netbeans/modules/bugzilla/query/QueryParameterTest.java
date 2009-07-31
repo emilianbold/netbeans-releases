@@ -79,6 +79,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
     }
 
     public void testComboParameters() {

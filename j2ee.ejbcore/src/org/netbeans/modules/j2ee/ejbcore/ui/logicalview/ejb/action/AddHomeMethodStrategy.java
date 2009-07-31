@@ -100,7 +100,7 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
                 hasRemote, 
                 hasLocal,
                 methodsNode == null ? hasLocal : methodsNode.isLocal(),
-                methodsNode == null ? hasRemote : !methodsNode.isLocal(),
+                methodsNode == null ? hasRemote : methodsNode.isRemote(),
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }

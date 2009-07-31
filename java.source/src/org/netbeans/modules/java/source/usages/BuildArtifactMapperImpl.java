@@ -77,6 +77,7 @@ import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -97,6 +98,7 @@ import org.openide.util.WeakSet;
 public class BuildArtifactMapperImpl {
     
     private static final String ASK_BEFORE_RUN_WITH_ERRORS = "askBeforeRunWithErrors"; //NOI18N
+    private static final String DIRTY_ROOT = "dirty"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
@@ -219,7 +221,11 @@ public class BuildArtifactMapperImpl {
         } catch (InterruptedException e) {
             //Not Important
             LOG.log(Level.FINE, null, e);
-            return false;
+            return null;
+        }
+
+        if (JavaIndex.ensureAttributeValue(sourceRoot, DIRTY_ROOT, null)) {
+            IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
         }
 
         FileObject[][] sources = new FileObject[1][];
@@ -246,7 +252,7 @@ public class BuildArtifactMapperImpl {
             File index = JavaIndex.getClassFolder(sr.getURL(), true);
 
             if (index == null) {
-                return false;
+                return null;
             }
 
             copyRecursively(index, targetFolder);

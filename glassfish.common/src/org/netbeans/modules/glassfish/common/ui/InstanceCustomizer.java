@@ -94,6 +94,11 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         String derbyFlag = ip.get(GlassfishModule.START_DERBY_FLAG);
         boolean derbyEnabled = Boolean.parseBoolean(derbyFlag);
         startDerby.setSelected(derbyEnabled);
+        boolean isLocalDomain = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
+        cometCheckBox.setEnabled(isLocalDomain);
+        monitorCheckBox.setEnabled(isLocalDomain);
+        this.jdbcDriverDeployCheckBox.setEnabled(isLocalDomain);
+        this.startDerby.setEnabled(isLocalDomain);
 }
     
     private void persistFields() {

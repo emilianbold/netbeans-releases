@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
 
 /**
  *
@@ -67,7 +67,7 @@ public class J2eePlatformTest extends ServerRegistryTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         Map<String, String> props = new HashMap<String, String>();
-        props.put(DepManager.PLATFORM_ROOT_PROPERTY, getWorkDirPath());
+        props.put(TestDeploymentManager.PLATFORM_ROOT_PROPERTY, getWorkDirPath());
 
         InstanceProperties.createInstanceProperties(TEST_URL,
                 TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);

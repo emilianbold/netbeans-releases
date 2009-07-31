@@ -44,12 +44,13 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -85,7 +86,9 @@ final class Erprint {
             log.setLevel(Level.INFO);
         }
 
-        log.finest(logPrefix + "started"); // NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest(logPrefix + "started"); // NOI18N
+        }
         out = process.getInputStream();
         in = process.getOutputStream();
         err = process.getErrorStream();
@@ -99,14 +102,18 @@ final class Erprint {
                 throw new IllegalStateException("er_print is scheduled to be stopped already!"); // NOI18N
             }
             locks.incrementAndGet();
-            log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+            }
         }
     }
 
     void releaseLock() {
         synchronized (this) {
             locks.decrementAndGet();
-            log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+            }
         }
     }
 
@@ -122,23 +129,31 @@ final class Erprint {
         DLightExecutorService.submit(new Runnable() {
 
             public void run() {
-                log.finest(logPrefix + "Scheduled for termination"); // NOI18N
+                if (log.isLoggable(Level.FINEST)) {
+                    log.finest(logPrefix + "Scheduled for termination"); // NOI18N
+                }
                 int attempts = 30;
 
                 while (locks.get() != 0 && --attempts > 0) {
                     try {
-                        log.finest(logPrefix + "waiting for lock release [" + locks.get() + "] ..."); // NOI18N
+                        if (log.isLoggable(Level.FINEST)) {
+                            log.finest(logPrefix + "waiting for lock release [" + locks.get() + "] ..."); // NOI18N
+                        }
                         Thread.sleep(500);
                     } catch (InterruptedException ex) {
-                        log.log(Level.FINEST, logPrefix + "Exception while terminating", ex); // NOI18N
+                        if (log.isLoggable(Level.FINEST)) {
+                            log.log(Level.FINEST, logPrefix + "Exception while terminating", ex); // NOI18N
+                        }
                         break;
                     }
                 }
 
-                if (locks.get() > 0) {
-                    log.finest(logPrefix + "do force termination"); // NOI18N
-                } else {
-                    log.finest(logPrefix + "do termination"); // NOI18N
+                if (log.isLoggable(Level.FINEST)) {
+                    if (locks.get() > 0) {
+                        log.finest(logPrefix + "do force termination"); // NOI18N
+                    } else {
+                        log.finest(logPrefix + "do termination"); // NOI18N
+                    }
                 }
 
                 process.destroy();
@@ -262,12 +277,22 @@ final class Erprint {
         return new LeaksStatistics(stat);
     }
 
+    List<DataraceImpl> getDataRaces() throws IOException {
+        String[] races = exec("rdetail all"); // NOI18N
+        return DataraceImpl.fromErprint(races);
+    }
+
+    List<DeadlockImpl> getDeadlocks() throws IOException {
+        String[] deadlocks = exec("ddetail all"); // NOI18N
+        return DeadlockImpl.fromErprint(deadlocks);
+    }
+
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
         String[] stat = exec("fsingle \"" + functionName + "\" 1"); // NOI18N
         return new FunctionStatistic(stat);
     }
 
-    FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
+    FunctionStatistic getFunctionStatistic(FunctionCallWithMetric functionCall) throws IOException {
         synchronized (this) {
             if (stopped) {
                 return new FunctionStatistic(new String[0]);
@@ -316,7 +341,9 @@ final class Erprint {
             long startTime = System.currentTimeMillis();
 
             try {
-                log.finest("> " + command + "'"); // NOI18N
+                if (log.isLoggable(Level.FINEST)) {
+                    log.finest("> " + command + "'"); // NOI18N
+                }
                 post(command);
             } catch (IOException ex) {
                 stop();
@@ -325,9 +352,11 @@ final class Erprint {
 
             String[] output = outProcessor.getOutput();
 
-            log.finest("Command '" + command + "' done in " + // NOI18N
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("Command '" + command + "' done in " + // NOI18N
                     (System.currentTimeMillis() - startTime) / 1000 +
                     " secs. Response is " + output.length + " lines."); // NOI18N
+            }
 
             return output;
         }

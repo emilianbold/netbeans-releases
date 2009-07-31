@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.15.1
+#Version 1.17.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -55,6 +55,20 @@ meth public java.lang.Object getSource()
 meth public java.lang.String toString()
 supr java.lang.Object
 hfds serialVersionUID
+
+CLSS public abstract interface org.netbeans.spi.viewmodel.CheckNodeModel
+intf org.netbeans.spi.viewmodel.NodeModel
+meth public abstract boolean isCheckEnabled(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean isCheckable(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.Boolean isSelected(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void setSelected(java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
+
+CLSS public abstract interface org.netbeans.spi.viewmodel.CheckNodeModelFilter
+intf org.netbeans.spi.viewmodel.NodeModelFilter
+meth public abstract boolean isCheckEnabled(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean isCheckable(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.Boolean isSelected(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void setSelected(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
 
 CLSS public abstract org.netbeans.spi.viewmodel.ColumnModel
 cons public ColumnModel()
@@ -163,6 +177,7 @@ meth public abstract boolean isEnabled(java.lang.Object)
 meth public abstract void perform(java.lang.Object[])
 
 CLSS public final static org.netbeans.spi.viewmodel.Models$CompoundModel
+intf org.netbeans.spi.viewmodel.CheckNodeModel
 intf org.netbeans.spi.viewmodel.ExtendedNodeModel
 intf org.netbeans.spi.viewmodel.NodeActionsProvider
 intf org.netbeans.spi.viewmodel.TableModel
@@ -171,12 +186,15 @@ intf org.netbeans.spi.viewmodel.TreeModel
 meth public boolean canCopy(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean canCut(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean canRename(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean isCheckEnabled(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean isCheckable(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean isExpanded(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean isLeaf(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean isReadOnly(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public int getChildrenCount(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.awt.datatransfer.Transferable clipboardCopy(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.awt.datatransfer.Transferable clipboardCut(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public java.lang.Boolean isSelected(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.Object getRoot()
 meth public java.lang.Object getValueAt(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.Object[] getChildren(java.lang.Object,int,int) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -195,9 +213,10 @@ meth public void nodeExpanded(java.lang.Object)
 meth public void performDefaultAction(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
 meth public void setName(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public void setSelected(java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void setValueAt(java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
-hfds columnModels,nodeActionsProvider,nodeModel,propertiesHelpID,tableModel,treeExpansionModel,treeModel
+hfds cnodeModel,columnModels,nodeActionsProvider,nodeModel,propertiesHelpID,rp,tableModel,treeExpansionModel,treeModel
 
 CLSS public abstract static org.netbeans.spi.viewmodel.Models$TreeFeatures
 cons public TreeFeatures()

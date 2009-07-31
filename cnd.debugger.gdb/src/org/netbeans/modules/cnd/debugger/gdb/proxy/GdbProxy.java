@@ -133,7 +133,11 @@ public class GdbProxy {
      * @param program - a name of an external program to debug
      */
     public void file_exec_and_symbols(String programName) {
-        engine.sendCommand("-file-exec-and-symbols " + programName); // NOI18N
+        StringBuilder cmd = new StringBuilder("-file-exec-and-symbols"); // NOI18N
+        cmd.append(" \""); // NOI18N
+        cmd.append(programName);
+        cmd.append("\""); // NOI18N
+        engine.sendCommand(cmd.toString());
     }
     
     public void addSymbolFile(String path, String addr) {

@@ -91,24 +91,22 @@ public final class TextProvider extends ComponentProvider {
         if (Config.getDefault().isSelection()) {
             start = component.getSelectionStart();
             end = component.getSelectionEnd();
-        } else {
+        }
+        else {
             start = 0;
             end = document.getLength();
         }
-        int length = end - start;
-
-        if (length < MAX_LENGTH) {
-            AttributedCharacterIterator[] iterators = getIterators(document, start, end);
+        AttributedCharacterIterator[] iterators = getIterators(document, start, end);
 //out();
 //out("iterators: " + iterators);
 //out();
-            if (iterators != null) {
-                return new ComponentDocument(iterators);
-            }
+        if (iterators != null) {
+            return new ComponentDocument(iterators);
         }
         try {
-            return new ComponentDocument(component.getText(start, length));
-        } catch (BadLocationException e) {
+            return new ComponentDocument(component.getText(start, end - start));
+        }
+        catch (BadLocationException e) {
             return null;
         }
     }
@@ -169,5 +167,4 @@ public final class TextProvider extends ComponentProvider {
     }
 
     private EditorCookie myEditor;
-    private static final int MAX_LENGTH = 64000;
 }

@@ -135,7 +135,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                 }
                 String instances[] = ServerRegistry.getInstance().getInstanceURLs();
                 if (null != instances) {
-                    if (instances.length > 1) {
+                    if (instances.length > 0) {
                         fail("too many instances");
                     }
                 }
@@ -144,15 +144,23 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
 
             fail("Sjsas instance still exists !");
         } finally {
-                File ff = new File(Util._V3_LOCATION);
-                if (ff.getAbsolutePath().contains("DELETEME")) {
-                    System.out.println("Deleting: " + ff.getAbsolutePath());
-                    Util.deleteJunk(ff.getParentFile());
-                }
+//                File ff = new File(Util._V3_LOCATION);
+//                if (ff.getAbsolutePath().contains("DELETEME")) {
+//                    System.out.println("Deleting: " + ff.getAbsolutePath());
+//                    Util.deleteJunk(ff.getParentFile());
+//                }
         }
     }
     
-//    public static Test suite() {
+    public void deleteJunkInstall() {
+                File ff = new File(Util._PRELUDE_LOCATION);
+                if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
+                    System.out.println("Deleting: " + ff.getAbsolutePath());
+                    Util.deleteJunk(ff.getParentFile());
+                }
+    }
+
+    //    public static Test suite() {
 //        return NbModuleSuite.create(
 //                NbModuleSuite.createConfiguration(AddRemoveV3InstanceMethods.class).
 //                addTest("addSjsasInstance","removeSjsasInstance").enableModules(".*").clusters(".*"));

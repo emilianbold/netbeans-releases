@@ -409,7 +409,7 @@ public class ExtKit extends BaseKit {
     /** Show the popup menu.
     */
     @EditorActionRegistration(
-            name = showPopupMenuAction,
+            name = "org.openide.actions.PopupAction",
             shortDescription = editorBundleHash + showPopupMenuAction
     )
     public static class ShowPopupMenuAction extends BaseKitLocalizedAction {

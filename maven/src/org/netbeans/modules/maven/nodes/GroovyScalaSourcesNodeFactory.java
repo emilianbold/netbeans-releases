@@ -40,18 +40,28 @@
 package org.netbeans.modules.maven.nodes;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -75,21 +85,45 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
         }
         
         public List<SourceGroup> keys() {
+            //#169192 check roots against java roots and if the same don't show twice.
+            Set<FileObject> javaroots = new HashSet<FileObject>();
+            SourceGroup[] javasg = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (SourceGroup sg : javasg) {
+                javaroots.add(sg.getRootFolder());
+            }
+
             List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
             SourceGroup[] groovygroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
             for (int i = 0; i < groovygroup.length; i++) {
-                list.add(groovygroup[i]);
+                if (!javaroots.contains(groovygroup[i].getRootFolder())) {
+                    list.add(groovygroup[i]);
+                }
             }
             SourceGroup[] scalagroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA);
             for (int i = 0; i < scalagroup.length; i++) {
-                list.add(scalagroup[i]);
+                if (!javaroots.contains(scalagroup[i].getRootFolder())) {
+                    list.add(scalagroup[i]);
+                }
             }
             return list;
         }
         
         public Node node(SourceGroup group) {
-            return PackageView.createPackageView(group);
+            Node pack = PackageView.createPackageView(group);
+
+
+            if (MavenSourcesImpl.NAME_SCALASOURCE.equals(group.getName()) ||
+                MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(group.getName())) {
+                Lookup lkp = new ProxyLookup(Lookups.singleton(new ScalaPrivs()), pack.getLookup());
+                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
+            }
+            if (MavenSourcesImpl.NAME_GROOVYSOURCE.equals(group.getName()) ||
+                MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(group.getName())) {
+                Lookup lkp = new ProxyLookup(Lookups.singleton(new GroovyPrivs()), pack.getLookup());
+                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
+            }
+            return pack;
         }
         
         @Override
@@ -105,7 +139,35 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
         }
 
         public void stateChanged(ChangeEvent arg0) {
-            fireChange();
+            //#167372 break the stack trace chain to prevent deadlocks.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fireChange();
+                }
+            });
+        }
+    }
+
+    private static class ScalaPrivs implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/Scala/Class.scala", //NOI18N
+                "Templates/Scala/Object.scala", //NOI18N
+                "Templates/Scala/Trait.scala", //NOI18N
+                "Templates/Other/Folder" //NOI18N
+            };
+        }
+    }
+
+    private static class GroovyPrivs implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/Groovy/GroovyClass.groovy", //NOI18N
+                "Templates/Groovy/GroovyScript.groovy", //NOI18N
+                "Templates/Other/Folder" //NOI18N
+            };
         }
     }
 }

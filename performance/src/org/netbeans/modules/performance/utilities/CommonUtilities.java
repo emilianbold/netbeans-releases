@@ -59,8 +59,9 @@ import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
@@ -76,6 +77,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.PluginsOperator;
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -439,7 +441,7 @@ public class CommonUtilities {
         wizard.selectProject(project);
         wizard.next();
         
-        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator wizard_location = new NewJavaProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(getTempDir());
         String pname = wizard_location.txtProjectName().getText() + System.currentTimeMillis();
@@ -519,7 +521,7 @@ public class CommonUtilities {
      * @param project
      */
     public static void buildProject(String project) {
-        ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
+        JavaProjectRootNode prn = JavaProjectsTabOperator.invoke().getJavaProjectRootNode(project);
         prn.buildProject();
         StringComparator sc = MainWindowOperator.getDefault().getComparator();        
         MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, true));

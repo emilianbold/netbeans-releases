@@ -106,9 +106,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private MavenProject project;
 
-    private TextValueCompleter groupCompleter;
-    private TextValueCompleter artifactCompleter;
-    private TextValueCompleter versionCompleter;
+    private final TextValueCompleter groupCompleter;
+    private final TextValueCompleter artifactCompleter;
+    private final TextValueCompleter versionCompleter;
     private JButton okButton;
     private QueryPanel queryPanel;
 
@@ -755,6 +755,20 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         return 0;
     }
 
+    void setFields(String groupId, String artifactId, String version) {
+        boolean sameGrId = false;
+        if (groupId != null && groupId.equals(project.getGroupId())) {
+            groupId = "${project.groupId}"; //NOI18N
+            sameGrId = true;
+        }
+        txtGroupId.setText(groupId);
+        txtArtifactId.setText(artifactId);
+        if (sameGrId && version != null && version.equals(project.getVersion())) {
+            version = "${project.version}"; //NOI18N
+        }
+        txtVersion.setText(version);
+    }
+
 
     private static class QueryPanel extends JPanel implements ExplorerManager.Provider,
             Comparator<String>, PropertyChangeListener, ChangeListener {
@@ -996,9 +1010,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 Node[] selNodes = manager.getSelectedNodes();
                 if (selNodes.length == 1 && selNodes[0] instanceof MavenNodeFactory.VersionNode) {
                     NBVersionInfo vi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
-                    depPanel.txtGroupId.setText(vi.getGroupId());
-                    depPanel.txtArtifactId.setText(vi.getArtifactId());
-                    depPanel.txtVersion.setText(vi.getVersion());
+                    depPanel.setFields(vi.getGroupId(), vi.getArtifactId(), vi.getVersion());
                     //reset completion.
                     depPanel.artifactCompleter.setLoading(true);
                     depPanel.versionCompleter.setLoading(true);
@@ -1009,9 +1021,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                         }
                     });
                 } else {
-                    depPanel.txtGroupId.setText("");
-                    depPanel.txtArtifactId.setText("");
-                    depPanel.txtVersion.setText("");
+                    depPanel.setFields("", "", "");//NOI18N
                     //reset completion.
                     depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
                     depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
@@ -1118,9 +1128,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             Node[] selNodes = manager.getSelectedNodes();
             if (selNodes.length == 1 && selNodes[0] instanceof MavenNodeFactory.VersionNode) {
                 NBVersionInfo vi = ((MavenNodeFactory.VersionNode)selNodes[0]).getNBVersionInfo();
-                depPanel.txtGroupId.setText(vi.getGroupId());
-                depPanel.txtArtifactId.setText(vi.getArtifactId());
-                depPanel.txtVersion.setText(""); //NOI18N
+                depPanel.setFields(vi.getGroupId(), vi.getArtifactId(), "");
                 //reset completion.
                 depPanel.artifactCompleter.setLoading(true);
                 depPanel.versionCompleter.setLoading(true);
@@ -1131,9 +1139,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     }
                 });
             } else {
-                depPanel.txtGroupId.setText(""); //NOI18N
-                depPanel.txtArtifactId.setText(""); //NOI18N
-                depPanel.txtVersion.setText(""); //NOI18N
+                depPanel.setFields("", "", "");//NOI18N
                 //reset completion.
                 depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
                 depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
@@ -1192,9 +1198,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 Project prj = selNodes[0].getLookup().lookup(Project.class);
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 MavenProject m = mav.getMavenProject();
-                depPanel.txtGroupId.setText(m.getGroupId());
-                depPanel.txtArtifactId.setText(m.getArtifactId());
-                depPanel.txtVersion.setText(m.getVersion()); //NOI18N
+                depPanel.setFields(m.getGroupId(), m.getArtifactId(), m.getVersion());
                 //reset completion.
                 depPanel.artifactCompleter.setLoading(true);
                 depPanel.versionCompleter.setLoading(true);
@@ -1205,9 +1209,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     }
                 });
             } else {
-                depPanel.txtGroupId.setText(""); //NOI18N
-                depPanel.txtArtifactId.setText(""); //NOI18N
-                depPanel.txtVersion.setText(""); //NOI18N
+                depPanel.setFields("","",""); //NOI18N
                 //reset completion.
                 depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
                 depPanel.versionCompleter.setValueList(Collections.<String>emptyList());

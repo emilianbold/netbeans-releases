@@ -48,7 +48,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import javax.swing.Action;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.junit.Manager;
@@ -56,14 +55,8 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.permanentUI.utils.Utilities;
-import org.netbeans.test.ide.BlacklistedClassesHandler;
-import org.netbeans.test.ide.BlacklistedClassesHandlerSingleton;
-import org.openide.explorer.ExplorerManager;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 public class GeneralSanityTest extends NbTestCase {
@@ -72,7 +65,9 @@ public class GeneralSanityTest extends NbTestCase {
         super(name);
     }
     
-    public static Test suite() {
+    public static Test suite() throws IOException {
+        CountingSecurityManager.initWrites();
+
         // disable 'slowness detection'
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000");
         NbTestSuite s = new NbTestSuite();
@@ -84,6 +79,7 @@ public class GeneralSanityTest extends NbTestCase {
             honorAutoloadEager(true).
             addTest(
                 "testWaitForUIReady",
+                "testNoWrites",
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
                 "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
@@ -92,6 +88,20 @@ public class GeneralSanityTest extends NbTestCase {
             )
         ));
         return s;
+    }
+
+    public void testNoWrites() throws Exception {
+        String msg = "No writes during startup.\n" +
+            "Writing any files to disk during start is inefficient and usualy unnecessary.\n" +
+            "Consider using declarative registration in your layer.xml file, or delaying\n" +
+            "the initialization of the whole subsystem till it is really used.\n" +
+            "In case it is necessary to perform the write, you can modify the\n" +
+            "'allowed-file-write.txt' file in ide.kit module. More details at\n" +
+            "http://wiki.netbeans.org/FitnessViaWhiteAndBlackList";
+
+        CountingSecurityManager.assertCounts(msg, 0);
+        // disable further collecting of
+        CountingSecurityManager.initialize("non-existent", CountingSecurityManager.Mode.CHECK_READ, null);
     }
 
     public void testInitBlacklistedClassesHandler() {

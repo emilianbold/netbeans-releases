@@ -17,7 +17,7 @@ METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     finalize()                      [PROTECTE  void
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -31,6 +31,7 @@ METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
 METHOD     getProperty(String)             [PUBLIC]   Object
 METHOD     grep(Object)                               Collection
+METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
@@ -39,6 +40,7 @@ METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
+METHOD     metaClass(Closure)                         MetaClass
 METHOD     method1()                       [PUBLIC]   Object
 METHOD     method2()                       [PRIVATE]  Object
 METHOD     method3()                       [PROTECTE  Object
@@ -53,10 +55,13 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
-METHOD     setMetaClass(MetaClass)         [PUBLIC]   void
+METHOD     respondsTo(String)                         List
+METHOD     respondsTo(String, Object)                 List
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     setProperty(String, Object)     [PUBLIC]   void
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
+METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     test()                          [PUBLIC]   Object

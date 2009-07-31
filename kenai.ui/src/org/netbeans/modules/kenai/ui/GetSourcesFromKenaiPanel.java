@@ -180,7 +180,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         proxyConfigButton = new JButton();
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
-        setPreferredSize(new Dimension(700, 350));
+        setPreferredSize(new Dimension(700, 250));
+        setRequestFocusEnabled(false);
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -628,7 +629,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private void setUsername(String uName) {
         if (uName != null) {
             usernameLabel.setText(uName);
-            usernameLabel.setForeground(Color.BLUE);
+            usernameLabel.setForeground(new Color(0, 102, 0));
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,

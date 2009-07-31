@@ -107,9 +107,8 @@ Microsystems, Inc. All Rights Reserved.
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
-                                         webcommon(webcommon),
                                          ergonomics(ergonomics),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
+                                         extra-core-browser-macosx(baseide), ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
         </for-each>                                                  
@@ -168,7 +167,6 @@ Microsystems, Inc. All Rights Reserved.
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
                                         groovy(${groovy-title}),
-					webcommon(${webcommon-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})"/>        
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
@@ -204,6 +202,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/add_cluster.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.sh"    todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.jar"   todir="${scriptsdir}"/>        
         
@@ -214,14 +213,14 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-sjsas-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg">
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/sjsas.pkg ./build/glassfish-v3-sun.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3-sun.pkg),
-                                             -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
+                                             -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
+                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -410,7 +409,7 @@ Microsystems, Inc. All Rights Reserved.
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
 
         <ant target="build-dmg">             
-             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
              <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
              <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
@@ -442,14 +441,13 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
-                <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
+                <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISH" value="${sizeof.sjsas}"/>
-                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3.sun}"/>
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                

@@ -16,7 +16,19 @@ Searchable Keys:
   attribute : tc
   class : Message
   class-ig : message
+  field : aa
+  field : additional
+  field : answer
+  field : authority
+  field : id
   field : identifier|STATIC
+  field : opcode
+  field : qr
+  field : question
+  field : ra
+  field : rcode
+  field : rd
+  field : tc
   fqn : Resolv::DNS::Message
   method : ==(other);;TrueClass|FalseClass;
   method : add_additional(name,ttl,data)
@@ -50,8 +62,11 @@ Searchable Keys:
   constant : ClassValue;
   constant : TypeValue;Fixnum
   extends : Resource
+  field : address
+  field : bitmap
+  field : protocol
   fqn : Resolv::DNS::Resource::IN::WKS
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;WKS;
   method : encode_rdata(msg)
   method : initialize(address,protocol,bitmap)|PRIVATE|
   method : new(address,protocol,bitmap)|PRIVATE|STATIC|
@@ -71,8 +86,9 @@ Searchable Keys:
   constant : ClassValue;
   constant : TypeValue;Fixnum
   extends : Resource
+  field : address
   fqn : Resolv::DNS::Resource::IN::A
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;A;
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
@@ -92,8 +108,9 @@ Searchable Keys:
   constant : ClassValue;
   constant : TypeValue;Fixnum
   extends : Resource
+  field : address
   fqn : Resolv::DNS::Resource::IN::AAAA
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;AAAA;
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
@@ -111,9 +128,10 @@ Searchable Keys:
   class : IPv4
   class-ig : ipv4
   constant : Regex;Regexp
+  field : address
   fqn : Resolv::IPv4
   method : ==(other);;TrueClass|FalseClass;
-  method : create(arg)|STATIC|
+  method : create(arg)|STATIC|;;IPv4;
   method : eql?(other);;TrueClass|FalseClass;
   method : hash
   method : initialize(address)|PRIVATE|
@@ -139,6 +157,7 @@ Searchable Keys:
   constant : Regex_8Hex;Regexp
   constant : Regex_CompressedHex4Dec;Regexp
   constant : Regex_CompressedHex;Regexp
+  field : address
   fqn : Resolv::IPv6
   method : ==(other);;TrueClass|FalseClass;
   method : create(arg)|STATIC|;;IPv6;
@@ -165,8 +184,10 @@ Searchable Keys:
   class-ig : hinfo
   constant : TypeValue;Fixnum
   extends : Resource
+  field : cpu
+  field : os
   fqn : Resolv::DNS::Resource::HINFO
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;HINFO;
   method : encode_rdata(msg)
   method : initialize(cpu,os)|PRIVATE|
   method : new(cpu,os)|PRIVATE|STATIC|
@@ -184,9 +205,10 @@ Searchable Keys:
   class : Generic
   class-ig : generic
   extends : Resource
+  field : data
   fqn : Resolv::DNS::Resource::Generic
   method : create(type_value,class_value)|STATIC|;;Class;
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;Generic;
   method : encode_rdata(msg)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
@@ -204,6 +226,8 @@ Searchable Keys:
   attribute : string
   class : Str
   class-ig : str
+  field : downcase
+  field : string
   fqn : Resolv::DNS::Label::Str
   method : ==(other);;TrueClass|FalseClass;
   method : eql?(other);;TrueClass|FalseClass;
@@ -228,8 +252,10 @@ Searchable Keys:
   class-ig : minfo
   constant : TypeValue;Fixnum
   extends : Resource
+  field : emailbx
+  field : rmailbx
   fqn : Resolv::DNS::Resource::MINFO
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;MINFO;
   method : encode_rdata(msg)
   method : initialize(rmailbx,emailbx)|PRIVATE|
   method : new(rmailbx,emailbx)|PRIVATE|STATIC|
@@ -249,8 +275,10 @@ Searchable Keys:
   class-ig : mx
   constant : TypeValue;Fixnum
   extends : Resource
+  field : exchange
+  field : preference
   fqn : Resolv::DNS::Resource::MX
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;MX;
   method : encode_rdata(msg)
   method : initialize(preference,exchange)|PRIVATE|
   method : new(preference,exchange)|PRIVATE|STATIC|
@@ -275,8 +303,15 @@ Searchable Keys:
   class-ig : soa
   constant : TypeValue;Fixnum
   extends : Resource
+  field : expire
+  field : minimum
+  field : mname
+  field : refresh
+  field : retry
+  field : rname
+  field : serial
   fqn : Resolv::DNS::Resource::SOA
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;SOA;
   method : encode_rdata(msg)
   method : initialize(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|
   method : new(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|STATIC|
@@ -294,8 +329,9 @@ Searchable Keys:
   class : DomainName
   class-ig : domainname
   extends : Resource
+  field : name
   fqn : Resolv::DNS::Resource::DomainName
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;DomainName;
   method : encode_rdata(msg)
   method : initialize(name)|PRIVATE|
   method : new(name)|PRIVATE|STATIC|
@@ -318,8 +354,12 @@ Searchable Keys:
   constant : ClassValue;
   constant : TypeValue;Fixnum
   extends : Resource
+  field : port
+  field : priority
+  field : target
+  field : weight
   fqn : Resolv::DNS::Resource::IN::SRV
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;SRV;
   method : encode_rdata(msg)
   method : initialize(priority,weight,port,target)|DOCUMENTED|PRIVATE|
   method : new(priority,weight,port,target)|DOCUMENTED|PRIVATE|STATIC|
@@ -338,6 +378,7 @@ Searchable Keys:
   class-ig : sender
   field : data
   field : msg
+  field : queue
   field : sock
   fqn : Resolv::DNS::Requester::Sender
   method : initialize(msg,data,sock,queue)|PRIVATE|
@@ -358,9 +399,10 @@ Searchable Keys:
   class-ig : txt
   constant : TypeValue;Fixnum
   extends : Resource
+  field : strings
   fqn : Resolv::DNS::Resource::TXT
   method : data
-  method : decode_rdata(msg)|STATIC|
+  method : decode_rdata(msg)|STATIC|;;TXT;
   method : encode_rdata(msg)
   method : initialize(first_string,*rest_strings)|PRIVATE|
   method : new(first_string,*rest_strings)|PRIVATE|STATIC|
@@ -418,7 +460,7 @@ Searchable Keys:
   method : generate_candidates(name)
   method : generate_timeouts;;Array;
   method : initialize(config_info)|PRIVATE|
-  method : lazy_initialize
+  method : lazy_initialize;;Config;
   method : new(config_info)|PRIVATE|STATIC|
   method : parse_resolv_conf(filename)|STATIC|;;Hash;
   method : resolv(name)
@@ -477,7 +519,7 @@ Searchable Keys:
   method : getresource(name,typeclass)
   method : getresources(name,typeclass);;Array;
   method : initialize(config_info)|PRIVATE|
-  method : lazy_initialize
+  method : lazy_initialize;;DNS;
   method : new(config_info)|PRIVATE|STATIC|
   method : open(*args)|STATIC|
   require : resolv
@@ -535,7 +577,7 @@ Searchable Keys:
   method : getname(address)
   method : getnames(address);;Array;
   method : initialize(filename)|PRIVATE|
-  method : lazy_initialize
+  method : lazy_initialize;;Hosts;
   method : new(filename)|PRIVATE|STATIC|
   require : resolv
 
@@ -815,7 +857,7 @@ Searchable Keys:
   class : Resolv
   class-ig : resolv
   constant : AddressRegex;Regexp
-  constant : DefaultResolver;
+  constant : DefaultResolver;Resolv
   field : resolvers
   fqn : Resolv
   method : each_address(name)

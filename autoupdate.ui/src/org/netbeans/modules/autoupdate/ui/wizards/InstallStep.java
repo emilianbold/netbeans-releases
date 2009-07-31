@@ -84,6 +84,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -107,6 +108,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean indeterminateProgress = false;
     private int processedUnits = 0;
     private int totalUnits = 0;
+    private static Notification restartNotification = null;
     private static  final Logger log = Logger.getLogger (InstallStep.class.getName ());
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     
@@ -596,21 +598,28 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip) {
-        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
-                                            getBundle ("RestartConfirmation_Message"),
-                                            getBundle ("RestartConfirmation_Title"),
-                                            NotifyDescriptor.YES_NO_OPTION);
+        //final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
+        //                                    getBundle ("RestartConfirmation_Message"),
+        //                                    getBundle ("RestartConfirmation_Title"),
+        //                                    NotifyDescriptor.YES_NO_OPTION);
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                DialogDisplayer.getDefault ().notify (nd);
-                if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
+                //DialogDisplayer.getDefault ().notify (nd);
+                //if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
                     onMouseClick.run ();
-                }
+                //}
             }
         };
-        NotificationDisplayer.getDefault().notify(tooltip, 
-                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false),
-                getBundle("RestartNeeded_Details"), onClickAction, NotificationDisplayer.Priority.HIGH);
+        synchronized (InstallStep.class) {
+            if (restartNotification != null) {
+                restartNotification.clear();
+                restartNotification = null;
+            }
+
+            restartNotification = NotificationDisplayer.getDefault().notify(tooltip,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false),
+                    getBundle("RestartNeeded_Details"), onClickAction, NotificationDisplayer.Priority.HIGH);
+        }
     }
 
     private void notifyNetworkProblem (final OperationException ex) {

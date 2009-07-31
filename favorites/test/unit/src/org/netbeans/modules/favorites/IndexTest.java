@@ -68,7 +68,7 @@ public class IndexTest extends NbTestCase {
     }
     
     /**
-     * Test basic functionality of Index on Favorites node.
+     * Test basic functionality of Index on FavoritesNode node.
      */
     public void testReorder () throws Exception {
         FileObject folder = FileUtil.createFolder (
@@ -81,12 +81,12 @@ public class IndexTest extends NbTestCase {
         DataObject dObj1 = DataObject.find(fo1);
         DataObject dObj2 = DataObject.find(fo2);
         
-        DataFolder favorites = Favorites.getFolder();
+        DataFolder favorites = FavoritesNode.getFolder();
         
         dObj1.createShadow(favorites);
         dObj2.createShadow(favorites);
         
-        Node n = Favorites.getNode();
+        Node n = FavoritesNode.getNode();
         
         Node n1 = n.getChildren().findChild("Test1");
         assertNotNull("Node must exist", n1);

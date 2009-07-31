@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +176,23 @@ public class LayerUtils {
         }
         return new URL[] {u};
     }
-    
+
+    static URL urlForBundle(String bundleName) throws MalformedURLException {
+        return new URL("nbresloc:/" + bundleName.replace('.', '/') + ".properties");
+    }
+
+    /**
+     * Constructs suitable bundle key for localizing file object with given path.
+     * Intended for localizing layer files/folders.
+     * @param filePath Path as returned from {@link org.openide.filesystems.FileObject.getPath()}, i.e. with forwared slashes ('/')
+     * @return Bundle key for given file path.
+     */
+    public static String generateBundleKeyForFile(String filePath) {
+        // might result in the same key for filles that differ in replaced chars, but probably good enough;
+        // otherwise may check for duplicates and add "_n" when properties are passed as param
+        return filePath.replaceAll("[^-a-zA-Z0-9_./]", "");    // NOI18N
+    }
+
     // E.g. for name 'foo_f4j_ce_ja', should produce list:
     // 'foo', 'foo_ja', 'foo_f4j', 'foo_f4j_ja', 'foo_f4j_ce'
     // Will actually produce:
@@ -437,7 +454,18 @@ public class LayerUtils {
          * (or the user can save it explicitly if you don't).
          * @param create if true, and there is no layer yet, create it now; if false, just return null
          */
-        public synchronized FileSystem layer(boolean create) {
+        public FileSystem layer(boolean create) {
+            return layer(create, null);
+        }
+
+        /**
+         * Get the layer as a structured filesystem.
+         * See {@link #layer(boolean)} for details.
+         * @param create see {@link #layer(boolean)} for details
+         * @param cp optional classpath to search for resources specified with <code>nbres:</code>
+         *  or <code>nbresloc:</code> parameter; default is <code>null</code>
+         */
+        public synchronized FileSystem layer(boolean create, ClassPath cp) {
             if (fs == null) {
                 FileObject xml = getLayerFile();
                 if (xml == null) {
@@ -464,7 +492,7 @@ public class LayerUtils {
                     }
                 }
                 try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), /*XXX*/null);
+                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), cp);
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }

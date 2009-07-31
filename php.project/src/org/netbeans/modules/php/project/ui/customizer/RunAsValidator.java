@@ -44,9 +44,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -126,7 +126,7 @@ public final class RunAsValidator {
     public static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
         assert parentDirectory != null;
         if (indexFile != null) {
-            if (!PhpProjectUtils.hasText(indexFile)) {
+            if (!StringUtils.hasText(indexFile)) {
                 return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
             }
             indexFile = indexFile.trim();

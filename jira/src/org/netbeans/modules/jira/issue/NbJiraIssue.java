@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -64,6 +65,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
+import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -79,6 +81,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -138,6 +141,7 @@ public class NbJiraIssue extends Issue {
      * Field was changed since the issue was seen the last time
      */
     static final int FIELD_STATUS_MODIFIED = 4;
+    private Map<String, String> seenAtributes;
 
     enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -147,9 +151,9 @@ public class NbJiraIssue extends Issue {
         PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
         RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
         PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
-        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT"),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS"),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS"),
+        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT", false),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS", false),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS", false),
         ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
         REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
         ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
@@ -210,6 +214,29 @@ public class NbJiraIssue extends Issue {
         super(repo);
         this.taskData = data;
         this.repository = repo;
+    }
+
+    void opened() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!taskData.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
+        if(refresh != null && refresh.equals("true")) {                                      // NOI18N
+            return;
+        }
+        repository.scheduleForRefresh(getID());
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+    }
+
+    void closed() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
+        repository.stopRefreshing(getID());
+        seenAtributes = null;
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
@@ -351,6 +378,39 @@ public class NbJiraIssue extends Issue {
                     && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
                 attribute.setValues(customField.getValues());
             }
+        }
+    }
+
+    /**
+     * Returns an array of worklogs under the issue.
+     * @return
+     */
+    WorkLog[] getWorkLogs () {
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, WorkLogConverter.TYPE_WORKLOG);
+        if (attrs == null) {
+            return new WorkLog[0];
+        }
+        List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            workLogs.add(new WorkLog(taskAttribute));
+        }
+        return workLogs.toArray(new WorkLog[workLogs.size()]);
+    }
+
+    /**
+     * Adds a new worklog. Just one worklog can be added before committing the issue.
+     * Don't forget to commit the issue.
+     * @param startDate
+     * @param spentTime in seconds
+     * @param comment
+     */
+    void addWorkLog (Date startDate, long spentTime, String comment) {
+        if(startDate != null) {
+            TaskAttribute attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            TaskAttributeMapper mapper = taskData.getAttributeMapper();
+            mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
+            mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
         }
     }
 
@@ -953,13 +1013,26 @@ public class NbJiraIssue extends Issue {
                 return project != null ? project.getName() : "";                // NOI18N
             case COMPONENT:
                 String projectId = getFieldValue(IssueField.PROJECT);
-                Component comp = config != null ? config.getComponentById(projectId, value) : null;
-                return comp != null ? comp.getName() : "";                      // NOI18N
+                // Component and version are multi-value fields, cannot use directly getFieldValue()
+                List<String> values = new LinkedList<String>();
+                for (String v : getFieldValues(f)) {
+                    Component version = config != null ? config.getComponentById(projectId, v) : null;
+                    if (version != null) {
+                        values.add(version.getName());
+                    }
+                }
+                return values.toString();
             case AFFECTSVERSIONS:
             case FIXVERSIONS:
                 projectId = getFieldValue(IssueField.PROJECT);
-                Version version = config != null ? config.getVersionById(projectId, value) : null;
-                return version != null ? version.getName() : "";                // NOI18N
+                values = new LinkedList<String>();
+                for (String v : getFieldValues(f)) {
+                    Version version = config != null ? config.getVersionById(projectId, v) : null;
+                    if (version != null) {
+                        values.add(version.getName());
+                    }
+                }
+                return values.toString();
             case TYPE:
                 IssueType type = config != null ? config.getIssueTypeById(value) : null;
                 return type != null ? type.getName() : "";                      // NOI18N
@@ -970,16 +1043,20 @@ public class NbJiraIssue extends Issue {
 
 
     static String getFieldValue(TaskData taskData, IssueField f) {
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
         if(f.isSingleAttribute()) {
-            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.key);
-            // returning 0 would set status MODIFIED instead of NEW
-            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
+            String value = "";                                          //NOI18N
+            if (a != null) {
+                ArrayList<String> attrs = new ArrayList(a.getValues());
+                Collections.sort(attrs);
+                value += "" + attrs.size() + attrs.toString();          //NOI18N
+            }
+            return value;
         }
     }
 
@@ -1101,6 +1178,14 @@ public class NbJiraIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+
         return true;
     }
 
@@ -1116,9 +1201,6 @@ public class NbJiraIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        if(!wasSeen()) {
-            return FIELD_STATUS_IRELEVANT;
-        }
         Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
@@ -1133,9 +1215,11 @@ public class NbJiraIssue extends Issue {
     }
 
     private Map<String, String> getSeenAttributes() {
-        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         if(seenAtributes == null) {
-            seenAtributes = new HashMap<String, String>();
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
         }
         return seenAtributes;
     }
@@ -1385,6 +1469,47 @@ public class NbJiraIssue extends Issue {
 
         public void setValues (List<String> values) {
             this.values = values;
+        }
+    }
+
+    public static final class WorkLog {
+        private final Date startDate;
+        private final String author;
+        private final long timeSpent;
+        private final String comment;
+
+        public WorkLog(TaskAttribute workLogTA) {
+            TaskAttributeMapper mapper = workLogTA.getTaskData().getAttributeMapper();
+            startDate = mapper.getDateValue(workLogTA.getMappedAttribute(WorkLogConverter.START_DATE.key()));
+            IRepositoryPerson person = mapper.getRepositoryPerson(workLogTA.getMappedAttribute(WorkLogConverter.AUTOR.key()));
+            author = person == null ? null : person.getPersonId();
+            comment = mapper.getValue(workLogTA.getMappedAttribute(WorkLogConverter.COMMENT.key()));
+            Long timeSpentValue = mapper.getLongValue(workLogTA.getMappedAttribute(WorkLogConverter.TIME_SPENT.key()));
+            this.timeSpent = timeSpentValue == null ? 0 : timeSpentValue.longValue();
+        }
+
+        public Date getStartDate () {
+            return startDate;
+        }
+
+        /**
+         *
+         * @return author's ID
+         */
+        public String getAuthor () {
+            return author;
+        }
+
+        /**
+         *
+         * @return spent time on the issue in seconds
+         */
+        public long getTimeSpent () {
+            return timeSpent;
+        }
+
+        public String getComment () {
+            return comment;
         }
     }
 }

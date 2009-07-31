@@ -42,7 +42,6 @@ package org.openide.util.actions;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeListener;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
@@ -53,8 +52,22 @@ import java.lang.ref.*;
 import java.util.*;
 
 
-/** An action
-* dependent on the cookies of the selected nodes.
+/** Not the preferred solution anymore, rather use
+* <a href="@org-openide-awt@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.context</a>.
+* To replace your action
+* <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+* layer definition</a> use more delarative way:
+* <pre>
+* &lt;file name="action-pkg-ClassName.instance"&gt;
+*   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
+*   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+*   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
+*   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
+*   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+*   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+*   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+* &lt;/file&gt;
+* </pre>
 *
 * @author   Petr Hamernik, Jaroslav Tulach, Dafe Simonek, Jesse Glick
 */

@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -56,76 +55,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class GNUCCCCompiler extends CCCCompiler {
 
-    protected PersistentList<String> systemIncludeDirectoriesList = null;
-    protected PersistentList<String> systemPreprocessorSymbolsList = null;
-
     public GNUCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
-    }
-
-    @Override
-    public boolean setSystemIncludeDirectories(List<String> values) {
-        assert values != null;
-        if (values.equals(systemIncludeDirectoriesList)) {
-            return false;
-        }
-        systemIncludeDirectoriesList = new PersistentList<String>(values);
-        normalizePaths(systemIncludeDirectoriesList);
-        saveSystemIncludesAndDefines();
-        return true;
-    }
-
-    @Override
-    public boolean setSystemPreprocessorSymbols(List<String> values) {
-        assert values != null;
-        if (values.equals(systemPreprocessorSymbolsList)) {
-            return false;
-        }
-        systemPreprocessorSymbolsList = new PersistentList<String>(values);
-        saveSystemIncludesAndDefines();
-        return true;
-    }
-
-    @Override
-    public List<String> getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null){
-            return systemPreprocessorSymbolsList;
-        }
-
-        getSystemIncludesAndDefines();
-        return systemPreprocessorSymbolsList;
-    }
-
-    @Override
-    public List<String> getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null){
-            return systemIncludeDirectoriesList;
-        }
-
-        getSystemIncludesAndDefines();
-        return systemIncludeDirectoriesList;
-    }
-
-    @Override
-    public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null){
-            systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        }
-        if (systemPreprocessorSymbolsList != null){
-            systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-        }
-    }
-
-    private void restoreSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-
-    private void getSystemIncludesAndDefines() {
-        restoreSystemIncludesAndDefines();
-        if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines();
-        }
     }
 
     protected String getCompilerStderrCommand() {
@@ -144,39 +75,21 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         return ""; // NOI18N
     }
 
-    private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList<String>();
-        systemPreprocessorSymbolsList = new PersistentList<String>();
-//        if (!getHostKey().endsWith(CompilerSetManager.LOCALHOST)) {
-//            // TODO: this is temporary to test CA for remote projects
-//            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc\\" + getHostKey() + "\\"; //NOI18N //TODO
-//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\include");
-//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\local\\include");
-//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include");
-////            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3");
-////            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3\\i386-pc-solaris2.10");
-//
-//            //systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
-//            return;
-//        }
+    protected Pair getFreshSystemIncludesAndDefines() {
+        Pair res = new Pair();
         try {
-            getSystemIncludesAndDefines(getCompilerStderrCommand(), false);
-            getSystemIncludesAndDefines(getCompilerStdoutCommand(), true);
+            getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
+            getSystemIncludesAndDefines(getCompilerStdoutCommand(), true, res);
             // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
-            if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
-                systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
+            if (!containsMacro(res.systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
+                res.systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
             }
-            saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
-    }
-
-    @Override
-    public void resetSystemIncludesAndDefines() {
-        getFreshSystemIncludesAndDefines();
+        return res;
     }
 
     private boolean startsWithPath(String line) {
@@ -203,7 +116,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
    @Override
-   protected void parseCompilerOutput(BufferedReader reader) {
+   protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
 
        try {
            String line;
@@ -221,27 +134,27 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                        continue;
                    }
                    if (line.length()>2 && line.charAt(1)==':') {
-                       systemIncludeDirectoriesList.addUnique(normalizePath(line));
+                       pair.systemIncludeDirectoriesList.addUnique(normalizePath(line));
                    } else {
                        line = cutIncludePrefix(line);
                        if (line.endsWith(" (framework directory)")) { // NOI18N
                            line = line.substring(0, line.lastIndexOf('(')).trim();
                        }
-                       systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
+                       pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
                        if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
                            // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
                            // we shouldn't add original dir (fix later to avoid regression before release)
-                           systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
+                           pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
                        }
                    }
                    continue;
                }
-               parseUserMacros(line, systemPreprocessorSymbolsList);
+               parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                if (line.startsWith("#define ")) { // NOI18N
                    int i = line.indexOf(' ', 8);
                    if (i > 0) {
                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                       systemPreprocessorSymbolsList.add(token);
+                       pair.systemPreprocessorSymbolsList.add(token);
                    }
                }
            }
@@ -250,17 +163,4 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
        }
    }
-
-
-
-    private void dumpLists() {
-        System.out.println("==================================" + getDisplayName()); // NOI18N
-        for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
-            System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
-        }
-        for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
-            System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
-        }
-    }
-
 }

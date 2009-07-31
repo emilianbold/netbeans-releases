@@ -40,27 +40,16 @@
  */
 package org.openide;
 
-
 import javax.swing.*;
 import org.netbeans.junit.*;
 
 /** Testing issue 56878.
  * @author  Jiri Rechtacek
- *
  */
 public class NotifyDescriptorTest extends NbTestCase {
 
-
     public NotifyDescriptorTest (String name) {
         super(name);
-    }
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run (new NbTestSuite (NotifyDescriptorTest.class));
-        System.exit (0);
-    }
-
-    protected final void setUp () {
     }
 
     public void testDefaultValue () {
@@ -71,10 +60,35 @@ public class NotifyDescriptorTest extends NbTestCase {
         assertEquals ("Test descriptor has defaultButton as defaultValue", defaultButton, dd.getValue ());
         dd.setClosingOptions (null);
         
-        DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+        DialogDisplayer.getDefault().createDialog(dd);
         customButton.doClick ();
         
         assertEquals ("Test dialog closed by CustomButton", customButton, dd.getValue ());
         assertEquals ("Test dialog has the same default value as before", defaultButton, dd.getDefaultValue ());
     }
+
+    /** Tests that clearMessages() really clears all previously set messages. */
+    public void testNotificationClearMessages() {
+        DialogDescriptor dd = new DialogDescriptor("Test", "Test dialog");
+        NotificationLineSupport nls = dd.createNotificationLineSupport();
+
+        String expected = "INFO";
+        nls.setInformationMessage(expected);
+        assertEquals("setInformationMessage doesn't work.", expected, nls.getInformationMessage());
+        nls.clearMessages();
+        assertNull("clearMessages doesn't work.", nls.getInformationMessage());
+
+        expected = "WARNING";
+        nls.setWarningMessage(expected);
+        assertEquals("setWarningMessage doesn't work.", expected, nls.getWarningMessage());
+        nls.clearMessages();
+        assertNull("clearMessages doesn't work.", nls.getWarningMessage());
+
+        expected = "ERROR";
+        nls.setErrorMessage(expected);
+        assertEquals("setErrorMessage doesn't work.", expected, nls.getErrorMessage());
+        nls.clearMessages();
+        assertNull("clearMessages doesn't work.", nls.getErrorMessage());
+    }
+
 }

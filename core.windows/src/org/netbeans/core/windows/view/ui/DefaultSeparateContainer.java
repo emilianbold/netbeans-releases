@@ -55,7 +55,6 @@ import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.dnd.ZOrderManager;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -213,7 +212,6 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 char[] c = title.toCharArray();
                 StringBuffer sb = new StringBuffer(title.length());
                 boolean inTag = false;
-                boolean inEntity = false;
                 for (int i=0; i < c.length; i++) {
                     if (inTag && c[i] == '>') { //NOI18N
                         inTag = false;
@@ -228,7 +226,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                     }
                 }
                 //XXX, would be nicer to support the full complement of entities...
-                title = Utilities.replaceString(sb.toString(), "&nbsp;", " "); //NOI18N
+                title = sb.toString().replace("&nbsp;", " "); //NOI18N
             }
             String completeTitle = MessageFormat.format(
                     NbBundle.getMessage(DefaultSeparateContainer.class, "CTL_SeparateEditorTitle"),

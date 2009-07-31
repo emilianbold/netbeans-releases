@@ -110,11 +110,13 @@ public class ComponentWidget extends Widget {
         revalidate ();
     }
 
+    @Override
     protected final void notifyAdded () {
         widgetAdded = true;
         attach ();
     }
 
+    @Override
     protected final void notifyRemoved () {
         widgetAdded = false;
     }
@@ -137,6 +139,7 @@ public class ComponentWidget extends Widget {
      * Calculates a client area from the preferred size of the component.
      * @return the calculated client area
      */
+    @Override
     protected final Rectangle calculateClientArea () {
         Dimension preferredSize = component.getPreferredSize ();
         zoomFactor = getScene ().getZoomFactor ();
@@ -172,11 +175,14 @@ public class ComponentWidget extends Widget {
     /**
      * Paints the component widget.
      */
+    @Override
     protected final void paintWidget () {
         if (getScene ().isPaintEverything ()  ||  ! componentVisible) {
-            boolean isDoubleBuffered = component instanceof JComponent  &&  component.isDoubleBuffered ();
-            if (isDoubleBuffered)
-                ((JComponent) component).setDoubleBuffered (false);
+            RepaintManager rm = RepaintManager.currentManager(null);
+            boolean isDoubleBuffered = component instanceof JComponent  &&  rm.isDoubleBufferingEnabled();
+            if (isDoubleBuffered) {
+                rm.setDoubleBufferingEnabled(false);
+            }
             Graphics2D graphics = getGraphics ();
             Rectangle bounds = getClientArea ();
             AffineTransform previousTransform = graphics.getTransform ();
@@ -185,8 +191,9 @@ public class ComponentWidget extends Widget {
             graphics.scale (1 / zoomFactor, 1 / zoomFactor);
             component.paint (graphics);
             graphics.setTransform (previousTransform);
-            if (isDoubleBuffered)
-                ((JComponent) component).setDoubleBuffered (isDoubleBuffered);
+            if (isDoubleBuffered) {
+                rm.setDoubleBufferingEnabled(true);
+            }
         }
     }
 

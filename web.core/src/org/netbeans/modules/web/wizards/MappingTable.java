@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 /**
  * MappingTable.java
  *
@@ -59,114 +58,114 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.event.TableModelListener;  
+import javax.swing.event.TableModelListener;
 import org.openide.util.NbBundle;
 
 class MappingTable extends JTable {
 
     // Handle resizing for larger fonts
     private boolean fontChanged = true;
-    private int margin = 6; 
-
+    private int margin = 6;
     private static final long serialVersionUID = 3482048644419079279L;
-    
-    MappingTable(String filterName, List<FilterMappingData> filterMappings) { 
-	super(); 
-	this.setModel(new MappingTableModel(filterName, filterMappings)); 
 
-	TableColumnModel tcm = this.getColumnModel();
+    MappingTable(String filterName, List<FilterMappingData> filterMappings) {
+        super();
+        this.setModel(new MappingTableModel(filterName, filterMappings));
 
-	// The filter name - this one is never editable 
-	tcm.getColumn(0).setPreferredWidth(72);
+        TableColumnModel tcm = this.getColumnModel();
 
-	// The pattern or servlet that we match to
-	// This editor depends on whether the value of the other is
-	// URL or Servlet
-	tcm.getColumn(1).setPreferredWidth(72);
-	this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	setColors(false); 
-	setIntercellSpacing(new Dimension(margin, margin));
+        // The filter name - this one is never editable
+        tcm.getColumn(0).setPreferredWidth(72);
+
+        // The pattern or servlet that we match to
+        // This editor depends on whether the value of the other is
+        // URL or Servlet
+        tcm.getColumn(1).setPreferredWidth(72);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //setColors(false);
+        setIntercellSpacing(new Dimension(margin, margin));
     }
 
-    List<FilterMappingData> getFilterMappings() { 
-	return ((MappingTableModel)this.getModel()).getFilterMappings(); 
+    List<FilterMappingData> getFilterMappings() {
+        return ((MappingTableModel) this.getModel()).getFilterMappings();
     }
 
-    void setFilterName(String name) { 
-	((MappingTableModel)this.getModel()).setFilterName(name);
-	this.invalidate(); 
-    } 
-
-    void addRow(FilterMappingData fmd) { 
-	this.invalidate(); 
-	((MappingTableModel)getModel()).addRow(fmd); 
+    void setFilterName(String name) {
+        ((MappingTableModel) this.getModel()).setFilterName(name);
+        this.invalidate();
     }
 
-    void addRow(int row, FilterMappingData fmd) { 
-	this.invalidate(); 
-	((MappingTableModel)getModel()).addRow(row, fmd); 
+    void addRow(FilterMappingData fmd) {
+        this.invalidate();
+        ((MappingTableModel) getModel()).addRow(fmd);
     }
 
-    void setRow(int row, FilterMappingData fmd) { 
-	this.invalidate(); 
-	((MappingTableModel)getModel()).setRow(row, fmd);
-    } 
-
-    FilterMappingData getRow(int row) { 
-	return 	((MappingTableModel)getModel()).getRow(row);
+    void addRow(int row, FilterMappingData fmd) {
+        this.invalidate();
+        ((MappingTableModel) getModel()).addRow(row, fmd);
     }
 
-    void moveRowUp(int row) { 
-	((MappingTableModel)getModel()).moveRowUp(row); 
-	getSelectionModel().setSelectionInterval(row-1, row-1); 
-	this.invalidate(); 
-    } 
-    void moveRowDown(int row) { 
-	((MappingTableModel)getModel()).moveRowUp(row+1);
-	getSelectionModel().setSelectionInterval(row+1, row+1);  
-	this.invalidate(); 
-    } 
+    void setRow(int row, FilterMappingData fmd) {
+        this.invalidate();
+        ((MappingTableModel) getModel()).setRow(row, fmd);
+    }
 
-    void removeRow(int row) { 
-	((MappingTableModel)getModel()).removeRow(row); 
-	this.invalidate(); 
-	return;
+    FilterMappingData getRow(int row) {
+        return ((MappingTableModel) getModel()).getRow(row);
+    }
+
+    void moveRowUp(int row) {
+        ((MappingTableModel) getModel()).moveRowUp(row);
+        getSelectionModel().setSelectionInterval(row - 1, row - 1);
+        this.invalidate();
+    }
+
+    void moveRowDown(int row) {
+        ((MappingTableModel) getModel()).moveRowUp(row + 1);
+        getSelectionModel().setSelectionInterval(row + 1, row + 1);
+        this.invalidate();
+    }
+
+    void removeRow(int row) {
+        ((MappingTableModel) getModel()).removeRow(row);
+        this.invalidate();
+        return;
     }
 
     @Override
     public void setValueAt(Object o, int row, int col) {
-	return; 
-    } 
+        return;
+    }
 
     private void setColors(boolean editable) {
-	Color bg;
-	this.setBorder(BorderFactory.createLoweredBevelBorder());
-	if (!editable) { 
-	    bg = this.getBackground().darker();
-	} else {
-	    bg = Color.white;
-	}
-	this.setBackground(bg);
+        Color bg;
+        this.setBorder(BorderFactory.createLoweredBevelBorder());
+        if (!editable) {
+            bg = this.getBackground().darker();
+        } else {
+            bg = Color.white;
+        }
+        this.setBackground(bg);
     }
 
     void addTableModelListener(TableModelListener tml) {
-	TableModel tableModel = getModel();
-	if (tableModel != null) {
-	    tableModel.addTableModelListener(tml);
-	}
+        TableModel tableModel = getModel();
+        if (tableModel != null) {
+            tableModel.addTableModelListener(tml);
+        }
     }
 
     void removeTableModelListener(TableModelListener tml) {
-	TableModel tableModel = getModel();
-	if (tableModel != null) {
-	    tableModel.removeTableModelListener(tml);
-	}
+        TableModel tableModel = getModel();
+        if (tableModel != null) {
+            tableModel.removeTableModelListener(tml);
+        }
     }
-    
+
     @Override
     public void setFont(Font f) {
-	fontChanged = true;
-	super.setFont(f);
+        fontChanged = true;
+        super.setFont(f);
     }
 
     /** 
@@ -174,111 +173,112 @@ class MappingTable extends JTable {
      * size of the font. */
     @Override
     public void paint(Graphics g) {
-	if (fontChanged) {
-	    fontChanged = false; 
+        if (fontChanged) {
+            fontChanged = false;
 
-	    int height = 0; 
-	    FontMetrics fm = g.getFontMetrics(getFont());
-	    height = fm.getHeight() + margin; 
-	    if(height > rowHeight) rowHeight = height; 
-	    //triggers paint, just return afterwards
-	    this.setRowHeight(rowHeight);
-	    return;
-	}
-	super.paint(g);
+            int height = 0;
+            FontMetrics fm = g.getFontMetrics(getFont());
+            height = fm.getHeight() + margin;
+            if (height > rowHeight) {
+                rowHeight = height;
+            }
+            //triggers paint, just return afterwards
+            this.setRowHeight(rowHeight);
+            return;
+        }
+        super.paint(g);
     }
 
-    private class MappingTableModel extends AbstractTableModel { 
+    private static class MappingTableModel extends AbstractTableModel {
 
-	private final String[] colheaders = { 
-	    NbBundle.getMessage(MappingTable.class, "LBL_filter_name"),
-	    NbBundle.getMessage(MappingTable.class, "LBL_applies_to"),
-	};
-
-	private List<FilterMappingData> filterMappings = null;
-	private String filterName; 
-	
+        private final String[] colheaders = {
+            NbBundle.getMessage(MappingTable.class, "LBL_filter_name"),
+            NbBundle.getMessage(MappingTable.class, "LBL_applies_to"),};
+        private List<FilterMappingData> filterMappings = null;
+        private String filterName;
         private static final long serialVersionUID = 2845252365404044474L;
-        
-	MappingTableModel(String filterName, List<FilterMappingData> filterMappings) { 
-	    this.filterName = filterName; 
-	    this.filterMappings = filterMappings;
-	}
 
-	List<FilterMappingData> getFilterMappings() { 
-	    return filterMappings; 
-	} 
+        MappingTableModel(String filterName, List<FilterMappingData> filterMappings) {
+            this.filterName = filterName;
+            this.filterMappings = filterMappings;
+        }
 
-	void setFilterName(String name) { 
-	    Iterator<FilterMappingData> i = filterMappings.iterator(); 
-	    FilterMappingData fmd; 
-	    while(i.hasNext()) {
-		fmd = i.next();
-		if(fmd.getName().equals(filterName))
-		    fmd.setName(name); 
-	    }
-	    this.filterName = name; 
-	} 
+        List<FilterMappingData> getFilterMappings() {
+            return filterMappings;
+        }
 
-	public int getColumnCount() {
-	    return colheaders.length;
-	}
+        void setFilterName(String name) {
+            Iterator<FilterMappingData> i = filterMappings.iterator();
+            FilterMappingData fmd;
+            while (i.hasNext()) {
+                fmd = i.next();
+                if (fmd.getName().equals(filterName)) {
+                    fmd.setName(name);
+                }
+            }
+            this.filterName = name;
+        }
 
-	public int getRowCount() {
-	    return filterMappings.size(); 
-	}
+        public int getColumnCount() {
+            return colheaders.length;
+        }
 
-        @Override
-	public String getColumnName(int col) {
-	    return colheaders[col];
-	}
-
-	public Object getValueAt(int row, int col) {
-	    FilterMappingData fmd = filterMappings.get(row);
-	    if(col == 0) return fmd.getName(); 
-	    else return fmd.getPattern();
-	} 
+        public int getRowCount() {
+            return filterMappings.size();
+        }
 
         @Override
-	public Class getColumnClass(int c) {
-	    return String.class; 
-	}
+        public String getColumnName(int col) {
+            return colheaders[col];
+        }
+
+        public Object getValueAt(int row, int col) {
+            FilterMappingData fmd = filterMappings.get(row);
+            if (col == 0) {
+                return fmd.getName();
+            } else {
+                return fmd.getPattern();
+            }
+        }
 
         @Override
-	public boolean isCellEditable(int row, int col) { 
-	    return false; 
-	} 
-    
+        public Class getColumnClass(int c) {
+            return String.class;
+        }
+
         @Override
-	public void setValueAt(Object value, int row, int col) {
-	    return;
-	} 
+        public boolean isCellEditable(int row, int col) {
+            return false;
+        }
 
-	void addRow(int row, FilterMappingData fmd) {
-	    filterMappings.add(row, fmd); 
-	}
+        @Override
+        public void setValueAt(Object value, int row, int col) {
+            return;
+        }
 
-	void addRow(FilterMappingData fmd) {
-	    filterMappings.add(fmd); 
-	}
+        void addRow(int row, FilterMappingData fmd) {
+            filterMappings.add(row, fmd);
+        }
 
-	FilterMappingData getRow(int row) { 
-	    return filterMappings.get(row);
-	}
-	
-	void setRow(int row, FilterMappingData fmd) { 
-	    filterMappings.set(row, fmd);
-	} 
+        void addRow(FilterMappingData fmd) {
+            filterMappings.add(fmd);
+        }
 
-	void moveRowUp(int row) { 
-	    FilterMappingData o = filterMappings.remove(row); 
-	    filterMappings.add(row-1, o); 
-	}
+        FilterMappingData getRow(int row) {
+            return filterMappings.get(row);
+        }
 
-	void removeRow(int row) { 
-	    filterMappings.remove(row); 
-	}
+        void setRow(int row, FilterMappingData fmd) {
+            filterMappings.set(row, fmd);
+        }
 
+        void moveRowUp(int row) {
+            FilterMappingData o = filterMappings.remove(row);
+            filterMappings.add(row - 1, o);
+        }
+
+        void removeRow(int row) {
+            filterMappings.remove(row);
+        }
     } // MappingTableModel
-
 } // MappingTable

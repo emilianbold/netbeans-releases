@@ -48,6 +48,7 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,8 +59,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -79,8 +78,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -88,6 +85,8 @@ import org.xml.sax.SAXException;
  * @author Peter Williams
  */
 public class StartTask extends BasicTask<OperationState> {
+
+    private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
 
     private final CommonServerSupport support;
     private List<Recognizer> recognizers;
@@ -297,7 +296,6 @@ public class StartTask extends BasicTask<OperationState> {
         if(localJdkHome != null) {
             String javaEnv = "JAVA_HOME=" + localJdkHome; // NOI18N
             envp.add(javaEnv); // NOI18N
-            Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv); // NOI18N
         } else {
             Logger.getLogger("glassfish").log(Level.WARNING, "Unable to set JAVA_HOME for GlassFish V3 enviroment."); // NOI18N
         }
@@ -313,13 +311,22 @@ public class StartTask extends BasicTask<OperationState> {
         }
         appendSystemEnvVar(envp, GlassfishModule.GEM_HOME);
         appendSystemEnvVar(envp, GlassfishModule.GEM_PATH);
+        Logger logger = Logger.getLogger("glassfish"); // NOI18N
+        if(logger.isLoggable(Level.FINE)) {
+            String logmsg = "V3 Environment: "; // NOI18N
+            for(String var: envp) {
+                logmsg += var;
+                logmsg += " "; // NOI18N
+            }
+            logger.log(Level.FINE, logmsg);
+        }
         return envp.toArray(new String[envp.size()]);
     }
     
     private void appendSystemEnvVar(List<String> envp, String key) {
         String value = ip.get(key);
         if(value != null && value.length() > 0) {
-            envp.add(key + "=" + value);
+            envp.add(key + "=" + value); // NOI18N
         }
     }
 
@@ -358,53 +365,97 @@ public class StartTask extends BasicTask<OperationState> {
     private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException { 
         String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
-        if (!File.separator.equals("/")) {
+        if (Utilities.isWindows()) {
             startScript += ".exe"; // NOI18N
         }
         File ss = new File(startScript);
         if (!ss.exists()) {
-            throw new ProcessCreationException(null,"MSG_INVALID_JAVA", instanceName, startScript);
+            throw new ProcessCreationException(null, "MSG_INVALID_JAVA", instanceName, startScript); // NOI18N
         }
         if (support.getInstanceProvider().requiresJdk6OrHigher() && !Util.appearsToBeJdk6OrBetter(ss)) {
-            throw new ProcessCreationException(null,"MSG_START_SERVER_FAILED_JDK_ERROR", instanceName);
+            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_JDK_ERROR", instanceName); // NOI18N
         }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
-        if(jar == null) {
-            throw new ProcessCreationException(null,"MSG_START_SERVER_FAILED_FNF");
+        File bootstrapJar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
+        if(bootstrapJar == null) {
+            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
         }
-        String jarLocation = jar.getAbsolutePath();
-        
+
+        File domainDir = getDomainFolder();
         List<String> optList = new ArrayList<String>(10);
         Map<String, String> argMap = new HashMap<String, String>();
-        readJvmArgs(getDomainFolder(), optList, argMap);
+        Map<String, String> propMap = new HashMap<String, String>();
+        readJvmArgs(domainDir, optList, argMap, propMap);
         
         if (null != jvmArgs) {
             optList.addAll(jvmArgs);
         }
-        
+
         StringBuilder argumentBuf = new StringBuilder(1024);
+        String classpath = computeClassPath(propMap, domainDir, bootstrapJar);
+        if(classpath != null) {
+            argumentBuf.append("-cp "); // NOI18N
+            argumentBuf.append(classpath);
+        }
         appendSystemVars(argMap, argumentBuf);
         appendJavaOpts(optList, argumentBuf);
 
-        argumentBuf.append(" -client -jar "); // NOI18N
-        argumentBuf.append(quote(jarLocation));
+        if(classpath != null) {
+            argumentBuf.append(" ");
+            argumentBuf.append(MAIN_CLASS);
+        } else {
+            argumentBuf.append(" -jar "); // NOI18N
+            argumentBuf.append(Util.quote(bootstrapJar.getAbsolutePath()));
+        }
         argumentBuf.append(" --domain " + getDomainName()); // NOI18N
-        argumentBuf.append(" --domaindir " + quote(getDomainFolder().getAbsolutePath())); // NOI18N
+        argumentBuf.append(" --domaindir " + Util.quote(domainDir.getAbsolutePath())); // NOI18N
         
         String arguments = argumentBuf.toString();
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + " " + arguments); // NOI18N
         return new NbProcessDescriptor(startScript, arguments);
     }
-    
-    // quote the string if it contains spaces.  Might want to expand to all
-    // white space (tabs, localized white space, etc.)
-    private static final String quote(String path) {
-        return path.indexOf(' ') == -1 ? path : "\"" + path + "\""; // NOI18N
+
+    private String computeClassPath(Map<String, String> propMap, File domainDir, File bootstrapJar) {
+        String result = null;
+        List<File> prefixCP = Util.classPathToFileList(propMap.get("classpath-prefix"), domainDir); // NOI18N
+        List<File> suffixCP = Util.classPathToFileList(propMap.get("classpath-suffix"), domainDir); // NOI18N
+        boolean useEnvCP = "false".equals(propMap.get("env-classpath-ignored")); // NOI18N
+        List<File> envCP = Util.classPathToFileList(useEnvCP ? System.getenv("CLASSPATH") : null, domainDir); // NOI18N
+        List<File> systemCP = Util.classPathToFileList(propMap.get("system-classpath"), domainDir); // NOI18N
+
+        if(prefixCP.size() > 0 || suffixCP.size() > 0 || envCP.size() > 0 || systemCP.size() > 0) {
+            List<File> mainCP = Util.classPathToFileList(bootstrapJar.getAbsolutePath(), null);
+
+            if(mainCP.size() > 0) {
+                List<File> completeCP = new ArrayList<File>(32);
+                completeCP.addAll(prefixCP);
+                completeCP.addAll(mainCP);
+                completeCP.addAll(systemCP);
+                completeCP.addAll(envCP);
+                completeCP.addAll(suffixCP);
+
+                // Build classpath in proper order - prefix / main / system / environment / suffix
+                // Note that completeCP should always have at least 2 elements at
+                // this point (1 from mainCP and 1 from some other CP modifier)
+                StringBuilder classPath = new StringBuilder(1024);
+                Iterator<File> iter = completeCP.iterator();
+                classPath.append(Util.quote(iter.next().getPath()));
+                while(iter.hasNext()) {
+                    classPath.append(File.pathSeparatorChar);
+                    classPath.append(Util.quote(iter.next().getPath()));
+                }
+                result = classPath.toString();
+            } else {
+                Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
+                        "Unable to read main classpath from glassfish main jar when building launch classpath."); // NOI18N
+            }
+        }
+        return result;
     }
-    
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws ProcessCreationException {
-        String debugPortString = "";
+
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf)
+            throws ProcessCreationException {
+        String debugPortString = ""; // NOI18N
         try {
             for (String option : optList) {
                 argumentBuf.append(' ');
@@ -412,7 +463,8 @@ public class StartTask extends BasicTask<OperationState> {
             }
 
             if (GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
-//            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
+//            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE
+//                -Xrunjdwp:transport=dt_socket,address="). // NOI18N
                 debugPortString = ip.get(GlassfishModule.DEBUG_PORT);
                 String debugTransport = "dt_socket"; // NOI18N
                 if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
@@ -429,7 +481,8 @@ public class StartTask extends BasicTask<OperationState> {
                 //try {
                 if (null == debugPortString || "".equals(debugPortString)) {
                     if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
-                        debugPortString = Integer.toString(Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
+                        debugPortString = Integer.toString(
+                                Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
                                 ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
@@ -455,9 +508,11 @@ public class StartTask extends BasicTask<OperationState> {
                 argumentBuf.append(",server=y,suspend=n"); // NOI18N
             }
         } catch (NumberFormatException nfe) {
-            throw new ProcessCreationException(nfe, "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
+            throw new ProcessCreationException(nfe,
+                    "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         } catch (IOException ioe) {
-            throw new ProcessCreationException(ioe, "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
+            throw new ProcessCreationException(ioe,
+                    "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         }
         return argumentBuf;
     }
@@ -492,10 +547,8 @@ public class StartTask extends BasicTask<OperationState> {
         argMap.remove(GlassfishModule.JRUBY_HOME);
         argMap.remove(GlassfishModule.COMET_FLAG);
         
-        if(!"false".equals(System.getProperty("glassfish.use.jvm.config"))) { // NOI18N
-            for(Map.Entry<String, String> entry: argMap.entrySet()) {
-                appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
-            }
+        for(Map.Entry<String, String> entry: argMap.entrySet()) {
+            appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
         }
         
         return argumentBuf;
@@ -506,7 +559,7 @@ public class StartTask extends BasicTask<OperationState> {
             argumentBuf.append(" -D"); // NOI18N
             argumentBuf.append(key);
             argumentBuf.append("="); // NOI18N
-            argumentBuf.append(quote(value));
+            argumentBuf.append(Util.quote(value));
         }
         return argumentBuf;
     }
@@ -516,10 +569,9 @@ public class StartTask extends BasicTask<OperationState> {
         NbProcessDescriptor pd = createProcessDescriptor();
         if(pd != null) {
             try {
-                process = pd.exec(null, createEnvironment(), true, new File(
-                        ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
+                process = pd.exec(null, createEnvironment(), true, getDomainFolder());
             } catch (java.io.IOException ex) {
-                throw new ProcessCreationException(ex, "MSG_START_SERVER_FAILED_PD", instanceName);
+                throw new ProcessCreationException(ex, "MSG_START_SERVER_FAILED_PD", instanceName); // NOI18N
             }
         }
         return process;
@@ -534,25 +586,17 @@ public class StartTask extends BasicTask<OperationState> {
         return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
     
-    private void readJvmArgs(File domainRoot, List<String> optList, Map<String, String> argMap) {
+    private void readJvmArgs(File domainRoot, List<String> optList, 
+            Map<String, String> argMap, Map<String, String> propMap) {
         Map<String, String> varMap = new HashMap<String, String>();
 
-        varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
-        varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath())); // NOI18N
-        varMap.put("com.sun.aas.javaRoot", fixPath(jdkHome.getPath())); // NOI18N
-        // account for changes of "source" for java db.
-        File javadb = new File(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"); // NOI18N
-        if (javadb.exists()) {
-            // a v3 Prelude install
-            varMap.put("com.sun.aas.derbyRoot", fixPath(ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb")); // NOI18N
-        } else {
-            // a v3 install
-            varMap.put("com.sun.aas.derbyRoot", fixPath(jdkHome.getPath() + File.separatorChar + "javadb")); // NOI18N
-        }
-        
-        File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
+        varMap.put("com.sun.aas.installRoot", Util.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
+        varMap.put("com.sun.aas.instanceRoot", Util.escapePath(domainRoot.getAbsolutePath())); // NOI18N
+        varMap.put("com.sun.aas.javaRoot", Util.escapePath(jdkHome.getPath())); // NOI18N
+        varMap.put("com.sun.aas.derbyRoot", getJavaDBLocation()); // NOI18N
 
-        JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap);
+        File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
+        JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap, propMap);
         List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
         pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder())); // NOI18N
         pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder())); // NOI18N
@@ -564,137 +608,16 @@ public class StartTask extends BasicTask<OperationState> {
         }
     }
 
-    private static final String fixPath(String path) {
-        return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
+    private String getJavaDBLocation() {
+        String javadb = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"; // NOI18N
+        if (new File(javadb).exists()) {
+            // V3 Prelude includes javadb as it can run on JDK 5
+            javadb = Util.escapePath(javadb);
+        } else {
+            // V3 uses javadb from JDK 6
+            javadb = Util.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
+        }
+        return javadb;
     }
 
-    private static class ProcessCreationException extends Exception {
-        private final String messageName;
-        private final String[] args;
-        ProcessCreationException(Exception cause, String messageName, String... args) {
-            super();
-            if (null != cause) {
-                initCause(cause);
-            }
-            this.messageName = messageName;
-            this.args = args;
-        }
-
-        @Override
-        public String getLocalizedMessage() {
-            return NbBundle.getMessage(StartTask.class, messageName, args);
-        }
-    }
-    
-    private static class JvmConfigReader extends TreeParser.NodeReader {
-
-        private final Map<String, String> argMap;
-        private final Map<String, String> varMap;
-        private final List<String> optList;
-        static private final String SERVER_NAME = "server"; // NOI18N
-        private String serverConfigName;
-        private boolean readJvmConfig = false;
-        
-        public JvmConfigReader(List<String> optList, Map<String, String> argMap, Map<String, String> varMap) {
-            this.optList = optList;
-            this.argMap = argMap;
-            this.varMap = varMap;
-        }
-        
-        public TreeParser.NodeReader getServerFinder() {
-            return new TreeParser.NodeReader() {
-                @Override
-                public void readAttributes(String qname, Attributes attributes) throws SAXException {
-//                    <server lb-weight="100" name="server" config-ref="server-config">
-                    if(serverConfigName == null || serverConfigName.length() == 0) {
-                        if(SERVER_NAME.equals(attributes.getValue("name"))) {        // NOI18N
-                            serverConfigName = attributes.getValue("config-ref");   // NOI18N
-                            Logger.getLogger("glassfish").finer("DOMAIN.XML: Server profile defined by " + serverConfigName); // NOI18N
-                        }
-                    }
-                }
-            };
-        }
-        
-        public TreeParser.NodeReader getConfigFinder() {
-            return new TreeParser.NodeReader() {
-                @Override
-                public void readAttributes(String qname, Attributes attributes) throws SAXException {
-//                    <config name="server-config" dynamic-reconfiguration-enabled="true">
-                    if(serverConfigName != null && serverConfigName.equals(attributes.getValue("name"))) { // NOI18N
-                        readJvmConfig = true;
-                        Logger.getLogger("glassfish").finer("DOMAIN.XML: Reading JVM options from server profile " + serverConfigName); // NOI18N
-                    }
-                }
-                @Override
-                public void endNode(String qname) throws SAXException {
-                    readJvmConfig = false;
-                }
-            };
-        }
-        
-        @Override
-        public void readCData(String qname, char [] ch, int start, int length) throws SAXException {
-//            <jvm-options>-client</jvm-options>
-//            <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
-            if(readJvmConfig) {
-                String option = new String(ch, start, length);
-                if(option.startsWith("-D")) { // NOI18N
-                    int splitIndex = option.indexOf('=');
-                    if(splitIndex != -1) {
-                        String name = option.substring(2, splitIndex);
-                        String value = doSub(option.substring(splitIndex+1));
-                        if(name.length() > 0) {
-                            Logger.getLogger("glassfish").finer("DOMAIN.XML: argument name = " + name + ", value = " + value); // NOI18N
-                            argMap.put(name, value);
-                        }
-                    }
-                } else if(option.startsWith("-X")) { // NOI18N
-                    option = doSub(option);
-                    int splitIndex = option.indexOf('=');
-                    if(splitIndex != -1) {
-                        String name = option.substring(0, splitIndex);
-                        String value = option.substring(splitIndex+1);
-                        Logger.getLogger("glassfish").finer("DOMAIN.XML: jvm option: " + name + " = " + value); // NOI18N
-                        optList.add(name + '=' + quote(value));
-                    } else {
-                        Logger.getLogger("glassfish").finer("DOMAIN.XML: jvm option: " + option); // NOI18N
-                        optList.add(option);
-                    }
-                }
-            }
-        }
-        
-        private Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}"); // NOI18N
-        
-        private String doSub(String value) {
-            try {
-                Matcher matcher = pattern.matcher(value);
-                boolean result = matcher.find();
-                if(result) {
-                    StringBuffer sb = new StringBuffer(value.length()*2);
-                    do {
-                        String key = matcher.group(1);
-                        String replacement = varMap.get(key);
-                        if(replacement == null) {
-                            replacement = System.getProperty(key);
-                            if(replacement != null) {
-                                replacement = fixPath(replacement);
-                            } else {
-                                replacement = "\\$\\{" + key + "\\}"; // NOI18N
-                            }
-                        }
-                        matcher.appendReplacement(sb, replacement);
-                        result = matcher.find();
-                    } while(result);
-                    matcher.appendTail(sb);
-                    value = sb.toString();
-                }
-            } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
-            }
-            return value;
-        }
-
-    }
 }

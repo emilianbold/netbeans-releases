@@ -57,12 +57,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.impl.ThreadDumpImpl;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
@@ -166,8 +169,8 @@ public final class SQLStackStorage {
         return METRICS;
     }
 
-    public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) throws SQLException {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
+    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) throws SQLException {
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         PreparedStatement select = prepareCallersSelect(path);
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
@@ -184,8 +187,8 @@ public final class SQLStackStorage {
         return result;
     }
 
-    public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) throws SQLException {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
+    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) throws SQLException {
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         PreparedStatement select = prepareCalleesSelect(path);
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
@@ -202,10 +205,76 @@ public final class SQLStackStorage {
         return result;
     }
 
-    public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        ThreadDumpImpl result = null;
+
+        try {
+            // First, we need ts of the thread threadID when it was in required state.
+            PreparedStatement statement = sqlStorage.prepareStatement(
+                    "select max(time_stamp) from CallStack where " + // NOI18N
+                    "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
+
+            statement.setInt(1, threadID);
+            statement.setLong(2, timestamp);
+            statement.setInt(3, threadState);
+
+            ResultSet rs = statement.executeQuery();
+            long ts = -1;
+
+            if (rs.next()) {
+                ts = rs.getLong(1);
+            }
+
+            rs.close();
+
+            if (ts < 0) {
+                // Means that no callstack found for this thread in this state
+                //System.out.println("No callstack found!!!");
+                return null;
+            }
+
+            //System.out.println("Nearest callstack found at " + ts);
+
+            result = new ThreadDumpImpl(ts);
+
+            // Next, get all times for all threads for alligned stacks (time <= ts)
+            // select threadid, max(ts) from test where ts <= 6 group by threadid;
+
+            statement = sqlStorage.prepareStatement(
+                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
+                    "time_stamp <= ? group by thread_id"); // NOI18N
+
+            statement.setLong(1, ts);
+            
+            rs = statement.executeQuery();
+
+            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
+
+            while (rs.next()) {
+                int callStackThreadId = rs.getInt(1);
+                long callStackTimeStamp = rs.getLong(2);
+                idToTime.put(callStackThreadId, callStackTimeStamp);
+            }
+
+
+            // Next, get stacks from database having tstamps and thread ids..
+
+        } catch (SQLException ex) {
+            System.err.println("ex: " + ex.getSQLState());
+        }
+
+        return result;
+    }
+
+    public FunctionCall getFunctionCall(int stackID) {
+        return null;
+    }
+
+
+    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
             List<String> funcNames = new ArrayList<String>();
-            List<FunctionCall> funcList = new ArrayList<FunctionCall>();
+            List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             PreparedStatement select = sqlStorage.prepareStatement(
                     "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
                     "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
@@ -236,7 +305,7 @@ public final class SQLStackStorage {
         return Collections.emptyList();
     }
 
-    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
+    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
             List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
         try {
             Collection<FunctionMetric> metrics = new ArrayList<FunctionMetric>();
@@ -248,7 +317,7 @@ public final class SQLStackStorage {
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
             List<String> funcNames = new ArrayList<String>();
-            List<FunctionCall> funcList = new ArrayList<FunctionCall>();
+            List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             PreparedStatement select = sqlStorage.prepareStatement(metadata.getViewStatement());
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
@@ -330,6 +399,7 @@ public final class SQLStackStorage {
                 funcId = ++funcIdSequence;
                 AddFunction cmd = new AddFunction();
                 cmd.id = funcId;
+                funcName = new String(funcName.toString());
                 cmd.name = funcName;
                 executor.submitCommand(cmd);
                 funcCache.put(funcName, funcId);
@@ -359,7 +429,7 @@ public final class SQLStackStorage {
         return -1;
     }
 
-    private PreparedStatement prepareCallersSelect(FunctionCall[] path) throws SQLException {
+    private PreparedStatement prepareCallersSelect(FunctionCallWithMetric[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
         buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N "); //NOI18N
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
@@ -383,7 +453,7 @@ public final class SQLStackStorage {
         return select;
     }
 
-    private PreparedStatement prepareCalleesSelect(FunctionCall[] path) throws SQLException {
+    private PreparedStatement prepareCalleesSelect(FunctionCallWithMetric[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
         buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < path.length; ++i) {
@@ -468,7 +538,7 @@ public final class SQLStackStorage {
         }
     }
 
-    protected static class FunctionCallImpl extends FunctionCall {
+    protected static class FunctionCallImpl extends FunctionCallWithMetric {
 
         private final Map<FunctionMetric, Object> metrics;
 
@@ -561,8 +631,8 @@ public final class SQLStackStorage {
 
     private class ExecutorThread extends Thread {
 
-        private static final int MAX_COMMANDS = 1000;
-        private static final long SLEEP_INTERVAL = 200l;
+        private static final int MAX_COMMANDS = 5000;
+        private static final long SLEEP_INTERVAL = 200L;
         private final LinkedBlockingQueue<Object> queue;
 
         public ExecutorThread() {

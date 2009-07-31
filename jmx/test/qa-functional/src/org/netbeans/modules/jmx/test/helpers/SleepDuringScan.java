@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.jmx.test.helpers;
 
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
@@ -76,8 +76,8 @@ public class SleepDuringScan extends JMXTestCase {
         npwo.selectCategory(PROJECT_CATEGORY_SAMPLES_JMX);
         npwo.selectProject(PROJECT_TYPE_ANAGRAM_GAME);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso =
-                new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso =
+                new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(PROJECT_NAME_BOOTSTRAP_MDR_SCAN);
         npwo.finish();
     }

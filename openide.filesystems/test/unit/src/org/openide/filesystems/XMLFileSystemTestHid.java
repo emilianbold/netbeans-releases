@@ -496,6 +496,44 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals("Right class", Count.class, instance.getClass());
     }
 
+    public void testMapsAreEqualWithoutCallsToAttributes() throws IOException {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        cnt = 0;
+
+        Map m1 = (Map)fo.getAttribute("map");
+        Map m2 = (Map)fo.getAttribute("map");
+
+        if (m1 == m2) {
+            fail("Surprise usually these two shall be different: " + m1);
+        }
+        assertTrue("But they have to be equal", m1.equals(m2));
+        assertEquals("No calls to other attributes of the map", 0, cnt);
+        assertEquals("Same hashcode", m1.hashCode(), m2.hashCode());
+        assertEquals("Still no calls to other attributes of the map", 0, cnt);
+    }
+
+    static Map map(Map m) {
+        return m;
+    }
+    static int cnt;
+    static int counter() {
+        return cnt++;
+    }
+
     public void testClassBoolean() throws Exception {
         doPrimitiveTypeTest("boolvalue='true'", Boolean.class);
     }
@@ -800,9 +838,9 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals(msg + "[" + fo + "]", value, v);
     }
 
-    int cnt;
+    int cntl;
     private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String folderName, String string) throws IOException {
-        File f = new File(getWorkDir(), "layer" + (cnt++) + ".xml");
+        File f = new File(getWorkDir(), "layer" + (cntl++) + ".xml");
         FileWriter w = new FileWriter(f);
         w.write(
             "<filesystem>" +

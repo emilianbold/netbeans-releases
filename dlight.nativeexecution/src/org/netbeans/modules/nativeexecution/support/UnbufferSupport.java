@@ -48,12 +48,16 @@ import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
+/*
+ * Used to unbuffer application's output in case OutputWindow is used.
+ * 
+ */
 public class UnbufferSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
@@ -84,7 +88,7 @@ public class UnbufferSupport {
         }
 
         if (unbufferLib != null && unbufferPath != null) {
-            InstalledFileLocator fl = InstalledFileLocator.getDefault();
+            InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
             File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
 
             log.fine("Look for unbuffer library here: " + unbufferPath + "/" + unbufferLib); // NOI18N
@@ -159,7 +163,7 @@ public class UnbufferSupport {
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ";")) + // NOI18N
                             new File(unbufferPath, unbufferLib).getAbsolutePath(); // NOI18N
 
-                    ldPreload = CommandLineHelper.getInstance(execEnv).toShellPaths(ldPreload);
+                    ldPreload = WindowsSupport.getInstance().convertToAllShellPaths(ldPreload);
                 } else if (isMacOS) {
                     // TODO: FIXME (?) For Mac and Windows just put unbuffer
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial;
 
-import java.util.regex.Matcher;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
@@ -154,7 +153,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
-    private WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
+    private final WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -246,7 +245,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
         
         if (mostImportantInfo == null) return null;
@@ -265,7 +264,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
         
         if (folderAnnotation == false) {
@@ -341,10 +340,46 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
-        IconSelector sc = new IconSelector(context.getRootFiles(), icon);
-        // return the icon as soon as possible and schedule a complete scan if needed
-        sc.scanFilesLazy();
-        return sc.getBadge();
+        int mostImportantCounter = -1;
+        if ("true".equals(System.getProperty("mercurial.newGenerationCache", "false"))) { //NOI18N
+            HgModuleConfig config = HgModuleConfig.getDefault();
+            for (File file : context.getRootFiles()) {
+                if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
+                    FileInformation info = cache.getCachedStatus(file);
+                    Set<FileInformation> exclusions = new HashSet<FileInformation>();
+                    boolean flat = VersioningSupport.isFlat(file);
+                    for (String s : config.getCommitExclusions()) {
+                        File f = new File(s);
+                        if ((!flat && Utils.isAncestorOrEqual(file, f))
+                                || (flat && file.equals(f.getParentFile()))) {
+                            FileInformation exclusionInfo = cache.getCachedStatus(f);
+                            if ((exclusionInfo.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                                exclusions.add(exclusionInfo);
+                            }
+                        }
+                    }
+                    mostImportantCounter = info.getMoreImportantCounter(mostImportantCounter, flat, exclusions);
+                }
+            }
+            Image badge = null;
+            if (mostImportantCounter == FileInformation.COUNTER_CONFLICTED_FILES) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+            } else if (mostImportantCounter == FileInformation.COUNTER_MODIFIED_FILES) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgeModified, true), toolTipModified);
+            }
+            if (badge != null) {
+                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+            } else {
+                return icon;
+            }
+        } else {
+            IconSelector sc = new IconSelector(context.getRootFiles(), icon);
+            // return the icon as soon as possible and schedule a complete scan if needed
+            sc.scanFilesLazy();
+            return sc.getBadge();
+        }
     }
 
     /**
@@ -353,7 +388,7 @@ public class MercurialAnnotator extends VCSAnnotator {
      * If null, performs the complete scan which may access I/O
      * @return
      */
-    private synchronized Map<File, FileInformation> getLocallyChangedFiles (final boolean changed[]) {
+    private Map<File, FileInformation> getLocallyChangedFiles (final boolean changed[]) {
         Map<File, FileInformation> map;
         if (changed != null) {
             // return cached values
@@ -363,23 +398,25 @@ public class MercurialAnnotator extends VCSAnnotator {
             map = cache.getAllModifiedFiles();
         }
         Map<File, FileInformation> m = null;
-        for (Map<File, FileInformation> sm : allModifiedFiles) {
-            m = sm;
-            break;
-        }
-        if(modifiedFiles == null || map != m) {
-            allModifiedFiles.clear();
-            allModifiedFiles.add(map);
-            modifiedFiles = new HashMap<File, FileInformation>();
-            for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                FileInformation info = map.get(file);
-                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                    modifiedFiles.put(file, info);
+        synchronized (allModifiedFiles) {
+            for (Map<File, FileInformation> sm : allModifiedFiles) {
+                m = sm;
+                break;
+            }
+            if (modifiedFiles == null || map != m) {
+                allModifiedFiles.clear();
+                allModifiedFiles.add(map);
+                modifiedFiles = new HashMap<File, FileInformation>();
+                for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+                    File file = (File) i.next();
+                    FileInformation info = map.get(file);
+                    if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                        modifiedFiles.put(file, info);
+                    }
                 }
             }
-        } 
-        return modifiedFiles;
+            return modifiedFiles;
+        }
     }
 
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {

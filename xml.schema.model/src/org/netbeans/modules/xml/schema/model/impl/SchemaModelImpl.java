@@ -70,6 +70,11 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.SyncUnit;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.netbeans.modules.xml.schema.model.impl.resolver.ChamelionResolver;
+import org.netbeans.modules.xml.schema.model.impl.resolver.ImportResolver;
+import org.netbeans.modules.xml.schema.model.impl.resolver.IncludeResolver;
 
 /**
  *
@@ -77,12 +82,12 @@ import org.netbeans.modules.xml.xam.dom.SyncUnit;
  */
 public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> implements SchemaModel {
     
-    private SchemaImpl schema;
+    private SchemaImpl mSchema;
     private SchemaComponentFactory csef;
     private RefCacheSupport mRefCacheSupport;
     
     public SchemaModelImpl(ModelSource modelSource) {
-        super(modelSource);	
+        super(modelSource);
         csef = new SchemaComponentFactoryImpl(this);
         //getAccess().setAutoSync(true);
         mRefCacheSupport = new RefCacheSupport(this);
@@ -121,16 +126,15 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     public SchemaComponent createRootComponent(org.w3c.dom.Element root) {
         SchemaImpl newSchema = (SchemaImpl)csef.create(root, null);
         if (newSchema != null) {
-            schema = newSchema;
+            mSchema = newSchema;
         } else {
             return null;
         }
         return getSchema();
     }
 
-
     public SchemaComponent getRootComponent() {
-        return schema;
+        return mSchema;
     }
 
     public <T extends NamedReferenceable>
@@ -138,7 +142,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace) &&
             XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(getSchema().getTargetNamespace())) {
-            return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
+            return resolveImpl(namespace, localName, type);
         }
         
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
@@ -146,112 +150,76 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             return sm.findByNameAndType(localName, type);
         }
         
-        return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
+        return resolveImpl(namespace, localName, type);
     }
-    
-    <T extends NamedReferenceable>
-            T resolve(String namespace, String localName, Class<T> type, SchemaModelReference refToMe, Collection<SchemaModel> checked) 
-    {
+
+    protected <T extends NamedReferenceable> T resolveImpl(
+            String namespace, String localName, Class<T> type) {
+        //
         if (getState() != State.VALID) {
             return null;
         }
-        
-        T found = null;
-        String targetNamespace = getSchema().getTargetNamespace();
-        if ( targetNamespace != null && targetNamespace.equals(namespace) ||
-            targetNamespace == null && namespace == null ||
-            targetNamespace == null && refToMe instanceof Include) {
-            found = findByNameAndType(localName, type);
-            
-            //Non-conservative approach to same namespace resolution.
-            //See http://www.netbeans.org/issues/show_bug.cgi?id=122836
-            if (found == null && refToMe == null) {
-                Collection<SchemaModelReference> modelRefs = getMegaIncludedModelsRefs();
-                for (SchemaModelReference r : modelRefs) {
-                    SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
-                       mRefCacheSupport.optimizedResolve(r);
-                    if (sm == null)
-                        continue;
-                    found = sm.resolve(namespace, localName, type, r, checked);
-                    if (found != null)
-                        break;
-                }
-            }            
+        //
+        Schema mySchema = getSchema();
+        if (mySchema == null) {
+            return null;
         }
-        
-        if (found == null && (! (refToMe instanceof Import) 
-                    || ((Import)refToMe).getNamespace().equals(namespace))) {
-            checked.add(this);
-            
-            Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
-            for (SchemaModelReference r : modelRefs) {
-                // import should not have null namespace
-                if (r instanceof Import) {
-                    if (namespace == null || ! namespace.equals(((Import)r).getNamespace())) {
-                        continue;
-                    }
-                }
-
-                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
-                    mRefCacheSupport.optimizedResolve(r);
-                
-                if (sm != null && ! checked.contains(sm)) {
-                    found = sm.resolve(namespace, localName, type, r, checked);
-                }
-                if (found != null) {
-                    break;
-                }
+        //
+        String targetNamespace = mySchema.getTargetNamespace();
+        //
+        if (Util.equal(targetNamespace, namespace)) { // Both can be null
+            return IncludeResolver.resolve(this, namespace, localName, type);
+        } else {
+            if (targetNamespace == null) {
+                return ChamelionResolver.resolve(this, namespace, localName, type);
+            } else {
+                return ImportResolver.resole(this, namespace, localName, type);
             }
         }
-        
-        return found;
     }
-    
+
+    /**
+     * Resolves reference to another model with the help of references' cache.
+     * Calling ref.resolveReferencedModel() does time consuming resolve.
+     * So it is recommended to use this method whenever it possible.
+     *
+     * @param ref
+     * @return
+     */
     public SchemaModelImpl resolve(SchemaModelReference ref) {
-        try {
-            return (SchemaModelImpl) ref.resolveReferencedModel();
-        } catch (CatalogModelException ex) {
-            return null;
+        if (mRefCacheSupport == null) {
+            try {
+                return (SchemaModelImpl) ref.resolveReferencedModel();
+            } catch (CatalogModelException ex) {
+                // Do nothing here. Exception means that the reference can't be resolved
+                return null;
+            }
+        } else {
+            return mRefCacheSupport.optimizedResolve(ref);
         }
     }
 
     public Collection<SchemaModelReference> getSchemaModelReferences() {
         Collection<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
-        refs.addAll(getSchema().getRedefines());
-        refs.addAll(getSchema().getIncludes());
-        refs.addAll(getSchema().getImports());
+        Schema schema = getSchema();
+        if (schema != null) {
+            refs.addAll(schema.getRedefines());
+            refs.addAll(schema.getIncludes());
+            refs.addAll(schema.getImports());
+        }
         return refs;
     }
     
-    /**
-     * See http://www.netbeans.org/issues/show_bug.cgi?id=122836
-     * B.xsd includes C and D. B uses types defined in  and C uses types defined
-     * in D. C & D do not know about each other.
-     * Returns all model references of the same namespace.
-     * Look for a mega model that includes this one. We may want to use all the
-     * includes from the mega model.
-     */
-    private Collection<SchemaModelReference> getMegaIncludedModelsRefs() {
-        Collection<SchemaModelReference> modelRefs = new ArrayList<SchemaModelReference>();
-        for(SchemaModel m: SchemaModelFactory.getDefault().getModels()) {
-            if(m == null || m.getSchema() == null || m == this)
-                continue;
-            //if this is one of the included schemas in some model then we must
-            //try to resolve in all the includes found.
-            Collection<Include> refs = m.getSchema().getIncludes();
-            for(SchemaModelReference ref: refs) {
-                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(ref) :
-                    mRefCacheSupport.optimizedResolve(ref);
-                if(sm == this) {
-                    modelRefs.addAll(refs);
-                    break;
-                }
-            }            
+    public Collection<SchemaModelReference> getNotImportRefrences() {
+        Collection<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
+        Schema schema = getSchema();
+        if (schema != null) {
+            refs.addAll(schema.getRedefines());
+            refs.addAll(schema.getIncludes());
         }
-        
-        return modelRefs;        
+        return refs;
     }
-            
+
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
         return new FindGlobalReferenceVisitor<T>().find(type, localName, getSchema());
     }
@@ -404,10 +372,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return new SyncUpdateVisitor();
     }
 
+    @Override
     public Set<QName> getQNames() {
         return SchemaElements.allQNames();
     }
     
+    @Override
     public SyncUnit prepareSyncUnit(ChangeInfo changes, SyncUnit unit) {
         unit = super.prepareSyncUnit(changes, unit);
         if (unit != null) {
@@ -416,6 +386,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return null;
     }
     
+    @Override
     public DocumentModelAccess getAccess() {
         if (access == null) {
             super.getAccess().setAutoSync(true);  // default autosync true
@@ -423,12 +394,28 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return super.getAccess();
     }
     
+    @Override
     public Map<QName,List<QName>> getQNameValuedAttributes() {
         return SchemaAttributes.getQNameValuedAttributes();
     }
 
     public boolean isEmbedded() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        ModelSource source = getModelSource();
+        if (source != null) {
+            Lookup lookup = source.getLookup();
+            if (lookup != null) {
+                FileObject fileObject = lookup.lookup(FileObject.class);
+                if (fileObject != null) {
+                    return fileObject.getNameExt();
+                }
+            }
+        }
+        return super.toString();
     }
 
 }

@@ -69,6 +69,7 @@ public class SourceListNode extends SectionNode {
             res.addAll(getRecentProjectsNodes(s));
             if (s.getWorkingDirectory() != null) {
                 res.add(new OpenNbProjectNode(s, this));
+                res.add(new OpenFavoritesNode(s, this));
         }
         }
         return res;

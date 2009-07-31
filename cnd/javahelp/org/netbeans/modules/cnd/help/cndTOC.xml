@@ -103,4 +103,7 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
+	<tocitem text="Legal Notices" target="credits" />
+	<tocitem text="Configuring C and C++ Project Settings" target="Configuring1" />
+	<tocitem text="Running a C or C++ Project" target="RunningCorC++Project1" />
 </toc>

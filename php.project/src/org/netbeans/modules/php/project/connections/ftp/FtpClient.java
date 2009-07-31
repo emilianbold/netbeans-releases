@@ -74,14 +74,12 @@ public class FtpClient implements RemoteClient {
     };
 
     private final FtpConfiguration configuration;
-    private final InputOutput io;
     private final FTPClient ftpClient;
 
 
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
-        this.io = io;
 
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = new FTPClient();
@@ -180,7 +178,7 @@ public class FtpClient implements RemoteClient {
         if (password != null) {
             return password;
         }
-        PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), configuration.getUserName());
+        PasswordPanel passwordPanel = PasswordPanel.forUser(configuration.getDisplayName(), configuration.getUserName());
         if (passwordPanel.open()) {
             password = passwordPanel.getPassword();
             PASSWORDS.put(configuration.hashCode(), password);

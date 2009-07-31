@@ -88,6 +88,8 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
+// this requires also a Java Indexer to be enabled for groovy mimetype
+// see layer.xml JavaIndexer.shadow
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider.class)
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 

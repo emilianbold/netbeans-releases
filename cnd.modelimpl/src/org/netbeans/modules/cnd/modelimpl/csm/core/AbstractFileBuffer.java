@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
+    private Charset encoding;
     
     protected AbstractFileBuffer(CharSequence absPath) {
         this.absPath = FilePathCache.getManager().getString(absPath);
@@ -86,14 +87,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public abstract String getText() throws IOException;
     
     public final Reader getReader() throws IOException {
-        File file = getFile();
-        // file must be normalized
-        FileObject fo = FileUtil.toFileObject(file);
-        Charset encoding;
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        } else {
-            encoding = FileEncodingQuery.getDefaultEncoding();
+        if (encoding == null) {
+            File file = getFile();
+            // file must be normalized
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                encoding = FileEncodingQuery.getEncoding(fo);
+            } else {
+                encoding = FileEncodingQuery.getDefaultEncoding();
+            }
         }
         InputStream is = getInputStream();
         Reader reader = new InputStreamReader(is, encoding);

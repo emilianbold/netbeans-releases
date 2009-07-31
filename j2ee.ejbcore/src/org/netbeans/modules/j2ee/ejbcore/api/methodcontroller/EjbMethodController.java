@@ -44,6 +44,9 @@ package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -87,9 +90,16 @@ public abstract class EjbMethodController {
                 }
             });
             if (ejbType == EjbType.SESSION) {
-                controller = new SessionMethodController(className, model);
+                boolean allowsNoInterface = false;
+                Project project = FileOwnerQuery.getOwner(ejbClassFO);
+                if (project != null){
+                    J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
+                    allowsNoInterface = projectCap != null ? projectCap.isEjb31LiteSupported() : false;
+                }
+
+                controller = new SessionMethodController(className, model, allowsNoInterface);
                 // TODO EJB3: on Java EE 5.0 this always sets controller to null
-                if (!controller.hasLocal() && !controller.hasRemote()) {
+                if (!controller.allowsNoInterface() && !controller.hasLocal() && !controller.hasRemote()) {
                     // this is either an error or a web service 
                     controller = null;
                 }
@@ -143,6 +153,9 @@ public abstract class EjbMethodController {
     public abstract Collection<String> getRemoteInterfaces();
     public abstract boolean hasLocal();
     public abstract boolean hasRemote();
+    public boolean allowsNoInterface(){
+        return false;
+    }
     public void addEjbQl(MethodModel clientView, String ejbql, FileObject ddFileObject) throws IOException {
         assert false: "ejbql not supported for this bean type";
     }
@@ -164,6 +177,7 @@ public abstract class EjbMethodController {
      */
     public abstract void createAndAddImpl(MethodModel clientView);
     
+    public abstract void delete(MethodModel classMethod);
     public abstract void delete(MethodModel interfaceMethod, boolean local);
     
     /** Checks if given method type is supported by controller.

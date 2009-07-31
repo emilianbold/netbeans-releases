@@ -142,7 +142,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     
     public void notifyDeleting() throws IOException {                
         Properties p = new Properties();
-        String[] targetNames = this.actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
+        String[] targetNames = this.actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p, false);
         FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
         
         assert targetNames != null;

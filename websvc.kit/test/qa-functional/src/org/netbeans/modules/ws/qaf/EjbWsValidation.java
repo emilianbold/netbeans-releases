@@ -42,7 +42,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -135,7 +135,7 @@ public class EjbWsValidation extends WsValidation {
         // Web Service
         String webServiceLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.dev.wizard.Bundle", "Templates/WebServices/WebService.java");
         createNewWSFile(getProject(), webServiceLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(wsName);
         op.setPackage(getWsPackage());
         JRadioButtonOperator jrbo = new JRadioButtonOperator(op, 1);
@@ -180,7 +180,7 @@ public class EjbWsValidation extends WsValidation {
         //Session Bean
         String sessionBeanLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle", "Templates/J2EE/Session");
         createNewFile(getWsClientProject(), enterpriseLabel, sessionBeanLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.txtObjectName().clearText();
         op.txtObjectName().typeText(ejbName);
         op.cboPackage().clearText();

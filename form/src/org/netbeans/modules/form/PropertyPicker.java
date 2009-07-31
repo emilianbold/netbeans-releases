@@ -197,9 +197,6 @@ public class PropertyPicker extends javax.swing.JPanel {
 	    public String getReadMethodName() {
 		return desc.getReadMethod().getName();
 	    }
-	    public boolean providesPropertyDescriptor() {
-		return true;
-	    }
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return desc;
 	    }
@@ -213,9 +210,6 @@ public class PropertyPicker extends javax.swing.JPanel {
 	    }
 	    public String getReadMethodName() {
 		return FormUtils.getMethodName(name, NO_PARAMETERS);
-	    }
-	    public boolean providesPropertyDescriptor() {
-		return false;
 	    }
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return null;

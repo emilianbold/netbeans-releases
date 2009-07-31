@@ -42,10 +42,8 @@ made subject to such option by the copyright holder.
 -->
 
 
-<project name="Creator_JSF_Components_Library" default="default" basedir=".">
+<project name="visualweb.jsfsupport.components/library" default="default" basedir=".">
 
-    <description>Builds and tests the project Creator JSF Components Library.</description>
-    
     <import file="nbproject/build-impl.xml"/>
     <import file="../../nbbuild/templates/projectized.xml"/>
     

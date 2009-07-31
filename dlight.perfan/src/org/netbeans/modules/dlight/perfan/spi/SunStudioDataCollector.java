@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,6 +75,7 @@ import org.netbeans.modules.dlight.spi.SunStudioLocator.SunStudioDescription;
 import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -110,15 +112,15 @@ public class SunStudioDataCollector
     private static final DataTableMetadata memInfoTable;
     private static final DataTableMetadata summaryInfoTable;
     private static final DataTableMetadata memSummaryInfoTable;
-
+    private static final DataTableMetadata deadlocksSummaryInfoTable;
+    private static final DataTableMetadata dataracesSummaryInfoTable;
     // ***
     private final Object lock = new String(SunStudioDataCollector.class.getName());
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
     private final Collection<ValidationListener> validationListeners;
-    private final Collection<CollectedInfo> collectedInfo;
+    private final Set<CollectedInfo> collectedInfo;
     private final List<DataFilter> dataFilters;
-
     // ***
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private CollectorConfiguration config = null;
@@ -130,26 +132,28 @@ public class SunStudioDataCollector
     private boolean isAttachable;
     private HostInfo hostInfo = null;
 
-
     static {
+        SunStudioDCConfigurationAccessor dcAccess = SunStudioDCConfigurationAccessor.getDefault();
+
         supportedStorageTypes = Arrays.asList(
                 DataStorageTypeFactory.getInstance().getDataStorageType(ID));
 
         cpuInfoTable = new DataTableMetadata(
-                "SunStudioCPUDetailedData", // NOI18N
+                dcAccess.getCPUTableName(),
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_iUser,
                 SunStudioDCConfiguration.c_eUser),
                 null);
 
         syncInfoTable = new DataTableMetadata(
-                "SunStudioSyncDetailedData", // NOI18N
+                dcAccess.getSyncTableName(),
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_eSync,
                 SunStudioDCConfiguration.c_eSyncn),
                 null);
 
-        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
+        memInfoTable = new DataTableMetadata(
+                dcAccess.getMemTableName(),
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
                 SunStudioDCConfiguration.c_leakSize),
@@ -165,10 +169,19 @@ public class SunStudioDataCollector
                 Arrays.asList(SunStudioDCConfiguration.c_leakSize),
                 null);
 
+        deadlocksSummaryInfoTable = new DataTableMetadata(
+                dcAccess.getDeadlockTableName(), // NOI18N
+                Arrays.asList(SunStudioDCConfiguration.c_Deadlocks),
+                null);
+
+        dataracesSummaryInfoTable = new DataTableMetadata(
+                dcAccess.getDataraceTableName(), // NOI18N
+                Arrays.asList(SunStudioDCConfiguration.c_Datarace),
+                null);
     }
 
-    public SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-        collectedInfo = new HashSet<CollectedInfo>();
+    public SunStudioDataCollector(Set<CollectedInfo> collectedInfoList) {
+        collectedInfo = EnumSet.<CollectedInfo>noneOf(CollectedInfo.class);
         dataTablesMetadata = new HashSet<DataTableMetadata>();
         validationListeners = new CopyOnWriteArraySet<ValidationListener>();
         isAttachable = true;
@@ -176,40 +189,9 @@ public class SunStudioDataCollector
         addCollectedInfo(collectedInfoList);
     }
 
-    void addCollectedInfo(final List<CollectedInfo> collectedInfoList) {
-        Set<CollectedInfo> ci = new HashSet<CollectedInfo>();
-        Set<DataTableMetadata> dtm = new HashSet<DataTableMetadata>();
-        boolean bAttachable = true;
-
-        for (CollectedInfo info : collectedInfoList) {
-            ci.add(info);
-            switch (info) {
-                case FUNCTIONS_LIST:
-                    dtm.add(cpuInfoTable);
-                    break;
-                case MEMORY:
-                    dtm.add(memInfoTable);
-                    bAttachable = false;
-                    break;
-                case MEMSUMMARY:
-                    dtm.add(memSummaryInfoTable);
-                    bAttachable = false;
-                    break;
-                case SYNCHRONIZATION:
-                    dtm.add(syncInfoTable);
-                    bAttachable = false;
-                    break;
-                case SYNCSUMMARY:
-                    dtm.add(summaryInfoTable);
-                    bAttachable = false;
-                    break;
-            }
-        }
-
+    void addCollectedInfo(final Set<CollectedInfo> collectedInfoList) {
         synchronized (lock) {
-            collectedInfo.addAll(ci);
-            dataTablesMetadata.addAll(dtm);
-            isAttachable &= bAttachable;
+            collectedInfo.addAll(collectedInfoList);
         }
     }
 
@@ -310,6 +292,8 @@ public class SunStudioDataCollector
                 return validationStatus;
             }
 
+            validateCollectedInfo();
+
             validationStatus = ValidationStatus.validStatus();
             cmd = command;
             sproHome = sprohome;
@@ -347,8 +331,59 @@ public class SunStudioDataCollector
 
     public List<DataTableMetadata> getDataTablesMetadata() {
         synchronized (lock) {
-            return Collections.unmodifiableList(
-                    new ArrayList<DataTableMetadata>(dataTablesMetadata));
+            return new ArrayList<DataTableMetadata>(dataTablesMetadata);
+        }
+    }
+
+    private void validateCollectedInfo() {
+        synchronized (lock) {
+            Set<CollectedInfo> ci = EnumSet.<CollectedInfo>copyOf(collectedInfo);
+            Set<DataTableMetadata> dtm = new HashSet<DataTableMetadata>();
+            boolean bAttachable = true;
+
+            if (ci.contains(CollectedInfo.DEADLOCKS) || ci.contains(CollectedInfo.DATARACES)) {
+                ci.retainAll(EnumSet.of(CollectedInfo.DEADLOCKS, CollectedInfo.DATARACES));
+            }
+
+            for (CollectedInfo info : collectedInfo) {
+                ci.add(info);
+
+                switch (info) {
+                    case FUNCTIONS_LIST:
+                        dtm.add(cpuInfoTable);
+                        break;
+                    case MEMORY:
+                        dtm.add(memInfoTable);
+                        bAttachable = false;
+                        break;
+                    case MEMSUMMARY:
+                        dtm.add(memSummaryInfoTable);
+                        bAttachable = false;
+                        break;
+                    case SYNCHRONIZATION:
+                        dtm.add(syncInfoTable);
+                        bAttachable = false;
+                        break;
+                    case SYNCSUMMARY:
+                        dtm.add(summaryInfoTable);
+                        bAttachable = false;
+                        break;
+                    case DEADLOCKS:
+                        dtm.add(deadlocksSummaryInfoTable);
+                        bAttachable = false;
+                        break;
+                    case DATARACES:
+                        dtm.add(dataracesSummaryInfoTable);
+                        bAttachable = false;
+                        break;
+                }
+            }
+
+            collectedInfo.clear();
+            collectedInfo.addAll(ci);
+            dataTablesMetadata.clear();
+            dataTablesMetadata.addAll(dtm);
+            isAttachable = bAttachable;
         }
     }
 
@@ -435,16 +470,34 @@ public class SunStudioDataCollector
                 args.add("/dev/null"); // NOI18N
             }
 
-            if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
-                    collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
-                args.add("-s"); // NOI18N
-                args.add("1000"); // NOI18N
-            }
+            final boolean deadlocks = collectedInfo.contains(CollectedInfo.DEADLOCKS);
+            final boolean dataraces = collectedInfo.contains(CollectedInfo.DATARACES);
+            if (deadlocks || dataraces) {
+                args.add("-r"); // NOI18N
 
-            if (collectedInfo.contains(CollectedInfo.MEMORY) ||
-                    collectedInfo.contains(CollectedInfo.MEMSUMMARY)) {
-                args.add("-H"); // NOI18N
-                args.add("on"); // NOI18N
+                if (deadlocks && dataraces) {
+                    args.add("deadlocks,races"); // NOI18N
+                } else if (deadlocks) {
+                    args.add("deadlocks"); // NOI18N
+                } else if (dataraces) {
+                    args.add("races"); // NOI18N
+                }
+
+                args.add("-y"); // NOI18N
+                args.add("USR1"); // NOI18N
+            } else {
+
+                if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
+                        collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
+                    args.add("-s"); // NOI18N
+                    args.add("1000"); // NOI18N
+                }
+
+                if (collectedInfo.contains(CollectedInfo.MEMORY) ||
+                        collectedInfo.contains(CollectedInfo.MEMSUMMARY)) {
+                    args.add("-H"); // NOI18N
+                    args.add("on"); // NOI18N
+                }
             }
 
             args.add("-o"); // NOI18N
@@ -610,7 +663,7 @@ public class SunStudioDataCollector
         final ExecutionEnvironment execEnv;
         final String experimentDirectory;
         final String sproHome;
-        final Collection<CollectedInfo> collectedInfo;
+        final Set<CollectedInfo> collectedInfo;
 
         public CollectorConfiguration(
                 final PerfanDataStorage dataStorage,
@@ -618,14 +671,14 @@ public class SunStudioDataCollector
                 final ExecutionEnvironment execEnv,
                 final String experimentDirectory,
                 final String sproHome,
-                final Collection<CollectedInfo> collectedInfo) {
+                final Set<CollectedInfo> collectedInfo) {
 
             this.target = target;
             this.dataStorage = dataStorage;
             this.execEnv = execEnv;
             this.experimentDirectory = experimentDirectory;
             this.sproHome = sproHome;
-            this.collectedInfo = Collections.unmodifiableCollection(new ArrayList<CollectedInfo>(collectedInfo));
+            this.collectedInfo = Collections.unmodifiableSet(EnumSet.copyOf(collectedInfo));
         }
     }
 }

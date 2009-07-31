@@ -51,7 +51,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
- * copied from ruby project
+ * Copied from ruby project.
  * @author Tomas Zezula
  */
 public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation implements PropertyChangeListener {
@@ -59,7 +59,6 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
     private final PropertyEvaluator eval;
     private Charset cache;
 
-    /** Creates a new instance of J2SEProjectEncodingQueryImpl */
     public PhpProjectEncodingQueryImpl(final PropertyEvaluator eval) {
         assert eval != null;
         this.eval = eval;

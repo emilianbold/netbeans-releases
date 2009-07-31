@@ -139,6 +139,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         checkAttributes("testfiles/resolv.rb");
     }
 
+    public void testAttributes2() throws Exception {
+        checkAttributes("testfiles/attr_declaration.rb");
+    }
+
     public void testFolds1() throws Exception {
         checkFolds("testfiles/resolv.rb");
     }
@@ -250,6 +254,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
 
     public void testTestStructure9b() throws Exception {
         checkFolds("testfiles/bowling_spec.rb");
+    }
+
+    public void testTestStructure10() throws Exception {
+        checkFolds("testfiles/japanese_spec.rb");
     }
 
     public void testEmpty1() throws Exception {

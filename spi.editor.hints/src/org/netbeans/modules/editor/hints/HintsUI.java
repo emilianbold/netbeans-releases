@@ -41,7 +41,16 @@
 
 package org.netbeans.modules.editor.hints;
 
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -53,6 +62,10 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -62,6 +75,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
@@ -71,7 +85,10 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Context;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -81,6 +98,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -114,11 +132,13 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private JLabel hintIcon;
     private ScrollCompletionPane hintListComponent;
     private JLabel errorTooltip;
+    private AtomicBoolean cancel;
     
     /** Creates a new instance of HintsUI */
     private HintsUI() {
         EditorRegistry.addPropertyChangeListener(this);
         propertyChange(null);
+        cancel = new AtomicBoolean(false);
     }
     
     public JTextComponent getComponent() {
@@ -138,6 +158,14 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             this.compRef = new WeakReference<JTextComponent>(comp);
             register();
         }
+    }
+
+    private AnnotationHolder getAnnotationHolder(Document doc) {
+        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        if (od == null) {
+            return null;
+        }
+        return AnnotationHolder.getInstance(od.getPrimaryFile());
     }
 
     private void register() {
@@ -422,13 +450,8 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     }
     
     private ParseErrorAnnotation findAnnotation(Document doc, AnnotationDesc desc, int lineNum) {
-        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        
-        if (od == null)
-            return null;
-        
-        AnnotationHolder annotations = AnnotationHolder.getInstance(od.getPrimaryFile());
-        
+        AnnotationHolder annotations = getAnnotationHolder(doc);
+
         if (annotations != null) {
             for (Annotation a : annotations.getAnnotations()) {
                 if (a instanceof ParseErrorAnnotation) {
@@ -444,15 +467,18 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         
         return null;
     }
-    
+
     boolean invokeDefaultAction(boolean onlyActive) {
         JTextComponent comp = getComponent(); 
         if (comp == null) {
             Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
             return false;
         }
-        
+
         Document doc = comp.getDocument();
+
+        cancel.set(false);
+        refresh(doc, comp.getCaretPosition());
         
         if (doc instanceof BaseDocument) {
             Annotations annotations = ((BaseDocument) doc).getAnnotations();
@@ -507,7 +533,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         if (comp == null) {
             return;
         }
-        boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
+//        boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
         boolean errorTooltipShowing = errorTooltip != null && errorTooltip.isShowing();
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         
@@ -541,6 +567,9 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         } else if ( e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
             if ( popupShowing ) {
                 removePopup();
+            } else {
+                //user is tired of waiting for refresh before popup is shown
+                cancel.set(true);
             }
         } else if ( popupShowing ) {
             InputMap input = hintListComponent.getInputMap();
@@ -710,6 +739,18 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         }
         
         return input;
+    }
+
+    private void refresh(Document doc, int pos) {
+        Context context = ContextAccessor.getDefault().newContext(pos, cancel);
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(doc);
+        Lookup lookup = MimeLookup.getLookup(mimeType);
+        Collection<? extends PositionRefresher> refreshers = lookup.lookupAll(PositionRefresher.class);
+        //set errors from all available refreshers
+        for (PositionRefresher ref : refreshers) {
+            Map<String, List<ErrorDescription>> layer2Errs = ref.getErrorDescriptionsAt(context, doc);
+            getAnnotationHolder(doc).setErrorsForLine(pos, layer2Errs);
+        }
     }
 
 }

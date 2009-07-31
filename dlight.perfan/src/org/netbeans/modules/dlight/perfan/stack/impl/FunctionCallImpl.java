@@ -39,14 +39,14 @@
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
 import java.util.Map;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
  * This class holds metric values for Function calls.
  */
-public class FunctionCallImpl extends FunctionCall {
+public class FunctionCallImpl extends FunctionCallWithMetric {
 
     private String fileName;
     private String sourceFile;
@@ -103,7 +103,7 @@ public class FunctionCallImpl extends FunctionCall {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer(getFunction().toString());
+        StringBuilder sb = new StringBuilder(getFunction().toString());
         sb.append(" [ "); // NOI18N
 
         for (FunctionMetric m : metrics.keySet()) {

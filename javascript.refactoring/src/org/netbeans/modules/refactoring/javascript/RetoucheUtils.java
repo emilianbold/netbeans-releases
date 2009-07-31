@@ -78,7 +78,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -213,7 +212,7 @@ public class RetoucheUtils {
             return string;
         }
         if (string.trim().length() == 0) {
-            return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
+            return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
         } 
         StringBuffer buf = new StringBuffer(string);
         if (StyleConstants.isBold(set)) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,8 @@ import javax.swing.text.Keymap;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.Mnemonics;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
@@ -85,6 +87,23 @@ class TabsComponent extends JPanel {
     public TabsComponent(boolean toolVis) {
         super();
         bar = new JToolBar();
+
+        setFocusTraversalPolicyProvider(true);
+        setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
+            @Override
+            public Component getDefaultComponent(Container aContainer) {
+                final MultiViewElement elem = model.getActiveElement();
+                final JComponent vr = elem.getVisualRepresentation();
+                if (vr instanceof CloneableEditorSupport.Pane) {
+                   Pane pane = (Pane)vr;
+                   if (pane.getEditorPane().isShowing()) {
+                     return pane.getEditorPane();
+                  }
+               }
+               return super.getDefaultComponent(aContainer);
+            }
+        });
+
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         bar.setBorder(b);
         bar.setFloatable(false);

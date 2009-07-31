@@ -317,14 +317,6 @@ made subject to such option by the copyright holder.
     </api>
    </li>
    <li>
-    <api group="java.io.File" name="XTest" type="import" category="friend">
-     <p>
-      XTest file layouts and <code>nbjunit.jar</code> needed for some test
-      functionality.
-     </p>
-    </api>
-   </li>
-   <li>
     <api group="java.io.File" name="nbbuild" type="import" category="friend">
      <p>
       NB build infrastructure file layouts, property names, etc.

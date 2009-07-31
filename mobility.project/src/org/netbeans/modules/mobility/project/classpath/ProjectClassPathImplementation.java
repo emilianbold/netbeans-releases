@@ -55,9 +55,9 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 
 public abstract class ProjectClassPathImplementation implements ClassPathImplementation, AntProjectListener, Runnable {
     
@@ -65,13 +65,11 @@ public abstract class ProjectClassPathImplementation implements ClassPathImpleme
     final private AntProjectHelper helper;
     private List<PathResourceImplementation> resources;
     private String path;
-    private final RequestProcessor requestProcessor;
     
     
-    public ProjectClassPathImplementation(AntProjectHelper helper, RequestProcessor requestProcessor) {
+    public ProjectClassPathImplementation(AntProjectHelper helper) {
         assert helper != null;
         this.helper = helper;
-        this.requestProcessor = requestProcessor;
         this.helper.addAntProjectListener(this);
     }
     
@@ -127,7 +125,7 @@ public abstract class ProjectClassPathImplementation implements ClassPathImpleme
     
     public void propertiesChanged(@SuppressWarnings("unused")
 	final AntProjectEvent ev) {
-        requestProcessor.post(this);
+        ProjectManager.mutex().postWriteRequest(this);
     }
     
     public void run() {

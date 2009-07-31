@@ -42,17 +42,11 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.util.test.RestrictThreadCreation;
 
 /** Checks the behaviour of enabled module list.
  *
@@ -85,11 +79,10 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         //         at org.netbeans.modules.apisupport.project.TestBase.doCopy(TestBase.java:272)
         //         at org.netbeans.modules.apisupport.project.TestBase.doCopy(TestBase.java:269)
         //         [....]
-        // See e.g.: http://beetle.czech.sun.com/automatedtests/xtest/netbeans_dev/200704301800/qa-unit_stable/qa-t4u-xp2_1/testrun_070501-125959/testbag_111/htmlresults/suites/TEST-org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleListTest.html
         return super.canRun() && !Utilities.isWindows();
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
                 //    XXX: failing test, fix or delete
 //        super.setUp();
 //        suiteRepoFO = FileUtil.toFileObject(copyFolder(resolveEEPFile(".")));

@@ -40,6 +40,8 @@
  */
 package org.openide.windows;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -76,7 +78,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
     private static final Object PRESENT = new Object();
 
     /** component to work with */
-    private TopComponent tc;
+    private Reference<TopComponent> tc;
 
     /** lookup listener that is attached to all subnodes */
     private LookupListener listener;
@@ -93,7 +95,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
     public DefaultTopComponentLookup(TopComponent tc) {
         super();
 
-        this.tc = tc;
+        this.tc = new WeakReference<TopComponent>(tc);
         this.listener = WeakListeners.create(LookupListener.class, this, null);
         this.actionMap = Lookups.singleton(new DelegateActionMap(tc));
 
@@ -148,7 +150,12 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
 
     /** Change in one of the lookups we delegate to */
     public void resultChanged(LookupEvent ev) {
-        updateLookups(tc.getActivatedNodes());
+        TopComponent c = tc.get();
+        if (c == null) {
+            updateLookups(null);
+            return;
+        }
+        updateLookups(c.getActivatedNodes());
     }
 
     /** Finds out whether a query for a class can be influenced

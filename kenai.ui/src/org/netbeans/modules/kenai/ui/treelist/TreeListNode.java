@@ -178,7 +178,7 @@ public abstract class TreeListNode {
     /**
      * @return Action to invoke when Enter key is pressed on selected node in TreeList.
      */
-    protected ActionListener getDefaultAction() {
+    protected Action getDefaultAction() {
         return null;
     }
 

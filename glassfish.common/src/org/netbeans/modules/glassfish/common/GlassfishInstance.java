@@ -126,9 +126,9 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
             this.instanceProvider = instanceProvider;
+            commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
             ic.add(this); // Server instance in lookup (to find instance from node lookup)
 
-            commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
             ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
             // Flag this server URI as under construction
@@ -223,6 +223,14 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         ip.put(GlassfishModule.URL_ATTR, url);
+        // extract the host from the URL
+        String[] bigUrlParts = url.split("]");
+        if (null != bigUrlParts && bigUrlParts.length > 1) {
+            String[] urlParts = bigUrlParts[1].split(":"); // NOI18N
+            if (null != urlParts && urlParts.length > 2) {
+                ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
+            }
+        }
         GlassfishInstance result = new GlassfishInstance(ip, gip);
         return result;
     }
@@ -369,6 +377,28 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
 
         instanceProvider.removeServerInstance(this);
+    }
+
+    //
+    // watch out for the localhost alias.
+    //
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof GlassfishInstance)) {
+            return false;
+        }
+        GlassfishInstance other = (GlassfishInstance) obj;
+        return getDeployerUri().replace("127.0.0.1", "localhost").equals(other.getDeployerUri().replace("127.0.0.1", "localhost")) &&
+                commonSupport.getDomainName().equals(other.getCommonSupport().getDomainName()) &&
+                commonSupport.getDomainsRoot().equals(other.getCommonSupport().getDomainsRoot()) &&
+                commonSupport.getHttpPort().equals(other.getCommonSupport().getHttpPort());
+    }
+
+    @Override
+    public int hashCode() {
+        String tmp = getDeployerUri().replace("127.0.0.1", "localhost")+commonSupport.getHttpPort()+
+                commonSupport.getDomainsRoot()+commonSupport.getDomainName();
+        return tmp.hashCode();
     }
 
 }

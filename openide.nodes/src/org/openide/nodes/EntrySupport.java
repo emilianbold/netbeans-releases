@@ -796,6 +796,7 @@ abstract class EntrySupport {
                     if (cannotWorkBetter != null) {
                         cannotWorkBetter[0] = true;
                     }
+                    arr.entrySupport = this;
                     return arr;
                 }
 

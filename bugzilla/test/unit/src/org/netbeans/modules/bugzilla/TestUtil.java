@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
@@ -132,6 +133,11 @@ public class TestUtil implements TestConstants {
         return  brc.getTaskDataHandler().postTaskData(repository, data, attrs, NULL_PROGRESS_MONITOR);
     }
 
+    public static TaskData getTaskData(TaskRepository taskRepository, String id) throws CoreException {
+        BugzillaRepositoryConnector brc = Bugzilla.getInstance().getRepositoryConnector();
+        return brc.getTaskData(taskRepository, id, new NullProgressMonitor());
+    }
+
     public static String createIssue(BugzillaRepository repo, String summary) throws MalformedURLException, CoreException {
         BugzillaRepositoryConnector brc = Bugzilla.getInstance().getRepositoryConnector();
         TaskRepository tr = repo.getTaskRepository();
@@ -139,7 +145,25 @@ public class TestUtil implements TestConstants {
         RepositoryResponse rr = TestUtil.postTaskData(brc, tr, data);
         return rr.getTaskId();
     }
-    
+//
+//    public static RepositoryResponse addComment(BugzillaRepository repository, TaskData data, String comment) throws CoreException {
+//        return addComment(repository.getTaskRepository(), id, comment);
+//    }
+
+    public static RepositoryResponse addComment(TaskRepository taskRepository, String id, String comment) throws CoreException {
+        TaskData data = getTaskData(taskRepository, id);
+        return addComment(taskRepository, data, comment);
+    }
+
+    public static RepositoryResponse addComment(TaskRepository taskRepository, TaskData data, String comment) throws CoreException {
+        TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+        ta.setValue(comment);
+
+        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
+        attrs.add(ta);
+        return Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(taskRepository, data, attrs, new NullProgressMonitor());
+    }
+
     public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
         return new BugzillaRepository(name, url, user, psswd, null, null);
     }
@@ -151,5 +175,5 @@ public class TestUtil implements TestConstants {
             handleException(ex);
         }
     }
-
+    
 }

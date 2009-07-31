@@ -113,7 +113,7 @@ class SectionFinder {
 
         @Override
         public String toString() {
-            java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
+            java.lang.StringBuilder str = new java.lang.StringBuilder(super.toString());
             str.append(" [ e_ident: "); // NOI18N
             for (int i = 0; i < EI_NIDENT; i++) {
                 if (e_ident[i] < 0x10 && e_ident[i] >= 0) {
@@ -174,7 +174,7 @@ class SectionFinder {
 
         @Override
         public String toString() {
-            java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
+            java.lang.StringBuilder str = new java.lang.StringBuilder(super.toString());
             str.append(" [ sh_name: ").append(sh_name); // NOI18N
             str.append("; sh_type: ").append(sh_type); // NOI18N
             str.append("; sh_flags: 0x").append(Long.toHexString(sh_flags)); // NOI18N

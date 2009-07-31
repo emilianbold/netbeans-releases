@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-//</editor-fold>
 
 package org.netbeans.modules.glassfish.common.wizards;
 
@@ -69,6 +67,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     public AddDomainLocationVisualPanel() {
         listeners = new CopyOnWriteArrayList<ChangeListener>();
         initComponents();
+        registerLocalRB.setSelected(true);
+        registerRemoteRB.setSelected(false);
         setName(NbBundle.getMessage(AddDomainLocationVisualPanel.class, "TITLE_DomainLocation"));
         //domainField.getEditor().getEditorComponent().addKeyListener(arg0);
     }
@@ -90,31 +90,44 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             }
         }
         domainField.setModel(model);
-        domainField.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
-
-            public void keyTyped(KeyEvent arg0) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void keyPressed(KeyEvent arg0) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void keyReleased(KeyEvent arg0) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-                fireChangeEvent();
-            }
-        });
+        KeyListener kl = new MyKeyListener();
+        domainField.getEditor().getEditorComponent().addKeyListener(kl);
         domainField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 domainField.getEditor().setItem(domainField.getSelectedItem());
                 fireChangeEvent();
             }
         });
+        registerLocalRB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                hostNameField.setEnabled(!registerLocalRB.isSelected());
+                portValueField.setEnabled(!registerLocalRB.isSelected());
+                domainField.setEnabled(!registerRemoteRB.isSelected());
+                fireChangeEvent();
+            }
+        });
+        registerRemoteRB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                hostNameField.setEnabled(!registerLocalRB.isSelected());
+                portValueField.setEnabled(!registerLocalRB.isSelected());
+                domainField.setEnabled(!registerRemoteRB.isSelected());
+                fireChangeEvent();
+            }
+        });
+        hostNameField.addKeyListener(kl);
+        portValueField.addKeyListener(kl);
     }
     
     String getDomainField() {
         return (String) domainField.getEditor().getItem();  //getSelectedItem();
+    }
+
+    String getHostName() {
+        return (String) hostNameField.getText();
+    }
+
+    String getPortValue() {
+        return (String) portValueField.getText();
     }
 
     /**
@@ -140,6 +153,10 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         }
     }
 
+    boolean registerLocalDomain() {
+        return registerLocalRB.isSelected();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -149,9 +166,21 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        registerLocalRB = new javax.swing.JRadioButton();
+        jPanel1 = new javax.swing.JPanel();
         domainFieldLabel = new javax.swing.JLabel();
         domainField = new javax.swing.JComboBox();
         explanationLabel = new javax.swing.JLabel();
+        registerRemoteRB = new javax.swing.JRadioButton();
+        jPanel2 = new javax.swing.JPanel();
+        hostNameLabel = new javax.swing.JLabel();
+        hostNameField = new javax.swing.JTextField();
+        portValueLabel = new javax.swing.JLabel();
+        portValueField = new javax.swing.JTextField();
+
+        buttonGroup1.add(registerLocalRB);
+        registerLocalRB.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerLocalRB.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(domainFieldLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainFieldLabel.text")); // NOI18N
 
@@ -160,33 +189,133 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
 
         explanationLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.explanationLabel.text")); // NOI18N
 
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(domainFieldLabel)
+                        .add(4, 4, 4)
+                        .add(domainField, 0, 334, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(domainFieldLabel)
+                    .add(domainField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(explanationLabel)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        buttonGroup1.add(registerRemoteRB);
+        registerRemoteRB.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerRemoteRB.text")); // NOI18N
+
+        hostNameLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostNameLabel.text")); // NOI18N
+
+        hostNameField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostNameField.text")); // NOI18N
+
+        portValueLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.portValueLabel.text")); // NOI18N
+
+        portValueField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.portValueField.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(hostNameLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(hostNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(portValueLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(portValueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(hostNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(hostNameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(portValueLabel)
+                    .add(portValueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(domainFieldLabel)
-                .add(18, 18, 18)
-                .add(domainField, 0, 256, Short.MAX_VALUE))
-            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .add(registerLocalRB)
+                .addContainerGap(236, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(registerRemoteRB)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(domainFieldLabel)
-                    .add(domainField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(registerLocalRB)
+                .add(2, 2, 2)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(explanationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(registerRemoteRB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox domainField;
     private javax.swing.JLabel domainFieldLabel;
     private javax.swing.JLabel explanationLabel;
+    private javax.swing.JTextField hostNameField;
+    private javax.swing.JLabel hostNameLabel;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JTextField portValueField;
+    private javax.swing.JLabel portValueLabel;
+    private javax.swing.JRadioButton registerLocalRB;
+    private javax.swing.JRadioButton registerRemoteRB;
     // End of variables declaration//GEN-END:variables
 
+    class MyKeyListener implements KeyListener {
+            public void keyTyped(KeyEvent arg0) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void keyPressed(KeyEvent arg0) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void keyReleased(KeyEvent arg0) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+                fireChangeEvent();
+            }
+
+    }
 }

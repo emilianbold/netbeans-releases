@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.io.IOException;
@@ -53,6 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -66,6 +66,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -76,15 +77,13 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
-
-
 /**
  *  This is a helper class for parsing and obtaining items for code completion of expression
  *  language.
  */
 public class ELExpression {
+
     private static final Logger logger = Logger.getLogger(ELExpression.class.getName());
-    
     /** it is not Expession Language */
     public static final int NOT_EL = 0;
     /** This is start of an EL expression */
@@ -92,84 +91,87 @@ public class ELExpression {
     /** The expression is bean */
     public static final int EL_BEAN = 2;
     /** The expression is implicit language */
-    public static final int EL_IMPLICIT =3;
+    public static final int EL_IMPLICIT = 3;
     /** The expression is EL function */
     public static final int EL_FUNCTION = 4;
     /** It is EL but we are not able to recognize it */
     public static final int EL_UNKNOWN = 5;
-    
     /** The expression - result of the parsing */
     private String expression;
-    
     protected JspSyntaxSupport sup;
     private String replace;
     private boolean isDefferedExecution = false;
-    
+
     public ELExpression(JspSyntaxSupport sup) {
         this.sup = sup;
         this.replace = "";
     }
-    
+
     /** Parses text before offset in the document. Doesn't parse after offset.
      *  It doesn't parse whole EL expression until ${ or #{, but just simple expression.
      *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
      *  is parsed.
      */
-    public int parse(int offset){
-        String value = null;
-        int result = NOT_EL;
-        boolean middle;
-        
+    public int parse(int offset) {
         BaseDocument document = sup.getDocument();
+        String value = null;
         document.readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = JspSyntaxSupport.tokenSequence(hi, ELTokenId.language(), offset);
-            if(ts == null) {
-                //no EL token sequence
-                return EL_UNKNOWN;
-            }
-            
-            TokenSequence jspTokenSequence = hi.tokenSequence();
-            jspTokenSequence.move(offset);
-            if(!jspTokenSequence.moveNext()) {
-                return NOT_EL; //no token
-            }
-            
-            Token jspToken = jspTokenSequence.token();
-            isDefferedExecution = jspToken.text().toString().startsWith("#{"); //NOI18N
-            
-            if (jspToken.id() == JspTokenId.EL){
-                if (offset == jspToken.offset(hi) + "${".length()){ //NOI18N
-                    return EL_START;
+            //find EL token sequence and its superordinate sequence
+            TokenSequence ts = hi.tokenSequence();
+            TokenSequence last = null;
+            for (;;) {
+                if (ts == null) {
+                    break;
+                }
+                if (ts.language() == ELTokenId.language()) {
+                    //found EL
+                    isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
+                    break;
+                } else {
+                    //not el, scan next embedded token sequence
+                    ts.move(offset);
+                    if (ts.moveNext() || ts.movePrevious()) {
+                        last = ts;
+                        ts = ts.embedded();
+                    } else {
+                        //no token, cannot embed
+                        return NOT_EL;
+                    }
                 }
             }
-            
-            ts.move(offset);
-            if (!ts.moveNext() && !ts.movePrevious()) {
+
+            if(ts == null) {
                 return NOT_EL;
             }
-            
-            if (ts.offset() == offset){
-                ts.movePrevious();
+
+
+            int diff = ts.move(offset);
+            if (diff == 0) {
+                if (!ts.movePrevious()) {
+                    return EL_START;
+                }
+            } else if (!ts.moveNext()) {
+                return EL_START;
             }
-            
+
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
             // it can be start of the function or start of a simple expression.
-            Token<ELTokenId> token = ts.token();
-            while (token.id() != ELTokenId.LPAREN
-                    && token.id() != ELTokenId.WHITESPACE
-                    && (!token.id().language().nonPrimaryTokenCategories(token.id()).contains(ELTokenId.ELTokenCategories.KEYWORDS.name())
-                    || token.id().language().nonPrimaryTokenCategories(token.id()).contains(ELTokenId.ELTokenCategories.NUMERIC_LITERALS.name()))) {
-                token = ts.token();
-                if (value == null){
-                    value = token.text().toString();
-                    if (token.id() == ELTokenId.DOT){
-                        replace="";
-                        middle = true;
-                    } else if (token.text().length() >= (offset-token.offset(hi))){
-                        if (token.offset(hi) <= offset){
-                            value = value.substring(0, offset-token.offset(hi));
+            Token token = ts.token();
+            while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) || ts.token().id() == ELTokenId.DOT) &&
+                    ts.token().id() != ELTokenId.WHITESPACE &&
+                    (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
+                    ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) {
+
+                //repeat until not ( and ' ' and keyword or number
+                if (value == null) {
+                    value = ts.token().text().toString();
+                    if (ts.token().id() == ELTokenId.DOT) {
+                        replace = "";
+                    } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
+                        if (ts.token().offset(hi) <= offset) {
+                            value = value.substring(0, offset - ts.token().offset(hi));
                             replace = value;
                         } else {
                             // cc invoked within EL delimiter
@@ -177,317 +179,336 @@ public class ELExpression {
                         }
                     }
                 } else {
-                    value = token.text().toString() + value;
-                    if (token.id() == ELTokenId.TAG_LIB_PREFIX)
+                    value = ts.token().text().toString() + value;
+                    if (ts.token().id() == ELTokenId.TAG_LIB_PREFIX) {
                         replace = value;
+                    }
                 }
-                if(!ts.movePrevious()) {
-                    break; //break the loop, we are on the beginning of the EL token sequence
+                token = ts.token();
+                if (!ts.movePrevious()) {
+                    //we are on the beginning of the EL token sequence
+                    break;
                 }
             }
-            if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX ) {
+
+            if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+                return EL_START;
+            }
+
+            if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX) {
                 value = null;
-            } else
-                if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
-                    result = EL_START;
-                } else
-                    if (value != null){
-                        result = findContext(value);
-                    } 
+            } else if (value != null) {
+                return findContext(value);
+            }
         } finally {
             document.readUnlock();
+            expression = value;
         }
-        expression = value;
-        return result;
+        return NOT_EL;
     }
-    
-    public List<CompletionItem> getPropertyCompletionItems(String beanType, int anchor){
+
+    public List<CompletionItem> getPropertyCompletionItems(String beanType, int anchor) {
         PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType, anchor);
         runTask(task);
-        
+
         return task.getCompletionItems();
     }
-    
-    public boolean gotoPropertyDeclaration(String beanType){
+
+    public boolean gotoPropertyDeclaration(String beanType) {
         GoToSourceTask task = new GoToSourceTask(beanType);
         runTask(task);
         return task.wasSuccessful();
     }
-    
+
     /**
      *  @return the class of the top-level object used in the expression
      */
-    public String getObjectClass(){
+    public String getObjectClass() {
         String beanName = extractBeanName();
-        
+
         BeanData[] allBeans = sup.getBeanData();
         if (allBeans != null) {
             for (BeanData beanData : allBeans) {
                 if (beanData.getId().equals(beanName)) {
                     return beanData.getClassName();
                 }
+
             }
         }
-        
+
         // not found within declared beans, try implicit objects
         ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
-        
-        if (implObj != null){
+
+        if (implObj != null) {
             return implObj.getClazz();
         }
-        
+
         return null;
     }
-    
-    protected void runTask(CancellableTask task){
+
+    protected void runTask(CancellableTask task) {
         ClasspathInfo cpInfo = ClasspathInfo.create(sup.getFileObject());
         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
-        
-        try{
+
+        try {
             source.runUserActionTask(task, true);
-        } catch (IOException e){
+        } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
+
     }
-    
-    public String extractBeanName(){
+
+    public String extractBeanName() {
         String elExp = getExpression();
-        
-        if (elExp != null && !elExp.equals("")){
-            if (elExp.indexOf('.')> -1){
-                String beanName = elExp.substring(0,elExp.indexOf('.'));
+
+        if (elExp != null && !elExp.equals("")) {
+            if (elExp.indexOf('.') > -1) {
+                String beanName = elExp.substring(0, elExp.indexOf('.'));
                 return beanName;
             }
+
         }
-        
+
         return null;
     }
-    
-    public boolean isDefferedExecution(){
+
+    public boolean isDefferedExecution() {
         return isDefferedExecution;
     }
-    
-    protected String getPropertyBeingTypedName(){
+
+    protected String getPropertyBeingTypedName() {
         String elExp = getExpression();
         int dotPos = elExp.lastIndexOf('.');
-        
+
         return dotPos == -1 ? null : elExp.substring(dotPos + 1);
     }
 
     static String getPropertyName(String methodName, int prefixLength) {
-            String propertyName = methodName.substring(prefixLength);
-            String propertyNameWithoutFL = propertyName.substring(1);
+        String propertyName = methodName.substring(prefixLength);
+        String propertyNameWithoutFL = propertyName.substring(1);
 
-            if(propertyNameWithoutFL.length() > 0) {
-                if(propertyNameWithoutFL.equals(propertyNameWithoutFL.toUpperCase())) {
-                    //property is in uppercase
-                    return propertyName;
-                }
+        if (propertyNameWithoutFL.length() > 0) {
+            if (propertyNameWithoutFL.equals(propertyNameWithoutFL.toUpperCase())) {
+                //property is in uppercase
+                return propertyName;
             }
 
-            return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
         }
-    
-    protected abstract class BaseELTaskClass{
+
+        return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
+    }
+
+    protected abstract class BaseELTaskClass {
+
         protected String beanType;
-        
-        public BaseELTaskClass(String beanType){
+
+        public BaseELTaskClass(String beanType) {
             this.beanType = beanType;
         }
-        
+
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
-        protected TypeElement getTypePreceedingCaret(CompilationInfo parameter){
-            if (beanType == null){
+        protected TypeElement getTypePreceedingCaret(CompilationInfo parameter) {
+            if (beanType == null) {
                 return null;
             }
-            
+
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
-            
+
             String parts[] = getExpression().split("\\.");
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
-            
+
             int limit = parts.length - 1;
-            
-            if (getPropertyBeingTypedName().length() == 0){
+
+            if (getPropertyBeingTypedName().length() == 0) {
                 limit += 1;
             }
-            
-            for (int i = 1; i < limit; i ++){
-                if (lastKnownType == null){
+
+            for (int i = 1; i < limit; i++) {
+                if (lastKnownType == null) {
                     logger.fine("EL CC: Could not resolve type for property " //NOI18N
                             + parts[i] + " in " + getExpression()); //NOI18N
-                    
+
                     return null;
                 }
-                
+
                 String accessorName = getAccessorName(parts[i]);
                 List<ExecutableElement> allMethods = ElementFilter.methodsIn(lastKnownType.getEnclosedElements());
                 lastKnownType = null;
-                
-                for (ExecutableElement method : allMethods){
-                    if (accessorName.equals(method.getSimpleName().toString())){
+
+                for (ExecutableElement method : allMethods) {
+                    if (accessorName.equals(method.getSimpleName().toString())) {
                         TypeMirror returnType = method.getReturnType();
-                        
-                        if (returnType.getKind() == TypeKind.DECLARED){ // should always be true
+
+                        if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
                             lastKnownType = (TypeElement) parameter.getTypes().asElement(returnType);
                             break;
                         }
                     }
-                    
+
                 }
             }
-            
+
             return lastKnownType;
         }
-        
-        protected String getAccessorName(String propertyName){
+
+        protected String getAccessorName(String propertyName) {
             // we do not have to handle "is" type accessors here
             return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
-        
+
         /**
          * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
          */
-        protected String getExpressionSuffix(ExecutableElement method){
-            
-            if (method.getModifiers().contains(Modifier.PUBLIC)
-                    && method.getParameters().size() == 0){
+        protected String getExpressionSuffix(ExecutableElement method) {
+
+            if (method.getModifiers().contains(Modifier.PUBLIC) && method.getParameters().size() == 0) {
                 String methodName = method.getSimpleName().toString();
-                
-                if (methodName.startsWith("get")){ //NOI18N
+
+                if (methodName.startsWith("get")) { //NOI18N
                     return getPropertyName(methodName, 3);
                 }
-                
-                if (methodName.startsWith("is")){ //NOI18N
+
+                if (methodName.startsWith("is")) { //NOI18N
                     return getPropertyName(methodName, 2);
                 }
-                
-                if (isDefferedExecution()){
+
+                if (isDefferedExecution()) {
                     //  also return values for method expressions
-                    
-                    if ("java.lang.String".equals(method.getReturnType().toString())){ //NOI18N
+
+                    if ("java.lang.String".equals(method.getReturnType().toString())) { //NOI18N
                         return methodName;
                     }
                 }
             }
-            
+
             return null; // not a property accessor
         }
 
-        public void cancel() {}
+        public void cancel() {
+        }
     }
-    
+
     /**
      * Go to the java source code of expression
-     * - a getter in case of 
+     * - a getter in case of
      */
-    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController> {
+
         private boolean success = false;
-        
-        GoToSourceTask(String beanType){
+
+        GoToSourceTask(String beanType) {
             super(beanType);
         }
-        
+
         public void run(CompilationController parameter) throws Exception {
             parameter.toPhase(Phase.ELEMENTS_RESOLVED);
             TypeElement bean = getTypePreceedingCaret(parameter);
-            
-            if (bean != null){
+
+            if (bean != null) {
                 String suffix = getPropertyBeingTypedName();
-                
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())) {
                     String propertyName = getExpressionSuffix(method);
-                    
-                    if (propertyName != null && propertyName.equals(suffix)){
+
+                    if (propertyName != null && propertyName.equals(suffix)) {
                         success = UiUtils.open(parameter.getClasspathInfo(), method);
                         break;
                     }
                 }
             }
         }
-        
-        public boolean wasSuccessful(){
+
+        public boolean wasSuccessful() {
             return success;
         }
     }
-    
-    private class PropertyCompletionItemsTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
-        
+
+    private class PropertyCompletionItemsTask extends BaseELTaskClass implements CancellableTask<CompilationController> {
+
         private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
         private int anchorOffset;
-        
-        PropertyCompletionItemsTask(String beanType, int anchor){
+
+        PropertyCompletionItemsTask(String beanType, int anchor) {
             super(beanType);
             this.anchorOffset = anchor;
         }
-        
+
         public void run(CompilationController parameter) throws Exception {
             parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            
+
             TypeElement bean = getTypePreceedingCaret(parameter);
-            
-            if (bean != null){
+
+            if (bean != null) {
                 String prefix = getPropertyBeingTypedName();
-                
-                for (ExecutableElement method : ElementFilter.methodsIn(parameter.getElements().getAllMembers(bean))){
+
+                for (ExecutableElement method : ElementFilter.methodsIn(parameter.getElements().getAllMembers(bean))) {
                     String propertyName = getExpressionSuffix(method);
-                    
-                    if (propertyName != null && propertyName.startsWith(prefix)){
+
+                    if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
                         String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
-                        
-                        CompletionItem item = JspCompletionItem.createELProperty(propertyName, anchorOffset, type);
-                        
+
+                        CompletionItem item = ElCompletionItem.createELProperty(propertyName, anchorOffset, type);
+
                         completionItems.add(item);
                     }
                 }
             }
         }
-        
-        public List<CompletionItem> getCompletionItems(){
+
+        public List<CompletionItem> getCompletionItems() {
             return completionItems;
         }
     }
-    
+
     /** Return context, whether the expression is about a bean, implicit object or
      *  function.
      */
-    protected int findContext(String expr){
+    protected int findContext(String expr) {
         int dotIndex = expr.indexOf('.');
         int bracketIndex = expr.indexOf('[');
         int value = EL_UNKNOWN;
-        
-        if (bracketIndex == -1 && dotIndex > -1){
+
+        if (bracketIndex == -1 && dotIndex > -1) {
             String first = expr.substring(0, dotIndex);
             BeanData[] beans = sup.getBeanData();
             if (beans != null) {
-                for (int i = 0; i < beans.length; i++)
-                    if (beans[i].getId().equals(first)){
+                for (int i = 0; i <
+                        beans.length; i++) {
+                    if (beans[i].getId().equals(first)) {
                         value = EL_BEAN;
                         continue;
+
                     }
+
+
+
+
+                }
             }
-            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size()>0)
+            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size() > 0) {
                 value = EL_IMPLICIT;
-        } else if (bracketIndex == -1 && dotIndex == -1)
+            }
+
+        } else if (bracketIndex == -1 && dotIndex == -1) {
             value = EL_START;
+        }
+
         return value;
     }
-    
-    
+
     public String getExpression() {
         return expression;
     }
-    
+
     public void setExpression(String expression) {
         this.expression = expression;
     }
-    
+
     public String getReplace() {
         return replace;
     }
-    
 }

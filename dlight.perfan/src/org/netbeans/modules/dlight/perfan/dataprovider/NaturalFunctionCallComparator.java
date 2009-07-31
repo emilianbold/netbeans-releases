@@ -59,7 +59,7 @@ public class NaturalFunctionCallComparator implements FunctionCallComparator {
     return instances.get(metric);
   }
 
-  public int compare(FunctionCall o1, FunctionCall o2) {
+  public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
     int res = 0;
     Object c1 = o1.getMetricValue(metric);
     Object c2 = o2.getMetricValue(metric);

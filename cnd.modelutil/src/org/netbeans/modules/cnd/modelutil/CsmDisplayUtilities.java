@@ -374,9 +374,9 @@ public class CsmDisplayUtilities {
             System.err.println("null string");// NOI18N
             return "";// NOI18N
         }
-        String temp = org.openide.util.Utilities.replaceString(input.toString(), "&", "&amp;");// NOI18N
-        temp = org.openide.util.Utilities.replaceString(temp, "<", "&lt;"); // NOI18N
-        temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
+        String temp = input.toString().replace("&", "&amp;");// NOI18N
+        temp = temp.replace("<", "&lt;"); // NOI18N
+        temp = temp.replace(">", "&gt;"); // NOI18N
         return temp;
     }
 
@@ -385,7 +385,7 @@ public class CsmDisplayUtilities {
             return string;
         }
         if (string.trim().length() == 0) {
-            return org.openide.util.Utilities.replaceString(org.openide.util.Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
+            return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
         }
         StringBuilder buf = new StringBuilder(string);
         if (StyleConstants.isBold(set)) {

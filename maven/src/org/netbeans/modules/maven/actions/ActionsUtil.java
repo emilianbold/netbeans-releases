@@ -50,7 +50,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G (anuradha@codehaus.org)
  */
 public class ActionsUtil {

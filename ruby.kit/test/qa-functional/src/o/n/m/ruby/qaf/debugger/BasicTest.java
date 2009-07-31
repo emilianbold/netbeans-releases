@@ -50,8 +50,8 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.modules.ruby.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.NewRubyProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
@@ -125,7 +125,7 @@ public class BasicTest extends JellyTestCase {
         String rubyApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "TXT_NewJavaApp");
         npwo.selectProject(rubyApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewRubyProjectNameLocationStepOperator npnlso = new NewRubyProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();

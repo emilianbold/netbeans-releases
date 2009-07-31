@@ -392,7 +392,7 @@ public class NativeExecutor implements Runnable {
      */
     private void fireExecutionStarted() {
         for (ExecutionListener listener : listeners) {
-            listener.executionStarted();
+            listener.executionStarted(ExecutionListener.UNKNOWN_PID);
         }
     }
     

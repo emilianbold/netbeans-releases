@@ -30,7 +30,6 @@ package org.netbeans.modules.ruby.hints;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +60,8 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class HintTestBase extends RubyTestBase {
 
+    private static final String RAILS_VERSION = "2.3.2"; //NOI18N
+
     public HintTestBase(String testName) {
         super(testName);
     }
@@ -79,14 +80,14 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
          // Some of the biggest files in Rails
-        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/test/cases/associations_test.rb",
-        "lib/ruby/gems/1.8/gems/actionmailer-2.1.0/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.1.0/test/controller/routing_test.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/associations.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/base.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.1.0/test/template/date_helper_test.rb",
+        "lib/ruby/gems/1.8/gems/actionmailer-" + RAILS_VERSION + "/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-" + RAILS_VERSION + "/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-" + RAILS_VERSION + "/test/template/date_helper_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-" + RAILS_VERSION + "/test/cases/validations_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-" + RAILS_VERSION + "/lib/active_record/base.rb",
     };
-    
+
     protected List<FileObject> getBigSourceFiles() {
         FileObject jruby = TestUtil.getXTestJRubyHomeFO();
         

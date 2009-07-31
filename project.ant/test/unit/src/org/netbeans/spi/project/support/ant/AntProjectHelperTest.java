@@ -44,7 +44,6 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -558,10 +557,9 @@ public class AntProjectHelperTest extends NbTestCase {
         FileObject cache = cdp.getCacheDirectory();
         assertNotNull("has a cache dir", cache);
         assertTrue("cache dir is a folder", cache.isFolder());
-        assertEquals("cache dir is empty", Collections.EMPTY_LIST, Arrays.asList(cache.getChildren()));
         cache.createData("foo");
         cache = cdp.getCacheDirectory();
-        assertEquals("cache contents still there", 1, cache.getChildren().length);
+        assertNotNull("cache contents still there", cache.getFileObject("foo"));
         // Check read of shared data.
         h.addAntProjectListener(l);
         Element data = aux.getConfigurationFragment("data", "urn:test:shared-aux", true);
@@ -774,7 +772,7 @@ public class AntProjectHelperTest extends NbTestCase {
         pp.addChangeListener(mcl);
         assertEquals("no defs initially", Collections.EMPTY_MAP, pp.getProperties());
         assertNull("no file made yet", h.getProjectDirectory().getFileObject(path));
-        ep = new EditableProperties();
+        ep = new EditableProperties(false);
         ep.setProperty("one", "1");
         ep.setProperty("two", "2");
         h.putProperties(path, ep);

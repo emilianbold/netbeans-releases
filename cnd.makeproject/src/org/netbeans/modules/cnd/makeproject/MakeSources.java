@@ -62,6 +62,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -168,8 +169,8 @@ public class MakeSources implements Sources, AntProjectListener {
 //                    }
 //                }
                 displayName = FilePathAdaptor.naturalize(displayName);
-                h.addPrincipalSourceRoot(name, displayName, null, null);
-                h.addTypedSourceRoot(name, "generic", displayName, null, null); // NOI18N
+                h.sourceRoot(name).displayName(displayName).add();
+                h.sourceRoot(name).type("generic").displayName(displayName).add(); // NOI18N
             }
         }
         h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);

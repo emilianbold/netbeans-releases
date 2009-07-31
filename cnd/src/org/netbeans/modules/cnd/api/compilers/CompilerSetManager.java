@@ -165,7 +165,7 @@ public class CompilerSetManager {
             if (csm == null) {
                 csm = restoreFromDisk(env);
                 if (csm != null && csm.getDefaultCompilerSet() == null) {
-                    csm.initDefaltCompilerSet();
+                    csm.setDefaltCompilerSet();
                     csm.saveToDisk();
                 }
             }
@@ -563,9 +563,22 @@ public class CompilerSetManager {
         return dirlist;
     }
 
-    private void initDefaltCompilerSet() {
-        // for now just use the first one
-        // but we should choose "GNU vs SS" based on "NB vs SS" knowledge
+    private void setDefaltCompilerSet() {
+        // Look for compiler set with lowest position and set it as the default 
+        List<ToolchainDescriptor> toolchainDescriptors = ToolchainManager.getImpl().getAllToolchains();
+        int pos = -1;
+        for (CompilerSet cs : sets) {
+            ToolchainDescriptor toolchainDescriptor = cs.getCompilerFlavor().getToolchainDescriptor();
+            int newPos = toolchainDescriptors.indexOf(toolchainDescriptor);
+            if (newPos >= 0 && (pos == -1 || newPos < pos)) {
+                pos = newPos;
+                setDefault(cs);
+            }
+        }
+        if (pos >= 0) {
+            return;
+        }
+        
         if (!sets.isEmpty()) {
             setDefault(sets.get(0));
         } else {
@@ -879,7 +892,7 @@ public class CompilerSetManager {
         if (sets.size() == 0) { // No compilers found
             add(CompilerSet.createEmptyCompilerSet(getPlatform()));
         } else {
-            initDefaltCompilerSet();
+            setDefaltCompilerSet();
         }
 
         completeCompilerSets(getPlatform());
@@ -1080,17 +1093,6 @@ public class CompilerSetManager {
         }
         if (cs.findTool(Tool.MakeTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
-        }
-        if (cs.findTool(Tool.DebuggerTool) == null) {
-            String path;
-            if (IpeUtils.isGdbEnabled()) {
-                path = Path.findCommand("gdb"); // NOI18N
-            } else {
-                path = Path.findCommand("dbx"); // NOI18N
-            }
-            if (path != null) {
-                cs.addNewTool(env, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
-            }
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);

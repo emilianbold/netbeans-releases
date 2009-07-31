@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -72,12 +74,15 @@ import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -137,7 +142,7 @@ public class LogViewMgr {
             Collections.synchronizedList(new ArrayList<WeakReference<LoggerRunnable>>());
 
     /**
-     * Creates and starts a new instance of Hk2Logger
+     * Creates and starts a new instance of LogViewMgr
      * 
      * @param uri the uri of the server
      */
@@ -158,10 +163,10 @@ public class LogViewMgr {
     }
     
     /**
-     * Returns uri specific instance of Hk2Logger
+     * Returns uri specific instance of LogViewMgr
      * 
      * @param uri the uri of the server
-     * @return uri specific instamce of OCHk2Logger
+     * @return uri specific instamce of LogViewMgr
      */
     public static LogViewMgr getInstance(String uri) {
         LogViewMgr logViewMgr = null;
@@ -356,9 +361,84 @@ public class LogViewMgr {
         if(LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError()); // NOI18N
         }
-        io.select();
+
+        // Only select the output window if it's closed.  This makes sure it's
+        // created properly and displayed.  However, if the user minimizes the
+        // output window or switches to another one, we don't switch back.
+        if(io.isClosed()) {
+            io.select();
+
+            // Horrible hack.  closed flag is never reset, so reset it after reopening.
+            invokeSetClosed(io, false);
+        }
+
+        // If the user happened to close the OutputWindow TopComponent, reopen it.
+        // Don't this check too often, but often enough.
+        if(System.currentTimeMillis() > lastVisibleCheck + VISIBILITY_CHECK_DELAY) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    if(visibleCheck.getAndSet(true)) {
+                        try {
+                            TopComponent tc = null;
+                            if(outputTCRef != null) {
+                                tc = outputTCRef.get();
+                            }
+                            if(tc == null) {
+                                tc = WindowManager.getDefault().findTopComponent(OUTPUT_WINDOW_TCID);
+                                if(tc != null) {
+                                    outputTCRef = new WeakReference<TopComponent>(tc);
+                                }
+                            }
+                            if(tc != null && !tc.isOpened()) {
+                                tc.open();
+                            }
+                            lastVisibleCheck = System.currentTimeMillis();
+                        } finally {
+                            visibleCheck.set(false);
+                        }
+                    }
+                }
+            });
+        }
     }
-    
+
+    private AtomicBoolean visibleCheck = new AtomicBoolean();
+    private final long VISIBILITY_CHECK_DELAY = 60 * 1000;
+    private final String OUTPUT_WINDOW_TCID = "output"; // NOI18N
+    private volatile long lastVisibleCheck = 0;
+    private WeakReference<TopComponent> outputTCRef =
+            new WeakReference<TopComponent>(null);
+    private volatile Method setClosedMethod;
+
+    private void invokeSetClosed(InputOutput io, boolean closed) {
+        if(setClosedMethod == null) {
+            setClosedMethod = initSetClosedMethod(io);
+        }
+        if(setClosedMethod != null) {
+            try {
+                setClosedMethod.invoke(io, Boolean.valueOf(closed));
+            } catch (Exception ex) {
+                if(LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "invokeSetClosed", ex); // NOI18N
+                }
+            }
+        }
+    }
+
+    private Method initSetClosedMethod(InputOutput io) {
+        Method method = null;
+        try {
+            Class clazz = io.getClass();
+            method = clazz.getDeclaredMethod("setClosed", boolean.class); // NOI18N
+            method.setAccessible(true);
+        } catch(Exception ex) {
+            if(LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "initSetClosedMethod", ex); // NOI18N
+            }
+        }
+        return method;
+    }
+
     private class LoggerRunnable implements Runnable {
 
         private final List<Recognizer> recognizers;
@@ -918,38 +998,38 @@ public class LogViewMgr {
                     ioWeakMap.put(si, null);
                 }
             }
-
-            // look up the node that belongs to the given server instance
-            Node node = si.getFullNode();
-
-            // it looks like that the server instance has been removed 
-            if (node == null) {
-                return null;
-            }
-            
-            // No server control interface...
-            GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
-            if(commonSupport == null) {
-                return null;
-            }
-
-            Action[] actions = new Action[] {
-                new StartServerAction.OutputAction(commonSupport),
-                new DebugAction.OutputAction(commonSupport),
-                new RestartAction.OutputAction(commonSupport),
-                new StopServerAction.OutputAction(commonSupport),
-                new RefreshAction.OutputAction(commonSupport)
-            };
-
-            InputOutput newIO = null;
-            synchronized (ioWeakMap) {
-                newIO = ioWeakMap.get(si);
-                if(newIO == null) {
-                    newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
-                    ioWeakMap.put(si, newIO);
-                }
-            }
-            return newIO;
         }
-    }    
+
+        // look up the node that belongs to the given server instance
+        Node node = si.getFullNode();
+
+        // it looks like that the server instance has been removed
+        if (node == null) {
+            return null;
+        }
+
+        // No server control interface...
+        GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
+        if(commonSupport == null) {
+            return null;
+        }
+
+        Action[] actions = new Action[] {
+            new StartServerAction.OutputAction(commonSupport),
+            new DebugAction.OutputAction(commonSupport),
+            new RestartAction.OutputAction(commonSupport),
+            new StopServerAction.OutputAction(commonSupport),
+            new RefreshAction.OutputAction(commonSupport)
+        };
+
+        InputOutput newIO = null;
+        synchronized (ioWeakMap) {
+            newIO = ioWeakMap.get(si);
+            if(newIO == null) {
+                newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
+                ioWeakMap.put(si, newIO);
+            }
+        }
+        return newIO;
+    }
 }

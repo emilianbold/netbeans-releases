@@ -53,11 +53,11 @@ import org.openide.text.PositionBounds;
  */
 public final class ErrorDescription {
 
-    private String        description;
-    private Severity      severity;
-    private LazyFixList   fixes;
-    private PositionBounds span;
-    private FileObject     file;
+    private final String description;
+    private final Severity severity;
+    private final LazyFixList fixes;
+    private final PositionBounds span;
+    private final FileObject file;
 
     /**
      * The constructor is intentionally not public. Use 

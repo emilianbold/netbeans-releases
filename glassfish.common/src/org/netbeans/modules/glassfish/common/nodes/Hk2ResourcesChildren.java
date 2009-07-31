@@ -76,15 +76,31 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
     }
 
     public void updateKeys(){
-        Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
+        Vector keys = new Vector();
         String[] childTypes = NodeTypes.getChildTypes(type);
-        if(childTypes != null) {
+        if((childTypes != null) && (childTypes.length > 1)) {
             for(int i = 0; i < childTypes.length; i++) {
                 String childtype = childTypes[i];
                 keys.add(new Hk2ItemNode(lookup,
                     new Hk2Resources(lookup, childtype),
                     NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+childtype), //TODO
                     Hk2ItemNode.REFRESHABLE_FOLDER));
+            }
+        } else {
+            String childtype = childTypes[0];
+            GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+            if (commonSupport != null) {
+                try {
+                    java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                    CommandRunner mgr = new CommandRunner(ip);
+                    Decorator decorator = DecoratorManager.findDecorator(childtype, null);
+                    List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
+                    for (ResourceDesc resource : reslourcesList) {
+                        keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, null));
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
             }
         }
         setKeys(keys);

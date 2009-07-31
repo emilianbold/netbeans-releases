@@ -4,7 +4,7 @@
     <fontcolor name="whitespace"/>
     <fontcolor default="string" name="markup-attribute-value"/>
     <fontcolor bgColor="ff2b2b2b" foreColor="ffdddddd" name="default">
-        <font name="Monaco" size="12" style="plain"/>
+        <font name="Monospaced" size="13" style="plain"/>
     </fontcolor>
     <fontcolor foreColor="ffd27522" name="operator"/>
     <fontcolor foreColor="ff7b7b7b" name="comment">

@@ -42,10 +42,10 @@
 package org.netbeans.modules.j2ee.clientproject;
 
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 
 /**
@@ -61,8 +61,8 @@ public class AppClientInjectionTargetQueryImplementation implements InjectionTar
     public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
         Car apiCar = Car.getCar(controller.getFileObject());
         if (apiCar != null && 
-                !apiCar.getJ2eePlatformVersion().equals(EjbProjectConstants.J2EE_13_LEVEL) &&
-                !apiCar.getJ2eePlatformVersion().equals(EjbProjectConstants.J2EE_14_LEVEL)) {
+                !Profile.J2EE_13.equals(apiCar.getJ2eeProfile()) &&
+                !Profile.J2EE_14.equals(apiCar.getJ2eeProfile())) {
             return SourceUtils.isMainClass(typeElement.getQualifiedName().toString(), controller.getClasspathInfo());
         }
         return false;

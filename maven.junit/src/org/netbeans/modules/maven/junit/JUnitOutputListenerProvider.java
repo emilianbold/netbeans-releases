@@ -141,7 +141,6 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             final TestSession.SessionType fType = type;
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
                     new JUnitTestRunnerNodeFactory(session, prj));
-            Manager.getInstance().testStarted(session);
             session.setRerunHandler(new RerunHandler() {
                 public void rerun() {
                     RunUtils.executeMaven(config);
@@ -155,6 +154,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 public void removeChangeListener(ChangeListener listener) {
                 }
             });
+            Manager.getInstance().testStarted(session);
         }
     }
 

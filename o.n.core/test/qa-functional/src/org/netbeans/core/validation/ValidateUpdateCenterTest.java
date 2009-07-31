@@ -119,7 +119,12 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.lib.terminalemulator");
         // some pseudomodules used only by tests
         permittedDisabledAutoloads.add("org.netbeans.modules.jellytools");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.cnd");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.enterprise");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ide");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.java");
         permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.platform");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ruby");
         permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
         permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
         permittedDisabledAutoloads.add("org.netbeans.insane");
@@ -147,6 +152,11 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
         // schlieman is our diamond
         permittedDisabledAutoloads.add("org.netbeans.modules.languages");
+        // os-specific binaries for embedded browser
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.linux");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.macosx");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.solaris");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.win");
         SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
         if (!problems.isEmpty()) {
             StringBuilder message = new StringBuilder("Problems found with autoloads");

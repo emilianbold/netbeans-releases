@@ -40,7 +40,7 @@ package org.netbeans.properties.jelly2tests.suites.properties_editing;
 
 import lib.PropertiesEditorTestCase;
 import junit.framework.Test;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -84,7 +84,7 @@ public class AddingNewKeyAndValuesTest extends PropertiesEditorTestCase {
         nfwo.selectFileType(WIZARD_FILE_TYPE);
         nfwo.next();
 
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(BUNDLE_NAME);
         JTextFieldOperator jtfo = new JTextFieldOperator(nfnlso, 2);
         jtfo.setText("src/" + WORKING_PACKAGE);

@@ -438,6 +438,11 @@ public class Annotator {
         boolean folderAnnotation = false;
 
         for (File file : context.getRootFiles()) {
+            if (SvnUtils.isPartOfSubversionMetadata(file)) {
+                // no need to handle .svn files, eliminates some warnings as 'no repository url found for managed file .svn'
+                // happens e.g. when annotating a Project folder
+                continue;
+            }
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 // status not in cache, plan refresh
@@ -457,7 +462,7 @@ public class Annotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
 
         if (mostImportantInfo == null) return null;
@@ -617,7 +622,7 @@ public class Annotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
 
         if (folderAnnotation == false) {

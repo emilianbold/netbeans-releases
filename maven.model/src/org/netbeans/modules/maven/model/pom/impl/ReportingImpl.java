@@ -88,6 +88,19 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         }
     }
 
+    public ReportPlugin findReportPluginById(String groupId, String artifactId) {
+        assert groupId != null;
+        assert artifactId != null;
+        java.util.List<ReportPlugin> plgs = getReportPlugins();
+        if (plgs != null) {
+            for (ReportPlugin p : plgs) {
+                if (groupId.equals(p.getGroupId()) && artifactId.equals(p.getArtifactId())) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
 
     public Boolean isExcludeDefaults() {
         String str = getChildElementText(getModel().getPOMQNames().EXCLUDEDEFAULTS.getQName());

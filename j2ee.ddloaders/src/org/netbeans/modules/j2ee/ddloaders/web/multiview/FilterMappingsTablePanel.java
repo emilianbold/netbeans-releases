@@ -71,7 +71,6 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
         webApp = dObj.getWebApp();
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                
                 int row = getTable().getSelectedRow();
                 String filterName = (String)model.getValueAt(row,0);
                 dObj.modelUpdatedFromUI();

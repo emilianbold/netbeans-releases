@@ -56,7 +56,7 @@ import org.w3c.dom.NodeList;
  * @author mkleint
  */
 public class ConfigurationProviderEnabler {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     static String NAMESPACE = "http://www.netbeans.org/ns/maven-config-data/1"; //NOI18N
     static String ROOT = "config-data"; //NOI18N
     static String ENABLED = "enabled"; //NOI18N

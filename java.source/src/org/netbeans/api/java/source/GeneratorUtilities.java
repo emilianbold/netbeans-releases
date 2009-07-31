@@ -408,13 +408,7 @@ public final class GeneratorUtilities {
         assert name.length() > 0;
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
         StringBuilder sb = getCapitalizedName(name);
-        boolean isBooleanType = false;
-        if (type instanceof DeclaredType) {
-            isBooleanType = copy.getElements().getTypeElement("java.lang.Boolean").equals(((DeclaredType) type).asElement()); // NOI18N
-        } else {
-            isBooleanType = type.getKind() == TypeKind.BOOLEAN;
-        }
-        sb.insert(0, isBooleanType ? "is" : "get"); //NOI18N
+        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
@@ -505,16 +499,25 @@ public final class GeneratorUtilities {
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
         try {
-            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
+            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
             return (T) translator.translate(original);
+            
+            /*JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
+            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+            CommentCollector instance = CommentCollector.getInstance();
+            instance.collect(seq, copy);
+
+            return original;*/
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return original;
     }
-
+    
+    
     // private implementation --------------------------------------------------
 
     private MethodTree createMethod(ExecutableElement element, DeclaredType type) {

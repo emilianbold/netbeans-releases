@@ -84,6 +84,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/var_scope.php", "print $^", false);
     }
 
+    public void testCCOnMethods0() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "TestCCOnMethods::crea^", false);
+    }
+
     public void testCCOnMethods1() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "$tst1->newInstance()->^", false);
     }
@@ -152,7 +156,39 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|^", false);
     }
 
-    public void testPhpContext2() throws Exception {
+//    public void testNamespaces1() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use ^", false);
+//    }
+//
+//    public void testNamespaces2() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use C^", false);
+//    }
+//
+//    public void testNamespaces3() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use ANS\\^", false);
+//    }
+//
+//    public void testNamespaces4() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use ANS\\B^", false);
+//    }
+//
+//    public void testNamespaces5() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\^", false);
+//    }
+//
+//    public void testNamespaces6() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\C^", false);
+//    }
+//
+//    public void testNamespaces7() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\ANS\\^", false);
+//    }
+//
+//    public void testNamespaces8() throws Exception {
+//        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\ANS\\B^", false);
+//    }
+
+    public void testPhpContext9() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
 
@@ -650,6 +686,15 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testMixedType03() throws Exception {
         checkCompletion("testfiles/completion/lib/mixedtypes.php", "getBook()->^", false);
+    }
+    public void testMixedType01_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes_1.php", "getBookMagazine()->^", false);
+    }
+    public void testMixedType02_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes_1.php", "$bm->^", false);
+    }
+    public void testMixedType03_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/mixedtypes_1.php", "getBook()->^", false);
     }
 
     public void testVarTypeCommentVariable02() throws Exception {

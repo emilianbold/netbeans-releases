@@ -18,19 +18,23 @@ rollback() {
   fi
 }
 
-HEADS=`hg heads --template "{node}\n" | wc -l`
-if [ $HEADS = 2 ]; then
-    echo "2 heads, here is some diagnostic"
-    echo hg heads:
-    hg heads
-    echo hg stat
-    hg stat
-    exit 1
-fi
 BASETIP=`hg id -i | tr -d "+"`
 trap rollback EXIT
 
-hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/"$push_repo"
+hg pull -u http://hg.netbeans.org/"$push_repo"
+
+HEADS=`hg heads --template "{node}\n" | wc -l`
+if [ $HEADS = 2 ]; then
+    echo "2 heads, Need to merge"
+    hg --config ui.merge=internal:merge --config ui.interactive=1 merge < /dev/null || exit 8
+    hg ci -u "$push_username"@netbeans.org -m "Automated merge with main-silver"
+else
+    if [ $HEADS -gt 2 ]; then
+        echo "$HEADS heads, here is some diagnostic"
+        hg heads
+    fi
+fi
+
 hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
 unset BASETIP
 exit 0

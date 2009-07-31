@@ -59,6 +59,12 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-groovy-editor-api-GroovyBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
                 
                 <folder name="CodeTemplates">
                     <folder name="Defaults">

@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -52,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -69,30 +67,30 @@ public final class FileObjectCrawler extends Crawler {
     private final ClassPath.Entry entry;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
+    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
+    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = files;
     }
 
     @Override
-    protected boolean collectResources(final Set<? extends String> supportedMimeTypes, Map<String, Collection<Indexable>> result) {
+    protected boolean collectResources(Collection<IndexableImpl> result) {
         final boolean finished;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
 
         if (files != null) {
-            finished = collect(files, root, result, supportedMimeTypes, stats, entry);
+            finished = collect(files, root, result, stats, entry);
         } else {
-            finished = collect(root.getChildren(), root, result, supportedMimeTypes, stats, entry);
+            finished = collect(root.getChildren(), root, result, stats, entry);
         }
 
         final long tm2 = System.currentTimeMillis();
@@ -105,16 +103,17 @@ public final class FileObjectCrawler extends Crawler {
                 rootUrl = root.toString();
             }
 
-            LOG.log(Level.FINE, "Up-to-date check of {0} files under {1} took {2} ms", new Object[]{ stats.filesCount, rootUrl, tm2 - tm1 }); //NOI18N
+            LOG.log(Level.FINE, String.format("Up-to-date check of %d files under %s took %d ms", stats.filesCount, rootUrl, tm2 - tm1 )); //NOI18N
 
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.FINER, "File extensions histogram for {0}:", rootUrl);
                 Stats.logHistogram(Level.FINER, stats.extensions);
                 LOG.finer("----");
 
-                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
-                Stats.logHistogram(Level.FINER, stats.mimeTypes);
-                LOG.finer("----");
+// mimetypes histogram is no longer available after crawling the files
+//                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
+//                Stats.logHistogram(Level.FINER, stats.mimeTypes);
+//                LOG.finer("----");
             }
         }
 
@@ -122,8 +121,7 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     private boolean collect (FileObject[] fos, FileObject root,
-            final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes,
+            final Collection<IndexableImpl> cache,
             final Stats stats, final ClassPath.Entry entry) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
@@ -137,28 +135,18 @@ public final class FileObjectCrawler extends Crawler {
                 continue;
             }
             if (fo.isFolder()) {
-                if (!collect(fo.getChildren(), root, cache, supportedMimeTypes, stats, entry)) {
+                if (!collect(fo.getChildren(), root, cache, stats, entry)) {
                     return false;
                 }
             } else {
-                String mime = fo.getMIMEType(); // XXX: this is VERY slow!!
                 if (stats != null) {
                     stats.filesCount++;
-                    stats.inc(stats.extensions, fo.getExt());
-                    stats.inc(stats.mimeTypes, mime);
+                    Stats.inc(stats.extensions, fo.getExt());
                 }
 
-                if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
-                    Collection<Indexable> indexable = cache.get(mime);
-                    if (indexable == null) {
-                        indexable = new HashSet<Indexable>();
-                        cache.put(mime, indexable);
-                    }
-
-                    if (!isUpToDate(fo)) {
-                        String relativePath = FileUtil.getRelativePath(root, fo);
-                        indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, relativePath, mime)));
-                    }
+                if (!isUpToDate(fo)) {
+                    String relativePath = FileUtil.getRelativePath(root, fo);
+                    cache.add(new FileObjectIndexable(root, relativePath));
                 }
             }
         }
@@ -170,7 +158,7 @@ public final class FileObjectCrawler extends Crawler {
         public int filesCount;
         public Map<String, Integer> extensions = new HashMap<String, Integer>();
         public Map<String, Integer> mimeTypes = new HashMap<String, Integer>();
-        public void inc(Map<String, Integer> m, String k) {
+        public static void inc(Map<String, Integer> m, String k) {
             Integer i = m.get(k);
             if (i == null) {
                 m.put(k, 1);

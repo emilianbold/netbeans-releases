@@ -195,7 +195,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                         schemaPanel.resetProgress();
                         try {
                             Connection conn = cinfo.getConnection();
-                            if (conn != null && !conn.isClosed())
+                            if (DatabaseConnection.isVitalConnection(conn, cinfo))
                                 conn.close();
                         } catch (SQLException exc) {
                             LOGGER.log(Level.FINE, null, exc);
@@ -301,7 +301,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                         okPressed = true;
                         basePanel.setConnectionInfo();
                         try {
-                            if (cinfo.getConnection() == null || cinfo.getConnection().isClosed())
+                            if (! DatabaseConnection.isVitalConnection(cinfo.getConnection(), cinfo))
                                 activeTask = cinfo.connectAsync();
                             else {
                                 cinfo.setSchema(schemaPanel.getSchema());
@@ -312,9 +312,6 @@ public class ConnectUsingDriverAction extends BaseAction {
                                     dlg.close();
                                 }
                             }
-                        } catch (SQLException exc) {
-                            //isClosed() method failed, try to connect
-                            activeTask = cinfo.connectAsync();
                         } catch (DatabaseException exc) {
                             LOGGER.log(Level.INFO, null, exc);
                             DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N

@@ -81,10 +81,10 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     private final EntityMethodController controller;
     private final Entity model; // EJB 2.1
     
-    public EntityChildren(ClasspathInfo cpInfo, final String ejbClass, EjbJar ejbModule) throws IOException {
-        this.cpInfo = cpInfo;
-        this.ejbClass = ejbClass;
-        this.ejbModule = ejbModule;;
+    public EntityChildren(EjbViewController ejbViewController) throws IOException {
+        this.cpInfo = ejbViewController.getClasspathInfo();
+        this.ejbClass = ejbViewController.getEjbClass();
+        this.ejbModule = ejbViewController.getEjbModule();
         this.controller = new EntityMethodController(ejbClass, ejbModule.getMetadataModel());
         this.model = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Entity>() {
             public Entity run(EjbJarMetadata metadata) throws Exception {
@@ -145,14 +145,14 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     protected Node[] createNodes(KEY key) {
         if (key == KEY.LOCAL) {
             Children children = new MethodChildren(cpInfo, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
-            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, true);
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.LOCAL);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (key == KEY.REMOTE) {
             Children children = new MethodChildren(cpInfo, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
-            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, false);
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.REMOTE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };

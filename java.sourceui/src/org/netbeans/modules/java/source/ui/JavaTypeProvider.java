@@ -66,11 +66,12 @@ import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -148,51 +149,64 @@ public class JavaTypeProvider implements TypeProvider {
             Set<CacheItem> sources = null;
 
             if (cpInfo == null) {
-                // XXX: sources will in fact contain not only java related roots, but also roots
-                // defined by other languages. Ideally PathRegistry should allow filtering roots by their ID.
-
-                // Sources - ClassPath.SOURCE
                 sources = new HashSet<CacheItem>();
-                for (URL url : PathRegistry.getDefault().getSources()) {
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(url));
+
+                // Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
+                Collection<FileObject> srcRoots = QuerySupport.findRoots(
+                        (Project)null,
+                        Collections.singleton(ClassPath.SOURCE),
+                        Collections.<String>emptySet(),
+                        Collections.<String>emptySet());
+
+                for(FileObject root : srcRoots) {
+                    if ( isCanceled ) {
+                        return;
+                    }
+                    URL rootUrl;
+                    try {
+                        rootUrl = root.getURL();
+                    } catch (FileStateInvalidException fsie) {
+                        continue;
+                    }
+
+                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(rootUrl));
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( url, ci, false ) );
+                        sources.add( new CacheItem( rootUrl, ci, false ) );
                     }
                 }
 
-                // Translated ClassPath.COMPILE & ClassPath.BOOT
-                for (URL url : PathRegistry.getDefault().getLibraries()) {
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(url));
+                // Binaries - not translated ClassPath.COMPILE & ClassPath.BOOT
+                Collection<FileObject> binRoots = QuerySupport.findRoots(
+                        (Project)null,
+                        Collections.<String>emptySet(),
+                        Collections.<String>emptySet(),
+                        Arrays.asList(new String [] { ClassPath.COMPILE, ClassPath.BOOT}));
+
+                for(FileObject root : binRoots) {
+                    if ( isCanceled ) {
+                        return;
+                    }
+                    URL rootUrl;
+                    try {
+                        rootUrl = root.getURL();
+                    } catch (FileStateInvalidException fsie) {
+                        continue;
+                    }
+                    if (!hasBinaryOpen) {
+                        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(rootUrl);
+                        if ( result.getRoots().length == 0 ) {
+                            continue;
+                        }
+                    }
+                    ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( url, ci, false ) );
-                    }
-                }
-                
-                // Binaries - not translated ClassPath.COMPILE & ClassPath.BOOT
-                for (URL url : PathRegistry.getDefault().getBinaryLibraries()) {
-                    try {
-                        if ( isCanceled ) {
-                            return;
-                        }
-                        if (!hasBinaryOpen) {
-                            SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
-                            if ( result.getRoots().length == 0 ) {
-                                continue;
-                            }
-                        }
-                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(url), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);
-                        sources.add( new CacheItem( url, ci, true ) );
-                    }
-                    finally {
-                        if ( isCanceled ) {
-                            return;
-                        }
+                        sources.add( new CacheItem( rootUrl, ci, true ) );
                     }
                 }
             } else { // user provided classpath
@@ -239,6 +253,17 @@ public class JavaTypeProvider implements TypeProvider {
 
             if ( !isCanceled ) {
 //                cache = sources;
+                if (LOGGER.isLoggable(LEVEL)) {
+                    LOGGER.log(LEVEL, "Querying following roots:"); //NOI18N
+                    for(CacheItem ci : sources) {
+                        try {
+                            LOGGER.log(LEVEL, "  {0}; binary={1}", new Object[]{ci.getRoot().getURL(), ci.isBinary()}); //NOI18N
+                        } catch (FileStateInvalidException ex) {
+                            // ignore
+                        }
+                    }
+                    LOGGER.log(LEVEL, "-------------------------"); //NOI18N
+                }
                 setCache(sources);
             }
             else {

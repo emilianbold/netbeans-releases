@@ -42,15 +42,8 @@
 package org.netbeans.modules.apisupport.project;
 
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import java.io.File;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -67,21 +60,15 @@ public class NbModuleProjectTest extends TestBase {
     }
     
     private NbModuleProject javaProjectProject;
-    private NbModuleProject loadersProject;
-    private File userPropertiesFile;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
+        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         FileObject dir = nbRoot().getFileObject("java.project");
         assertNotNull("have java.project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
-        dir = nbRoot().getFileObject("openide.loaders");
-        assertNotNull("have openide.loaders checked out", dir);
-        p = ProjectManager.getDefault().findProject(dir);
-        loadersProject = (NbModuleProject)p;
     }
 
     /** #56457 */
@@ -126,7 +113,7 @@ public class NbModuleProjectTest extends TestBase {
 
     public void testGetNbrootFile() throws Exception {
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(resolveEEP("suite1/action-project"));
-        assertEquals(file("xtest/lib/insanelib.jar"), actionProject.getNbrootFile("xtest/lib/insanelib.jar"));
+        assertEquals(file("whatever"), actionProject.getNbrootFile("whatever"));
     }
 
     public void testThatModuleWithOverriddenSrcDirPropertyDoesNotThrowNPE() throws Exception {
