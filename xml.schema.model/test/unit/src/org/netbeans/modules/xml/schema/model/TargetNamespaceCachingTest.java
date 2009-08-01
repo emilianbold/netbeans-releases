@@ -42,14 +42,12 @@ package org.netbeans.modules.xml.schema.model;
 import javax.swing.undo.UndoManager;
 import org.junit.Test;
 import org.junit.After;
-import org.netbeans.modules.xml.schema.model.impl.GlobalComponentsIndexSupport;
-import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import static org.junit.Assert.*;
 
 /**
- * The test for class GloablComponentsIndexSupport. 
+ * See the issue #169435
  *
  * @author Nikita Krjukov
  */
