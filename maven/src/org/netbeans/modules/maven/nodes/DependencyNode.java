@@ -219,10 +219,12 @@ public class DependencyNode extends AbstractNode {
     }
 
     private void setIconBase() {
-        if (longLiving && isDependencyProjectOpen() && isTransitive()) {
-            setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
-        } else if (longLiving && isDependencyProjectOpen()) {
-            setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
+        if (longLiving && isDependencyProjectOpen()) {
+            if (isTransitive()) {
+                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
+            } else {
+                setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
+            }
         } else if (isTransitive()) {
             if (isAddedToCP()) {
                 setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveDependencyIcon.png"); //NOI18N
