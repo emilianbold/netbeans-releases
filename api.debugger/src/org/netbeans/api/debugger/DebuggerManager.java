@@ -42,6 +42,7 @@
 package org.netbeans.api.debugger;
 
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.HashMap;
 
@@ -1001,7 +1002,16 @@ public final class DebuggerManager implements ContextProvider {
         try {
             java.lang.reflect.Method unloadMethod = dl.getClass().getMethod("unloadBreakpoints", new Class[] {});
             bps = (Breakpoint[]) unloadMethod.invoke(dl, new Object[] {});
-        } catch (Exception exc) {
+        } catch (IllegalAccessException iaex) {
+            return ;
+        } catch (IllegalArgumentException iaex) {
+            return ;
+        } catch (NoSuchMethodException iaex) {
+            return ;
+        } catch (SecurityException iaex) {
+            return ;
+        } catch (InvocationTargetException iaex) {
+            Exceptions.printStackTrace(iaex.getTargetException());
             return ;
         }
         //Breakpoint[] bps = dl.unloadBreakpoints();
