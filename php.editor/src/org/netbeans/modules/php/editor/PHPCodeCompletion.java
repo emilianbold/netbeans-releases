@@ -289,6 +289,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteClassNames(proposals, request,false);
                     break;
                 case INTERFACE_NAME:
+                    autoCompleteNamespaces(proposals, request);
                     autoCompleteInterfaceNames(proposals, request);
                     break;
                 case USE_KEYWORD:
