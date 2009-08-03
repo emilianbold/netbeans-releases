@@ -454,6 +454,22 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof LineBreakpointImpl) {
+                LineBreakpoint lbthis = this;
+                LineBreakpoint lb = (LineBreakpoint) obj;
+                return lbthis.url.equals(lb.url) && lbthis.lineNumber == lb.lineNumber;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            LineBreakpoint lbthis = this;
+            return lbthis.url.hashCode() + lbthis.lineNumber;
+        }
+
         public void fileFolderCreated(FileEvent fe) {
         }
 
