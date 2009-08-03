@@ -670,8 +670,9 @@ public final class FrameworkCommandChooser extends JPanel {
             if (value instanceof FrameworkCommand) {
                 FrameworkCommand task = (FrameworkCommand) value;
                 String descripton = task.getDescription();
-                StringBuilder text = new StringBuilder("<html>"); // NOI18N
-                text.append("<b>").append(task.getCommand()).append("</b>"); // NOI18N
+                StringBuilder text = new StringBuilder(100);
+                text.append("<html>"); // NOI18N
+                text.append("<b>").append(task.getDisplayName()).append("</b>"); // NOI18N
                 if (descripton != null) {
                     text.append(" : ").append(descripton); // NOI18N
                 }
