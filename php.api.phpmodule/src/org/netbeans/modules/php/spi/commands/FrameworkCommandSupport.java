@@ -117,7 +117,7 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Get the process builder for running framework commands or <code>null</code> if something is wrong.
-     * The default implmentation returns {@ExternalProcessBuilder process builder}
+     * The default implmentation returns {@link ExternalProcessBuilder process builder}
      * with default {@link PhpInterpreter#getDefault() PHP interpreter}
      * with all its parameters (specified in Tools > Options > PHP).
      * @param warnUser <code>true</code> if user should be warned (e.g. the script is incorrect), <code>false</code> otherwise
