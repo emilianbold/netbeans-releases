@@ -54,9 +54,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -97,6 +101,9 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
     public static final Icon EXPAND_ALL_ICON = ImageUtilities.loadImageIcon(
             "org/netbeans/modules/java/navigation/resources/expandall.gif", false); // NOI18N
+    
+    private static final String NON_BINDING_MEMBER_ANNOTATION =
+                                            "javax.enterprise.inject.NonBinding";    // NOI18N
 
     private static TreeModel pleaseWaitTreeModel;
     static
@@ -115,26 +122,30 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     {
         initComponents();
         
-        initInjectionPoint( var, bindings , controller );
-        
         docPane = new DocumentationScrollPane( true );
         mySplitPane.setRightComponent( docPane );
-        // TODO splitPane.setDividerLocation(JavaMembersAndHierarchyOptions.getHierarchyDividerLocation());
+        mySplitPane.setDividerLocation(
+                WebBeansNavigationOptions.getHierarchyDividerLocation());
         
-        ToolTipManager.sharedInstance().registerComponent(javaHierarchyTree);
+        ToolTipManager.sharedInstance().registerComponent(myJavaHierarchyTree);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
-        caseSensitiveFilterCheckBox.setSelected(WebBeansNavigationOptions.isCaseSensitive());
-        showFQNToggleButton.setSelected(WebBeansNavigationOptions.isShowFQN());
+        myCaseSensitiveFilterCheckBox.setSelected(
+                WebBeansNavigationOptions.isCaseSensitive());
+        myShowFQNToggleButton.setSelected(
+                WebBeansNavigationOptions.isShowFQN());
 
-        javaHierarchyTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        javaHierarchyTree.setRootVisible(false);
-        javaHierarchyTree.setShowsRootHandles(true);
-        javaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
+        initInjectionPoint( var, bindings , controller );
+
+        myJavaHierarchyTree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
+        myJavaHierarchyTree.setRootVisible(false);
+        myJavaHierarchyTree.setShowsRootHandles(true);
+        myJavaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
 
         javaHierarchyModel = new AmbiguousInjectablesModel(elements, 
                 controller );
-        javaHierarchyTree.setModel(javaHierarchyModel);
+        myJavaHierarchyTree.setModel(javaHierarchyModel);
 
         registerKeyboardAction(
                 new ActionListener() {
@@ -145,7 +156,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        filterTextField.getDocument().addDocumentListener(
+        myFilterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 selectMatchingRow();
@@ -159,7 +170,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         }
         );
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 //TODO : Utils.firstRow(javaHierarchyTree);
@@ -168,7 +179,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 //TODO : Utils.previousRow(javaHierarchyTree);
@@ -177,7 +188,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
             }
@@ -185,7 +196,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 //TODO : Utils.lastRow(javaHierarchyTree);
@@ -235,10 +246,10 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getSelectionPath();
+                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
@@ -251,10 +262,10 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getSelectionPath();
+                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
@@ -266,7 +277,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         Component view = docPane.getViewport().getView();
@@ -282,7 +293,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 },
                 KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
                 JComponent.WHEN_FOCUSED);
-        filterTextField.registerKeyboardAction(
+        myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
                     private boolean firstTime = true;
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -304,21 +315,21 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
                 JComponent.WHEN_FOCUSED);
 
-        caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
+        myCaseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                WebBeansNavigationOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                if (filterTextField.getText().trim().length() > 0) {
+                WebBeansNavigationOptions.setCaseSensitive(myCaseSensitiveFilterCheckBox.isSelected());
+                if (myFilterTextField.getText().trim().length() > 0) {
                     // apply filters again only if there is some filter text
                     selectMatchingRow();
                 }
             }
         });
 
-        javaHierarchyTree.addMouseListener(
+        myJavaHierarchyTree.addMouseListener(
                 new MouseAdapter() {
             public void mouseClicked(MouseEvent me) {
                 Point point = me.getPoint();
-                TreePath treePath = javaHierarchyTree.getPathForLocation(point.x, point.y);
+                TreePath treePath = myJavaHierarchyTree.getPathForLocation(point.x, point.y);
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
@@ -335,17 +346,17 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         }
         );
 
-        javaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
+        myJavaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 showBindings();
                 showJavaDoc();
             }
         });
 
-        javaHierarchyTree.registerKeyboardAction(
+        myJavaHierarchyTree.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getLeadSelectionPath();
+                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
@@ -357,10 +368,10 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 JComponent.WHEN_FOCUSED);
 
-        javaHierarchyTree.registerKeyboardAction(
+        myJavaHierarchyTree.registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getLeadSelectionPath();
+                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
@@ -373,20 +384,21 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        showFQNToggleButton.addActionListener(new ActionListener() {
+        myShowFQNToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                WebBeansNavigationOptions.setShowFQN(showFQNToggleButton.isSelected());
+                WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
                 javaHierarchyModel.fireTreeNodesChanged();
+                reloadInjectionPoint();
             }
         });
 
-        expandAllButton.addActionListener(new ActionListener() {
+        myExpandAllButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         expandAll();
                     }
                 });
 
-        closeButton.addActionListener(new ActionListener() {
+        myCloseButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         close();
                     }
@@ -398,13 +410,14 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 applyFilter(true);
-                filterTextField.requestFocusInWindow();
+                myFilterTextField.requestFocusInWindow();
             }           
         });
     }
 
     public void removeNotify() {
-        //TODO : JavaMembersAndHierarchyOptions.setHierarchyDividerLocation(splitPane.getDividerLocation());
+        WebBeansNavigationOptions.setHierarchyDividerLocation(
+                mySplitPane.getDividerLocation());
         docPane.setData( null );
         super.removeNotify();
     }
@@ -424,7 +437,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     private Component lastFocusedComponent;
     
     private void enterBusy() {
-        javaHierarchyTree.setModel(pleaseWaitTreeModel);
+        myJavaHierarchyTree.setModel(pleaseWaitTreeModel);
         JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
         if (rootPane != null) {
             rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -433,22 +446,22 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         if (window != null) {
             lastFocusedComponent = window.getFocusOwner();
         }
-        filterTextField.setEnabled(false);  
-        caseSensitiveFilterCheckBox.setEnabled(false);
-        showFQNToggleButton.setEnabled(false);
-        expandAllButton.setEnabled(false);
+        myFilterTextField.setEnabled(false);
+        myCaseSensitiveFilterCheckBox.setEnabled(false);
+        myShowFQNToggleButton.setEnabled(false);
+        myExpandAllButton.setEnabled(false);
     }
     
     private void leaveBusy() {
-        javaHierarchyTree.setModel(javaHierarchyModel);
+        myJavaHierarchyTree.setModel(javaHierarchyModel);
         JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
         if (rootPane != null) {
             rootPane.setCursor(Cursor.getDefaultCursor());
         }
-        filterTextField.setEnabled(true);  
-        caseSensitiveFilterCheckBox.setEnabled(true);
-        showFQNToggleButton.setEnabled(true);
-        expandAllButton.setEnabled(true);
+        myFilterTextField.setEnabled(true);
+        myCaseSensitiveFilterCheckBox.setEnabled(true);
+        myShowFQNToggleButton.setEnabled(true);
+        myExpandAllButton.setEnabled(true);
         if (lastFocusedComponent != null) {
             if (lastFocusedComponent.isDisplayable()) {
                 lastFocusedComponent.requestFocusInWindow();
@@ -466,8 +479,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             enterBusy();
         }
 
-        WebBeansNavigationOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-        WebBeansNavigationOptions.setShowFQN(showFQNToggleButton.isSelected());
+        WebBeansNavigationOptions.setCaseSensitive(myCaseSensitiveFilterCheckBox.isSelected());
+        WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
 
         RequestProcessor.getDefault().post(
             new Runnable() {
@@ -484,8 +497,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                                     leaveBusy();
                                 }
                                 // expand the tree
-                                for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                                    javaHierarchyTree.expandRow(row);
+                                for (int row = 0; row < myJavaHierarchyTree.getRowCount(); row++) {
+                                    myJavaHierarchyTree.expandRow(row);
                                 }
                             }});
                     }
@@ -510,8 +523,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             public void run() {
                 try {
                     // expand the tree
-                    for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                        javaHierarchyTree.expandRow(row);
+                    for (int row = 0; row < myJavaHierarchyTree.getRowCount(); row++) {
+                        myJavaHierarchyTree.expandRow(row);
                     }
                     selectMatchingRow();
                 } finally {
@@ -526,13 +539,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     }
 
     private void selectMatchingRow() {
-        filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
-        javaHierarchyTree.setSelectionRow(-1);
+        myFilterTextField.setForeground(UIManager.getColor("TextField.foreground"));
+        myJavaHierarchyTree.setSelectionRow(-1);
         // select first matching
-        for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-            Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
+        for (int row = 0; row < myJavaHierarchyTree.getRowCount(); row++) {
+            Object o = myJavaHierarchyTree.getPathForRow(row).getLastPathComponent();
             if (o instanceof JavaElement) {
-                String filterText = filterTextField.getText();
+                String filterText = myFilterTextField.getText();
                 /*TODO :if (Utils.patternMatch((JavaElement)o, filterText, filterText.toLowerCase())) {
                     javaHierarchyTree.setSelectionRow(row);
                     javaHierarchyTree.scrollRowToVisible(row);
@@ -540,7 +553,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 }*/
             }
         }
-        filterTextField.setForeground(Color.RED);
+        myFilterTextField.setForeground(Color.RED);
     }
 
     private void gotoElement(JavaElement javaToolsJavaElement) {
@@ -554,7 +567,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     private void showBindings() {
         myInjectableBindings.setText("");
         myInjectableBindings.setToolTipText(null);
-        TreePath treePath = javaHierarchyTree.getSelectionPath();
+        TreePath treePath = myJavaHierarchyTree.getSelectionPath();
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
@@ -566,7 +579,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     }
 
     private void showJavaDoc() {
-        TreePath treePath = javaHierarchyTree.getSelectionPath();
+        TreePath treePath = myJavaHierarchyTree.getSelectionPath();
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
@@ -590,37 +603,121 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     {
         TypeMirror typeMirror  = var.asType();
         Element element = controller.getTypes().asElement( typeMirror );
-        String name ;
         if ( element == null ){
-            name ="";
+            myShortTypeName ="";
+            myFqnTypeName = "";
         }
         else {
-            name = ( element instanceof TypeElement )? 
-                ((TypeElement)element).getQualifiedName().toString() : 
-                    element.getSimpleName().toString();
+            myFqnTypeName = ( element instanceof TypeElement )?
+                    ((TypeElement)element).getQualifiedName().toString() :
+                        element.getSimpleName().toString();
+            myShortTypeName =element.getSimpleName().toString();
         }
-        myType.setText(name);
         
+        StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();
         for (AnnotationMirror annotationMirror : bindings) {
-            DeclaredType type = annotationMirror.getAnnotationType();
-            Element annotation = type.asElement();
-            String annotationName  = ( annotation instanceof TypeElement )? 
-                    ((TypeElement)annotation).getQualifiedName().toString() : 
-                        annotation.getSimpleName().toString();
-            builder.append("@");                // NOI18N
-            builder.append(annotationName);     // NOI18N
-            builder.append(", ");               // NOI18N
+            appendBinding(annotationMirror, fqnBuilder,  true );
+            appendBinding(annotationMirror, builder,  false );
         }
-        String bindingsText ;
-        if ( builder.length() >0 ){
-            bindingsText  = builder.substring(0 , builder.length() -2 );
+        if ( fqnBuilder.length() >0 ){
+            myFqnBindings  = fqnBuilder.substring(0 , fqnBuilder.length() -2 );
+            myShortBindings = builder.substring(0 , builder.length() -2 );
         }
         else {
             // this should never happens actually.
-            bindingsText = "";
+            myFqnBindings = "";
+            myShortBindings = "";
         }
-        myBindings.setText( bindingsText );
+        if ( myShowFQNToggleButton.isSelected() ) {
+            myBindings.setText( myFqnBindings );
+        }
+        else {
+            myBindings.setText( myShortBindings );
+        }
+        
+        reloadInjectionPoint();
+    }
+    
+    private void appendBinding( AnnotationMirror mirror , StringBuilder builder , 
+            boolean isFqn )
+    {
+        DeclaredType type = mirror.getAnnotationType();
+        Element annotation = type.asElement();
+        
+        builder.append("@");            // NOI18N
+        String annotationName ;
+        if ( isFqn ) {
+            annotationName= ( annotation instanceof TypeElement )?
+                ((TypeElement)annotation).getQualifiedName().toString() : 
+                    annotation.getSimpleName().toString();
+        }
+        else { 
+            annotationName = annotation.getSimpleName().toString();
+        }
+        
+        builder.append( annotationName );
+        
+        appendBindingParamters( mirror , builder );
+        
+        builder.append(", ");           // NOI18N
+    }
+
+    private void appendBindingParamters( AnnotationMirror mirror,
+            StringBuilder builder )
+    {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> 
+            elementValues = mirror.getElementValues();
+        StringBuilder params = new StringBuilder();
+        for ( Entry<? extends ExecutableElement, ? extends AnnotationValue> 
+            entry :  elementValues.entrySet()) 
+        {
+            ExecutableElement key = entry.getKey();
+            AnnotationValue value = entry.getValue();
+            List<? extends AnnotationMirror> annotationMirrors = 
+                key.getAnnotationMirrors();
+            boolean nonBinding = false;
+            for (AnnotationMirror annotationMirror : annotationMirrors) {
+                DeclaredType annotationType = annotationMirror.getAnnotationType();
+                Element element = annotationType.asElement();
+                if ( ( element instanceof TypeElement ) && 
+                        ((TypeElement)element).getQualifiedName().
+                        contentEquals(NON_BINDING_MEMBER_ANNOTATION))
+                {
+                    nonBinding = true;
+                    break;
+                }
+            }
+            if ( !nonBinding ){
+                params.append( key.getSimpleName().toString() );
+                params.append( "=" );               // NOI18N
+                if ( value.getValue() instanceof String ){
+                    params.append('"');
+                    params.append( value.getValue().toString());
+                    params.append('"');
+                }
+                else {
+                    params.append( value.getValue().toString());
+                }
+                params.append(", ");                // NOI18N
+            }
+        }
+        if ( params.length() >0 ){
+            builder.append( "(" );                   // NOI18N
+            builder.append( params.substring(0 , params.length() -2 ));
+            builder.append( ")" );                   // NOI18N
+        }
+    }
+
+    private void reloadInjectionPoint(){
+        if ( myShowFQNToggleButton.isSelected() ) {
+            myBindings.setText( myFqnBindings );
+            myType.setText(myFqnTypeName);
+        }
+        else {
+            myBindings.setText( myShortBindings );
+            myType.setText(myShortTypeName);
+        } 
     }
 
     /** This method is called from within the constructor to
@@ -633,62 +730,62 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
         javaHierarchyModeButtonGroup = new javax.swing.ButtonGroup();
         mySplitPane = new javax.swing.JSplitPane();
-        javaHierarchyTreeScrollPane = new javax.swing.JScrollPane();
-        javaHierarchyTree = new javax.swing.JTree();
-        filterLabel = new javax.swing.JLabel();
-        filterTextField = new javax.swing.JTextField();
-        caseSensitiveFilterCheckBox = new javax.swing.JCheckBox();
-        filtersLabel = new javax.swing.JLabel();
-        closeButton = new javax.swing.JButton();
-        filtersToolbar = new NoBorderToolBar();
-        showFQNToggleButton = new javax.swing.JToggleButton();
-        expandAllButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
+        myJavaHierarchyTreeScrollPane = new javax.swing.JScrollPane();
+        myJavaHierarchyTree = new javax.swing.JTree();
+        myFilterLabel = new javax.swing.JLabel();
+        myFilterTextField = new javax.swing.JTextField();
+        myCaseSensitiveFilterCheckBox = new javax.swing.JCheckBox();
+        myАiltersLabel = new javax.swing.JLabel();
+        myCloseButton = new javax.swing.JButton();
+        myFiltersToolbar = new NoBorderToolBar();
+        myShowFQNToggleButton = new javax.swing.JToggleButton();
+        myExpandAllButton = new javax.swing.JButton();
+        mySeparator = new javax.swing.JSeparator();
         myBindings = new javax.swing.JEditorPane();
         myBindingLbl = new javax.swing.JLabel();
         myType = new javax.swing.JEditorPane();
         myTypeLbl = new javax.swing.JLabel();
         myInjectableBindings = new javax.swing.JEditorPane();
-        jLabel1 = new javax.swing.JLabel();
+        myInjectableBindingLbl = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         mySplitPane.setDividerLocation(300);
 
-        javaHierarchyTreeScrollPane.setBorder(null);
-        javaHierarchyTreeScrollPane.setViewportView(javaHierarchyTree);
-        javaHierarchyTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableHierarchy")); // NOI18N
+        myJavaHierarchyTreeScrollPane.setBorder(null);
+        myJavaHierarchyTreeScrollPane.setViewportView(myJavaHierarchyTree);
+        myJavaHierarchyTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableHierarchy")); // NOI18N
 
-        mySplitPane.setLeftComponent(javaHierarchyTreeScrollPane);
+        mySplitPane.setLeftComponent(myJavaHierarchyTreeScrollPane);
 
-        filterLabel.setLabelFor(filterTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_filterLabel")); // NOI18N
+        myFilterLabel.setLabelFor(myFilterTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(myFilterLabel, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_filterLabel")); // NOI18N
 
-        filterTextField.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_filterTextField")); // NOI18N
+        myFilterTextField.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_filterTextField")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(caseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
-        caseSensitiveFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(myCaseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
+        myCaseSensitiveFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myАiltersLabel, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_Close")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myCloseButton, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_Close")); // NOI18N
 
-        filtersToolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        filtersToolbar.setFloatable(false);
-        filtersToolbar.setBorderPainted(false);
-        filtersToolbar.setOpaque(false);
+        myFiltersToolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        myFiltersToolbar.setFloatable(false);
+        myFiltersToolbar.setBorderPainted(false);
+        myFiltersToolbar.setOpaque(false);
 
-        showFQNToggleButton.setIcon(FQN_ICON);
-        showFQNToggleButton.setMnemonic('Q');
-        showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
-        showFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-        filtersToolbar.add(showFQNToggleButton);
+        myShowFQNToggleButton.setIcon(FQN_ICON);
+        myShowFQNToggleButton.setMnemonic('Q');
+        myShowFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
+        myShowFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        myFiltersToolbar.add(myShowFQNToggleButton);
 
-        expandAllButton.setIcon(EXPAND_ALL_ICON);
-        expandAllButton.setMnemonic('E');
-        expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "TOOLTIP_expandAll")); // NOI18N
-        expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-        filtersToolbar.add(expandAllButton);
+        myExpandAllButton.setIcon(EXPAND_ALL_ICON);
+        myExpandAllButton.setMnemonic('E');
+        myExpandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "TOOLTIP_expandAll")); // NOI18N
+        myExpandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        myFiltersToolbar.add(myExpandAllButton);
 
         myBindings.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         myBindings.setContentType("text/x-java");
@@ -708,25 +805,25 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myInjectableBindings.setContentType("text/x-java");
         myInjectableBindings.setEditable(false);
 
-        jLabel1.setLabelFor(myInjectableBindings);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LBL_CurrentElementBindings")); // NOI18N
+        myInjectableBindingLbl.setLabelFor(myInjectableBindings);
+        org.openide.awt.Mnemonics.setLocalizedText(myInjectableBindingLbl, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LBL_CurrentElementBindings")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(filterLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(myFilterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                        .add(myFilterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(caseSensitiveFilterCheckBox))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(myCaseSensitiveFilterCheckBox))
+                    .add(mySeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(myBindingLbl)
                             .add(myTypeLbl))
@@ -734,16 +831,16 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(myType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                             .add(myBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jLabel1)
+                    .add(layout.createSequentialGroup()
+                        .add(myАiltersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(filtersLabel)
+                        .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filtersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                        .add(myCloseButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(myInjectableBindingLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(closeButton)))
+                        .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -758,63 +855,69 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                     .add(myBindings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(myBindingLbl))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(mySeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(filterLabel)
-                    .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(caseSensitiveFilterCheckBox))
+                    .add(myFilterLabel)
+                    .add(myFilterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(myCaseSensitiveFilterCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mySplitPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
+                    .add(myInjectableBindingLbl)
                     .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(filtersLabel)
-                        .add(closeButton))
-                    .add(filtersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(myАiltersLabel)
+                        .add(myCloseButton))
+                    .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
-        filterLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_TextFilter")); // NOI18N
-        filterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFilter")); // NOI18N
-        filterTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFieldFilter")); // NOI18N
-        caseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_CaseSensitive")); // NOI18N
-        caseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
-        filtersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Filters")); // NOI18N
-        filtersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Filters")); // NOI18N
-        closeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Close")); // NOI18N
-        closeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Close")); // NOI18N
+        myFilterLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_TextFilter")); // NOI18N
+        myFilterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFilter")); // NOI18N
+        myFilterTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFieldFilter")); // NOI18N
+        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_CaseSensitive")); // NOI18N
+        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
+        myАiltersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Filters")); // NOI18N
+        myАiltersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Filters")); // NOI18N
+        myCloseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Close")); // NOI18N
+        myCloseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Close")); // NOI18N
         myBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Bindings")); // NOI18N
         myBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Bindnigs")); // NOI18N
         myTypeLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Type")); // NOI18N
         myTypeLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Type")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_InjectableBindings")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
+        myInjectableBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_InjectableBindings")); // NOI18N
+        myInjectableBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JCheckBox caseSensitiveFilterCheckBox;
-    public javax.swing.JButton closeButton;
-    public javax.swing.JButton expandAllButton;
-    public javax.swing.JLabel filterLabel;
-    public javax.swing.JTextField filterTextField;
-    public javax.swing.JLabel filtersLabel;
-    public javax.swing.JToolBar filtersToolbar;
-    public javax.swing.JLabel jLabel1;
-    public javax.swing.JSeparator jSeparator1;
     public javax.swing.ButtonGroup javaHierarchyModeButtonGroup;
-    public javax.swing.JTree javaHierarchyTree;
-    public javax.swing.JScrollPane javaHierarchyTreeScrollPane;
     public javax.swing.JLabel myBindingLbl;
     public javax.swing.JEditorPane myBindings;
+    public javax.swing.JCheckBox myCaseSensitiveFilterCheckBox;
+    public javax.swing.JButton myCloseButton;
+    public javax.swing.JButton myExpandAllButton;
+    public javax.swing.JLabel myFilterLabel;
+    public javax.swing.JTextField myFilterTextField;
+    public javax.swing.JToolBar myFiltersToolbar;
+    public javax.swing.JLabel myInjectableBindingLbl;
     public javax.swing.JEditorPane myInjectableBindings;
+    public javax.swing.JTree myJavaHierarchyTree;
+    public javax.swing.JScrollPane myJavaHierarchyTreeScrollPane;
+    public javax.swing.JSeparator mySeparator;
+    public javax.swing.JToggleButton myShowFQNToggleButton;
     public javax.swing.JSplitPane mySplitPane;
     public javax.swing.JEditorPane myType;
     public javax.swing.JLabel myTypeLbl;
-    public javax.swing.JToggleButton showFQNToggleButton;
+    public javax.swing.JLabel myАiltersLabel;
     // End of variables declaration//GEN-END:variables
+    
+    private String myFqnTypeName;
+    private String myShortTypeName;
+    
+    private String myFqnBindings;
+    private String myShortBindings;
 }
