@@ -174,12 +174,12 @@ public final class DebuggerManager implements ContextProvider {
     private static DebuggerManager            debuggerManager;
     private Session                           currentSession;
     private DebuggerEngine                    currentEngine;
-    private List                              sessions = new ArrayList();
-    private Set                               engines = new HashSet ();
+    private final List                        sessions = new ArrayList();
+    private final Set                         engines = new HashSet ();
     private final Vector                      breakpoints = new Vector ();
     private boolean                           breakpointsInitializing = false;
     private boolean                           breakpointsInitialized = false;
-    private Vector                            watches = new Vector ();
+    private final Vector                      watches = new Vector ();
     private boolean                           watchesInitialized = false;
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listeners = new Vector ();
@@ -878,7 +878,7 @@ public final class DebuggerManager implements ContextProvider {
     }
     
     private List<Breakpoint> createdBreakpoints;
-    private Map<ClassLoader, Set<Breakpoint>> breakpointsByClassLoaders =
+    private final Map<ClassLoader, Set<Breakpoint>> breakpointsByClassLoaders =
             new HashMap<ClassLoader, Set<Breakpoint>>();
     
     /**
