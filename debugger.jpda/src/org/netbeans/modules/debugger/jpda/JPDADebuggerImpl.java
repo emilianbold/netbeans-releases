@@ -478,25 +478,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
         try {
             // 1) redefine classes
             Map<ReferenceType, byte[]> map = new HashMap<ReferenceType, byte[]>();
-            Iterator<String> i = classes.keySet ().iterator ();
+            Iterator<Map.Entry<String, byte[]>> e = classes.entrySet ().iterator ();
             VirtualMachine vm = getVirtualMachine();
             if (vm == null) {
                 return ; // The session has finished
             }
             try {
-                while (i.hasNext ()) {
-                    String className = i.next ();
+                while (e.hasNext ()) {
+                    Map.Entry<String, byte[]> classEntry = e.next();
+                    String className = classEntry.getKey();
+                    byte[] bytes = classEntry.getValue();
                     List<ReferenceType> classRefs = VirtualMachineWrapper.classesByName (vm, className);
                     int j, jj = classRefs.size ();
                     for (j = 0; j < jj; j++)
                         map.put (
                             classRefs.get (j),
-                            classes.get (className)
+                            bytes
                         );
                 }
                 VirtualMachineWrapper.redefineClasses (vm, map);
-            } catch (InternalExceptionWrapper e) {
-            } catch (VMDisconnectedExceptionWrapper e) {
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
 
             // update breakpoints
@@ -521,7 +523,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         updateCurrentCallStackFrame (t);
                         setState (STATE_STOPPED);
                     }
-                } catch (InvalidStackFrameException e) {
+                } catch (InvalidStackFrameException ex) {
                 }
             }
 
