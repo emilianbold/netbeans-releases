@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -245,10 +246,19 @@ final class GeneralAction {
             }
         }
 
-        public void putValue(String key, Object o) {
+        private Map<String,Object> attrs;
+
+        public void putValue(String key, Object value) {
+            if (attrs == null) {
+                attrs = new HashMap<String,Object>();
+            }
+            attrs.put(key, value);
         }
 
         public Object getValue(String key) {
+            if (attrs != null && attrs.containsKey(key)) {
+                return attrs.get(key);
+            }
             Object ret = GeneralAction.extractCommonAttribute(map, this, key);
             if (ret != null) {
                 return ret;
