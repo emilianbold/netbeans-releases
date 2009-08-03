@@ -184,8 +184,8 @@ public class LineBreakpoint extends JPDABreakpoint {
         }
         firePropertyChange (
             PROP_LINE_NUMBER,
-            new Integer (old),
-            new Integer (ln)
+            Integer.valueOf(old),
+            Integer.valueOf(ln)
         );
     }
     
