@@ -126,7 +126,11 @@ public class CallStackFrameImpl implements CallStackFrame {
         this.valid = true; // suppose we're valid when we're new
         try {
             sfLocation = StackFrameWrapper.location(sf);
-        } catch (Exception ex) {}
+        } catch (InternalExceptionWrapper ex) {
+            // Ignored
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            // Unfortunate
+        } catch (VMDisconnectedExceptionWrapper ex) {}
     }
 
     // public interface ........................................................
