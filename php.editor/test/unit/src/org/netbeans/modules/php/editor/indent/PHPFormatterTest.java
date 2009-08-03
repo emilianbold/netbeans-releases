@@ -131,6 +131,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
 
+    public void testNamespaces1() throws Exception {
+        reformatFileContents("testfiles/formatting/namespaces1.php");
+    }
+
     public void test161049() throws Exception {
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
