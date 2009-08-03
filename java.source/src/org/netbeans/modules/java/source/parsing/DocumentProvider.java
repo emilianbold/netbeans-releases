@@ -61,7 +61,7 @@ public interface DocumentProvider {
      * May be called only if {@link DocumentProvider#getDocument}
      * returns non null
      * @param {@link Runnable} the atomic action
-     * @throws {@link IllegalStateException} is thrown if the {@link JavaFileObject} has no {@link Document}
+     * @throws IllegalStateException is thrown if the {@link JavaFileObject} has no {@link Document}
      */
     void runAtomic (Runnable r);
 }
