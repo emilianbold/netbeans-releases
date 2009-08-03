@@ -201,7 +201,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
     }
 
     void fireTreeNodesChanged() {
-        super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
+        // TODO  : super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
     }
     
     private abstract class AbstractHierarchyTreeNode
