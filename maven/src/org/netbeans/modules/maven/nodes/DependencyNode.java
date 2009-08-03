@@ -193,7 +193,15 @@ public class DependencyNode extends AbstractNode {
                     MavenFileOwnerQueryImpl.getInstance()));
         }
         setDisplayName(createName());
-        setIconBase();
+        setIconBase(false);
+        if (longLiving) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    setIconBase(longLiving);
+                    fireIconChange();
+                }
+            });
+        }
     }
 
     /**
@@ -218,7 +226,7 @@ public class DependencyNode extends AbstractNode {
         return false;
     }
 
-    private void setIconBase() {
+    private void setIconBase(boolean longLiving) {
         if (longLiving && isDependencyProjectOpen()) {
             if (isTransitive()) {
                 setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
@@ -257,6 +265,10 @@ public class DependencyNode extends AbstractNode {
         return art.getArtifactHandler().isAddedToClasspath();
     }
 
+    /**
+     * this call is slow
+     * @return
+     */
     boolean isDependencyProjectOpen() {
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             return false;
@@ -271,7 +283,7 @@ public class DependencyNode extends AbstractNode {
     
     public void refreshNode() {
         setDisplayName(createName());
-        setIconBase();
+        setIconBase(longLiving);
         fireIconChange();
         fireDisplayNameChange(null, getDisplayName());
 //        if (longLiving) {
