@@ -1398,7 +1398,7 @@ public final class DebuggerManager implements ContextProvider {
         //Annotation listeners must be unregistered AFTER breakpoints are removed
         //and registered back BEFORE breakpoints are loaded
         Set<LazyDebuggerManagerListener> addedInitBreakpointsListeners = new HashSet<LazyDebuggerManagerListener>();
-        Set<ClassLoader> uninstalledModules = new HashSet<ClassLoader>();
+        //Set<ClassLoader> uninstalledModules = new HashSet<ClassLoader>();
         synchronized (listenersLookupList) {
             int i, k = listenersLookupList.size ();
             //System.err.println("size() = "+k+",  content = "+listenersLookupList+"\n");
