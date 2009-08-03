@@ -166,7 +166,6 @@ public final class NbMavenProjectImpl implements Project {
     private final Info projectInfo;
     private final MavenSharabilityQueryImpl sharability;
     private final SubprojectProviderImpl subs;
-    private MavenProject oldProject;
     private final NbMavenProject watcher;
     private final ProjectState state;
     private ConfigurationProviderEnabler configEnabler;
@@ -333,165 +332,166 @@ public final class NbMavenProjectImpl implements Project {
      */
     public synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
-            long startLoading = System.currentTimeMillis();
-//            AggregateProgressHandle hndl = createDownloadHandle();
+            project = loadOriginalMavenProject();
+        }
+        return project;
+    }
 
-            try {
+    private MavenProject loadOriginalMavenProject() {
+        long startLoading = System.currentTimeMillis();
+        MavenProject newproject = null;
+        try {
 //                ProgressTransferListener.setAggregateHandle(hndl);
 //                hndl.start();
-                MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+            MavenExecutionRequest req = new DefaultMavenExecutionRequest();
 //                ProgressTransferListener ptl = new ProgressTransferListener();
 //                req.setTransferListener(ptl);
-                req.addActiveProfiles(getCurrentActiveProfiles());
-                req.setPomFile(projectFile.getAbsolutePath());
-                req.setNoSnapshotUpdates(true);
-                req.setUpdateSnapshots(false);
-                //MEVENIDE-634 i'm wondering if this fixes the issue
-                req.setInteractiveMode(false);
-                // recursive == false is important to avoid checking all submodules for extensions
-                // that will not be used in current pom anyway..
-                // #135070
-                req.setRecursive(false);
-                req.setProperties(createSystemPropsForProjectLoading());
-                MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
-                project = res.getProject();
-                if (res.hasExceptions()) {
-                    for (Object e : res.getExceptions()) {
-                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Error on loading project " + projectFile.getAbsolutePath(), (Throwable)e); //NOI18N
-                        if (e instanceof ArtifactResolutionException) {
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"),
-                                    ((Exception) e).getMessage(), null);
-                            problemReporter.addReport(report);
-                        } else if (e instanceof ArtifactNotFoundException) {
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"),
-                                    ((Exception) e).getMessage(), null);
-                            problemReporter.addReport(report);
-                        } else if (e instanceof InvalidProjectModelException) {
-                            //validation failure..
-                            problemReporter.addValidatorReports((InvalidProjectModelException) e);
-                        } else if (e instanceof ProjectBuildingException) {
-                            //igonre if the problem is in the project validation codebase, we handle that later..
-                            problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"),
-                                    ((Exception) e).getMessage(), null));
-                        } else if (e instanceof MissingModuleException) {
-                            MissingModuleException exc = (MissingModuleException)e;
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingSubmodule", exc.getModuleName()),
-                                    ((Exception) e).getMessage(), null);
-                            problemReporter.addReport(report);
-                        } else if (e instanceof ExtensionScanningException) {
-                            ExtensionScanningException exc = (ExtensionScanningException)e;
-                            String message = null;
-                            String name = null;
-                            String urlString = null;
-                            Throwable cause = exc.getCause();
-                            if (cause != null && cause instanceof ProjectBuildingException) {
-                                //parent pom
-                                name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingParentPOM");
-                                urlString = "http://wiki.netbeans.org/MavenMissingParentPomError"; //NOI18N
-                                ProjectBuildingException pbe = (ProjectBuildingException)cause;
-                                ArtifactNotFoundException anfe = (ArtifactNotFoundException)getCause(pbe, ArtifactNotFoundException.class);
-                                if (anfe != null) {
-                                    message = NbBundle.getMessage(NbMavenProjectImpl.class, "DESC_MissingParentPOM",
-                                            new String[] {
-                                                anfe.getGroupId(),
-                                                anfe.getArtifactId(),
-                                                anfe.getVersion(),
-                                                repositoryListToString(anfe.getRemoteRepositories())
-                                    });
-                                }
+            req.addActiveProfiles(getCurrentActiveProfiles());
+            req.setPomFile(projectFile.getAbsolutePath());
+            req.setNoSnapshotUpdates(true);
+            req.setUpdateSnapshots(false);
+            //MEVENIDE-634 i'm wondering if this fixes the issue
+            req.setInteractiveMode(false);
+            // recursive == false is important to avoid checking all submodules for extensions
+            // that will not be used in current pom anyway..
+            // #135070
+            req.setRecursive(false);
+            req.setProperties(createSystemPropsForProjectLoading());
+            MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
+            newproject = res.getProject();
+            if (res.hasExceptions()) {
+                for (Object e : res.getExceptions()) {
+                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Error on loading project " + projectFile.getAbsolutePath(), (Throwable) e); //NOI18N
+                    if (e instanceof ArtifactResolutionException) {
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"),
+                                ((Exception) e).getMessage(), null);
+                        problemReporter.addReport(report);
+                    } else if (e instanceof ArtifactNotFoundException) {
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"),
+                                ((Exception) e).getMessage(), null);
+                        problemReporter.addReport(report);
+                    } else if (e instanceof InvalidProjectModelException) {
+                        //validation failure..
+                        problemReporter.addValidatorReports((InvalidProjectModelException) e);
+                    } else if (e instanceof ProjectBuildingException) {
+                        //igonre if the problem is in the project validation codebase, we handle that later..
+                        problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"),
+                                ((Exception) e).getMessage(), null));
+                    } else if (e instanceof MissingModuleException) {
+                        MissingModuleException exc = (MissingModuleException) e;
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingSubmodule", exc.getModuleName()),
+                                ((Exception) e).getMessage(), null);
+                        problemReporter.addReport(report);
+                    } else if (e instanceof ExtensionScanningException) {
+                        ExtensionScanningException exc = (ExtensionScanningException) e;
+                        String message = null;
+                        String name = null;
+                        String urlString = null;
+                        Throwable cause = exc.getCause();
+                        if (cause != null && cause instanceof ProjectBuildingException) {
+                            //parent pom
+                            name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingParentPOM");
+                            urlString = "http://wiki.netbeans.org/MavenMissingParentPomError"; //NOI18N
+                            ProjectBuildingException pbe = (ProjectBuildingException) cause;
+                            ArtifactNotFoundException anfe = (ArtifactNotFoundException) getCause(pbe, ArtifactNotFoundException.class);
+                            if (anfe != null) {
+                                message = NbBundle.getMessage(NbMavenProjectImpl.class, "DESC_MissingParentPOM",
+                                        new String[]{
+                                            anfe.getGroupId(),
+                                            anfe.getArtifactId(),
+                                            anfe.getVersion(),
+                                            repositoryListToString(anfe.getRemoteRepositories())
+                                        });
                             }
-                            if (cause != null && cause instanceof ExtensionManagerException) {
-                                //extension
-                                name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingExtensionOrPlugin");
-                                urlString = "http://wiki.netbeans.org/MavenMissingExtensionPluginError"; //NOI18N
-                                ExtensionManagerException eme = (ExtensionManagerException)cause;
-                                ArtifactNotFoundException anfe = (ArtifactNotFoundException) getCause(eme, ArtifactNotFoundException.class);
-                                if (anfe != null) {
-                                    message = NbBundle.getMessage(NbMavenProjectImpl.class, "DESC_MissingExtensionOrPlugin",
-                                            new String[] {
-                                                anfe.getGroupId(),
-                                                anfe.getArtifactId(),
-                                                anfe.getVersion(),
-                                                repositoryListToString(anfe.getRemoteRepositories())
-                                    });
-                                }
-                            }
-
-                            if (name == null) {
-                                name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingSomething");
-                            }
-                            if (message == null) {
-                                message = exc.getMessage();
-                            }
-                            if (urlString == null) {
-                                urlString = "http://wiki.netbeans.org/MavenBadlyFormedProjectErrors"; //NOI18N
-                            }
-                            Action act;
-                            try {
-                                act = new OpenWikiPage(new URL(urlString)); //NOI18N
-                            } catch (MalformedURLException ex) {
-                                Exceptions.printStackTrace(ex);
-                                act = null;
-                            }
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    name,
-                                    message, act);
-                            problemReporter.addReport(report);
-                        } else {
-                            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), (Exception)e); //NOI18N
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                    "Error reading project model",
-                                    ((Exception) e).getMessage(), null);
-                            problemReporter.addReport(report);
-                            
                         }
+                        if (cause != null && cause instanceof ExtensionManagerException) {
+                            //extension
+                            name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingExtensionOrPlugin");
+                            urlString = "http://wiki.netbeans.org/MavenMissingExtensionPluginError"; //NOI18N
+                            ExtensionManagerException eme = (ExtensionManagerException) cause;
+                            ArtifactNotFoundException anfe = (ArtifactNotFoundException) getCause(eme, ArtifactNotFoundException.class);
+                            if (anfe != null) {
+                                message = NbBundle.getMessage(NbMavenProjectImpl.class, "DESC_MissingExtensionOrPlugin",
+                                        new String[]{
+                                            anfe.getGroupId(),
+                                            anfe.getArtifactId(),
+                                            anfe.getVersion(),
+                                            repositoryListToString(anfe.getRemoteRepositories())
+                                        });
+                            }
+                        }
+
+                        if (name == null) {
+                            name = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_MissingSomething");
+                        }
+                        if (message == null) {
+                            message = exc.getMessage();
+                        }
+                        if (urlString == null) {
+                            urlString = "http://wiki.netbeans.org/MavenBadlyFormedProjectErrors"; //NOI18N
+                            }
+                        Action act;
+                        try {
+                            act = new OpenWikiPage(new URL(urlString)); //NOI18N
+                            } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                            act = null;
+                        }
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                name,
+                                message, act);
+                        problemReporter.addReport(report);
+                    } else {
+                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), (Exception) e); //NOI18N
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                "Error reading project model",
+                                ((Exception) e).getMessage(), null);
+                        problemReporter.addReport(report);
+
                     }
                 }
-            } catch (RuntimeException exc) {
-                //guard against exceptions that are not processed by the embedder
-                //#136184 NumberFormatException
-                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
-                StringWriter wr = new StringWriter();
-                PrintWriter pw = new PrintWriter(wr);
-                exc.printStackTrace(pw);
-                pw.flush();
+            }
+        } catch (RuntimeException exc) {
+            //guard against exceptions that are not processed by the embedder
+            //#136184 NumberFormatException
+            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
+            StringWriter wr = new StringWriter();
+            PrintWriter pw = new PrintWriter(wr);
+            exc.printStackTrace(pw);
+            pw.flush();
 
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeException"),
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeExceptionLong") + wr.toString(), null);
-                problemReporter.addReport(report);
-                
-            } finally {
+            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeException"),
+                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeExceptionLong") + wr.toString(), null);
+            problemReporter.addReport(report);
+
+        } finally {
 //                hndl.finish();
 //                ProgressTransferListener.clearAggregateHandle();
 
-                if (project == null) {
-                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
-                    try {
-                        project = getEmbedder().readProject(fallback);
-                    } catch (Exception x) {
-                        // oh well..
-                        //NOPMD
+            if (newproject == null) {
+                File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                try {
+                    newproject = getEmbedder().readProject(fallback);
+                } catch (Exception x) {
+                    // oh well..
+                    //NOPMD
                     }
-                }
             }
-            if (project == null && oldProject != null) {
-                project = oldProject;
-            }
-            oldProject = null;
             long endLoading = System.currentTimeMillis();
             Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
             logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
             if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
-        }
 
-        return project;
+            return newproject;
+
+        }
     }
 
     public void fireProjectReload() {
@@ -508,12 +508,11 @@ public final class NbMavenProjectImpl implements Project {
             return;
         }
         clearProjectWorkspaceCache();
-        synchronized (this) {
-            oldProject = project;
-            project = null;
-            getOriginalMavenProject(); //#167741 just reload the project here before anything happens.
-        }
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
+        MavenProject prj = loadOriginalMavenProject();
+        synchronized (this) {
+            project = prj;
+        }
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
         doBaseProblemChecks();
