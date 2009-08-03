@@ -190,7 +190,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
             }
 
         }
-        assertEquals("Provided error messages differ. ", expected, buf.toString());
+        assertEquals("Provided error messages differ. ", expected, buf.toString().replace(":  ", "  :"));
     }
    
 
