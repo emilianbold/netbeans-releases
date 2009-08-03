@@ -271,7 +271,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             old = suspend;
             suspend = s;
         }
-        firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
+        firePropertyChange (PROP_SUSPEND, Integer.valueOf(old), Integer.valueOf(s));
     }
 
     /**
