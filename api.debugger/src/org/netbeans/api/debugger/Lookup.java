@@ -320,16 +320,20 @@ abstract class Lookup implements ContextProvider {
                     urls.add(url);
                     InputStream is = url.openStream ();
                     if (is == null) continue;
-                    BufferedReader br = new BufferedReader (
-                        new InputStreamReader (is)
-                    );
-                    for (String s = br.readLine(); s != null; s = br.readLine()) {
-                        if (s.startsWith ("#")) continue;
-                        if (s.length () == 0) continue;
-                        if (verbose)
-                            v += "\nR  service " + s + " found";
+                    try {
+                        BufferedReader br = new BufferedReader (
+                            new InputStreamReader (is)
+                        );
+                        for (String s = br.readLine(); s != null; s = br.readLine()) {
+                            if (s.startsWith ("#")) continue;
+                            if (s.length () == 0) continue;
+                            if (verbose)
+                                v += "\nR  service " + s + " found";
 
-                        l.add (s);
+                            l.add (s);
+                        }
+                    } finally {
+                        is.close();
                     }
                 }
                 if (verbose)
