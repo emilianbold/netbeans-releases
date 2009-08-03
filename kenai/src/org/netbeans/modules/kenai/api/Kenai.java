@@ -185,7 +185,7 @@ public final class Kenai {
      * Adds listener to Kenai instance
      * @param l
      */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
     }
 
@@ -194,7 +194,7 @@ public final class Kenai {
      * @param name 
      * @param l
      */
-    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+    public void addPropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(name,l);
     }
 
@@ -202,7 +202,7 @@ public final class Kenai {
      * Removes listener from Kenai instance
      * @param l
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+    public void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
@@ -211,7 +211,7 @@ public final class Kenai {
      * @param name
      * @param l
      */
-    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+    public void removePropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(name, l);
     }
 
