@@ -315,7 +315,7 @@ final class GeneralAction {
                     sup = support;
                 }
                 if (sup != null) {
-                    sup.firePropertyChange("enabled", null, null); // NOI18N
+                    sup.firePropertyChange("enabled", evt.getOldValue(), evt.getNewValue()); // NOI18N
                 }
             }
         }
