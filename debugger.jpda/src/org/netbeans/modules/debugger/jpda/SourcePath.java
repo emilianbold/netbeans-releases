@@ -332,12 +332,12 @@ public class SourcePath {
 
     public boolean showSource (Field v) {
         String fieldName = ((Field) v).getName ();
-        String className = className = ((Field) v).getClassName ();
+        String className = ((Field) v).getClassName ();
         String url = getURL (
             EditorContextBridge.getRelativePath (className), true
         );
         if (url == null) return false;
-        int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
+        int lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
             className,
             fieldName
