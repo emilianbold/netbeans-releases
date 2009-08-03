@@ -56,9 +56,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -94,6 +98,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
     
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
+    private static String WELCOME_XHTML = "template-client.xhtml"; //NOI18N
+    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
+    private static String CSS_FOLDER = "css"; //NOI18N
+    private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
 
@@ -219,7 +227,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new JSFConfigurationPanel(this, controller, !defaultValue);
+        if (webModule != null) {
+            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
+        } else {
+            panel = new JSFConfigurationPanel(this, controller, !defaultValue);
+        }
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
@@ -235,13 +249,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         
         return panel;
     }
-    
+
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         FileObject dd = webModule.getDeploymentDescriptor();
         return (dd != null && ConfigurationUtils.getFacesServlet(webModule) != null);
     }
-    
+
     public String getServletPath(FileObject file){
         String url = null;
         if (file == null) return url;
@@ -463,7 +477,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
-                        welcomeFiles.addWelcomeFile("forward.jsp"); //NOI18N
+                        welcomeFiles.addWelcomeFile(FORWARD_JSF);
+                        if (canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) {
+                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
+                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
+                                content = content.replaceAll("__ENCODING__", encoding.name());
+                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                                createFile(target, content, encoding.name());  //NOI18N
+                        }
+//                        welcomeFiles.addWelcomeFile("forward.jsp"); //NOI18N
                     }
                     ddRoot.write(dd);                    
                     
@@ -543,16 +566,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 jsfConfig.addApplication(application);
                             }
                             //In JSF2.0 no need to add HANDLER need to change version of faces-config instead
-                            if (!isJSF20) {
+                            if (!isJSF20 && !isMyFaces) {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
                                 application.addViewHandler(viewHandler);
                             }
                             ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                            if (panel.getLibrary().getName().indexOf("facelets-icefaces") != -1
-                                    && cp != null && cp.findResource("com/icesoft/faces/facelets/D2DFaceletViewHandler.class") != null){
+                            if (panel.getLibrary()!=null && panel.getLibrary().getName().indexOf("facelets-icefaces") != -1 //NOI18N
+                                    && cp != null && cp.findResource("com/icesoft/faces/facelets/D2DFaceletViewHandler.class") != null){    //NOI18N
                                 ViewHandler iceViewHandler = model.getFactory().createViewHandler();
-                                iceViewHandler.setFullyQualifiedClassType("com.icesoft.faces.facelets.D2DFaceletViewHandler");
+                                iceViewHandler.setFullyQualifiedClassType("com.icesoft.faces.facelets.D2DFaceletViewHandler");  //NOI18N
                                 application.addViewHandler(iceViewHandler);
                             }
                             model.endTransaction();
@@ -568,33 +591,34 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 InputStream is;
                 String content;
                 FileObject target;
+                Charset encoding = FileEncodingQuery.getDefaultEncoding();
 
-                if (webModule.getDocumentBase().getFileObject("template.xhtml") == null){ //NOI18N
+                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){ 
                     is= JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + "template.xhtml");
-                    content = readResource(is, "UTF-8");
-                    target = FileUtil.createData(webModule.getDocumentBase(), "template.xhtml");//NOI18N
-                    createFile(target, content, "UTF-8");
+                    .getResourceAsStream(baseFolder + TEMPLATE_XHTML);
+                    content = readResource(is, encoding.name());
+                    target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
+                    createFile(target, content, encoding.name());
                 }
-                if (webModule.getDocumentBase().getFileObject("template-client.xhtml") == null){
+                if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + "template-client.xhtml");
-                    content = readResource(is, "UTF-8");
-                    target = FileUtil.createData(webModule.getDocumentBase(), "template-client.xhtml");//NOI18N
-                    createFile(target, content, "UTF-8");
+                    .getResourceAsStream(baseFolder + WELCOME_XHTML);
+                    content = readResource(is, encoding.name());
+                    target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
+                    createFile(target, content, encoding.name());
                 }
-                if (webModule.getDocumentBase().getFileObject("forward.jsp") == null) {
-                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + "forward.jsp");
-                    content = readResource(is, "UTF-8");
-                    target = FileUtil.createData(webModule.getDocumentBase(), "forward.jsp");//NOI18N
-                    createFile(target, content, "UTF-8");
-                }
-                if (webModule.getDocumentBase().getFileObject("css/default.css") == null){
+//                if (webModule.getDocumentBase().getFileObject("forward.jsp") == null) {
+//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + "forward.jsp");
+//                    content = readResource(is, encoding.name());
+//                    target = FileUtil.createData(webModule.getDocumentBase(), "forward.jsp");//NOI18N
+//                    createFile(target, content, encoding.name());
+//                }
+                if (webModule.getDocumentBase().getFileObject(CSS_FOLDER+File.separator+DEFAULT_CSS) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + "default.css");   //NOI18N
-                    content = readResource(is, "UTF-8");
-                    target = FileUtil.createData(webModule.getDocumentBase().createFolder("css"), "default.css");//NOI18N
-                    createFile(target, content, "UTF-8");
+                    .getResourceAsStream(baseFolder + DEFAULT_CSS);  
+                    content = readResource(is, encoding.name());
+                    target = FileUtil.createData(webModule.getDocumentBase().createFolder(CSS_FOLDER), DEFAULT_CSS);
+                    createFile(target, content, encoding.name());
                 }
             }
             //copy Welcome.jsp
@@ -602,8 +626,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                 content = content.replaceAll("__ENCODING__", encoding.name());
-                FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);//NOI18N
-                createFile(target, content, encoding.name());  //NOI18N
+                FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);
+                createFile(target, content, encoding.name());  
             }
         }
         

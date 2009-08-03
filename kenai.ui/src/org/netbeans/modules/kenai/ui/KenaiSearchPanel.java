@@ -323,6 +323,7 @@ public class KenaiSearchPanel extends JPanel {
             getListModel().stopLoading();
         }
 
+        searchTextField.setText(searchTextField.getText().toLowerCase());
         searchButton.setEnabled(false);
         searchTextField.setEnabled(false);
 

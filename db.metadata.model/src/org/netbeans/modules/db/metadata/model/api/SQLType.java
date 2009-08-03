@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 - 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.api;
 
 import java.sql.Types;
-import java.util.EnumSet;
 
 /**
  * This is a type-safe enumeration wrapper around java.sql.Types
@@ -78,7 +77,14 @@ public enum SQLType {
     STRUCT(Types.STRUCT),
     ARRAY(Types.ARRAY),
     BLOB(Types.BLOB),
-    CLOB(Types.CLOB);
+    CLOB(Types.CLOB),
+    // JDBC 4.0
+    LONGNVARCHAR(-16),
+    NCHAR(-15),
+    NCLOB(2011),
+    NVARCHAR(-9),
+    SQLXML(2009),
+    ROWID(-8);
 
     private final int javasqltype;
 

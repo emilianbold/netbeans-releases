@@ -105,9 +105,9 @@ public final class PhpUnit extends PhpProgram {
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
 
     // suite file
-    public static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
-    public static final String SUITE_RUN = "run=%s"; // NOI18N
     public static final File SUITE;
+    public static final String SUITE_RUN = "run=%s"; // NOI18N
+    private static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -140,6 +140,10 @@ public final class PhpUnit extends PhpProgram {
      */
     public PhpUnit(String command) {
         super(command);
+    }
+
+    public File getWorkingDirectory() {
+        return new File(getProgram()).getParentFile();
     }
 
     // XXX see 2nd paragraph
@@ -182,6 +186,7 @@ public final class PhpUnit extends PhpProgram {
 
         version = UNKNOWN_VERSION;
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+                .workingDirectory(getWorkingDirectory())
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
@@ -402,22 +407,27 @@ public final class PhpUnit extends PhpProgram {
     }
 
     private static String getDirnameFile(File testFile, File sourceFile) {
-        return getRelPath(testFile, sourceFile, DIRNAME_FILE, "'"); // NOI18N
+        return getRelPath(testFile, sourceFile, ".'", DIRNAME_FILE, "'"); // NOI18N
     }
 
     public static String getRequireOnce(File testFile, File sourceFile) {
-        return getRelPath(testFile, sourceFile, REQUIRE_ONCE_REL_PART, ""); // NOI18N
+        return getRelPath(testFile, sourceFile, "", REQUIRE_ONCE_REL_PART, ""); // NOI18N
     }
 
     // XXX improve this and related method
-    public static String getRelPath(File testFile, File sourceFile, String prefix, String suffix) {
+    private static String getRelPath(File testFile, File sourceFile, String absolutePrefix, String relativePrefix, String suffix) {
+        return getRelPath(testFile, sourceFile, absolutePrefix, relativePrefix, suffix, false);
+    }
+
+    // forceAbsolute only for unit tests
+    static String getRelPath(File testFile, File sourceFile, String absolutePrefix, String relativePrefix, String suffix, boolean forceAbsolute) {
         File parentFile = testFile.getParentFile();
         String relPath = PropertyUtils.relativizeFile(parentFile, sourceFile);
-        if (relPath == null) {
+        if (relPath == null || forceAbsolute) {
             // cannot be versioned...
-            relPath = sourceFile.getAbsolutePath();
+            relPath = absolutePrefix + sourceFile.getAbsolutePath() + suffix;
         } else {
-            relPath = prefix + relPath + suffix;
+            relPath = relativePrefix + relPath + suffix;
         }
         return relPath.replace(File.separatorChar, DIRECTORY_SEPARATOR);
     }

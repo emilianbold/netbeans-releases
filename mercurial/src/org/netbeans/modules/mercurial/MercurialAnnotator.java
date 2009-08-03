@@ -340,10 +340,46 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
-        IconSelector sc = new IconSelector(context.getRootFiles(), icon);
-        // return the icon as soon as possible and schedule a complete scan if needed
-        sc.scanFilesLazy();
-        return sc.getBadge();
+        int mostImportantCounter = -1;
+        if ("true".equals(System.getProperty("mercurial.newGenerationCache", "false"))) { //NOI18N
+            HgModuleConfig config = HgModuleConfig.getDefault();
+            for (File file : context.getRootFiles()) {
+                if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
+                    FileInformation info = cache.getCachedStatus(file);
+                    Set<FileInformation> exclusions = new HashSet<FileInformation>();
+                    boolean flat = VersioningSupport.isFlat(file);
+                    for (String s : config.getCommitExclusions()) {
+                        File f = new File(s);
+                        if ((!flat && Utils.isAncestorOrEqual(file, f))
+                                || (flat && file.equals(f.getParentFile()))) {
+                            FileInformation exclusionInfo = cache.getCachedStatus(f);
+                            if ((exclusionInfo.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                                exclusions.add(exclusionInfo);
+                            }
+                        }
+                    }
+                    mostImportantCounter = info.getMoreImportantCounter(mostImportantCounter, flat, exclusions);
+                }
+            }
+            Image badge = null;
+            if (mostImportantCounter == FileInformation.COUNTER_CONFLICTED_FILES) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+            } else if (mostImportantCounter == FileInformation.COUNTER_MODIFIED_FILES) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgeModified, true), toolTipModified);
+            }
+            if (badge != null) {
+                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+            } else {
+                return icon;
+            }
+        } else {
+            IconSelector sc = new IconSelector(context.getRootFiles(), icon);
+            // return the icon as soon as possible and schedule a complete scan if needed
+            sc.scanFilesLazy();
+            return sc.getBadge();
+        }
     }
 
     /**

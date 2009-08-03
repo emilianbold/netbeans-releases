@@ -39,20 +39,15 @@
 
 package org.netbeans.modules.bugtracking.hyperlink;
 
-import java.awt.EventQueue;
 import java.io.File;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
@@ -78,15 +73,6 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
         final String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 
-        final Task[] t = new Task[1];
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                if(t[0] != null) {
-                    return t[0].cancel();
-                }
-                return true;
-            }
-        };
         class IssueDisplayer implements Runnable {
             public void run() {
                 final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
@@ -96,7 +82,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
                 Issue.open(repo, issueId);
             }
         }
-        t[0] = RequestProcessor.getDefault().post(new IssueDisplayer());
+        RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
     private String getIssueId(String text, int offsetStart, int offsetEnd) {        

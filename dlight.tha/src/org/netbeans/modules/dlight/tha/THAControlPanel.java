@@ -36,14 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-/*
- * THAControlPanel.java
- *
- * Created on 22.07.2009, 12:28:59
- */
-
 package org.netbeans.modules.dlight.tha;
+
+import javax.swing.Action;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,8 +47,11 @@ package org.netbeans.modules.dlight.tha;
  */
 public class THAControlPanel extends javax.swing.JPanel {
 
+    private final Action action;
+
     /** Creates new form THAControlPanel */
-    public THAControlPanel() {
+    public THAControlPanel(Action action) {
+        this.action = action;
         initComponents();
     }
 
@@ -65,7 +64,6 @@ public class THAControlPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
         controlButton = new javax.swing.JButton();
         deadlocksButton = new javax.swing.JButton();
         racesButton = new javax.swing.JButton();
@@ -73,65 +71,53 @@ public class THAControlPanel extends javax.swing.JPanel {
         setToolTipText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.toolTipText")); // NOI18N
 
         controlButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
+        add(controlButton);
 
+        deadlocksButton.setAction(action);
         deadlocksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"))); // NOI18N
-        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.text")); // NOI18N
+        deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.nodeadlocks")); // NOI18N
         deadlocksButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive24.png"))); // NOI18N
-        deadlocksButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        deadlocksButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        deadlocksButton.setEnabled(false);
+        add(deadlocksButton);
 
+        racesButton.setAction(action);
         racesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_active24.png"))); // NOI18N
+        racesButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.dataracesButton.nodataraces")); // NOI18N
         racesButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive24.png"))); // NOI18N
-        racesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        racesButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(controlButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(deadlocksButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 150, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(racesButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(controlButton)
-                .add(deadlocksButton)
-                .add(racesButton))
-        );
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        racesButton.setEnabled(false);
+        add(racesButton);
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton controlButton;
     private javax.swing.JButton deadlocksButton;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton racesButton;
     // End of variables declaration//GEN-END:variables
+
+    void setDeadlocks(int deadlocks) {
+        if (0 < deadlocks) {
+            deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.deadlocks", deadlocks));
+            deadlocksButton.setEnabled(true);
+        } else {
+            deadlocksButton.setText(getMessage("THAControlPanel.deadlocksButton.nodeadlocks"));
+            deadlocksButton.setEnabled(false);
+        }
+    }
+
+    void setDataRaces(int dataraces) {
+        if (0 < dataraces) {
+            racesButton.setText(getMessage("THAControlPanel.dataracesButton.dataraces", dataraces));
+            racesButton.setEnabled(true);
+        } else {
+            racesButton.setText(getMessage("THAControlPanel.dataracesButton.nodataraces"));
+            racesButton.setEnabled(false);
+        }
+    }
 
     void reset() {
         // throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    private static String getMessage(String name, Object... args) {
+        return NbBundle.getMessage(THAControlPanel.class, name, args);
+    }
 }

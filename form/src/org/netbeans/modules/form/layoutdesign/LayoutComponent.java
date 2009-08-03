@@ -333,7 +333,7 @@ public final class LayoutComponent implements LayoutConstants {
     }
 
     int removeLayoutRoots(LayoutInterval[] roots) {
-        Iterator it = layoutRoots.iterator();
+        Iterator<LayoutInterval[]> it = layoutRoots.iterator();
         int index = -1;
         while (it.hasNext()) {
             index++;

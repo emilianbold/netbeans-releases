@@ -248,28 +248,24 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     FileObject resolveWebInf(String docBaseValue, String webInfValue, boolean silent, boolean useDocBase) {
-        return resolveWebInf(docBaseValue, webInfValue, silent, useDocBase, true);
-    }
-
-    FileObject resolveWebInf(String docBaseValue, String webInfValue, boolean silent, boolean useDocBase, boolean forceCreate) {
         FileObject webInf = null;
         if (webInfValue != null){
              webInf = helper.getAntProjectHelper().resolveFileObject(webInfValue);
-             if (webInf == null && forceCreate){
-                webInf = helper.getAntProjectHelper().getProjectDirectory();
-                StringTokenizer st = new StringTokenizer(webInfValue, "/");
-                while (st.hasMoreTokens()) {
-                    String nameExt = st.nextToken();
-                    try {
-                        FileObject tmp = webInf.getFileObject(nameExt, null);
-                        webInf = tmp != null ? tmp : webInf.createFolder(nameExt);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                        webInf = null;
-                        break;
-                    }
-                }
-             }
+//             if (webInf == null && forceCreate){
+//                webInf = helper.getAntProjectHelper().getProjectDirectory();
+//                StringTokenizer st = new StringTokenizer(webInfValue, "/");
+//                while (st.hasMoreTokens()) {
+//                    String nameExt = st.nextToken();
+//                    try {
+//                        FileObject tmp = webInf.getFileObject(nameExt, null);
+//                        webInf = tmp != null ? tmp : webInf.createFolder(nameExt);
+//                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                        webInf = null;
+//                        break;
+//                    }
+//                }
+//             }
         }
 
         //temporary solution for < 6.0 projects
@@ -284,13 +280,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 return null;
             }
             webInf = documentBase.getFileObject (FOLDER_WEB_INF);
-            if (webInf == null && forceCreate){
-                try {
-                    webInf = documentBase.createFolder(FOLDER_WEB_INF);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+//            if (webInf == null && forceCreate){
+//                try {
+//                    webInf = documentBase.createFolder(FOLDER_WEB_INF);
+//                } catch (IOException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
         }
 
         if (webInf == null && !silent) {

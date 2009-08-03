@@ -155,7 +155,8 @@ abstract class DefaultParser  extends DefaultHandler {
             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6743605.
             if(!isStopException(npe)) {
                 state = ERROR;
-                if(!npe.getStackTrace()[0].getMethodName().equals("skipChar")) {  //NOI18N
+                StackTraceElement[] elements = npe.getStackTrace();
+                if(elements.length == 0 || !elements[0].getMethodName().equals("skipChar")) {  //NOI18N
                     // report all other NPEs
                     Exceptions.attachMessage(npe, "While parsing: " + fo); // NOI18N
                     Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, npe);

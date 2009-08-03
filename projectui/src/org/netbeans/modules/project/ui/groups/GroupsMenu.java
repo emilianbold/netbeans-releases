@@ -165,7 +165,10 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.remove", active.getName()));
                 mi.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        active.destroy();
+                        NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(GroupsMenu.class, "Delete_Confirm", active.getName()), NotifyDescriptor.YES_NO_OPTION);
+                        if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
+                            active.destroy();
+                        }
                     }
                 });
                 add(mi);
@@ -217,6 +220,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     private static void openProperties(Group g) {
         GroupEditPanel panel = g.createPropertiesPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.properties_title"));
+        panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GroupsMenu.class));

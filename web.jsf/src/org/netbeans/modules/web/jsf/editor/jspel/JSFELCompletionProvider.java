@@ -48,7 +48,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.spi.editor.completion.*;
@@ -67,10 +66,9 @@ public class JSFELCompletionProvider implements CompletionProvider{
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE)
+        if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()), component);
-//        else if (queryType == DOCUMENTATION_QUERY_TYPE)
-//            return new AsyncCompletionTask(new DocQuery(/*null*/), component);
+        }
         return null;
     }
     

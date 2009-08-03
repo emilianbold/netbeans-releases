@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -62,7 +63,12 @@ public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
 
         if (conf instanceof MakeConfiguration) {
             MakeConfiguration mc = (MakeConfiguration)conf;
-            return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
+            final CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return false;
+            }
+            return true;
+            //return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
         }
         return false;
     }

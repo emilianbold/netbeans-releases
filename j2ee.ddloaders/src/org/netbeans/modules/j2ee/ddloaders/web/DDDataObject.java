@@ -46,6 +46,7 @@ import java.awt.Dialog;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -803,7 +804,10 @@ public class DDDataObject extends  DDMultiViewDataObject
      */
     @Override
     public boolean isDeleteAllowed() {
-        return WebApp.VERSION_2_5.equals(getWebApp().getVersion());
+        String version = getWebApp().getVersion();
+        if (version == null) return true; // defensive tactics
+        BigDecimal ver = new BigDecimal(version);
+        return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
     }
     /** Enable to access Active element 
      */

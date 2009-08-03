@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
@@ -274,7 +274,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
-    public StackTrace getStackTrace(long timeStamp) {
+    public ThreadDump getStackTrace(long timeStamp) {
         return stackProvider.getStackTrace(timeStamp);
     }
 

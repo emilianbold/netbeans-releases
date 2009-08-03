@@ -122,32 +122,37 @@ public class ELExpression {
             TokenSequence ts = hi.tokenSequence();
             TokenSequence last = null;
             for (;;) {
-                if (ts != null) {
-                    if (ts.language() == ELTokenId.language()) {
-                        //found EL
-                        isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
-                        break;
+                if (ts == null) {
+                    break;
+                }
+                if (ts.language() == ELTokenId.language()) {
+                    //found EL
+                    isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
+                    break;
+                } else {
+                    //not el, scan next embedded token sequence
+                    ts.move(offset);
+                    if (ts.moveNext() || ts.movePrevious()) {
+                        last = ts;
+                        ts = ts.embedded();
                     } else {
-                        //not el, scan next embedded token sequence
-                        ts.move(offset);
-                        if (ts.moveNext() || ts.movePrevious()) {
-                            last = ts;
-                            ts = ts.embedded();
-                        } else {
-                            //no token, cannot embed
-                            return NOT_EL;
-                        }
+                        //no token, cannot embed
+                        return NOT_EL;
                     }
                 }
             }
 
+            if(ts == null) {
+                return NOT_EL;
+            }
+
 
             int diff = ts.move(offset);
-            if(diff == 0) {
-                if(!ts.movePrevious()) {
+            if (diff == 0) {
+                if (!ts.movePrevious()) {
                     return EL_START;
                 }
-            } else if(!ts.moveNext()) {
+            } else if (!ts.moveNext()) {
                 return EL_START;
             }
 

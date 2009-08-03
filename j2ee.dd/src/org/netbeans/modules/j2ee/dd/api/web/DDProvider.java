@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
 import org.xml.sax.*;
 import java.util.Map;
 import java.util.logging.Level;
@@ -127,20 +128,29 @@ public final class DDProvider {
                 original = getOriginalFromCache(fo);
                 if (original == null) {
                     version = WebParseUtils.getVersion(fo.getInputStream());
-                    // preparsing
-                    error = parse(fo);
-                    original = DDUtils.createWebApp(fo.getInputStream(), version);
-                    baseBeanMap.put(fo.getURL(), new WeakReference(original));
-                    errorMap.put(fo.getURL(), error);
+                    if (version != null) {
+                        // preparsing
+                        error = parse(fo);
+                        original = DDUtils.createWebApp(fo.getInputStream(), version);
+                        baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                        errorMap.put(fo.getURL(), error);
+                    }
                 } else {
                     version = original.getVersion();
                     error = (SAXParseException) errorMap.get(fo.getURL());
                 }
             }
-            webApp = new WebAppProxy(original, version);
-            if (error != null) {
-                webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
-                webApp.setError(error);
+            if (version != null) {
+                webApp = new WebAppProxy(original, version);
+                if (error != null) {
+                    webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
+                    webApp.setError(error);
+                }
+            } else {
+                // #169465 - need to handle the case when version was not determined
+                webApp = new WebAppProxy(null, null);
+                webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+                webApp.setError(new SAXParseException(NbBundle.getMessage(DDProvider.class, "MSG_cannotDetermineVersion"), null));
             }
         } catch (SAXException ex) {
             webApp = new WebAppProxy(null, version);

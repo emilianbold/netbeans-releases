@@ -41,14 +41,23 @@ package org.netbeans.modules.dlight.tha;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.UIThread;
 
 public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
+    private final THAControlPanel controlPanel;
+    private final String dataracesColumnName;
+    private final String deadlocksColumnName;
+    private int dataraces;
+    private int deadlocks;
 
     public THAIndicator(final THAIndicatorConfiguration configuration) {
         super(configuration);
+        controlPanel = new THAControlPanel(getDefaultAction());
+        dataracesColumnName = getMetadataColumnName(0);
+        deadlocksColumnName = getMetadataColumnName(1);
     }
 
     @Override
@@ -57,13 +66,23 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     }
 
     @Override
-    protected void tick() {
-        // throw new UnsupportedOperationException("Not supported yet.");
+    protected synchronized void tick() {
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                controlPanel.setDataRaces(dataraces);
+                controlPanel.setDeadlocks(deadlocks);
+            }
+         });
     }
 
     @Override
-    public void updated(List<DataRow> data) {
-//        controlPanel.
+    public synchronized void updated(List<DataRow> data) {
+        for (DataRow row : data) {
+            Object dataracesObj = row.getData(dataracesColumnName);
+            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
+            Object deadlocksObj = row.getData(deadlocksColumnName);
+            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
+        }
     }
 
     @Override

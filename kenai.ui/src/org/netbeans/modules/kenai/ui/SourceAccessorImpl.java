@@ -95,18 +95,16 @@ public class SourceAccessorImpl extends SourceAccessor {
             // XXX
             Exceptions.printStackTrace(ex);
         }
-        KenaiFeature features[] = null;
         if (project != null) {
             try {
-                features = project.getFeatures(Type.SOURCE);
+                for (KenaiFeature feature : project.getFeatures(Type.SOURCE)) {
+                    SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
+                    handlesList.add(srcHandle);
+                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
+                }
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-        for (KenaiFeature feature : features) {
-            SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
-            handlesList.add(srcHandle);
-            handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
         }
 
         return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;

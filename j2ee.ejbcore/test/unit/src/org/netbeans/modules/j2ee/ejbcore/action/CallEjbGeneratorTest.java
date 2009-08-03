@@ -97,7 +97,7 @@ public class CallEjbGeneratorTest extends TestBase {
                 referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
                 "statelesslr.StatelessLRBean2",
                 null,
-                false,
+                EjbReference.EjbRefIType.LOCAL,
                 false,
                 referencedEjb21Module.getProject()
                 );
@@ -148,7 +148,7 @@ public class CallEjbGeneratorTest extends TestBase {
                 referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
                 "statelesslr.StatelessLRBean2",
                 null,
-                false,
+                EjbReference.EjbRefIType.LOCAL,
                 false,
                 referencedEjb21Module.getProject()
                 );

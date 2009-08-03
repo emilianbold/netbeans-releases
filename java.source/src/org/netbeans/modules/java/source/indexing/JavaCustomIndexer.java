@@ -107,6 +107,7 @@ import org.openide.util.Utilities;
 public class JavaCustomIndexer extends CustomIndexer {
 
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+    private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
 
@@ -125,8 +126,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return;
             }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
+                return;
+            }
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+                JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
@@ -369,7 +375,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel)) {
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
@@ -452,40 +458,49 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
 
-        List<URL> depRoots = null;
-        Map<URL, List<URL>> deps = null;
-        if (dt != TasklistSettings.DependencyTracking.ENABLED_WITHIN_ROOT) {
-            //get dependencies
-            deps = IndexingController.getDefault().getRootDependencies();
+        //get dependencies
+        Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
 
-            //create inverse dependencies
-            final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
-            for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
-                final URL u1 = entry.getKey();
-                final List<URL> l1 = entry.getValue();
-                for (URL u2 : l1) {
-                    List<URL> l2 = inverseDeps.get(u2);
-                    if (l2 == null) {
-                        l2 = new ArrayList<URL>();
-                        inverseDeps.put (u2,l2);
-                    }
-                    l2.add (u1);
+        //create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
+            final URL u1 = entry.getKey();
+            final List<URL> l1 = entry.getValue();
+            for (URL u2 : l1) {
+                List<URL> l2 = inverseDeps.get(u2);
+                if (l2 == null) {
+                    l2 = new ArrayList<URL>();
+                    inverseDeps.put (u2,l2);
                 }
+                l2.add (u1);
             }
+        }
 
-            //get sorted list of depenedent roots
-            depRoots = inverseDeps.get(root);
-            if (depRoots != null) {
+        //get sorted list of depenedent roots
+        List<URL> depRoots = inverseDeps.get(root);
+        if (depRoots != null) {
+            if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_ROOT) {
+                for (URL url : depRoots) {
+                    JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                }
+                depRoots = null;
+            } else {
                 depRoots = new ArrayList<URL>(depRoots);
                 try {
                     if (dt == TasklistSettings.DependencyTracking.ENABLED_WITHIN_PROJECT) {
                         Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
-                        if (rootPrj == null)
+                        if (rootPrj == null) {
+                            for (URL url : depRoots) {
+                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                            }
                             depRoots.clear();
+                        }
                         for (Iterator<URL> it = depRoots.iterator(); it.hasNext();) {
                             URL url = it.next();
-                            if (FileOwnerQuery.getOwner(url.toURI()) != rootPrj)
+                            if (FileOwnerQuery.getOwner(url.toURI()) != rootPrj) {
+                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
                                 it.remove();
+                            }
                         }
                     }
                     depRoots.add(root);

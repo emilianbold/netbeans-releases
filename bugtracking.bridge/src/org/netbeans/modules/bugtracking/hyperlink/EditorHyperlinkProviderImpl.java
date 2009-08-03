@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugtracking.hyperlink;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -52,8 +51,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -63,14 +60,12 @@ import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import static org.netbeans.modules.bugtracking.util.IssueFinderUtils.HyperlinkSpanInfo;
 
 /**
@@ -125,15 +120,6 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
         final String issueId = getIssueId(doc, offset, type);
         if(issueId == null) return;
 
-        final Task[] t = new Task[1];
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                if(t[0] != null) {
-                    return t[0].cancel();
-                }
-                return true;
-            }
-        };
         class IssueDisplayer implements Runnable {
             public void run() {
                 DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -153,7 +139,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                 Issue.open(repo, issueId);
             }
         }
-        t[0] = RequestProcessor.getDefault().post(new IssueDisplayer());
+        RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {

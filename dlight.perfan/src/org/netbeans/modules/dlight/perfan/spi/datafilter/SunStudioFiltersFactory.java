@@ -47,8 +47,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
 public class SunStudioFiltersFactory implements DataFilterFactory {
 
-    public static String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
-    public static String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
+    public static final String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
+    public static final String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
 
     public DataFilter createFilter(String filterID, String filterSpec) {
         if (CollectedObjectsFilterID.equals(filterID)) {

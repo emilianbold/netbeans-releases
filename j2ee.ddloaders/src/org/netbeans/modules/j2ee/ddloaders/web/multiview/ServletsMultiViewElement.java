@@ -192,7 +192,7 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
             return servletsNode;
         }
         
-        SectionContainer getServletsContainer(){
+        SectionContainer getServletsContainer() {
             return servletsCont;
         }
         

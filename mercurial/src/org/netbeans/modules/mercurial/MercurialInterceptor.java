@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 
@@ -75,6 +76,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
+    private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -331,7 +333,14 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
             // refresh all at once
             Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-            filesToRefresh.add(fileToRefresh);
+            if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
+                if ("dirstate".equals(fileToRefresh.getName())) {
+                    // XXX handle dirstate events
+                    Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
+                }
+            } else {
+                filesToRefresh.add(fileToRefresh);
+            }
         } else {
             // refresh one by one
             File parent = fileToRefresh.getParentFile();
@@ -342,6 +351,26 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
         refreshTask.schedule(delayMillis);
+    }
+
+    void pingRepositoryRootFor(final File file) {
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if (repositoryRoot != null) {
+                    File dirstate = new File(new File(repositoryRoot, ".hg"), "dirstate"); //NOI18N
+                    FileObject fo = FileUtil.toFileObject(dirstate);
+                    synchronized (dirStates) {
+                        if (!dirStates.contains(fo)) {
+                            reScheduleRefresh(2000, repositoryRoot); // the whole clone
+                            if (fo != null && fo.isValid() && fo.isData()) {
+                                dirStates.add(fo);
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private class RefreshTask implements Runnable {

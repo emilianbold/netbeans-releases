@@ -42,6 +42,10 @@
 package org.netbeans.modules.project.ui.groups;
 
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.NotificationLineSupport;
 
 /**
  * Interface used by the various group editing panels.
@@ -49,6 +53,44 @@ import javax.swing.JPanel;
  */
 public abstract class GroupEditPanel extends JPanel {
 
+    private NotificationLineSupport supp;
+
     public abstract void applyChanges();
+
+    void setNotificationLineSupport(NotificationLineSupport s) {
+        supp = s;
+    }
+
+    NotificationLineSupport getNotificationLineSupport() {
+        return supp;
+    }
+
+    void startPerformingNameChecks(final JTextField field, final String initial) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                doCheck();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                doCheck();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                doCheck();
+            }
+
+            private void doCheck() {
+                getNotificationLineSupport().clearMessages();
+                String newText = field.getText();
+                if (!newText.equals(initial)) {
+                    for (Group g : Group.allGroups()) {
+                        if (newText.equals(g.getNameOrNull())) {
+                            getNotificationLineSupport().setWarningMessage(org.openide.util.NbBundle.getBundle(GroupEditPanel.class).getString("WARN_GroupExists"));
+                        }
+                    }
+                }
+            }
+        });
+    }
 
 }

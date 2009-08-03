@@ -77,6 +77,7 @@ import javax.swing.border.LineBorder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -116,7 +117,7 @@ public final class QueryTopComponent extends TopComponent
 
 
     QueryTopComponent() {
-        BugtrackingManager.getInstance().addPropertyChangeListener(this);
+        RepositoriesSupport.getInstance().addPropertyChangeListener(this);
 
         initComponents();
         Font f = new JLabel().getFont();
@@ -462,7 +463,7 @@ public final class QueryTopComponent extends TopComponent
             }
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
-        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
                 return;
