@@ -473,13 +473,14 @@ class CompletionContextFinder {
         boolean isIface = false;
         boolean isExtends = false;
         boolean isImplements = false;
+        boolean isNsSeparator = false;;
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
         for (Token<PHPTokenId> cToken : preceedingLineTokens) {
             TokenId id = cToken.id();
-            boolean nokeywords = !isIface && !isClass && !isExtends && !isImplements;
-            if (id.equals(PHPTokenId.PHP_CLASS)) {
+            boolean nokeywords = !isIface && !isClass && !isExtends && !isImplements && !isNsSeparator;
+           if (id.equals(PHPTokenId.PHP_CLASS)) {
                 isClass = true;
                 break;
             } else if (id.equals(PHPTokenId.PHP_INTERFACE)) {
@@ -489,7 +490,9 @@ class CompletionContextFinder {
                 isExtends = true;
             } else if (id.equals(PHPTokenId.PHP_IMPLEMENTS)) {
                 isImplements = true;
-            } else if (nokeywords && id.equals(PHPTokenId.PHP_STRING)) {
+            } else if (id.equals(PHPTokenId.PHP_NS_SEPARATOR)) {
+                isNsSeparator = true;
+            }  else if (nokeywords && id.equals(PHPTokenId.PHP_STRING)) {
                 isString = true;
                 stringToken = cToken;
             } else {
