@@ -96,6 +96,8 @@ import org.openide.util.RequestProcessor;
  */
 public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
+    private static final long serialVersionUID = -1643692494954311020L;
+
     public static final Icon FQN_ICON = ImageUtilities.loadImageIcon(
             "org/netbeans/modules/java/navigation/resources/fqn.gif", false); // NOI18N
 
@@ -156,253 +158,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        myFilterTextField.getDocument().addDocumentListener(
-                new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-            public void insertUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-        }
-        );
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.firstRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.previousRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.lastRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myBindings.putClientProperty(
-            "HighlightsLayerExcludes", // NOI18N
-            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
-        );
-
-        myBindings.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.firstRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myBindings.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.previousRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myBindings.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.nextRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myBindings.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                //TODO : Utils.lastRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        // TODO
-                        applyFilter();
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        gotoElement((JavaElement) node);
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
-                        if (view instanceof JEditorPane) {
-                            JEditorPane editorPane = (JEditorPane) view;
-                            ActionListener actionForKeyStroke =
-                                editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));                            
-                            actionForKeyStroke.actionPerformed(
-                                    new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
-                        }
-                    }
-                },
-                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
-                JComponent.WHEN_FOCUSED);
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-                    private boolean firstTime = true;
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
-                        if (view instanceof JEditorPane) {
-                            JEditorPane editorPane = (JEditorPane) view;
-                            ActionListener actionForKeyStroke =
-                                editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0, false));
-                            actionEvent = new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, "");
-                            actionForKeyStroke.actionPerformed(actionEvent);
-                            if (firstTime) {
-                                actionForKeyStroke.actionPerformed(actionEvent);
-                                firstTime = false;
-                            }
-                        }
-                    }
-                },
-                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
-                JComponent.WHEN_FOCUSED);
-
-        myCaseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                WebBeansNavigationOptions.setCaseSensitive(myCaseSensitiveFilterCheckBox.isSelected());
-                if (myFilterTextField.getText().trim().length() > 0) {
-                    // apply filters again only if there is some filter text
-                    selectMatchingRow();
-                }
-            }
-        });
-
-        myJavaHierarchyTree.addMouseListener(
-                new MouseAdapter() {
-            public void mouseClicked(MouseEvent me) {
-                Point point = me.getPoint();
-                TreePath treePath = myJavaHierarchyTree.getPathForLocation(point.x, point.y);
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        if (me.getClickCount() == 1) {
-                            if (me.isControlDown()) {
-                                applyFilter();
-                            }
-                        }  else if (me.getClickCount() == 2){
-                            gotoElement((JavaElement) node);
-                        }
-                    }
-                }
-            }
-        }
-        );
-
-        myJavaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                showBindings();
-                showJavaDoc();
-            }
-        });
-
-        myJavaHierarchyTree.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        gotoElement((JavaElement) node);
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                JComponent.WHEN_FOCUSED);
-
-        myJavaHierarchyTree.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        // TODO
-                        applyFilter();
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
-
-        myShowFQNToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
-                javaHierarchyModel.fireTreeNodesChanged();
-                reloadInjectionPoint();
-            }
-        });
-
-        myExpandAllButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        expandAll();
-                    }
-                });
-
-        myCloseButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        close();
-                    }
-                });
+        initListeners();
     }
 
     public void addNotify() {
@@ -424,11 +180,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     
     // Hack to allow showing of Help window when F1 or HELP key is pressed.
     @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, 
+            boolean pressed) 
+    {
         if (e.getKeyCode() == KeyEvent.VK_F1 || e.getKeyCode() == KeyEvent.VK_HELP)  {
             JComponent rootPane = SwingUtilities.getRootPane(this);
             if (rootPane != null) {
-                //TODO : rootPane.putClientProperty(ResizablePopup.HELP_COOKIE, Boolean.TRUE); // NOI18N
+                rootPane.putClientProperty(ResizablePopup.HELP_COOKIE, Boolean.TRUE); 
             }
         }
         return super.processKeyBinding(ks, e, condition, pressed);
@@ -546,11 +304,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             Object o = myJavaHierarchyTree.getPathForRow(row).getLastPathComponent();
             if (o instanceof JavaElement) {
                 String filterText = myFilterTextField.getText();
-                /*TODO :if (Utils.patternMatch((JavaElement)o, filterText, filterText.toLowerCase())) {
-                    javaHierarchyTree.setSelectionRow(row);
-                    javaHierarchyTree.scrollRowToVisible(row);
+                if (Utils.patternMatch((JavaElement)o, filterText, 
+                        filterText.toLowerCase())) 
+                {
+                    myJavaHierarchyTree.setSelectionRow(row);
+                    myJavaHierarchyTree.scrollRowToVisible(row);
                     return;
-                }*/
+                }
             }
         }
         myFilterTextField.setForeground(Color.RED);
@@ -718,6 +478,251 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             myBindings.setText( myShortBindings );
             myType.setText(myShortTypeName);
         } 
+    }
+    
+
+    private void initListeners() {
+        myFilterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                selectMatchingRow();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                selectMatchingRow();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                selectMatchingRow();
+            }
+        }
+        );
+        
+        registerKeyboardActions();
+
+        myCaseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                WebBeansNavigationOptions.setCaseSensitive(
+                        myCaseSensitiveFilterCheckBox.isSelected());
+                if (myFilterTextField.getText().trim().length() > 0) {
+                    // apply filters again only if there is some filter text
+                    selectMatchingRow();
+                }
+            }
+        });
+
+        myJavaHierarchyTree.addMouseListener(
+                new MouseAdapter() {
+            public void mouseClicked(MouseEvent me) {
+                Point point = me.getPoint();
+                TreePath treePath = myJavaHierarchyTree.
+                    getPathForLocation(point.x, point.y);
+                if (treePath != null) {
+                    Object node = treePath.getLastPathComponent();
+                    if (node instanceof JavaElement) {
+                        if (me.getClickCount() == 1) {
+                            if (me.isControlDown()) {
+                                applyFilter();
+                            }
+                        }  else if (me.getClickCount() == 2){
+                            gotoElement((JavaElement) node);
+                        }
+                    }
+                }
+            }
+        }
+        );
+
+        myJavaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                showBindings();
+                showJavaDoc();
+            }
+        });
+
+        myShowFQNToggleButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
+                javaHierarchyModel.fireTreeNodesChanged();
+                reloadInjectionPoint();
+            }
+        });
+
+        myExpandAllButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        expandAll();
+                    }
+                });
+
+        myCloseButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        close();
+                    }
+                });
+    }
+
+    private void registerKeyboardActions() {
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Utils.firstRow(myJavaHierarchyTree);
+            }
+        };
+
+        myFilterTextField.registerKeyboardAction( listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
+                JComponent.WHEN_FOCUSED);
+        
+        myBindings.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
+                JComponent.WHEN_FOCUSED);
+
+        listener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Utils.previousRow(myJavaHierarchyTree);
+            }
+        };
+        myFilterTextField.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
+                JComponent.WHEN_FOCUSED);
+        
+        myBindings.registerKeyboardAction( listener ,
+                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
+                JComponent.WHEN_FOCUSED);
+
+        listener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Utils.nextRow(myJavaHierarchyTree);
+            }
+        };
+        myFilterTextField.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
+                JComponent.WHEN_FOCUSED);
+        
+        myBindings.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
+                JComponent.WHEN_FOCUSED);
+
+        listener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Utils.lastRow(myJavaHierarchyTree);
+            }
+        };
+        myFilterTextField.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
+                JComponent.WHEN_FOCUSED);
+        
+        myBindings.registerKeyboardAction(listener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
+                JComponent.WHEN_FOCUSED);
+
+        myBindings.putClientProperty(
+            "HighlightsLayerExcludes", // NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
+        );
+
+        myFilterTextField.registerKeyboardAction(
+                new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
+                if (treePath != null) {
+                    Object node = treePath.getLastPathComponent();
+                    if (node instanceof JavaElement) {
+                        applyFilter();
+                    }
+                }
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
+                JComponent.WHEN_FOCUSED);
+
+        myFilterTextField.registerKeyboardAction(
+                new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
+                if (treePath != null) {
+                    Object node = treePath.getLastPathComponent();
+                    if (node instanceof JavaElement) {
+                        gotoElement((JavaElement) node);
+                    }
+                }
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+                JComponent.WHEN_FOCUSED);
+
+        myFilterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(
+                                                KeyEvent.VK_PAGE_UP, 0, false));                            
+                            actionForKeyStroke.actionPerformed(
+                                    new ActionEvent(editorPane, 
+                                            ActionEvent.ACTION_PERFORMED, ""));
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 
+                        KeyEvent.SHIFT_MASK, false),
+                JComponent.WHEN_FOCUSED);
+        myFilterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    private boolean firstTime = true;
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(
+                                                KeyEvent.VK_PAGE_DOWN, 0, false));
+                            actionEvent = new ActionEvent(editorPane, 
+                                    ActionEvent.ACTION_PERFORMED, "");
+                            actionForKeyStroke.actionPerformed(actionEvent);
+                            if (firstTime) {
+                                actionForKeyStroke.actionPerformed(actionEvent);
+                                firstTime = false;
+                            }
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 
+                        KeyEvent.SHIFT_MASK, false),
+                JComponent.WHEN_FOCUSED);
+        
+        myJavaHierarchyTree.registerKeyboardAction(
+                new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
+                if (treePath != null) {
+                    Object node = treePath.getLastPathComponent();
+                    if (node instanceof JavaElement) {
+                        gotoElement((JavaElement) node);
+                    }
+                }
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+                JComponent.WHEN_FOCUSED);
+
+        myJavaHierarchyTree.registerKeyboardAction(
+                new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
+                if (treePath != null) {
+                    Object node = treePath.getLastPathComponent();
+                    if (node instanceof JavaElement) {
+                        applyFilter();
+                    }
+                }
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
+                JComponent.WHEN_FOCUSED);
     }
 
     /** This method is called from within the constructor to
