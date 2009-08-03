@@ -191,14 +191,18 @@ public class ProfilesModelHelper {
                     } else if ((ComboConstants.USERNAME.equals(tokenType)) || (ComboConstants.X509.equals(tokenType))) {  // profile2
                         return ComboConstants.PROF_MSGAUTHSSL;
                     }
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    if (tokenKind != null) {
+                        return ComboConstants.PROF_MSGAUTHSSL;
+                    }
                     return ComboConstants.PROF_TRANSPORT;
                 } else {
                     WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.ENDORSING);
                     if (tokenKind != null) {
                         return ComboConstants.PROF_MSGAUTHSSL; // profile 2 with secure conversation
                     }
+                    Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
                     if (secConv) {
-                        Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
                         tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                     } else {
                         tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
@@ -207,6 +211,15 @@ public class ProfilesModelHelper {
                     if (ComboConstants.SAML.equals(tokenType)) { // profile3
                         return ComboConstants.PROF_SAMLSSL;
                     } else if ((ComboConstants.USERNAME.equals(tokenType)) || (ComboConstants.X509.equals(tokenType))) {  // profile2
+                        return ComboConstants.PROF_MSGAUTHSSL;
+                    }
+
+                    if (secConv) {
+                        tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    } else {
+                        tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                    }
+                    if (tokenKind != null) {
                         return ComboConstants.PROF_MSGAUTHSSL;
                     }
                     return ComboConstants.PROF_TRANSPORT;
@@ -555,7 +568,11 @@ public class ProfilesModelHelper {
                 spmh.disableTrust(c);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                stmh.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                if (ConfigVersion.CONFIG_1_0.equals(configVersion)) {
+                    stmh.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    stmh.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
             } else if (ComboConstants.PROF_SAMLSSL.equals(profile)) {   // Profile #3
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.TRANSPORT);
                 stmh.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
