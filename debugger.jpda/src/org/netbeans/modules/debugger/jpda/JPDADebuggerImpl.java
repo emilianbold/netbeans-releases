@@ -307,7 +307,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
         if (csf == null && t != null) {
-            t.getReadAccessLock().lock();
+            Lock l = t.getReadAccessLock();
+            l.lock();
             try {
                 if (t.isSuspended()) {
                     // Must not call this under currentThreadAndFrameLock, other lock acquired.
@@ -320,7 +321,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             } catch (Exception ex) {
             } finally {
-                t.getReadAccessLock().unlock();
+                l.unlock();
             }
         }
         return csf;
