@@ -314,7 +314,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
 
                     }, true);
             } catch (IOException ex) {
-                new IllegalStateException(ex);
+                throw new IllegalStateException(ex);
             }
         }
         

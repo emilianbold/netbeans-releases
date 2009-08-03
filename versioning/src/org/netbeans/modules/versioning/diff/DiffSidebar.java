@@ -335,8 +335,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     
     void onPrevious(Difference diff) {
         Difference[] diffs = currentDiff;
-        if (diffs != null) {
-            diff = diffs[getDiffIndex(diff) - 1];
+        int diffIndex;
+        if (diffs != null && (diffIndex = getDiffIndex(diff)) > -1 && diffIndex < diffs.length) {
+            diff = diffs[diffIndex - 1];
             Point location = scrollToDifference(diff);
             showTooltipWindow(location, diff);
             textComponent.repaint();
@@ -345,8 +346,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     void onNext(Difference diff) {
         Difference[] diffs = currentDiff;
-        if (diffs != null) {
-            diff = diffs[getDiffIndex(diff) + 1];
+        int diffIndex;
+        if (diffs != null && (diffIndex = getDiffIndex(diff)) > -1 && diffIndex < diffs.length - 1) {
+            diff = diffs[diffIndex + 1];
             Point location = scrollToDifference(diff);
             showTooltipWindow(location, diff);
             textComponent.repaint();

@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.spi.project.support.rake.ui;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ButtonModel;
@@ -53,9 +52,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.openide.ErrorManager;
+import org.openide.util.EditableProperties;
 
 /** Serves as utility class for storing Swing models into project
  * properties. Usefull for creating project customizers. <CODE>StoreGroup</CODE>

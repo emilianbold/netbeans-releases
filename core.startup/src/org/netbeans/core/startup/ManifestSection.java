@@ -273,6 +273,7 @@ public abstract class ManifestSection<T> {
             warnObsolete(sectionName, module);
             return null;
         } else if (sectionName.equalsIgnoreCase("Loader")) { // NOI18N
+            warnObsolete(sectionName, module);
             return new LoaderSection(name, attr, module);
         } else if (sectionName.equalsIgnoreCase("Filesystem")) { // NOI18N
             warnObsolete(sectionName, module);

@@ -50,9 +50,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import java.text.MessageFormat;
 import java.util.Collections;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Comment;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Generates the code needed for invoking a container-managed <code>EntityManager</code> 
@@ -61,48 +65,57 @@ import org.netbeans.api.java.source.Comment;
  * @author Erno Mononen
  */
 public final class ContainerManagedJTANonInjectableInWeb extends EntityManagerGenerationStrategySupport {
-    
+
     public ClassTree generate() {
-    
-        FieldInfo em = getEntityManagerFieldInfo();
-        
-        ModifiersTree methodModifiers = getTreeMaker().Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC),
-                Collections.<AnnotationTree>emptyList()
-                );
-        
-        MethodTree newMethod = getTreeMaker().Method(
-                methodModifiers, 
-                computeMethodName(),
-                getTreeMaker().PrimitiveType(TypeKind.VOID),
-                Collections.<TypeParameterTree>emptyList(),
-                getParameterList(),
-                Collections.<ExpressionTree>emptyList(),
-                "{ " +
-                getMethodBody(em)
-                + "}",
-                null
-                );
 
-        //TODO: should be added automatically, but accessing web / ejb apis from this module
-        // would require API changes that might not be doable for 6.0
-        String addToWebXmlComment =
-                " Add this to the deployment descriptor of this module (e.g. web.xml, ejb-jar.xml):\n" +
-                "<persistence-context-ref>\n" +
-                "   <persistence-context-ref-name>persistence/LogicalName</persistence-context-ref-name>\n" +
-                "   <persistence-unit-name>"+ getPersistenceUnitName() + "</persistence-unit-name>\n" +
-                "</persistence-context-ref>\n" +
-                "<resource-ref>\n" +
-                "    <res-ref-name>UserTransaction</res-ref-name>\n" +
-                "     <res-type>javax.transaction.UserTransaction</res-type>\n" +
-                "     <res-auth>Container</res-auth>\n" +
-                "</resource-ref>\n";
+        if(!ElementKind.CLASS.equals(getClassElement().getKind()))
+        {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ContainerManagedJTANonInjectableInWeb.class, "LBL_ClassOnly"), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return getClassTree();
+        }
+        else
+        {
+            FieldInfo em = getEntityManagerFieldInfo();
 
-        MethodTree method = (MethodTree) importFQNs(newMethod);
-        getTreeMaker().addComment(method.getBody().getStatements().get(0), 
-                Comment.create(Comment.Style.BLOCK, 0, 0, 4, addToWebXmlComment), true);
+            ModifiersTree methodModifiers = getTreeMaker().Modifiers(
+                    Collections.<Modifier>singleton(Modifier.PUBLIC),
+                    Collections.<AnnotationTree>emptyList()
+                    );
+            
+            MethodTree newMethod = getTreeMaker().Method(
+                    methodModifiers,
+                    computeMethodName(),
+                    getTreeMaker().PrimitiveType(TypeKind.VOID),
+                    Collections.<TypeParameterTree>emptyList(),
+                    getParameterList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    "{ " +
+                    getMethodBody(em)
+                    + "}",
+                    null
+                    );
 
-        return getTreeMaker().addClassMember(getClassTree(), method);
+            //TODO: should be added automatically, but accessing web / ejb apis from this module
+            // would require API changes that might not be doable for 6.0
+            String addToWebXmlComment =
+                    " Add this to the deployment descriptor of this module (e.g. web.xml, ejb-jar.xml):\n" +
+                    "<persistence-context-ref>\n" +
+                    "   <persistence-context-ref-name>persistence/LogicalName</persistence-context-ref-name>\n" +
+                    "   <persistence-unit-name>"+ getPersistenceUnitName() + "</persistence-unit-name>\n" +
+                    "</persistence-context-ref>\n" +
+                    "<resource-ref>\n" +
+                    "    <res-ref-name>UserTransaction</res-ref-name>\n" +
+                    "     <res-type>javax.transaction.UserTransaction</res-type>\n" +
+                    "     <res-auth>Container</res-auth>\n" +
+                    "</resource-ref>\n";
+
+            MethodTree method = (MethodTree) importFQNs(newMethod);
+            getTreeMaker().addComment(method.getBody().getStatements().get(0),
+                    Comment.create(Comment.Style.BLOCK, 0, 0, 4, addToWebXmlComment), true);
+
+            return getTreeMaker().addClassMember(getClassTree(), method);
+        }
     }
 
     private String getMethodBody(FieldInfo em){

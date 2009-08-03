@@ -374,8 +374,8 @@ public final class TopLogging {
         return s;
     }
     
-    private static java.util.logging.Handler streamHandler;
-    private static synchronized java.util.logging.Handler streamHandler () {
+    private static NonClose streamHandler;
+    private static synchronized NonClose streamHandler() {
         if (streamHandler == null) {
             StreamHandler sth = new StreamHandler (OLD_ERR, NbFormatter.FORMATTER);
             sth.setLevel(Level.ALL);
@@ -384,8 +384,8 @@ public final class TopLogging {
         return streamHandler;
     }
     
-    private static java.util.logging.Handler defaultHandler;
-    private static synchronized java.util.logging.Handler defaultHandler () {
+    private static NonClose defaultHandler;
+    private static synchronized NonClose defaultHandler() {
         if (defaultHandler != null) return defaultHandler;
 
         String home = System.getProperty("netbeans.user");
@@ -445,16 +445,14 @@ public final class TopLogging {
         }
     }
     static void close() {
-        Handler s = streamHandler;
-        if (s instanceof NonClose) {
-            NonClose ns = (NonClose)s;
-            ns.doClose();
+        NonClose s = streamHandler;
+        if (s != null) {
+            s.doClose();
         }
 
-        Handler d = defaultHandler;
+        NonClose d = defaultHandler;
         if (d != null) {
-            NonClose nd = (NonClose)d;
-            nd.doClose();
+            d.doClose();
         }
     }
     static void exit(int exit) {
@@ -722,7 +720,7 @@ public final class TopLogging {
                     Object[] param;
                     if (col != -1 || line != -1) {
                         msg = "EXC_sax_parse_col_line"; // NOI18N
-                        param = new Object[] {String.valueOf(pubid), String.valueOf(sysid), new Integer(col), new Integer(line)};
+                        param = new Object[] {String.valueOf(pubid), String.valueOf(sysid), col, line};
                     } else {
                         msg = "EXC_sax_parse"; // NOI18N
                         param = new Object[] { String.valueOf(pubid), String.valueOf(sysid) };

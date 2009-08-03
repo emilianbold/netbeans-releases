@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-// NOTE: org.netbeans.spi.project.support.ant.EditableProperties should be used.
+// NOTE: org.openide.util.EditableProperties should be used.
 // This is added temporarily to avoid another round of ATS project mass upgrage
 // for now.
 

@@ -70,6 +70,9 @@ public class SQLCompletion {
         // INSERT command
         } else if (SQLStatementKind.INSERT.equals (SQLStatementAnalyzer.analyzeKind(env.getTokenSequence()))) {
             return true;
+        } else if (SQLStatementKind.DROP.equals(SQLStatementAnalyzer.analyzeKind(env.getTokenSequence()))) {
+            // DROP command
+            return true;
         }
         return false;
     }

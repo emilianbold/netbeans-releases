@@ -134,8 +134,8 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
 
             DataObject template = wiz.getTemplate();
             result = template.createFromTemplate(targetFolder, listenerName, templateParameters);
-            String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
             if (result!=null && panel.createElementInDD()){
+                String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
                 FileObject webAppFo=DeployData.getWebAppFor(folder);
                 if (webAppFo == null) {
                     WebModule wm = WebModule.getWebModule(folder);
@@ -271,9 +271,9 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -289,7 +289,7 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
 
     public String name () {
         return NbBundle.getMessage(ListenerIterator.class, "TITLE_x_of_y",
-            new Integer (index + 1), new Integer (panels.length));
+            index + 1, panels.length);
     }
 
     public boolean hasNext () {

@@ -527,7 +527,7 @@ final class BinaryFS extends FileSystem {
                         return Boolean.valueOf(value);
                     case 7: // charvalue
                         if (value.trim().length() != 1) break;
-                        return new Character(value.charAt(0));
+                        return value.charAt(0);
                     case 8: // stringvalue
                         return value;
                     case 9: // urlvalue

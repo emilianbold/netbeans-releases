@@ -41,18 +41,18 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.Dimension;
-import java.awt.Panel;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.Map;
 import javax.swing.*;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -73,8 +73,6 @@ final class CommandManager implements ActionListener {
     private final SlideBar slideBar;
     /** Local tabbed container used to display slided component */
     private TabbedContainer slidedTabContainer;
-    //TODO use light-weight container when embedded browser is turned off
-    private Container heavyContainer;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;
@@ -98,8 +96,7 @@ final class CommandManager implements ActionListener {
             return;
         }
         SlideOperation op = SlideOperationFactory.createSlideResize(getSlidedTabContainer(), curSlideOrientation);
-        Component slidedComp = getSlidedTabContainer();
-        Rectangle finish = slidedComp.getBounds(null);
+        Rectangle finish = getSlidedTabContainer().getBounds(null);
         String side = orientation2Side(curSlideOrientation);
         if (Constants.BOTTOM.equals(side)) {
             finish.height = finish.height - delta;
@@ -130,7 +127,7 @@ final class CommandManager implements ActionListener {
         curSlidedComp = model.getTab(tabIndex).getComponent();
         curSlideOrientation = model.getOrientation();
         curSlideButton = slideBar.getButton(tabIndex);
-        Component cont = updateSlidedTabContainer(tabIndex);
+        TabbedContainer cont = updateSlidedTabContainer(tabIndex);
         SlideOperation operation = SlideOperationFactory.createSlideIn(
             cont, curSlideOrientation, true, true);
         
@@ -203,8 +200,7 @@ final class CommandManager implements ActionListener {
      * sliding component.
      */
     public void setActive(boolean active) {
-        getSlidedTabContainer();
-        slidedTabContainer.setActive(active);
+        getSlidedTabContainer().setActive(active);
     }
     
     /********* implementation of ActionListener **************/
@@ -284,30 +280,27 @@ final class CommandManager implements ActionListener {
     }    
 
     
-    private Component getSlidedTabContainer () {
+    private TabbedContainer getSlidedTabContainer () {
         if (slidedTabContainer == null) {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
             slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo());
             slidedTabContainer.addActionListener(this);
-//            Border b = null;
-//            String side = orientation2Side( slideBar.getModel().getOrientation() );
-//            b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
-//            if( b == null )
-//                b = UIManager.getBorder("floatingBorder"); //NOI18N
-//            if (b != null) {
-//                slidedTabContainer.setBorder (b);
-//            }
+            Border b = null;
+            String side = orientation2Side( slideBar.getModel().getOrientation() );
+            b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
+            if( b == null )
+                b = UIManager.getBorder("floatingBorder"); //NOI18N
+            if (b != null) {
+                slidedTabContainer.setBorder (b);
+            }
             
             registerEscHandler(slidedTabContainer);
-            heavyContainer = new Panel(new BorderLayout());
-            heavyContainer.add(slidedTabContainer, BorderLayout.CENTER);
         }
-        return heavyContainer;
+        return slidedTabContainer;
     }
     
-    private Component updateSlidedTabContainer(int tabIndex) {
-        getSlidedTabContainer();
-        TabbedContainer container = slidedTabContainer;
+    private TabbedContainer updateSlidedTabContainer(int tabIndex) {
+        TabbedContainer container = getSlidedTabContainer();
         TabDataModel containerModel = container.getModel();
         SlideBarDataModel dataModel = slideBar.getModel();
         // creating new TabData instead of just referencing
@@ -322,7 +315,7 @@ final class CommandManager implements ActionListener {
             containerModel.setTab(0, newTab);
         }
         container.getSelectionModel().setSelectedIndex(0);
-        return getSlidedTabContainer();
+        return container;
     }
     
     private void registerEscHandler (JComponent comp) {
@@ -407,8 +400,7 @@ final class CommandManager implements ActionListener {
             // in which case do nothing
             if (curSlidedIndex < model.size()) {
                 String freshText = model.getTab(curSlidedIndex).getText();
-                getSlidedTabContainer();
-                TabDataModel slidedModel = slidedTabContainer.getModel();
+                TabDataModel slidedModel = getSlidedTabContainer().getModel();
                 String slidedText = slidedModel.getTab(0).getText();
                 if (slidedText == null || !slidedText.equals(freshText)) {
                     slidedModel.setText(0, freshText);

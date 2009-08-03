@@ -41,14 +41,9 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.beans.PropertyVetoException;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,19 +51,15 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.Stamps;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 
 /** Layered file system serving itself as either the user or installation layer.
@@ -80,8 +71,6 @@ public class ModuleLayeredFileSystem extends MultiFileSystem
 implements LookupListener {
     /** serial version UID */
     private static final long serialVersionUID = 782910986724201983L;
-    
-    private static final String LAYER_STAMP = "layer-stamp.txt";
     
     static final Logger err = Logger.getLogger("org.netbeans.core.projects"); // NOI18N
 
@@ -208,11 +197,11 @@ implements LookupListener {
      * if working within the core.
      */
     public static ModuleLayeredFileSystem getInstallationModuleLayer () {
-        SystemFileSystem sfs = null;
+        SystemFileSystem sfs;
         try {
             sfs = (SystemFileSystem) FileUtil.getConfigRoot().getFileSystem();
         } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new AssertionError(ex);
         }
         ModuleLayeredFileSystem home = sfs.getInstallationLayer ();
         if (home != null)
@@ -226,11 +215,11 @@ implements LookupListener {
      * if working within the core.
      */
     public static ModuleLayeredFileSystem getUserModuleLayer () {
-        SystemFileSystem sfs = null;
+        SystemFileSystem sfs;
         try {
             sfs = (SystemFileSystem) FileUtil.getConfigRoot().getFileSystem();
         } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new AssertionError(ex);
         }
         return sfs.getUserLayer ();
     }

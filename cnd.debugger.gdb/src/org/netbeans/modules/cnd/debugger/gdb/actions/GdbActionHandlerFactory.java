@@ -67,7 +67,8 @@ public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
             if (compilerSet == null) {
                 return false;
             }
-            return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
+            return true;
+            //return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
         }
         return false;
     }

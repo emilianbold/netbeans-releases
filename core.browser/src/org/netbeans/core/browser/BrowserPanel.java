@@ -60,6 +60,12 @@ public class BrowserPanel extends MozillaPanel {
     }
 
     @Override
+    public void onDetachBrowser() {
+        super.onDetachBrowser();
+        browserAttached = false;
+    }
+
+    @Override
     public void onEnableBackButton(boolean enabled) {
         super.onEnableBackButton(enabled);
         this.backEnabled = enabled;
@@ -76,6 +82,7 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingEnded() {
         super.onLoadingEnded();
+        statusText = null;
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_ENDED, null );
     }
@@ -83,6 +90,8 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingStarted() {
         super.onLoadingStarted();
+        backEnabled = true;
+        propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_BACKWARD, false, true);
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_STARTED, null );
     }
@@ -127,8 +136,12 @@ public class BrowserPanel extends MozillaPanel {
     }
 
     public void dispose() {
+        if( !browserAttached || null == getChromeAdapter() )
+            return;
         MozillaExecutor.mozAsyncExec(new Runnable() {
             public void run() {
+                if( !browserAttached || null == getChromeAdapter() )
+                    return;
                 onDetachBrowser();
                 browserAttached = false;
             }
