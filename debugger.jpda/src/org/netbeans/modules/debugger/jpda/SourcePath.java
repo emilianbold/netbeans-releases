@@ -551,11 +551,5 @@ public class SourcePath {
         
     }
 
-    private static class CompoundAnnotation {
-        CompoundAnnotation () {}
-        
-        Object annotation1;
-        Object annotation2;
-    }
 }
 
