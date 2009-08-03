@@ -101,7 +101,7 @@ public final class ResizablePopup {
             }
         };
         //dialog.setUndecorated(true);
-        // TODO : dialog.setBounds(WebBeansNavigationOptions.getLastBounds());
+        dialog.setBounds(WebBeansNavigationOptions.getLastBounds());
         dialog.addWindowListener(windowListener);
         dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         return dialog;
