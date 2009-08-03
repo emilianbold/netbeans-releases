@@ -310,7 +310,7 @@ abstract class Lookup implements ContextProvider {
             List<String> l = new ArrayList<String>();
             try {
                 ClassLoader cl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-                String v = "\nR lookup " + resourceName;
+                StringBuilder v = new StringBuilder("\nR lookup ").append(resourceName);
                 Enumeration<URL> e = cl.getResources(resourceName);
                 Set<URL> urls = new HashSet<URL>();
                 while (e.hasMoreElements ()) {
@@ -328,7 +328,7 @@ abstract class Lookup implements ContextProvider {
                             if (s.startsWith ("#")) continue;
                             if (s.length () == 0) continue;
                             if (verbose)
-                                v += "\nR  service " + s + " found";
+                                v.append("\nR  service ").append(s).append(" found");
 
                             l.add (s);
                         }
@@ -337,7 +337,7 @@ abstract class Lookup implements ContextProvider {
                     }
                 }
                 if (verbose)
-                    System.out.println (v);
+                    System.out.println (v.toString());
                 return l; 
             } catch (IOException e) {
                 e.printStackTrace ();
