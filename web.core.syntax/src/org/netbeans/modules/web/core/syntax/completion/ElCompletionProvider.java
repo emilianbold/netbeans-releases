@@ -49,6 +49,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
@@ -73,16 +74,38 @@ public class ElCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         TokenHierarchy th = TokenHierarchy.get(doc);
+        int offset = component.getCaretPosition();
+        return isAfterElDelimiter(th, offset) || checkElCompletionOpen(th, offset) ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
+
+    }
+
+    private boolean isAfterElDelimiter(TokenHierarchy th, int offset) {
         TokenSequence ts = th.tokenSequence();
-        int diff = ts.move(component.getCaretPosition());
+        int diff = ts.move(offset);
         if (ts.moveNext()) {
             CharSequence image = ts.token().text();
             if (diff == 2 && (image.charAt(0) == '$' || image.charAt(0) == '#') && image.charAt(1) == '{') {
                 //popup completion
-                return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
+                return true;
             }
         }
-        return 0;
+        return false;
+    }
+
+    private boolean checkElCompletionOpen(TokenHierarchy th, int offset) {
+        List<TokenSequence> tsl = th.embeddedTokenSequences(offset, true);
+        for(TokenSequence ts : tsl) {
+            if(ts.language() == ELTokenId.language()) {
+                ts.move(offset);
+                if(ts.movePrevious()) {
+                    if(ts.token().id() == ELTokenId.DOT) {
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+        return false;
     }
 
     public CompletionTask createTask(int type, JTextComponent component) {
