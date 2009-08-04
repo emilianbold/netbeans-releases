@@ -58,19 +58,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
-import org.netbeans.modules.dlight.api.stack.OpenInEditor;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.module.dlight.threads.api.OpenInEditor;
+import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
+import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
