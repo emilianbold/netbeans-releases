@@ -199,6 +199,8 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
                 } else if( null != urlToLoad ) {
                     setURL(urlToLoad);
                 }
+                urlToLoad = null;
+                strUrlToLoad = null;
             }
         });
     }
