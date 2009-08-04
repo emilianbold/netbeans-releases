@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.web.jsf.api.editor;
 
 
 import java.io.IOException;
@@ -67,8 +67,8 @@ public class JSFEditorUtilities {
     /** The constant from XML editor
      */
     // The constant are taken from class org.netbeans.modules.xml.text.syntax.XMLTokenIDs
-    protected final static int XML_ELEMENT = 4;
-    protected final static int XML_TEXT = 1;
+    public  final static int XML_ELEMENT = 4;
+    public  final static int XML_TEXT = 1;
     public final static String END_LINE = System.getProperty("line.separator");  //NOI18N
     
     /** Returns the value of from-view-id element of navigation rule definition on the offset possition.

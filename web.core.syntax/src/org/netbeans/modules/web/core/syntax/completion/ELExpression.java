@@ -52,7 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -60,19 +60,18 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileObject;
 
-/**
- *
+/** 
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
@@ -98,12 +97,12 @@ public class ELExpression {
     public static final int EL_UNKNOWN = 5;
     /** The expression - result of the parsing */
     private String expression;
-    protected JspSyntaxSupport sup;
     private String replace;
     private boolean isDefferedExecution = false;
+    private Document doc;
 
-    public ELExpression(JspSyntaxSupport sup) {
-        this.sup = sup;
+    public ELExpression(Document doc) {
+        this.doc = doc;
         this.replace = "";
     }
 
@@ -113,7 +112,7 @@ public class ELExpression {
      *  is parsed.
      */
     public int parse(int offset) {
-        BaseDocument document = sup.getDocument();
+        BaseDocument document = (BaseDocument) doc;
         String value = null;
         document.readLock();
         try {
@@ -142,7 +141,7 @@ public class ELExpression {
                 }
             }
 
-            if(ts == null) {
+            if (ts == null) {
                 return NOT_EL;
             }
 
@@ -191,7 +190,7 @@ public class ELExpression {
                 }
             }
 
-            if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+            if (ELTokenCategories.OPERATORS.hasCategory(token.id()) || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
                 return EL_START;
             }
 
@@ -226,16 +225,6 @@ public class ELExpression {
     public String getObjectClass() {
         String beanName = extractBeanName();
 
-        BeanData[] allBeans = sup.getBeanData();
-        if (allBeans != null) {
-            for (BeanData beanData : allBeans) {
-                if (beanData.getId().equals(beanName)) {
-                    return beanData.getClassName();
-                }
-
-            }
-        }
-
         // not found within declared beans, try implicit objects
         ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
 
@@ -246,8 +235,17 @@ public class ELExpression {
         return null;
     }
 
+    protected FileObject getFileObject() {
+        return DataLoadersBridge.getDefault().getFileObject(doc);
+    }
+            
+
     protected void runTask(CancellableTask task) {
-        ClasspathInfo cpInfo = ClasspathInfo.create(sup.getFileObject());
+        
+        if(getFileObject() == null) {
+            return ;
+        }
+        ClasspathInfo cpInfo = ClasspathInfo.create(getFileObject());
         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
 
         try {
@@ -258,7 +256,7 @@ public class ELExpression {
 
     }
 
-    public String extractBeanName() {
+    protected String extractBeanName() {
         String elExp = getExpression();
 
         if (elExp != null && !elExp.equals("")) {
@@ -474,21 +472,6 @@ public class ELExpression {
 
         if (bracketIndex == -1 && dotIndex > -1) {
             String first = expr.substring(0, dotIndex);
-            BeanData[] beans = sup.getBeanData();
-            if (beans != null) {
-                for (int i = 0; i <
-                        beans.length; i++) {
-                    if (beans[i].getId().equals(first)) {
-                        value = EL_BEAN;
-                        continue;
-
-                    }
-
-
-
-
-                }
-            }
             if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size() > 0) {
                 value = EL_IMPLICIT;
             }

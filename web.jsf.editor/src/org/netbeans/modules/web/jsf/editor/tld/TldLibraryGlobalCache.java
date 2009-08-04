@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * TODO use indexing
@@ -108,9 +107,9 @@ public class TldLibraryGlobalCache {
             DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
             try {
                 DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/tld/resources/composite.tld"))); //NOI18N
+                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
                 DEFAULT_LIBRARIES.add(
-                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/tld/resources/ui.tld"))); //NOI18N
+                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
             } catch (TldLibraryException ex) {
                 //warn user, this should not happen
                 Logger.global.warning(ex.getMessage());

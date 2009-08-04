@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.modules.web.jsf.api.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;

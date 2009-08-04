@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +47,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -59,10 +60,10 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  * @author Po-Ting Wu
  */
-public class JSFELCompletionProvider implements CompletionProvider{
+public class JsfElCompletionProvider implements CompletionProvider{
     
     /** Creates a new instance of JSFELCompletionProvider */
-    public JSFELCompletionProvider() {
+    public JsfElCompletionProvider() {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
@@ -85,20 +86,19 @@ public class JSFELCompletionProvider implements CompletionProvider{
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int offset) {
-            JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = null;
             if (fObject != null)
                 wm = WebModule.getWebModule(fObject);
-            if (sup != null && wm != null){
-                JSFELExpression elExpr = new JSFELExpression (wm, sup);
+            if (wm != null){
+                JsfElExpression elExpr = new JsfElExpression (wm, doc);
                 ArrayList complItems = new ArrayList();
 
                 int elParseType = elExpr.parse(offset);
                 int anchor = offset - elExpr.getReplace().length();
                 
                 switch (elParseType){
-                    case JSFELExpression.EL_START:
+                    case JsfElExpression.EL_START:
                         String replace = elExpr.getReplace();
 
                         // check managed beans
@@ -106,7 +106,7 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         for (ManagedBean bean : beans) {
                             String beanName = bean.getManagedBeanName();
                             if ((beanName != null) && beanName.startsWith(replace)){
-                                complItems.add(new JSFResultItem.JSFBean(beanName, anchor, bean.getManagedBeanClass()));
+                                complItems.add(new JsfElCompletionItem.JsfBean(beanName, anchor, bean.getManagedBeanClass()));
                             }
                         }
                         // check bundles properties
@@ -114,18 +114,18 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         for (ResourceBundle bundle : bundles) {
                             String var = bundle.getVar();
                             if ((var != null) && var.startsWith(replace)) {
-                                complItems.add(new JSFResultItem.JSFResourceBundle(var, anchor, bundle.getBaseName()));
+                                complItems.add(new JsfElCompletionItem.JsfResourceBundle(var, anchor, bundle.getBaseName()));
                             }
                         }
                         break;
-                    case JSFELExpression.EL_JSF_BEAN:
+                    case JsfElExpression.EL_JSF_BEAN:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
                         items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
                         break;
-                    case JSFELExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundleName, anchor, elExpr.getReplace());
+                    case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
+                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
                 }

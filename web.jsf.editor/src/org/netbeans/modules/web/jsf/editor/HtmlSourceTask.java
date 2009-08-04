@@ -54,7 +54,6 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 
 /**
  * 
@@ -93,28 +92,26 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
         //process only xhtml content
-        if (result.getHtmlVersion().isXhtml()) {
-            Source source = result.getSnapshot().getSource();
-            Map<String, String> namespaces = result.getNamespaces();
+        Source source = result.getSnapshot().getSource();
+        Map<String, String> namespaces = result.getNamespaces();
 
-            //search for a jsf library namespace and if found activate the JsfSupport
-            for (String uri : namespaces.keySet()) {
-                if (JsfSupport.isJSFLibrary(uri)) {
-                    JsfSupport.findFor(source);
-                    break;
-                }
+        //search for a jsf library namespace and if found activate the JsfSupport
+        for (String uri : namespaces.keySet()) {
+            if (JsfSupport.isJSFLibrary(uri)) {
+                JsfSupport.findFor(source);
+                break;
             }
-
-            //enable EL support it this xhtml file
-            //TODO possibly add if(jsf_used()) { //enable el }
-            Document doc = result.getSnapshot().getSource().getDocument(true);
-            if (doc.getProperty(InputAttributes.class) == null) {
-                InputAttributes inputAttributes = new InputAttributes();
-                inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
-                doc.putProperty(InputAttributes.class, inputAttributes);
-            }
-
         }
+
+        //enable EL support it this xhtml file
+        //TODO possibly add if(jsf_used()) { //enable el }
+        Document doc = result.getSnapshot().getSource().getDocument(true);
+        if (doc.getProperty(InputAttributes.class) == null) {
+            InputAttributes inputAttributes = new InputAttributes();
+            inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
+            doc.putProperty(InputAttributes.class, inputAttributes);
+        }
+
 
 
     }

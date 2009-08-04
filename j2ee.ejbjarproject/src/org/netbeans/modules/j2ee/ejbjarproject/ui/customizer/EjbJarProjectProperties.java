@@ -140,7 +140,7 @@ final public class EjbJarProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
-    public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embedableejb.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N

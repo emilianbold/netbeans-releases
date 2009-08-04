@@ -47,24 +47,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation.
@@ -76,6 +79,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static boolean activated = false;
+    private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
 
     static synchronized void activate() {
         if (!activated) {
@@ -90,55 +94,54 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         //highlight JSF tags
         highlightJsfTags(result, highlights);
-        //highlight Expression Language
-        highlightEL(result, highlights);
+
+        //check if the EL is enabled in the file and enables it if not
+        checkELEnabled(result);
 
         return highlights;
 
     }
 
-    private void highlightEL(HtmlParserResult result, final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
-        TokenHierarchy th = TokenHierarchy.get(result.getSnapshot().getSource().getDocument(true));
-        TokenSequence<HTMLTokenId> ts = th.tokenSequence();
-        ts.moveStart();
-        while (ts.moveNext()) {
-            if (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.VALUE) {
-                TokenSequence<ELTokenId> elts = ts.embedded(ELTokenId.language());
-                if (elts != null) {
-                    //if the token has EL embedding, highlight it
-                    elts.moveStart();
-                    int from = ts.offset();
-                    int to = ts.offset() + ts.token().length();
+    private void checkELEnabled(HtmlParserResult result) {
+        Document doc = result.getSnapshot().getSource().getDocument(true);
+        InputAttributes inputAttributes = (InputAttributes) doc.getProperty(InputAttributes.class);
+        if (inputAttributes == null) {
+            inputAttributes = new InputAttributes();
+            doc.putProperty(InputAttributes.class, inputAttributes);
+        }
+        if (inputAttributes.getValue(LanguagePath.get(XhtmlElTokenId.language()), EL_ENABLED_KEY) == null) {
+            inputAttributes.setValue(XhtmlElTokenId.language(), EL_ENABLED_KEY, new Object(), false);
 
-                    if (ts.token().id() == HTMLTokenId.VALUE) {
-                        if (ts.token().text().charAt(0) == '"' ||
-                                ts.token().text().charAt(0) == '\'') {
-                            //sustract the qutations
-                            from += 1;
-                            to -= 1;
-                        }
-                    }
-
-                    //adjust the range based on the real embedding
-                    if (elts.moveNext()) {
-                        from = elts.offset();
-                        from -= 2; //substract the ${ length which is not with the embedding but should be highlighted
-                    }
-                    elts.moveEnd();
-                    if (elts.movePrevious()) {
-                        to = elts.offset() + elts.token().length();
-                        to += 1; //add } length
-                    }
-
-                    highlights.put(new OffsetRange(from, to), ColoringAttributes.FIELD_SET);
-                }
-            }
+            //refresh token hierarchy so the EL becomes lexed
+            recolor(doc);
         }
     }
 
+    private void recolor(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.extWriteLock();
+                try {
+                    MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                    if (mti != null) {
+                        mti.tokenHierarchyControl().rebuild();
+                    }
+                } finally {
+                    nbdoc.extWriteUnlock();
+                }
+            }
+        });
+    }
+
     private void highlightJsfTags(HtmlParserResult result, final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
-        Source source = result.getSnapshot().getSource();
+        final Snapshot snapshot = result.getSnapshot();
+        Source source = snapshot.getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+        if(jsfs == null) {
+            return;
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
@@ -161,7 +164,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
                             if (node.getNamespacePrefix() != null) {
                                 Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
-                                highlight(node, highlights, coloring);
+                                highlight(snapshot, node, highlights, coloring);
                             }
                         }
                     }
@@ -171,15 +174,19 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void highlight(AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) {
+    private void highlight(Snapshot s, AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) {
         // "<div" id='x'> part
         int prefixLen = node.type() == AstNode.NodeType.OPEN_TAG ? 1 : 2; //"<" open; "</" close
-        hls.put(new OffsetRange(node.startOffset(), node.startOffset() + node.name().length() + prefixLen /* tag open symbol len */),
+        hls.put(getDocumentOffsetRange(s, node.startOffset(), node.startOffset() + node.name().length() + prefixLen /* tag open symbol len */),
                 cas);
         // <div id='x'">" part
-        hls.put(new OffsetRange(node.endOffset() - 1, node.endOffset()),
+        hls.put(getDocumentOffsetRange(s, node.endOffset() - 1, node.endOffset()),
                 cas);
 
+    }
+
+    private OffsetRange getDocumentOffsetRange(Snapshot s, int astFrom, int astTo) {
+        return new OffsetRange(s.getOriginalOffset(astFrom), s.getOriginalOffset(astTo));
     }
 
     @Override
@@ -187,6 +194,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+         if(jsfs == null) {
+            return Collections.emptyList();
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
@@ -273,6 +283,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+        if(jsfs == null) {
+            return Collections.emptyList();
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
