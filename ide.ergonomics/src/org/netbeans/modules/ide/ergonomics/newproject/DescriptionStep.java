@@ -138,7 +138,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     implements Runnable, PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent evt) {
             if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
-                RequestProcessor.getDefault().post(this);
+                FeatureManager.getInstance().create(this).schedule(0);
             }
         }
         public void run () {
@@ -231,7 +231,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             if (templateResource.startsWith("Servers/WizardProvider")) {
                 try {
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-                    Class clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
+                    Class<?> clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
                     Collection c = Lookups.forPath("J2EE/DeploymentPlugins/" +
                             templateResource.substring(templateResource.indexOf('-') + 1, templateResource.indexOf('.')) + "/").lookupAll(clazz);
                     if (!c.isEmpty()) {
