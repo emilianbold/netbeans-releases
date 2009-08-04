@@ -1812,7 +1812,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // before the reload.
         if (!isAlreadyModified() && !revertingUndoOrReloading) {
             setAlreadyModified(true);
-
+            
             if (!notifyModified()) {
                 setAlreadyModified(false);
                 revertingUndoOrReloading = true;
@@ -1874,7 +1874,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             locked = false;
         } catch (IOException e) { // locking failed
-
+            //#169695: Added exception log to investigate
+            ERR.log( Level.INFO, "Could not lock document", e);
+            //#169695: END
             String message = null;
 
             if ((Object)e.getMessage() != e.getLocalizedMessage()) {

@@ -304,7 +304,7 @@ public final class ProjectManager {
                             // IOException or a runtime exception interrupted.
                             LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
                             synchronized (dir2Proj) {
-                                assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
+                                assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory)) : dir2Proj.get(projectDirectory);
                                 dir2Proj.remove(projectDirectory);
                                 dir2Proj.notifyAll(); // make sure other threads can continue
                             }
