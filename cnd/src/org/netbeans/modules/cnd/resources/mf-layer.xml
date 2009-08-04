@@ -188,6 +188,9 @@ made subject to such option by the copyright holder.
     </folder>	<!-- Services -->
     <folder name="CND">
         <folder name="ToolChain">
+            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
+                <attr name="position" intvalue="1000"/>
+            </file>
             <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
                 <attr name="position" intvalue="1100"/>
                 <attr name="extends" stringvalue="SunStudio"/>
@@ -214,9 +217,6 @@ made subject to such option by the copyright holder.
             <file name="SunStudio_12.1.xml" url="toolchain/SunStudio_12.1.xml">
                 <attr name="position" intvalue="1700"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
-                <attr name="position" intvalue="2000"/>
             </file>
             <file name="SunStudio_Linux.xml" url="toolchain/SunStudio_Linux.xml">
                 <attr name="position" intvalue="2050"/>

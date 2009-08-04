@@ -175,6 +175,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
      *        column, number 2 means second etc.
      * @since 1.3
      */
+    @SuppressWarnings("deprecation")
     public void setColumnSorted(ETableColumn etc, boolean ascending, int newRank) {
         if (! etc.isSortingAllowed()) {
             return;
@@ -196,6 +197,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     /**
      *
      */
+    @SuppressWarnings("deprecation")
     void toggleSortedColumn(ETableColumn etc, boolean cleanAll) {
         if (! etc.isSortingAllowed()) {
             return;
@@ -247,6 +249,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     /**
      * Makes the whole table unsorted.
      */
+    @SuppressWarnings("deprecation")
     public void clearSortedColumns() {
         for (Iterator it = sortedColumns.iterator(); it.hasNext(); ) {
             Object o = it.next();
@@ -261,6 +264,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     /**
      * Makes the whole table unsorted except for one column.
      */
+    @SuppressWarnings("deprecation")
     void clearSortedColumns(TableColumn notThisOne) {
         boolean wasSorted = sortedColumns.contains(notThisOne);
         for (Iterator it = sortedColumns.iterator(); it.hasNext(); ) {

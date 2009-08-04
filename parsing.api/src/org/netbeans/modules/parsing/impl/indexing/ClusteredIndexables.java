@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,7 +58,7 @@ public final class ClusteredIndexables {
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public ClusteredIndexables(List<IndexableImpl> indexables) {
+    public ClusteredIndexables(Collection<IndexableImpl> indexables) {
         Parameters.notNull("indexables", indexables);
         this.indexables = new LinkedList<IndexableImpl>(indexables);
     }

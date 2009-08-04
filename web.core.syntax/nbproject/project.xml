@@ -562,10 +562,9 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
-                <!-- https://nbfaceletssupport.dev.java.net/ >>> -->
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.simplesnippets</friend>
-                <friend>org.netbeans.modules.web.facelets</friend>
-                <!-- <<< -->
+                <package>org.netbeans.modules.web.core.syntax.completion</package>
                 <package>org.netbeans.modules.web.core.syntax.spi</package>
             </friend-packages>
         </data>

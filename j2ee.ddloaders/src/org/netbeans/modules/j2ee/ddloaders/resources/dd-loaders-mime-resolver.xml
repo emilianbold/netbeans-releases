@@ -48,22 +48,6 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="xml"/>
-        <resolver mime="text/x-dd-servlet2.2">
-            <xml-rule>
-            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"/>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="xml"/>
-        <resolver mime="text/x-dd-servlet2.3">
-            <xml-rule>
-            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"/>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="xml"/>
         <resolver mime="text/x-dd-servlet2.4">
             <xml-rule>
             	<element name="web-app" ns="http://java.sun.com/xml/ns/j2ee">

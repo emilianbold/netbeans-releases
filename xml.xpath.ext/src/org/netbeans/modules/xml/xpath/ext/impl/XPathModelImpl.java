@@ -81,7 +81,6 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder.AttributeHolder;
@@ -120,8 +119,6 @@ public class XPathModelImpl implements XPathModel {
 
     // The static instance is used because it is stateless
     private static FilInStubVisitor sFilInStubVisitor = new FilInStubVisitor();
-
-    private CachingSchemaSearchVisitor mCachingSchemaSearchVisitor;
 
     /** Instantiates a new object. */
     public XPathModelImpl() {
@@ -257,10 +254,6 @@ public class XPathModelImpl implements XPathModel {
         mExtFuncResolver = extFuncResolver;
     }
 
-    public void setCachingSchemaSearchVisitor(CachingSchemaSearchVisitor visitor) {
-        mCachingSchemaSearchVisitor = visitor;
-    }
-
     public XPathCastResolver getXPathCastResolver() {
         return myXPathCastResolver;
     }
@@ -383,8 +376,7 @@ public class XPathModelImpl implements XPathModel {
                     List<SchemaCompHolder> found = XPathUtils.getChildren(
                             this, parentContext,
                             parentCompHolder.getSchemaComponent(),
-                            nodeName, nsUri, isAttribute,
-                            mCachingSchemaSearchVisitor);
+                            nodeName, nsUri, isAttribute);
                     //
                     if (found != null) {
                         for (SchemaCompHolder compH : found) {
@@ -403,8 +395,7 @@ public class XPathModelImpl implements XPathModel {
                     List<SchemaCompHolder> found = XPathUtils.getChildren(
                             this, parentContext,
                             parentCH.getSchemaComponent(),
-                            nodeName, nsUri, isAttribute,
-                            mCachingSchemaSearchVisitor);
+                            nodeName, nsUri, isAttribute);
                     for (SchemaCompHolder sCompHolder : found) {
                         SchemaCompPair newPair =
                                 new SchemaCompPair(sCompHolder, parentCH);
@@ -434,8 +425,7 @@ public class XPathModelImpl implements XPathModel {
                     Schema schema = model.getSchema();
                     List<SchemaCompHolder> found = XPathUtils.getChildren(
                             this, parentContext, schema,
-                            nodeName, nsUri, isAttribute,
-                            mCachingSchemaSearchVisitor);
+                            nodeName, nsUri, isAttribute);
                     for (SchemaCompHolder foundCompHolder : found) {
                         assert foundCompHolder instanceof ElementHolder ||
                                 foundCompHolder instanceof AttributeHolder;

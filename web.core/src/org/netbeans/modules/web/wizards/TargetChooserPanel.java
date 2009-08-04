@@ -79,7 +79,11 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     private FileType fileType;
     private TemplateWizard templateWizard;
     private Profile j2eeVersion;
-    
+
+    enum PreferredLanguage {
+        JSP,Facelets
+    }
+
     //TODO how to add [,] to the regular expression?
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
 
@@ -174,6 +178,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType)) {
             if (isSegment()) ext+="f"; //NOI18N
             else if (isXml()) ext+="x"; //NOI18N
+            else if (isFacelets()) ext="xhtml"; //NOI18N
         }
         
         String errorMessage = Utilities.canUseFileName (file, gui.getRelativeTargetFolder(), targetName, ext);
@@ -228,6 +233,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             if (FileType.JSP.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_JspFile"));
+            else if (FileType.JSF.equals(fileType))
+                templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
+                    NbBundle.getMessage(TargetChooserPanel.class, "TITLE_JsfFile"));
             else if (FileType.TAG.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_TagFile"));
@@ -278,7 +286,11 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     boolean isSegment() {
         return gui.isSegment();
     }
-    
+
+    boolean isFacelets () {
+        return gui.isFacelets();
+    }
+
     String getUri() {
         return gui.getUri();
     }

@@ -67,10 +67,10 @@ import org.w3c.dom.Document;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
+import org.openide.util.EditableProperties;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's

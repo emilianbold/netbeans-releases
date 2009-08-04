@@ -225,7 +225,11 @@ public class Operator {
                              if (breakpointsDisabled) {
                                  if (EventSetWrapper.suspendPolicy(eventSet) == EventRequest.SUSPEND_ALL) {
                                     staledEvents.add(eventSet);
-                                    EventSetWrapper.resume(eventSet);
+                                    try {
+                                        EventSetWrapper.resume(eventSet);
+                                    } catch (IllegalThreadStateExceptionWrapper itex) {
+                                        logger.throwing(Operator.class.getName(), "loop", itex);
+                                    }
                                     if (logger.isLoggable(Level.FINE)) {
                                         logger.fine("RESUMING "+eventSet);
                                     }
@@ -313,7 +317,11 @@ public class Operator {
                          if (!silent && suspendedThread != null) {
                              resume = resume && suspendedThread.notifyToBeResumedNoFire();
                          }
-                         EventSetWrapper.resume(eventSet);
+                         try {
+                            EventSetWrapper.resume(eventSet);
+                         } catch (IllegalThreadStateExceptionWrapper itex) {
+                             logger.throwing(Operator.class.getName(), "loop", itex);
+                         }
                          continue;
                      }
                      if (logger.isLoggable(Level.FINE)) {
@@ -444,8 +452,11 @@ public class Operator {
                      if (!startEventOnly) {
                          if (resume) {
                              //resumeLock.writeLock().lock();
-                             //try {
-                                EventSetWrapper.resume(eventSet);
+                             try {
+                                 EventSetWrapper.resume(eventSet);
+                             } catch (IllegalThreadStateExceptionWrapper itex) {
+                                 logger.throwing(Operator.class.getName(), "loop", itex);
+                             }
                              //} finally {
                              //    resumeLock.writeLock().unlock();
                              //}

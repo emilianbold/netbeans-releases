@@ -164,20 +164,24 @@ final class RemoteFileSystem extends AbstractFileSystem implements
                 LOG.log(Level.FINE, "non-plain dir listing: {0}", url);
                 return new String[0];
             }
-            InputStream is = conn.getInputStream();
-            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
             java.util.List<String> kids = new ArrayList<String>();
-            String line;
-            while ((line = r.readLine()) != null) {
-                if (line.endsWith("/")) { // NOI18N
-                    String n = line.substring(0, line.length() - 1);
-                    kids.add(n);
-                } else {
-                    kids.add(line);
-                    synchronized (nonDirs) {
-                        nonDirs.add(fSlash + line);
+            InputStream is = conn.getInputStream();
+            try {
+                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
+                String line;
+                while ((line = r.readLine()) != null) {
+                    if (line.endsWith("/")) { // NOI18N
+                        String n = line.substring(0, line.length() - 1);
+                        kids.add(n);
+                    } else {
+                        kids.add(line);
+                        synchronized (nonDirs) {
+                            nonDirs.add(fSlash + line);
+                        }
                     }
                 }
+            } finally {
+                is.close();
             }
             LOG.log(Level.FINE, "children: {0} -> {1}", new Object[] {url, kids});
             return kids.toArray(new String[kids.size()]);

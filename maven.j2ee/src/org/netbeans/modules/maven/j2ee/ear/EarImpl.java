@@ -108,7 +108,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     private Project project;
     private EarModuleProviderImpl provider;
     private MetadataModel<ApplicationMetadata> metadataModel;
-    private NbMavenProject mavenproject;
+    private final NbMavenProject mavenproject;
 
     /** Creates a new instance of EarImpl */
     EarImpl(Project proj, EarModuleProviderImpl prov) {
@@ -799,9 +799,9 @@ class EarImpl implements EarImplementation, EarImplementation2,
 
 
     private static class ProxyJ2eeModule implements J2eeModuleImplementation2 {
-        private J2eeModule module;
-        private EarImpl.MavenModule mavenModule;
-        private String fileNameMapping;
+        private final J2eeModule module;
+        private final EarImpl.MavenModule mavenModule;
+        private final String fileNameMapping;
 
         ProxyJ2eeModule(J2eeModule module, EarImpl.MavenModule mavModule, String fileNameMapping) {
             this.mavenModule = mavModule;

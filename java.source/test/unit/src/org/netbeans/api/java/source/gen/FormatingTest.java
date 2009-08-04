@@ -2762,11 +2762,11 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n\n" +
             "    public void taragui(int x, int y) {\n" +
-            "        for (int i = 0; i <\n" +
-            "                x; i++) {\n" +
-            "            y += (y ^\n" +
-            "                    123) <<\n" +
-            "                    2;\n" +
+            "        for (int i = 0; i\n" +
+            "                < x; i++) {\n" +
+            "            y += (y\n" +
+            "                    ^ 123)\n" +
+            "                    << 2;\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -2777,11 +2777,11 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n\n" +
             "    public void taragui(int x, int y) {\n" +
-            "        for (int i = 0; i <\n" +
-            "                        x; i++) {\n" +
-            "            y += (y ^\n" +
-            "                  123) <<\n" +
-            "                 2;\n" +
+            "        for (int i = 0; i\n" +
+            "                        < x; i++) {\n" +
+            "            y += (y\n" +
+            "                  ^ 123)\n" +
+            "                 << 2;\n" +
             "        }\n" +
             "    }\n" +
             "}\n";

@@ -232,9 +232,15 @@ public final class SessionGenerator {
 
     private void generateEJB21Xml() throws IOException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
-        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
+        FileObject ddFO = ejbModule.getDeploymentDescriptor();
+        if (ddFO == null && ejbModule.getMetaInf() != null){
+            String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";    //NOI18N
+            ddFO = FileUtil.copyFile(FileUtil.getConfigFile(resource), ejbModule.getMetaInf(), "ejb-jar"); //NOI18N
+        }
+        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFO); // EJB 2.1
         if (ejbJar == null) {
-            Logger.getLogger(SessionGenerator.class.getName()).warning("EjbJar not found for " + FileUtil.getFileDisplayName(ejbModule.getDeploymentDescriptor()));
+            String fileName = ddFO == null ? null : FileUtil.getFileDisplayName(ddFO);
+            Logger.getLogger(SessionGenerator.class.getName()).warning("EjbJar not found for " + fileName); //NOI18N
             return;
         }
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();

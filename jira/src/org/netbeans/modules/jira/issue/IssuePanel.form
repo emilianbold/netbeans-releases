@@ -38,6 +38,9 @@
       <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
     </Property>
   </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,3,8,0,0,2,84"/>
+  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -140,13 +143,14 @@
                   </Group>
                   <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="customFieldPanelLeft" max="32767" attributes="1"/>
                           <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="environmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="attachmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="subtaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="originalEstimateLabelNew" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateLabelNew" alignment="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -161,7 +165,8 @@
                           <Component id="dummyAttachmentPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="dummySubtaskPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="originalEstimateFieldNew" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="originalEstimateHint" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateHint" alignment="0" max="32767" attributes="1"/>
+                          <Component id="customFieldPanelRight" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -277,17 +282,20 @@
                   <Component id="environmentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="environmentScrollPane" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="customFieldPanelRight" min="-2" max="-2" attributes="0"/>
+                  <Component id="customFieldPanelLeft" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="addCommentScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="addCommentScrollPane" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="originalEstimateFieldNew" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="originalEstimateLabelNew" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="originalEstimateFieldNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="originalEstimateLabelNew" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="originalEstimateHint" min="-2" max="-2" attributes="0"/>
@@ -305,6 +313,14 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Container class="javax.swing.JPanel" name="customFieldPanelLeft">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Container class="javax.swing.JPanel" name="customFieldPanelRight">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
     <Component class="javax.swing.JLabel" name="headerLabel">
     </Component>
     <Component class="javax.swing.JLabel" name="projectLabel">

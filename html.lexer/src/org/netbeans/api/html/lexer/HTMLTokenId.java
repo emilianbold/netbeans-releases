@@ -50,7 +50,6 @@ import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.html.lexer.HtmlLexer;
-import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -101,23 +100,24 @@ public enum HTMLTokenId implements TokenId {
     TAG_OPEN_SYMBOL("tag"),
     /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
     TAG_CLOSE_SYMBOL("tag");
+
     private final String primaryCategory;
-    private static Language EL_LANGUAGE;
+
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
 
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
-    private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
 
+    private static final Language<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
         @Override
         protected Collection<HTMLTokenId> createTokenIds() {
             return EnumSet.allOf(HTMLTokenId.class);
         }
 
         @Override
-        protected Map<String, Collection<HTMLTokenId>> createTokenCategories() {
+        protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
             //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
             // Additional literals being a lexical error
             //cats.put("error", EnumSet.of());
@@ -129,28 +129,18 @@ public enum HTMLTokenId implements TokenId {
             return new HtmlLexer(info);
         }
 
-        @Override
-        protected EmbeddingPresence embeddingPresence(HTMLTokenId id) {
-            if (id == TEXT || id == VALUE) {
-                //always query TEXT and VALUE tokens for embedding
-                return EmbeddingPresence.ALWAYS_QUERY;
-            } else {
-                return super.embeddingPresence(id);
-            }
-        }
-
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
-                Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             String mimeType = null;
-            switch (token.id()) {
+            switch(token.id()) {
                 // BEGIN TOR MODIFICATIONS
                 case VALUE_JAVASCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
-                    if (mimeType != null) {
+                    if(mimeType != null) {
                         Language lang = Language.find(mimeType);
-                        if (lang == null) {
+                        if(lang == null) {
                             return null; //no language found
                         } else {
                             // TODO:
@@ -160,7 +150,7 @@ public enum HTMLTokenId implements TokenId {
                             // Marek: AFAIK value of the onSomething methods is always javascript
                             // so having the attribute unqouted doesn't make much sense -  the html spec
                             // allows only a-zA-Z characters in unqouted values so I belive
-                            // it is not possible to write reasonable js code - it ususally 
+                            // it is not possible to write reasonable js code - it ususally
                             // contains some whitespaces, brackets, quotations etc.
 
                             PartType ptype = token.partType();
@@ -173,9 +163,9 @@ public enum HTMLTokenId implements TokenId {
                 // END TOR MODIFICATIONS
                 case VALUE_CSS:
                     mimeType = STYLE_MIMETYPE;
-                    if (mimeType != null) {
+                    if(mimeType != null) {
                         Language lang = Language.find(mimeType);
-                        if (lang == null) {
+                        if(lang == null) {
                             return null; //no language found
                         } else {
                             PartType ptype = token.partType();
@@ -191,42 +181,16 @@ public enum HTMLTokenId implements TokenId {
                 case STYLE:
                     mimeType = STYLE_MIMETYPE;
                     break;
-
-                //embedded EL support
-                //TODO possible redo this EL support by some html lexer plugin
-                case TEXT:
-                    if (isELEnabled(inputAttributes)) {
-                        //EL enabled for this token hierarchy - document
-                        return createELEmbedding(token, 0, 0);
-                    }
-                    break;
-                case VALUE:
-                    //attribute value
-                    if (isELEnabled(inputAttributes)) {
-                        int startSkipLen = 0;
-                        int endSkipLen = 0;
-                        CharSequence tokenImage = token.text();
-                        if ((tokenImage.charAt(0) == '"' || //NOI18N
-                                tokenImage.charAt(0) == '\'')) { //NOI18N
-                            startSkipLen = 1;
-                        }
-                        if ((tokenImage.charAt(tokenImage.length() - 1) == '"' || //NOI18N
-                                tokenImage.charAt(tokenImage.length() - 1) == '\'')) { //NOI18N
-                            endSkipLen = 1;
-                        }
-                        return createELEmbedding(token, startSkipLen, endSkipLen);
-                    }
-                    break;
             }
-            if (mimeType != null) {
+            if(mimeType != null) {
                 Language lang = Language.find(mimeType);
-                if (lang == null) {
+                if(lang == null) {
                     return null; //no language found
                 } else {
                     return LanguageEmbedding.create(lang, 0, 0, true);
                 }
             }
-            return null;
+            return  null;
         }
 
         @Override
@@ -254,31 +218,6 @@ public enum HTMLTokenId implements TokenId {
      */
     public String primaryCategory() {
         return primaryCategory;
-    }
-
-    private static synchronized Language getELLanguage() {
-        if (EL_LANGUAGE == null) {
-            EL_LANGUAGE = Language.find("text/x-el"); //NOI18N
-        }
-        return EL_LANGUAGE;
-    }
-
-    private static LanguageEmbedding createELEmbedding(Token token, int startSkipLen, int endSkipLen) {
-        CharSequence tokenImage = token.text();
-
-        if (tokenImage.length() - startSkipLen - endSkipLen > 2) { //at least two chars in the token
-            if ((tokenImage.charAt(startSkipLen) == '$' || tokenImage.charAt(startSkipLen) == '#') && //NOI18N
-                    tokenImage.charAt(startSkipLen + 1) == '{' && //NOI18N
-                    tokenImage.charAt(token.length() - 1 - endSkipLen) == '}') { //NOI18N
-
-                return LanguageEmbedding.create(getELLanguage(), startSkipLen + 2, endSkipLen + 1); //+ '${'.len - '}'.len - those must not be a part of the EL
-                }
-        }
-        return null;
-    }
-
-    private static boolean isELEnabled(InputAttributes inputAttributes) {
-        return inputAttributes == null ? false : inputAttributes.getValue(LanguagePath.get(HTMLTokenId.language), "enable el") != null; //NOI18N
     }
 
 }

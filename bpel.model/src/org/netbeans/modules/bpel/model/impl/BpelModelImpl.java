@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
@@ -56,6 +55,7 @@ import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventSupport;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.references.RefCacheSupport;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.bpel.model.impl.events.TreeCreatedEvent;
 import org.netbeans.modules.bpel.model.spi.EntityFactory;
@@ -69,7 +69,6 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -169,6 +168,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.xam.Model#addUndoableEditListener(javax.swing.event.UndoableEditListener)
      */
+    @Override
     public void addUndoableEditListener( UndoableEditListener listener ) {
         myUndoSupport.addUndoableEditListener(listener);
     }
@@ -177,6 +177,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.xam.Model#removeUndoableEditListener(javax.swing.event.UndoableEditListener)
      */
+    @Override
     public void removeUndoableEditListener( UndoableEditListener listener ) {
         myUndoSupport.removeUndoableEditListener(listener);
     }
@@ -413,6 +414,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.xam.AbstractModel#getQNames()
      */
+    @Override
     public Set<QName> getQNames() {
         return getEntityRegistry().getAllQNames();
     }
@@ -538,7 +540,15 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
         }
         return false;
     }
-    
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public RefCacheSupport getRefCacheSupport() {
+        return mRefCacheSupport;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -718,6 +728,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
         //getXDMAccess().getReferenceModel().setPretty(true);
         myXDMListener = new XDMListener();  
         myChildBuilder = new BpelChildEntitiesBuilder( this );
+        mRefCacheSupport = new RefCacheSupport(this);
         
         getAccess().setAutoSync(true);
     }
@@ -1071,5 +1082,8 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     private BpelChildEntitiesBuilder myChildBuilder;
     
     private Element myAnotherRoot;
+
+    private RefCacheSupport mRefCacheSupport;
+
 
 }

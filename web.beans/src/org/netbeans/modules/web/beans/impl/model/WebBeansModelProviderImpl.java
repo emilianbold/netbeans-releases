@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -147,21 +149,28 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
-    public List<AnnotationMirror> getBindings( Element element ) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<AnnotationMirror> getBindings( Element element ,
+        AbstractModelImplementation modelImpl )
+    {
+        WebBeansModelImplementation impl = getImplementation( modelImpl);
+        if ( impl == null ){
+            return Collections.emptyList();
+        }
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        List<? extends AnnotationMirror> annotations = impl.getHelper().
+            getCompilationController().getElements().getAllAnnotationMirrors( element);
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType type = annotationMirror.getAnnotationType();
+            TypeElement annotationElement = (TypeElement)type.asElement();
+            if ( isBinding( annotationElement , impl.getHelper()) ){
+                result.add( annotationMirror );
+            }
+        }
+        return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getDeploymentType(javax.lang.model.element.Element)
-     */
-    public AnnotationMirror getDeploymentType( Element element ) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
     private WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
