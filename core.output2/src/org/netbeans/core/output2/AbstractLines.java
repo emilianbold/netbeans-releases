@@ -52,9 +52,9 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.UIManager;
@@ -72,19 +72,19 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
     /** Maps output listeners to the lines they are associated with */
-    IntMap linesToListeners;
-    /** Mapping of explicitly set colors to line numbers */
-    IntMap linesToColors;
+    IntMap lineWithListenerToInfo;
+
+    /** line index to LineInfo */
+    IntMap linesToInfos;
 
     /** longest line length (in chars)*/
     private int longestLineLen = 0;
 
     private int knownCharsPerLine = -1;
-    
+
     /** cache of logical (wrapped) lines count, used to transform logical (wrapped)
      * line index to physical (real) line index */
     private SparseIntList knownLogicalLineCounts = null;
-    private IntList errLines = null;
 
     /** last storage size (after dispose), in bytes */
     private int lastStorageSize = -1;
@@ -178,26 +178,6 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    private int lastErrLineMarked = -1;
-    void markErr() {
-        if (isDisposed() || getStorage().isClosed()) {
-            return;
-        }
-        if (errLines == null) {
-            errLines = new IntList(20);
-        }
-        int linecount = getLineCount();
-        //Check this - for calls to OutputWriter.write(byte b), we may still be on the same line as last time
-        if (linecount != lastErrLineMarked) {
-            errLines.add(linecount == 0 ? 0 : linecount - (isLastLineFinished() ? 2 : 1));
-            lastErrLineMarked = linecount;
-        }
-    }
-
-    public boolean isErr(int line) {
-        return errLines != null ? errLines.contains(line) : false;
-    }
-
     private ChangeListener listener = null;
     public void addChangeListener(ChangeListener cl) {
         this.listener = cl;
@@ -227,7 +207,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
         }
     }
-    
+
     void delayedFire() {
         newEvent.set(true);
         if (listener == null) {
@@ -236,7 +216,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         if (timer == null) {
             timer = new javax.swing.Timer(200, this);
         }
-        
+
         synchronized (newEvent) {
             if (newEvent.get() && !timer.isRunning()) {
                 timer.start();
@@ -257,22 +237,49 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    public boolean hasHyperlinks() {
+    public boolean hasListeners() {
         return firstListenerLine() != -1;
     }
 
-    public boolean isHyperlink (int line) {
-        return getListenerForLine(line) != null;
+    public OutputListener getListener(int pos, int[] range) {
+        int line = getLineAt(pos);
+        int lineStart = getLineStart(line);
+        pos -= lineStart;
+        LineInfo info = (LineInfo) lineWithListenerToInfo.get(line);
+        if (info == null) {
+            return null;
+        }
+        int start = 0;
+        for (LineInfo.Segment seg : info.getLineSegments()) {
+            if (pos < seg.getEnd()) {
+                if (seg.getListener() != null) {
+                    if (range != null) {
+                        range[0] = lineStart + start;
+                        range[1] = lineStart + seg.getEnd();
+                    }
+                    return seg.getListener();
+                } else {
+                    return null;
+                }
+            }
+            start = seg.getEnd();
+        }
+        return null;
+    }
+
+    public boolean isListener(int start, int end) {
+        int[] range = new int[2];
+        OutputListener l = getListener(start, range);
+        return l == null ? false : (range[0] == start && range[1] == end);
     }
 
     private void init() {
         knownLogicalLineCounts = null;
         lineStartList = new IntList(100);
         lineStartList.add(0);
-        linesToListeners = new IntMap();
-        linesToColors = new IntMap();
+        linesToInfos = new IntMap();
+        lineWithListenerToInfo = new IntMap();
         longestLineLen = 0;
-        errLines = null;
         listener = null;
         dirty = false;
         curDefColors = DEF_COLORS.clone();
@@ -291,8 +298,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return wasDirty;
     }
 
-    public int[] allListenerLines() {
-        return linesToListeners.getKeys();
+    public int[] getLinesWithListeners() {
+        return lineWithListenerToInfo.getKeys();
     }
 
     public int getCharCount() {
@@ -316,7 +323,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             return Math.max(0, toByteIndex(lastLineLength));
         }
         int lineStart = getByteLineStart(idx);
-        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getByteSize();
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 * OutWriter.LINE_SEPARATOR.length() : getByteSize();
         return lineEnd - lineStart;
     }
 
@@ -369,22 +376,61 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return lineStartList.size();
     }
 
-    public OutputListener getListenerForLine (int line) {
-        return (OutputListener) linesToListeners.get(line);
+    public Collection<OutputListener> getListenersForLine(int line) {
+        LineInfo info = (LineInfo) lineWithListenerToInfo.get(line);
+        if (info == null) {
+            return Collections.emptyList();
+        }
+        return info.getListeners();
     }
 
     public int firstListenerLine () {
         if (isDisposed()) {
             return -1;
         }
-        return linesToListeners.isEmpty() ? -1 : linesToListeners.first();
+        return lineWithListenerToInfo.isEmpty() ? -1 : lineWithListenerToInfo.first();
     }
 
-    public int nearestListenerLine (int line, boolean backward) {
-        if (isDisposed()) {
-            return -1;
+    public OutputListener nearestListener(int pos, boolean backward, int[] range) {
+        int posLine = getLineAt(pos);
+        int line = lineWithListenerToInfo.nearest(posLine, backward);
+        if (line < 0) {
+            return null;
         }
-        return linesToListeners.nearest (line, backward);
+        LineInfo info = (LineInfo) lineWithListenerToInfo.get(line);
+        int lineStart = getLineStart(line);
+        OutputListener l = null;
+        int[] lpos = new int[2];
+        if (posLine == line) {
+            if (backward) {
+                info.getFirstListener(lpos);
+                if (lpos[0] + lineStart > pos) {
+                    line = lineWithListenerToInfo.nearest(line - 1, backward);
+                    info = (LineInfo) lineWithListenerToInfo.get(line);
+                    lineStart = getLineStart(line);
+                    l = info.getLastListener(lpos);
+                }
+            } else {
+                info.getLastListener(lpos);
+                if (lpos[1] + lineStart <= pos) {
+                    line = lineWithListenerToInfo.nearest(line + 1, backward);
+                    info = (LineInfo) lineWithListenerToInfo.get(line);
+                    lineStart = getLineStart(line);
+                    l = info.getFirstListener(lpos);
+                }
+            }
+        } else {
+            pos = lineStart;
+            l = backward ? info.getLastListener(lpos) : info.getFirstListener(lpos);
+        }
+        if (l == null) {
+            l = backward ? info.getListenerBefore(pos - lineStart, lpos) : info.getListenerAfter(pos - lineStart, lpos);
+        }
+        if (l != null) {
+            range[0] = lpos[0] + lineStart;
+            range[1] = lpos[1] + lineStart;
+        }
+        return l;
     }
 
     public int getLongestLineLength() {
@@ -419,10 +465,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         // find physical (real) line index which corresponds to logical line idx
         int physLineIdx = Math.min(findPhysicalLine(logicalLineIdx, charsPerLine), getLineCount() - 1);
-        
+
         // compute how many logical lines is above our physical line
         int linesAbove = getLogicalLineCountAbove(physLineIdx, charsPerLine);
-        
+
         int len = length(physLineIdx);
         int wrapCount = lengthToLineCount(len, charsPerLine);
 
@@ -464,7 +510,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public int getLogicalLineCountIfWrappedAt (int charsPerLine) {
         if (charsPerLine >= longestLineLen) {
             return getLineCount();
-        }        
+        }
         int lineCount = getLineCount();
         if (charsPerLine == 0 || lineCount == 0) {
             return 0;
@@ -477,37 +523,26 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    public void addListener (int line, OutputListener l, boolean important) {
-        if (l == null) {
-            //#56826 - debug messaging
-            Logger.getLogger(AbstractLines.class.getName()).log(Level.WARNING, "Issue #56826 - Adding a null OutputListener for line: " + line, new NullPointerException());
-        } else {
-            linesToListeners.put(line, l);
-            if (important) {
-                importantLines.add(line);
-            }
-        }
-    }
-
-    public void setColor(int line, Color color) {
-        if (color != null) {
-            linesToColors.put(line, color);
+    private void registerLineWithListener(int line, LineInfo info, boolean important) {
+        lineWithListenerToInfo.put(line, info);
+        if (important) {
+            importantLines.add(line);
         }
     }
 
     private IntList importantLines = new IntList(10);
-    
+
     public int firstImportantListenerLine() {
         return importantLines.size() == 0 ? -1 : importantLines.get(0);
     }
-    
-    public boolean isImportantHyperlink(int line) {
+
+    public boolean isImportantLine(int line) {
         return importantLines.contains(line);
     }
-    
+
     /**
-     * We use SparseIntList to create a cache which only actually holds 
-     * the counts for lines that *are* wrapped, and interpolates the rest, so 
+     * We use SparseIntList to create a cache which only actually holds
+     * the counts for lines that *are* wrapped, and interpolates the rest, so
      * we don't need to create an int[]  as big as the number of lines we have.
      * This presumes that most lines don't wrap.
      */
@@ -534,15 +569,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     static int lengthToLineCount(int len, int charsPerLine) {
         return len > charsPerLine ? (charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine) : 1;
     }
-    
+
     void markDirty() {
         dirty = true;
     }
-    
+
     boolean isLastLineFinished() {
         return lastLineFinished;
     }
-    
+
     private boolean lastLineFinished = true;
     private int lastLineLength = -1;
 
@@ -585,7 +620,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
         }
     }
-    
+
     public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
         synchronized (readLock()) {
             int charLineLength = toCharIndex(lineLength);
@@ -601,7 +636,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
         markDirty();
     }
-    
+
     /** Convert an index from chars to byte count (*2).  Simple math, but it
      * makes the intent clearer when encountered in code */
     static int toByteIndex (int charIndex) {
@@ -667,7 +702,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
         if (hyperlinkImp == null) {
-            hyperlinkImp = err;
+            hyperlinkImp = hyperlink;
         }
 
         DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
@@ -677,31 +712,25 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         curDefColors[type.ordinal()] = color;
     }
 
-    Color getDefColor(int type) {
-        return curDefColors[type];
+    public Color getDefColor(IOColors.OutputType type) {
+        return curDefColors[type.ordinal()];
     }
 
-    /**
-     * @param line
-     * @return explicitly set color
-     */
-    Color getLineColor(int line) {
-        return (Color) linesToColors.get(line);
+    public LineInfo getLineInfo(int line) {
+        LineInfo info = (LineInfo) linesToInfos.get(line);
+        if (info != null) {
+            int lineLength = length(line);
+            if (lineLength > info.getEnd()) {
+                info.addSegment(lineLength, false, null, null, false);
+            }
+            return info;
+        } else {
+            return new LineInfo(this, length(line));
+        }
     }
 
-    public Color getColorForLine(int line) {
-        Color color = (Color) linesToColors.get(line);
-        if (color != null) {
-            return color;
-        }
-
-        boolean hyperlink = isHyperlink(line);
-        boolean important = hyperlink ? isImportantHyperlink(line) : false;
-        boolean isErr = isErr(line);
-        if (hyperlink) {
-            return important ? curDefColors[IOColors.OutputType.HYPERLINK_IMPORTANT.ordinal()] : curDefColors[IOColors.OutputType.HYPERLINK.ordinal()];
-        }
-        return isErr ? curDefColors[IOColors.OutputType.ERROR.ordinal()] : curDefColors[IOColors.OutputType.OUTPUT.ordinal()];
+    public LineInfo getExistingLineInfo(int line) {
+        return (LineInfo) linesToInfos.get(line);
     }
 
     private static final int MAX_FIND_SIZE = 16*1024;
@@ -819,5 +848,87 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     @Override
     public String toString() {
         return lineStartList.toString();
+    }
+
+    int addSegment(CharSequence s, int offset, int lineIdx, int pos, OutputListener l, boolean important, boolean err, Color c) {
+        int len = length(lineIdx);
+        if (len > 0) {
+            LineInfo info = (LineInfo) linesToInfos.get(lineIdx);
+            if (info == null) {
+                info = new LineInfo(this);
+                linesToInfos.put(lineIdx, info);
+            }
+            int curEnd = info.getEnd();
+            if (pos > 0 && pos != curEnd) {
+                info.addSegment(pos, false, null, null, false);
+                curEnd = pos;
+            }
+            if (l != null) {
+                int endPos = curEnd + Math.min(s.length() - offset, len);
+                int strlen = Math.min(s.length(), offset + len);
+                if (s.charAt(strlen - 1) == '\n') {
+                    strlen--;
+                }
+                if (s.charAt(strlen - 1) == '\r') {
+                    strlen--;
+                }
+                int leadingCnt = 0;
+                while (leadingCnt + offset < strlen && Character.isWhitespace(s.charAt(offset + leadingCnt))) {
+                    leadingCnt++;
+                }
+                int trailingCnt = 0;
+                if (leadingCnt != strlen) {
+                    while (trailingCnt < strlen && Character.isWhitespace(s.charAt(strlen - trailingCnt - 1))) {
+                        trailingCnt++;
+                    }
+                }
+                if (leadingCnt > 0) {
+                    info.addSegment(curEnd + leadingCnt, false, null, null, false);
+                }
+                info.addSegment(endPos - trailingCnt, err, l, c, important);
+                if (trailingCnt > 0) {
+                    info.addSegment(endPos, false, null, null, false);
+                }
+                registerLineWithListener(lineIdx, info, important);
+            } else {
+                info.addSegment(len, err, l, c, important);
+            }
+        }
+        return len;
+    }
+
+    void updateLinesInfo(CharSequence s, int startLine, int startPos, OutputListener l, boolean important, boolean err, Color c) {
+        int offset = 0;
+        CharSequence noTabsStr = s;
+        if (l != null) {
+            for (int i = 0; i < s.length(); i++) {
+                if (s.charAt(i) == '\t') {
+                    StringBuilder str = new StringBuilder(s.length() + 100);
+                    int start = 0;
+                    for (int k = i; k < s.length(); k++) {
+                        if (s.charAt(k) == '\t') {
+                            str.append(s, start, k);
+                            str.append(OutWriter.TAB_REPLACEMENT);
+                            start = k + 1;
+                        }
+                    }
+                    str.append(s, start, s.length());
+                    noTabsStr = str;
+                    break;
+                }
+            }
+        }
+        int startLinePos = startPos - getLineStart(startLine);
+        for (int i = startLine; i < getLineCount(); i++) {
+            offset += addSegment(noTabsStr, offset, i, startLinePos, l, important, err, c) + 1;
+            startLinePos = 0;
+        }
+    }
+
+    void addLineInfo(int idx, LineInfo info, boolean important) {
+        linesToInfos.put(idx, info);
+        if (!info.getListeners().isEmpty()) {
+            registerLineWithListener(idx, info, important);
+        }
     }
 }
