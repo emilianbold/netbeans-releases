@@ -233,6 +233,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             if (FileType.JSP.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_JspFile"));
+            else if (FileType.JSF.equals(fileType))
+                templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
+                    NbBundle.getMessage(TargetChooserPanel.class, "TITLE_JsfFile"));
             else if (FileType.TAG.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_TagFile"));
