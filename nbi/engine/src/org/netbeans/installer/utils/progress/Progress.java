@@ -224,7 +224,7 @@ public class Progress {
      *
      * @param percentage The new value for the <code>percentage</code> property.
      * 
-     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     * @throws IllegalArgumentException if the supplied percentage cannot be 
      *      set.
      */
     public void setPercentage(final int percentage) {
@@ -251,7 +251,7 @@ public class Progress {
      *
      * @param percentage The new value for the <code>percentage</code> property.
      * 
-     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     * @throws IllegalArgumentException if the supplied percentage cannot be 
      *      set.
      */
     public void setPercentage(final long percentage) {
@@ -267,7 +267,7 @@ public class Progress {
      *
      * @param addition The amount to add to the <code>percentage</code> property.
      * 
-     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     * @throws IllegalArgumentException if the supplied percentage cannot be 
      *      added.
      */
     public void addPercentage(final int addition) {

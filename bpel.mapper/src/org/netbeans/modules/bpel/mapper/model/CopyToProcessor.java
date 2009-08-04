@@ -25,7 +25,6 @@ import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
-import org.netbeans.modules.bpel.mapper.model.MapperModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
@@ -241,12 +240,6 @@ public class CopyToProcessor {
             try {
                 XPathModel newXPathModel = BpelXPathModelFactory.create(
                         contextEntity, castList, pseudoComps);
-                //
-                // Specify the Caching visitor for optimization!
-                if (modelFactory != null) {
-                    newXPathModel.setCachingSchemaSearchVisitor(
-                            modelFactory.getCachingSchemaSearchVisitor());
-                }
                 //
                 // NOT NEED to specify schema context because of an 
                 // expression with variable is implied here. 
