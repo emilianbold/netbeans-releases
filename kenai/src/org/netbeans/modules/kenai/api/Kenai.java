@@ -113,6 +113,19 @@ public final class Kenai {
         return instance;
     }
 
+    /**
+    * Helper method that fixed slash on the Kenai.com url
+    * @param urlStr String with URL as it was passed
+    * @return Fixed URL string
+    */
+    public static String normalizeUrl(String urlStr) {
+        if (urlStr.endsWith("/")) {
+            return urlStr.substring(0, urlStr.length() - 1);
+        } else {
+            return urlStr;
+        }
+    }
+
     private final KenaiImpl     impl;
     private XMPPConnection xmppConnection;
 
