@@ -57,7 +57,7 @@ public class Install extends ModuleInstall {
 
     public void restored () {
         listener = new CtrlClickHack();
-        Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK);
+        Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.FOCUS_EVENT_MASK);
         if (System.getProperty("mrj.version") != null) { // NOI18N
 //            FontReferenceQueue.install();
             try {
