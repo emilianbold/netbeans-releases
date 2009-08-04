@@ -86,7 +86,7 @@ public class KenaiTestSimple extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "https://kenai.com/");
+            System.setProperty("kenai.com.url", "https://kenai.com");
             System.out.println("kurl " + System.getProperty("kenai.com.url"));
             instance = Kenai.getDefault();
             if (uname == null) {
