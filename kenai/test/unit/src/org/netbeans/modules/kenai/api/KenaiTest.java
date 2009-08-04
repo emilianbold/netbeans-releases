@@ -650,7 +650,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
+//        _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }
