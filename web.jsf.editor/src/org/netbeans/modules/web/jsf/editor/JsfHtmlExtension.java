@@ -139,6 +139,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         final Snapshot snapshot = result.getSnapshot();
         Source source = snapshot.getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+        if(jsfs == null) {
+            return;
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
@@ -191,6 +194,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+         if(jsfs == null) {
+            return Collections.emptyList();
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
@@ -277,6 +283,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
+        if(jsfs == null) {
+            return Collections.emptyList();
+        }
         Map<String, TldLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
