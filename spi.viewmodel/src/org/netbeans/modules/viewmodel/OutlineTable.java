@@ -77,7 +77,6 @@ import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.ExplorerManager;
@@ -669,9 +668,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             try {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(aioobex,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder));
+                logger.log(Level.SEVERE,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        aioobex);
                 continue ;
             }
             logger.fine("  GUI column = "+tc.getHeaderValue());
@@ -716,9 +715,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             try {
                 tc = tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(aioobex,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder));
+                logger.log(Level.SEVERE,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        aioobex);
                 continue ;
             }
             logger.fine("  GUI column = "+tc.getHeaderValue());
@@ -747,9 +746,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             try {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(aioobex,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder));
+                logger.log(Level.SEVERE,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        aioobex);
                 continue ;
             }
             logger.fine("  GUI column = "+tc.getHeaderValue());

@@ -41,6 +41,8 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.util.Arrays;
+
 
 /**
  * Notifies about class load and class unload events.
@@ -141,7 +143,7 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
             throw new IllegalArgumentException  ();
         int old = this.type;
         this.type = type;
-        firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (type));
+        firePropertyChange (PROP_BREAKPOINT_TYPE, Integer.valueOf(old), Integer.valueOf(type));
     }
 
     /**
@@ -191,7 +193,8 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
      *
      * @return  a string representation of the object
      */
+    @Override
     public String toString () {
-        return "ClassLoadUnloadBreakpoint " + classFilters;
+        return "ClassLoadUnloadBreakpoint " + Arrays.toString(classFilters);
     }
 }

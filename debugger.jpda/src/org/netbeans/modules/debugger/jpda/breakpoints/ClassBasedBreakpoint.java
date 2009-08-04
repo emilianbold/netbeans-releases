@@ -278,43 +278,41 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             ReferenceType referenceType = (ReferenceType) i.next ();
 //                if (verbose)
 //                    System.out.println("B     cls: " + referenceType);
-            if (i != null) {
-                try {
-                    ClassLoaderReference clref = ReferenceTypeWrapper.classLoader(referenceType);
-                    if (clref != null && ObjectReferenceWrapper.isCollected(clref)) {
-                        // Ignore classes whose class loaders are gone.
-                        continue;
-                    }
-                    String name = ReferenceTypeWrapper.name (referenceType);
-                    if (match (name, className)) {
-                        boolean excluded = false;
-                        if (classExclusionFilters != null) {
-                            for (String exFilter : classExclusionFilters) {
-                                if (match(name, exFilter)) {
-                                    excluded = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!excluded) {
-                            if (logger.isLoggable(Level.FINE))
-                                logger.fine(" Class loaded: " + referenceType);
-                            if (loadedClasses == null) {
-                                loadedClasses = Collections.singletonList(referenceType);
-                            } else {
-                                if (loadedClasses.size() == 1) {
-                                    loadedClasses = new ArrayList<ReferenceType>(loadedClasses);
-                                }
-                                loadedClasses.add(referenceType);
-                            }
-                            //classLoaded (referenceType);
-                            matched = true;
-                        }
-                    }
-                } catch (InternalExceptionWrapper e) {
-                } catch (VMDisconnectedExceptionWrapper e) {
-                } catch (ObjectCollectedExceptionWrapper e) {
+            try {
+                ClassLoaderReference clref = ReferenceTypeWrapper.classLoader(referenceType);
+                if (clref != null && ObjectReferenceWrapper.isCollected(clref)) {
+                    // Ignore classes whose class loaders are gone.
+                    continue;
                 }
+                String name = ReferenceTypeWrapper.name (referenceType);
+                if (match (name, className)) {
+                    boolean excluded = false;
+                    if (classExclusionFilters != null) {
+                        for (String exFilter : classExclusionFilters) {
+                            if (match(name, exFilter)) {
+                                excluded = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!excluded) {
+                        if (logger.isLoggable(Level.FINE))
+                            logger.fine(" Class loaded: " + referenceType);
+                        if (loadedClasses == null) {
+                            loadedClasses = Collections.singletonList(referenceType);
+                        } else {
+                            if (loadedClasses.size() == 1) {
+                                loadedClasses = new ArrayList<ReferenceType>(loadedClasses);
+                            }
+                            loadedClasses.add(referenceType);
+                        }
+                        //classLoaded (referenceType);
+                        matched = true;
+                    }
+                }
+            } catch (InternalExceptionWrapper e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
             }
         }
         if (loadedClasses != null && loadedClasses.size() > 0) {

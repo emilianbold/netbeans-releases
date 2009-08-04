@@ -121,8 +121,8 @@ class LazyArrayList<T> extends ArrayList<T> {
             LazyArrayList lazyArrayList = (LazyArrayList) c;
             int s = size();
             Map<Integer, LazyEntry> newLazyEntries = lazyArrayList.lazyEntries;
-            for (Integer i : newLazyEntries.keySet()) {
-                lazyEntries.put((i + s), newLazyEntries.get(i));
+            for (Map.Entry<Integer, LazyEntry> e : newLazyEntries.entrySet()) {
+                lazyEntries.put((e.getKey() + s), e.getValue());
             }
             return super.addAll((Collection<? extends T>) Arrays.asList(lazyArrayList.toOriginalArray()));
         } else {
