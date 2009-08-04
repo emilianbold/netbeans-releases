@@ -1611,7 +1611,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     for (ThreadReference tr : threadsToSuspend) {
                         try {
                             ThreadReferenceWrapper.suspend(tr); // Increases the suspend count to 2 so that it's not resumed by EventSet.resume()
-                        } catch (Exception e) {}
+                        } catch (IllegalThreadStateExceptionWrapper iex) {
+                            // The thread is gone
+                        } catch (InternalExceptionWrapper iex) {
+                            // ??
+                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                            // The thread is gone
+                        } catch (VMDisconnectedExceptionWrapper vdex) {}
                         JPDAThreadImpl t = debugger.getExistingThread(tr);
                         if (t != null) {
                             t.notifySuspended();
@@ -1630,6 +1636,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                                 logger.fine("Resuming thread "+threadName+" to finish method invoke...");
                                 resumedToFinishMethodInvocation = true;
                                     ThreadReferenceWrapper.resume(threadReference);
+                            } catch (IllegalThreadStateExceptionWrapper iex) {
+                                // The thread is gone
                             } catch (VMDisconnectedExceptionWrapper e) {
                                 // Ignored
                             } catch (Exception e) {

@@ -105,6 +105,12 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
     private List<VisualizerConfiguration> visualizerConfigurations;
 
+    protected final void notifyListeners(VisualizerConfiguration vc){
+        for (IndicatorActionListener l : listeners) {
+            l.openVisualizerForIndicator(this, vc);
+        }
+    }
+
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
             l.mouseClickedOnIndicator(this);

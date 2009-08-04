@@ -66,8 +66,7 @@ public class ArgumentObjectVariable extends AbstractObjectVariable implements or
         super (
             debugger, 
             value, 
-            name + className.hashCode() +
-                (value instanceof ObjectReference ? "^" : "")
+            name + className.hashCode() + "^"
         );
         this.name = name;
         this.className = className;

@@ -71,6 +71,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
+import org.netbeans.modules.web.core.syntax.completion.JspELExpression;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -168,7 +169,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             }
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
-                ELExpression exp = new ELExpression(jspSup);
+                JspELExpression exp = new JspELExpression(jspSup);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return false; //no token
@@ -257,7 +258,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             
             if (elTokenSequence != null){
-                ELExpression exp = new ELExpression(jspSup);
+                JspELExpression exp = new JspELExpression(jspSup);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return null; //no token
@@ -319,7 +320,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                     // is it a bean in EL
                     TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
                     if (elTokenSequence != null){
-                        ELExpression exp = new ELExpression(jspSup);
+                        JspELExpression exp = new JspELExpression(jspSup);
 
                         elTokenSequence.move(offset);
                         if(!elTokenSequence.moveNext()) {

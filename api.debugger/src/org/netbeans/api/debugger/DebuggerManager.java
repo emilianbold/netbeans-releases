@@ -42,6 +42,7 @@
 package org.netbeans.api.debugger;
 
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.HashMap;
 
@@ -173,12 +174,12 @@ public final class DebuggerManager implements ContextProvider {
     private static DebuggerManager            debuggerManager;
     private Session                           currentSession;
     private DebuggerEngine                    currentEngine;
-    private List                              sessions = new ArrayList();
-    private Set                               engines = new HashSet ();
+    private final List                        sessions = new ArrayList();
+    private final Set                         engines = new HashSet ();
     private final Vector                      breakpoints = new Vector ();
     private boolean                           breakpointsInitializing = false;
     private boolean                           breakpointsInitialized = false;
-    private Vector                            watches = new Vector ();
+    private final Vector                      watches = new Vector ();
     private boolean                           watchesInitialized = false;
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listeners = new Vector ();
@@ -877,7 +878,7 @@ public final class DebuggerManager implements ContextProvider {
     }
     
     private List<Breakpoint> createdBreakpoints;
-    private Map<ClassLoader, Set<Breakpoint>> breakpointsByClassLoaders =
+    private final Map<ClassLoader, Set<Breakpoint>> breakpointsByClassLoaders =
             new HashMap<ClassLoader, Set<Breakpoint>>();
     
     /**
@@ -1001,7 +1002,16 @@ public final class DebuggerManager implements ContextProvider {
         try {
             java.lang.reflect.Method unloadMethod = dl.getClass().getMethod("unloadBreakpoints", new Class[] {});
             bps = (Breakpoint[]) unloadMethod.invoke(dl, new Object[] {});
-        } catch (Exception exc) {
+        } catch (IllegalAccessException iaex) {
+            return ;
+        } catch (IllegalArgumentException iaex) {
+            return ;
+        } catch (NoSuchMethodException iaex) {
+            return ;
+        } catch (SecurityException iaex) {
+            return ;
+        } catch (InvocationTargetException iaex) {
+            Exceptions.printStackTrace(iaex.getTargetException());
             return ;
         }
         //Breakpoint[] bps = dl.unloadBreakpoints();
@@ -1398,7 +1408,7 @@ public final class DebuggerManager implements ContextProvider {
         //Annotation listeners must be unregistered AFTER breakpoints are removed
         //and registered back BEFORE breakpoints are loaded
         Set<LazyDebuggerManagerListener> addedInitBreakpointsListeners = new HashSet<LazyDebuggerManagerListener>();
-        Set<ClassLoader> uninstalledModules = new HashSet<ClassLoader>();
+        //Set<ClassLoader> uninstalledModules = new HashSet<ClassLoader>();
         synchronized (listenersLookupList) {
             int i, k = listenersLookupList.size ();
             //System.err.println("size() = "+k+",  content = "+listenersLookupList+"\n");

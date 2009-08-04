@@ -42,7 +42,6 @@ package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -224,17 +223,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                     WSTool wsTool = wsStack.getWSTool(JaxRs.Tool.JAXRS);
                     if (wsTool != null) {
                         URL[] libs = wsTool.getLibraries();
-                        try {
-                            List<File> jars = new ArrayList<File>();
-                            for (URL lib : libs) {
-                                if (!new File(lib.toURI()).exists()) {
-                                    return;
-                                }
-                                jars.add(new File(lib.toURI()));
-                            }
-                            swdpLibrary = createSwdpLibrary(jars, libName);
-                        } catch (URISyntaxException e) {
-                        }
+                        swdpLibrary = createSwdpLibrary(libs, libName);
                     }
                 }
                 if (swdpLibrary != null) {
@@ -244,12 +233,11 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private Library createSwdpLibrary(List<File> jars, final String libraryName) throws IOException {
+    private Library createSwdpLibrary(URL[] libs, final String libraryName) throws IOException {
         // obtain URLs of the jar file
         List <URL> urls = new ArrayList <URL> ();
-        for (File jar:jars) {
-            URL url = jar.toURL();
-            url = FileUtil.getArchiveRoot(url);
+        for (URL lib:libs) {
+            URL url = FileUtil.getArchiveRoot(lib);
             urls.add(url);
         }
         // create new library and regist in the Library Manager.

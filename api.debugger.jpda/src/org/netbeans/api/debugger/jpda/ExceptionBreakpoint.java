@@ -217,8 +217,8 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
         this.catchType = catchType;
         firePropertyChange (
             PROP_CATCH_TYPE, 
-            new Integer (old), 
-            new Integer (catchType)
+            Integer.valueOf(old),
+            Integer.valueOf(catchType)
         );
     }
 
