@@ -655,7 +655,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext) {
                             for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                                 if (!invalidProposalsForClsMembers.contains(method.getName())) {
-                                    proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                                    proposals.add(new PHPCompletionItem.FunctionItem(classMember, request, i));
                                 }
                             }
                         }
@@ -668,7 +668,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     for (IndexedClassMember<IndexedConstant> classMember : properties){
                         IndexedConstant prop = classMember.getMember();
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
+                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(classMember, request);
 
                             if (!staticContext) {
                                 item.doNotInsertDollarPrefix();
@@ -681,8 +681,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (staticContext) {
                         Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllTypeConstants(request.result, tokenType, request.prefix, nameKind);
                         for (IndexedClassMember<IndexedConstant> indexedClassMember : allClassConstants) {
-                            IndexedConstant constant = indexedClassMember.getMember();
-                            proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
+                            proposals.add(new PHPCompletionItem.ClassConstantItem(indexedClassMember, request));
                         }
                     }
                 }
