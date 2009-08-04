@@ -45,12 +45,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.utils.ServicesChecker;
 
@@ -59,25 +55,15 @@ import org.netbeans.modules.kenai.utils.ServicesChecker;
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public class KenaiTestSimple extends NbTestCase {
+public class KenaiGetMyProjectsTest extends NbTestCase {
 
     private static Kenai instance;
     private static String uname = null;
     private static String passw = null;
     private static boolean firstRun = true;
 
-    private String UNITTESTUNIQUENAME =  "java-inline";
-
-    public KenaiTestSimple(String S) {
+    public KenaiGetMyProjectsTest(String S) {
         super(S);
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Before
@@ -100,7 +86,6 @@ public class KenaiTestSimple extends NbTestCase {
                 br.close();
             }
             if (firstRun) {
-                System.out.println("UNAME/PASSWD: " + uname + "/" + passw);
                 instance.login(uname, passw.toCharArray());
                 firstRun = false;
             }
@@ -114,98 +99,9 @@ public class KenaiTestSimple extends NbTestCase {
     public void tearDown() {
     }
 
-    public void testForRepositoryHg() throws Exception {
-        KenaiProjectTest kpt = new KenaiProjectTest(getName());
-        kpt.setProjectName("java-inline");
-        kpt.testForRepositoryHg();
+    static public junit.framework.Test suite() {
+        junit.framework.TestSuite _suite = new junit.framework.TestSuite();
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        return _suite;
     }
-
-    public void testForRepositorySvn() throws Exception {
-        KenaiProjectTest kpt = new KenaiProjectTest(getName());
-        kpt.setProjectName("motorbikediary");
-        kpt.testForRepositorySvn();
-    }
-
-    public void testCheckName() throws KenaiException, MalformedURLException {
-        assertNull(KenaiProject.checkName("non-existing-project"));
-        assertNotNull("Project does not exist, but it should...", KenaiProject.checkName(UNITTESTUNIQUENAME));
-        assertTrue(KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
-    }
-
-    public void testService() throws IOException {
-        KenaiServiceTest kst = new KenaiServiceTest(getName());
-        kst.setServicesChecker(new ServicesChecker(getDataDir().getAbsolutePath() + File.separatorChar + "services.data"));
-        kst.testService();
-    }
-
-    public void testServiceDescriptionAndDisplayableName() throws IOException {
-        KenaiServiceTest kst = new KenaiServiceTest(getName());
-        kst.setServicesChecker(new ServicesChecker(getDataDir().getAbsolutePath() + File.separatorChar + "services.data"));
-        kst.testServiceDescriptionAndDisplayableName();
-    }
-
-    public void testType() {
-        new KenaiFeatureTest(getName()).testType();
-    }
-
-    public void testSearchProjects() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testSearchProjects();
-    }
-
-    public void testSearchProjectsLessSpecific() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testSearchProjectsLessSpecific();
-    }
-
-    public void testSearchProjectsWithSpace() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testSearchProjectsWithSpace();
-    }
-
-    public void testGetProject() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetProject();
-    }
-
-    public void testGetDescription() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetDescription();
-    }
-
-    public void testGetDisplayName() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetDisplayName();
-    }
-
-    public void testGetTags() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetTags();
-    }
-
-    public void testGetLicenses() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetLicenses();
-    }
-    
-    public void testGetServices() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetServices();
-    }
-    
-    public void testGetWebLocation() throws Exception {
-        KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
-        kt.testGetWebLocation();
-    }
-
 }
