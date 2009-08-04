@@ -38,8 +38,16 @@
  */
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
@@ -158,6 +166,47 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             if (displayedName.length() == 0) {
                 displayedName.append(super.getDisplayedName());
             }
+        }
+    }
+
+    private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s+(\\S+)\\s+\\+\\s+0x([0-9a-fA-F]+)(?:,\\s+line\\s+(\\d+)\\s+in\\s+\"(.+)\")?"); // NOI18N
+
+    public static List<FunctionCall> parseStack(ListIterator<String> it) {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+        while (it.hasNext()) {
+            String line = it.next().replace("Stack:", "      "); // NOI18N
+            if (8 <= line.length() - line.trim().length()) {
+                // stack lines start with whitespace
+                result.add(parseFunctionCall(line));
+            } else {
+                it.previous();
+                break;
+            }
+        }
+        Collections.reverse(result);
+        return result;
+    }
+
+    private static FunctionCall parseFunctionCall(String line) {
+        Matcher m = FUNCTION_PATTERN.matcher(line);
+        if (m.matches()) {
+            FunctionImpl func = new FunctionImpl(m.group(1), m.group(1).hashCode());
+
+            long lineNumber = -1;
+            if (m.group(3) != null) {
+                try {
+                    lineNumber = Long.parseLong(m.group(3));
+                } catch (NumberFormatException ex) {
+                }
+            }
+            FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
+            if (m.group(4) != null) {
+                call.setFileName(m.group(4));
+            }
+
+            return call;
+        } else {
+            return null;
         }
     }
 }

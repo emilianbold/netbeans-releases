@@ -57,8 +57,8 @@ public class DDDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = 8616780278674213886L;
     private static final String REQUIRED_MIME_1 = "text/x-dd-servlet2.4"; // NOI18N
-    private static final String REQUIRED_MIME_2 = "text/x-dd-servlet2.3"; // NOI18N
-    private static final String REQUIRED_MIME_3 = "text/x-dd-servlet2.2"; // NOI18N
+    //private static final String REQUIRED_MIME_2 = "text/x-dd-servlet2.3"; // NOI18N
+    //private static final String REQUIRED_MIME_3 = "text/x-dd-servlet2.2"; // NOI18N
 
     public DDDataLoader () {
         super ("org.netbeans.modules.j2ee.ddloaders.web.DDDataObject");  // NOI18N
@@ -90,7 +90,7 @@ public class DDDataLoader extends UniFileLoader {
      *@return the MIME types that this loader supports.
      */
     protected String[] getSupportedMimeTypes(){
-        return new String[]{REQUIRED_MIME_1, REQUIRED_MIME_2, REQUIRED_MIME_3};
+        return new String[]{REQUIRED_MIME_1/*, REQUIRED_MIME_2, REQUIRED_MIME_3*/};
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile)

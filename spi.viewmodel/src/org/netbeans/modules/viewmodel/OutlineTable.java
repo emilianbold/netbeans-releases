@@ -680,7 +680,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 logger.fine("    Retrieved width "+c.getColumnWidth()+" from "+columns[i].getDisplayName()+"["+i+"] for "+tc.getHeaderValue());
                 tc.setPreferredWidth(c.getColumnWidth());
                 if (c.isSorted()) {
-                    tc.setSorted(1, !c.isSortedDescending());
+                    ecm.setColumnSorted(tc, !c.isSortedDescending(), 1);
                 }
             }
         }

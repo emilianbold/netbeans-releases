@@ -557,6 +557,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return leftText;
         }
 
+        public void defaultAction(JTextComponent component) {
+            if (component != null) {
+                Completion.get().hideDocumentation();
+                if (inPackageStatement || Utilities.getJavaCompletionAutoPopupTriggers().indexOf('.') < 0)
+                    Completion.get().hideCompletion();
+                int caretOffset = component.getSelectionEnd();
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            }
+        }
+
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : "."); //NOI18N
         }

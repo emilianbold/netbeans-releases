@@ -51,14 +51,11 @@ final class PHPSQLStatement {
             potentialStatement = potentialStatement.substring(1);
         }
         potentialStatement = potentialStatement.toLowerCase().trim();
-        if (potentialStatement.startsWith("select") ||
+        return potentialStatement.startsWith("select") ||
                 potentialStatement.startsWith("insert") ||
                 potentialStatement.startsWith("update") ||
-                potentialStatement.startsWith("delete")) {
-            return true;
-        }
-
-        return false;
+                potentialStatement.startsWith("delete") ||
+                potentialStatement.startsWith("drop");
     }
 
     private PHPSQLStatement(TokenSequence seq, int caretOffset) {

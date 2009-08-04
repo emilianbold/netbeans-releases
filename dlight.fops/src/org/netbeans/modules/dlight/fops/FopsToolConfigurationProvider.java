@@ -54,7 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,16 +74,15 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(ID, toolName);
 
-        /* DTrace tool - FOPS */
+        Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
+        Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
                 new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
-                new Column("cpu", Integer.class, getMessage("Column.CPU"), null), // NOI18N
-                new Column("thread", Integer.class, getMessage("Column.Thread"), null), // NOI18N
                 new Column("operation", String.class, getMessage("Column.OpType"), null), // NOI18N
-                new Column("handle", Integer.class, getMessage("Column.Handle"), null), // NOI18N
-                new Column("file", String.class, getMessage("Column.Filename"), null), // NOI18N
-                new Column("size", Long.class, getMessage("Column.Size"), null), // NOI18N
+                new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
+                fileColumn,
+                sizeColumn,
                 new Column("stack_id", Long.class, getMessage("Column.StackId"), null)); // NOI18N
 
         final DataTableMetadata dtraceFopsMetadata =
@@ -97,11 +96,19 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 new DTDCConfiguration(script, Arrays.asList(dtraceFopsMetadata));
         dtraceCollectorConfig.setStackSupportEnabled(true);
         dtraceCollectorConfig.setIndicatorFiringFactor(1);
+        final MultipleDTDCConfiguration multiDtraceCollectorConfig
+                = new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:"); // NOI18N
 
-        toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:")); // NOI18N
+        toolConfiguration.addDataCollectorConfiguration(multiDtraceCollectorConfig);
+        toolConfiguration.addIndicatorDataProviderConfiguration(multiDtraceCollectorConfig);
 
-        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceCollectorConfig);
+        DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
+                Arrays.asList(
+                        fileColumn,
+                        new Column("totalsize", Long.class), // NOI18N
+                        new Column("closed", Boolean.class)), // NOI18N
+                "select file, sum(size) as totalsize, bool_or(operation='close') as closed from fops group by sid, file order by closed asc, totalsize desc", // NOI18N
+                Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
@@ -112,7 +119,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 new DataRowToIOPlot());
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
         indicatorConfiguration.addVisualizerConfiguration(
-                new TableVisualizerConfiguration(dtraceFopsMetadata));
+                new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName()));
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 

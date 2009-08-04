@@ -389,29 +389,39 @@ public class ETable extends JTable {
         if(editing == FULLY_NONEDITABLE) {
             return false;
         }
-        int modelRow = convertRowIndexToModel(row);
-        return super.isCellEditable(modelRow, column);
+        //In 1.6 JTable adds method convertRowIndexToModel which is called in
+        //its isCellEditable(), otherwise we have to translate the row
+        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
+            row = convertRowIndexToModel(row);
+        }
+        return super.isCellEditable(row, column);
     }
 
-    /**
+    /*
      * Overriden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#getCellRenderer(int, int)
-     */
+     *
+     * NOT NECESSARY - JTable does not use the "row" argument.
+     *
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         int modelRow = convertRowIndexToModel(row);
         return super.getCellRenderer(modelRow, column);
     }
+     */
 
-    /**
+    /*
      * Overriden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#getCellEditor(int, int)
-     */
+     *
+     * NOT NECESSARY - JTable does not use the "row" argument.
+     *
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
         int modelRow = convertRowIndexToModel(row);
         return super.getCellEditor(modelRow, column);
     }
+     */
 
     /**
      * Sets all the cells in the <code>ETable</code> to be editable if
@@ -648,8 +658,12 @@ public class ETable extends JTable {
      */
     @Override
     public void setValueAt(Object aValue, int row, int column) {
-        int modelRow = convertRowIndexToModel(row);
-        super.setValueAt(aValue, modelRow, column);
+        //In 1.6 JTable adds method convertRowIndexToModel which is called in
+        //its setValueAt(), otherwise we have to translate the row
+        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
+            row = convertRowIndexToModel(row);
+        }
+        super.setValueAt(aValue, row, column);
     }
 
     /**
@@ -940,12 +954,11 @@ public class ETable extends JTable {
      * Convert indices of selected rows to model.
      */
     private int[] getSelectedRowsInModel() {
-        int inView[] = getSelectedRows();
-        int result[] = new int[inView.length];
-        for (int i = 0; i < inView.length; i++) {
-            result[i] = convertRowIndexToModel(inView[i]);
+        int rows[] = getSelectedRows();
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = convertRowIndexToModel(rows[i]);
         }
-        return result;
+        return rows;
     }
     
     /**

@@ -49,13 +49,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**
@@ -91,8 +91,8 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                 return new String[0];
             }
             
-            public @Override final Properties load() throws IOException {
-                return new Properties();
+            public @Override final EditableProperties load() throws IOException {
+                return new EditableProperties(true);
             }
             
             protected @Override FileObject toPropertiesFile(boolean create) throws IOException {
@@ -191,10 +191,10 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         }
     }
     
-    public Properties load() throws IOException {
+    public EditableProperties load() throws IOException {
         Statistics.StopWatch sw = Statistics.getStopWatch(Statistics.LOAD, true);
         try {
-            Properties retval = new Properties();
+            EditableProperties retval = new EditableProperties(true);
             FileObject file = toPropertiesFile(false);
             if (file != null) {
                 try {
@@ -215,7 +215,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         }
     }
     
-    public void save(final Properties properties) throws IOException {
+    public void save(final EditableProperties properties) throws IOException {
         if (isModified) {
             Statistics.StopWatch sw = Statistics.getStopWatch(Statistics.FLUSH, true);
             try {
@@ -224,7 +224,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                     OutputStream os = null;
                     try {
                         os = outputStream();
-                        properties.store(os, null);
+                        properties.store(os);
                     } finally {
                         if (os != null) os.close();
                     }

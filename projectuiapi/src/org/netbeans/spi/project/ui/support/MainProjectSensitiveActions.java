@@ -61,13 +61,16 @@ public class MainProjectSensitiveActions {
      * to select a main project, etc.
      * @param command the command which should be invoked when the action is
      *        performed
-     * @param name display name of the action
+     * @param namePattern a pattern which should be used for determining the action's
+     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}:
+     *        <code>{0}</code> - number of selected projects (or -1 if a main project is set);
+     *        <code>{1}</code> - name of the first project (if >0).
      * @param icon icon of the action; may be null, in which case the action will
      *        not have an icon
      * @return an action sensitive to the main project
      */    
-    public static Action mainProjectCommandAction( String command, String name, Icon icon  ) {
-        return Utilities.getActionsFactory().mainProjectCommandAction( command, name, icon );
+    public static Action mainProjectCommandAction(String command, String namePattern, Icon icon) {
+        return Utilities.getActionsFactory().mainProjectCommandAction(command, namePattern, icon);
     }
         
     /**
@@ -78,13 +81,16 @@ public class MainProjectSensitiveActions {
      * action should or should not be enabled. If no main project is selected the 
      * project parameter in the callback will be null.
      * @param performer callback class for enabling and performing the action    
-     * @param name display name of the action
+     * @param namePattern a pattern which should be used for determining the action's
+     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}:
+     *        <code>{0}</code> - number of selected projects (or -1 if a main project is set);
+     *        <code>{1}</code> - name of the first project (if >0).
      * @param icon icon of the action; may be null, in which case the action will
      *        not have an icon
      * @return an action sensitive to the main project
      */
-    public static Action mainProjectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon ) {
-        return Utilities.getActionsFactory().mainProjectSensitiveAction( performer, name, icon );
+    public static Action mainProjectSensitiveAction(ProjectActionPerformer performer, String namePattern, Icon icon) {
+        return Utilities.getActionsFactory().mainProjectSensitiveAction(performer, namePattern, icon);
     }
     
 }

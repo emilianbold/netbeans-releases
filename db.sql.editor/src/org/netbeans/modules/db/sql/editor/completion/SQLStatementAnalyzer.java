@@ -59,8 +59,10 @@ public class SQLStatementAnalyzer {
         }
         if (isKeyword ("SELECT", seq)) { // NOI18N
             return SQLStatementKind.SELECT;
-        } else if (isKeyword ("INSERT", seq)) {
+        } else if (isKeyword ("INSERT", seq)) {  //NOI18N
             return SQLStatementKind.INSERT;
+        } else if (isKeyword("DROP", seq)) {  //NOI18N
+            return SQLStatementKind.DROP;
         }
         return null;
     }

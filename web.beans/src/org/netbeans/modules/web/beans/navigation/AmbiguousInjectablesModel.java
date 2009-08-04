@@ -49,12 +49,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -62,16 +62,15 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.java.source.ui.ElementOpen;
@@ -86,9 +85,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * The hierarchy tree model
- * Based on org.netbeans.modules.java.navigation.JavaHierarchyModel.
- *
  * @author ads
  */
 public final class AmbiguousInjectablesModel extends DefaultTreeModel {
@@ -96,47 +92,44 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
     private static final Logger LOG = Logger.getLogger(AmbiguousInjectablesModel.class.getName());
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
-    static ElementHandle[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
-
-    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
+    static ElementHandle<?>[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
 
     /**
      * Holds value of property pattern.
      */
-    private FileObject fileObject;
-    private ElementHandle[] elementHandles;
+    private ElementHandle<?>[] elementHandles;
 
-    /**
-     */
-    public AmbiguousInjectablesModel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public AmbiguousInjectablesModel(Collection<Element> elements, 
+            CompilationController controller ) 
+    {
         super(null);
-        this.fileObject = fileObject;
 
-        if ((elements == null) || (elements.length == 0)) {
+        //if ((elements == null) || (elements.length == 0)) {
             elementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
-        } else {
-            List<ElementHandle> elementHandlesList = new ArrayList<ElementHandle>(elements.length);
+        /*} else {
+            List<ElementHandle<?>> elementHandlesList = new ArrayList<ElementHandle<?>>(elements.length);
 
-            for (Element element : elements) {
-                elementHandlesList.add(ElementHandle.create(element));
+            for (Element el : elements) {
+                elementHandlesList.add(ElementHandle.create(el));
             }
 
             elementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
         }
 
-        update(elements, compilationInfo);
+        update(elements, controller );*/
     }
     
     public void update() {
         update(elementHandles);
     }
 
-    private void update(final ElementHandle[] elementHandles) {
-        if ((elementHandles == null) && (elementHandles.length == 0)) {
+    private void update(final ElementHandle<?>[] elementHandles) {
+        if ((elementHandles == null) || (elementHandles.length == 0)) {
             return;
         }
 
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        /* TODO :
+         * JavaSource javaSource = JavaSource.forFileObject(fileObject);
 
         if (javaSource != null) {
             try {
@@ -148,7 +141,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
 
                             List<Element> elementsList = new ArrayList<Element>(elementHandles.length);
 
-                            for (ElementHandle elementHandle : elementHandles) {
+                            for (ElementHandle<?> elementHandle : elementHandles) {
                                 final Element element = elementHandle.resolve(compilationController);
                                 if (element != null) {
                                     elementsList.add(element);
@@ -167,12 +160,12 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-        }
+        }*/
     }
 
     private void update(final Element[] elements,
         CompilationInfo compilationInfo) {
-        if ((elements == null) && (elements.length == 0)) {
+        if ((elements == null) || (elements.length == 0)) {
             return;
         }
 
@@ -182,11 +175,8 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             if ((element.getKind() == ElementKind.CLASS) ||
                     (element.getKind() == ElementKind.INTERFACE) ||
                     (element.getKind() == ElementKind.ENUM) ||
-                    (element.getKind() == ElementKind.ANNOTATION_TYPE)) {
-                /*TODO : if (JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
-                    root.add(new TypeTreeNode(fileObject,
-                            ((TypeElement) element), compilationInfo, null));
-                } else*/ {
+                    (element.getKind() == ElementKind.ANNOTATION_TYPE)) 
+            {
                     Types types = compilationInfo.getTypes();
                     TypeElement typeElement = ((TypeElement) element);
                     List<TypeElement> superClasses = new ArrayList<TypeElement>();
@@ -203,8 +193,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
                         DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, null, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
                         parent.insert(child, 0);
                         parent = child;
-                    }
-                    // TODO JavaMembersAndHierarchyOptions.setSubTypeHierarchyDepth(superClasses.size()+2);
                 }
             }
         }
@@ -213,7 +201,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
     }
 
     void fireTreeNodesChanged() {
-        super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
+        // TODO  : super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
     }
     
     private abstract class AbstractHierarchyTreeNode
@@ -231,12 +219,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
         private final ClasspathInfo cpInfo;
 
         private boolean loaded = false;
-        private AbstractHierarchyTreeNode owner;
-
-        AbstractHierarchyTreeNode(FileObject fileObject,
-            Element element, CompilationInfo compilationInfo, final AbstractHierarchyTreeNode owner) {
-            this( fileObject, element, compilationInfo, owner, false);
-        }
 
         AbstractHierarchyTreeNode(FileObject fileObject,
             Element element, CompilationInfo compilationInfo, final AbstractHierarchyTreeNode owner, boolean lazyLoadChildren) {
@@ -245,7 +227,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             this.elementKind = element.getKind();
             this.modifiers = element.getModifiers();
             this.cpInfo = compilationInfo.getClasspathInfo();
-            this.owner = owner;
 
             setName(element.getSimpleName().toString());
             setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
@@ -262,10 +243,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
                     loaded = true;
                 }
             }
-        }
-
-        public AbstractHierarchyTreeNode getOwningTreeNode () {
-            return this.owner;
         }
 
         @Override
@@ -304,24 +281,12 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             return label;
         }
 
-        protected void setLabel(String label) {
-            this.label = label;
-        }
-        
         public String getFQNLabel() {
             return FQNlabel;
         }
 
-        protected void setFQNLabel(String FQNlabel) {
-            this.FQNlabel = FQNlabel;
-        }
-
         public String getTooltip() {
             return tooltip;
-        }
-
-        protected void setToolTip(String tooltip) {
-            this.tooltip = tooltip;
         }
 
         public Icon getIcon() {
@@ -330,11 +295,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
 
         protected void setIcon(Icon icon) {
             this.icon = icon;
-        }
-
-        protected void setElementHandle(
-            ElementHandle<?extends Element> elementHandle) {
-            this.elementHandle = elementHandle;
         }
 
         public ElementJavadoc getJavaDoc() {
@@ -369,7 +329,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             this.javaDoc = javaDoc;
         }
 
-        public ElementHandle getElementHandle() {
+        public ElementHandle<?> getElementHandle() {
             return elementHandle;
         }
 
@@ -405,8 +365,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             CompilationInfo compilationInfo);
 
         public String toString() {
-            //TODO :return (JavaMembersAndHierarchyOptions.isShowFQN()? getFQNLabel() : getLabel());
-            return "";
+            return (WebBeansNavigationOptions.isShowFQN()? getFQNLabel() : getLabel());
         }
 
         protected void openElementHandle() {
@@ -424,86 +383,6 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             }
         }
 
-    }
-
-    private class TypeTreeNode extends AbstractHierarchyTreeNode {
-        private boolean inSuperClassRole;
-
-        TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner) {
-            this(fileObject, typeElement, compilationInfo, owner, false);
-        }
-
-        TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo, owner);
-            this.inSuperClassRole = inSuperClassRole;
-        }
-
-        public boolean isLeaf() {
-            return false;
-        }
-
-        protected void loadChildren(Element element,
-            CompilationInfo compilationInfo) {
-            loadChildren(element, compilationInfo, 0);
-        }
-
-        protected int loadChildren(Element element,
-            CompilationInfo compilationInfo, int index) {
-            Types types = compilationInfo.getTypes();
-
-            TypeElement typeElement = (TypeElement) element;
-
-            TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
-            if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
-                if(!hasCycle(superClass)){
-                    insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, this, true), index++);
-                }
-            }
-            List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
-            for (TypeMirror interfaceMirror:interfaces) {
-                TypeElement interfaceElement = (TypeElement) types.asElement(interfaceMirror);
-                if (interfaceElement != null) {
-                    if(!hasCycle((TypeElement)interfaceElement)){
-                        insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, this, true), index++);
-                    }
-                }
-            }
-
-            /* TODO
-             if (JavaMembersAndHierarchyOptions.isShowInner()) {
-                if (!inSuperClassRole) {
-                    for (Element childElement:typeElement.getEnclosedElements()) {
-                        AbstractHierarchyTreeNode node = null;
-                        if ((childElement.getKind() == ElementKind.CLASS) ||
-                            (childElement.getKind() == ElementKind.INTERFACE) ||
-                            (childElement.getKind() == ElementKind.ENUM) ||
-                            (childElement.getKind() == ElementKind.ANNOTATION_TYPE)) {
-                            node = new TypeTreeNode(getFileObject(), (TypeElement)childElement, compilationInfo, this, true);
-                            if(!hasCycle((TypeElement) childElement)){
-                                insert(node, index++);
-                            }
-                        }
-                    }
-                }
-            }*/
-            return index;
-        }
-        private boolean hasCycle (final TypeElement type) {
-            final String binName = ElementUtilities.getBinaryName(type);
-            AbstractHierarchyTreeNode node = this;
-            while (node != null) {
-                if (node instanceof TypeTreeNode) {
-                    if (binName.equals(((TypeTreeNode)node).getElementHandle().getBinaryName())) {
-                        return true;
-                    }
-                }
-                //getParent cannot be used, ut's not yet filled.
-                node = node.getOwningTreeNode();
-            }
-            return false;
-        }
     }
 
     private class SimpleTypeTreeNode extends AbstractHierarchyTreeNode {

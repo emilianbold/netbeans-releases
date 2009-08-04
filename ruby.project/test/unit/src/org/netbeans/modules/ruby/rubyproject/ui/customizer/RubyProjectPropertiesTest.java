@@ -40,10 +40,10 @@ package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.PLATFORM_ACTIVE;
 

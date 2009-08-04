@@ -153,8 +153,8 @@ public class HttpMethodsChildren extends Children.Keys {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof HttpMethod) {
                                 if (HttpMethodNode.getKey((HttpMethod) method).equals(key)) {
-                                    return new Node[] { new HttpMethodNode(project, 
-                                            desc.getClassName(), (HttpMethod) method) };
+                                    return new Node[] {
+                                        new HttpMethodNode(project, desc,(HttpMethod) method)};
                                 }
                             }
                         }

@@ -42,183 +42,246 @@
 package org.netbeans.core;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.loaders.Environment;
+import org.openide.loaders.InstanceSupport;
+import org.openide.loaders.XMLDataObject;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Document;
 
-/** Test NbKeymap.
- * @author Jesse Glick
- * @see "#30455" */
 public class NbKeymapTest extends NbTestCase {
     public NbKeymapTest(String name) {
         super(name);
     }
-    
-    @Override
-    protected boolean runInEQ () {
-        return true;
+
+    static {
+        System.setProperty("os.name", "Linux"); // just to standardize modifier key binding
+    }
+
+    protected @Override void setUp() throws Exception {
+        for (FileObject f : FileUtil.getConfigRoot().getChildren()) {
+            f.delete();
+        }
     }
     
-    public void testBasicFunctionality() throws Exception {
-        Keymap km = new NbKeymap();
-        Action a1 = new DummyAction("a1");
-        Action a2 = new DummyAction("a2");
-        Action d = new DummyAction("d");
-        KeyStroke k1 = KeyStroke.getKeyStroke("X");
-        KeyStroke k2 = KeyStroke.getKeyStroke("Y");
-        assertFalse(k1.equals(k2));
-        assertNull(km.getAction(k1));
-        assertNull(km.getAction(k2));
-        assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getBoundActions()));
-        assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getBoundKeyStrokes()));
-        assertNull(km.getDefaultAction());
-        km.setDefaultAction(d);
-        assertEquals(d, km.getDefaultAction());
-        km.addActionForKeyStroke(k1, a1);
-        assertEquals(a1, km.getAction(k1));
-        assertTrue(km.isLocallyDefined(k1));
-        assertEquals(null, km.getAction(k2));
-        assertEquals(Collections.singletonList(a1), Arrays.asList(km.getBoundActions()));
-        assertEquals(Collections.singletonList(k1), Arrays.asList(km.getBoundKeyStrokes()));
-        km.addActionForKeyStroke(k2, a2);
-        assertEquals(a1, km.getAction(k1));
-        assertEquals(a2, km.getAction(k2));
-        assertEquals(2, km.getBoundActions().length);
-        assertEquals(2, km.getBoundKeyStrokes().length);
-        km.addActionForKeyStroke(k1, d);
-        assertEquals(d, km.getAction(k1));
-        assertEquals(a2, km.getAction(k2));
-        assertEquals(2, km.getBoundActions().length);
-        assertEquals(2, km.getBoundKeyStrokes().length);
-        assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getKeyStrokesForAction(a1)));
-        assertEquals(Collections.singletonList(k2), Arrays.asList(km.getKeyStrokesForAction(a2)));
-        assertEquals(Collections.singletonList(k1), Arrays.asList(km.getKeyStrokesForAction(d)));
-        km.removeKeyStrokeBinding(k2);
-        assertEquals(d, km.getAction(k1));
-        assertNull(km.getAction(k2));
-        assertEquals(Collections.singletonList(d), Arrays.asList(km.getBoundActions()));
-        assertEquals(Collections.singletonList(k1), Arrays.asList(km.getBoundKeyStrokes()));
-        km.removeBindings();
-        assertNull(km.getAction(k1));
-        assertNull(km.getAction(k2));
-        assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getBoundActions()));
-        assertEquals(Collections.EMPTY_LIST, Arrays.asList(km.getBoundKeyStrokes()));
+    private FileObject make(String path) throws IOException {
+        return FileUtil.createData(FileUtil.getConfigRoot(), path);
     }
-    
-    public void testObservability() throws Exception {
-        NbKeymap km = new NbKeymap();
-        O o = new O();
-        km.addObserver(o);
-        assertFalse(o.changed);
-        Action a1 = new DummyAction("a1");
-        Action a2 = new DummyAction("a2");
-        KeyStroke k1 = KeyStroke.getKeyStroke("X");
-        km.addActionForKeyStroke(k1, a1);
-        assertTrue(o.changed);
-        o.changed = false;
-        km.addActionForKeyStroke(k1, a2);
-        assertTrue(o.changed);
-        o.changed = false;
-        km.removeKeyStrokeBinding(k1);
-        assertTrue(o.changed);
+
+    private FileObject makeFolder(String path) throws IOException {
+        return FileUtil.createFolder(FileUtil.getConfigRoot(), path);
+    }
+
+    private void assertMapping(Keymap km, KeyStroke stroke, FileObject presenterDefinition, String actionName) throws Exception {
+        Action a = km.getAction(stroke);
+        assertNotNull("for " + stroke, a);
+        assertEquals(actionName, a.getValue(Action.NAME));
+        a.putValue("definingFile", presenterDefinition);
+        assertEquals("for " + stroke + " from " + presenterDefinition.getPath(),
+                Collections.singletonList(stroke), Arrays.asList(km.getKeyStrokesForAction(a)));
     }
     
     public void testAcceleratorMapping() throws Exception {
+        FileObject def1 = make("Actions/DummyAction1.instance");
+        def1.setAttribute("instanceCreate", new DummyAction("one"));
+        FileObject def2 = make("Actions/DummyAction2.instance");
+        def2.setAttribute("instanceCreate", new DummyAction("two"));
+        FileObject def3 = make("Actions/DummySystemAction1.instance");
+        def3.setAttribute("instanceClass", DummySystemAction1.class.getName());
+        FileObject def4 = make("Actions/" + DummySystemAction2.class.getName().replace('.', '-') + ".instance");
+        DataFolder shortcuts = DataFolder.findFolder(makeFolder("Shortcuts"));
+        DataShadow.create(shortcuts, "1", DataObject.find(def1)).getPrimaryFile();
+        DataShadow.create(shortcuts, "2", DataObject.find(def2)).getPrimaryFile();
+        DataShadow.create(shortcuts, "3", DataObject.find(def3)).getPrimaryFile();
+        DataShadow.create(shortcuts, "C-4", DataObject.find(def4)).getPrimaryFile();
+        DataFolder menu = DataFolder.findFolder(makeFolder("Menu/Tools"));
+        FileObject menuitem1 = DataShadow.create(menu, "whatever1", DataObject.find(def1)).getPrimaryFile();
+        FileObject menuitem2 = DataShadow.create(menu, "whatever2", DataObject.find(def2)).getPrimaryFile();
+        FileObject menuitem3 = DataShadow.create(menu, "whatever3", DataObject.find(def3)).getPrimaryFile();
+        FileObject menuitem4 = DataShadow.create(menu, "whatever4", DataObject.find(def4)).getPrimaryFile();
         Keymap km = new NbKeymap();
-        Action a1 = new DummyAction("a1");
-        Action a2 = new DummyAction("a2");
-        KeyStroke k1 = KeyStroke.getKeyStroke("X");
-        KeyStroke k2 = KeyStroke.getKeyStroke("Y");
-        assertNull(a1.getValue(Action.ACCELERATOR_KEY));
-        assertNull(a2.getValue(Action.ACCELERATOR_KEY));
-        AccL l = new AccL();
-        a1.addPropertyChangeListener(l);
-        assertFalse(l.changed);
-        km.addActionForKeyStroke(k1, a1);
-        assertEquals(k1, a1.getValue(Action.ACCELERATOR_KEY));
-        assertTrue(l.changed);
-        l.changed = false;
-        km.addActionForKeyStroke(k2, a2);
-        assertEquals(k2, a2.getValue(Action.ACCELERATOR_KEY));
-        km.addActionForKeyStroke(k2, a1);
-        Object acc = a1.getValue(Action.ACCELERATOR_KEY);
-        assertTrue(acc == k1 || acc == k2);
-        assertNull(a2.getValue(Action.ACCELERATOR_KEY));
-        km.removeKeyStrokeBinding(k1);
-        assertEquals(k2, a1.getValue(Action.ACCELERATOR_KEY));
-        km.removeKeyStrokeBinding(k2);
-        assertNull(a1.getValue(Action.ACCELERATOR_KEY));
-        assertTrue(l.changed);
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_1, 0), menuitem1, "one");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_2, 0), menuitem2, "two");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_3, 0), menuitem3, "DummySystemAction1");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_4, KeyEvent.CTRL_MASK), menuitem4, "DummySystemAction2");
+    }
+
+    public void testMultipleAcceleratorMapping() throws Exception {
+        FileObject def = make("Actions/paste.instance");
+        def.setAttribute("instanceCreate", new DummyAction("paste"));
+        DataFolder shortcuts = DataFolder.findFolder(makeFolder("Shortcuts"));
+        DataShadow.create(shortcuts, "C-V", DataObject.find(def)).getPrimaryFile();
+        DataShadow.create(shortcuts, "PASTE", DataObject.find(def)).getPrimaryFile();
+        Keymap km = new NbKeymap();
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK), def, "paste");
     }
     
-    public void testAddActionForKeyStrokeMap() throws Exception {
-        NbKeymap km = new NbKeymap();
-        O o = new O();
-        km.addObserver(o);
-        Action a1 = new DummyAction("a1");
-        Action a2 = new DummyAction("a2");
-        Action a3 = new DummyAction("a3");
-        KeyStroke k1 = KeyStroke.getKeyStroke("X");
-        KeyStroke k2 = KeyStroke.getKeyStroke("Y");
-        Map<KeyStroke,Action> m = new HashMap<KeyStroke,Action>();
-        m.put(k1, a1);
-        m.put(k2, a2);
-        km.addActionForKeyStrokeMap(m);
-        assertTrue(o.changed);
-        assertEquals(a1, km.getAction(k1));
-        assertEquals(a2, km.getAction(k2));
-        assertEquals(k1, a1.getValue(Action.ACCELERATOR_KEY));
-        assertEquals(k2, a2.getValue(Action.ACCELERATOR_KEY));
-        assertEquals(2, km.getBoundActions().length);
-        assertEquals(2, km.getBoundKeyStrokes().length);
-        km.removeBindings();
-        km.addActionForKeyStroke(k1, a3);
-        km.addActionForKeyStrokeMap(m);
-        assertEquals(a1, km.getAction(k1));
-        assertEquals(a2, km.getAction(k2));
-        assertEquals(k1, a1.getValue(Action.ACCELERATOR_KEY));
-        assertEquals(k2, a2.getValue(Action.ACCELERATOR_KEY));
-        assertNull(a3.getValue(Action.ACCELERATOR_KEY));
-        assertEquals(2, km.getBoundActions().length);
-        assertEquals(2, km.getBoundKeyStrokes().length);
+    public void testUnusualInstanceFileExtensions() throws Exception {
+        MockServices.setServices(ENV.class);
+        FileObject inst = make("Shortcuts/C-F11.xml");
+        OutputStream os = inst.getOutputStream();
+        os.write("<action/>".getBytes());
+        os.close();
+        assertMapping(new NbKeymap(), KeyStroke.getKeyStroke(KeyEvent.VK_F11, KeyEvent.CTRL_MASK), inst, "whatever");
     }
-    
-    private static final class DummyAction extends AbstractAction {
-        private final String name;
-        public DummyAction(String name) {
-            this.name = name;
-        }
-        public void actionPerformed(ActionEvent e) {}
-        @Override
-        public String toString() {
-            return "DummyAction[" + name + "]";
-        }
+
+    public void testAbstractModifiers() throws Exception {
+        Keymap km = new NbKeymap();
+        FileObject inst1 = make("Shortcuts/D-1.instance");
+        inst1.setAttribute("instanceCreate", new DummyAction("one"));
+        FileObject inst2 = make("Shortcuts/O-1.instance");
+        inst2.setAttribute("instanceCreate", new DummyAction("two"));
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.CTRL_MASK), inst1, "one");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.ALT_MASK), inst2, "two");
     }
-    
-    private static final class O implements Observer {
-        public boolean changed = false;
-        public void update(Observable o, Object arg) {
-            changed = true;
-        }
+
+    public void testDifferentKeymaps() throws Exception {
+        make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
+        make("Keymaps/NetBeans/C-A.instance").setAttribute("instanceCreate", new DummyAction("two"));
+        make("Keymaps/Eclipse/C-A.instance").setAttribute("instanceCreate", new DummyAction("three"));
+        Keymap km = new NbKeymap();
+        KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+        assertEquals("two", km.getAction(controlA).getValue(Action.NAME));
+        FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        assertEquals("three", km.getAction(controlA).getValue(Action.NAME));
+        FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "IDEA");
+        assertEquals("one", km.getAction(controlA).getValue(Action.NAME));
     }
-    
-    private static final class AccL implements PropertyChangeListener {
-        public boolean changed = false;
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName())) {
-                changed = true;
+
+    public void testChangeOfAcceleratorFromKeymap() throws Exception {
+        Action a = new DummyAction("one");
+        FileObject def = make("Actions/one.instance");
+        def.setAttribute("instanceCreate", a);
+        DataShadow.create(DataFolder.findFolder(makeFolder("Keymaps/NetBeans")), "C-A", DataObject.find(def));
+        DataShadow.create(DataFolder.findFolder(makeFolder("Keymaps/Eclipse")), "C-B", DataObject.find(def));
+        Keymap km = new NbKeymap();
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK), def, "one");
+        FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        // Any actions ever passed to getKeyStrokesForAction should get updated when keymap changes:
+        assertEquals(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK), a.getValue(Action.ACCELERATOR_KEY));
+    }
+
+    public void testMultiKeyShortcuts() throws Exception {
+        final AtomicReference<String> ran = new AtomicReference<String>();
+        class A extends AbstractAction {
+            final String s;
+            A(String s) {
+                this.s = s;
+            }
+            public void actionPerformed(ActionEvent e) {
+                ran.set(s);
             }
         }
+        make("Shortcuts/C-X 1.instance").setAttribute("instanceCreate", new A("C-X 1"));
+        make("Shortcuts/C-X 2.instance").setAttribute("instanceCreate", new A("C-X 2"));
+        make("Shortcuts/C-U A B.instance").setAttribute("instanceCreate", new A("C-U A B"));
+        Keymap km = new NbKeymap();
+        Action a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals(null, ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_1, 0));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals("C-X 1", ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals(null, ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_2, 0));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals("C-X 2", ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_MASK));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals(null, ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals(null, ran.getAndSet(null));
+        a = km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0));
+        assertNotNull(a);
+        a.actionPerformed(null);
+        assertEquals("C-U A B", ran.getAndSet(null));
+    }
+
+    public void testChangesInShortcutRegistrations() throws Exception {
+        make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
+        make("Keymaps/NetBeans/C-B.instance").setAttribute("instanceCreate", new DummyAction("two"));
+        Keymap km = new NbKeymap();
+        assertEquals("one", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
+        assertEquals("two", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
+        assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)));
+        FileUtil.getConfigFile("Shortcuts/C-A.instance").delete();
+        assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)));
+        make("Shortcuts/C-C.instance").setAttribute("instanceCreate", new DummyAction("three"));
+        assertEquals("three", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
+        make("Keymaps/NetBeans/C-C.instance").setAttribute("instanceCreate", new DummyAction("four"));
+        assertEquals("four", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
+    }
+
+    private static final class DummyAction extends AbstractAction {
+        public DummyAction(String name) {
+            super(name);
+        }
+        public void actionPerformed(ActionEvent e) {}
     }
     
+    public static class ENV extends Object implements Environment.Provider {
+        public Lookup getEnvironment(DataObject obj) {
+            if (obj instanceof XMLDataObject) {
+                try {
+                    Document doc = ((XMLDataObject) obj).getDocument();
+                    if (doc.getDocumentElement().getNodeName().equals("action")) {
+                        return Lookups.singleton(new InstanceSupport.Instance(new DummyAction("whatever")));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    fail("No exception: " + ex.getMessage());
+                }
+            }
+            return Lookup.EMPTY;
+        }
+    }
+
+    public static final class DummySystemAction1 extends CallableSystemAction {
+        public void performAction() {}
+        public String getName() {
+            return "DummySystemAction1";
+        }
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+    }
+
+    public static final class DummySystemAction2 extends CallableSystemAction {
+        public void performAction() {}
+        public String getName() {
+            return "DummySystemAction2";
+        }
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+    }
+
 }

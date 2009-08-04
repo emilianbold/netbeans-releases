@@ -43,7 +43,6 @@ package org.netbeans.core.multiview;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.KeyEvent;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,15 +50,12 @@ import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
-import javax.swing.text.Keymap;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallbackSystemAction;
 
 
 /**
@@ -250,40 +246,7 @@ class TabsComponent extends JPanel {
             buttonMouseListener = new ButtonMouseListener();
         }
         button.addMouseListener (buttonMouseListener);
-
-        //HACK start - now find the global action shortcut
-        Keymap map = Lookup.getDefault().lookup(Keymap.class);
-        KeyStroke stroke = null;
-        KeyStroke stroke2 = null;
-//in tests map can be null, that's why the check..
-        if (map != null) {
-            // map is null in tests..
-            Action[] acts = map.getBoundActions();
-            for (int i = 0; i < acts.length;i++) {
-                if (acts[i] instanceof CallbackSystemAction) {
-                    CallbackSystemAction sa = (CallbackSystemAction)acts[i];
-                    if ("NextViewAction".equals(sa.getActionMapKey())) { //NOI18N
-                        KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
-                        if (strokes != null && strokes.length > 0) {
-                            stroke = strokes[0];
-                        }
-                    }
-                    if ("PreviousViewAction".equals(sa.getActionMapKey())) { //NOI18N
-                        KeyStroke[] strokes = map.getKeyStrokesForAction(acts[i]);
-                        if (strokes != null && strokes.length > 0) {
-                            stroke2 = strokes[0];
-                        }
-                    }
-                }
-            }
-        }
-        //HACK end
-        String key1 = stroke == null ? "" : KeyEvent.getKeyModifiersText(stroke.getModifiers()) + "+" + KeyEvent.getKeyText(stroke.getKeyCode());//NOI18N
-        String key2 = stroke2 == null ? "" : KeyEvent.getKeyModifiersText(stroke2.getModifiers()) + "+" + KeyEvent.getKeyText(stroke2.getKeyCode());//NOI18N
-        button.setToolTipText(NbBundle.getMessage(TabsComponent.class, "TabButton.tooltip",//NOI18N
-                              button.getText(), 
-                              key1,
-                              key2));
+        button.setToolTipText(NbBundle.getMessage(TabsComponent.class, "TabButton.tool_tip", button.getText()));
         button.setFocusable(true);
         button.setFocusPainted(true);
         return button;

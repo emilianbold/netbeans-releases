@@ -242,7 +242,7 @@ class DDTable extends JTable implements KeyListener {
     public void keyTyped(KeyEvent keyEvent) {
     }
 
-    class DDTableModel extends AbstractTableModel {
+    static class DDTableModel extends AbstractTableModel {
 
         private String[] colheaders = null;
         private Object[][] data = null;
@@ -309,7 +309,7 @@ class DDTable extends JTable implements KeyListener {
                 LOG.finer("newRowIndex is " + newRowIndex); //NOI18N
             }
             data = data2;
-            numRows = --numRows;
+            numRows--;
         }
 
         void setData(String name, String value, int row) {
@@ -327,7 +327,7 @@ class DDTable extends JTable implements KeyListener {
         }
     } // DDTableModel
 
-    class CellText extends JTextField {
+    static class CellText extends JTextField {
 
         private static final long serialVersionUID = 2674682216176560005L;
 

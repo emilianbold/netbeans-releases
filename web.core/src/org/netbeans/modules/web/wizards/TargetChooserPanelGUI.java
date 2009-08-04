@@ -42,11 +42,13 @@
 package org.netbeans.modules.web.wizards;
 
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,7 +66,7 @@ import org.netbeans.modules.web.core.Util;
 
 /**
  *
- * @author  phrebejk, mkuchtiak
+ * @author  phrebejk, mkuchtiak, alexeybutenko
  */
 public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener  {
     private static final Logger LOG = Logger.getLogger(TargetChooserPanelGUI.class.getName());
@@ -83,11 +85,13 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     private SourceGroup[] folders;
     private FileType fileType;
     private WebModule wm;
+
+    private TargetChooserPanel.PreferredLanguage preferredLanguage;
     // GUI components for JSP/TAG
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JRadioButton jspSyntaxButton, xmlSyntaxButton;
+    private javax.swing.JRadioButton jspSyntaxButton, xmlSyntaxButton, faceletsSyntaxButton;
     private javax.swing.JCheckBox segmentBox, tldCheckBox;
     private javax.swing.JButton browseButton1;
     private javax.swing.JLabel descriptionLabel, optionLabel;
@@ -109,26 +113,32 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         this.project = project;
         this.folders=folders;
         this.fileType=fileType;
+        int gridy=0;
         initComponents();
         getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_DESC_TargetPanel",fileType.toString()));
         
-        if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType)) {
+        if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType) || FileType.JSF.equals(fileType)) {
             buttonGroup1 = new javax.swing.ButtonGroup();
             jScrollPane1 = new javax.swing.JScrollPane();
             descriptionArea = new javax.swing.JTextArea();
             segmentBox = new javax.swing.JCheckBox();
+            int segmenty;
             descriptionLabel = new javax.swing.JLabel();
             optionLabel = new javax.swing.JLabel();
             jspSyntaxButton = new javax.swing.JRadioButton();
-            xmlSyntaxButton = new javax.swing.JRadioButton();
+            if (!FileType.JSF.equals(fileType))
+                xmlSyntaxButton = new javax.swing.JRadioButton();
+            if (isFaceletsAvailable() && FileType.JSF.equals(fileType))
+                faceletsSyntaxButton = new javax.swing.JRadioButton();
+            
             optionsPanel = new javax.swing.JPanel();
 
             optionsPanel.setLayout(new java.awt.GridBagLayout());
 
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridy = gridy;
             gridBagConstraints.gridwidth = 4;
             gridBagConstraints.weightx = 2;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -144,13 +154,32 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             optionLabel.setText(org.openide.util.NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_Options"));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridy = gridy++;
             gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             optionsPanel.add(optionLabel, gridBagConstraints);
 
-            jspSyntaxButton.setSelected(true);
-            if (FileType.JSP.equals(fileType))
+            if (isFaceletsAvailable() && FileType.JSF.equals(fileType)) {
+                faceletsSyntaxButton.setSelected(true);
+                segmentBox.setEnabled(false);
+                faceletsSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_Facelets_mnem").charAt(0));
+                buttonGroup1.add(faceletsSyntaxButton);
+                faceletsSyntaxButton.addItemListener(new java.awt.event.ItemListener() {
+                    public void itemStateChanged(ItemEvent evt) {
+                        checkBoxChanged(evt);
+                    }
+                });
+
+                gridBagConstraints = new java.awt.GridBagConstraints();
+                gridBagConstraints.gridx = 0;
+                gridBagConstraints.gridy = gridy++;
+                gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+                gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+                optionsPanel.add(faceletsSyntaxButton,gridBagConstraints);
+            } else {
+                jspSyntaxButton.setSelected(true);
+            }
+            if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType))
                 jspSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspStandard_mnem").charAt(0));
             else
                 jspSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_TagStandard_mnem").charAt(0));
@@ -162,37 +191,39 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             });
 
             gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridx = 0;
+            segmenty = gridy;
+            gridBagConstraints.gridy = gridy++;
             gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             optionsPanel.add(jspSyntaxButton, gridBagConstraints);
-            
-            xmlSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspXml_mnem").charAt(0));
-            buttonGroup1.add(xmlSyntaxButton);
-            xmlSyntaxButton.addItemListener(new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    checkBoxChanged(evt);
-                }
-            });
+            if (!FileType.JSF.equals(fileType)) {
+                xmlSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspXml_mnem").charAt(0));
+                buttonGroup1.add(xmlSyntaxButton);
+                xmlSyntaxButton.addItemListener(new java.awt.event.ItemListener() {
+                    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                        checkBoxChanged(evt);
+                    }
+                });
+
+                gridBagConstraints = new java.awt.GridBagConstraints();
+                gridBagConstraints.gridx = 0;
+                gridBagConstraints.gridy = gridy++;
+                gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+                gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+                optionsPanel.add(xmlSyntaxButton, gridBagConstraints);
+            }
 
             gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 2;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            optionsPanel.add(xmlSyntaxButton, gridBagConstraints);
-            
-            gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 1;
+            gridBagConstraints.gridy = segmenty;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
             segmentBox.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspSegment_mnem").charAt(0));
             optionsPanel.add(segmentBox, gridBagConstraints);
             
             gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 3;
+            gridBagConstraints.gridx = 2;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.gridheight = 2;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -437,18 +468,28 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         
         setName( NbBundle.getMessage(TargetChooserPanelGUI.class,"TITLE_name_location"));
         
-        if (fileType.equals(FileType.JSP)) {
+        if (fileType.equals(FileType.JSP) || FileType.JSF.equals(fileType)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_JspName"));
             jspSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_JspSyntax"));
             jspSyntaxButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_JSP"));
-            xmlSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_XmlSyntax"));
-            xmlSyntaxButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_JSP_XML"));
+            if (!FileType.JSF.equals(fileType)) {
+                xmlSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_XmlSyntax"));
+                xmlSyntaxButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_JSP_XML"));
+            }
+            if (isFaceletsAvailable() && FileType.JSF.equals(fileType)) {
+                faceletsSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_Facelets"));
+                faceletsSyntaxButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_FACELETS"));
+            }
             segmentBox.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_JspSegment"));
             segmentBox.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_DESC_JSP_segment"));
-            descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_JSP"));
+            if (isFaceletsAvailable() && FileType.JSF.equals(fileType))
+                descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_FACELETS"));
+            else
+                descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_JSP"));
         } else if (fileType.equals(FileType.TAG)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_TagFileName"));
             jspSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_TagFileJsp"));
@@ -532,11 +573,13 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             if (wm!=null) {
                 if (target==null || !target.startsWith(TAG_FILE_FOLDER))
                     folderTextField.setText(TAG_FILE_FOLDER+"/"); // NOI18N
-                else folderTextField.setText( target == null ? "" : target ); // NOI18N
+                else
+                    folderTextField.setText(target);
             } else {
                  if (target==null || !target.startsWith(TAG_FILE_IN_JAVALIB_FOLDER))
                      folderTextField.setText(TAG_FILE_IN_JAVALIB_FOLDER+"/"); // NOI18N
-                 else folderTextField.setText( target == null ? "" : target ); // NOI18N
+                 else
+                     folderTextField.setText(target);
             }
         } else if (FileType.TAGLIBRARY.equals(fileType) && target==null) {
             if (wm==null) folderTextField.setText(TLD_IN_JAVALIB_FOLDER+"/"); // NOI18N
@@ -602,7 +645,6 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
 
         // removing multiple slashes
         java.util.StringTokenizer tokens = new java.util.StringTokenizer(norm,"/");
-        java.util.List list = new java.util.ArrayList();
         StringBuffer buf = new StringBuffer(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
@@ -858,8 +900,9 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             if (documentName.length() == 0) {
                 fileTextField.setText(""); // NOI18N
             } else {
+                String extension = isFacelets() ? ".xhtml" : expectedExtension+(isSegment()?"f":(isXml()?"x":""));
                 File newFile = new File(new File(rootDirFile, folderTextField.getText().replace('/', File.separatorChar)),
-                                        documentName + expectedExtension+(isSegment()?"f":(isXml()?"x":""))); //NOI18N
+                                        documentName + extension); //NOI18N
                 fileTextField.setText(newFile.getAbsolutePath());
             }
         } else {
@@ -900,7 +943,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     /** specific for JSP/TAG wizards
      */
     private void checkBoxChanged(java.awt.event.ItemEvent evt) {
-        if (fileType.equals(FileType.JSP)) {
+        if (fileType.equals(FileType.JSP) || FileType.JSF.equals(fileType)) {
             if (isSegment()) {
                 if (isXml()) {
                     descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_segment_XML"));
@@ -920,11 +963,24 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                         fileTextField.setText(createdFile.substring(0,createdFile.length()-1)+"x"); //NOI18N
                     } else if (createdFile.endsWith("jsp")) { //NOI18N
                         fileTextField.setText(createdFile+"x"); //NOI18N
+                    } else {
+                        fileTextField.setText(createdFile.substring(0,createdFile.lastIndexOf(".")+1)+"jspx"); //NOI18N
                     }
+                } else if(isFacelets()) {
+                    descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_FACELETS"));
+                    if (createdFile.endsWith("jspf") || createdFile.endsWith("jspx")) { //NOI18N
+                        fileTextField.setText(createdFile.substring(0,createdFile.length()-4)+"xhtml"); //NOI18N
+                    } else if(createdFile.endsWith("jsp")) { //NOI18N
+                        fileTextField.setText(createdFile.substring(0,createdFile.length()-3)+"xhtml"); //NOI18N
+                    }
+                    segmentBox.setEnabled(false);
                 } else {
+                    segmentBox.setEnabled(true);
                     descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_JSP"));
                     if (createdFile.endsWith("jspf") || createdFile.endsWith("jspx")) { //NOI18N
                         fileTextField.setText(createdFile.substring(0,createdFile.length()-1)); //NOI18N
+                    } else {
+                        fileTextField.setText(createdFile.substring(0,createdFile.lastIndexOf(".")+1)+"jsp"); //NOI18N
                     }
                 }
             }
@@ -978,6 +1034,11 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         else return segmentBox.isSelected();
     }
 
+    boolean isFacelets() {
+        if (faceletsSyntaxButton == null) return false;
+        else return faceletsSyntaxButton.isSelected();
+    }
+
     String getUri() {
         if (uriTextField==null) return "";
         else return uriTextField.getText();
@@ -988,7 +1049,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     }
     
     String getErrorMessage() {
-        if (FileType.JSP.equals(fileType)) {
+        if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType)) {
             if (isSegment() && !getNormalizedFolder().startsWith("WEB-INF/jspf")) //NOI18N
                 return NbBundle.getMessage(TargetChooserPanelGUI.class,"NOTE_segment");
         } else if (FileType.TAG.equals(fileType)) {
@@ -1083,7 +1144,23 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             wizardPanel.fireChange();
         }
     }
- 
+
+    boolean isFaceletsAvailable() {
+        if (preferredLanguage == null) {
+            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            String lang = preferences.get("jsf.language", "NOLANG");   //NOI18N
+            if ("JSP".equals(lang))   //NOI18N
+                preferredLanguage = TargetChooserPanel.PreferredLanguage.JSP;
+            else if("Facelets".equals(lang))   //NOI18N
+                preferredLanguage = TargetChooserPanel.PreferredLanguage.Facelets;
+            else
+                return false;
+        }
+        if (preferredLanguage == TargetChooserPanel.PreferredLanguage.Facelets)
+            return true;
+        return false;
+    }
+
     boolean isTldCheckBoxSelected() {
         return tldCheckBox.isSelected();
     }

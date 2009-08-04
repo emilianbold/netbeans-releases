@@ -46,11 +46,15 @@ import javax.swing.JToolBar;
 
 /**
  * ToolBar that doesn't paint any border.
+ * 
+ * Copy of NoBorderToolBar at java.navigation
  *
- * @author S. Aubrecht
+ * @author ads
  */
 public class NoBorderToolBar extends JToolBar {
     
+    private static final long serialVersionUID = 2388606453287832422L;
+
     /** Creates a new instance of NoBorderToolbar */
     public NoBorderToolBar() {
     }

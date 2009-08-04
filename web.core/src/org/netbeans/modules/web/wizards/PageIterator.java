@@ -91,6 +91,10 @@ public class PageIterator implements TemplateWizard.Iterator {
         return new PageIterator(FileType.JSP);
     }
 
+    public static PageIterator createJsfIterator() {
+        return new PageIterator(FileType.JSF);
+    }
+
     public static PageIterator createTagIterator() {
         return new PageIterator(FileType.TAG);
     }
@@ -118,7 +122,7 @@ public class PageIterator implements TemplateWizard.Iterator {
     // You should define what panels you want to use here:
     protected WizardDescriptor.Panel[] createPanels(Project project) {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
-        if (fileType.equals(FileType.JSP)) {
+        if (fileType.equals(FileType.JSP)||fileType.equals(FileType.JSF)) {
             sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -191,7 +195,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         
         Map<String, Object> wizardProps = new HashMap<String, Object>();
 
-        if (FileType.JSP.equals(fileType)) {
+        if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType)) {
             if (panel.isSegment()) {
                 if (panel.isXml()) {
                     template = templateParent.getFileObject("JSPFX", "jspf"); //NOI18N
@@ -201,6 +205,9 @@ public class PageIterator implements TemplateWizard.Iterator {
             } else {
                 if (panel.isXml()) {
                     template = templateParent.getFileObject("JSPX", "jspx"); //NOI18N
+                }
+                if (panel.isFacelets()) {
+                    template = templateParent.getFileObject("JSP", "xhtml"); //NOI18N
                 }
             }
         } else if (FileType.TAG.equals(fileType)) {
@@ -315,9 +322,9 @@ public class PageIterator implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -333,7 +340,7 @@ public class PageIterator implements TemplateWizard.Iterator {
     // or disappear dynamically, go ahead.
     public String name() {
         return NbBundle.getMessage(PageIterator.class, "TITLE_x_of_y",
-                new Integer(index + 1), new Integer(panels.length));
+                index + 1, panels.length);
     }
 
     public boolean hasNext() {

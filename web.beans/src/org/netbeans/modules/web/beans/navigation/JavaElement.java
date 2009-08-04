@@ -54,7 +54,9 @@ import org.netbeans.api.java.source.ui.ElementJavadoc;
 /**
  * The interface representing Java elements in hierarchy and members pop up windows.
  * 
- * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
+ * Copy of JavaElement at java.navigation
+ * 
+ * @author ads
  */
 public interface JavaElement {
     String getName();    
@@ -67,5 +69,5 @@ public interface JavaElement {
     ElementJavadoc getJavaDoc();
     void gotoElement();
     FileObject getFileObject();
-    ElementHandle getElementHandle();
+    ElementHandle<?> getElementHandle();
 }

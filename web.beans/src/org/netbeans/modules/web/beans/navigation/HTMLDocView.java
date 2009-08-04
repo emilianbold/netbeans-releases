@@ -59,11 +59,14 @@ import javax.swing.text.html.HTMLEditorKit;
 /**
  *  HTML documentation view.
  *  Javadoc content is displayed in JEditorPane pane using HTMLEditorKit.
+ *  
+ *  Copy of HTMLDocView in java.naviation.
  *
- *  @author  Martin Roskanin
- *  @since   03/2002
+ *  @author  ads
  */
 class HTMLDocView extends JEditorPane {
+    
+    private static final long serialVersionUID = 6743108080998604204L;
     
     private HTMLEditorKit htmlKit;
     

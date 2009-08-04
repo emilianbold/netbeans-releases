@@ -53,7 +53,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -187,6 +186,8 @@ public class SvnClientFactory {
     private void setup() {
         try {
             String factoryType = System.getProperty("svnClientAdapterFactory");
+            // ping config file copying
+            SvnConfigFiles.getInstance();
 
             if(factoryType == null ||
                factoryType.trim().equals("") ||
