@@ -47,7 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.module.dlight.threads.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
