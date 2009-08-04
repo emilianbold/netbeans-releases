@@ -64,6 +64,6 @@ syscall::close*:return
 
 tick-1s, END
 {
-    printa("0 %s %d \"%s\" %@d %k\n", @transfer);
+    printa("-1 %s %d \"%s\" %@d %k\n", @transfer);
     trunc(@transfer);
 }

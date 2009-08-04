@@ -39,18 +39,22 @@
 package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
@@ -66,6 +70,16 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
     private static final int INDICATOR_POSITION = 400;
 
+    private static final int BINARY_ORDER = 1024;
+    private static final int DECIMAL_ORDER = 1000;
+    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
+
+    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
+    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+    static {
+        FRAC_FORMAT.setMaximumFractionDigits(1);
+    }
+
     public FopsToolConfigurationProvider() {
     }
 
@@ -74,12 +88,13 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(ID, toolName);
 
+        Column opColumn = new Column("operation", String.class, getMessage("Column.OpType"), null); // NOI18N
         Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
         Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
                 new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
-                new Column("operation", String.class, getMessage("Column.OpType"), null), // NOI18N
+                opColumn,
                 new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
                 fileColumn,
                 sizeColumn,
@@ -115,9 +130,15 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), 100, // NOI18N
                 Arrays.asList(
-                        new GraphDescriptor(Color.GRAY, getMessage("Indicator.Value"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToIOPlot());
+                        new GraphDescriptor(Color.RED, getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
+                        new GraphDescriptor(Color.BLUE, getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
+                new DataRowToIOPlot(opColumn, sizeColumn));
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
+        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
+            public String render(int value) {
+                return formatValue(value);
+            }
+        });
         indicatorConfiguration.addVisualizerConfiguration(
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName()));
 
@@ -130,12 +151,50 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         return NbBundle.getMessage(FopsToolConfigurationProvider.class, name);
     }
 
-    private static class DataRowToIOPlot implements DataRowToPlot {
-        public void addDataRow(DataRow row) {
-            //throw new UnsupportedOperationException("Not supported yet.");
+    private static String formatValue(long value) {
+        double dbl = value;
+        int i = 0;
+        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
         }
-        public void tick(float[] data, Map<String,String> details) {
-            //throw new UnsupportedOperationException("Not supported yet.");
+        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
+        }
+        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
+        return nf.format(dbl) + SUFFIXES[i];
+    }
+
+    private static class DataRowToIOPlot implements DataRowToPlot {
+
+        private final String opColumn;
+        private final String sizeColumn;
+        private long reads;
+        private long writes;
+
+        public DataRowToIOPlot(Column opColumn, Column sizeColumn) {
+            this.opColumn = opColumn.getColumnName();
+            this.sizeColumn = sizeColumn.getColumnName();
+        }
+
+        public synchronized void addDataRow(DataRow row) {
+            String op = row.getStringValue(opColumn);
+            if ("read".equals(op) || "write".equals(op)) { // NOI18N
+                int bytes = DataUtil.toInt(row.getData(sizeColumn));
+                if ("read".equals(op)) { // NOI18N
+                    reads += bytes;
+                } else {
+                    writes += bytes;
+                }
+            }
+        }
+
+        public synchronized void tick(float[] data, Map<String,String> details) {
+            data[0] = writes;
+            data[1] = reads;
+            writes = 0;
+            reads = 0;
         }
     }
 }
