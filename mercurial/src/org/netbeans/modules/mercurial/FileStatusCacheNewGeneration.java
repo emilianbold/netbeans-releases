@@ -359,27 +359,30 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles, boolean alwaysFireEvent) {
         if(file == null || fi == null) return;
 
-        // XXX the question here is: do we want to keep ignored files in the cache (i mean those ignored by hg, not by SQ)?
-        // if yes, add equivalent(FILE_INFORMATION_UNKNOWN, fi) into the following test
-        if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && HgUtils.isIgnored(file)) {
-            // Sharebility query recognized this file as ignored
-            LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-            fi = file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+        FileInformation current;
+        synchronized (this) {
+            // XXX the question here is: do we want to keep ignored files in the cache (i mean those ignored by hg, not by SQ)?
+            // if yes, add equivalent(FILE_INFORMATION_UNKNOWN, fi) into the following test
+            if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && HgUtils.isIgnored(file)) {
+                // Sharebility query recognized this file as ignored
+                LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
+                fi = file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+            }
+            file = FileUtil.normalizeFile(file);
+            current = getInfo(file);
+            if (equivalent(fi, current)) {
+                // no need to fire an event
+                return;
+            }
+            if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
+                removeInfo(file);
+            } else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
+                removeInfo(file);
+            } else {
+                setInfo(file, fi);
+            }
+            updateParentInformation(file, current, fi);
         }
-        file = FileUtil.normalizeFile(file);
-        FileInformation current = getInfo(file);
-        if (equivalent(fi, current)) {
-            // no need to fire an event
-            return;
-        }
-        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
-            removeInfo(file);
-        } else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
-            removeInfo(file);
-        } else {
-            setInfo(file, fi);
-        }
-        
         fireFileStatusChanged(file, current, fi);
     }
 
@@ -394,12 +397,12 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     }
 
     /**
-     * Updates parent's counters and fires an event into IDE
+     * Updates parent information
      * @param file
      * @param oldInfo
      * @param newInfo
      */
-    private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
+    private void updateParentInformation (File file, FileInformation oldInfo, FileInformation newInfo) {
         File parent = file;
         FileInformation info;
         int counterUp = -1, counterDown = -1;
@@ -440,7 +443,15 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 direct = false;
             }
         }
-        // finally fire the event for the file
+    }
+
+    /**
+     * Fires an event into IDE
+     * @param file
+     * @param oldInfo
+     * @param newInfo
+     */
+    private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
     }
 
