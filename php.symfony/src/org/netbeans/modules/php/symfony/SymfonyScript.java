@@ -45,9 +45,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -160,7 +158,7 @@ public class SymfonyScript extends PhpProgram {
 
     public boolean initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
-        SymfonyCommandSupport commandSupport = getCommandSupport(phpModule);
+        SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -173,7 +171,7 @@ public class SymfonyScript extends PhpProgram {
         assert params != null;
 
         String[] cmdParams = mergeArrays(params, new String[]{app});
-        FrameworkCommandSupport commandSupport = getCommandSupport(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -184,7 +182,7 @@ public class SymfonyScript extends PhpProgram {
         assert phpModule != null;
         assert command != null;
 
-        FrameworkCommandSupport commandSupport = getCommandSupport(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand());
         assert processBuilder != null;
 
@@ -211,13 +209,8 @@ public class SymfonyScript extends PhpProgram {
     }
 
     private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
-        final ExecutionService service = ExecutionService.newService(
-                processBuilder,
-                executionDescriptor,
-                title);
-        final Future<Integer> result = service.run();
         try {
-            result.get();
+            executeAndWait(processBuilder, executionDescriptor, title);
         } catch (ExecutionException ex) {
             if (warnUser) {
                 UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
@@ -225,10 +218,6 @@ public class SymfonyScript extends PhpProgram {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    private static SymfonyCommandSupport getCommandSupport(PhpModule phpModule) {
-        return (SymfonyCommandSupport) SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
     }
 
     static class HelpLineProcessor implements LineProcessor {

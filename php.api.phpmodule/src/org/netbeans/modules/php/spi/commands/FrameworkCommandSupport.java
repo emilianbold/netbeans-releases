@@ -131,11 +131,7 @@ public abstract class FrameworkCommandSupport {
         }
         assert phpInterpreter.isValid() : "php interpreter must be valid";
 
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter.getProgram());
-        for (String param : phpInterpreter.getParameters()) {
-            externalProcessBuilder = externalProcessBuilder.addArgument(param);
-        }
-        return externalProcessBuilder;
+        return phpInterpreter.getProcessBuilder();
     }
 
     /**
@@ -176,7 +172,7 @@ public abstract class FrameworkCommandSupport {
     }
 
     /**
-     * Get {@link ExecutionDescriptor descriptor} with factory for standard output processor.
+     * Get {@link PhpProgram#getExecutionDescriptor() descriptor} with factory for standard output processor.
      * This descriptor refreshes PHP module after running a command.
      * @param outFactory factory for standard output processor.
      * @return {@link ExecutionDescriptor descriptor} with factory for standard output processor.
@@ -228,7 +224,8 @@ public abstract class FrameworkCommandSupport {
     }
 
     /**
-     * Create command. Warning should be shown if any error occurs.
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * Warning should be shown if any error occurs.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
@@ -239,7 +236,8 @@ public abstract class FrameworkCommandSupport {
     }
 
     /**
-     * Create command. No error dialog is displayed if e.g. framework script is invalid.
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * No error dialog is displayed if e.g. framework script is invalid.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.

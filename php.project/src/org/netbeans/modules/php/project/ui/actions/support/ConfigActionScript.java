@@ -143,7 +143,6 @@ class ConfigActionScript extends ConfigAction {
             this(null);
         }
 
-        // XXX fix this
         public ScriptProvider(Lookup context) {
             PhpProgram prg = null;
             try {
@@ -169,25 +168,19 @@ class ConfigActionScript extends ConfigAction {
         public ExecutionDescriptor getDescriptor() throws IOException {
             assert startFile != null;
             RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
-            return new ExecutionDescriptor()
+            return PhpProgram.getExecutionDescriptor()
                     .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
-                    .inputVisible(true)
-                    .showProgress(true)
                     .optionsPath(UiUtils.OPTIONS_PATH)
                     .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
                     .outProcessorFactory(redirector)
                     .postExecution(redirector)
                     .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
-
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
             assert startFile != null;
-            ExternalProcessBuilder builder = new ExternalProcessBuilder(program.getProgram());
-            for (String param : program.getParameters()) {
-                builder = builder.addArgument(param);
-            }
-            builder = builder.addArgument(startFile.getName());
+            ExternalProcessBuilder builder = program.getProcessBuilder()
+                    .addArgument(startFile.getName());
             String argProperty = ProjectPropertiesSupport.getArguments(project);
             if (StringUtils.hasText(argProperty)) {
                 for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N

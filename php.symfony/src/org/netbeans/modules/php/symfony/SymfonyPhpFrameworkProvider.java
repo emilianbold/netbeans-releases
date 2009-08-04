@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
@@ -122,7 +121,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public FrameworkCommandSupport createFrameworkCommandSupport(PhpModule phpModule) {
+    public SymfonyCommandSupport createFrameworkCommandSupport(PhpModule phpModule) {
         return new SymfonyCommandSupport(phpModule);
     }
 }

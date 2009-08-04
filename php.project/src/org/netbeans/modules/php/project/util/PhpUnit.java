@@ -157,8 +157,10 @@ public final class PhpUnit extends PhpProgram {
         return new PhpUnit(command);
     }
 
-    public File getWorkingDirectory() {
-        return new File(getProgram()).getParentFile();
+    @Override
+    public ExternalProcessBuilder getProcessBuilder() {
+        return super.getProcessBuilder()
+                .workingDirectory(new File(getProgram()).getParentFile());
     }
 
     // XXX see 2nd paragraph
@@ -200,8 +202,7 @@ public final class PhpUnit extends PhpProgram {
         }
 
         version = UNKNOWN_VERSION;
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
-                .workingDirectory(getWorkingDirectory())
+        ExternalProcessBuilder externalProcessBuilder = getProcessBuilder()
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
@@ -240,7 +241,7 @@ public final class PhpUnit extends PhpProgram {
         return params.toArray(new String[params.size()]);
     }
 
-    public Files getFiles(PhpProject project, boolean withSuite) {
+    public static ConfigFiles getConfigFiles(PhpProject project, boolean withSuite) {
         List<Pair<String, File>> missingFiles = new LinkedList<Pair<String, File>>();
         File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
         if (bootstrap != null
@@ -266,10 +267,10 @@ public final class PhpUnit extends PhpProgram {
             }
         }
         warnAboutMissingFiles(missingFiles);
-        return new Files(bootstrap, configuration, suite);
+        return new ConfigFiles(bootstrap, configuration, suite);
     }
 
-    public File getCustomSuite(PhpProject project) {
+    public static File getCustomSuite(PhpProject project) {
         File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
         if (suite != null
                 && suite.isFile()) {
@@ -496,12 +497,12 @@ public final class PhpUnit extends PhpProgram {
         return new PhpUnit(command).validate();
     }
 
-    public static final class Files {
+    public static final class ConfigFiles {
         public final File bootstrap;
         public final File configuration;
         public final File suite;
 
-        public Files(File bootstrap, File configuration, File suite) {
+        public ConfigFiles(File bootstrap, File configuration, File suite) {
             this.bootstrap = bootstrap;
             this.configuration = configuration;
             this.suite = suite;

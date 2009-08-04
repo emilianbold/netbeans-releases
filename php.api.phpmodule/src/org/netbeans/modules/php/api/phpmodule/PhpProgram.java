@@ -188,13 +188,34 @@ public abstract class PhpProgram {
                 .showProgress(true);
     }
 
-    protected Future<Integer> executeLater(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
+    /**
+     * Execute process, <b>non-blocking</b>. It is just a wrapper for {@link ExecutionService#run()}.
+     * @param processBuilder {@link ExternalProcessBuilder process builder}
+     * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
+     * @param title display name of this service
+     * @return task representing the actual run, value representing result
+     *         of the {@link Future} is exit code of the process
+     * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @see ExecutionService#run()
+     * @since 1.10
+     */
+    public static Future<Integer> executeLater(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
         return ExecutionService.newService(processBuilder, executionDescriptor, title).run();
     }
 
-    protected int executeAndWait(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) throws InterruptedException, ExecutionException {
-        Future<Integer> result = ExecutionService.newService(processBuilder, executionDescriptor, title).run();
-        return result.get();
+    /**
+     * Execute process, <b>blocking</b>. It is just a wrapper for {@link ExecutionService#run()} which waits for the return code.
+     * @param processBuilder {@link ExternalProcessBuilder process builder}
+     * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
+     * @param title display name of this service
+     * @return exit code of the process
+     * @throws ExecutionException if the process throws any exception
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @since 1.10
+     */
+    public static int executeAndWait(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) throws ExecutionException, InterruptedException {
+        return ExecutionService.newService(processBuilder, executionDescriptor, title).run().get();
     }
 
     @Override
