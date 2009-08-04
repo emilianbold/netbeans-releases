@@ -127,10 +127,7 @@ public class ElCompletionProvider implements CompletionProvider {
         }
 
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
             queryEL(resultSet, component, caretOffset);
-            resultSet.addAllItems(jspResultSet.getItems());
-            resultSet.setAnchorOffset(jspResultSet.getAnchor());
         }
 
     }
@@ -157,10 +154,7 @@ public class ElCompletionProvider implements CompletionProvider {
                 }
             } else {
                 //called directly by infrastructure - run query
-                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
                 queryEL(resultSet, component, caretOffset);
-                resultSet.addAllItems(jspResultSet.getItems());
-                resultSet.setAnchorOffset(jspResultSet.getAnchor());
             }
 
 
@@ -208,12 +202,15 @@ public class ElCompletionProvider implements CompletionProvider {
 
             boolean queryingJsp = JspUtils.isJspDocument(doc);
             JspELExpression elExpr = new JspELExpression(sup);
+            int parseType = elExpr.parse(offset); //this initializes the expression
+            int anchor = offset - elExpr.getReplace().length();
+            result.setAnchorOffset(anchor);
 
-            switch (elExpr.parse(offset)) {
+            switch (parseType) {
                 case ELExpression.EL_START:
                     // implicit objects
                     for (ELImplicitObjects.ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) {
-                        result.addItem(ElCompletionItem.createELImplicitObject(implOb.getName(), offset - elExpr.getReplace().length(), implOb.getType()));
+                        result.addItem(ElCompletionItem.createELImplicitObject(implOb.getName(), anchor, implOb.getType()));
                     }
 
                     if (queryingJsp) {
@@ -222,7 +219,7 @@ public class ElCompletionProvider implements CompletionProvider {
                         if (beans != null) {
                             for (int i = 0; i < beans.length; i++) {
                                 if (beans[i].getId().startsWith(elExpr.getReplace())) {
-                                    result.addItem(ElCompletionItem.createELBean(beans[i].getId(), offset - elExpr.getReplace().length(), beans[i].getClassName()));
+                                    result.addItem(ElCompletionItem.createELBean(beans[i].getId(), anchor, beans[i].getClassName()));
                                 }
                             }
                         }
@@ -243,7 +240,7 @@ public class ElCompletionProvider implements CompletionProvider {
                 case ELExpression.EL_BEAN:
                 case ELExpression.EL_IMPLICIT:
 
-                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), offset - elExpr.getReplace().length());
+                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
                     result.addAllItems(items);
 
                     break;
