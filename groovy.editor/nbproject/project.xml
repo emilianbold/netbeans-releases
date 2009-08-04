@@ -363,7 +363,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>
-                <binary-origin>external/groovy-all-1.6.3-patched.jar</binary-origin>
+                <binary-origin>external/groovy-all-1.6.4.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
