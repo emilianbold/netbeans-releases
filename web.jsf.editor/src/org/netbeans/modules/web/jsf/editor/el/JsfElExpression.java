@@ -39,8 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.modules.web.jsf.editor.el;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -64,14 +67,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.cookies.OpenCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -80,19 +82,19 @@ import org.openide.loaders.DataObject;
  * @author Petr Pisl
  * @author Po-Ting Wu
  */
-public class JSFELExpression extends ELExpression{
+public class JsfElExpression extends ELExpression {
     
     public static final int EL_JSF_BEAN = 100;
     public static final int EL_JSF_RESOURCE_BUNDLE = 101;
     
-    private static final Logger logger = Logger.getLogger(JSFELExpression.class.getName());
+    private static final Logger logger = Logger.getLogger(JsfElExpression.class.getName());
     
     private WebModule webModule;
     
     protected String bundleName;
     
-    public JSFELExpression(WebModule wm, JspSyntaxSupport sup){
-        super(sup);
+    public JsfElExpression(WebModule wm, Document doc){
+        super(doc);
         this.webModule = wm;
     }
     
@@ -142,6 +144,10 @@ public class JSFELExpression extends ELExpression{
         
         return null;
     }
+
+    public String getBundleName() {
+        return bundleName;
+    }
     
     /**
      * Finds list of all ResourceBundles, which are registered in all
@@ -172,13 +178,13 @@ public class JSFELExpression extends ELExpression{
         ClassLoader classLoader;
         
         try { // try to find on the source classpath
-            classPath = ClassPath.getClassPath(sup.getFileObject(), ClassPath.SOURCE);
+            classPath = ClassPath.getClassPath(getFileObject(), ClassPath.SOURCE);
             classLoader = classPath.getClassLoader(false);
             labels = java.util.ResourceBundle.getBundle(propertyFile, Locale.getDefault(), classLoader);
         }  catch (MissingResourceException exception) {
             // There is not the property on source classpath - try compile
             try {
-                classLoader = ClassPath.getClassPath(sup.getFileObject(), ClassPath.COMPILE).getClassLoader(false);
+                classLoader = ClassPath.getClassPath(getFileObject(), ClassPath.COMPILE).getClassLoader(false);
                 labels = java.util.ResourceBundle.getBundle(propertyFile, Locale.getDefault(), classLoader);
             } catch (MissingResourceException exception2) {
                 // the propertyr file wasn't find on the compile classpath as well
@@ -195,7 +201,7 @@ public class JSFELExpression extends ELExpression{
                     StringBuffer helpText = new StringBuffer();
                     helpText.append(key).append("=<font color='#ce7b00'>"); //NOI18N
                     helpText.append(labels.getString(key)).append("</font>"); //NOI18N
-                    items.add(new JSFResultItem.JSFResourceItem(key, anchorOffset, helpText.toString()));
+                    items.add(new JsfElCompletionItem.JsfResourceItem(key, anchorOffset, helpText.toString()));
                 }
             }
         }
@@ -234,7 +240,7 @@ public class JSFELExpression extends ELExpression{
                     if (isActionListenerMethod(method)) {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
-                                CompletionItem item = new JSFResultItem.JSFMethod(
+                                CompletionItem item = new JsfElCompletionItem.JsfMethod(
                                     methodName, anchor, "void");
 
                             completionItems.add(item);
@@ -299,7 +305,7 @@ public class JSFELExpression extends ELExpression{
                         // Not a regular Java data object (may be a multi-view data object), open it first
                         DataObject od = DataObject.find(fo);
                         if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
-                            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
+                            EditorCookie oc = od.getCookie(EditorCookie.class);
                             oc.open();
                         }
                       

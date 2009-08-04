@@ -308,7 +308,10 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <package>org.netbeans.modules.html</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

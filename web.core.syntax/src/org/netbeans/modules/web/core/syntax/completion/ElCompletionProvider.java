@@ -184,7 +184,7 @@ public class ElCompletionProvider implements CompletionProvider {
             JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
 
             boolean queryingJsp = JspUtils.isJspDocument(doc);
-            ELExpression elExpr = new ELExpression(sup);
+            JspELExpression elExpr = new JspELExpression(sup);
 
             switch (elExpr.parse(offset)) {
                 case ELExpression.EL_START:

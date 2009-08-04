@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
@@ -107,13 +108,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public String getSortText() {
+        IndexedElement indexedElement = null;
         if (getElement() instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) getElement();
-
-            if (indexedElement.isResolved()) {
-                return "-" + getName(); //NOI18N
-
-            }
+            indexedElement = (IndexedElement) getElement();
+        } else if (getElement() instanceof IndexedClassMember) {
+            indexedElement = ((IndexedClassMember)getElement()).getMember();
+        }
+        if (indexedElement != null && indexedElement.isResolved()) {
+            return "-" + getName(); //NOI18N
         }
         return getName();
     }
@@ -139,8 +141,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     public boolean isSmart() {
         // true for elements defined in the currently file
+        IndexedElement indexedElement = null;
         if (getElement() instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) getElement();
+            indexedElement = (IndexedElement) getElement();
+        } else if (getElement() instanceof IndexedClassMember) {
+            indexedElement = ((IndexedClassMember) getElement()).getMember();
+        }
+
+        if (indexedElement != null) {
             String url = indexedElement.getFilenameUrl();
             return url != null && url.equals(request.currentlyEditedFileURL);
         }
@@ -183,7 +191,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public String getRhsHtml(HtmlFormatter formatter) {
-        if (element.getIn() != null) {
+        if (element instanceof IndexedClassMember) {
+            IndexedClassMember classMember = (IndexedClassMember) element;
+            IndexedType type = classMember.getType();
+            QualifiedName qualifiedName = QualifiedName.create(type.getNamespaceName());
+            if (qualifiedName.isDefaultNamespace()) {
+                formatter.appendText(type.getName());
+                return formatter.getText();
+            } else {
+                formatter.appendText(type.getFullyQualifiedName());
+                return formatter.getText();
+            }
+        } if (element.getIn() != null) {
             formatter.appendText(element.getIn());
             return formatter.getText();
         } else if (element instanceof IndexedElement) {
@@ -492,9 +511,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
         }
+        VariableItem(IndexedClassMember<IndexedConstant> classMember, CompletionRequest request) {
+            super(classMember, request);
+        }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            String typeName = ((IndexedConstant)getElement()).getTypeName();
+            final ElementHandle elem = getElement();
+            String typeName = null;
+            if (elem instanceof IndexedConstant) {
+                typeName = ((IndexedConstant)elem).getTypeName();
+            } else if (elem instanceof IndexedClassMember) {
+                typeName = ((IndexedClassMember<IndexedConstant>)elem).getMember().getTypeName();
+            }
 
             if (typeName == null) {
                 typeName = "?"; //NOI18N
@@ -562,8 +590,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ClassConstantItem extends VariableItem {
-        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
+        ClassConstantItem(IndexedClassMember<IndexedConstant> classMember, CompletionRequest request) {
+            super(classMember, request);
         }
 
         @Override
@@ -671,8 +699,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             super(function, request);
             this.optionalArgCount = optionalArgCount;
         }
+        FunctionItem(IndexedClassMember<IndexedFunction> function, CompletionRequest request, int optionalArgCount) {
+            super(function, request);
+            this.optionalArgCount = optionalArgCount;
+        }
 
         public IndexedFunction getFunction(){
+            if (getElement() instanceof IndexedClassMember) {
+                return (IndexedFunction)((IndexedClassMember)getElement()).getMember();
+            }
             return (IndexedFunction)getElement();
         }
 

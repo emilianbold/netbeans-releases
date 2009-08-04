@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.awt.Color;
 import java.util.Collections;
@@ -55,8 +55,8 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -113,9 +113,9 @@ public class JsfCompletionItem {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         //suppose we are always top level
-                        if (resultIterator.getSnapshot().getMimeType().equals("text/html")) {
-                            HtmlParserResult result = (HtmlParserResult) resultIterator.getParserResult();
-                            htmlRootNode[0] = AstNodeUtils.query(result.root(), "html");
+                        Result result = resultIterator.getParserResult(substitutionOffset);
+                        if (result.getSnapshot().getMimeType().equals("text/html")) {
+                            htmlRootNode[0] = AstNodeUtils.query(((HtmlParserResult)result).root(), "html");
                         }
                     }
                 });

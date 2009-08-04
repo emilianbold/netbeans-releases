@@ -275,7 +275,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case NEW_CLASS:
                     autoCompleteNamespaces(proposals, request);                    
-                    NamespaceCompletionSupport<IndexedFunction> completionSupport = new NamespaceCompletionSupport<IndexedFunction>(prefix);
+                    NamespaceIndexFilter<IndexedFunction> completionSupport = new NamespaceIndexFilter<IndexedFunction>(prefix);
                     Collection<IndexedFunction> functions = request.index.getConstructors(result, completionSupport.getName());
                     for (IndexedFunction fnc : completionSupport.filter(functions)) {
                         int[] optionalArgs = fnc.getOptionalArgs();
@@ -385,7 +385,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon, QualifiedNameKind kind) {
-        NamespaceCompletionSupport<IndexedClass> completionSupport = new NamespaceCompletionSupport<IndexedClass>(request.prefix);
+        NamespaceIndexFilter<IndexedClass> completionSupport = new NamespaceIndexFilter<IndexedClass>(request.prefix);
         final Collection<IndexedClass> classes = request.index.getClasses(request.result, completionSupport.getName(), nameKind);
         for (IndexedClass clazz : completionSupport.filter(classes)) {
             proposals.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
@@ -396,7 +396,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         autoCompleteInterfaceNames(proposals, request, null);
     }
     private void autoCompleteInterfaceNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
-        NamespaceCompletionSupport<IndexedInterface> completionSupport = new NamespaceCompletionSupport<IndexedInterface>(request.prefix);
+        NamespaceIndexFilter<IndexedInterface> completionSupport = new NamespaceIndexFilter<IndexedInterface>(request.prefix);
         final Collection<IndexedInterface> interfaces = request.index.getInterfaces(request.result, completionSupport.getName(), nameKind);
         for (IndexedInterface iface : completionSupport.filter(interfaces)) {
             proposals.add(new PHPCompletionItem.InterfaceItem(iface, request, kind));
@@ -436,7 +436,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
      }
      private void autoCompleteNamespaces(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
-        NamespaceCompletionSupport<IndexedNamespace> completionSupport = new NamespaceCompletionSupport<IndexedNamespace>(request.prefix);
+        NamespaceIndexFilter<IndexedNamespace> completionSupport = new NamespaceIndexFilter<IndexedNamespace>(request.prefix);
         final String prefix = completionSupport.getName();
         Collection<IndexedNamespace> namespaces = request.index.getNamespaces(request.result,prefix);//NOI18N
         
@@ -655,7 +655,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext) {
                             for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                                 if (!invalidProposalsForClsMembers.contains(method.getName())) {
-                                    proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                                    proposals.add(new PHPCompletionItem.FunctionItem(classMember, request, i));
                                 }
                             }
                         }
@@ -668,7 +668,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     for (IndexedClassMember<IndexedConstant> classMember : properties){
                         IndexedConstant prop = classMember.getMember();
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
+                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(classMember, request);
 
                             if (!staticContext) {
                                 item.doNotInsertDollarPrefix();
@@ -681,8 +681,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (staticContext) {
                         Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllTypeConstants(request.result, tokenType, request.prefix, nameKind);
                         for (IndexedClassMember<IndexedConstant> indexedClassMember : allClassConstants) {
-                            IndexedConstant constant = indexedClassMember.getMember();
-                            proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
+                            proposals.add(new PHPCompletionItem.ClassConstantItem(indexedClassMember, request));
                         }
                     }
                 }
@@ -731,7 +730,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // all toplevel variables, wchich are defined in more files
         Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
 
-        NamespaceCompletionSupport<IndexedElement> completionSupport = new NamespaceCompletionSupport<IndexedElement>(request.prefix);
+        NamespaceIndexFilter<IndexedElement> completionSupport = new NamespaceIndexFilter<IndexedElement>(request.prefix);
         QualifiedNameKind kind = completionSupport.getKind();
         Collection<IndexedElement> allTopLevel = index.getAllTopLevel(request.result, completionSupport.getName(), nameKind);
         if (!kind.isUnqualified()) {
@@ -1302,103 +1301,5 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
-    private class NamespaceCompletionSupport<T extends IndexedElement> {
-        private final String requestPrefix;
-        private final QualifiedName prefix;
-        private QualifiedNameKind kind;
-        private String namespaceName;
-        private String name;
-        private int segmentSize;
-
-        NamespaceCompletionSupport(String requestPrefix) {
-            this.requestPrefix = requestPrefix;
-            this.prefix = QualifiedName.create(requestPrefix);
-        }
-
-        /**
-         * @return the prefixStr
-         */
-        public String getRequestPrefix() {
-            return requestPrefix;
-        }
-
-
-        /**
-         * @return the namespaceName
-         */
-        public String getNamespaceName() {
-            if (namespaceName == null) {
-                namespaceName = prefix.toNamespaceName(true).toString();
-            }
-            return namespaceName;
-        }
-
-        /**
-         * @return the name
-         */
-        public String getName() {
-            if (name == null) {
-                name = prefix.toName().toString();
-            }
-            return name;
-        }
-
-        public QualifiedNameKind getKind() {
-            if (kind == null) {
-                kind = prefix.getKind();
-            }
-            return kind;
-        }
-
-        public int getSegmentSize() {
-            if (segmentSize != -1) {
-                 segmentSize = prefix.getSegments().size();
-            }
-            return segmentSize;
-        }
-
-        public Collection<T> filter(final Collection<T> originalElems) {
-            return filter(originalElems, getName().trim().length() == 0);
-        }
-        
-        public Collection<T> filter(final Collection<T> originalElems, boolean strictCCOption) {
-            if (getKind().isUnqualified()) {
-                return originalElems;
-            }
-            Collection<T> retval = new ArrayList<T>();
-            String namespaneNameLCase = getNamespaceName().toLowerCase();
-            String namespaneNameLCaseSlashed = namespaneNameLCase;
-            if (!namespaneNameLCaseSlashed.endsWith("\\")) {//NOI18N
-                namespaneNameLCaseSlashed += "\\";//NOI18N
-            }
-            for (T elem : originalElems) {
-                if (elem instanceof IndexedFullyQualified) {
-                    IndexedFullyQualified idxFqn = (IndexedFullyQualified) elem;
-                    String fqn = idxFqn.getFullyQualifiedName();
-                    final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
-                    final boolean fullyQualified = getKind().isFullyQualified();
-                    if (fullyQualified ? indexOf == 0 : indexOf != -1) {
-                        if (strictCCOption && (fullyQualified || getSegmentSize() > 1)) {
-                            final QualifiedName nsFqn = QualifiedName.create(fqn).toNamespaceName(true);
-                            if (nsFqn.toString().toLowerCase().indexOf(namespaneNameLCase) == -1) {
-                                continue;
-                            }
-                            final String elemName = fqn.substring(indexOf + namespaneNameLCaseSlashed.length());
-                            if (elemName.indexOf(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) != -1) {
-                                continue;
-                            }
-                        }
-                        retval.add(elem);
-                    }
-                } else if (namespaneNameLCase.equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
-                    retval.add(elem);
-                }
-            }
-            return retval;
-        }
-
-
     }
  }

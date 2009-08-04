@@ -190,11 +190,11 @@ public class TldLibrary {
             }
 
         } catch (ParserConfigurationException ex) {
-            ex.printStackTrace();
+            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
         } catch (SAXException ex) {
-            ex.printStackTrace();
+            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
         } catch (IOException ex) {
-            ex.printStackTrace();
+            throw new TldLibraryException("Error parsing TLD library: ", ex); //NOI18N
         }
 
 
