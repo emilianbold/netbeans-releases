@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     private HtmlBrowserComponent(boolean toolbar, boolean statusLine, URL url) {
         this (IDESettings.getWWWBrowser(), toolbar, statusLine);
-        urlToLoad = url;
+        urlToLoad = null == url ? null : url.toExternalForm();
     }
     /**
     * Creates new html browser.
@@ -200,13 +201,10 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
                 setEnableLocation(enableLocation);
                 setToolbarVisible(toolbarVisible);
                 setStatusLineVisible(statusVisible);
-                if( null != strUrlToLoad ) {
-                    setURL(strUrlToLoad);
-                } else if( null != urlToLoad ) {
+                if( null != urlToLoad ) {
                     setURL(urlToLoad);
                 }
                 urlToLoad = null;
-                strUrlToLoad = null;
             }
         });
     }
@@ -216,7 +214,8 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         if( null != browserComponent ) {
             toolbarVisible = isToolbarVisible();
             statusVisible = isStatusLineVisible();
-            urlToLoad = browserComponent.getBrowserImpl().getURL();
+            URL url = browserComponent.getBrowserImpl().getURL();
+            urlToLoad = null == url ? null : url.toExternalForm();
             browserComponent.getBrowserImpl().removePropertyChangeListener(this);
             browserComponent.getBrowserImpl().dispose();
         }
@@ -236,7 +235,6 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     // public methods ....................................................................................
 
-    private String strUrlToLoad = null;
     /**
     * Sets new URL.
     *
@@ -244,13 +242,13 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     */
     public void setURL (String str) {
         if( null == browserComponent ) {
-            strUrlToLoad = str;
+            urlToLoad = str;
             return;
         }
         browserComponent.setURL (str);
     }
 
-    private URL urlToLoad;
+    private String urlToLoad;
 
     /**
     * Sets new URL.
@@ -259,7 +257,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     */
     public void setURL (final URL url) {
         if( null == browserComponent ) {
-            urlToLoad = url;
+            urlToLoad = null == url ? null : url.toExternalForm();
             return;
         }
         browserComponent.setURL (url);
@@ -269,8 +267,16 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Gets current document url.
     */
     public final URL getDocumentURL () {
-        if( null == browserComponent )
-            return urlToLoad;
+        if( null == browserComponent ) {
+            URL url = null;
+            if( null != urlToLoad ) {
+                try {
+                    url = new URL(urlToLoad);
+                } catch( MalformedURLException ex ) {
+                }
+            }
+            return url;
+        }
         return browserComponent.getDocumentURL ();
     }
 
