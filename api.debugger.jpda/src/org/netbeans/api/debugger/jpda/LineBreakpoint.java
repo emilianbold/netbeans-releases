@@ -184,8 +184,8 @@ public class LineBreakpoint extends JPDABreakpoint {
         }
         firePropertyChange (
             PROP_LINE_NUMBER,
-            new Integer (old),
-            new Integer (ln)
+            Integer.valueOf(old),
+            Integer.valueOf(ln)
         );
     }
     
@@ -452,6 +452,22 @@ public class LineBreakpoint extends JPDABreakpoint {
             } else {
                 return -1;
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof LineBreakpointImpl) {
+                LineBreakpoint lbthis = this;
+                LineBreakpoint lb = (LineBreakpoint) obj;
+                return lbthis.url.equals(lb.url) && lbthis.lineNumber == lb.lineNumber;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            LineBreakpoint lbthis = this;
+            return lbthis.url.hashCode() + lbthis.lineNumber;
         }
 
         public void fileFolderCreated(FileEvent fe) {

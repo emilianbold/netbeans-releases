@@ -44,7 +44,6 @@ package org.netbeans.core.output2;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -136,19 +135,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    public String getText (int start, int end) {
-        if (end < start || start < 0) {
-            throw new IllegalArgumentException ("Illogical text range from " + start + " to " + end);
+    CharBuffer getCharBuffer(int start, int len) {
+        if (len < 0 || start < 0) {
+            throw new IllegalArgumentException ("Illogical text range from " + start + " to " + (start + len));
         }
         synchronized(readLock()) {
             if (isDisposed()) {
-                // dispose is performed asynchronously, data may be required by
-                // events fired before (during) dispose(), return just zeros
-                // (output will be cleared soon anyway)
-                return new String(new char[end - start]);
+                return null;
             }
             int fileStart = AbstractLines.toByteIndex(start);
-            int byteCount = AbstractLines.toByteIndex(end - start);
+            int byteCount = AbstractLines.toByteIndex(len);
             int available = getStorage().size();
             if (available < fileStart + byteCount) {
                 throw new ArrayIndexOutOfBoundsException ("Bytes from " +
@@ -156,12 +152,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     "but storage is only " + available + " bytes long");
             }
             try {
-                return getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer().toString();
+                return getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
             } catch (Exception e) {
-                handleException (e);
-                return new String(new char[end - start]);
+                return null;
             }
         }
+    }
+
+    public String getText (int start, int end) {
+        CharBuffer cb = getCharBuffer(start, end - start);
+        return cb != null ? cb.toString() : new String(new char[end - start]);
     }
 
     void onDispose(int lastStorageSize) {
@@ -655,10 +655,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         if (storage == null) {
             throw new IOException ("Data has already been disposed"); //NOI18N
         }
-        File f = new File (path);
-        CharBuffer cb = storage.getReadBuffer(0, storage.size()).asCharBuffer();
-
-        FileOutputStream fos = new FileOutputStream (f);
+        FileOutputStream fos = new FileOutputStream(path);
         try {
             String encoding = System.getProperty ("file.encoding"); //NOI18N
             if (encoding == null) {
@@ -666,9 +663,20 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             Charset charset = Charset.forName (encoding); //NOI18N
             CharsetEncoder encoder = charset.newEncoder ();
-            ByteBuffer bb = encoder.encode (cb);
+            String ls = System.getProperty("line.separator");
             FileChannel ch = fos.getChannel();
-            ch.write(bb);
+            ByteBuffer lsbb = encoder.encode(CharBuffer.wrap(ls));
+            for (int i = 0; i < getLineCount(); i++) {
+                int lineStart = getCharLineStart(i);
+                int lineLength = length(i);
+                CharBuffer cb = getCharBuffer(lineStart, lineLength);
+                ByteBuffer bb = encoder.encode(cb);
+                ch.write(bb);
+                if (i != getLineCount() - 1) {
+                    lsbb.rewind();
+                    ch.write(lsbb);
+                }
+            }
             ch.close();
         } finally {
             fos.close();
@@ -864,7 +872,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 curEnd = pos;
             }
             if (l != null) {
-                int endPos = curEnd + Math.min(s.length() - offset, len);
+                int endPos = Math.min(curEnd + s.length() - offset, len);
                 int strlen = Math.min(s.length(), offset + len);
                 if (s.charAt(strlen - 1) == '\n') {
                     strlen--;

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;

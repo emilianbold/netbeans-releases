@@ -258,9 +258,16 @@ public class WrappedTextView extends View {
             
             try {
                 for (int i = firstline; i < lineCount; i++) {
+                    if (y > clip.y + clip.height) {
+                        return;
+                    }
                     int lineStart = doc.getLineStart(i);
                     int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
+                    if (length == 0) {
+                        y += charHeight;
+                        continue;
+                    }
                     LineInfo info = lines.getLineInfo(i);
 
                     // get number of logical lines
@@ -317,9 +324,6 @@ public class WrappedTextView extends View {
                     }
                     if (charpos % charsPerLine != 0) {
                         y += charHeight;
-                        if (y > clip.y + clip.height) {
-                            return;
-                        }
                     }
                 }
             } catch (BadLocationException e) {

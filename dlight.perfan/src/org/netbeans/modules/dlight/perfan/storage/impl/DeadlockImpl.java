@@ -45,9 +45,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.api.stack.Deadlock;
-import org.netbeans.modules.dlight.api.stack.DeadlockThreadSnapshot;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.module.dlight.threads.api.Deadlock;
+import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 
 /**

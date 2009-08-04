@@ -51,9 +51,9 @@ import org.openide.util.Lookup;
  *  InputOutput io = ...;
  *  OutputListener l = ...;
  *  OutputListener l2 = ...;
- *  IOColors.print(io, "Green text", Color.GREEN);
- *  IOColors.print(io, " orange hyperlink ", l, false, Color.ORANGE);
- *  IOColors.print(io, " green hyperlink\n", l2, false, Color.GREEN);
+ *  IOColorPrint.print(io, "Green text", Color.GREEN);
+ *  IOColorPrint.print(io, " orange hyperlink ", l, false, Color.ORANGE);
+ *  IOColorPrint.print(io, " green hyperlink\n", l2, false, Color.GREEN);
  * </pre>
  * How to support {@link IOColorPrint} in own {@link IOProvider} implementation:
  * <ul>
