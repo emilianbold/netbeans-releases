@@ -453,7 +453,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
                 }*/
                 removed(eventRequest); // Clean-up
-                int suspendPolicy = debugger.getSuspend();
+                //int suspendPolicy = debugger.getSuspend();
                 if (addExprStep) {
                     try {
                         stepAdded = addOperationStep(tr, true, sourcePath,

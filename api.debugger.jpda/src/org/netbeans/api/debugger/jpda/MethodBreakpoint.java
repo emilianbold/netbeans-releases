@@ -227,7 +227,7 @@ public class MethodBreakpoint extends JPDABreakpoint {
             throw new IllegalArgumentException  ();
         int old = this.breakpointType;
         this.breakpointType = breakpointType;
-        firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (breakpointType));
+        firePropertyChange (PROP_BREAKPOINT_TYPE, Integer.valueOf(old), Integer.valueOf(breakpointType));
     }
 
     /**

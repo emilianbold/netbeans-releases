@@ -61,15 +61,11 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 */
 public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     
-    private ContextProvider lookupProvider;
-
-    
     public PopToHereActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class) 
         );
-        this.lookupProvider = lookupProvider;
         setProviderToDisableOnLazyAction(this);
     }
     
@@ -81,6 +77,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         runAction();
     }
     
+    @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(new Runnable() {
             public void run() {

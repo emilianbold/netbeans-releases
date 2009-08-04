@@ -120,7 +120,7 @@ public class ThreadsTreeModel implements TreeModel {
                 throw new UnknownTypeException (o);
             } else {
                 synchronized (childrenCache) {
-                    ChildrenTree cht = new ChildrenTree(o);
+                    ChildrenTree cht = new ChildrenTree();
                     cht.setChildren(ch);
                     childrenCache.put(o, cht);
                 }
@@ -185,7 +185,6 @@ public class ThreadsTreeModel implements TreeModel {
         ChildrenTree cht = childrenCache.get(node);
         if (cht != null) {
             Set keys = childrenCache.keySet();
-            Object[] oldCh = cht.getChildren();
             Object[] newCh = computeChildren(node);
             cht.setChildren(newCh);
             for (int i = 0; i < newCh.length; i++) {
@@ -397,11 +396,9 @@ public class ThreadsTreeModel implements TreeModel {
     
     private static class ChildrenTree {
         
-        private Object node;
         private Object[] ch;
         
-        public ChildrenTree(Object node) {
-            this.node = node;
+        public ChildrenTree() {
         }
         
         public void setChildren(Object[] ch) {

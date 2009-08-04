@@ -92,7 +92,7 @@ import org.openide.util.NbBundle;
  */
 public class TreeEvaluator {
 
-    private Expression2 expression;
+    private Expression expression;
     private EvaluationContext evaluationContext;
 
     private StackFrame frame;
@@ -100,11 +100,10 @@ public class TreeEvaluator {
     private ThreadReference frameThread;
     private int frameIndex;
     private String currentPackage;
-    private Operators operators;
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
 
-    TreeEvaluator(Expression2 expression, EvaluationContext context) {
+    TreeEvaluator(Expression expression, EvaluationContext context) {
         this.expression = expression;
         this.evaluationContext = context;
     }
@@ -118,7 +117,7 @@ public class TreeEvaluator {
      * @throws IncompatibleThreadStateException if the context thread is in an
      * incompatible state (running, dead)
      */
-    public Value evaluate() throws EvaluationException2, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper
+    public Value evaluate() throws EvaluationException, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper
     {
         frame = evaluationContext.getFrame();
         vm = MirrorWrapper.virtualMachine(evaluationContext.getFrame());
@@ -127,7 +126,7 @@ public class TreeEvaluator {
             frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), frame);
         } catch (ObjectCollectedExceptionWrapper ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected"));
+                TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thread died
             throw new InvalidExpressionException(ex.getCause().getLocalizedMessage());
@@ -139,7 +138,6 @@ public class TreeEvaluator {
                 StackFrameWrapper.location(evaluationContext.getFrame())));
         int idx = currentPackage.lastIndexOf('.');
         currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
-        operators = new Operators(vm);
         int line;
         String url;
         ObjectReference contextVar =  evaluationContext.getContextVariable();
@@ -191,11 +189,11 @@ public class TreeEvaluator {
             }
         } catch (VMDisconnectedException e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_disconnected"));
+                TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (ObjectCollectedException e) {
             Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected"));
+                TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (ClassNotPreparedException e) {
             throw new InvalidExpressionException (e);
         } catch (NativeMethodException e) {
@@ -265,7 +263,7 @@ public class TreeEvaluator {
                 TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (VMDisconnectedExceptionWrapper e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_disconnected"));
+                TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
