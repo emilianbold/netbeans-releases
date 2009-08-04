@@ -299,6 +299,9 @@ public abstract class ManifestSection<T> {
     }
     
     private static void warnObsolete(String sectionName, Module module) {
+        if (module == null) {
+            return; // NbLoaderPoolResolverChangeTest
+        }
         Util.err.warning("Use of OpenIDE-Module-Class: " + sectionName + " in " + module.getCodeNameBase() + " is obsolete.");
         Util.err.warning("(Please use layer-based installation of objects instead.)");
     }
