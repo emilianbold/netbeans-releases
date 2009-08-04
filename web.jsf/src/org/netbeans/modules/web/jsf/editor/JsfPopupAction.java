@@ -39,6 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.web.jsf.editor;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.editor.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,14 +77,14 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Petr Pisl
  */
-public final class JSFPopupAction extends SystemAction implements Presenter.Popup {
+public final class JsfPopupAction extends SystemAction implements Presenter.Popup {
     
     private ArrayList actions = null;
     protected final static int MANAGED_BEAN_TYPE = 1;
     protected final static int NAVIGATION_RULE_TYPE = 2;
     
     public String getName() {
-        return NbBundle.getMessage(JSFPopupAction.class, "org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance"); // NOI18N
+        return NbBundle.getMessage(JsfPopupAction.class, "org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance"); // NOI18N
     }
     
     public void actionPerformed(ActionEvent ev) {
@@ -118,7 +120,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
     
     public static class AddManagedBeanAction extends BaseAction{
         public AddManagedBeanAction(){
-            super(NbBundle.getBundle(JSFPopupAction.class).getString("add-managed-bean-action")); //NOI18N
+            super(NbBundle.getBundle(JsfPopupAction.class).getString("add-managed-bean-action")); //NOI18N
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -126,7 +128,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddManagedBeanDialog dialogPanel = new AddManagedBeanDialog(data);
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddManagedBean"), //NOI18N
+                    NbBundle.getMessage(JsfPopupAction.class,"TTL_AddManagedBean"), //NOI18N
                     new HelpCtx(AddManagedBeanDialog.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -161,7 +163,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
     
     public static class AddNavigationRuleAction extends BaseAction{
         public AddNavigationRuleAction(){
-            super(NbBundle.getBundle(JSFPopupAction.class).getString("add-navigation-rule-action")); //NOI18N
+            super(NbBundle.getBundle(JsfPopupAction.class).getString("add-navigation-rule-action")); //NOI18N
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -169,7 +171,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddNavigationRuleDialog dialogPanel = new AddNavigationRuleDialog(data);
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationRule"), //NOI18N
+                    NbBundle.getMessage(JsfPopupAction.class,"TTL_AddNavigationRule"), //NOI18N
                     new HelpCtx(AddNavigationRuleDialog.class));
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
@@ -201,7 +203,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
     
     public static class AddNavigationCaseAction extends BaseAction{
         public AddNavigationCaseAction(){
-            super(NbBundle.getBundle(JSFPopupAction.class).getString("add-navigation-case-action")); //NOI18N
+            super(NbBundle.getBundle(JsfPopupAction.class).getString("add-navigation-case-action")); //NOI18N
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -210,7 +212,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             AddNavigationCaseDialog dialogPanel = new AddNavigationCaseDialog(data,
                     JSFEditorUtilities.getNavigationRule((BaseDocument)doc, target.getCaretPosition()));
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationCase"),    //NOI18N
+                    NbBundle.getMessage(JsfPopupAction.class,"TTL_AddNavigationCase"),    //NOI18N
                     new HelpCtx(AddNavigationCaseDialog.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);

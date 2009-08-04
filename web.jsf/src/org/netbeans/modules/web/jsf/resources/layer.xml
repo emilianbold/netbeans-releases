@@ -42,17 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    <folder name="Services">
-        <!-- Recognize text/x-jsf+xml: -->
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="web-faces-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"/>
-                <attr name="position" intvalue="400"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="j2ee">
         <folder name="webtier">
             <!-- XXX breaks commit validation; no such class in the trunk:
@@ -61,7 +50,7 @@ made subject to such option by the copyright holder.
             </folder>
             -->
             <folder name="framework">
-                <file name="org-netbeans-modules-web-jsf-JSFFrameworkProvider.instance"> 
+                <file name="org-netbeans-modules-web-jsf-JSFFrameworkProvider.instance">
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
@@ -82,37 +71,16 @@ made subject to such option by the copyright holder.
 
     <folder name="Editors">
         <folder name="text">
-                <folder name="html">
-                    <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">
-                        <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                    </file>
-                    <folder name="CompletionProviders">
-                        <file name="org-netbeans-modules-web-jsf-editor-jspel-JSFELCompletionProvider.instance"/>
-                        <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
-                    </folder>
-                    <folder name="HyperlinkProviders">
-                        <file name="JSFJSPHyperlinkProvider.instance">
-                            <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.jspel.JSFJSPHyperlinkProvider"/>
-                            <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                        </file>
-                    </folder>
-                </folder>
-            <folder name="x-jsf+xml">
-                <folder name="HyperlinkProviders">
-                    <file name="JSFConfigHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.JSFConfigHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder>
-                <folder name="Popup"> 
-                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance">
+            <folder name="xhtml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-web-jsf-editor-JsfPopupAction.instance">
                         <attr name="position" intvalue="3500"/>
                     </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="3600"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
             <folder name="x-jsp">
                 <folder name="CompletionProviders">
@@ -164,12 +132,12 @@ made subject to such option by the copyright holder.
             </file>
             <!-- JSP Segment --> 
             <file name="JSPF.jspf" url="templates/JSPF.template">
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
             <!-- JSP XML segemnt --> 
             <file name="JSPFX.jspf" url="templates/JSPDocX.template">
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
             <!-- JSF Managed Bean --> 
@@ -181,7 +149,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>
             </file>
         </folder>
         <folder name="Persistence">
@@ -204,7 +172,7 @@ made subject to such option by the copyright holder.
             <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
         </folder>
-        </folder>
+    </folder>
     
     <folder name="Loaders">
         <folder name="text">
@@ -275,7 +243,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

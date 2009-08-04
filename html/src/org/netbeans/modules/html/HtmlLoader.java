@@ -64,6 +64,7 @@ public class HtmlLoader extends UniFileLoader {
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType("text/html"); // NOI18N
+        getExtensions().addMimeType("text/xhtml"); // NOI18N
     }
     
     protected MultiDataObject createMultiObject(final FileObject primaryFile)
