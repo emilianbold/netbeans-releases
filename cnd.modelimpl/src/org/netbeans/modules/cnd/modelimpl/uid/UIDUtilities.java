@@ -90,15 +90,15 @@ public class UIDUtilities {
     }
 
     public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
-        return UIDManager.instance().getSharedUID(new ProjectUID(prj));
+        return getCachedUID(new ProjectUID(prj), prj);
     }
 
     public static CsmUID<CsmFile> createFileUID(FileImpl file) {
-        return UIDManager.instance().getSharedUID(new FileUID(file));
+        return getCachedUID(new FileUID(file), file);
     }
 
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
-        return UIDManager.instance().getSharedUID(new NamespaceUID(ns));
+        return getCachedUID(new NamespaceUID(ns), ns);
     }
 
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
@@ -126,15 +126,15 @@ public class UIDUtilities {
     }
 
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
-        return UIDManager.instance().getSharedUID(new MacroUID(macro));
+        return getCachedUID(new MacroUID(macro), macro);
     }
 
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
-        return UIDManager.instance().getSharedUID(new IncludeUID(incl));
+        return getCachedUID(new IncludeUID(incl), incl);
     }
 
     public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
-        return UIDManager.instance().getSharedUID(new ParamListUID<T>(incl));
+        return getCachedUID(new ParamListUID<T>(incl), incl);
     }
 
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
@@ -147,6 +147,12 @@ public class UIDUtilities {
 
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+    }
+
+    private static <T> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
+        CachedUID<T> cachedUid = (CachedUID<T>)UIDManager.instance().getSharedUID(uid);
+        cachedUid.update(obj);
+        return cachedUid;
     }
 
     public static int getProjectID(CsmUID<CsmFile> uid) {
@@ -404,6 +410,12 @@ public class UIDUtilities {
                 weakT = DUMMY;
             } else {
                 weakT = new SoftReference<Object>(obj);
+            }
+        }
+
+        public void update(T obj) {
+            if (weakT.get() != obj) {
+                weakT = new WeakReference<Object>(obj);
             }
         }
     }
