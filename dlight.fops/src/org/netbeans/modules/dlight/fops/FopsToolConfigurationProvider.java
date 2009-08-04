@@ -120,8 +120,8 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
                         fileColumn,
-                        new Column("totalsize", Long.class), // NOI18N
-                        new Column("closed", Boolean.class)), // NOI18N
+                        new Column("totalsize", Long.class, getMessage("Column.TotalSize"), null), // NOI18N
+                        new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
                 "select file, sum(size) as totalsize, bool_or(operation='close') as closed from fops group by sid, file order by closed asc, totalsize desc", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
@@ -139,8 +139,12 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 return formatValue(value);
             }
         });
-        indicatorConfiguration.addVisualizerConfiguration(
-                new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName()));
+
+        AdvancedTableViewVisualizerConfiguration tableConfiguration =
+                new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
+        tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
+        tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
+        indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 
