@@ -43,18 +43,8 @@ made subject to such option by the copyright holder.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="xml"/>
+        <!-- backup mimeresolver for .xhtml files w/o proper namespace declaration -->
         <ext name="xhtml"/>
-        <resolver mime="text/xhtml">
-            <xml-rule>
-                <element ns="http://www.w3.org/1999/xhtml"/>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="html"/>
-        <ext name="htm"/>
-        <ext name="shtml"/>
         <resolver mime="text/html"/>
     </file>
 </MIME-resolver>
