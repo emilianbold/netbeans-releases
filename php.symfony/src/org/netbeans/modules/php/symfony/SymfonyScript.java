@@ -191,7 +191,7 @@ public class SymfonyScript extends PhpProgram {
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(FrameworkCommandSupport.ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
+                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.bridge(lineProcessor);
             }

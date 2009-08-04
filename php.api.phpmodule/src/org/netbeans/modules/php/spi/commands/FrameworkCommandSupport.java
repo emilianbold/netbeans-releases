@@ -55,6 +55,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -70,15 +71,8 @@ import org.openide.util.Utilities;
  */
 public abstract class FrameworkCommandSupport {
 
-    public static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
-
     // @GuardedBy(COMMANDS_CACHE)
     private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
-    private static final ExecutionDescriptor COMMAND_DESCRIPTOR = new ExecutionDescriptor()
-            .controllable(true)
-            .frontWindow(true)
-            .inputVisible(true)
-            .showProgress(true);
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
@@ -188,16 +182,16 @@ public abstract class FrameworkCommandSupport {
      * @return {@link ExecutionDescriptor descriptor} with factory for standard output processor.
      */
     public ExecutionDescriptor getDescriptor(InputProcessorFactory outFactory) {
-        ExecutionDescriptor descriptor = COMMAND_DESCRIPTOR.postExecution(new RefreshPhpModuleRunnable(phpModule))
-                .errProcessorFactory(ANSI_STRIPPING);
+        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule))
+                .errProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
         String optionsPath = getOptionsPath();
         if (optionsPath != null) {
             descriptor = descriptor.optionsPath(optionsPath);
         }
         if (outFactory != null) {
-            descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, outFactory));
+            descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY, outFactory));
         } else {
-            descriptor = descriptor.outProcessorFactory(ANSI_STRIPPING);
+            descriptor = descriptor.outProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
         }
         return descriptor;
     }
@@ -302,13 +296,6 @@ public abstract class FrameworkCommandSupport {
             processBuilder = processBuilder.addArgument(arg);
         }
         return processBuilder;
-    }
-
-    private static final class AnsiStrippingInputProcessorFactory implements InputProcessorFactory {
-
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.ansiStripping(defaultProcessor);
-        }
     }
 
     /**

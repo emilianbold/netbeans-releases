@@ -40,8 +40,16 @@
 package org.netbeans.modules.php.api.phpmodule;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.openide.util.Utilities;
 
 /**
@@ -50,6 +58,19 @@ import org.openide.util.Utilities;
  * @since 1.9
  */
 public abstract class PhpProgram {
+
+    /**
+     * The {@link InputProcessorFactory input processor factory} that strips any
+     * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>.
+     * @see InputProcessors#ansiStripping(InputProcessor)
+     * @since 1.10
+     */
+    public static final InputProcessorFactory ANSI_STRIPPING_FACTORY = new InputProcessorFactory() {
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.ansiStripping(defaultProcessor);
+        }
+    };
+
     protected static final Logger LOGGER = Logger.getLogger(PhpProgram.class.getName());
     private static final String[] NO_PARAMETERS = new String[0];
 
@@ -132,6 +153,49 @@ public abstract class PhpProgram {
      * @see InvalidPhpProgramException
      */
     public abstract String validate();
+
+    /**
+     * Get {@link ExternalProcessBuilder process builder} with {@link #getProgram() program}
+     * and {@link #getParameters() parameters}.
+     * @return {@link ExternalProcessBuilder process builder} with {@link #getProgram() program}
+     *         and {@link #getParameters() parameters}.
+     * @since 1.10
+     */
+    public ExternalProcessBuilder getProcessBuilder() {
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(program);
+        for (String param : parameters) {
+            processBuilder = processBuilder.addArgument(param);
+        }
+        return processBuilder;
+    }
+
+    /**
+     * Get the {@link ExecutionDescriptor execution descriptor}. This descriptor is:
+     * <ul>
+     *   <li>{@link ExecutionDescriptor#isControllable() controllable}</li>
+     *   <li>{@link ExecutionDescriptor#isFrontWindow() displays the Output window}</li>
+     *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
+     *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
+     * </ul>
+     * @return the default {@link ExecutionDescriptor execution descriptor}.
+     * @since 1.10
+     */
+    public static ExecutionDescriptor getExecutionDescriptor() {
+        return new ExecutionDescriptor()
+                .controllable(true)
+                .frontWindow(true)
+                .inputVisible(true)
+                .showProgress(true);
+    }
+
+    protected Future<Integer> executeLater(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
+        return ExecutionService.newService(processBuilder, executionDescriptor, title).run();
+    }
+
+    protected int executeAndWait(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) throws InterruptedException, ExecutionException {
+        Future<Integer> result = ExecutionService.newService(processBuilder, executionDescriptor, title).run();
+        return result.get();
+    }
 
     @Override
     public String toString() {

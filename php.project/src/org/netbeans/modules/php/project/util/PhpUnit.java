@@ -252,7 +252,7 @@ public final class PhpUnit extends PhpProgram {
         File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
         if (configuration != null
                 && !configuration.isFile()) {
-            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_Configuration"), configuration));
+            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_XmlConfiguration"), configuration));
             configuration = null;
         }
 
