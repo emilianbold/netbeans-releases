@@ -154,6 +154,10 @@ public final class ModuleList {
         return getModuleList(basedir, null);
     }
 
+    private static File getClusterPropertiesFile(File nbroot) {
+        return new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
+    }
+
     /**
      * Runs given action both in Project read lock and synchronized on given cache
      * @param protectedCache Synchronized cache list, e.g. sourceLists, binaryLists, etc.
@@ -462,7 +466,8 @@ public final class ModuleList {
             }
         }
         if (clusterList == null) {
-            throw new IOException("No ${nb.clusters.list} found in " + root); // NOI18N
+            throw new IOException("Neither ${clusters.list} nor ${cluster.config} + ${clusters.config.<cfg>.list} found in "    // NOI18N
+                    + getClusterPropertiesFile(root));
         }
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
@@ -1230,7 +1235,7 @@ public final class ModuleList {
         synchronized (clusterPropertiesFiles) {
             clusterDefs = clusterPropertiesFiles.get(nbroot);
             if (clusterDefs == null) {
-                PropertyProvider pp = loadPropertiesFile(new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties")); // NOI18N
+                PropertyProvider pp = loadPropertiesFile(getClusterPropertiesFile(nbroot)); // NOI18N
                 PropertyEvaluator clusterEval = PropertyUtils.sequentialPropertyEvaluator(
                         PropertyUtils.fixedPropertyProvider(Collections.<String, String>emptyMap()), pp);
                 clusterDefs = clusterEval.getProperties();

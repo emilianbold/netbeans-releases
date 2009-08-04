@@ -143,7 +143,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void reset() {
         if (origPane != null) {
-            setOutputPane(origPane);
+            setFilter(null, false, false);
         }
         setDocument(new OutputDocument(((NbWriter) io.getOut()).out()));
         io.setClosed(false);

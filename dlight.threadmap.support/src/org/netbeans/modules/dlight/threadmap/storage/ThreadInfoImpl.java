@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.threadmap.storage;
 
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
 
 public class ThreadInfoImpl implements ThreadInfo {
 

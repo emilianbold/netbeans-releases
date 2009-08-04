@@ -78,7 +78,7 @@ class OutWriter extends PrintWriter {
     /**
      * Byte array used to write the line separator after line writes.
      */
-    static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    static final String LINE_SEPARATOR = "\n";
 
     /** The read-write backing storage.  May be heap or */
     private Storage storage;
@@ -403,7 +403,7 @@ class OutWriter extends PrintWriter {
                 } else if (c == '\r') {
                     // skip
                 } else if (c == '\n') {
-                    charBuff.put(LINE_SEPARATOR);
+                    charBuff.put(c);
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), true);
                     written = true;
                     lineCount++;

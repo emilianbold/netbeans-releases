@@ -47,6 +47,24 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="HtmlBrowser.toolbar">
+        <api name="awt"/>
+        <summary>Added 'location' String property to HtmlBrowser.Impl</summary>
+        <version major="7" minor="13"/>
+        <date day="4" month="8" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            HtmlBrowser.Impl class now has a String property to set/get browser
+            location. The location doesn't have to be a valid URL, for example
+            "about:config" may be accepted as well depeneding on actual browser
+            implementation.
+            The default property implementation attempts to convert the String
+            location to/from URL address.
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="169241"/>
+    </change>
     <change id="Actions.asynchronous">
         <api name="awt"/>
         <summary>Support for asynchronous actions</summary>

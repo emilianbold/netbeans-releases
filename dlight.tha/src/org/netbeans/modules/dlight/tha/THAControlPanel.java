@@ -47,11 +47,15 @@ import org.openide.util.NbBundle;
  */
 public class THAControlPanel extends javax.swing.JPanel {
 
-    private final Action action;
+    private final boolean started;
+    private final Action toggleAction;
+    private final Action deadlocksAction;
 
     /** Creates new form THAControlPanel */
-    public THAControlPanel(Action action) {
-        this.action = action;
+    public THAControlPanel(boolean started, Action toggleAction, Action deadlocksAction) {
+        this.started = started;
+        this.toggleAction = toggleAction;
+        this.deadlocksAction = deadlocksAction;
         initComponents();
     }
 
@@ -64,33 +68,37 @@ public class THAControlPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        controlButton = new javax.swing.JButton();
+        toggleButton = new javax.swing.JToggleButton();
         deadlocksButton = new javax.swing.JButton();
         racesButton = new javax.swing.JButton();
 
         setToolTipText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.toolTipText")); // NOI18N
 
-        controlButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
-        add(controlButton);
+        toggleButton.setAction(toggleAction);
+        toggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
+        toggleButton.setSelected(started);
+        toggleButton.setRolloverEnabled(false);
+        toggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/pause24.png"))); // NOI18N
+        add(toggleButton);
 
-        deadlocksButton.setAction(action);
+        deadlocksButton.setAction(deadlocksAction);
         deadlocksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"))); // NOI18N
         deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.nodeadlocks")); // NOI18N
         deadlocksButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive24.png"))); // NOI18N
         deadlocksButton.setEnabled(false);
         add(deadlocksButton);
 
-        racesButton.setAction(action);
         racesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_active24.png"))); // NOI18N
         racesButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.dataracesButton.nodataraces")); // NOI18N
         racesButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive24.png"))); // NOI18N
         racesButton.setEnabled(false);
         add(racesButton);
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton controlButton;
     private javax.swing.JButton deadlocksButton;
     private javax.swing.JButton racesButton;
+    private javax.swing.JToggleButton toggleButton;
     // End of variables declaration//GEN-END:variables
 
     void setDeadlocks(int deadlocks) {

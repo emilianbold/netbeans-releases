@@ -49,7 +49,6 @@ import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -64,13 +63,11 @@ public class StepOperationActionProvider extends ActionsProviderSupport
                                                   ActionsManagerListener {
 
     private JPDADebugger debugger;
-    private Session session;
     private ActionsManager lastActionsManager;
     
     
     public StepOperationActionProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        session = lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
     }
     

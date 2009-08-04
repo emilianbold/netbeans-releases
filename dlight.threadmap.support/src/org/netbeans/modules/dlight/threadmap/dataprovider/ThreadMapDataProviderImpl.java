@@ -38,13 +38,13 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
+import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
+import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.module.dlight.threads.api.storage.ThreadMapDataQuery;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadMapData;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
