@@ -58,6 +58,11 @@ import org.openide.util.Utilities;
  * @since 1.9
  */
 public abstract class PhpProgram {
+    private static final ExecutionDescriptor DEFAULT_DESCRIPTOR = new ExecutionDescriptor()
+            .controllable(true)
+            .frontWindow(true)
+            .inputVisible(true)
+            .showProgress(true);
 
     /**
      * The {@link InputProcessorFactory input processor factory} that strips any
@@ -181,11 +186,7 @@ public abstract class PhpProgram {
      * @since 1.10
      */
     public static ExecutionDescriptor getExecutionDescriptor() {
-        return new ExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .inputVisible(true)
-                .showProgress(true);
+        return DEFAULT_DESCRIPTOR;
     }
 
     /**
