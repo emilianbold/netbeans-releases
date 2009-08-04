@@ -434,6 +434,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (f.contains("config/Windows2Local")) {
             return false;
         }
+        if (f.contains("var/cache/felix")) {
+            return false;
+        }
         if (f.endsWith(".hg")) {
             try {
                 Class<?> ref = Class.forName("org.netbeans.modules.versioning.util.Utils", true, Thread.currentThread().getContextClassLoader());
