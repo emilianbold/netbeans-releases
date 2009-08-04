@@ -66,6 +66,9 @@ final class IntList {
     /** Add an integer to the lineStartList.  Must be greater than the preceding value
      * or an exception is thrown. */
     public synchronized void add (int value) {
+        if (used > 0 && array[used - 1] == value) {
+            return;
+        }
         if (value < lastAdded) {
             throw new IllegalArgumentException ("Contents must be presorted - " + //NOI18N
                 "added value " + value + " is less than preceding " + //NOI18N
