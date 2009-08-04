@@ -89,7 +89,7 @@ public class ParseProjectXmlTest extends NbTestCase {
     }
 
     public void testScanBinariesForOSGiInModulesDir() throws Exception {
-        doScanBinariesForOSGi("modules", "netigso.test-repackaged");
+        doScanBinariesForOSGi("modules", "netigso.test_repackaged");
     }
 
     private void doScanBinariesForOSGi(String whereTo, String cnb) throws Exception {
