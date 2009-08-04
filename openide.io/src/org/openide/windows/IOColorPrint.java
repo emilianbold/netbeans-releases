@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.openide.windows;
@@ -44,62 +44,65 @@ import java.io.IOException;
 import org.openide.util.Lookup;
 
 /**
- * Line printing with custom color.
+ * Text printing with custom color.
  * <p>
  * Client usage:
  * <pre>
- *  // print green line
  *  InputOutput io = ...;
- *  IOColorLines.println(io, "Green line", Color.GREEN);
+ *  OutputListener l = ...;
+ *  OutputListener l2 = ...;
+ *  IOColorPrint.print(io, "Green text", Color.GREEN);
+ *  IOColorPrint.print(io, " orange hyperlink ", l, false, Color.ORANGE);
+ *  IOColorPrint.print(io, " green hyperlink\n", l2, false, Color.GREEN);
  * </pre>
- * How to support {@link IOColorLines} in own {@link IOProvider} implementation:
+ * How to support {@link IOColorPrint} in own {@link IOProvider} implementation:
  * <ul>
  *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement {@link org.openide.util.Lookup.Provider}
- *   <li> Extend {@link IOColorLines} and implement its abstract methods
- *   <li> Place instance of {@link IOColorLines} to {@link Lookup} provided by {@link InputOutput}
+ *   <li> Extend {@link IOColorPrint} and implement its abstract methods
+ *   <li> Place instance of {@link IOColorPrint} to {@link Lookup} provided by {@link InputOutput}
  * </ul>
  * @see IOColors
- * @see IOColorPrint
- * @since 1.16
+ * @see IOColorLines
+ * @since 1.18
  * @author Tomas Holy
  */
-public abstract class IOColorLines {
+public abstract class IOColorPrint {
 
-    private static IOColorLines find(InputOutput io) {
+    private static IOColorPrint find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOColorLines.class);
+            return p.getLookup().lookup(IOColorPrint.class);
         }
         return null;
     }
 
     /**
-     * Prints line with selected color
+     * Prints text with selected color
      * @param io IO to print to
      * @param text a string to print to the tab
-     * @param color a color for the line of text
+     * @param color a color for the text (null allowed)
      */
-    public static void println(InputOutput io, CharSequence text, Color color) throws IOException {
-        IOColorLines iocl = find(io);
+    public static void print(InputOutput io, CharSequence text, Color color) throws IOException {
+        IOColorPrint iocl = find(io);
         if (iocl != null) {
-            iocl.println(text, null, false, color);
+            iocl.print(text, null, false, color);
         }
     }
 
     /**
-     * Prints line with selected color
+     * Prints text with selected color and add listener for it
      * @param io IO to print to
      * @param text a string to print to the tab
-     * @param listener a listener that will receive events about this line
+     * @param listener a listener that will receive events about this text (null allowed)
      * @param important  important mark the line as important.
      *        Makes the UI respond appropriately, eg. stop the automatic scrolling
      *        or highlight the hyperlink.
-     * @param color a color for the line of text
+     * @param color a color for the text (null allowed)
      */
-    public static void println(InputOutput io, CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
-        IOColorLines iocl = find(io);
+    public static void print(InputOutput io, CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
+        IOColorPrint iocl = find(io);
         if (iocl != null) {
-            iocl.println(text, listener, important, color);
+            iocl.print(text, listener, important, color);
         }
     }
 
@@ -114,13 +117,13 @@ public abstract class IOColorLines {
     }
 
     /**
-     * Prints line with selected color
+     * Prints text with selected color and optionaly add listener for it
      * @param text a string to print to the tab
-     * @param listener a listener that will receive events about this line (null allowed)
+     * @param listener a listener that will receive events about this text (null allowed)
      * @param important  important mark the line as important.
      *        Makes the UI respond appropriately, eg. stop the automatic scrolling
      *        or highlight the hyperlink.
-     * @param color a color for the line of text
+     * @param color a color for the text (null allowed)
      */
-    abstract protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException;
+    abstract protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException;
 }
