@@ -53,9 +53,9 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/javaee6-doc-api.zip!/</resource>
     </volume>
-    <volume>
+    <!--volume-->
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <!--type>maven-pom</type>
         <resource>http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-agent-2.0-36.pom</resource-->
-    </volume>
+    <!--/volume-->
 </library>
