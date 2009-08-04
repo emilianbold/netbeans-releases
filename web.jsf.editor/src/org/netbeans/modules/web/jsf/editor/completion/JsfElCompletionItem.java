@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.modules.web.jsf.editor.completion;
 
 import javax.swing.ImageIcon;
 import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem;
@@ -50,13 +50,13 @@ import org.openide.util.ImageUtilities;
  * @author Petr Pisl
  * @author Marek Fukala
  */
-public class JSFResultItem {
+public class JsfElCompletionItem {
 
-    public static class JSFBean extends ElCompletionItem.ELBean {
+    public static class JsfBean extends ElCompletionItem.ELBean {
 
         private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/jsf_bean_16.png";  //NOI18N
 
-        JSFBean(String text, int substitutionOffset, String type) {
+        public JsfBean(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
         }
 
@@ -71,11 +71,11 @@ public class JSFResultItem {
         }
     }
 
-    public static class JSFMethod extends ElCompletionItem.ELBean {
+    public static class JsfMethod extends ElCompletionItem.ELBean {
 
         private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
 
-        JSFMethod(String text, int substitutionOffset, String type) {
+        public JsfMethod(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
         }
 
@@ -85,11 +85,11 @@ public class JSFResultItem {
         }
     }
 
-    public static class JSFResourceBundle extends ElCompletionItem.ELBean {
+    public static class JsfResourceBundle extends ElCompletionItem.ELBean {
 
         private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
 
-        JSFResourceBundle(String text, int substitutionOffset, String type) {
+        public JsfResourceBundle(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
         }
 
@@ -103,11 +103,11 @@ public class JSFResultItem {
         }
     }
 
-    public static class JSFResourceItem extends JspCompletionItem {
+    public static class JsfResourceItem extends JspCompletionItem {
 
         private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
 
-        JSFResourceItem(String text, int substitutionOffset, String type) {
+        public JsfResourceItem(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
         }
 

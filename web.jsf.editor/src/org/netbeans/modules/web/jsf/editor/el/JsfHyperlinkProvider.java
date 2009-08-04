@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.modules.web.jsf.editor.el;
 
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -55,9 +55,8 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -76,10 +75,10 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  * @author Petr Pisl
  */
-public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
+public class JsfHyperlinkProvider implements HyperlinkProvider {
     
     /** Creates a new instance of JSFJSPHyperlinkProvider */
-    public JSFJSPHyperlinkProvider() {
+    public JsfHyperlinkProvider() {
     }
     
     /**
@@ -127,7 +126,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                 
                 WebModule wm = WebModule.getWebModule(fObject);
                 if (wm != null) {
-                    JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
+                    JsfElExpression exp = new JsfElExpression(wm, doc);
                     elTokenSequence.move(offset);
                     if (!elTokenSequence.moveNext()) {
                         return false; //no token
@@ -140,11 +139,11 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                     int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
                     int res = exp.parse(endOfEL);
                     
-                    if (res == JSFELExpression.EL_START) {
+                    if (res == JsfElExpression.EL_START) {
                         res = exp.parse(endOfEL + 1);
                     }
                     
-                    return res == JSFELExpression.EL_JSF_BEAN;
+                    return res == JsfElExpression.EL_JSF_BEAN;
                 }
             }
         } finally {
@@ -196,7 +195,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
+                JsfElExpression exp = new JsfElExpression(wm, doc);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return null; //no token
@@ -205,7 +204,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
-                if (res == JSFELExpression.EL_JSF_BEAN || res == JSFELExpression.EL_START )
+                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START )
                     return new int[] {elTokenSequence.offset(), elEnd};
             }
         }
@@ -248,20 +247,20 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
+                JsfElExpression exp = new JsfElExpression(wm, bdoc);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return; //no token
                 }
                 
                 int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
-                if (res == JSFELExpression.EL_START ){
+                if (res == JsfElExpression.EL_START ){
                     (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
                     return;
                 }
-                if (res == JSFELExpression.EL_JSF_BEAN){
+                if (res == JsfElExpression.EL_JSF_BEAN){
                     if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
-                        String msg = NbBundle.getBundle(JSFJSPHyperlinkProvider.class).getString("MSG_source_not_found");
+                        String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).getString("MSG_source_not_found");
                         StatusDisplayer.getDefault().setStatusText(msg);
                         Toolkit.getDefaultToolkit().beep();
                     }
