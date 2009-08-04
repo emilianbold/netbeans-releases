@@ -20,6 +20,18 @@
                     </file>
                 </folder>
             </folder>
+            <folder name="x-jsp">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-web-jsf-editor-completion-JsfElCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
+                    <file name="JSFJSPHyperlinkProvider.instance">
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.el.JsfHyperlinkProvider"/>
+                    </file>
+                </folder>
+            </folder>
+
         </folder>
     </folder>
 </filesystem>
