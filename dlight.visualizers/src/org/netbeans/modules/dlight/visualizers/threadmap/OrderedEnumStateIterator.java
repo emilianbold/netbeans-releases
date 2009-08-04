@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
 
 /**
  *

@@ -44,10 +44,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.module.dlight.threads.api.storage.ThreadData;
+import org.netbeans.module.dlight.threads.api.storage.ThreadMapDataQuery;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 public class ThreadMapDataStorage {
     // TODO: currently only one

@@ -2,10 +2,14 @@ package org.netbeans.core.browser;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import org.mozilla.browser.MozillaExecutor;
 import org.mozilla.browser.MozillaKeyEvent;
 import org.mozilla.browser.MozillaMouseEvent;
@@ -22,6 +26,7 @@ import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -131,7 +136,22 @@ public class BrowserPanel extends MozillaPanel {
             callback.fireBrowserEvent( WebBrowserEvent.WBE_KEY_EVENT, e, mke.getSourceNode() );
         } else if( e instanceof MozillaMouseEvent ) {
             MozillaMouseEvent mme = (MozillaMouseEvent) e;
+            fixMouseHandling(mme);
             callback.fireBrowserEvent( WebBrowserEvent.WBE_KEY_EVENT, e, mme.getSourceNode() );
+        }
+    }
+
+    private void fixMouseHandling( MouseEvent e ) {
+        if( e.getID() == MouseEvent.MOUSE_PRESSED ) {
+            MenuSelectionManager.defaultManager().clearSelectedPath();
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
+            if( null != tc ) {
+                tc.requestActive();
+            }
+        }
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if( null != w ) {
+            w.dispatchEvent(e);
         }
     }
 

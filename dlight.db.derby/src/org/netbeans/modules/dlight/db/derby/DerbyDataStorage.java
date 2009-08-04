@@ -51,7 +51,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.module.dlight.threads.impl.ThreadsSQLDataStorage;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -61,7 +62,6 @@ import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,7 +72,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 /**
  *
  */
-public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage {
+public class DerbyDataStorage extends ThreadsSQLDataStorage implements StackDataStorage {
 
     private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
     private static final String SQL_QUERY_DELIMETER = "";
@@ -257,7 +257,4 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
-    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
-        return stackStorage.getThreadDump(timestamp, threadID, threadState);
-    }
 }

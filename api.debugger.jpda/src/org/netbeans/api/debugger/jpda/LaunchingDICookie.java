@@ -138,10 +138,10 @@ public final class LaunchingDICookie extends AbstractDICookie {
         String          classPath,
         boolean         suspend
     ) {
-        String argss = "";
+        StringBuilder argss = new StringBuilder();
         int i, k = args.length;
         for (i = 0; i < k; i++) {
-            argss += " \"" + args [i] + "\"";
+            argss.append(" \"").append(args [i]).append("\"");
         }
         // TODO: This code is likely wrong, we need to run debuggee on JDK that
         //       is set on the project.

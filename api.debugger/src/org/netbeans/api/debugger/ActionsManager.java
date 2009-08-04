@@ -442,7 +442,7 @@ public final class ActionsManager {
     private boolean listerersLoaded = false;
     private List lazyListeners;
     
-    private void initListeners () {
+    private synchronized void initListeners () {
         if (listerersLoaded) return;
         listerersLoaded = true;
         lazyListeners = lookup.lookup (null, LazyActionsManagerListener.class);

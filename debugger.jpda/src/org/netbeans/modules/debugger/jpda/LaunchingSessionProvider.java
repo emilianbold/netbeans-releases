@@ -104,13 +104,13 @@ public class LaunchingSessionProvider extends SessionProvider {
             String pn = ds [i].getName ();
             if (!pn.startsWith (sessionName)) continue;
             if (pn.equals (sessionName)) {
-                m.add (new Integer (0));
+                m.add (Integer.valueOf(0));
                 continue;
             }
 
             try {
                 int t = Integer.parseInt (pn.substring (sessionName.length ()));
-                m.add (new Integer (t));
+                m.add (Integer.valueOf(t));
             } catch (Exception e) {
             }
         }
@@ -118,7 +118,7 @@ public class LaunchingSessionProvider extends SessionProvider {
         // 2) finds first unused index in m
         k = m.size ();
         for (i = 0; i < k; i++)
-           if (!m.contains (new Integer (i)))
+           if (!m.contains (Integer.valueOf(i)))
                break;
         if (i > 0) sessionName = sessionName + i;
         return sessionName;

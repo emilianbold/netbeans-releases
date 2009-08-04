@@ -62,8 +62,8 @@ syscall::close*:return
     self->path = "";
 }
 
-tick-1s, END
+tick-200ms, END
 {
-    printa("0 %s %d \"%s\" %@d %k\n", @transfer);
+    printa("-1 %s %d \"%s\" %@d %k\n", @transfer);
     trunc(@transfer);
 }

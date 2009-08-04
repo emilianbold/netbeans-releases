@@ -100,6 +100,7 @@ public class KenaiTestSimple extends NbTestCase {
                 br.close();
             }
             if (firstRun) {
+                System.out.println("UNAME/PASSWD: " + uname + "/" + passw);
                 instance.login(uname, passw.toCharArray());
                 firstRun = false;
             }

@@ -124,7 +124,7 @@ public class JPDABreakpoint extends Breakpoint {
         if (s == suspend) return;
         int old = suspend;
         suspend = s;
-        firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
+        firePropertyChange (PROP_SUSPEND, Integer.valueOf(old), Integer.valueOf(s));
     }
     
     /**
@@ -163,7 +163,7 @@ public class JPDABreakpoint extends Breakpoint {
      * @param printText a new value of print text property
      */
     public void setPrintText (String printText) {
-        if (this.printText == printText) return;
+        if (printText.equals(this.printText)) return;
         String old = this.printText;
         this.printText = printText;
         firePropertyChange (PROP_PRINT_TEXT, old, printText);

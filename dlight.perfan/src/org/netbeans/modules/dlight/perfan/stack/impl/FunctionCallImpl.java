@@ -46,8 +46,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 

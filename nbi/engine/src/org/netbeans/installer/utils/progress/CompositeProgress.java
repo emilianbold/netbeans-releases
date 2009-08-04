@@ -148,7 +148,7 @@ public final class CompositeProgress extends Progress implements ProgressListene
      *
      * @param percentage The new value for the core composite's percentage.
      *
-     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be 
+     * @throws IllegalArgumentException if the supplied percentage cannot be 
      *      set.
      */
     @Override
@@ -230,7 +230,7 @@ public final class CompositeProgress extends Progress implements ProgressListene
      * @param progress The child progress to add to the composite.
      * @param percentage The child's relative percentage within the composite.
      *
-     * @throws {@link IllegalArgumentException} if the supplied percentage cannot be
+     * @throws IllegalArgumentException if the supplied percentage cannot be
      *      added.
      */
     public void addChild(final Progress progress, final int percentage) {
@@ -255,7 +255,7 @@ public final class CompositeProgress extends Progress implements ProgressListene
      *
      * @param progress The child progress to remove from the composite.     
      *
-     * @throws {@link IllegalArgumentException} if the supplied progress is not in 
+     * @throws IllegalArgumentException if the supplied progress is not in 
      *      composite.
      */
     public void removeChild(final Progress progress) {                    

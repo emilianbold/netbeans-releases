@@ -43,7 +43,6 @@ package org.netbeans.modules.web.beans.navigation.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -51,7 +50,8 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -158,7 +158,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
          *  this list will contain variable element name and TypeElement 
          *  qualified name which contains variable element. 
          */
-        final List<String> variableAtCaret = new ArrayList<String>(2);
+        final Object[] variableAtCaret = new Object[2];
         if ( !getVariableElementAtDot( component, variableAtCaret )){
             return;
         }
@@ -233,30 +233,10 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      */
     private void inspectInjectables( final JTextComponent component, 
             final FileObject fileObject, final WebBeansModel model, 
-            final List<String> variablePath )
+            final Object[] variablePath )
     {
-        TypeElement typeElement = model.getCompilationController().getElements().
-            getTypeElement( variablePath.get(0));
-        if ( typeElement == null ){
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, "LBL_EnclosedTypeNotFound",
-                    variablePath.get(0)), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-            return;
-        }
-        List<? extends Element> children = typeElement.getEnclosedElements();
-        String name = variablePath.get( 1 );
-        VariableElement var = null;
-        for (Element element : children) {
-            if ( element.getSimpleName().contentEquals(name ) && 
-                    (element instanceof VariableElement))
-            {
-                var = (VariableElement)element;
-            }
-        }
+        VariableElement var = findVariable(model, variablePath);
         if ( var == null ){
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                    InspectInjectablesAtCaretAction.class, "LBL_VariableNotFound",
-                    name), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
         try {
@@ -287,15 +267,13 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     final CompilationController controller = model.getCompilationController();
                     if ( SwingUtilities.isEventDispatchThread()){
                         showDialog( adExcpeption , varElement, 
-                                controller, 
-                                bindings);
+                                controller, bindings, model );
                     }
                     else {
                         SwingUtilities.invokeLater( new Runnable() {
                             public void run() {
                                 showDialog(adExcpeption, varElement, 
-                                        controller,
-                                        bindings);
+                                        controller, bindings, model);
                             }
                         });
                     }
@@ -310,6 +288,49 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         }
     }
 
+
+    private VariableElement findVariable( final WebBeansModel model,
+            final Object[] variablePath )
+    {
+        if ( variablePath[0] == null ){
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                    InspectInjectablesAtCaretAction.class, 
+                    "LBL_VariableNotFound", variablePath[1]));
+            return null ;
+        }
+        Element element = ((ElementHandle<?>)variablePath[0]).resolve(
+                model.getCompilationController());
+        if ( element == null ){
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                    InspectInjectablesAtCaretAction.class, 
+                    "LBL_VariableNotFound", variablePath[1]));
+            return null ;
+        }
+        VariableElement var = null;
+        ExecutableElement method = null;
+        if ( element.getKind() == ElementKind.FIELD){
+            var = (VariableElement)element;
+        }
+        else {
+            method = (ExecutableElement)element;
+            List<? extends VariableElement> parameters = method.getParameters();
+            for (VariableElement variableElement : parameters) {
+                if (variableElement.getSimpleName().contentEquals(
+                        variablePath[1].toString())) 
+                {
+                    var = variableElement;
+                }
+            }
+        }
+        
+        if (var == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                    InspectInjectablesAtCaretAction.class, 
+                    "LBL_VariableNotFound", variablePath[1]));
+        }
+        return var;
+    }
+
     /**
      * Compilation controller from metamodel could not be used for getting 
      * TreePath via dot because it is not based on one FileObject ( Document ).
@@ -322,7 +343,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      * As result this trick is used.  
      */
     private boolean getVariableElementAtDot( final JTextComponent component,
-            final List<String> variableAtCaret ) 
+            final Object[] variable ) 
     {
         JavaSource javaSource = JavaSource.forDocument( component.getDocument());
         if ( javaSource == null ){
@@ -337,15 +358,30 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     TreePath tp = controller.getTreeUtilities()
                         .pathFor(dot);
                     Element element = controller.getTrees().getElement(tp );
+                    if ( element == null ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                InspectInjectablesAtCaretAction.class, 
+                                "LBL_ElementNotFound"));
+                        return;
+                    }
                     if ( !( element instanceof VariableElement) ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                InspectInjectablesAtCaretAction.class, 
+                                "LBL_NotVariableElement"));
                         return;
                     }
                     else {
-                        TypeElement enclosingTypeElement = controller.
-                            getElementUtilities().enclosingTypeElement(element);
-                        variableAtCaret.add( enclosingTypeElement.
-                                getQualifiedName().toString());
-                        variableAtCaret.add( element.getSimpleName().toString());
+                        if ( element.getKind() == ElementKind.FIELD ){
+                            ElementHandle<VariableElement> handle = 
+                                ElementHandle.create((VariableElement)element);
+                            variable[0] = handle;
+                            variable[1] = element.getSimpleName().toString();
+                        }
+                        else {
+                            setVariablePath(variable, controller, element);
+                        }
                     }
                 }
             }, true );
@@ -354,12 +390,12 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             Logger.getLogger( InspectInjectablesAtCaretAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
-        return variableAtCaret.size() ==2 ;
+        return variable[1] !=null ;
     }
     
     private void showDialog( AmbiguousDependencyException adExcpeption , 
             VariableElement var , CompilationController controller,
-            List<AnnotationMirror> bindings ) 
+            List<AnnotationMirror> bindings , WebBeansModel model ) 
     {
         Collection<Element> elements = adExcpeption.getElements();
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
@@ -369,8 +405,21 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                 "TITLE_Injectables" , var.getSimpleName().toString() );
         dialog.setTitle( title );
         dialog.setContentPane( new AmbiguousInjectablesPanel(elements, var, 
-                bindings, controller));
+                bindings, controller, model));
         dialog.setVisible( true );
+    }
+
+
+    private void setVariablePath( Object[] variableAtCaret,
+            CompilationController controller, Element element )
+    {
+        Element parent = element.getEnclosingElement();
+        if ( parent instanceof ExecutableElement ){
+            ElementHandle<ExecutableElement> handle = ElementHandle.create( 
+                    (ExecutableElement)parent ) ;
+            variableAtCaret[0] = handle;
+            variableAtCaret[1] = element.getSimpleName().toString();
+        }
     }
 
 }
