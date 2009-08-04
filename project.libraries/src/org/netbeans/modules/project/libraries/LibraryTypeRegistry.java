@@ -92,17 +92,14 @@ public final class LibraryTypeRegistry {
     }
 
     public boolean hasChanged() {
-        final Set<? extends LibraryTypeProvider> oldTP = usedLibraryTypes;
-        if (oldTP == null) {
-            return true;
-        }
+        final Set<? extends  LibraryTypeProvider> oldTP = usedLibraryTypes;
         final LibraryTypeProvider[] providers = getLibraryTypeProviders();
         final Map<LibraryTypeProvider,LibraryTypeProvider> newTP = new IdentityHashMap<LibraryTypeProvider,LibraryTypeProvider>();
         for (LibraryTypeProvider provider : providers) {
             newTP.put(provider, provider);
         }
         usedLibraryTypes = newTP.keySet();
-        return oldTP.equals(newTP.keySet());
+        return oldTP == null || !oldTP.equals(newTP.keySet());
     }
 
     public void addChangeListener (final ChangeListener listener) {
