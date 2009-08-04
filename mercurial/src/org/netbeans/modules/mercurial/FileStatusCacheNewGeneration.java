@@ -305,7 +305,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     if (!interestingFiles.containsKey(file) // file no longer has an interesting status
                             && Utils.isAncestorOrEqual(root, file) // file is under the examined root
                             && ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0 && !exists || // file was ignored and is now deleted
-                            (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date
+                            (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date or also ignored by .hgignore
                         LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                         // TODO better way to detect conflicts
                         if (HgCommand.existsConflictFile(file.getAbsolutePath())) {
@@ -349,6 +349,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     /**
      * Updates cache with scanned information for the given file
      * XXX should be turned to private
+     * XXX alwaysFireEvent useless
      * @param file
      * @param fi
      * @param interestingFiles
@@ -357,44 +358,20 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     @Override
     public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles, boolean alwaysFireEvent) {
         if(file == null || fi == null) return;
-        
-        FileInformation current = getInfo(file);
-        if (equivalent(fi, current))  {
-            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
-                if (HgUtils.isIgnored(file)) {
-                    // Sharebility query recognized this file as ignored
-                    LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-                    fi = FILE_INFORMATION_EXCLUDED;
-                } else {
-                    if (alwaysFireEvent) {
-                        // XXX this should not happen, why would we want this?
-                        fireFileStatusChanged(file, null, fi);
-                    }
-                    return;
-                }
-            } else if (!equivalent(FILE_INFORMATION_REMOVEDLOCALLY, fi)) {
-                if (alwaysFireEvent) {
-                    // XXX this should not happen, why would we want this?
-                    fireFileStatusChanged(file, null, fi);
-                }
-                return;
-            }
-        }
-        if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
-            if (equivalent(FILE_INFORMATION_EXCLUDED, current)) {
-                LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
-                if (alwaysFireEvent) {
-                    fireFileStatusChanged(file, null, fi);
-                }
-                return;
-            } else if (current == null) {
-                if (HgUtils.isIgnored(file)) {
-                    LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but current is null and is not NotSharable", file.getAbsolutePath()); // NOI18N
-                    fi = FILE_INFORMATION_EXCLUDED;
-                }
-            }
+
+        // XXX the question here is: do we want to keep ignored files in the cache (i mean those ignored by hg, not by SQ)?
+        // if yes, add equivalent(FILE_INFORMATION_UNKNOWN, fi) into the following test
+        if ((equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) && HgUtils.isIgnored(file)) {
+            // Sharebility query recognized this file as ignored
+            LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
+            fi = file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
         }
         file = FileUtil.normalizeFile(file);
+        FileInformation current = getInfo(file);
+        if (equivalent(fi, current)) {
+            // no need to fire an event
+            return;
+        }
         if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
             removeInfo(file);
         } else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
