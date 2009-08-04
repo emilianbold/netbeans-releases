@@ -142,7 +142,7 @@ public class LifecycleTest extends NbTestCase {
         System.out.println("testGetOut");
         ErrWriter err = io.writer().err();
         assertNull ("Error output should not be created yet", err);
-        err = (ErrWriter) io.writer().getErr();
+        err = io.writer().getErr();
         assertNotNull ("Error output should never be null from getErr()", err);
         assertTrue ("Error output should initially be closed", err.isClosed());
         err.println ("Hello");
@@ -154,8 +154,8 @@ public class LifecycleTest extends NbTestCase {
     public void testClose() throws Exception {
         System.out.println("testClose");
         NbWriter writer = (NbWriter) io.getOut();
-        ErrWriter err = (ErrWriter) writer.getErr();
-        OutWriter out = (OutWriter) writer.out();
+        ErrWriter err = writer.getErr();
+        OutWriter out = writer.out();
 
         writer.reset();
         sleep();
@@ -218,8 +218,8 @@ public class LifecycleTest extends NbTestCase {
 
     public void testReset() throws Exception {
         System.out.println("testReset");
-        ErrWriter err = (ErrWriter) io.writer().getErr();
-        OutWriter out = (OutWriter) io.writer().out();
+        ErrWriter err = io.writer().getErr();
+        OutWriter out = io.writer().out();
         NbWriter writer = io.writer();
 
         OutputDocument doc = (OutputDocument) pane.getDocument();
@@ -250,8 +250,8 @@ public class LifecycleTest extends NbTestCase {
     public void testCloseInputOutput() throws Exception {
 
         System.out.println("testCloseInputOutput");
-        ErrWriter err = (ErrWriter) io.writer().getErr();
-        OutWriter out = (OutWriter) io.writer().out();
+        ErrWriter err = io.writer().getErr();
+        OutWriter out = io.writer().out();
         NbWriter writer = io.writer();
 
         err.println ("joy to the world");
@@ -268,8 +268,8 @@ public class LifecycleTest extends NbTestCase {
     public void testFilesCleanedUp() throws Exception {
         System.out.println("testFilesCleanedUp");
         NbWriter writer = io.writer();
-        ErrWriter err = (ErrWriter) writer.getErr();
-        OutWriter out = (OutWriter) writer.out();
+        ErrWriter err = writer.getErr();
+        OutWriter out = writer.out();
 
         err.println ("hello");
         writer.println ("world");
@@ -309,8 +309,8 @@ public class LifecycleTest extends NbTestCase {
     public void testMultipleResetsAreHarmless() throws Exception {
         System.out.println("testMultipleResetsAreHarmless");
         NbWriter writer = io.writer();
-        ErrWriter err = (ErrWriter) writer.getErr();
-        OutWriter out = (OutWriter) writer.out();
+        ErrWriter err = writer.getErr();
+        OutWriter out = writer.out();
 
         assertTrue ("Before any writes, out should be empty", out.isEmpty());
 
