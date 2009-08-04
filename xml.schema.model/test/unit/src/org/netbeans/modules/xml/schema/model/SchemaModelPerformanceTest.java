@@ -43,15 +43,14 @@ package org.netbeans.modules.xml.schema.model;
 
 
 import org.junit.Test;
+import org.junit.After;
 import static org.junit.Assert.*;
 
-import org.junit.After;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  *
- * @author nn136682
  * @author Nikita Krjukov
  */
 public class SchemaModelPerformanceTest {
@@ -62,13 +61,7 @@ public class SchemaModelPerformanceTest {
     }
 
     /**
-     * B includes C & D. C & D do not know anything about each other.
-     * In this use-case, we'll explore components in C and it'll NOT resolve types
-     * from D.
-     *
-     * It's impossible to resolve the reference if the B hasn't loaded yet.
-     * If uncomment the first line, which loads the T1B.xsd, then the reference
-     * becomes resolvable.
+     * Checks the optimization related to issue #168232
      */
     @Test
     public void testPerformance1() throws Exception {
