@@ -177,7 +177,10 @@ public class RefCacheSupport {
         Object cachedValue = refModelCache.get(imp);
         if (cachedValue != null) {
             if (cachedValue instanceof SmAttachment) {
-                assert modelClass == SchemaModel.class;
+                if (modelClass != SchemaModel.class) {
+                    // Import type doesn't correspond to requested model type
+                    return null;
+                }
                 //
                 SmAttachment sma = SmAttachment.class.cast(cachedValue);
                 SchemaModel cachedModel = sma.mSModel;
@@ -191,7 +194,10 @@ public class RefCacheSupport {
                     excludeModel(cachedModel);
                 }
             } else if (cachedValue instanceof WsdlMAttachment) {
-                assert modelClass == WSDLModel.class;
+                if (modelClass != WSDLModel.class) {
+                    // Import type doesn't correspond to requested model type
+                    return null;
+                }
                 //
                 WsdlMAttachment wma = WsdlMAttachment.class.cast(cachedValue);
                 WSDLModel cachedModel = wma.mWModel;
