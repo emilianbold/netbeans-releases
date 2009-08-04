@@ -75,8 +75,14 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
     private Mercurial     hg;
+    /**
+     * Keeps cached statuses for managed files
+     */
     private final Map<File, FileInformation> cachedFiles;
     private final RequestProcessor rp = new RequestProcessor("Mercurial.cacheNG", 1, true);
+    /**
+     * Copy of cachedFiles. Available for time-consuming read operations, so these operations don't block a fast synchronized access to cachedFiles
+     */
     private Map<File, FileInformation> modifiedFiles = null;
     
     FileStatusCacheNewGeneration() {
@@ -84,16 +90,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         cachedFiles = new HashMap<File, FileInformation>();
     }
 
+    /**
+     * Checks if given files are ignored, also calls a SharebilityQuery. Cached status for ignored files is eventually refreshed.
+     * Can be run from AWT, in that case it switches to a background thread.
+     * @param files set of files to be ignore-tested.
+     */
     private void handleIgnoredFiles(final Set<File> files) {
         Runnable outOfAWT = new Runnable() {
             public void run() {
                 for (File f : files) {
                     if (HgUtils.isIgnored(f, true)) {
+                        // refresh status for this file
                         refreshFileStatus(f, f.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED, Collections.EMPTY_MAP, true);
                     }
                 }
             }
         };
+        // always run outside of AWT, SQ inside isIgnored can last a long time
         if (EventQueue.isDispatchThread()) {
             rp.post(outOfAWT);
         } else {
@@ -101,22 +114,39 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         }
     }
 
+    /**
+     * Fast (can be run from AWT) version of {@link #handleIgnoredFiles(Set)}, tests a file if it's ignored, but never runs a SharebilityQuery.
+     * If the file is not recognized as ignored, runs {@link #handleIgnoredFiles(Set)}.
+     * @param file
+     * @return true if the file is recognized as ignored (but not through a SharebilityQuery)
+     */
     private FileInformation checkForIgnoredFile (File file) {
         FileInformation fi = null;
         if (HgUtils.isIgnored(file, false)) {
             fi = FILE_INFORMATION_EXCLUDED;
         } else {
+            // run the full test with the SQ
             handleIgnoredFiles(Collections.singleton(file));
         }
         return fi;
     }
 
+    /**
+     * Returns the cached file information or null if it does not exist in the cache.
+     * @param file
+     * @return
+     */
     private FileInformation getInfo(File file) {
         synchronized (cachedFiles) {
             return cachedFiles.get(file);
         }
     }
 
+    /**
+     * Sets FI for the given files
+     * @param file
+     * @param info
+     */
     private void setInfo (File file, FileInformation info) {
         synchronized (cachedFiles) {
             cachedFiles.put(file, info);
@@ -124,6 +154,11 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         }
     }
 
+    /**
+     * Removes the cached value for the given file. Call e.g. if the file becomes up-to-date 
+     * or uninteresting (no longer existing ignored file).
+     * @param file
+     */
     private void removeInfo (File file) {
         synchronized (cachedFiles) {
             cachedFiles.remove(file);
@@ -131,6 +166,12 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         }
     }
 
+    /**
+     * Do not call from AWT.
+     * Can result in a status call. Returns a cached status and runs a status command for not cached files (e.g. up to date files)
+     * @param file
+     * @return
+     */
     @Override
     public FileInformation getStatus(File file) {
         boolean isDirectory = file.isDirectory();
@@ -151,13 +192,20 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return fi;
     }
 
+    /**
+     * Fast version of {@link #getStatus(java.io.File)}.
+     * @param file
+     * @return always returns a not null value
+     */
     @Override
     public FileInformation getCachedStatus(File file) {
-        FileInformation info = getInfo(file);
+        FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
         if (info == null) {
             if (hg.isManaged(file)) {
+                // ping repository scan, this means it has not yet been scanned
                 hg.getMercurialInterceptor().pingRepositoryRootFor(file);
+                // fast ignore-test
                 info = checkForIgnoredFile(file);
                 if (file.isDirectory()) {
                     info = createFolderFileInformation(file, info == null ? null : FILE_INFORMATION_EXCLUDED_DIRECTORY);
@@ -167,6 +215,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     }
                 }
             } else {
+                // unmanaged files
                 info = file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
             LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
@@ -174,6 +223,12 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return info;
     }
 
+    /**
+     * Puts folder's information into the cache.
+     * @param folder
+     * @param fi null means an up-to-date folder.
+     * @return
+     */
     private FileInformation createFolderFileInformation (File folder, FileInformation fi) {
         FileInformation info;
         // must lock, so possibly elsewhere-created information is not overwritten
@@ -190,16 +245,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
     // XXX probably useless method, use refresh instead
     @Override
+    @Deprecated
     public Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
         getStatus(dir);
         return null;
     }
 
+    /**
+     * Returns a copy of the cache. This copy can be accessed outside of a synchronized block.
+     * XXX eventually can be turned to private
+     * @return
+     */
     @Override
     Map<File, FileInformation>  getAllModifiedFiles() {
         synchronized (cachedFiles) {
             Map<File, FileInformation> allModifiedFiles = modifiedFiles;
             if (allModifiedFiles == null) {
+                // any changes have been made to the original
                 allModifiedFiles = new HashMap<File, FileInformation>(cachedFiles.size());
                 for (Map.Entry<File, FileInformation> e : cachedFiles.entrySet()) {
                     if ((e.getValue().getStatus() & FileInformation.STATUS_VERSIONED_UPTODATE) == 0) {
@@ -259,6 +321,12 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         }
     }
 
+    /**
+     * Refreshes the status of the file given the repository status. Repository status is filled
+     * in when this method is called while processing server output.
+     * @param file
+     * @param repositoryStatus
+     */
     @Override
     public FileInformation refresh(File file, FileStatus repositoryStatus) {
         File repositoryRoot = hg.getRepositoryRoot(file);
@@ -270,12 +338,22 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                 fi = FILE_INFORMATION_NOTMANAGED;
             }
         } else {
+            // start the recursive refresh
             refreshAllRoots(Collections.singletonMap(repositoryRoot, file));
+            // and return scanned value
             fi = getCachedStatus(file);
         }
         return fi;
     }
 
+    /**
+     * Updates cache with scanned information for the given file
+     * XXX should be turned to private
+     * @param file
+     * @param fi
+     * @param interestingFiles
+     * @param alwaysFireEvent
+     */
     @Override
     public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles, boolean alwaysFireEvent) {
         if(file == null || fi == null) return;
@@ -284,16 +362,19 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         if (equivalent(fi, current))  {
             if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
                 if (HgUtils.isIgnored(file)) {
+                    // Sharebility query recognized this file as ignored
                     LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                     fi = FILE_INFORMATION_EXCLUDED;
                 } else {
                     if (alwaysFireEvent) {
+                        // XXX this should not happen, why would we want this?
                         fireFileStatusChanged(file, null, fi);
                     }
                     return;
                 }
             } else if (!equivalent(FILE_INFORMATION_REMOVEDLOCALLY, fi)) {
                 if (alwaysFireEvent) {
+                    // XXX this should not happen, why would we want this?
                     fireFileStatusChanged(file, null, fi);
                 }
                 return;
@@ -335,10 +416,17 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         listenerSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Updates parent's counters and fires an event into IDE
+     * @param file
+     * @param oldInfo
+     * @param newInfo
+     */
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         File parent = file;
         FileInformation info;
         int counterUp = -1, counterDown = -1;
+        // XXX refactor
         if (newInfo != null) {
             if ((newInfo.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                 counterUp = FileInformation.COUNTER_CONFLICTED_FILES;
@@ -362,7 +450,9 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
             }
         }
         boolean direct = true;
+        // any change?
         if (counterUp != -1 || counterDown != -1) {
+            // update all managed parents
             while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                 boolean fireFolderChange = false;
                 if (counterUp != -1 && info.addToCounter(counterUp, 1, direct)) {
@@ -372,11 +462,13 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     fireFolderChange = true;
                 }
                 if (fireFolderChange) {
+                    // XXX is this neccessary?
                     listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(parent, null, info));
                 }
                 direct = false;
             }
         }
+        // finally fire the event for the file
         listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
     }
 
@@ -412,7 +504,14 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return true;
     }
 
-    // XXX should be here
+    /**
+     * Lists <b>modified files</b> and all folders that are known to be inside
+     * this folder. There are locally modified files present
+     * plus any files that exist in the folder in the remote repository.
+     *
+     * @param dir folder to list
+     * @return
+     */
     @Override
     public File [] listFiles(File dir) {
         Set<File> set = new HashSet<File>();
@@ -427,8 +526,16 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return set.toArray(new File[set.size()]);
     }
 
-    // XXX called only from ResolveConflictsAction so i guess no exclusion test is needed (as is in FileStatusCache
-    // cached argument not needed
+
+    /**
+     * Check if this context has at least one file with the passed in status
+     * XXX called only from ResolveConflictsAction so i guess no exclusion test is needed (as is in FileStatusCache
+     * XXX cached argument not needed
+     * @param context context to examine
+     * @param includeStatus file status to check for
+     * @param cached if set to <code>true</code>, only cached values will be checked otherwise it may call I/O operations
+     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
+     */
     @Override
     public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean cached){
         assert (includeStatus & FileInformation.STATUS_VERSIONED_CONFLICT) != 0;
@@ -445,7 +552,16 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
 
 
 
-    // XXX should be here
+    /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * <p>This method returns both folders and files.
+     *
+     * @param context context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return File [] array of interesting files
+     */
     @Override
     public File [] listFiles(VCSContext context, int includeStatus) {
         Set<File> roots = context.getRootFiles();
@@ -463,7 +579,16 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         return set.toArray(new File[set.size()]);
     }
 
-    // XXX should be here
+    /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * <p>Comapring to CVS this method returns both folders and files.
+     *
+     * @param roots context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return File [] array of interesting files
+     */
     @Override
     public File [] listFiles(File[] roots, int includeStatus) {
         Set<File> listedFiles = listFilesIntern(roots, includeStatus);
@@ -511,13 +636,22 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         // nothing
     }
 
-    // XXX evaluate
+    /**
+     * Refreshes status of the specified file or all files inside the
+     * specified directory.
+     *
+     * @param file
+     */
     @Override
     public void refreshCached(File root) {
         refreshAllRoots(Collections.singletonMap(hg.getRepositoryRoot(root), root));
     }
 
-    // XXX should be here
+    /**
+     * Refreshes status of all files inside given context.
+     *
+     * @param ctx context to refresh
+     */
     @Override
     public void refreshCached(VCSContext ctx) {
         for (File root : ctx.getRootFiles()) {
