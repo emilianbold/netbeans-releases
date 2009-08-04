@@ -64,8 +64,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -107,11 +107,11 @@ public final class JavaAntLogger extends AntLogger {
                 }
                 event.consume();
                 InputOutput io = session.getIO();
-                if (IOColorLines.isSupported(io) && IOColorPrint.isSupported(io)) {
+                if (IOColorPrint.isSupported(io)) {
                     try {
-                        IOColorPrint.print(io, prePart, null);
-                        IOColorPrint.print(io, midPart, hyperlink, true, null);
-                        IOColorLines.println(io, endPart, null);
+                        io.getErr().print(prePart);
+                        IOColorPrint.print(io, midPart, hyperlink, true, IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
+                        io.getErr().println(endPart);
                         return;
                     } catch (IOException x) {
                         Exceptions.printStackTrace(x);

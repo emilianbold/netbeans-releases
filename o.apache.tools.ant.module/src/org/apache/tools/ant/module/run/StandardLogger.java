@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -435,7 +436,7 @@ public final class StandardLogger extends AntLogger {
                 if (IOColorPrint.isSupported(io)) {
                     try {
                         assert mainPart != null;
-                        IOColorPrint.print(io, mainPart, hyperlink, isImportant(all), null);
+                        IOColorPrint.print(io, mainPart, hyperlink, isImportant(all), IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
                         assert postLinkPart != null;
                         session.println(postLinkPart, true, null);
                         return;
