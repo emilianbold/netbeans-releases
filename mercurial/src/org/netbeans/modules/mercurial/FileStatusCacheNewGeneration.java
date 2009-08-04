@@ -431,16 +431,11 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         if (counterUp != -1 || counterDown != -1) {
             // update all managed parents
             while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                boolean fireFolderChange = false;
-                if (counterUp != -1 && info.addToCounter(counterUp, 1, direct)) {
-                    fireFolderChange = true;
+                if (counterUp != -1) {
+                    info.addToCounter(counterUp, 1, direct);
                 }
-                if (counterDown != -1 && info.addToCounter(counterDown, -1, direct)) {
-                    fireFolderChange = true;
-                }
-                if (fireFolderChange) {
-                    // XXX is this neccessary?
-                    listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(parent, null, info));
+                if (counterDown != -1) {
+                    info.addToCounter(counterDown, -1, direct);
                 }
                 direct = false;
             }
