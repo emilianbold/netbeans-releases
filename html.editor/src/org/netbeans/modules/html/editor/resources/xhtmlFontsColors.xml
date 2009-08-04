@@ -40,21 +40,29 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
-<MIME-resolver>
-    <file>
-        <ext name="xml"/>
-        <ext name="xhtml"/>
-        <resolver mime="text/xhtml">
-            <xml-rule>
-                <element ns="http://www.w3.org/1999/xhtml"/>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="html"/>
-        <ext name="htm"/>
-        <ext name="shtml"/>
-        <resolver mime="text/html"/>
-    </file>
-</MIME-resolver>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="argument" default="markup-attribute"/>
+    <fontcolor name="block-comment" default="comment"/>
+    <fontcolor name="character" default="entity-reference"/>
+    <fontcolor name="error" default="error"/>
+    <fontcolor name="operator" default="argument"/>
+    <fontcolor name="sgml-comment" default="comment"/>
+    <fontcolor name="sgml-declaration" foreColor="ff628FB5" default="default"/>
+    <fontcolor name="tag" default="markup-element"/>
+    <fontcolor name="text" default="default"/>
+    <fontcolor name="value" default="markup-attribute-value"/>
+    <fontcolor name="ws" default="whitespace"/>
+    <fontcolor name="css-embedded" bgColor="FFE3F2E1" default="default"/>
+    <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
+
+     <!--"semantic" highlighting:-->
+    <fontcolor name="mod-method"> <!-- used for JSF tags in xhtml -->
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-class" waveUnderlined="red"/>
+    <fontcolor name="mod-field" bgColor="ffe3f2e1" /> <!-- used for EL in xhtml -->
+
+    <fontcolor name="expression-language" foreColor="black" bgColor="FFE3F2E1" default="default"/>
+</fontscolors>
