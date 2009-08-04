@@ -51,7 +51,7 @@ import javax.swing.JPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.GroupLayout.ParallelGroup;
 import org.jdesktop.layout.GroupLayout.SequentialGroup;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 
 /**
  * @author Alexey Vladykin

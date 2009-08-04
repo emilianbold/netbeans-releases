@@ -40,11 +40,11 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.stack.ThreadSnapshot;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
+import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
+import org.netbeans.module.dlight.threads.api.storage.ThreadState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateColumn;
 
 /**
  *
