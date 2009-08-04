@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,8 +58,10 @@ import org.openide.xml.EntityCatalog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -139,6 +143,7 @@ public class TldLibrary {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             InputSource is = new InputSource(content); //default encoding?!?!
+            is.setEncoding("UTF-8");
             docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
             Document doc = docBuilder.parse(is);
 
@@ -219,7 +224,7 @@ public class TldLibrary {
         NodeList nl = parent.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node n = nl.item(i);
-            if (n.getNodeName().equals(childName)) {
+            if (n.getNodeType() == Node.ELEMENT_NODE && n.getNodeName().equals(childName)) {
                 nodes.add(n);
             }
         }
