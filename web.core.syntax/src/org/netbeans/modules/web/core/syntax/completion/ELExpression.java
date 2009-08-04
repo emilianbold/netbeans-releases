@@ -190,7 +190,7 @@ public class ELExpression {
                 }
             }
 
-            if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+            if (ELTokenCategories.OPERATORS.hasCategory(token.id()) || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
                 return EL_START;
             }
 
