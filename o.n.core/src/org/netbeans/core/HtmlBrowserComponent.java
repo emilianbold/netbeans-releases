@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.CloneableTopComponent;
@@ -78,7 +79,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Creates new html browser with toolbar and status line.
     */
     public HtmlBrowserComponent() {
-        this (true, true);
+        this (true, false);
     }
 
     /**
@@ -119,10 +120,15 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     }
     
     public void propertyChange (PropertyChangeEvent e) {
-        if (!HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ())) return;
-        String title = browserComponent.getBrowserImpl().getTitle ();
-        if ((title == null) || (title.length () < 1)) return;
-        setToolTipText(title);
+        if( HtmlBrowser.Impl.PROP_STATUS_MESSAGE.equals(e.getPropertyName()) ) {
+            StatusDisplayer.getDefault().setStatusText(browserComponent.getBrowserImpl().getStatusMessage());
+            return;
+        } else if( HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ()) ) {
+            String title = browserComponent.getBrowserImpl().getTitle();
+            if ((title == null) || (title.length () < 1))
+                return;
+            setToolTipText(title);
+        }
     }    
     
     /** always open this top component in our special mode, if
@@ -293,7 +299,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         browserComponent.setEnableLocation (b);
     }
 
-    private boolean statusVisible = true;
+    private boolean statusVisible = false;
     /**
     * Gets status line state.
     */
