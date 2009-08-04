@@ -56,8 +56,8 @@ import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
 import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbContextBinding;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -98,7 +98,7 @@ public class WatchPanel {
                 editorPane.selectAll();
             }
         };
-        GdbContextBinding.getInstance().setupContext(editorPane, editorPaneUpdated);
+        ContextBindingSupport.getDefault().setupContext(editorPane, editorPaneUpdated);
 
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
