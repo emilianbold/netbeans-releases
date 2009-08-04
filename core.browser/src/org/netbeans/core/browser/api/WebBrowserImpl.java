@@ -424,6 +424,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     public boolean fireBrowserEvent(int type, String url) {
         WebBrowserEvent event = WebBrowserEvent.create(type, this, url);
+        urlToLoad = url;
         synchronized( browserListners ) {
             for( WebBrowserListener l : browserListners ) {
                 l.onDispatchEvent(event);
