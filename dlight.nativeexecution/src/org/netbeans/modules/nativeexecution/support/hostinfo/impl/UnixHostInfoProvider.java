@@ -160,6 +160,8 @@ public class UnixHostInfoProvider implements HostInfoProvider {
                     echannel.connect();
                 }
 
+                long localStartTime = System.currentTimeMillis();
+
                 hiOutputStream = echannel.getOutputStream();
                 hiInputStream = echannel.getInputStream();
 
@@ -174,6 +176,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
                 scriptReader.close();
                 hostInfo.load(hiInputStream);
+
+                long localEndTime = System.currentTimeMillis();
+
+                hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
             }
         } catch (JSchException ex) {
             throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
