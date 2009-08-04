@@ -44,11 +44,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -58,7 +53,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
@@ -115,8 +109,7 @@ public class ActionsTest extends NbTestCase {
     }
     
     protected void setUp() {
-        MockServices.setServices(new Class[] {TestKeymap.class, TestConnector.class});
-        assertNotNull("Keymap has to be in lookup", Lookup.getDefault().lookup(Keymap.class));
+        MockServices.setServices(TestConnector.class);
     }
     
     /**
@@ -235,37 +228,6 @@ public class ActionsTest extends NbTestCase {
         Icon disabledIcon = jb.getDisabledIcon();
         assertNotNull(disabledIcon);
         checkIfLoadedCorrectIcon(disabledIcon, jb, 7, "Disabled icon");
-    }
-    
-    /**
-     * tests if the accelerator for JMenuItem is reset when the global KeyMap changes.
-     * Has to work even when the menu is not visible (when visible is handled by Actions.Bridge listeners)
-     * when not visible handled by the tested Actions.setMenuActionConnection() - only for menu items.
-     * #39508
-     */
-    public void testActionRemoval_Issue39508() throws Exception {
-        // prepare
-        Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
-        map.removeBindings();
-        Action action = new ActionsTest.TestAction();
-        KeyStroke stroke = KeyStroke.getKeyStroke("ctrl alt 7");
-        assertNotNull(stroke);
-        //test start
-        JMenuItem menu = new JMenuItem();
-        assertNull(menu.getAccelerator());
-        Actions.connect(menu, action, false);
-        assertEquals(1, ((Observable)map).countObservers());
-        assertNull(menu.getAccelerator());
-        map.addActionForKeyStroke(stroke, action);
-        assertNotNull(action.getValue(Action.ACCELERATOR_KEY));
-        assertNotNull(menu.getAccelerator());
-        map.removeKeyStrokeBinding(stroke);
-        assertNull(action.getValue(Action.ACCELERATOR_KEY));
-        assertNull(menu.getAccelerator());
-        Reference ref = new WeakReference(action);
-        menu = null;
-        action = null;
-        assertGC("action can dissappear", ref);
     }
     
     /**
@@ -519,73 +481,6 @@ public class ActionsTest extends NbTestCase {
         }
         
         public void actionPerformed(ActionEvent e) {
-        }
-        
-    }
-    
-    public static final class TestKeymap extends Observable implements Keymap {
-        
-        private Map map = new HashMap();
-        private Action defAct;
-        
-        public void addActionForKeyStroke(KeyStroke key, Action act) {
-            map.put(key, act);
-            act.putValue(Action.ACCELERATOR_KEY, key);
-            setChanged();
-            notifyObservers();
-        }
-        
-        public Action getAction(KeyStroke key) {
-            return (Action)map.get(key);
-        }
-        
-        public Action[] getBoundActions() {
-            return new Action[0];
-        }
-        
-        public KeyStroke[] getBoundKeyStrokes() {
-            return new KeyStroke[0];
-        }
-        
-        public Action getDefaultAction() {
-            return defAct;
-        }
-        
-        public KeyStroke[] getKeyStrokesForAction(Action a) {
-            return new KeyStroke[0];
-        }
-        
-        public String getName() {
-            return "testKeymap";
-        }
-        
-        public Keymap getResolveParent() {
-            return null;
-        }
-        
-        public boolean isLocallyDefined(KeyStroke key) {
-            return true;
-        }
-        
-        public void removeBindings() {
-            map.clear();
-        }
-        
-        public void removeKeyStrokeBinding(KeyStroke keys) {
-            Action act = (Action)map.remove(keys);
-            if (act != null) {
-                act.putValue(Action.ACCELERATOR_KEY, null);
-            }
-            setChanged();
-            notifyObservers();
-        }
-        
-        public void setDefaultAction(Action a) {
-            defAct = a;
-        }
-        
-        public void setResolveParent(Keymap parent) {
-            // ignore
         }
         
     }

@@ -138,6 +138,11 @@ public abstract class SQLDataStorage extends DataStorage {
 
             return statement;
         }
+
+        @Override
+        public String toString() {
+            return "insert into " + tableName + ": " + dataRow.toString(); // NOI18N
+        }
     }
     private LinkedBlockingQueue<Request> requestQueue;
     private final Object insertPreparedStatmentsLock = new Object();

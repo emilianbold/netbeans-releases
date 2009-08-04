@@ -42,11 +42,17 @@
 package org.netbeans.modules.groovy.support.options;
 
 import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.openide.DialogDisplayer;
@@ -63,15 +69,34 @@ import org.openide.util.NbBundle;
 final class SupportPanel extends javax.swing.JPanel {
 
     private final SupportOptionsPanelController controller;
-    private final GroovyOptionsSubpanel subpanel;
+    private final Collection<GroovyOptionsSubpanel> subpanels;
 
-    SupportPanel(SupportOptionsPanelController controller, GroovyOptionsSubpanel subpanel) {
+    SupportPanel(SupportOptionsPanelController controller,
+            @NonNull Collection<? extends GroovyOptionsSubpanel> subpanels) {
+
         this.controller = controller;
-        this.subpanel = subpanel;
+        this.subpanels = new ArrayList<GroovyOptionsSubpanel>(subpanels);
         initComponents();
-        if (subpanel != null) {
-            subpanelWrapper.add(subpanel.getComponent());
+
+        int y = 1;
+        for (GroovyOptionsSubpanel subpanel: this.subpanels) {
+            GridBagConstraints constr = new GridBagConstraints();
+            constr.gridx = 1;
+            constr.gridy = y;
+            constr.weightx = 1.0;
+            constr.fill = GridBagConstraints.HORIZONTAL;
+            constr.insets = new Insets(0, 0, 8, 0);
+            subpanelWrapper.add(subpanel.getComponent(), constr);
+            y++;
         }
+
+        GridBagConstraints constr = new GridBagConstraints();
+        constr.gridx = 1;
+        constr.gridy = y;
+        constr.weightx = 1.0;
+        constr.weighty = 1.0;
+        constr.fill = GridBagConstraints.BOTH;
+        subpanelWrapper.add(new JLabel(), constr);
         // TODO listen to changes in form fields and call controller.changed()
     }
 
@@ -116,7 +141,7 @@ final class SupportPanel extends javax.swing.JPanel {
             }
         });
 
-        subpanelWrapper.setLayout(new java.awt.BorderLayout());
+        subpanelWrapper.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel1.text")); // NOI18N
 
@@ -207,7 +232,8 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             text = "";
         }
         groovyDocTextField.setText(text);
-        if (subpanel != null) {
+
+        for (GroovyOptionsSubpanel subpanel: this.subpanels) {
             subpanel.load();
         }
     }
@@ -215,14 +241,23 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     void store() {
         GroovySettings groovyOption = GroovySettings.getInstance();
         groovyOption.setGroovyDoc(groovyDocTextField.getText().trim());
-        if (subpanel != null) {
+
+        for (GroovyOptionsSubpanel subpanel: this.subpanels) {
             subpanel.store();
         }
     }
 
     boolean valid() {
         String groovyDoc = groovyDocTextField.getText().trim();
-        return (!"".equals(groovyDoc) && (subpanel != null ? subpanel.valid() : true)); // NOI18N
+        if ("".equals(groovyDoc)) {
+            return false;
+        }
+        for (GroovyOptionsSubpanel subpanel: this.subpanels) {
+            if (!subpanel.valid()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
