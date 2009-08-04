@@ -56,6 +56,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -64,8 +66,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.OutlineTable;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
-
-import org.openide.ErrorManager;
 
 import org.openide.awt.Actions;
 import org.openide.explorer.view.TreeView;
@@ -1040,11 +1040,11 @@ public final class Models {
                 } catch (Exception utex) {
                     // The filter can not process the icon base filtering
                     // Perhaps it needs to be upgraded to ExtendedNodeModelFilter
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                            ErrorManager.getDefault().annotate(utex,
-                                "The filter "+filter+" does not perform icon base filtering for "+node+".\n"+
-                                "If this is a problem, it should be upgraded to "+
-                                "ExtendedNodeModelFilter and getIconBaseWithExtension() implemented."));
+                    Logger.getLogger(Models.class.getName()).log(Level.CONFIG,
+                            "The filter "+filter+" does not perform icon base filtering for "+node+".\n"+
+                            "If this is a problem, it should be upgraded to "+
+                            "ExtendedNodeModelFilter and getIconBaseWithExtension() implemented.",
+                            utex);
                     base = model.getIconBaseWithExtension(node);
                 }
                 return base;

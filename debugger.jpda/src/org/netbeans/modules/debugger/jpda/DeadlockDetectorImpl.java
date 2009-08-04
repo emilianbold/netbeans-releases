@@ -64,13 +64,11 @@ import org.openide.util.WeakSet;
  */
 public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyChangeListener {
     
-    private JPDADebugger debugger;
     private final Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
     
     private Map<Long, Node> monitorToNode;
 
     DeadlockDetectorImpl(JPDADebugger debugger) {
-        this.debugger = debugger;
         debugger.addPropertyChangeListener(this);
         List<JPDAThread> threads = debugger.getThreadsCollector().getAllThreads();
         for (JPDAThread thread : threads) {

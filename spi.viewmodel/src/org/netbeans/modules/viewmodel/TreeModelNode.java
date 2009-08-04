@@ -54,6 +54,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -64,7 +66,6 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.ErrorManager;
 
 import org.openide.awt.Actions;
 import org.openide.explorer.view.CheckableNode;
@@ -164,8 +165,7 @@ public class TreeModelNode extends AbstractNode {
                 new TreeModelChildren (model, treeModelRoot, object);
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             }
             return Children.LEAF;
         }
@@ -189,8 +189,7 @@ public class TreeModelNode extends AbstractNode {
             return sd;
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             }
             return null;
         }
@@ -257,8 +256,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             return model.canCopy(object);
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             return false;
         }
     }
@@ -268,8 +266,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             return model.canCut(object);
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             return false;
         }
     }
@@ -290,8 +287,7 @@ public class TreeModelNode extends AbstractNode {
                 }
             }
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
         }
         if (model.getRoot() == object) {
             treeModelRoot.destroy();
@@ -361,8 +357,7 @@ public class TreeModelNode extends AbstractNode {
                     setName (name, false);
                 }
             } catch (UnknownTypeException e) {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             }
             refreshed = true;
         }
@@ -374,8 +369,7 @@ public class TreeModelNode extends AbstractNode {
                 else
                     setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             } catch (UnknownTypeException e) {
-                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             }
             refreshed = true;
         }
@@ -455,7 +449,7 @@ public class TreeModelNode extends AbstractNode {
                         "Model: " + model + ".getDisplayName (" + object + 
                         ") = null!"
                     );
-                ErrorManager.getDefault().notify(t);
+                Exceptions.printStackTrace(t);
             }
             setName (name, false);
             String iconBase = null;
@@ -468,8 +462,7 @@ public class TreeModelNode extends AbstractNode {
                 setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             firePropertyChange(null, null, null);
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
         }
     }
     
@@ -496,8 +489,7 @@ public class TreeModelNode extends AbstractNode {
         } catch (UnknownTypeException utex) {
             // not known - do not change children
             if (!(object instanceof String)) {
-                Throwable t = ErrorManager.getDefault().annotate(utex, "Model: "+model);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, utex);
             }
             setChildren(Children.LEAF);
         }
@@ -602,8 +594,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             return model.canRename(object);
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             return false;
         }
     }
@@ -614,8 +605,7 @@ public class TreeModelNode extends AbstractNode {
             model.setName(object, s);
             super.setName(s);
         } catch (UnknownTypeException e) {
-            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
         }
     }
     
@@ -625,8 +615,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             t = model.clipboardCopy(object);
         } catch (UnknownTypeException e) {
-            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             t = null;
         }
         if (t == null) {
@@ -642,8 +631,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             t = model.clipboardCut(object);
         } catch (UnknownTypeException e) {
-            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             t = null;
         }
         if (t == null) {
@@ -659,8 +647,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             t = model.drag(object);
         } catch (UnknownTypeException e) {
-            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             t = null;
         }
         if (t == null) {
@@ -677,8 +664,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             p = model.getPasteTypes(object, t);
         } catch (UnknownTypeException e) {
-            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             p = null;
         }
         if (p == null) {
@@ -694,8 +680,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             p = model.getDropType(object, t, action, index);
         } catch (UnknownTypeException e) {
-            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             p = null;
         }
         if (p == null) {
@@ -844,15 +829,14 @@ public class TreeModelNode extends AbstractNode {
             } catch (UnknownTypeException e) {
                 ch = new Object [0];
                 if (!(object instanceof String)) {
-                    Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
                 }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
                 // recover from defect in getChildren()
                 // Otherwise there would remain "Please wait..." node.
-                ErrorManager.getDefault().notify(t);
+                Exceptions.printStackTrace(t);
                 ch = new Object[0];
             }
             evaluatedNotify.run();
@@ -1052,8 +1036,7 @@ public class TreeModelNode extends AbstractNode {
                 return !model.isReadOnly (object, columnModel.getID ());
             } catch (UnknownTypeException e) {
                 if (!(object instanceof String)) {
-                    Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
                 }
                 return false;
             }
@@ -1216,8 +1199,7 @@ public class TreeModelNode extends AbstractNode {
                         }
                         firePropertyChange (id, null, null);
                     } catch (UnknownTypeException e) {
-                        Throwable t = ErrorManager.getDefault().annotate(e, "Column id:" + columnModel.getID ()+"\nModel: "+model);
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                        Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
                     }
                 }
             });

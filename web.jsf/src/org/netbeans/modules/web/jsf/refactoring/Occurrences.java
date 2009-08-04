@@ -52,7 +52,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;

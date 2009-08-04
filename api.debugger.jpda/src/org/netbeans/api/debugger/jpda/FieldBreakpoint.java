@@ -252,7 +252,7 @@ public class FieldBreakpoint extends JPDABreakpoint {
            ) throw new IllegalArgumentException  ();
         int old = this.type;
         this.type = type;
-        firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (type));
+        firePropertyChange (PROP_BREAKPOINT_TYPE, Integer.valueOf(old), Integer.valueOf(type));
     }
     
     /**

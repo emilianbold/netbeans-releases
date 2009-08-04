@@ -293,8 +293,8 @@ public abstract class JPDADebugger {
         int i, k = es.length;
         for (i = 0; i < k; i++) {
             JPDADebugger d = es[i].lookupFirst(null, JPDADebugger.class);
-            d.waitRunning ();
             if (d == null) continue;
+            d.waitRunning ();
             return d;
         }
         throw new DebuggerStartException(

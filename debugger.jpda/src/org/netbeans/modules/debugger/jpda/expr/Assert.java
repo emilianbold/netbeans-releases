@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 
 /**
@@ -50,75 +51,75 @@ import java.util.Collection;
  */
 class Assert {
 
-    static Object error(SimpleNode node, String param) throws EvaluationException {
+    static Object error(Tree node, String param) throws EvaluationException {
         return error(node, param, null);
     }
 
-    static Object error(SimpleNode node, String cause, Object p2) throws EvaluationException {
+    static Object error(Tree node, String cause, Object p2) throws EvaluationException {
         return error(node, cause, new Object [] { p2 });
     }
 
-    static Object error(SimpleNode node, String cause, Object p2, Object p3) throws EvaluationException {
+    static Object error(Tree node, String cause, Object p2, Object p3) throws EvaluationException {
         return error(node, cause, new Object [] { p2, p3});
     }
 
-    static Object error(SimpleNode node, String cause, Object p1, Object p2, Object p3) throws EvaluationException {
+    static Object error(Tree node, String cause, Object p1, Object p2, Object p3) throws EvaluationException {
         return error(node, cause, new Object [] { p1, p2, p3});
     }
 
-    private static Object error (SimpleNode node, String cause, Object [] params) throws EvaluationException {
+    private static Object error (Tree node, String cause, Object [] params) throws EvaluationException {
         throw new EvaluationException(node, cause, params);
     }
 
-    static void assertAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2) {
+    static void assertAssignable(Object o, Class aClass, Tree s, String p1, Object p2) {
         if (o != null && !aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2);
         }
     }
 
-    static void assertAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2, Object p3) {
+    static void assertAssignable(Object o, Class aClass, Tree s, String p1, Object p2, Object p3) {
         if (o != null && !aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2, p3);
         }
     }
 
-    static void assertNotAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2) {
+    static void assertNotAssignable(Object o, Class aClass, Tree s, String p1, Object p2) {
         if (aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2);
         }
     }
 
-    static void assertNotAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2, Object p3) {
+    static void assertNotAssignable(Object o, Class aClass, Tree s, String p1, Object p2, Object p3) {
         if (aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2, p3);
         }
     }
 
-    static void assertNotAssignable(Object o, Class aClass, SimpleNode node, String s) {
+    static void assertNotAssignable(Object o, Class aClass, Tree node, String s) {
         if (aClass.isAssignableFrom(o.getClass())) {
             error(node, s);
         }
     }
 
-    static void assertLess(int a, int b, SimpleNode s, String p1, Object p2, Object p3) {
+    static void assertLess(int a, int b, Tree s, String p1, Object p2, Object p3) {
         if (a >= b) {
             error(s, p1, p2, p3);
         }
     }
 
-    static void assertNotNull(Object obj, SimpleNode s, String identifier) {
+    static void assertNotNull(Object obj, Tree s, String identifier) {
         if (obj == null) {
             error(s, identifier);
         }
     }
 
-    static void assertNonEmpty(Collection collection, SimpleNode s, String p1, Object p2) {
+    static void assertNonEmpty(Collection collection, Tree s, String p1, Object p2) {
         if (collection == null || collection.size() == 0) {
             error(s, p1, p2);
         }
     }
 
-    static void assertNotNull(Object obj, SimpleNode node, String p1, Object p2) {
+    static void assertNotNull(Object obj, Tree node, String p1, Object p2) {
         if (obj == null) {
             error(node, p1, p2);
         }

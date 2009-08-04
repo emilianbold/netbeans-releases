@@ -41,6 +41,7 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -175,7 +176,10 @@ public class NbKeymapTest extends NbTestCase {
         DataShadow.create(DataFolder.findFolder(makeFolder("Keymaps/Eclipse")), "C-B", DataObject.find(def));
         Keymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK), def, "one");
+        assertEquals(null, a.getValue(Action.ACCELERATOR_KEY));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        // let former EQ task finish
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         // Any actions ever passed to getKeyStrokesForAction should get updated when keymap changes:
         assertEquals(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK), a.getValue(Action.ACCELERATOR_KEY));
     }

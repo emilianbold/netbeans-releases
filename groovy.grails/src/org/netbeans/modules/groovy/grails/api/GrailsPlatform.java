@@ -728,9 +728,12 @@ public final class GrailsPlatform {
                 }
             }
 
-            String vmOptions = descriptor.getProjectConfig().getVmOptions();
-            if (vmOptions != null && "".equals(vmOptions.trim())) {
-                vmOptions = null;
+            String vmOptions = null;
+            if (descriptor.getProjectConfig() != null) {
+                vmOptions = descriptor.getProjectConfig().getVmOptions();
+                if (vmOptions != null && "".equals(vmOptions.trim())) {
+                    vmOptions = null;
+                }
             }
             String[] envp = new String[] {
                 "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N

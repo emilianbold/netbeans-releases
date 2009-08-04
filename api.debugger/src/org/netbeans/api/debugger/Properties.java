@@ -1190,13 +1190,13 @@ public abstract class Properties {
                 } else {
                     impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
                     Properties p = getProperties (propertyName);
-                    Iterator it = value.keySet ().iterator ();
+                    Iterator<Map.Entry> it = value.entrySet ().iterator ();
                     int i = 0;
                     p.setInt ("length", value.size ()); // NOI18N
                     while (it.hasNext ()) {
-                        Object o = it.next ();
-                        p.setObject ("" + i + "-key", o); // NOI18N
-                        p.setObject ("" + i + "-value", value.get (o)); // NOI18N
+                        Map.Entry e = it.next ();
+                        p.setObject ("" + i + "-key", e.getKey()); // NOI18N
+                        p.setObject ("" + i + "-value", e.getValue()); // NOI18N
                         i++;
                     }
                 }
