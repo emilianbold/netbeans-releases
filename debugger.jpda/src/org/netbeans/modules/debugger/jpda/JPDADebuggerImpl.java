@@ -130,11 +130,10 @@ import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
-import org.netbeans.modules.debugger.jpda.expr.EvaluationException2;
-import org.netbeans.modules.debugger.jpda.expr.Evaluator;
-import org.netbeans.modules.debugger.jpda.expr.Expression2;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
+import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
-import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.modules.debugger.jpda.expr.TreeEvaluator;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
@@ -779,7 +778,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     // * it's collection must be enabled again.
     private Value evaluateIn (String expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
         Expression expr = null;
-        expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
+        expr = Expression.parse(expression, Expression.LANGUAGE_JAVA_1_5);
         return evaluateIn (expr, csf, var);
     }
 
@@ -924,119 +923,63 @@ public class JPDADebuggerImpl extends JPDADebugger {
             final List<EventRequest>[] disabledBreakpoints =
                     new List[] { null };
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
-            boolean useNewEvaluator = !Boolean.getBoolean("debugger.evaluatorOld");
             EvaluationContext context;
-            if (useNewEvaluator) {
-                Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
-                org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 =
-                    expression2.evaluator(
-                        context = new EvaluationContext(
-                            trImpl,
-                            frame,
-                            frameDepth,
-                            var,
-                            imports,
-                            staticImports,
-                            methodCallsUnsupportedExc == null,
-                            new Runnable() {
-                                public void run() {
-                                    if (disabledBreakpoints[0] == null) {
-                                        JPDAThreadImpl theResumedThread = getThread(tr);
-                                        try {
-                                            theResumedThread.notifyMethodInvoking();
-                                        } catch (PropertyVetoException pvex) {
-                                            throw new RuntimeException(
-                                                new InvalidExpressionException (pvex.getMessage()));
-                                        }
-                                        try {
-                                            disabledBreakpoints[0] = disableAllBreakpoints();
-                                            resumedThread[0] = theResumedThread;
-                                        } catch (InternalExceptionWrapper ex) {
-                                        } catch (VMDisconnectedExceptionWrapper ex) {
-                                        }
+            TreeEvaluator evaluator =
+                expression.evaluator(
+                    context = new EvaluationContext(
+                        trImpl,
+                        frame,
+                        frameDepth,
+                        var,
+                        imports,
+                        staticImports,
+                        methodCallsUnsupportedExc == null,
+                        new Runnable() {
+                            public void run() {
+                                if (disabledBreakpoints[0] == null) {
+                                    JPDAThreadImpl theResumedThread = getThread(tr);
+                                    try {
+                                        theResumedThread.notifyMethodInvoking();
+                                    } catch (PropertyVetoException pvex) {
+                                        throw new RuntimeException(
+                                            new InvalidExpressionException (pvex.getMessage()));
+                                    }
+                                    try {
+                                        disabledBreakpoints[0] = disableAllBreakpoints();
+                                        resumedThread[0] = theResumedThread;
+                                    } catch (InternalExceptionWrapper ex) {
+                                    } catch (VMDisconnectedExceptionWrapper ex) {
                                     }
                                 }
-                            },
-                            this
-                        )
-                    );
-                try {
-                    return evaluator2.evaluate ();
-                } finally {
-                    if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
-                        methodCallsUnsupportedExc =
-                                new InvalidExpressionException(new UnsupportedOperationException());
-                    }
-                    if (disabledBreakpoints[0] != null) {
-                        enableAllBreakpoints (disabledBreakpoints[0]);
-                    }
-                    if (resumedThread[0] != null) {
-                        resumedThread[0].notifyMethodInvokeDone();
-                    }
+                            }
+                        },
+                        this
+                    )
+                );
+            try {
+                return evaluator.evaluate ();
+            } finally {
+                if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
+                    methodCallsUnsupportedExc =
+                            new InvalidExpressionException(new UnsupportedOperationException());
                 }
-            } else {
-                org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator =
-                    expression.evaluator (
-                        context = new EvaluationContext (
-                            trImpl,
-                            frame,
-                            frameDepth,
-                            var,
-                            imports,
-                            staticImports,
-                            methodCallsUnsupportedExc == null,
-                            new Runnable() {
-                                public void run() {
-                                    if (disabledBreakpoints[0] == null) {
-                                        JPDAThreadImpl theResumedThread = getThread(tr);
-                                        try {
-                                            theResumedThread.notifyMethodInvoking();
-                                        } catch (PropertyVetoException pvex) {
-                                            throw new RuntimeException(
-                                                new InvalidExpressionException (pvex.getMessage()));
-                                        }
-                                        try {
-                                            disabledBreakpoints[0] = disableAllBreakpoints();
-                                            resumedThread[0] = theResumedThread;
-                                        } catch (InternalExceptionWrapper ex) {
-                                        } catch (VMDisconnectedExceptionWrapper ex) {
-                                        }
-                                    }
-                                }
-                            },
-                            this
-                        )
-                    );
-                try {
-                    return evaluator.evaluate ();
-                } finally {
-                    if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
-                        methodCallsUnsupportedExc =
-                                new InvalidExpressionException(new UnsupportedOperationException());
-                    }
-                    if (disabledBreakpoints[0] != null) {
-                        enableAllBreakpoints (disabledBreakpoints[0]);
-                    }
-                    if (resumedThread[0] != null) {
-                        resumedThread[0].notifyMethodInvokeDone();
-                    }
+                if (disabledBreakpoints[0] != null) {
+                    enableAllBreakpoints (disabledBreakpoints[0]);
+                }
+                if (resumedThread[0] != null) {
+                    resumedThread[0].notifyMethodInvokeDone();
                 }
             }
         } catch (InternalExceptionWrapper e) {
             throw new InvalidExpressionException(e.getLocalizedMessage());
         } catch (VMDisconnectedExceptionWrapper e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_disconnected"));
+                TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (InvalidStackFrameExceptionWrapper e) {
             Exceptions.printStackTrace(e); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (EvaluationException e) {
-            InvalidExpressionException iee = new InvalidExpressionException (e);
-            iee.initCause (e);
-            Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
-            throw iee;
-        } catch (EvaluationException2 e) {
             InvalidExpressionException iee = new InvalidExpressionException (e);
             iee.initCause (e);
             Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
