@@ -66,6 +66,16 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
     }
 
     @Override
+    public String getLocation() {
+        return getBrowser().getURL();
+    }
+
+    @Override
+    public void setLocation(String str) {
+        getBrowser().setURL(str);
+    }
+
+    @Override
     public String getStatusMessage() {
         return getBrowser().getStatusMessage();
     }

@@ -67,7 +67,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
-import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.openide.util.NbBundle;
@@ -258,7 +257,6 @@ public class WatchesModel implements TreeModel {
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
         private Expression expression;
-        private ParseException parseException;
         private final boolean[] evaluating = new boolean[] { false };
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
@@ -277,22 +275,13 @@ public class WatchesModel implements TreeModel {
         }
         
         private void parseExpression(String exprStr) {
-            try {
-                expression = Expression.parse (
-                    exprStr, 
-                    Expression.LANGUAGE_JAVA_1_5
-                );
-                parseException = null;
-            } catch (ParseException e) {
-                setEvaluated(new JPDAWatchImpl(debugger, w, e, this));
-                parseException = e;
-            }
+            expression = Expression.parse (
+                exprStr,
+                Expression.LANGUAGE_JAVA_1_5
+            );
         }
         
-        Expression getParsedExpression() throws ParseException {
-            if (parseException != null) {
-                throw parseException;
-            }
+        Expression getParsedExpression() {
             return expression;
         }
 
@@ -419,10 +408,6 @@ public class WatchesModel implements TreeModel {
                     }*/
                 }
             } catch (InvalidExpressionException e) {
-                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
-                jwi.addPropertyChangeListener(this);
-                jw = jwi;
-            } catch (ParseException e) {
                 JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
                 jwi.addPropertyChangeListener(this);
                 jw = jwi;

@@ -80,7 +80,8 @@ public class SingleThreadWatcher implements Runnable {
             destroy();
             return;
         }
-        boolean areLocks = t.checkForBlockingThreads();
+        //boolean areLocks =
+        t.checkForBlockingThreads();
         //if (!areLocks) {
             synchronized (this) {
                 if (watchTask != null) {

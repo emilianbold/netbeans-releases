@@ -120,6 +120,7 @@
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
@@ -130,6 +131,7 @@
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.dlight</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
@@ -140,10 +142,10 @@
                 <friend>org.netbeans.modules.dlight.management</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>

@@ -45,17 +45,19 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -84,6 +86,11 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -120,12 +127,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
     public AmbiguousInjectablesPanel(Collection<Element> elements, 
             VariableElement var,  List<AnnotationMirror> bindings , 
-            CompilationController controller ) 
+            CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         initComponents();
         
-        docPane = new DocumentationScrollPane( true );
-        mySplitPane.setRightComponent( docPane );
+        myModel = model;
+        myDocPane = new DocumentationScrollPane( true );
+        mySplitPane.setRightComponent( myDocPane );
         mySplitPane.setDividerLocation(
                 WebBeansNavigationOptions.getHierarchyDividerLocation());
         
@@ -146,7 +154,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myJavaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
 
         javaHierarchyModel = new AmbiguousInjectablesModel(elements, 
-                controller );
+                controller, model );
         myJavaHierarchyTree.setModel(javaHierarchyModel);
 
         registerKeyboardAction(
@@ -165,7 +173,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                applyFilter(true);
+                reload();
                 myFilterTextField.requestFocusInWindow();
             }           
         });
@@ -174,7 +182,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     public void removeNotify() {
         WebBeansNavigationOptions.setHierarchyDividerLocation(
                 mySplitPane.getDividerLocation());
-        docPane.setData( null );
+        myDocPane.setData( null );
         super.removeNotify();
     }
     
@@ -228,14 +236,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         }
     }
     
-    private void applyFilter() {
-        applyFilter(true);
-    }
-    
-    private void applyFilter(final boolean structural) {
-        if (structural) {
-            enterBusy();
-        }
+    private void reload() {
+        enterBusy();
 
         WebBeansNavigationOptions.setCaseSensitive(myCaseSensitiveFilterCheckBox.isSelected());
         WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
@@ -244,18 +246,15 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             new Runnable() {
                 public void run() {
                     try {
-    
-                        if (structural) {
-                                javaHierarchyModel.update();
-                        }
+                        javaHierarchyModel.update();
                     } finally {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                if (structural) {
-                                    leaveBusy();
-                                }
+                                leaveBusy();
                                 // expand the tree
-                                for (int row = 0; row < myJavaHierarchyTree.getRowCount(); row++) {
+                                for (int row = 0; 
+                                    row < myJavaHierarchyTree.getRowCount(); row++) 
+                                {
                                     myJavaHierarchyTree.expandRow(row);
                                 }
                             }});
@@ -330,8 +329,45 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         TreePath treePath = myJavaHierarchyTree.getSelectionPath();
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
-            if (node instanceof JavaElement) {
-                myInjectableBindings.setText(((JavaElement)node).getTooltip());
+            if (node instanceof InjectableTreeNode<?>) {
+                final ElementHandle<?> elementHandle = 
+                    ((InjectableTreeNode<?>)node).getElementHandle();
+                try {
+                    getModel().runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
+
+                        public Void run( WebBeansModel model ) throws Exception {
+                            Element element = elementHandle.resolve(
+                                    model.getCompilationController());
+                            if ( element == null ){
+                                myInjectableBindings.setText("");
+                            }
+                            else {
+                                List<AnnotationMirror> bindings = 
+                                    model.getBindings(element);
+                                StringBuilder builder = new StringBuilder();
+                                for (AnnotationMirror annotationMirror : bindings) {
+                                    appendBinding(annotationMirror, builder,  
+                                            myShowFQNToggleButton.isSelected() );
+                                }
+                                String bindingsString = "";
+                                if ( builder.length() >0 ){
+                                    bindingsString = builder.substring(0 , 
+                                            builder.length() -2 );
+                                }
+                                myInjectableBindings.setText( bindingsString);
+                            }
+                            return null;
+                        }
+                    });
+                }
+                catch (MetadataModelException e) {
+                    Logger.getLogger( AmbiguousInjectablesPanel.class.getName() ).
+                        log( Level.WARNING, e.getMessage(), e);
+                }
+                catch (IOException e) {
+                    Logger.getLogger( AmbiguousInjectablesPanel.class.getName() ).
+                    log( Level.WARNING, e.getMessage(), e);
+                }
                 myInjectableBindings.setCaretPosition(0);
                 myInjectableBindings.setToolTipText(((JavaElement)node).getTooltip());
             }
@@ -343,18 +379,20 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
-                docPane.setData( ((JavaElement)node).getJavaDoc() );
+                myDocPane.setData( ((JavaElement)node).getJavaDoc() );
             }
         }
     }
 
-    private DocumentationScrollPane docPane;
-    
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(AmbiguousInjectablesPanel.this);
         if (window != null) {
             window.setVisible(false);
         }
+    }
+    
+    private MetadataModel<WebBeansModel> getModel(){
+        return myModel;
     }
     
 
@@ -518,11 +556,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
-                        if (me.getClickCount() == 1) {
-                            if (me.isControlDown()) {
-                                applyFilter();
-                            }
-                        }  else if (me.getClickCount() == 2){
+                        if (me.getClickCount() == 2){
                             gotoElement((JavaElement) node);
                         }
                     }
@@ -543,6 +577,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
                 javaHierarchyModel.fireTreeNodesChanged();
                 reloadInjectionPoint();
+                showBindings();
             }
         });
 
@@ -625,22 +660,6 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 if (treePath != null) {
                     Object node = treePath.getLastPathComponent();
                     if (node instanceof JavaElement) {
-                        applyFilter();
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
-
-        myFilterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
                         gotoElement((JavaElement) node);
                     }
                 }
@@ -652,7 +671,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
+                        Component view = myDocPane.getViewport().getView();
                         if (view instanceof JEditorPane) {
                             JEditorPane editorPane = (JEditorPane) view;
                             ActionListener actionForKeyStroke =
@@ -672,7 +691,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 new ActionListener() {
                     private boolean firstTime = true;
                     public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
+                        Component view = myDocPane.getViewport().getView();
                         if (view instanceof JEditorPane) {
                             JEditorPane editorPane = (JEditorPane) view;
                             ActionListener actionForKeyStroke =
@@ -708,21 +727,6 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 JComponent.WHEN_FOCUSED);
 
-        myJavaHierarchyTree.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        applyFilter();
-                    }
-                }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 
-                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
     }
 
     /** This method is called from within the constructor to
@@ -925,4 +929,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     
     private String myFqnBindings;
     private String myShortBindings;
+    
+    private DocumentationScrollPane myDocPane;
+    private MetadataModel<WebBeansModel> myModel;
 }

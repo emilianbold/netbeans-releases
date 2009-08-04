@@ -293,8 +293,8 @@ public abstract class JPDADebugger {
         int i, k = es.length;
         for (i = 0; i < k; i++) {
             JPDADebugger d = es[i].lookupFirst(null, JPDADebugger.class);
-            d.waitRunning ();
             if (d == null) continue;
+            d.waitRunning ();
             return d;
         }
         throw new DebuggerStartException(
@@ -469,7 +469,7 @@ public abstract class JPDADebugger {
      * Parameters correspond to {@link JPDAStep} constructor.
      * 
      * @return {@link JPDAStep} 
-     * @throws {@link java.lang.UnsupportedOperationException} If not overridden
+     * @throws UnsupportedOperationException If not overridden
      */
     public JPDAStep createJPDAStep(int size, int depth) {
         throw new UnsupportedOperationException("This method must be overridden."); 

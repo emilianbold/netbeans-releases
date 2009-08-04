@@ -4,6 +4,8 @@
  */
 
 package org.netbeans.modules.dlight.spi.impl;
+
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 
@@ -14,4 +16,5 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 public interface IndicatorActionListener {
 
   void mouseClickedOnIndicator(Indicator source);
+  void openVisualizerForIndicator(Indicator source, VisualizerConfiguration vc);
 }

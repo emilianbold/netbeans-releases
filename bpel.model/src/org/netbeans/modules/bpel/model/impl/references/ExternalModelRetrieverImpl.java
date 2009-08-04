@@ -26,7 +26,7 @@ import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -108,7 +108,8 @@ public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
         Import[] imports = model.getProcess().getImports();
         for (Import imp : imports) {
             if ( namespace.equals(imp.getNamespace()) ){
-                WSDLModel wsdlModel = ImportHelper.getWsdlModel(imp);
+                WSDLModel wsdlModel = BpelModelImpl.class.cast(model).
+                        getRefCacheSupport().optimizedWsdlResolve(imp);
                 if ( wsdlModel!= null && wsdlModel.getState() == Model.State.VALID ){
                     list.add( wsdlModel );
                 }
@@ -156,7 +157,8 @@ public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
             if ( !namespace.equals( imp.getNamespace() )){
                 continue;
             }
-            SchemaModel schemaModel = ImportHelper.getSchemaModel( imp );
+            SchemaModel schemaModel = BpelModelImpl.class.cast(model).
+                    getRefCacheSupport().optimizedSchemaResolve(imp);
             if ( schemaModel != null && schemaModel.getState() == State.VALID ){
                 list.add( schemaModel );
             }

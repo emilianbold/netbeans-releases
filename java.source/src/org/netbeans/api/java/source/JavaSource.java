@@ -176,7 +176,7 @@ public final class JavaSource {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link JavaSource} should be created
      * @return a new {@link JavaSource}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null        
+     * @throws IllegalArgumentException if fileObject or cpInfo is null        
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull FileObject... files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
@@ -191,7 +191,7 @@ public final class JavaSource {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link JavaSource} should be created
      * @return a new {@link JavaSource}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
+     * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
@@ -214,7 +214,7 @@ public final class JavaSource {
      * it returns null if the {@link Document} is not associanted with data type providing the {@link JavaSource}.
      * @param fileObject for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if fileObject is null
+     * @throws IllegalArgumentException if fileObject is null
      */
     public static @CheckForNull JavaSource forFileObject(@NonNull FileObject fileObject) throws IllegalArgumentException {
         if (fileObject == null) {
@@ -293,7 +293,7 @@ public final class JavaSource {
      * associated with data type providing the {@link JavaSource}.
      * @param doc {@link Document} for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if doc is null
+     * @throws IllegalArgumentException if doc is null
      */
     public static @CheckForNull JavaSource forDocument(@NonNull Document doc) throws IllegalArgumentException {
         if (doc == null) {

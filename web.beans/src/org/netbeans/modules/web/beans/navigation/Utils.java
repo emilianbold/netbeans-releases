@@ -40,10 +40,25 @@
  */
 package org.netbeans.modules.web.beans.navigation;
 
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 
@@ -150,6 +165,414 @@ final class Utils {
             }
 
             return name.toLowerCase().startsWith(patternLowerCase);
+        }
+    }
+    
+    static String format(Element element) {
+        return format(element, false, false);
+    }
+    
+    static String format(Element element, boolean forSignature, boolean FQNs) {
+        StringBuilder stringBuilder = new StringBuilder();
+        format(element, stringBuilder, forSignature, FQNs);
+
+        return stringBuilder.toString();
+    }
+    
+    static void format(Element element, StringBuilder stringBuilder, 
+            boolean forSignature, boolean FQNs) 
+    {
+        if (element == null) {
+            return;
+        }
+
+        Set<Modifier> modifiers = element.getModifiers();
+
+        switch (element.getKind()) {
+        case PACKAGE:
+            break;
+        case CLASS:
+        case INTERFACE:
+        case ENUM:
+        case ANNOTATION_TYPE:
+            if (forSignature) {
+                stringBuilder.append(toString(modifiers));
+                if (modifiers.size() > 0) {
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append(" ");
+                    }
+                }
+            }
+            
+            if (forSignature) {
+                switch (element.getKind()) {
+                    case CLASS:
+                        stringBuilder.append("class "); // NOI18N
+                        break;
+                    case INTERFACE:
+                        stringBuilder.append("interface "); // NOI18N
+                        break;
+                    case ENUM:
+                        stringBuilder.append("enum "); // NOI18N
+                        break;
+                    case ANNOTATION_TYPE:
+                        stringBuilder.append("@interface "); // NOI18N
+                        break;
+                }
+            }
+            
+            TypeElement typeElement = (TypeElement) element;
+            stringBuilder.append(FQNs
+                ? typeElement.getQualifiedName().toString()
+                : typeElement.getSimpleName().toString());
+
+            formatTypeParameters(typeElement.getTypeParameters(), stringBuilder, FQNs);
+
+            break;
+
+        case CONSTRUCTOR:
+            break;
+
+        case METHOD:
+            ExecutableElement methodElement = (ExecutableElement) element;
+            TypeMirror returnTypeMirror = methodElement.getReturnType();
+            List<?extends TypeParameterElement> typeParameters = 
+                methodElement.getTypeParameters();
+
+            if (forSignature) {
+                stringBuilder.append(toString(modifiers));
+                
+                if (modifiers.size() > 0) {
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append(" ");
+                    }
+                }
+
+                if ((typeParameters != null) && (typeParameters.size() > 0)) {
+                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append(" ");
+                    }
+                }
+
+                formatTypeMirror(returnTypeMirror, stringBuilder, FQNs);
+            }
+
+            if (stringBuilder.length() > 0) {
+                    stringBuilder.append(" ");
+            }
+
+            stringBuilder.append(methodElement.getSimpleName().toString());
+            stringBuilder.append("(");
+            formatVariableElements(methodElement.getParameters(),
+                methodElement.isVarArgs(), stringBuilder, FQNs);
+            stringBuilder.append(")");
+
+            List<? extends TypeMirror> thrownTypesMirrorsByMethod = methodElement.getThrownTypes();
+            if (!thrownTypesMirrorsByMethod.isEmpty()) {
+                stringBuilder.append(" throws "); // NOI18N
+                formatTypeMirrors(thrownTypesMirrorsByMethod, stringBuilder, FQNs);
+            }
+
+            if (forSignature) {
+                AnnotationValue annotationValue = methodElement.getDefaultValue();
+                if (annotationValue != null) {
+                    Object annotationValueValue = annotationValue.getValue();
+                    if (annotationValueValue != null) {
+                        stringBuilder.append(" default "); // NOI18N
+                        if (annotationValueValue instanceof String) {
+                            stringBuilder.append("\"");
+                        } else if (annotationValueValue instanceof Character) {
+                            stringBuilder.append("\'");
+                        } 
+                        stringBuilder.append(String.valueOf(annotationValueValue));
+                        if (annotationValueValue instanceof String) {
+                            stringBuilder.append("\"");
+                        } else if (annotationValueValue instanceof Character) {
+                            stringBuilder.append("\'");
+                        }                    
+                    }
+                }
+            } else {
+                stringBuilder.append(":");
+
+                formatTypeMirror(returnTypeMirror, stringBuilder, FQNs);
+
+                if ((typeParameters != null) && (typeParameters.size() > 0)) {
+                    stringBuilder.append(":");
+                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                }
+
+            }
+
+            break;
+
+        case TYPE_PARAMETER:
+            break;
+
+        case FIELD:
+            VariableElement fieldElement = (VariableElement) element;
+            if (forSignature) {
+                stringBuilder.append(toString(modifiers));
+
+                if (stringBuilder.length() > 0) {
+                    stringBuilder.append(" ");
+                }
+
+                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+            }
+
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append(" ");
+            }
+
+            stringBuilder.append(fieldElement.getSimpleName().toString());
+
+            if (forSignature) {
+                Object fieldValue = fieldElement.getConstantValue();
+                if (fieldValue != null) {
+                    stringBuilder.append(" = ");
+                    if (fieldValue instanceof String) {
+                        stringBuilder.append("\"");
+                    } else if (fieldValue instanceof Character) {
+                        stringBuilder.append("\'");
+                    } 
+                    stringBuilder.append(String.valueOf(fieldValue));
+                    if (fieldValue instanceof String) {
+                        stringBuilder.append("\"");
+                    } else if (fieldValue instanceof Character) {
+                        stringBuilder.append("\'");
+                    }                    
+                }
+            } else {
+                stringBuilder.append(":");
+
+                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+            }
+            
+            break;
+
+        case ENUM_CONSTANT:
+
+            break;
+
+        case PARAMETER:
+        case LOCAL_VARIABLE:
+            break;
+        }
+    }
+    
+    static String toString(Set<Modifier> modifiers) {
+        return java.lang.reflect.Modifier.toString(getIntModifiers(modifiers));
+    }
+    
+    static int getIntModifiers(Set<Modifier> modifiers) {
+        int intModifiers = 0;
+
+        if (modifiers.contains(Modifier.ABSTRACT)) {
+            intModifiers |= java.lang.reflect.Modifier.ABSTRACT;
+        }
+
+        if (modifiers.contains(Modifier.FINAL)) {
+            intModifiers |= java.lang.reflect.Modifier.FINAL;
+        }
+
+        if (modifiers.contains(Modifier.NATIVE)) {
+            intModifiers |= java.lang.reflect.Modifier.NATIVE;
+        }
+
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            intModifiers |= java.lang.reflect.Modifier.PRIVATE;
+        }
+
+        if (modifiers.contains(Modifier.PROTECTED)) {
+            intModifiers |= java.lang.reflect.Modifier.PROTECTED;
+        }
+
+        if (modifiers.contains(Modifier.PUBLIC)) {
+            intModifiers |= java.lang.reflect.Modifier.PUBLIC;
+        }
+
+        if (modifiers.contains(Modifier.STATIC)) {
+            intModifiers |= java.lang.reflect.Modifier.STATIC;
+        }
+
+        if (modifiers.contains(Modifier.STRICTFP)) {
+            intModifiers |= java.lang.reflect.Modifier.STRICT;
+        }
+
+        if (modifiers.contains(Modifier.SYNCHRONIZED)) {
+            intModifiers |= java.lang.reflect.Modifier.SYNCHRONIZED;
+        }
+
+        if (modifiers.contains(Modifier.TRANSIENT)) {
+            intModifiers |= java.lang.reflect.Modifier.TRANSIENT;
+        }
+
+        if (modifiers.contains(Modifier.VOLATILE)) {
+            intModifiers |= java.lang.reflect.Modifier.VOLATILE;
+        }
+
+        return intModifiers;
+    }
+    
+    static void formatTypeParameters(
+            List<? extends TypeParameterElement> typeParameters,
+            StringBuilder stringBuilder, boolean FQNs )
+    {
+        if ((typeParameters == null) || (typeParameters.size() == 0)) {
+            return;
+        }
+
+        boolean first = true;
+        if (typeParameters.size() > 0) {
+            stringBuilder.append("<");
+            first = true;
+
+            for (TypeParameterElement typeParameterElement : typeParameters) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    stringBuilder.append(", ");
+                }
+
+                format(typeParameterElement, stringBuilder, false, FQNs);
+            }
+
+            stringBuilder.append(">");
+        }
+    }
+    
+    static void formatTypeMirrors( List<? extends TypeMirror> thrownTypeMirros,
+            StringBuilder stringBuilder, boolean FQNs )
+    {
+        if ((thrownTypeMirros == null) || (thrownTypeMirros.size() == 0)) {
+            return;
+        }
+
+        boolean first = true;
+
+        for (TypeMirror typeMirror : thrownTypeMirros) {
+            if (first) {
+                first = false;
+            }
+            else {
+                stringBuilder.append(", ");
+            }
+
+            formatTypeMirror(typeMirror, stringBuilder, FQNs);
+        }
+    }
+    
+    static void formatTypeMirror( TypeMirror typeMirror,
+            StringBuilder stringBuilder, boolean FQNs )
+    {
+        if (typeMirror == null) {
+            return;
+        }
+
+        switch (typeMirror.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case NONE:
+            case NULL:
+            case SHORT:
+            case VOID:
+                stringBuilder.append(typeMirror);
+
+                break;
+
+            case TYPEVAR:
+                TypeVariable typeVariable = (TypeVariable) typeMirror;
+                stringBuilder.append(typeVariable.asElement().getSimpleName()
+                        .toString());
+                break;
+
+            case WILDCARD:
+                WildcardType wildcardType = (WildcardType) typeMirror;
+                stringBuilder.append("?");
+                if (wildcardType.getExtendsBound() != null) {
+                    stringBuilder.append(" extends "); // NOI18N
+                    formatTypeMirror(wildcardType.getExtendsBound(),
+                            stringBuilder, FQNs);
+                }
+                if (wildcardType.getSuperBound() != null) {
+                    stringBuilder.append(" super "); // NOI18N
+                    formatTypeMirror(wildcardType.getSuperBound(),
+                            stringBuilder, FQNs);
+                }
+
+                break;
+
+            case DECLARED:
+                DeclaredType declaredType = (DeclaredType) typeMirror;
+                Element element = declaredType.asElement();
+                if (element instanceof TypeElement) {
+                    stringBuilder.append(FQNs ? ((TypeElement) element)
+                            .getQualifiedName().toString() : element
+                            .getSimpleName().toString());
+                }
+                else {
+                    stringBuilder.append(element.getSimpleName().toString());
+                }
+                List<? extends TypeMirror> typeArgs = declaredType
+                        .getTypeArguments();
+                if (!typeArgs.isEmpty()) {
+                    stringBuilder.append("<");
+                    formatTypeMirrors(typeArgs, stringBuilder, FQNs);
+                    stringBuilder.append(">");
+                }
+
+                break;
+
+            case ARRAY:
+
+                int dims = 0;
+
+                while (typeMirror.getKind() == TypeKind.ARRAY) {
+                    dims++;
+                    typeMirror = ((ArrayType) typeMirror).getComponentType();
+                }
+
+                formatTypeMirror(typeMirror, stringBuilder, FQNs);
+
+                for (int i = 0; i < dims; i++) {
+                    stringBuilder.append("[]");
+                }
+
+                break;
+        }
+    }
+    
+    static void formatVariableElements(
+            List<? extends VariableElement> variableElements, boolean varArgs,
+            StringBuilder stringBuilder, boolean FQNs )
+    {
+        if ((variableElements == null) || (variableElements.size() == 0)) {
+            return;
+        }
+
+        boolean first = true;
+
+        for (VariableElement variableElement : variableElements) {
+            if (first) {
+                first = false;
+            }
+            else {
+                stringBuilder.append(", ");
+            }
+
+            format(variableElement, stringBuilder, false, FQNs);
+        }
+
+        if (varArgs) {
+            stringBuilder.append("...");
         }
     }
 }

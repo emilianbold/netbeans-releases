@@ -49,7 +49,6 @@ import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -57,31 +56,11 @@ import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
 import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -90,131 +69,12 @@ import org.openide.util.RequestProcessor;
  */
 public class WatchPanel {
 
-    private static RequestProcessor contextRetrievalRP;
     private JPanel panel;
     private JEditorPane editorPane;
     private String expression;
 
     public WatchPanel(String expression) {
         this.expression = expression;
-    }
-
-    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE);
-        editorPane.setEditorKit(kit);
-        if (EventQueue.isDispatchThread()) {
-            synchronized (WatchPanel.class) {
-                if (contextRetrievalRP == null) {
-                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1); // NOI18N
-                }
-                contextRetrievalRP.post(new Runnable() {
-
-                    public void run() {
-                        final Context c = retrieveContext();
-                        if (c != null) {
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    setupContext(editorPane, c.fileObject, c.line);
-                                    if (contextSetUp != null) {
-                                        contextSetUp.actionPerformed(null);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-            setupUI(editorPane);
-        } else {
-            Context c = retrieveContext();
-            if (c != null) {
-                setupContext(editorPane, c.fileObject, c.line);
-            } else {
-                setupUI(editorPane);
-            }
-            if (contextSetUp != null) {
-                contextSetUp.actionPerformed(null);
-            }
-        }
-    }
-
-    private static Context retrieveContext() {
-        // TODO: check how to get context from call stack
-        DebuggerEngine en = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        CallStackFrame csf = null;
-        if (en != null) {
-            GdbDebugger d = en.lookupFirst(null, GdbDebugger.class);
-            if (d != null) {
-                csf = d.getCurrentCallStackFrame();
-            }
-        }
-        if (csf != null) {
-            String language = DebuggerManager.getDebuggerManager().getCurrentSession().getCurrentLanguage();
-            String fullname = csf.getFullname();
-
-            if (fullname != null && fullname.trim().length() > 0) {
-                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(fullname)));
-                return new Context(fo, csf.getLineNumber());
-            }
-        } else {
-            EditorContext context = EditorContextBridge.getContext();
-            FileObject fo = context == null ? null : context.getCurrentFileObject();
-            if (fo != null) {
-                return new Context(fo, context.getCurrentLineNumber());
-            }
-        }
-        return null;
-    }
-
-    public static void setupContext(JEditorPane editorPane, FileObject contextFO, int line) {
-        setupUI(editorPane);
-        StyledDocument doc;
-        if (contextFO == null) {
-            return;
-        }
-        try {
-            DataObject dobj = DataObject.find(contextFO);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return;
-            }
-            try {
-                doc = ec.openDocument();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return;
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // null dobj
-            return;
-        }
-        try {
-            int offset = NbDocument.findLineOffset(doc, line);
-            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
-        } catch (IndexOutOfBoundsException ioobex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
-        }
-    }
-
-    private static void setupUI(final JEditorPane editorPane) {
-//        Runnable runnable = new Runnable() {
-//            public void run() {
-//                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-//                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-//                // Do not draw text limit line
-//                try {
-//                    java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
-//                    textLimitLineField.setAccessible(true);
-//                    textLimitLineField.set(eui, false);
-//                } catch (Exception ex) {}
-//            }
-//        };
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            runnable.run();
-//        } else {
-//            SwingUtilities.invokeLater(runnable);
-//        }
     }
 
     public JComponent getPanel() {
@@ -238,7 +98,7 @@ public class WatchPanel {
                 editorPane.selectAll();
             }
         };
-        setupContext(editorPane, editorPaneUpdated);
+        ContextBindingSupport.getDefault().setupContext(editorPane, editorPaneUpdated);
 
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
@@ -298,8 +158,6 @@ public class WatchPanel {
             sp.setPreferredSize(referenceTextField.getPreferredSize());
         }
         sp.setMinimumSize(sp.getPreferredSize());
-
-        setupUI(editorPane);
 
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
