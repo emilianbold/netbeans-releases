@@ -44,6 +44,8 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
@@ -86,9 +88,18 @@ class ActionFilterNode extends FilterNode {
      */
     static ActionFilterNode create(Node original) {
         DataObject dobj = original.getLookup().lookup(DataObject.class);
-        assert dobj != null;
-        FileObject root =  dobj.getPrimaryFile();
-        Lookup lkp = new ProxyLookup(original.getLookup(), Lookups.singleton(new JavadocProvider(root, root)));
+        FileObject root;
+        Lookup lkp;
+        if (dobj != null) {
+            root =  dobj.getPrimaryFile();
+            lkp = new ProxyLookup(original.getLookup(), Lookups.singleton(new JavadocProvider(root, root)));
+        } else {
+            // #169568: dummy node
+            root = null;
+            lkp = new ProxyLookup(original.getLookup());
+            Logger.getLogger(ActionFilterNode.class.getName())
+                    .log(Level.WARNING, "DataObject not found in lookup of " + original.getDisplayName() + ", returning dummy node.");
+        }
         return new ActionFilterNode(original, MODE_PACKAGE, root, lkp);
     }
     
