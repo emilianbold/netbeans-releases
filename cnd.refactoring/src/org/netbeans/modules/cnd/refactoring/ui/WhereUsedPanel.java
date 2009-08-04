@@ -136,8 +136,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         public JLabel getLabel() {
             return label;
         }
+
+        @Override
+        public String toString() {
+            return label == null? "null" : label.getText(); // NOI18N
+        }
     }
-    
+
     public CsmProject getScopeProject() {
         if (defaultScope == Scope.ALL) {
             return null;

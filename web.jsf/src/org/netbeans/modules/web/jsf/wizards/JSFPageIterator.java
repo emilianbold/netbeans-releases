@@ -64,6 +64,10 @@ public class JSFPageIterator extends PageIterator {
         return new JSFPageIterator(FileType.JSP);
     }
 
+    public static JSFPageIterator createJsfIterator() {
+        return new JSFPageIterator(FileType.JSF);
+    }
+
     @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         Set<DataObject> dobj = super.instantiate(wiz);
