@@ -61,7 +61,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
-import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
