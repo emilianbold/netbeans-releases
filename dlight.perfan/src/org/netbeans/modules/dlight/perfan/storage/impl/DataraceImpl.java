@@ -46,11 +46,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot.MemoryAccessType;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot.MemoryAccessType;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 
 /**

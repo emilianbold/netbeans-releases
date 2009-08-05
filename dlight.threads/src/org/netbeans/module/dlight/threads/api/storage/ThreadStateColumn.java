@@ -39,7 +39,8 @@
 
 package org.netbeans.module.dlight.threads.api.storage;
 
-import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 
 /**
  * Represents thread state line column

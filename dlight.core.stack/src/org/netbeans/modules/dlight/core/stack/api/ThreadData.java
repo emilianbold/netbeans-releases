@@ -36,29 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.core.stack.api;
+
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadInfo {
+public interface ThreadData {
 
     /**
-     * @return ststem thread ID.
+     * @return thread information.
      */
-    int getThreadId();
+    ThreadInfo getThreadInfo();
 
     /**
-     * @return Thread name. It is a function full name that was called.
+     * @return list of thread states.
      */
-    String getThreadName();
-//
-//    long getThreadStartTS();
-//
-//    /**
-//     *
-//     * @return -1 if not finished yet
-//     */
-//    long getThreadFinishTS();
+    List<ThreadState> getThreadState();
+
+    /**
+     * @param timeStamp
+     * @return thread stack by time stamp
+     */
+    ThreadDump getStackTrace(long timeStamp);
+
 }
