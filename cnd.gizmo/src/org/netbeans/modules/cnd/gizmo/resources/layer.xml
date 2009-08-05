@@ -20,12 +20,12 @@
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
                     </file>
-          <file name="DLightParallelAdviserToolConfigurationProvider.shadow">
-            <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightParallelAdviserToolConfigurationProvider.instance"/>
-          </file>
-          <!--file name="FopsToolConfigurationProvider.shadow">
-            <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
-          </file-->
+                    <file name="DLightParallelAdviserToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightParallelAdviserToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="FopsToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
+                    </file>
                 </folder>
                 <folder name="ConfigurationOptions">
                     <file name="GizmoConfigurationOptions.instance">
