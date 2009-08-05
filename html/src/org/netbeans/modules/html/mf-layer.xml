@@ -81,12 +81,6 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            <file name="html2.xml" url="resolver2.xml">
-                <!-- backup mimeresolver for .xhtml files w/o proper namespace declaration -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
-                <attr name="position" intvalue="301"/> <!-- must be after the main resolver (300) -->
-            </file>
         </folder>
     </folder>
 

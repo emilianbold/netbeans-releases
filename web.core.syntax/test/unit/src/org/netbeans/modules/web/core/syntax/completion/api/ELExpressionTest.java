@@ -36,54 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api.storage;
+
+package org.netbeans.modules.web.core.syntax.completion.api;
+
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Alexander Simon
+ * @author marekfukala
  */
-public final class ThreadMapDataQuery {
+public class ELExpressionTest {
 
-    private final long timeFrom;
-    private final long timeTo;
-    private final boolean fullState;
-
-    /**
-     * @param timeUnit time unit.
-     * @param timeFrom start time in time units.
-     * @param timeTo end time in time units.
-     * @param step aggregation time in time units.
-     * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    private ThreadMapDataQuery(long timeFrom, long timeTo, boolean fullState) {
-        this.timeFrom = timeFrom;
-        this.timeTo = timeTo;
-        this.fullState = fullState;
+    public ELExpressionTest() {
     }
 
-    public ThreadMapDataQuery(long timeFrom, boolean fullState) {
-        this(timeFrom, Long.MAX_VALUE, fullState);
+    @Test
+    public void testGetPropertyName() {
+        NbTestCase.assertEquals("id", ELExpression.getPropertyName("getId", 3));
+        NbTestCase.assertEquals("ID", ELExpression.getPropertyName("getID", 3));
+        NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
     }
 
-    /**
-     * @return start time in time units.
-     */
-    public long getTimeFrom() {
-        return timeFrom;
-    }
-
-    /**
-     * @return end time in time units.
-     */
-    public long getTimeTo() {
-        return timeTo;
-    }
-
-    /**
-     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
-     */
-    public boolean isFullState() {
-        return fullState;
-    }
 }

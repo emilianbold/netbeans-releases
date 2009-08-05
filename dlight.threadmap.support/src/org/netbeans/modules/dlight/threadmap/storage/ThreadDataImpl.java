@@ -41,10 +41,10 @@ package org.netbeans.modules.dlight.threadmap.storage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
-import org.netbeans.module.dlight.threads.api.storage.ThreadData;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 public final class ThreadDataImpl implements ThreadData {
 

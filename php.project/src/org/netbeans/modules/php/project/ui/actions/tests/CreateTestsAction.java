@@ -68,7 +68,7 @@ import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.modules.php.project.util.PhpUnit.Files;
+import org.netbeans.modules.php.project.util.PhpUnit.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -314,7 +314,7 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
                 .workingDirectory(parent);
 
-        Files files = phpUnit.getFiles(project, false);
+        ConfigFiles files = PhpUnit.getConfigFiles(project, false);
         if (files.bootstrap != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_BOOTSTRAP)

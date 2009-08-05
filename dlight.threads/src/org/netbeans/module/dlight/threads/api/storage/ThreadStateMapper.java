@@ -39,7 +39,7 @@
 package org.netbeans.module.dlight.threads.api.storage;
 
 import java.util.HashMap;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 public final class ThreadStateMapper {
 

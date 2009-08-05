@@ -38,6 +38,7 @@
  */
 package org.netbeans.module.dlight.threads.api;
 
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import java.util.List;
 
 /**
