@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -719,6 +720,10 @@ public final class RemoteClient implements Cancellable {
     public Set<TransferFile> prepareDelete(FileObject baseLocalDirectory, FileObject... filesToDelete) throws RemoteException {
         LOGGER.fine("Preparing files to delete => calling prepareUpload because in fact the same operation is done");
         return prepareUpload(baseLocalDirectory, filesToDelete);
+    }
+
+    public TransferInfo delete(TransferFile fileToDelete) throws RemoteException {
+        return delete(Collections.singleton(fileToDelete));
     }
 
     public TransferInfo delete(Set<TransferFile> filesToDelete) throws RemoteException {
