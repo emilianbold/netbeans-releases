@@ -109,23 +109,17 @@ public class LineInfo {
     }
 
     OutputListener getListenerBefore(int pos, int[] range) {
-        if (segments.size() == 1 && segments.get(0).getListener() != null && pos >= 0) {
-            if (range != null) {
-                range[0] = 0;
-                range[1] = segments.get(0).getEnd();
-            }
-            return segments.get(0).getListener();
-        }
-        for (int i = segments.size() - 2; i >= 0; i--) {
-            if (segments.get(i).getEnd() > pos) {
+        for (int i = segments.size() - 1; i >= 0; i--) {
+            int startPos = i == 0 ? 0 : segments.get(i-1).getEnd();
+            if (startPos > pos) {
                 continue;
             }
-            if (segments.get(i + 1).getListener() != null) {
+            if (segments.get(i).getListener() != null) {
                 if (range != null) {
-                    range[0] = segments.get(i).getEnd();
-                    range[1] = segments.get(i + 1).getEnd();
+                    range[0] = startPos;
+                    range[1] = segments.get(i).getEnd();
                 }
-                return segments.get(i + 1).getListener();
+                return segments.get(i).getListener();
             }
         }
         return null;

@@ -36,58 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-package org.netbeans.module.dlight.threads.impl;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
-import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
+/**
+ *
+ * @author Alexander Simon
+ */
+public interface ThreadMapDataProvider extends VisualizerDataProvider {
 
-final class SnapshotImpl implements ThreadSnapshot {
-    private final ThreadInfo threadInfo;
-    private final SQLStackStorage storage;
-    private final int stackID;
+    /**
+     * @param metadata define needed time selection and aggregation.
+     * @return list threads data about all threads that alive in selected time period.
+     */
+    ThreadMapData queryData(ThreadMapDataQuery query);
 
-    public SnapshotImpl(final SQLStackStorage storage, final int threadID, final int stackID) {
-        this.storage = storage;
-        this.stackID = stackID;
-        
-        this.threadInfo = new ThreadInfo() {
-
-            public int getThreadId() {
-                return threadID;
-            }
-
-            public String getThreadName() {
-                return "Thread " + threadID; // NOI18N
-            }
-        };
-    }
-
-
-    public ThreadInfo getThreadInfo() {
-        return threadInfo;
-    }
-
-    public List<FunctionCall> getStack() {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-//        FunctionCall call = storage.getFunctionCall(stackID);
-
-//        storage.getCallers(path, true)
-
-        return result;
-    }
-
-    public MSAState getState() {
-        // TODO: implement!
-        return MSAState.Running;
-    }
-
-    public MemoryAccessType getMemoryAccessType() {
-        return null;
-    }
+    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
 }

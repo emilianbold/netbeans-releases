@@ -70,7 +70,7 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.core.syntax.completion.ELExpression;
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.completion.JspELExpression;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;

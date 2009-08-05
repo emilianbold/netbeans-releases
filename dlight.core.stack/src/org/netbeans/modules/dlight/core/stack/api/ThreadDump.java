@@ -36,15 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.dataprovider;
+package org.netbeans.modules.dlight.core.stack.api;
 
 import java.util.List;
-import org.netbeans.module.dlight.threads.api.storage.ThreadData;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
-public interface ThreadMapData {
+/**
+ * Snapshot of a set of threads at particular moment in time.
+ *
+ * @author Alexey Vladykin
+ */
+public interface ThreadDump {
 
-    List<ThreadData> getThreadsData();
+    long getTimestamp();
 
-    TimeDuration getPrecision();
+    List<ThreadSnapshot> getThreadStates();
 }

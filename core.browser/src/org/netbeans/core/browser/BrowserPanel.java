@@ -148,10 +148,13 @@ public class BrowserPanel extends MozillaPanel {
             if( null != tc ) {
                 tc.requestActive();
             }
-        }
-        Window w = SwingUtilities.getWindowAncestor(this);
-        if( null != w ) {
-            w.dispatchEvent(e);
+        } else if( e.getID() == MouseEvent.MOUSE_MOVED ) {
+            Window w = SwingUtilities.getWindowAncestor(this);
+            if( null != w ) {
+                //send this event to the parent frame to hide sliding (if any)
+                SwingUtilities.convertPoint(this, e.getPoint(), w);
+                w.dispatchEvent(e);
+            }
         }
     }
 

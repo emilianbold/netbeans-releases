@@ -36,25 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.dataprovider;
+package org.netbeans.modules.dlight.core.stack.storage;
 
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadMapDataQuery;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends VisualizerDataProvider {
+final class ThreadDumpImpl implements ThreadDump {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
+    private final long timestamp;
 
-    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
+    public ThreadDumpImpl(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public List<ThreadSnapshot> getThreadStates() {
+        return stacks;
+    }
+
+    public void addStack(ThreadSnapshot stack) {
+        stacks.add(stack);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

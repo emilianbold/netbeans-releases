@@ -128,10 +128,10 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), 100, // NOI18N
+                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), BINARY_ORDER, // NOI18N
                 Arrays.asList(
-                        new GraphDescriptor(Color.RED, getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
-                        new GraphDescriptor(Color.BLUE, getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
+                        new GraphDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
+                        new GraphDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
                 new DataRowToIOPlot(opColumn, sizeColumn));
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
         indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
