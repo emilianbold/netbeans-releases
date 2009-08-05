@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.api.phpmodule;
 
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
