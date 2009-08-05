@@ -51,8 +51,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 
 /**
@@ -176,11 +176,9 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N
-                    buf.append("<font bgcolor=#");// NOI18N
-                    buf.append(Integer.toHexString(res.color.getRed()));
-                    buf.append(Integer.toHexString(res.color.getGreen()));
-                    buf.append(Integer.toHexString(res.color.getBlue()));
-                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("<font bgcolor=\"#");// NOI18N
+                    buf.append(colorToHexString(res.color));
+                    buf.append("\">&nbsp;&nbsp;");// NOI18N
                     buf.append("</font></td>");// NOI18N
                     buf.append("<td>");// NOI18N
                     buf.append(res.name);
@@ -230,6 +228,10 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
         }
         return -1;
+    }
+
+    private static String colorToHexString(Color c) {
+        return Integer.toHexString((c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
     }
 
     /**

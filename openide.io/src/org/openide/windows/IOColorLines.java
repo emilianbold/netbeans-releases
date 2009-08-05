@@ -77,7 +77,7 @@ public abstract class IOColorLines {
      * Prints line with selected color
      * @param io IO to print to
      * @param text a string to print to the tab
-     * @param color a color for the line of text
+     * @param color a color for the line of text (null allowed). If null is passed default color (see {@link IOColors}) is used.
      */
     public static void println(InputOutput io, CharSequence text, Color color) throws IOException {
         IOColorLines iocl = find(io);
@@ -94,7 +94,7 @@ public abstract class IOColorLines {
      * @param important  important mark the line as important.
      *        Makes the UI respond appropriately, eg. stop the automatic scrolling
      *        or highlight the hyperlink.
-     * @param color a color for the line of text
+     * @param color a color for the line of text (null allowed). If null is passed default color (see {@link IOColors}) is used.
      */
     public static void println(InputOutput io, CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
         IOColorLines iocl = find(io);
@@ -120,7 +120,7 @@ public abstract class IOColorLines {
      * @param important  important mark the line as important.
      *        Makes the UI respond appropriately, eg. stop the automatic scrolling
      *        or highlight the hyperlink.
-     * @param color a color for the line of text
+     * @param color a color for the line of text (null allowed). If null is passed default color (see {@link IOColors}) is used.
      */
     abstract protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException;
 }

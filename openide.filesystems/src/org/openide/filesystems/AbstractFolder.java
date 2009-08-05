@@ -946,9 +946,7 @@ abstract class AbstractFolder extends FileObject {
                 try {
                     fo.delete(foLock);
                 } catch (IOException iex) {
-                    String message = NbBundle.getMessage(
-                            getClass(), "EXC_CannotDelete", //NOI18N
-
+                    String message = NbBundle.getMessage(AbstractFolder.class, "EXC_CannotDelete",
                         // XXX use FileUtil.getFileDisplayName instead?
                         getPath(), fo.getFileSystem().getDisplayName()
                         );

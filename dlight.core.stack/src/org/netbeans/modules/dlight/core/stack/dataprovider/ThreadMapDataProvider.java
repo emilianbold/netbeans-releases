@@ -36,34 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-package org.netbeans.modules.web.core.syntax.completion;
-
-import org.junit.Test;
-import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem.ELBean;
-import org.netbeans.test.web.core.syntax.TestBase;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
 /**
  *
- * @author marekfukala
+ * @author Alexander Simon
  */
-public class JspCompletionItemTest extends TestBase {
+public interface ThreadMapDataProvider extends VisualizerDataProvider {
 
-    public JspCompletionItemTest() {
-        super("");
-    }
+    /**
+     * @param metadata define needed time selection and aggregation.
+     * @return list threads data about all threads that alive in selected time period.
+     */
+    ThreadMapData queryData(ThreadMapDataQuery query);
 
-    public void testELBeanType() {
-        ELBean elb = new ElCompletionItem.ELBean(null, 0, "Collection");
-        assertEquals("Collection", elb.getRightHtmlText());
-
-        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection");
-        assertEquals("Collection", elb.getRightHtmlText());
-
-        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection<java.lang.String>");
-        assertEquals("Collection&lt;String&gt;", elb.getRightHtmlText());
-
-    }
-
-
+    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
 }

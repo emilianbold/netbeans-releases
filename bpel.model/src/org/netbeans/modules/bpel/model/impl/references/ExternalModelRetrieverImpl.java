@@ -107,11 +107,12 @@ public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
     {
         Import[] imports = model.getProcess().getImports();
         for (Import imp : imports) {
-            if ( namespace.equals(imp.getNamespace()) ){
+            if (namespace.equals(imp.getNamespace()) && 
+                    Import.WSDL_IMPORT_TYPE.equals( imp.getImportType())) {
                 WSDLModel wsdlModel = BpelModelImpl.class.cast(model).
                         getRefCacheSupport().optimizedWsdlResolve(imp);
-                if ( wsdlModel!= null && wsdlModel.getState() == Model.State.VALID ){
-                    list.add( wsdlModel );
+                if (wsdlModel!= null && wsdlModel.getState() == Model.State.VALID ){
+                    list.add( wsdlModel);
                 }
             }
         }
@@ -149,18 +150,19 @@ public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
             if ( Import.WSDL_IMPORT_TYPE.equals( imp.getImportType()) ){
                 // Fix for #78085
                 Collection<SchemaModel> collection = ImportHelper.
-                    getInlineSchema( imp, namespace );
+                getInlineSchema( imp, namespace );
                 if ( collection!= null ){
                     list.addAll( collection );
                 }
-            }
-            if ( !namespace.equals( imp.getNamespace() )){
-                continue;
-            }
-            SchemaModel schemaModel = BpelModelImpl.class.cast(model).
-                    getRefCacheSupport().optimizedSchemaResolve(imp);
-            if ( schemaModel != null && schemaModel.getState() == State.VALID ){
-                list.add( schemaModel );
+            } else {
+                if ( !namespace.equals( imp.getNamespace() )){
+                    continue;
+                }
+                SchemaModel schemaModel = BpelModelImpl.class.cast(model).
+                        getRefCacheSupport().optimizedSchemaResolve(imp);
+                if ( schemaModel != null && schemaModel.getState() == State.VALID ){
+                    list.add( schemaModel );
+                }
             }
         }
     }

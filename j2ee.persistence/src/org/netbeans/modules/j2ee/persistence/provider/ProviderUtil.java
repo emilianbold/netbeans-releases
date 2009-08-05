@@ -665,7 +665,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
+            ECLIPSELINK_PROVIDER, TOPLINK_PROVIDER, HIBERNATE_PROVIDER,
             KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

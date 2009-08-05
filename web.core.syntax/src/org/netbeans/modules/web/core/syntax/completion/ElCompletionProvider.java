@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;

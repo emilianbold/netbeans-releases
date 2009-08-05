@@ -476,6 +476,7 @@ public class SourceUtils {
      * @param cpInfo classpaths used to resolve
      * @return the URL of the javadoc page or null when the javadoc is not available.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     public static URL getJavadoc (final Element element, final ClasspathInfo cpInfo) {      
         if (element == null || cpInfo == null) {
             throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getJavadoc");  //NOI18N
@@ -709,14 +710,16 @@ out:                    for (URL e : roots) {
      * incoming root, never returns null.
      * @since 0.10
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     public static Set<URL> getDependentRoots (final URL root) {
         final Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
         return getDependentRootsImpl (root, deps);
     }
     
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> deps) {
-        //Create inverse dependencies
+        //Create inverse dependencies        
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
             final URL u1 = entry.getKey();

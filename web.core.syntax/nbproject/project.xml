@@ -564,7 +564,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.simplesnippets</friend>
-                <package>org.netbeans.modules.web.core.syntax.completion</package>
+                <package>org.netbeans.modules.web.core.syntax.completion.api</package>
                 <package>org.netbeans.modules.web.core.syntax.spi</package>
             </friend-packages>
         </data>

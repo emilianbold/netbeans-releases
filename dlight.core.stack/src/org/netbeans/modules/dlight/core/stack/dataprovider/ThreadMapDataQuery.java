@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project.util;
-
-import java.util.regex.Pattern;
-import org.netbeans.modules.php.api.util.PhpProgram;
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author Alexander Simon
  */
-public final class PhpInterpreter extends PhpProgram {
-    public static final Pattern[] LINE_PATTERNS = {
-        Pattern.compile(".+\\s+in\\s+(.+)\\s+on\\s+line\\s+(\\d+)"), // NOI18N
-        Pattern.compile(".+\\(\\)\\s+(.+):(\\d+)"), // NOI18N
-    };
+public final class ThreadMapDataQuery {
+
+    private final long timeFrom;
+    private final long timeTo;
+    private final boolean fullState;
 
     /**
-     * {@inheritDoc}
+     * @param timeUnit time unit.
+     * @param timeFrom start time in time units.
+     * @param timeTo end time in time units.
+     * @param step aggregation time in time units.
+     * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     * @return list threads data about all threads that alive in selected time period.
      */
-    public PhpInterpreter(String command) {
-        super(command);
+    private ThreadMapDataQuery(long timeFrom, long timeTo, boolean fullState) {
+        this.timeFrom = timeFrom;
+        this.timeTo = timeTo;
+        this.fullState = fullState;
+    }
+
+    public ThreadMapDataQuery(long timeFrom, boolean fullState) {
+        this(timeFrom, Long.MAX_VALUE, fullState);
+    }
+
+    /**
+     * @return start time in time units.
+     */
+    public long getTimeFrom() {
+        return timeFrom;
+    }
+
+    /**
+     * @return end time in time units.
+     */
+    public long getTimeTo() {
+        return timeTo;
+    }
+
+    /**
+     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     */
+    public boolean isFullState() {
+        return fullState;
     }
 }

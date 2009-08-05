@@ -46,9 +46,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.module.dlight.threads.api.storage.ThreadData;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 /**
  * A class that holds data about threads history (state changes) during a
