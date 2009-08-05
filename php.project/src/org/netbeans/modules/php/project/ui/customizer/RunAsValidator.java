@@ -44,6 +44,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -89,9 +91,10 @@ public final class RunAsValidator {
      * @return an error message or <code>null</code> if everything is OK.
      */
     public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
-        String err = Utils.validatePhpInterpreter(phpInterpreter);
-        if (err != null) {
-            return err;
+        try {
+            PhpInterpreter.getCustom(phpInterpreter);
+        } catch (InvalidPhpProgramException ex) {
+            return ex.getLocalizedMessage();
         }
         return validateIndexFile(projectDirectory, indexFile, arguments);
     }
