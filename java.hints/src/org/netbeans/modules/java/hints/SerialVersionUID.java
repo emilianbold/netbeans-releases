@@ -101,11 +101,11 @@ public class SerialVersionUID extends AbstractHint {
         // fixes.add(new FixImpl(TreePathHandle.create(treePath, info), true));
         fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SERIAL));
 
-        String desc = NbBundle.getMessage(getClass(), "ERR_SerialVersionUID"); //NOI18N
         int[] span = info.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf());
         if (span == null) { //span cannot be found, do not show anything
             return null;
         }
+        String desc = NbBundle.getMessage(getClass(), "ERR_SerialVersionUID"); //NOI18N
         ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), span[0], span[1]);
         if (cancel.get()) {
             return null;
