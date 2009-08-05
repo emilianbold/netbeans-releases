@@ -67,6 +67,7 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
+import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
@@ -88,6 +89,7 @@ final class OnePassCompileWorker extends CompileWorker {
         final Set<File> createdFiles = new HashSet<File>();
         final Set<Indexable> finished = new HashSet<Indexable>();
         final Set<ElementHandle<TypeElement>> modifiedTypes = new HashSet<ElementHandle<TypeElement>>();
+        final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
         final LowMemoryListenerImpl mem = new LowMemoryListenerImpl();
         LowMemoryNotifier.getDefault().addLowMemoryListener(mem);
@@ -106,7 +108,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         System.gc();
                     }
                     if (jt == null) {
-                        jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, null);
+                        jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum);
                     }
                     for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                         if (units != null)
