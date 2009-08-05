@@ -45,7 +45,6 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +83,7 @@ final class OnePassCompileWorker extends CompileWorker {
 
     ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
-        final Map<URI, List<String>> file2FQNs = new HashMap<URI, List<String>>();
+        final Map<JavaFileObject, List<String>> file2FQNs = new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = new HashSet<ElementHandle<TypeElement>>();
         final Set<File> createdFiles = new HashSet<File>();
         final Set<Indexable> finished = new HashSet<Indexable>();
@@ -113,7 +112,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                         if (units != null)
                             units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
-                        computeFQNs(file2FQNs, cut, tuple.jfo);
+                        computeFQNs(file2FQNs, cut, tuple);
                     }
                     Log.instance(jt.getContext()).nerrors = 0;
                 } catch (Throwable t) {
