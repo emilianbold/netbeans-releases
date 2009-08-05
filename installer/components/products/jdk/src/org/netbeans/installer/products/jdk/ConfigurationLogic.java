@@ -117,7 +117,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final boolean javadbBundled = getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
                     
                     if(fullSilentInstaller) {
-                        LogManager.log("    perform full silent installation...");
+                        LogManager.log("... perform full silent installation");
                         overallProgress.addChild(jdkProgress, progress.COMPLETE);
                     } else {
                         //before jdk6u15 there were separate jre and javadb installers
@@ -373,7 +373,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void configureJREProductWindows(ExecutionResults results) {
-        LogManager.log(" configuring JRE Product...");
+        LogManager.log("... configuring JRE Product");
         addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
         if(results.getErrorCode()==0) {
                getProduct().setProperty(JRE_INSTALLED_WINDOWS_PROPERTY,
@@ -382,7 +382,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     private void configureJavaDBProductWindows(ExecutionResults results) {
         if(results.getErrorCode()==0) {
-            LogManager.log(" configuring JavaDB Product...");
+            LogManager.log("... configuring JavaDB Product...");
             getProduct().setProperty(JAVADB_INSTALLED_WINDOWS_PROPERTY,
                         "" + true);
         }
