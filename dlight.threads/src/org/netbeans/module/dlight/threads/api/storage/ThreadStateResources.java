@@ -40,7 +40,7 @@ package org.netbeans.module.dlight.threads.api.storage;
 
 import java.awt.Color;
 import java.util.ResourceBundle;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.openide.util.NbBundle;
 
 public enum ThreadStateResources {

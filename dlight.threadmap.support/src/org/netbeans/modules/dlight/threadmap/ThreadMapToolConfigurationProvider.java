@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateMapper;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;

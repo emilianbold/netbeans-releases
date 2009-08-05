@@ -36,18 +36,29 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api;
+package org.netbeans.modules.dlight.core.stack.api;
 
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 /**
- * Snapshot of a set of threads at particular moment in time.
+ * Describes one thread at particular moment in time.
  *
  * @author Alexey Vladykin
  */
-public interface ThreadDump {
+public interface ThreadSnapshot {
 
-    long getTimestamp();
+    List<FunctionCall> getStack();
 
-    List<ThreadSnapshot> getThreadStates();
+    ThreadInfo getThreadInfo();
+
+    MSAState getState();
+
+    MemoryAccessType getMemoryAccessType();
+
+    static enum MemoryAccessType {
+        READ, WRITE
+    }
 }

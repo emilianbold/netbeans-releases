@@ -64,6 +64,7 @@ import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
@@ -413,6 +414,67 @@ public final class SQLStackStorage {
         return select;
     }
 
+    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        ThreadDumpImpl result = null;
+
+        try {
+            // First, we need ts of the thread threadID when it was in required state.
+            PreparedStatement statement = sqlStorage.prepareStatement(
+                    "select max(time_stamp) from CallStack where " + // NOI18N
+                    "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
+
+            statement.setInt(1, threadID);
+            statement.setLong(2, timestamp);
+            statement.setInt(3, threadState);
+
+            ResultSet rs = statement.executeQuery();
+            long ts = -1;
+
+            if (rs.next()) {
+                ts = rs.getLong(1);
+            }
+
+            rs.close();
+
+            if (ts < 0) {
+                // Means that no callstack found for this thread in this state
+                //System.out.println("No callstack found!!!");
+                return null;
+            }
+
+            //System.out.println("Nearest callstack found at " + ts);
+
+            result = new ThreadDumpImpl(ts);
+
+            // Next, get all times for all threads for alligned stacks (time <= ts)
+            // select threadid, max(ts) from test where ts <= 6 group by threadid;
+
+            statement = sqlStorage.prepareStatement(
+                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
+                    "time_stamp <= ? group by thread_id"); // NOI18N
+
+            statement.setLong(1, ts);
+
+            rs = statement.executeQuery();
+
+            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
+
+            while (rs.next()) {
+                int callStackThreadId = rs.getInt(1);
+                long callStackTimeStamp = rs.getLong(2);
+                idToTime.put(callStackThreadId, callStackTimeStamp);
+            }
+
+
+            // Next, get stacks from database having tstamps and thread ids..
+
+        } catch (SQLException ex) {
+            System.err.println("ex: " + ex.getSQLState());
+        }
+
+        return result;
+    }
+
 ////////////////////////////////////////////////////////////////////////////////
     private static class NodeCacheKey {
 
@@ -714,4 +776,5 @@ public final class SQLStackStorage {
             }
         }
     }
+
 }

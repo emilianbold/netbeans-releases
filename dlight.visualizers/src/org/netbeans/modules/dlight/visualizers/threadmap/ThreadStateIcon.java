@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.Color;
 import javax.swing.Icon;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 /**
  * @author Jiri Sedlacek

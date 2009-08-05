@@ -36,31 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.impl;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot;
 
-final class ThreadDumpImpl implements ThreadDump {
+/**
+ * Snapshot of a set of threads at particular moment in time.
+ *
+ * @author Alexey Vladykin
+ */
+public interface ThreadDump {
 
-    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
-    private final long timestamp;
+    long getTimestamp();
 
-    public ThreadDumpImpl(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public List<ThreadSnapshot> getThreadStates() {
-        return stacks;
-    }
-
-    public void addStack(ThreadSnapshot stack) {
-        stacks.add(stack);
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
+    List<ThreadSnapshot> getThreadStates();
 }
