@@ -395,19 +395,5 @@ public class J2eeTestCase extends JellyTestCase {
                 dialog.close();
             }
         }
-    }
-
-    private void waitScanFinished(){
-       ClassLoader l = Thread.currentThread().getContextClassLoader();
-        if (l == null) {
-            l = getClass().getClassLoader();
-        }
-        Class<?> sourceUtils;
-        try {
-            sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
-            sourceUtils.getMethod("waitScanFinished").invoke(null);
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Waiting for classpath scanning failed", ex);
-        }
-    }
+    }   
 }

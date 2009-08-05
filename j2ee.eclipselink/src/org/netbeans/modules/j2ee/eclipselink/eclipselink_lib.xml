@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-2.0.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-javax.persistence-2.0.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -56,6 +57,6 @@ made subject to such option by the copyright holder.
     <!--volume-->
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <!--type>maven-pom</type>
-        <resource>http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-agent-2.0-36.pom</resource-->
+        <resource>http://download.java.net/maven/1/**/poms/**.pom</resource-->
     <!--/volume-->
 </library>

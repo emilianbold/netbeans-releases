@@ -47,6 +47,7 @@ import java.awt.*;
 /**
  *
  * @author Tran Duc Trung
+ * @author Jan Stola
  */
 class FakeCanvasPeer extends FakeComponentPeer
 {
@@ -58,9 +59,10 @@ class FakeCanvasPeer extends FakeComponentPeer
         return new Delegate();
     }
 
-    //
-    //
-    //
+    // JDK 1.7
+    public GraphicsConfiguration getAppropriateGraphicsConfiguration(GraphicsConfiguration gc) {
+        return gc;
+    }
 
     private class Delegate extends Component
     {

@@ -46,18 +46,18 @@ import org.openide.util.NbBundle;
 public enum ThreadStateResources {
 
     THREAD_RUNNING(new Color(0xB2, 0xBC, 0x00), MSAState.Running),
-    THREAD_RUNNING_USER(new Color(84, 185, 72), MSAState.RunningUser),
+    THREAD_RUNNING_USER(new Color(0xB2, 0xBC, 0x00), MSAState.RunningUser),
     THREAD_RUNNING_SYSTEM(new Color(0, 166, 80), MSAState.RunningSystemCall),
     THREAD_RUNNING_OTHER(new Color(0, 169, 157), MSAState.RunningOther),
 
     THREAD_BLOCKED(new Color(0xE7, 0x6F, 0x00), MSAState.Blocked),
-    THREAD_SLEEP_USE_LOCK(new Color(238, 29, 37), MSAState.SleepingUserLock),
+    THREAD_SLEEP_USE_LOCK(new Color(0xE7, 0x6F, 0x00), MSAState.SleepingUserLock),
 
     THREAD_WAITING(new Color(0xFF, 0xC7, 0x26), MSAState.Waiting),
-    THREAD_WAITING_CPU(new Color(83, 130, 161), MSAState.WaitingCPU),
+    THREAD_WAITING_CPU(new Color(0xFF, 0xC7, 0x26), MSAState.WaitingCPU),
 
     THREAD_SLEEPING(new Color(0x53, 0x82, 0xA1), MSAState.Sleeping),
-    THREAD_SLEEPING_OTHER(new Color(255, 199, 38), MSAState.SleepingOther),
+    THREAD_SLEEPING_OTHER(new Color(0x53, 0x82, 0xA1), MSAState.SleepingOther),
     THREAD_SLEEPING_USER_DATA_PAGE_FAULT(new Color(247, 149, 29), MSAState.SleepingUserDataPageFault),
     THREAD_SLEEPING_USER_TEXT_PAGE_FAULT(new Color(231, 111, 0), MSAState.SleepingUserTextPageFault),
     THREAD_SLEEPING_KERNEL_PAGE_FAULT(new Color(114, 138, 132), MSAState.SleepingKernelPageFault),
