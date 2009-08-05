@@ -345,21 +345,19 @@ public class JellyTestCase extends NbTestCase {
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public void waitScanFinished() throws ClassNotFoundException, NoSuchMethodException,
-            InvocationTargetException, IllegalAccessException
+    public void waitScanFinished()
     {
-        ClassLoader l = Thread.currentThread().getContextClassLoader();
-        if (l == null)
-        {
-            l = getClass().getClassLoader();
-        }
-        Class<?> repositoryUpdaterClass = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater", true, l);
-        final Object repositoryUpdater = repositoryUpdaterClass.getMethod("getDefault").invoke(null);
-        
-        final Method isScanInProgressMethod = repositoryUpdaterClass.getMethod("isScanInProgress");
-
-
         try {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null)
+            {
+                l = getClass().getClassLoader();
+            }
+            Class<?> repositoryUpdaterClass = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater", true, l);
+            final Object repositoryUpdater = repositoryUpdaterClass.getMethod("getDefault").invoke(null);
+
+            final Method isScanInProgressMethod = repositoryUpdaterClass.getMethod("isScanInProgress");
+
             Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object anObject) {
                     Boolean result;
@@ -369,10 +367,10 @@ public class JellyTestCase extends NbTestCase {
                     catch (Exception e)
                     {
                         throw new JemmyException("Error during waiting for the end of scanning: ", e);
-                    }                    
+                    }
                     return result ? null : Boolean.TRUE;
                 }
-                public String getDescription() {                    
+                public String getDescription() {
                     return("Waiting for scanning to finish.");
                 }
             });
@@ -381,10 +379,9 @@ public class JellyTestCase extends NbTestCase {
             timeouts.setTimeout("Waiter.WaitingTime", 600000); //set timeout for 10 minutes
             waiter.waitAction(null);
         }
-        catch (InterruptedException e) {
-            throw new JemmyException("Waiting for end of scanning interrupted.", e);
+        catch (Exception e) {
+            throw new JemmyException("Waiting for end of scanning failed.", e);
         }
-
     }
 
     /**
