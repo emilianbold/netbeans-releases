@@ -59,7 +59,7 @@ public final class RunCommandAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule).runCommand();
+        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override
