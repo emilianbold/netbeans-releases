@@ -42,12 +42,15 @@ package org.netbeans.modules.cnd.debugger.common.utils;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -55,6 +58,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -62,7 +66,13 @@ import org.openide.util.RequestProcessor;
  *
  * @author Egor Ushakov
  */
-public abstract class ContextBindingSupport {
+public class ContextBindingSupport {
+    private static final ContextBindingSupport INSTANCE = new ContextBindingSupport();
+
+    public static final ContextBindingSupport getDefault() {
+        return INSTANCE;
+    }
+
     private RequestProcessor contextRetrievalRP;
     
     public final void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
@@ -104,7 +114,29 @@ public abstract class ContextBindingSupport {
         }
     }
 
-    protected abstract Context retrieveContext();
+    protected Context retrieveContext() {
+        List<ContextProvider> providers  = new ArrayList<ContextProvider>(
+                Lookup.getDefault().lookupAll(ContextProvider.class));
+
+        for (ContextProvider provider : providers) {
+            Context result = provider.retrieveContext();
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // Use default implementation
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fo != null) {
+            return new Context(fo, EditorContextDispatcher.getDefault().getCurrentLineNumber());
+        } else {
+            fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+            if (fo != null) {
+                return new Context(fo, EditorContextDispatcher.getDefault().getMostRecentLineNumber());
+            }
+        }
+        return null;
+    }
 
     private static void setupContext(JEditorPane editorPane, FileObject contextFO, int line) {
         setupUI(editorPane);
@@ -164,5 +196,9 @@ public abstract class ContextBindingSupport {
             this.fileObject = fo;
             this.line = contextLine <= 0 ? 0 : contextLine;
         }
+    }
+
+    public static interface ContextProvider {
+        Context retrieveContext();
     }
 }

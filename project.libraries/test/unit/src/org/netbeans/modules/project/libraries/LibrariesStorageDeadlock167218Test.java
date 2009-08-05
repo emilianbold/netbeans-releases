@@ -92,7 +92,8 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
 
                 LibraryManagerTest.resetCache();
                 Library[] arr1 = LibraryManager.getDefault().getLibraries();
-                assertEquals("Nothing, as we are under mutex", 0, arr1.length);
+//                assertEquals("Nothing, as we are under mutex", 0, arr1.length); Was wrong caller under PM.mutex didn't see changes
+                assertEquals("See changes even under mutex", 1, arr1.length);
 
                 return null;
             }
@@ -111,8 +112,8 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
         @Override
         public LibraryImplementation createLibrary() {
             assertFalse("No Hold lock", Thread.holdsLock(LibraryManager.getDefault()));
-            assertFalse("No mutex", ProjectManager.mutex().isReadAccess());
-            assertFalse("No mutex write", ProjectManager.mutex().isWriteAccess());
+//            assertFalse("No mutex", ProjectManager.mutex().isReadAccess());   Libraries refreshed synchronously by caller - makes no sence
+//            assertFalse("No mutex write", ProjectManager.mutex().isWriteAccess());  Libraries refreshed synchronously by caller - makes no sence
             try {
                 LibrariesStorageTest.registerLibraryTypeProvider();
                 Thread.sleep(500);

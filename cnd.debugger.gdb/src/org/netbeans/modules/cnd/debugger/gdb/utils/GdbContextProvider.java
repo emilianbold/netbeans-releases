@@ -44,25 +44,19 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbContextBinding extends ContextBindingSupport {
-    private static final GdbContextBinding INSTANCE = new GdbContextBinding();
-
-    public static final GdbContextBinding getInstance() {
-        return INSTANCE;
-    }
-
-    protected Context retrieveContext() {
+@ServiceProvider(service = ContextBindingSupport.ContextProvider.class)
+public class GdbContextProvider implements ContextBindingSupport.ContextProvider {
+    public ContextBindingSupport.Context retrieveContext() {
         // TODO: check how to get context from call stack
         DebuggerEngine en = DebuggerManager.getDebuggerManager().getCurrentEngine();
         CallStackFrame csf = null;
@@ -73,18 +67,11 @@ public class GdbContextBinding extends ContextBindingSupport {
             }
         }
         if (csf != null) {
-            String language = DebuggerManager.getDebuggerManager().getCurrentSession().getCurrentLanguage();
             String fullname = csf.getFullname();
 
             if (fullname != null && fullname.trim().length() > 0) {
                 FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(fullname)));
-                return new Context(fo, csf.getLineNumber());
-            }
-        } else {
-            EditorContext context = EditorContextBridge.getContext();
-            FileObject fo = context == null ? null : context.getCurrentFileObject();
-            if (fo != null) {
-                return new Context(fo, context.getCurrentLineNumber());
+                return new ContextBindingSupport.Context(fo, csf.getLineNumber());
             }
         }
         return null;
