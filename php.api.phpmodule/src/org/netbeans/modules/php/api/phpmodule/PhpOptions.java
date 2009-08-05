@@ -41,14 +41,20 @@ package org.netbeans.modules.php.api.phpmodule;
 
 /**
  * Instance of this class can be found in global lookup.
+ * <p>
+ * Clients probably want to use {@link PhpInterpreter#getDefault()}.
  * @author Tomas Mysik
+ * @see PhpInterpreter
  * @since 1.1
  */
 public interface PhpOptions {
 
     /**
      * Get the PHP interpreter file path.
+     * <p>
+     * Clients probably want to use {@link PhpInterpreter#getDefault()}.
      * @return the PHP interpreter file path or <code>null</code> if none is found.
+     * @see PhpInterpreter#getDefault()
      */
     String getPhpInterpreter();
 }

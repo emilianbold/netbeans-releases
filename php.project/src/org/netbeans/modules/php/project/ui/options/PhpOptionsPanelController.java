@@ -44,7 +44,8 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -157,20 +158,21 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
         // warnings
         // #144680
-        String warning = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
-        if (warning != null) {
-            phpOptionsPanel.setWarning(warning);
-            return true;
-        }
-
-        warning = Utils.validatePhpUnit(phpOptionsPanel.getPhpUnit());
+        String warning = PhpInterpreter.validate(phpOptionsPanel.getPhpInterpreter());
         if (warning != null) {
             phpOptionsPanel.setWarning(warning);
             return true;
         }
 
         PhpUnit.resetVersion();
-        PhpUnit phpUnit = new PhpUnit(phpOptionsPanel.getPhpUnit());
+        PhpUnit phpUnit = null;
+        try {
+            phpUnit = PhpUnit.getCustom(phpOptionsPanel.getPhpUnit());
+        } catch (InvalidPhpProgramException ex) {
+            phpOptionsPanel.setWarning(ex.getLocalizedMessage());
+            return true;
+        }
+        assert phpUnit != null;
         if (!phpUnit.supportedVersionFound()) {
             phpOptionsPanel.setWarning(NbBundle.getMessage(
                     PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)));

@@ -199,7 +199,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), 1024, // NOI18N
+                loc("indicator.title"), BINARY_ORDER, // NOI18N
                 Arrays.asList(
                     new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
                 new DataRowToMemoryPlot(indicatorColumns));

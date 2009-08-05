@@ -40,7 +40,7 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import org.junit.Test;
-import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem.ELBean;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem.ELBean;
 import org.netbeans.test.web.core.syntax.TestBase;
 
 /**

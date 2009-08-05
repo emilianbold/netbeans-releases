@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.api;
 
-package org.netbeans.modules.php.project.util;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
-import java.util.regex.Pattern;
-import org.netbeans.modules.php.api.util.PhpProgram;
+public interface ThreadMapData {
 
-/**
- * @author Tomas Mysik
- */
-public final class PhpInterpreter extends PhpProgram {
-    public static final Pattern[] LINE_PATTERNS = {
-        Pattern.compile(".+\\s+in\\s+(.+)\\s+on\\s+line\\s+(\\d+)"), // NOI18N
-        Pattern.compile(".+\\(\\)\\s+(.+):(\\d+)"), // NOI18N
-    };
+    List<ThreadData> getThreadsData();
 
-    /**
-     * {@inheritDoc}
-     */
-    public PhpInterpreter(String command) {
-        super(command);
-    }
+    TimeDuration getPrecision();
 }
