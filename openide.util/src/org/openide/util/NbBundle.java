@@ -65,17 +65,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Convenience class permitting easy loading of localized resources of various sorts.
-* Extends the functionality of the default Java resource support, and interacts
-* better with class loaders in a multiple-loader system.
+* Extends the functionality of {@link ResourceBundle} to handle branding, and interacts
+* better with class loaders in a module system.
 * <p>Example usage:
-* <p><code><pre>
+* <pre>
 * package com.mycom;
 * public class Foo {
-*   // Search for tag Foo_theMessage in /com/mycom/Bundle.properties:
-*   private static String theMessage = {@link NbBundle#getMessage(Class, String) NbBundle.getMessage} (Foo.class, "Foo_theMessage");
-*   // Might also look in /com/mycom/Bundle_de.properties, etc.
+*     public String getDisplayName() {
+*         return {@link #getMessage(Class,String) NbBundle.getMessage}(Foo.class, "Foo.displayName");
+*     }
 * }
-* </pre></code>
+* </pre>
+* will in German locale look for the key {@code Foo.displayName} in
+* {@code com/mycom/Bundle_de.properties} and then {@code com/mycom/Bundle.properties} (in that order).
 */
 public class NbBundle extends Object {
 
@@ -375,7 +377,8 @@ public class NbBundle extends Object {
 
     /** Get a resource bundle in the same package as the provided class,
     * with the default locale/branding and the class' own classloader.
-    * This is the usual style of invocation.
+    * The usual style of invocation is {@link #getMessage(Class,String)}
+     * or one of the other overloads taking message formats.
     *
     * @param clazz the class to take the package name from
     * @return the resource bundle
@@ -621,7 +624,7 @@ public class NbBundle extends Object {
 
     /**
      * Finds a localized and/or branded string in a bundle.
-    * @param clazz the class to use to locate the bundle
+    * @param clazz the class to use to locate the bundle (see {@link #getBundle(Class)} for details)
     * @param resName name of the resource to look for
     * @return the string associated with the resource
     * @throws MissingResourceException if either the bundle or the string cannot be found
@@ -635,7 +638,7 @@ public class NbBundle extends Object {
      * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
-    * @param clazz the class to use to locate the bundle
+    * @param clazz the class to use to locate the bundle (see {@link #getBundle(Class)} for details)
     * @param resName name of the resource to look for
     * @param param1 the argument to use when formatting the message
     * @return the string associated with the resource
@@ -651,7 +654,7 @@ public class NbBundle extends Object {
      * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
-    * @param clazz the class to use to locate the bundle
+    * @param clazz the class to use to locate the bundle (see {@link #getBundle(Class)} for details)
     * @param resName name of the resource to look for
     * @param param1 the argument to use when formatting the message
     * @param param2 the second argument to use for formatting
@@ -668,7 +671,7 @@ public class NbBundle extends Object {
      * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
-    * @param clazz the class to use to locate the bundle
+    * @param clazz the class to use to locate the bundle (see {@link #getBundle(Class)} for details)
     * @param resName name of the resource to look for
     * @param param1 the argument to use when formatting the message
     * @param param2 the second argument to use for formatting
@@ -686,7 +689,7 @@ public class NbBundle extends Object {
      * Finds a localized and/or branded string in a bundle and formats the message
     * by passing requested parameters.
     *
-    * @param clazz the class to use to locate the bundle
+    * @param clazz the class to use to locate the bundle (see {@link #getBundle(Class)} for details)
     * @param resName name of the resource to look for
     * @param arr array of parameters to use for formatting the message
     * @return the string associated with the resource
@@ -760,7 +763,7 @@ public class NbBundle extends Object {
             this.attrs = attrs;
         }
 
-        public String get(Object _k) {
+        public @Override String get(Object _k) {
             if (!(_k instanceof String)) {
                 return null;
             }
@@ -805,7 +808,7 @@ public class NbBundle extends Object {
             return m.get(key);
         }
 
-        public Locale getLocale() {
+        public @Override Locale getLocale() {
             return locale;
         }
     }
@@ -830,7 +833,7 @@ public class NbBundle extends Object {
             this.sub2 = sub2;
         }
 
-        public Locale getLocale() {
+        public @Override Locale getLocale() {
             return loc;
         }
 
@@ -1046,7 +1049,7 @@ public class NbBundle extends Object {
             }
         }
 
-        public InputStream getResourceAsStream(String name) {
+        public @Override InputStream getResourceAsStream(String name) {
             InputStream base = super.getResourceAsStream(name);
 
             if (base == null) {

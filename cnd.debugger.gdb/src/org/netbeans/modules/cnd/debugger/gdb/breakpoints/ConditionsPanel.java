@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
 import org.netbeans.modules.cnd.debugger.gdb.models.WatchPanel;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbContextBinding;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +88,7 @@ public class ConditionsPanel extends JPanel {
                 tfCondition.setText(breakpoint.getCondition());
             }
         };
-        GdbContextBinding.getInstance().setupContext(tfCondition, editorPaneUpdated);
+        ContextBindingSupport.getDefault().setupContext(tfCondition, editorPaneUpdated);
     }
     
     public void ok() {

@@ -2064,6 +2064,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
+            int [] outOfDateFiles = new int [] { 0 };
+            int [] deletedFiles = new int [] { 0 };
             boolean finished = true;
 
             for (URL source : ctx.newRootsToScan) {
@@ -2075,7 +2077,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(source);
-                    if (scanSource (source)) {
+                    if (scanSource (source, outOfDateFiles, deletedFiles)) {
                         ctx.scannedRoots.add(source);
                     } else {
                         finished = false;
@@ -2097,14 +2099,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d)",
+                        scannedRootsCnt, completeTime, outOfDateFiles[0], deletedFiles[0])); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
             return finished;
         }
 
-        private boolean scanSource (URL root) throws IOException {
+        private boolean scanSource (URL root, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (noRootsScan && useInitialState && TimeStamps.existForRoot(root)) {
@@ -2159,6 +2162,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         delete(deleted, root);
                         if (index(resources, root, !useInitialState, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
+                            outOfDateFiles[0] += resources.size();
+                            deletedFiles[0] += deleted.size();
                             return true;
                         }
                     }

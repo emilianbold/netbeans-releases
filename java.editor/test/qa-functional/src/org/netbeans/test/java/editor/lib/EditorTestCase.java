@@ -84,13 +84,9 @@ public class EditorTestCase extends JellyTestCase {
     private String defaultSamplePackage = "test";
     private String defaultSampleName = "sample1";
 
-    private static final char treeSeparator = '|';
-    private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"test";
-    private final String defaultFileName = "sampel1";
-    private String projectName = null;
-    private String treeSubPackagePathToFile = null;
-    private String fileName = null;
-    private final String dialogSaveTitle = "Save";  // I18N
+    private static final char treeSeparator = '|';    
+    private String projectName = null;    
+    private String fileName = null;    
     public static final int WAIT_MAX_MILIS_FOR_CLIPBOARD = 4000;
     
     /**
@@ -133,8 +129,7 @@ public class EditorTestCase extends JellyTestCase {
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
     public void openProject(String projectName) {
-        this.projectName = projectName;
-        File projectPath = new File(this.getDataDir() + "/projects", projectName);
+        this.projectName = projectName;        
         log("data dir = "+this.getDataDir().toString());
         
         /* 1. check if project is open  */
@@ -197,25 +192,13 @@ public class EditorTestCase extends JellyTestCase {
     protected void openDefaultProject() {
         openProject(getDefaultProjectName());
     }
-    
+          
     /**
-     * Close the default project.
+     * Open file in the test project
+     * @param treeSubPackagePathToFile  path to required file separated by '|'
+     * @param fileName name of the opened file
      */
-    protected void closeDefaultProject() {
-        closeProject(getDefaultProjectName());
-    }
-    
-    protected void closeProject(String projectName) {
-       this.closeProject(projectName);
-        //ProjectSupport.closeProject(projectName);
-    }
-    
-    
-    /** Open file in open project
-     *  @param treeSubPath e.g. "Source Packages|test","sample1" */
-    public void openFile(String treeSubPackagePathToFile, String fileName) {
-        // debug info, to be removed
-        this.treeSubPackagePathToFile = treeSubPackagePathToFile;
+    public void openFile(String treeSubPackagePathToFile, String fileName) {                
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
@@ -274,12 +257,7 @@ public class EditorTestCase extends JellyTestCase {
             throw new JemmyException("Interrupted.", e);
         }                
     }
-    
-    /** Open the default file in open project */
-    public void openFile() {
-        openFile(defaultPackageNameTreePath,defaultFileName);
-    }
-    
+            
     /** Close file in open project.
      */
     public void closeFile() {
