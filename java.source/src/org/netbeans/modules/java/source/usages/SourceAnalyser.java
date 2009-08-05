@@ -221,12 +221,7 @@ public class SourceAnalyser {
             return;
         }
         this.toDelete.add(name);
-    }
-    
-    public void delete (final String binaryName, final String sourceName) throws IOException {
-        this.delete(Pair.<String,String>of(binaryName, sourceName));
-    }
-    
+    }        
     
     private void addClassReferences (final Pair<String,String> name, final Data data) {
         assert name != null;
