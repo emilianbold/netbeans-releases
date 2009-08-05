@@ -39,7 +39,7 @@
 
 package org.netbeans.module.dlight.threads.api.storage;
 
-import org.netbeans.module.dlight.threads.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 
 /**
  *

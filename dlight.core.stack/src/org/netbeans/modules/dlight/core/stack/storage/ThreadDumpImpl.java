@@ -36,15 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.dataprovider;
+package org.netbeans.modules.dlight.core.stack.storage;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.module.dlight.threads.api.storage.ThreadData;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 
-public interface ThreadMapData {
+final class ThreadDumpImpl implements ThreadDump {
 
-    List<ThreadData> getThreadsData();
+    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
+    private final long timestamp;
 
-    TimeDuration getPrecision();
+    public ThreadDumpImpl(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public List<ThreadSnapshot> getThreadStates() {
+        return stacks;
+    }
+
+    public void addStack(ThreadSnapshot stack) {
+        stacks.add(stack);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }
