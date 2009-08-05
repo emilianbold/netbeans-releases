@@ -82,8 +82,7 @@ public final class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
     private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = new AdvancedProperties();
     private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
-    private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
-    private static final Set<String> IGNORED_REMOTE_DIRS = new HashSet<String>(Arrays.asList(".", "..")); // NOI18N
+    private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
     private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
     private static final String LOCAL_TMP_OLD_SUFFIX = ".old~"; // NOI18N
@@ -247,7 +246,7 @@ public final class RemoteClient implements Cancellable {
             }
 
             if (file.isDirectory()) {
-                File f = getLocalFile(file, baseLocalDir);
+                File f = getLocalFile(baseLocalDir, file);
                 File[] children = f.listFiles();
                 if (children != null) {
                     for (File child : children) {
@@ -492,7 +491,7 @@ public final class RemoteClient implements Cancellable {
                     }
                     String relPath = getRemoteRelativePath(file);
                     for (RemoteFile child : remoteClient.listFiles()) {
-                        if (isVisible(child)) {
+                        if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.fine("File " + child + " added to download queue");
                             queue.offer(TransferFile.fromRemoteFile(child, baseRemoteDirectory, relPath));
                         } else {
@@ -559,7 +558,7 @@ public final class RemoteClient implements Cancellable {
     }
 
     private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        File localFile = getLocalFile(file, baseLocalDir);
+        File localFile = getLocalFile(baseLocalDir, file);
         if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -704,12 +703,18 @@ public final class RemoteClient implements Cancellable {
         return moved[0];
     }
 
-    private File getLocalFile(TransferFile transferFile, File localFile) {
+    private File getLocalFile(File localFile, TransferFile transferFile) {
         if (transferFile.getRelativePath() == TransferFile.CWD) {
             return localFile;
         }
         return new File(localFile, transferFile.getRelativePath(true));
     }
+
+    // #169778
+    private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
+        return new File(getLocalFile(localFile, parent), file.getName());
+    }
+
 
     public Set<TransferFile> prepareDelete(FileObject baseLocalDirectory, FileObject... filesToDelete) throws RemoteException {
         LOGGER.fine("Preparing files to delete => calling prepareUpload because in fact the same operation is done");
@@ -961,18 +966,10 @@ public final class RemoteClient implements Cancellable {
 
     private static boolean isVisible(File file) {
         assert file != null;
-        if (file.getName().equals(NB_METADATA_DIR)) {
+        if (IGNORED_DIRS.contains(file.getName())) {
             return false;
         }
         return VisibilityQuery.getDefault().isVisible(file);
-    }
-
-    private boolean isVisible(RemoteFile file) {
-        assert file != null;
-        if (file.isDirectory()) {
-            return !IGNORED_REMOTE_DIRS.contains(file.getName());
-        }
-        return true;
     }
 
     private static boolean mkLocalDirs(File folder) {
