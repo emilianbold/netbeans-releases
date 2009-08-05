@@ -40,8 +40,8 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.List;
 import org.junit.Test;
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.ThreadSnapshot.MemoryAccessType;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot.MemoryAccessType;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import static org.junit.Assert.*;
 

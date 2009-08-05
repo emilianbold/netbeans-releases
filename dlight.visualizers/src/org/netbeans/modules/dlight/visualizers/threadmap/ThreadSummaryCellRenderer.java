@@ -50,8 +50,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 
 /**

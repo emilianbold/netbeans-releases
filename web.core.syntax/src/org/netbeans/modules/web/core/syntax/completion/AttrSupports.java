@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import java.beans.*;
 import java.io.Closeable;

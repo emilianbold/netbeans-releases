@@ -48,6 +48,8 @@
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.dlight.threadmap</friend>
+                <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.threads</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.core.stack.api</package>

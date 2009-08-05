@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 

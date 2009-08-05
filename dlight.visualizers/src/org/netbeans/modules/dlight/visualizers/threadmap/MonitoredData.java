@@ -41,10 +41,10 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.netbeans.module.dlight.threads.api.storage.ThreadData;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState;
-import org.netbeans.module.dlight.threads.dataprovider.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 
 /**
  *
