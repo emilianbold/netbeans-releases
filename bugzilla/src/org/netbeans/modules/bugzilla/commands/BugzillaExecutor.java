@@ -82,7 +82,7 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions) {
-        execute(cmd, true, true);
+        execute(cmd, handleExceptions, true);
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
