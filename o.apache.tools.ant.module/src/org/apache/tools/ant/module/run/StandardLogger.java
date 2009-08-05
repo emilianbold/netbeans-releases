@@ -63,6 +63,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -100,19 +102,6 @@ public final class StandardLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CWD_LEAVE = Pattern.compile(".*Leaving directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
-    /**
-     * Regexp matching an output line which should (perhaps) be hyperlinked to a file.
-     * Captured groups:
-     * <ol>
-     * <li>file name (rel/abs path or URL)
-     * <li>line1
-     * <li>col1
-     * <li>line2
-     * <li>col2
-     * <li>message
-     * </ol>
-     */
-    private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
     
     /**
      * Data stored in the session.
@@ -410,12 +399,11 @@ public final class StandardLogger extends AntLogger {
             // stdout and stderr is printed directly for java
             return;
         }
-        OutputListener hyperlink = findHyperlink(line, event.getSession(), getSessionData(session).currentDir);
-        if (hyperlink instanceof Hyperlink) {
-            getSessionData(session).lastHyperlink = (Hyperlink) hyperlink;
+        PartiallyLinkedLine parse = findHyperlink(line, event.getSession(), getSessionData(session).currentDir);
+        if (parse.hyperlink instanceof Hyperlink) {
+            getSessionData(session).lastHyperlink = (Hyperlink) parse.hyperlink;
         }
-        // XXX should translate tabs to spaces here as a safety measure (esp. since output window messes it up...)
-        event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, hyperlink);
+        parse.println(event.getSession(), event.getLogLevel() <= AntEvent.LOG_WARN);
     }
     
     @Override
@@ -424,26 +412,80 @@ public final class StandardLogger extends AntLogger {
         getSessionData(event.getSession()).lastHyperlink = null;
     }
 
+    private static final Pattern IMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped");
+    public static boolean isImportant(String message) {
+        return !IMPORTANT_MESSAGE.matcher(message).find();
+    }
+
+    public static class PartiallyLinkedLine { // used also in ForkedJavaOverride
+        final OutputListener/*|null*/ hyperlink;
+        final String all;
+        final String/*|null*/ mainPart, postLinkPart;
+        PartiallyLinkedLine(String line) {
+            this(null, line, null, null);
+        }
+        PartiallyLinkedLine(OutputListener hyperlink, String all, String mainPart, String postLinkPart) {
+            this.hyperlink = hyperlink;
+            this.all = all;
+            this.mainPart = mainPart;
+            this.postLinkPart = postLinkPart;
+        }
+        public void println(AntSession session, boolean err) {
+            if (hyperlink != null) {
+                InputOutput io = session.getIO();
+                if (IOColorPrint.isSupported(io)) {
+                    try {
+                        assert mainPart != null;
+                        IOColorPrint.print(io, mainPart, hyperlink, isImportant(all), IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
+                        assert postLinkPart != null;
+                        session.println(postLinkPart, true, null);
+                        return;
+                    } catch (IOException x) {
+                        ERR.log(Level.INFO, null, x);
+                    }
+                }
+                session.println(all, err, hyperlink);
+            } else {
+                session.println(all, err, null);
+            }
+        }
+    }
+
+    /**
+     * Regexp matching an output line which should (perhaps) be hyperlinked to a file.
+     * Captured groups:
+     * <ol>
+     * <li>file name plus optional line/column information (i.e. hyperlinkable portion)
+     * <li>file name (rel/abs path or URL)
+     * <li>line1
+     * <li>col1
+     * <li>line2
+     * <li>col2
+     * <li>non-hyperlinkable portion
+     * <li>message
+     * </ol>
+     */
+    private static final Pattern HYPERLINK = Pattern.compile("(\"?(.+?)\"?(?:(?::|, line )(\\d+)(?::(\\d+)(?::(\\d+):(\\d+))?)?)?)(: +(.+))"); // NOI18N
     /**
      * Possibly hyperlink a message logged event.
      */
-    public static OutputListener findHyperlink(String line, AntSession session, Stack<File> cwd) {
+    public static PartiallyLinkedLine findHyperlink(String line, AntSession session, Stack<File> cwd) {
         Matcher m = HYPERLINK.matcher(line);
         if (!m.matches()) {
             ERR.fine("does not look like a hyperlink");
-            return null;
+            return new PartiallyLinkedLine(line);
         }
-        String path = m.group(1);
+        String path = m.group(2);
         File file;
         if (path.startsWith("file:")) {
             try {
                 file = new File(new URI(path));
             } catch (URISyntaxException e) {
                 ERR.log(Level.FINE, "invalid URI, skipping", e);
-                return null;
+                return new PartiallyLinkedLine(line);
             } catch (IllegalArgumentException e) {
                 ERR.log(Level.FINE, "invalid URI, skipping", e);
-                return null;
+                return new PartiallyLinkedLine(line);
             }
         } else {
             file = new File(path);
@@ -451,7 +493,7 @@ public final class StandardLogger extends AntLogger {
                 if (cwd == null || cwd.isEmpty()) {
                     ERR.fine("Non-absolute path with no CWD, skipping");
                     // don't waste time on File.exists!
-                    return null;
+                    return new PartiallyLinkedLine(line);
                 } else {
                     file = new File(cwd.peek(), path);
                 }
@@ -459,39 +501,40 @@ public final class StandardLogger extends AntLogger {
         }
         if (!file.exists()) {
             ERR.log(Level.FINE, "no such file {0}, skipping", file);
-            return null;
+            return new PartiallyLinkedLine(line);
         }
 
         int line1 = -1, col1 = -1, line2 = -1, col2 = -1;
-        String num = m.group(2);
+        String num = m.group(3);
         try {
             if (num != null) {
                 line1 = Integer.parseInt(num);
-                num = m.group(3);
+                num = m.group(4);
                 if (num != null) {
                     col1 = Integer.parseInt(num);
-                    num = m.group(4);
+                    num = m.group(5);
                     if (num != null) {
                         line2 = Integer.parseInt(num);
-                        col2 = Integer.parseInt(m.group(5));
+                        col2 = Integer.parseInt(m.group(6));
                     }
                 }
             }
         } catch (NumberFormatException e) {
             ERR.log(Level.FINE, "bad line/col #", e);
-            return null;
+            return new PartiallyLinkedLine(line);
         }
 
-        String message = m.group(6);
+        String message = m.group(8);
         
         file = FileUtil.normalizeFile(file); // do this late, after File.exists
         ERR.log(Level.FINE, "Hyperlink: {0} [{1}:{2}:{3}:{4}]: {5}", new Object[] {file, line1, col1, line2, col2, message});
         try {
-            return session != null ? session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2)
-                : new Hyperlink(file.toURI().toURL(), message, line1, col1, line2, col2);
+            return new PartiallyLinkedLine(
+                    session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2),
+                    line, m.group(1), m.group(7));
         } catch (MalformedURLException e) {
             assert false : e;
-            return null;
+            return new PartiallyLinkedLine(line);
         }
     }
 

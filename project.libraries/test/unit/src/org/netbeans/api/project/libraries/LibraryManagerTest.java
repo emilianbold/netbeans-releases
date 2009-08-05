@@ -41,6 +41,9 @@
 
 package org.netbeans.api.project.libraries;
 
+import org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 import static org.netbeans.modules.project.libraries.TestUtil.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -52,6 +55,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
+import org.netbeans.modules.settings.RecognizeInstanceObjects;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -60,8 +64,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
 public class LibraryManagerTest extends NbTestCase {
@@ -82,7 +84,7 @@ public class LibraryManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         lp = new WLP();
-        MockLookup.setLookup(Lookups.singleton(lp));
+        MockLookup.setLookup(Lookups.fixed(lp, new RecognizeInstanceObjects()));
         registerLibraryTypeProvider();
     }
 
@@ -177,7 +179,7 @@ public class LibraryManagerTest extends NbTestCase {
 
     public void testArealLibraryManagers() throws Exception {
         ALP alp = new ALP();
-        MockLookup.setLookup(Lookups.fixed(lp, alp));
+        MockLookup.setLookup(Lookups.fixed(lp, alp, new RecognizeInstanceObjects()));
         new LibrariesModel().createArea();
         Area home = new Area("home");
         Area away = new Area("away");
