@@ -71,6 +71,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -141,7 +142,7 @@ public class SourceAnalyser {
         final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
         for (CompilationUnitTree cu : data) {
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes,
-                    tuple.virtual, tuple.index);
+                    tuple);
             uv.scan(cu,usages);
             mainMethod[0] |= uv.mainMethod;
             if (uv.sourceName != null && uv.rsList != null && uv.rsList.size()>0) {
@@ -290,7 +291,7 @@ public class SourceAnalyser {
         private final CompilationUnitTree cu;        
         private final Types types;
         private final TransTypes trans;
-        private final javax.tools.JavaFileObject sibling;
+        private final URL siblingUrl;
         private final String sourceName;
         private final boolean signatureFiles;
         private final List<? super Pair<String,String>> topLevels;
@@ -310,7 +311,7 @@ public class SourceAnalyser {
         
         
         public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes,
-                boolean virtual, boolean storeIndex) {
+                final CompileTuple tuple) throws MalformedURLException {
             assert jt != null;
             assert cu != null;
             assert manager != null;
@@ -327,15 +328,15 @@ public class SourceAnalyser {
             this.cu = cu;
             this.signatureFiles = true;
             this.manager = manager;
-            this.sibling = sibling;
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);            
+            this.virtual = tuple.virtual;
+            this.storeIndex = tuple.index;
+            this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
+            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);            
             this.topLevels = null;
             this.newTypes = newTypes;            
-            this.virtual = virtual;
-            this.storeIndex = storeIndex;
         }
                 
-        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) {
+        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) throws MalformedURLException {
             assert jt != null;
             assert cu != null;
             assert manager != null;
@@ -353,8 +354,8 @@ public class SourceAnalyser {
             this.cu = cu;
             this.signatureFiles = false;
             this.manager = manager;
-            this.sibling = sibling;
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);
+            this.siblingUrl = sibling.toUri().toURL();
+            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);
             this.topLevels = topLevels;
             this.newTypes = null;
             this.virtual = false;
@@ -566,16 +567,12 @@ public class SourceAnalyser {
                                     rsList.add(sourceName);
                                 }
                             }
-                            try {
-                                FileObject fo = URLMapper.findFileObject(this.sibling.toUri().toURL());
-                                if (fo != null) {
-                                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                                    if (cp != null) {
-                                        resourceName = cp.getResourceName(fo, '/', true);                                    
-                                    }
+                            final FileObject fo = URLMapper.findFileObject(this.siblingUrl);
+                            if (fo != null) {
+                                final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                                if (cp != null) {
+                                    resourceName = cp.getResourceName(fo, '/', true);   //NOI18N
                                 }
-                            } catch (MalformedURLException e) {
-                                Exceptions.printStackTrace(e);
                             }
                         }
                         else {
