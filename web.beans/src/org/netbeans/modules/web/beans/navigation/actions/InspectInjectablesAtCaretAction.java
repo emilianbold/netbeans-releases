@@ -151,7 +151,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             return;
         }
         ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
-        MetadataModel<WebBeansModel> metaModel = WebBeansModelFactory.
+        final MetadataModel<WebBeansModel> metaModel = WebBeansModelFactory.
             getMetaModel( modelUnit );
         
         /*
@@ -168,7 +168,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
 
                 public Void run( WebBeansModel model ) throws Exception {
                     inspectInjectables(component, fileObject, 
-                            model, variableAtCaret );
+                            model , metaModel, variableAtCaret );
                     return null;
                 }
             });
@@ -233,6 +233,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      */
     private void inspectInjectables( final JTextComponent component, 
             final FileObject fileObject, final WebBeansModel model, 
+            final MetadataModel<WebBeansModel> metaModel, 
             final Object[] variablePath )
     {
         VariableElement var = findVariable(model, variablePath);
@@ -266,14 +267,14 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                     final VariableElement varElement = var;
                     final CompilationController controller = model.getCompilationController();
                     if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( adExcpeption , varElement, 
-                                controller, bindings, model );
+                        showDialog( adExcpeption , varElement, bindings, 
+                                controller , metaModel );
                     }
                     else {
                         SwingUtilities.invokeLater( new Runnable() {
                             public void run() {
-                                showDialog(adExcpeption, varElement, 
-                                        controller, bindings, model);
+                                showDialog(adExcpeption, varElement, bindings, 
+                                        controller, metaModel);
                             }
                         });
                     }
@@ -394,8 +395,8 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
     }
     
     private void showDialog( AmbiguousDependencyException adExcpeption , 
-            VariableElement var , CompilationController controller,
-            List<AnnotationMirror> bindings , WebBeansModel model ) 
+            VariableElement var , List<AnnotationMirror> bindings , 
+            CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         Collection<Element> elements = adExcpeption.getElements();
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
@@ -405,7 +406,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
                 "TITLE_Injectables" , var.getSimpleName().toString() );
         dialog.setTitle( title );
         dialog.setContentPane( new AmbiguousInjectablesPanel(elements, var, 
-                bindings, controller, model));
+                bindings, controller , model));
         dialog.setVisible( true );
     }
 

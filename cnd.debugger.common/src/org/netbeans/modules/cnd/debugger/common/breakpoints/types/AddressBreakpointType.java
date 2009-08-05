@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,92 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
 
-import java.io.File;
+package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
-public interface HostInfo {
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpointPanel;
+import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.openide.util.NbBundle;
 
-    public static enum CpuFamily {
-
-        SPARC,
-        X86,
-        UNKNOWN;
+/**
+ *
+ * @author   Egor Ushakov
+ */
+public class AddressBreakpointType extends BreakpointType {
+    public String getCategoryDisplayName() {
+        return NbBundle.getMessage(LineBreakpointType.class,
+                    "CTL_Common_breakpoint_events_category_name"); // NOI18N
     }
-
-    public static enum OSFamily {
-
-        SUNOS,
-        LINUX,
-        WINDOWS,
-        MACOSX,
-        UNKNOWN;
-
-        public boolean isUnix() {
-            switch (this) {
-                case LINUX:
-                case MACOSX:
-                case SUNOS:
-                    return true;
-                case WINDOWS:
-                    return false;
-                case UNKNOWN:
-                    return false;
-                default:
-                    throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
-            }
-        }
+    
+    public JComponent getCustomizer() {
+        return new AddressBreakpointPanel();
     }
-
-    public static enum Bitness {
-
-        _32,
-        _64;
-
-        public static Bitness valueOf(int bitness) {
-            return bitness == 64 ? _64 : _32;
-        }
-
-        @Override
-        public String toString() {
-            return (this == _32) ? "32" : "64"; // NOI18N
-        }
+    
+    @Override
+    public String getTypeDisplayName() {
+        return NbBundle.getMessage(LineBreakpointType.class, "CTL_Common_Address_Breakpoint"); // NOI18N
     }
-
-    public static interface OS {
-
-        public OSFamily getFamily();
-
-        public String getName();
-
-        public String getVersion();
-
-        public Bitness getBitness();
-    }
-
-    public OS getOS();
-
-    public CpuFamily getCpuFamily();
-
-    public int getCpuNum();
-
-    public OSFamily getOSFamily();
-
-    public String getHostname();
-
-    public String getShell();
-
-    public String getTempDir();
-
-    public File getTempDirFile();
-
+    
     /**
-     * @return time difference in milliseconds between remote and localhost
+     *  Tell debuggercore if this should be the default breakpoint.
+     *
+     *  Currently we always return false because we want to defer to FunctionBreakpointType.
+     *  Eventually, this class and FunctionBreakpointType should both become smart enough
+     *  that FBT is the default if the cursor is inside a function and LBT if its outside
+     *  of a function (in both cases, its false if the current file in the editor isn't a
+     *  C, C++, or Fortran file)
      */
-    public long getClockSkew();
+    public boolean isDefault() {	
+	return false;	// do false for now because FunctionBreakpointType currently
+			// overrides this anyway.
+    }
 }
