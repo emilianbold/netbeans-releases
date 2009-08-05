@@ -734,6 +734,9 @@ public class Action {
      * @return an array of KeyStroke objects or null if not found.
      */
     public KeyStroke[] getKeyStrokes() {
+        //Commented out, because after recent changes it is no longer
+        //possible to create a reverse mapping Action -> [KeyStroke]
+        /*
         if (this.keystrokes == null && systemActionClass != null) {
             try {
             //ClassReference keymapRef = new ClassReference(getClass().getClassLoader(), "org.netbeans.core.NbKeymap");
@@ -757,6 +760,8 @@ public class Action {
                 throw new JemmyException("Exception while gettting keystrokes", e);
             }
         }
+         */
+
         return this.keystrokes;
     }
     
