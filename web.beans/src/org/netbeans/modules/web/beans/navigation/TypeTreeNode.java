@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.navigation;
 
 import javax.lang.model.element.TypeElement;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -52,9 +53,32 @@ import org.openide.filesystems.FileObject;
  */
 class TypeTreeNode extends InjectableTreeNode<TypeElement> {
 
+    private static final long serialVersionUID = 5945151445570825042L;
+
     TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-        CompilationInfo compilationInfo) {
+        CompilationInfo compilationInfo) 
+    {
         super(fileObject, typeElement, compilationInfo);
+    }
+    
+    boolean isAssignableFrom( TypeElement element , 
+            CompilationController controller)
+    {
+        TypeElement typeElement = getElementHandle().resolve(controller);
+        if ( typeElement ==null ){
+            return true;
+        }
+        return controller.getTypes().isAssignable( element.asType(), 
+                typeElement.asType());
+    }
+    
+    boolean isAssignable( TypeElement element , CompilationController controller ){
+        TypeElement typeElement = getElementHandle().resolve(controller);
+        if ( typeElement ==null ){
+            return false;
+        }
+        return controller.getTypes().isAssignable( typeElement.asType(), 
+                element.asType());
     }
     
 }

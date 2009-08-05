@@ -208,8 +208,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
                 continue;
             }
             TypeTreeNode injectableNode = (TypeTreeNode)entry.getValue();
-            TypeElement typeElement = injectableNode.getElementHandle().
-                resolve(controller);
+            TypeElement typeElement = (TypeElement)key;
             if (typeElement == null ){
                 continue;
             }
@@ -219,15 +218,8 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
                 if ( parent == null ){
                     parent = injectableNode;
                 }
-                else {
-                    TypeElement parentElement = parent.getElementHandle().
-                        resolve( controller );
-                    if ( parentElement == null || 
-                            controller.getTypes().isAssignable( 
-                                    typeElement.asType(), parentElement.asType()))
-                    {
-                        parent = injectableNode;
-                    }
+                else if ( parent.isAssignableFrom(typeElement, controller)){
+                    parent = injectableNode;
                 }
             }
         }
@@ -241,14 +233,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
         List<TypeTreeNode> movedChildren = new LinkedList<TypeTreeNode>();
         while (children.hasMoreElements()) {
             TypeTreeNode childNode = (TypeTreeNode) children.nextElement();
-            ElementHandle<TypeElement> elementHandle = childNode
-                    .getElementHandle();
-            TypeElement child = elementHandle.resolve(controller);
-            if (child == null) {
-                continue;
-            }
-            if (controller.getTypes().isAssignable(child.asType(),
-                    element.asType()))
+            if (childNode.isAssignable(element, controller))
             {
                 movedChildren.add(childNode);
             }
@@ -267,13 +252,69 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             ExecutableElement element , MethodTreeNode node, 
             DefaultMutableTreeNode root , CompilationController controller)
     {
-        ExecutableElement parent = null;
-        // TODO Auto-generated method stub
+        MethodTreeNode parent = null;
         
-        if ( parent == null ){
-            root.add( node );
+        List<ExecutableElement> overriddenMethods = new ArrayList<ExecutableElement>();
+        ExecutableElement overriddenMethod = element;
+        while ( true ){
+            overriddenMethod = 
+                controller.getElementUtilities().getOverriddenMethod(overriddenMethod);
+            if ( overriddenMethod == null ){
+                break;
+            }
+            overriddenMethods.add( overriddenMethod );
         }
-        elementMap.put( element, node  );
+        if ( overriddenMethods.size() > 0  )
+        {
+            for (Entry<Element, InjectableTreeNode<? extends Element>> entry : 
+                elementMap.entrySet())
+            {
+                Element key = entry.getKey();
+                if (!(key instanceof ExecutableElement)) {
+                    continue;
+                }
+                MethodTreeNode injectableNode = (MethodTreeNode) entry
+                        .getValue();
+                ExecutableElement method = (ExecutableElement) key;
+                if (method == null) {
+                    continue;
+                }
+
+                int index = overriddenMethods.indexOf( method);
+                if ( index != -1 ) {
+                    if (parent == null) {
+                        parent = injectableNode;
+                    }
+                    else if (parent.isOverridden( index, overriddenMethods, 
+                            controller)) 
+                    {
+                        parent = injectableNode;
+                    }
+                }
+            }
+        }
+        
+        DefaultMutableTreeNode parentNode = parent;
+        
+        if ( parentNode == null ){
+            parentNode = root;
+        }
+        Enumeration children = parentNode.children();
+        List<MethodTreeNode> movedChildren = new LinkedList<MethodTreeNode>();
+        while (children.hasMoreElements()) {
+            MethodTreeNode childNode = (MethodTreeNode) children.nextElement();
+            if (childNode.overridesMethod(element, controller))
+            {
+                movedChildren.add(childNode);
+            }
+        }
+
+        for (MethodTreeNode methodNode : movedChildren) {
+            parentNode.remove(methodNode);
+            node.add(methodNode);
+        }
+        parentNode.add(node);
+        elementMap.put(element, node);
     }
     
     private void insertTreeNode( Map<Element, 
