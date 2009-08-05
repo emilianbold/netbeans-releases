@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -109,8 +110,9 @@ public class JsfHtmlExtension extends HtmlExtension {
             inputAttributes = new InputAttributes();
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
-        if (inputAttributes.getValue(LanguagePath.get(XhtmlElTokenId.language()), EL_ENABLED_KEY) == null) {
-            inputAttributes.setValue(XhtmlElTokenId.language(), EL_ENABLED_KEY, new Object(), false);
+        Language xhtmlLang = Language.find("text/xhtml"); //NOI18N
+        if (inputAttributes.getValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY) == null) {
+            inputAttributes.setValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY, new Object(), false);
 
             //refresh token hierarchy so the EL becomes lexed
             recolor(doc);
