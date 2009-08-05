@@ -145,8 +145,8 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                     false,
                                     new ActionListener() {
 
-                                        public void actionPerformed(ActionEvent arg0) {
-                                            if (arg0.getSource().equals(NotifyDescriptor.OK_OPTION)) {
+                                        public void actionPerformed(ActionEvent event) {
+                                            if (event.getSource().equals(NotifyDescriptor.OK_OPTION)) {
                                                 // write the data back to the server
                                                 GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
                                                 if (commonSupport != null) {
