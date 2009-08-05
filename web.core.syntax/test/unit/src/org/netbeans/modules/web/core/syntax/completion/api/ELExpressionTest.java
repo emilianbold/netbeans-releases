@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.completion;
+package org.netbeans.modules.web.core.syntax.completion.api;
 
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
