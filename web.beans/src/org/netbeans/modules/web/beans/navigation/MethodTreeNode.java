@@ -40,8 +40,11 @@
  */
 package org.netbeans.modules.web.beans.navigation;
 
+import java.util.List;
+
 import javax.lang.model.element.ExecutableElement;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -52,10 +55,48 @@ import org.openide.filesystems.FileObject;
  */
 class MethodTreeNode extends InjectableTreeNode<ExecutableElement> {
 
+    private static final long serialVersionUID = -137177182006814794L;
+
     MethodTreeNode( FileObject fileObject, ExecutableElement element,
             CompilationInfo compilationInfo )
     {
         super(fileObject, element, compilationInfo);
+    }
+
+    boolean isOverridden( int index,
+            List<ExecutableElement> overriddenMethods, 
+            CompilationController controller )
+    {
+        ExecutableElement exec = getElementHandle().resolve(controller);
+        if ( exec == null ){
+            return true;
+        }
+        int execIndex = overriddenMethods.indexOf( exec );
+        if ( execIndex == -1){
+            return true;
+        }
+        return index < execIndex ;
+    }
+
+    boolean overridesMethod( ExecutableElement element,
+            CompilationController controller )
+    {
+        ExecutableElement exec = getElementHandle().resolve(controller);
+        if ( exec == null ){
+            return false;
+        }
+        ExecutableElement overriddenMethod = exec;
+        while ( true ){
+            overriddenMethod = 
+                controller.getElementUtilities().getOverriddenMethod(overriddenMethod);
+            if ( overriddenMethod == null ){
+                break;
+            }
+            if ( overriddenMethod.equals( element )){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
