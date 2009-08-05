@@ -37,10 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.completion;
+package org.netbeans.modules.web.core.syntax.completion.api;
 
-import org.junit.Test;
-import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem.ELBean;
 import org.netbeans.test.web.core.syntax.TestBase;
 
 /**
@@ -54,7 +52,7 @@ public class JspCompletionItemTest extends TestBase {
     }
 
     public void testELBeanType() {
-        ELBean elb = new ElCompletionItem.ELBean(null, 0, "Collection");
+        ElCompletionItem.ELBean elb = new ElCompletionItem.ELBean(null, 0, "Collection");
         assertEquals("Collection", elb.getRightHtmlText());
 
         elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection");

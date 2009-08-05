@@ -353,17 +353,27 @@ public class MercurialInterceptor extends VCSInterceptor {
         refreshTask.schedule(delayMillis);
     }
 
+    /**
+     * Checks if dirstate for a repository with the file is registered.
+     * If it is not yet registered, this creates a fileobject for the dirstate and keeps a reference to it.
+     * @param file
+     */
     void pingRepositoryRootFor(final File file) {
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
+                // select repository root for the file and finds it's dirstate file
                 File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if (repositoryRoot != null) {
                     File dirstate = new File(new File(repositoryRoot, ".hg"), "dirstate"); //NOI18N
                     FileObject fo = FileUtil.toFileObject(dirstate);
                     synchronized (dirStates) {
                         if (!dirStates.contains(fo)) {
+                            // this means the repository has not yet been scanned, so scan it
+                            Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath());
                             reScheduleRefresh(2000, repositoryRoot); // the whole clone
                             if (fo != null && fo.isValid() && fo.isData()) {
+                                // however there might be NO dirstate file, especially for just initialized repositories
+                                // so keep the reference only for existing and valid dirstate files
                                 dirStates.add(fo);
                             }
                         }
