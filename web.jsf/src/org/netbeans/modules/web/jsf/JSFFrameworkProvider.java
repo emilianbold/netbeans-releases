@@ -181,7 +181,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
-            FileObject welcomeFile = webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"); //NOI18N
+            FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
+                                                                webModule.getDocumentBase().getFileObject(WELCOME_JSF);
             if (welcomeFile != null) {
                 result.add(welcomeFile);
             }
@@ -477,16 +478,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
-                        welcomeFiles.addWelcomeFile(FORWARD_JSF);
-                        if (canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) {
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
-                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
-                                content = content.replaceAll("__ENCODING__", encoding.name());
-                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, encoding.name());  //NOI18N
-                        }
-//                        welcomeFiles.addWelcomeFile("forward.jsp"); //NOI18N
+                          welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
                     }
                     ddRoot.write(dd);                    
                     
@@ -607,12 +599,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
                 }
-//                if (webModule.getDocumentBase().getFileObject("forward.jsp") == null) {
-//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + "forward.jsp");
-//                    content = readResource(is, encoding.name());
-//                    target = FileUtil.createData(webModule.getDocumentBase(), "forward.jsp");//NOI18N
-//                    createFile(target, content, encoding.name());
-//                }
                 if (webModule.getDocumentBase().getFileObject(CSS_FOLDER+File.separator+DEFAULT_CSS) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
                     .getResourceAsStream(baseFolder + DEFAULT_CSS);  

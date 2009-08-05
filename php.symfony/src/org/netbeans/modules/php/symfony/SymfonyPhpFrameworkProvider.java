@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
+import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -117,5 +118,10 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule) {
         return new SymfonyPhpModuleVisibilityExtender(phpModule);
+    }
+
+    @Override
+    public SymfonyCommandSupport createFrameworkCommandSupport(PhpModule phpModule) {
+        return new SymfonyCommandSupport(phpModule);
     }
 }

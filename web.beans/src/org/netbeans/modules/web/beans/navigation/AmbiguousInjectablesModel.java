@@ -44,83 +44,73 @@ package org.netbeans.modules.web.beans.navigation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Types;
-import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
-import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * @author ads
  */
 public final class AmbiguousInjectablesModel extends DefaultTreeModel {
     
-    private static final Logger LOG = Logger.getLogger(AmbiguousInjectablesModel.class.getName());
+    private static final long serialVersionUID = -6845959436250662000L;
+
+    private static final Logger LOG = Logger.getLogger(
+            AmbiguousInjectablesModel.class.getName());
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
     static ElementHandle<?>[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
 
-    /**
-     * Holds value of property pattern.
-     */
-    private ElementHandle<?>[] elementHandles;
-
     public AmbiguousInjectablesModel(Collection<Element> elements, 
-            CompilationController controller ) 
+            CompilationController controller ,MetadataModel<WebBeansModel> model ) 
     {
         super(null);
 
-        //if ((elements == null) || (elements.length == 0)) {
-            elementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
-        /*} else {
-            List<ElementHandle<?>> elementHandlesList = new ArrayList<ElementHandle<?>>(elements.length);
+        myModel = model;
+        if (elements.size() == 0 ) {
+            myElementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
+        } else {
+            List<ElementHandle<?>> elementHandlesList = 
+                new ArrayList<ElementHandle<?>>(elements.size());
 
             for (Element el : elements) {
                 elementHandlesList.add(ElementHandle.create(el));
             }
 
-            elementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
+            myElementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
         }
 
-        update(elements, controller );*/
+        update(elements , controller );
     }
     
-    public void update() {
-        update(elementHandles);
+    void update() {
+        update(myElementHandles);
+    }
+
+    void fireTreeNodesChanged() {
+        super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), 
+                null, null);
     }
 
     private void update(final ElementHandle<?>[] elementHandles) {
@@ -128,375 +118,175 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             return;
         }
 
-        /* TODO :
-         * JavaSource javaSource = JavaSource.forFileObject(fileObject);
-
-        if (javaSource != null) {
             try {
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-                        public void run(
-                            CompilationController compilationController)
-                            throws Exception {
-                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-
-                            List<Element> elementsList = new ArrayList<Element>(elementHandles.length);
+                getModel().runReadAction(new MetadataModelAction<WebBeansModel, Void>() {
+                        public Void run( WebBeansModel model ){
+                            List<Element> elementsList = new ArrayList<Element>(
+                                    elementHandles.length);
 
                             for (ElementHandle<?> elementHandle : elementHandles) {
-                                final Element element = elementHandle.resolve(compilationController);
+                                final Element element = elementHandle.resolve(
+                                        model.getCompilationController());
                                 if (element != null) {
                                     elementsList.add(element);
                                 }
                                 else {
-                                    LOG.warning(elementHandle.toString()+" cannot be resolved using: " +compilationController.getClasspathInfo());
+                                    LOG.warning(elementHandle.toString()+
+                                            " cannot be resolved using: " 
+                                            +model.getCompilationController().
+                                            getClasspathInfo());
                                 }
                             }
 
-                            Element[] elements = elementsList.toArray(EMPTY_ELEMENTS_ARRAY);
-                            update(elements, compilationController);
+                            update(elementsList, model.getCompilationController());
+                            return null;
                         }
-                    }, true);
+                    });
 
                 return;
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            } 
+            catch (MetadataModelException e ){
+                LOG.log(Level.WARNING, e.getMessage(), e);
             }
-        }*/
+            catch (IOException e ){
+                LOG.log(Level.WARNING, e.getMessage(), e);
+            }
     }
 
-    private void update(final Element[] elements,
-        CompilationInfo compilationInfo) {
-        if ((elements == null) || (elements.length == 0)) {
+    private void update(final Collection<Element> elements, 
+            CompilationController controller) 
+    {
+        if (elements.size()==0 ) {
             return;
         }
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        Map<Element, InjectableTreeNode<? extends Element>> elementMap= 
+            new LinkedHashMap<Element, InjectableTreeNode<? extends Element>>();
 
         for (Element element : elements) {
-            if ((element.getKind() == ElementKind.CLASS) ||
-                    (element.getKind() == ElementKind.INTERFACE) ||
-                    (element.getKind() == ElementKind.ENUM) ||
-                    (element.getKind() == ElementKind.ANNOTATION_TYPE)) 
-            {
-                    Types types = compilationInfo.getTypes();
-                    TypeElement typeElement = ((TypeElement) element);
-                    List<TypeElement> superClasses = new ArrayList<TypeElement>();
-                    superClasses.add(typeElement);
-
-                    TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
-                    while (superClass != null) {
-                        superClasses.add(0, superClass);
-                        superClass = (TypeElement) types.asElement(superClass.getSuperclass());;
-                    }
-                    DefaultMutableTreeNode parent = root;
-                    for(TypeElement superTypeElement:superClasses) {
-                        FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superTypeElement), compilationInfo.getClasspathInfo());
-                        DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, null, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
-                        parent.insert(child, 0);
-                        parent = child;
-                }
+            FileObject fileObject = SourceUtils.getFile(
+                    ElementHandle.create(element), controller.getClasspathInfo());
+            if (element instanceof TypeElement) {
+                // Type declaration 
+                TypeTreeNode node = new TypeTreeNode(fileObject, 
+                        (TypeElement)element, controller); 
+                insertTreeNode( elementMap , (TypeElement)element, node , 
+                        root , controller);
+            }
+            else if ( element instanceof ExecutableElement ){
+                // Method definition
+                MethodTreeNode node = new MethodTreeNode(fileObject, 
+                        (ExecutableElement)element, controller);
+                insertTreeNode( elementMap , (ExecutableElement)element , 
+                        node , root , controller);
+            }
+            else  {
+                // Should be produces field.
+                InjectableTreeNode<Element> node = 
+                    new InjectableTreeNode<Element>(fileObject, element,  
+                            controller);
+                insertTreeNode( elementMap , node , root );
             }
         }
 
         setRoot(root);
     }
+    
+    private void insertTreeNode( Map<Element, 
+            InjectableTreeNode<? extends Element>> elementMap,TypeElement element , 
+            TypeTreeNode node, DefaultMutableTreeNode root ,
+            CompilationController controller)
+    {
+        TypeTreeNode parent = null;
+        
+        for( Entry<Element, InjectableTreeNode<? extends Element>> entry : 
+                elementMap.entrySet())
+        {
+            Element key = entry.getKey();
+            if ( !( key instanceof TypeElement )){
+                continue;
+            }
+            TypeTreeNode injectableNode = (TypeTreeNode)entry.getValue();
+            TypeElement typeElement = injectableNode.getElementHandle().
+                resolve(controller);
+            if (typeElement == null ){
+                continue;
+            }
+            if ( controller.getTypes().isAssignable( element.asType(), 
+                    typeElement.asType()))
+            {
+                if ( parent == null ){
+                    parent = injectableNode;
+                }
+                else {
+                    TypeElement parentElement = parent.getElementHandle().
+                        resolve( controller );
+                    if ( parentElement == null || 
+                            controller.getTypes().isAssignable( 
+                                    typeElement.asType(), parentElement.asType()))
+                    {
+                        parent = injectableNode;
+                    }
+                }
+            }
+        }
+        
+        DefaultMutableTreeNode parentNode = parent;
+        
+        if ( parentNode == null ){
+            parentNode = root;
+        }
+        Enumeration children = parentNode.children();
+        List<TypeTreeNode> movedChildren = new LinkedList<TypeTreeNode>();
+        while (children.hasMoreElements()) {
+            TypeTreeNode childNode = (TypeTreeNode) children.nextElement();
+            ElementHandle<TypeElement> elementHandle = childNode
+                    .getElementHandle();
+            TypeElement child = elementHandle.resolve(controller);
+            if (child == null) {
+                continue;
+            }
+            if (controller.getTypes().isAssignable(child.asType(),
+                    element.asType()))
+            {
+                movedChildren.add(childNode);
+            }
+        }
 
-    void fireTreeNodesChanged() {
-        super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
+        for (TypeTreeNode typeTreeNode : movedChildren) {
+            parentNode.remove(typeTreeNode);
+            node.add(typeTreeNode);
+        }
+        parentNode.add(node);
+        elementMap.put(element, node);
     }
     
-    private abstract class AbstractHierarchyTreeNode
-        extends DefaultMutableTreeNode implements JavaElement {
-        private FileObject fileObject;
-        private ElementHandle<?extends Element> elementHandle;
-        private ElementKind elementKind;
-        private Set<Modifier> modifiers;
-        private String name = "";
-        private String label = "";
-        private String FQNlabel = "";
-        private String tooltip = null;
-        private Icon icon = null;
-        private ElementJavadoc javaDoc = null;
-        private final ClasspathInfo cpInfo;
-
-        private boolean loaded = false;
-
-        AbstractHierarchyTreeNode(FileObject fileObject,
-            Element element, CompilationInfo compilationInfo, final AbstractHierarchyTreeNode owner, boolean lazyLoadChildren) {
-            this.fileObject = fileObject;
-            this.elementHandle = ElementHandle.create(element);
-            this.elementKind = element.getKind();
-            this.modifiers = element.getModifiers();
-            this.cpInfo = compilationInfo.getClasspathInfo();
-
-            setName(element.getSimpleName().toString());
-            setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
-            /*
-             TODO
-             setLabel(Utils.format(element));
-            setFQNLabel(Utils.format(element, false, true));
-            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));            
-             */
-            if (!lazyLoadChildren) {
-                try {
-                    loadChildren(element, compilationInfo);
-                } finally {
-                    loaded = true;
-                }
-            }
-        }
-
-        @Override
-        public int getChildCount() {
-            if (!loaded) {
-                try {
-                    loadChildren();
-                } finally {
-                    loaded = true;
-                }
-            }
-            return super.getChildCount();
-        }
-
-        public FileObject getFileObject() {
-            return fileObject;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Set<Modifier> getModifiers() {
-            return modifiers;
-        }
+    private void insertTreeNode( Map<Element, 
+            InjectableTreeNode<? extends Element>> elementMap,
+            ExecutableElement element , MethodTreeNode node, 
+            DefaultMutableTreeNode root , CompilationController controller)
+    {
+        ExecutableElement parent = null;
+        // TODO Auto-generated method stub
         
-        public ElementKind getElementKind() {
-            return elementKind;
+        if ( parent == null ){
+            root.add( node );
         }
-        
-        protected void setName(String name) {
-            this.name = name;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public String getFQNLabel() {
-            return FQNlabel;
-        }
-
-        public String getTooltip() {
-            return tooltip;
-        }
-
-        public Icon getIcon() {
-            return icon;
-        }
-
-        protected void setIcon(Icon icon) {
-            this.icon = icon;
-        }
-
-        public ElementJavadoc getJavaDoc() {
-            if (javaDoc == null) {
-                if (fileObject == null) {
-                    // Probably no source filem - so cannot get Javadoc
-                    return null;
-                }
-                
-                JavaSource javaSource = JavaSource.forFileObject(fileObject);
-
-                if (javaSource != null) {
-                    try {
-                        javaSource.runUserActionTask(new Task<CompilationController>() {
-                                public void run(
-                                    CompilationController compilationController)
-                                    throws Exception {
-                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    Element element = elementHandle.resolve(compilationController);
-                                    setJavaDoc(ElementJavadoc.create(compilationController, element));
-                                }
-                            }, true);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                }
-            }
-            return javaDoc;
-        }
-
-        protected void setJavaDoc(ElementJavadoc javaDoc) {
-            this.javaDoc = javaDoc;
-        }
-
-        public ElementHandle<?> getElementHandle() {
-            return elementHandle;
-        }
-
-        public void gotoElement() {
-            openElementHandle();
-        }
-
-        protected void loadChildren() {
-            JavaSource javaSource = JavaSource.create(cpInfo);
-            if (javaSource != null) {
-                try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                            public void run(CompilationController compilationController)
-                                throws Exception {
-                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-
-                                Element element = elementHandle.resolve(compilationController);
-                                if (element instanceof TypeElement && ((TypeElement)element).getQualifiedName().toString().equals(Object.class.getName())) {
-                                } else {
-                                    loadChildren(element, compilationController);
-                                }
-                            }
-                        }, true);
-
-                    return;
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-        }
-
-        protected abstract void loadChildren(Element element,
-            CompilationInfo compilationInfo);
-
-        public String toString() {
-            return (WebBeansNavigationOptions.isShowFQN()? getFQNLabel() : getLabel());
-        }
-
-        protected void openElementHandle() {
-        	if (fileObject == null) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(AmbiguousInjectablesModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
-                return;
-            }
-        	
-            if (elementHandle == null) {
-                return;
-            }
-
-            if (!ElementOpen.open(cpInfo, elementHandle)) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(AmbiguousInjectablesModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
-            }
-        }
-
+        elementMap.put( element, node  );
+    }
+    
+    private void insertTreeNode( Map<Element, 
+            InjectableTreeNode<? extends Element>> elementMap,
+            InjectableTreeNode<Element> node, DefaultMutableTreeNode root )
+    {
+        root.add( node );
     }
 
-    private class SimpleTypeTreeNode extends AbstractHierarchyTreeNode {
-        private boolean inSuperClassRole;
-
-        SimpleTypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner) {
-            this(fileObject, typeElement, compilationInfo, owner, false);
-        }
-
-        SimpleTypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo, owner, inSuperClassRole);
-            this.inSuperClassRole = inSuperClassRole;
-        }
-
-        public boolean isLeaf() {
-            return false;
-        }
-
-        protected void loadChildren(Element element,
-                    CompilationInfo compilationInfo) {
-            if (inSuperClassRole) {
-                return;
-            }
-
-            TypeElement typeElement = (TypeElement) element;
-            // prevent showing sub classes of java.lang.Object
-            if (typeElement.getQualifiedName().toString().equals(Object.class.getName())) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(AmbiguousInjectablesModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
-                return;
-            }
-
-            // Get open projects
-            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-            if (openProjects == null) {
-                return;
-            }
-            Set<ElementHandle<TypeElement>> processedImplementorElementHandles = new LinkedHashSet<ElementHandle<TypeElement>>();
-            
-            ElementHandle<TypeElement> typeElementHandle = ElementHandle.create(typeElement);
-
-            final int[] index = new int[] {0};
-            // Walk through open projects
-            for (Project project : openProjects) {
-                // Get Sources
-                Collection<? extends Sources> sourcess = project.getLookup().lookupAll(Sources.class);
-                if (sourcess == null) {
-                    continue;
-                }
-                
-                // Walk through sources
-                for (Sources sources : sourcess) {
-                    // Get Source groups of type java
-                    SourceGroup[] sourceGroups = sources.getSourceGroups("java");
-                    if (sourceGroups == null) {
-                        continue;
-                    }
-                    
-                    // Walk through source groups
-                    for (SourceGroup sourceGroup : sourceGroups) {
-                        // Get root file object
-                        FileObject rootFileObject = sourceGroup.getRootFolder();
-                        if (rootFileObject == null) {
-                            continue;
-                        }
-                        
-                        // Find implementors
-                        ClassPath classPath =ClassPathSupport.createClassPath(new FileObject[] {rootFileObject});                        
-                        ClassPath bootClassPath =ClassPath.getClassPath(rootFileObject, ClassPath.BOOT);
-                        ClassPath compileClassPath =ClassPath.getClassPath(rootFileObject, ClassPath.COMPILE);                            
-                        if (classPath != null) {                            
-                            ClasspathInfo classpathInfo = ClasspathInfo.create(bootClassPath, compileClassPath, classPath);
-                            if (classpathInfo != null) {
-                                ClassIndex classIndex = classpathInfo.getClassIndex();
-                                if (classIndex != null) {
-                                    Set<ElementHandle<TypeElement>> implementors = classIndex.getElements(typeElementHandle,
-                                            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                                            EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
-                                    for (ElementHandle<TypeElement> implementorElementHandle: implementors) {
-                                        if (processedImplementorElementHandles.contains(implementorElementHandle)) {
-                                            continue;
-                                        }
-                                        processedImplementorElementHandles.add(implementorElementHandle);
-                                        final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
-                                        final FileObject implementorfileObject = 
-                                            SourceUtils.getFile(implementorElementHandle, classpathInfo);
-                                        if (implementorfileObject == null) {
-                                            continue;
-                                        }
-                                        JavaSource javaSource = JavaSource.forFileObject(implementorfileObject);
-                                        if (javaSource != null) {
-                                            try {
-                                                javaSource.runUserActionTask(new Task<CompilationController>() {
-                                                        public void run(CompilationController compilationController)
-                                                            throws Exception {
-                                                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                                                            Element implementor = finalImplementorElementHandle.resolve(compilationController);
-                                                            if (implementor instanceof TypeElement && ((TypeElement)implementor).getNestingKind() != NestingKind.ANONYMOUS) {
-                                                                insert(new SimpleTypeTreeNode(implementorfileObject, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
-                                                            }
-                                                        }
-                                                    }, true);
-                                            } catch (IOException ioe) {
-                                                Exceptions.printStackTrace(ioe);
-                                            }
-                                        }                                       
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    private MetadataModel<WebBeansModel> getModel(){
+        return myModel;
     }
+    
+    private ElementHandle<?>[] myElementHandles;
+    private MetadataModel<WebBeansModel> myModel;
 }

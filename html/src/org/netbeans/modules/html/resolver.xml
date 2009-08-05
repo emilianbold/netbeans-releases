@@ -44,17 +44,20 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="xml"/>
-        <resolver mime="application/xhtml+xml">
+        <resolver mime="text/xhtml">
             <xml-rule>
-                <element name="html" ns="http://www.w3.org/1999/xhtml"/>
+                <element ns="http://www.w3.org/1999/xhtml"/>
             </xml-rule>
         </resolver>
+    </file>
+    <file>
+        <ext name="xhtml"/>
+        <resolver mime="text/xhtml"/>
     </file>
     <file>
         <ext name="html"/>
         <ext name="htm"/>
         <ext name="shtml"/>
-        <ext name="xhtml"/>
         <resolver mime="text/html"/>
     </file>
 </MIME-resolver>

@@ -65,8 +65,6 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
-import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -184,27 +182,6 @@ public final class Utils {
         }
     }
 
-    // input can be with parameters e.g. "/usr/bin/php -q"
-    public static String validatePhpInterpreter(String command) {
-        assert command != null;
-        if (command.trim().length() == 0) {
-            return NbBundle.getMessage(Utils.class, "MSG_NoPhpInterpreter");
-        }
-
-        PhpInterpreter phpInterpreter = new PhpInterpreter(command);
-        File file = new File(phpInterpreter.getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterCannotRead");
-        }
-        return null;
-    }
-
     public static void browsePhpUnit(Component parent, JTextField textField) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
@@ -215,26 +192,6 @@ public final class Utils {
             LastUsedFolders.setOptionsPhpUnit(phpUnit);
             textField.setText(phpUnit.getAbsolutePath());
         }
-    }
-
-    // input can be with parameters e.g. "/usr/bin/phpunit  --repeat 3"
-    public static String validatePhpUnit(String command) {
-        if (command == null || command.trim().length() == 0) {
-            return NbBundle.getMessage(Utils.class, "MSG_NoPhpUnit");
-        }
-
-        PhpUnit phpUnit = new PhpUnit(command);
-        File file = new File(phpUnit.getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitCannotRead");
-        }
-        return null;
     }
 
     public static void browseTestSources(JTextField textField, PhpProject phpProject) {

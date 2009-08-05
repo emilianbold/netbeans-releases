@@ -124,6 +124,12 @@ public final class J2eePlatform {
     public static final String TOOL_WSCOMPILE   = "wscompile";  // NOI18N
 
     /**
+     * Constant for the embedabble EJB (Java EE 6).
+     * @since 1.60
+     */
+    public static final String TOOL_EMBEDABBLE_EJB   = "embedabbleejb";  // NOI18N
+
+    /**
      * Constant for the WSIMPORT tool.
      * @since 1.16
      */
@@ -596,6 +602,11 @@ public final class J2eePlatform {
         content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH), contentItem);
+
+        contentItem = new  ArrayList<URI>();
+        content.put(ServerLibraryTypeProvider.VOLUME_EMBEDABBLE_EJB_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName,
+                getToolClasspathEntries(TOOL_EMBEDABBLE_EJB), contentItem);
 
         contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_COMPILE_CLASSPATH, contentItem);

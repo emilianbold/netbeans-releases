@@ -1768,7 +1768,7 @@ public class FormUtils
     }
 
     // helper method for getBeanInfo(Class)
-    private static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
+    static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
         if (mode == Introspector.IGNORE_IMMEDIATE_BEANINFO) {
             try {
                 return Introspector.getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);

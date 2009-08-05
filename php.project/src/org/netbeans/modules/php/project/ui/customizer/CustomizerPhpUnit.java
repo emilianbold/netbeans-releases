@@ -117,7 +117,7 @@ public class CustomizerPhpUnit extends JPanel {
         }
         String configuration = ""; // NOI18N
         if (configurationCheckBox.isSelected()) {
-            configuration = getValidFile(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_Configuration"), configurationTextField);
+            configuration = getValidFile(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_XmlConfiguration"), configurationTextField);
             if (configuration == null) {
                 return;
             }

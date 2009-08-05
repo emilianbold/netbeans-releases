@@ -211,8 +211,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(3);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        public ArrayListImpl(int arg0) {\n" + 
-                "            super(arg0);\n" + 
+                "        public ArrayListImpl(int i) {\n" +
+                "            super(i);\n" +
                 "        }\n" + 
                 "    }\n" +
                 "}\n");
@@ -235,8 +235,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(i);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        public ArrayListImpl(int arg0) {\n" + 
-                "            super(arg0);\n" + 
+                "        public ArrayListImpl(int i) {\n" +
+                "            super(i);\n" +
                 "        }\n" + 
                 "    }\n" +
                 "}\n");
@@ -259,8 +259,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(i);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        public ArrayListImpl(int arg0) {\n" + 
-                "            super(arg0);\n" + 
+                "        public ArrayListImpl(int i) {\n" +
+                "            super(i);\n" +
                 "        }\n" + 
                 "    }\n" +
                 "}\n");
@@ -284,8 +284,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(l);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList<CharSequence> {\n" +
-                "        public ArrayListImpl(Collection<? extends CharSequence> arg0) {\n" + 
-                "            super(arg0);\n" + 
+                "        public ArrayListImpl(Collection<? extends CharSequence> clctn) {\n" +
+                "            super(clctn);\n" +
                 "        }\n" + 
                 "    }\n" +
                 "}\n");

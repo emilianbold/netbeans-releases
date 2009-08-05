@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -100,11 +101,14 @@ final class GeneralAction {
     }
     
     public static ContextAwareAction context(Map map) {
-        ContextSelection sel = readSelection(map.get("selectionType")); // NOI18N
         Class<?> dataType = readClass(map.get("type")); // NOI18N
-        Performer perf = new Performer(map);
+        return _context(map, dataType);
+    }
+    private static <T> ContextAwareAction _context(Map map, Class<T> dataType) {
+        ContextSelection sel = readSelection(map.get("selectionType")); // NOI18N
+        Performer<T> perf = new Performer<T>(map);
         boolean survive = Boolean.TRUE.equals(map.get("surviveFocusChange")); // NOI18N
-        ContextAwareAction cAction = new ContextAction(
+        ContextAwareAction cAction = new ContextAction<T>(
             perf, sel, Utilities.actionsGlobalContext(), dataType, survive
         );
         return new DelegateAction(map, cAction);
@@ -141,10 +145,6 @@ final class GeneralAction {
     }
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
         return AlwaysEnabledAction.extractCommonAttribute(fo, action, name);
-    }
-
-    private static String localizedName(Map fo) {
-        return (String) fo.get("displayName");
     }
 
     public Logger getLOG() {
@@ -245,10 +245,19 @@ final class GeneralAction {
             }
         }
 
-        public void putValue(String key, Object o) {
+        private Map<String,Object> attrs;
+
+        public void putValue(String key, Object value) {
+            if (attrs == null) {
+                attrs = new HashMap<String,Object>();
+            }
+            attrs.put(key, value);
         }
 
         public Object getValue(String key) {
+            if (attrs != null && attrs.containsKey(key)) {
+                return attrs.get(key);
+            }
             Object ret = GeneralAction.extractCommonAttribute(map, this, key);
             if (ret != null) {
                 return ret;
@@ -305,7 +314,7 @@ final class GeneralAction {
                     sup = support;
                 }
                 if (sup != null) {
-                    sup.firePropertyChange("enabled", null, null); // NOI18N
+                    sup.firePropertyChange("enabled", evt.getOldValue(), evt.getNewValue()); // NOI18N
                 }
             }
         }

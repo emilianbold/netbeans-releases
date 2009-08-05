@@ -123,7 +123,8 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     HtmlEditorSupport(HtmlDataObject obj) {
         super(obj, new Environment(obj));
         
-        setMIMEType("text/html"); // NOI18N
+        //set the FileObject's mimetype - text/html or text/xhtml
+        setMIMEType(obj.getPrimaryFile().getMIMEType());
     }
     
     @Override 

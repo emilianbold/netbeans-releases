@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;

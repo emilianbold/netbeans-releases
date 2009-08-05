@@ -61,8 +61,11 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference.EjbRefIType;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
@@ -97,19 +100,20 @@ public class CallEjbGenerator {
     private final boolean isDefaultRefName;
     private final boolean isSimplified;
     private final boolean isSession;
+    private String ejbName;
 
     private CallEjbGenerator(final EjbReference ejbReference, String ejbReferenceName, boolean isDefaultRefName) {
         
         this.ejbReference = ejbReference;
-        final boolean[] iofSession = new boolean[] { false };
-        BigDecimal version = null;
+        Object[] result = new Object[]{Boolean.FALSE, null, null};
         try {
             MetadataModel<EjbJarMetadata> metadataModel = ejbReference.getEjbModule().getMetadataModel();
-            version = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
-                public BigDecimal run(EjbJarMetadata metadata) throws Exception {
+            result = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Object[]>() {
+                public Object[] run(EjbJarMetadata metadata) throws Exception {
                     Ejb ejb = metadata.findByEjbClass(ejbReference.getEjbClass());
-                    iofSession[0] = ejb instanceof Session;
-                    return metadata.getRoot().getVersion();
+                    return new Object[]{ejb instanceof Session,
+                                        metadata.getRoot().getVersion(),
+                                        ejb.getEjbName()};
                 }
             });
         } catch (IOException ioe) {
@@ -117,9 +121,9 @@ public class CallEjbGenerator {
         }
         this.ejbReferenceName = ejbReferenceName;
         this.isDefaultRefName = isDefaultRefName;
-        this.isSimplified = version == null ? true : (version.doubleValue() > 2.1);
-        this.isSession = iofSession[0];
-        
+        this.isSimplified = result[1] == null ? true : (((BigDecimal)result[1]).doubleValue() > 2.1);
+        this.isSession = (Boolean)result[0];
+        this.ejbName = (String)result[2];
     }
     
     /**
@@ -165,7 +169,8 @@ public class CallEjbGenerator {
             }
         }
         if (serviceLocator == null) {
-            result = generateReferenceCode(referencingFO, referencingClassName, refIType, throwExceptions, !nodeProjectIsJavaEE5);
+            boolean isEE6 = J2eeProjectCapabilities.forProject(enterpriseProject).isEjb31LiteSupported();
+            result = generateReferenceCode(referencingFO, referencingClassName, refIType, throwExceptions, !nodeProjectIsJavaEE5, isEE6, nodeProject);
         } else {
             result = generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, refIType, throwExceptions);
         }
@@ -223,13 +228,14 @@ public class CallEjbGenerator {
             String className,
             EjbReference.EjbRefIType refIType,
             boolean throwExceptions,
-            boolean isTargetEjb2x) {
+            boolean isTargetEjb2x,
+            boolean generateGlobalJNDI,
+            Project ejbProject) {
         
         ElementHandle<? extends Element> result = null;
         
         try {
-            boolean isInjectionTarget = InjectionTargetQuery.isInjectionTarget(fileObject, className);
-            if (isInjectionTarget) {
+            if (!generateGlobalJNDI && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
                 if (isTargetEjb2x) {
                     result = generateInjectionEjb21FromEE5(
                             fileObject,
@@ -248,10 +254,10 @@ public class CallEjbGenerator {
                 result = generateJNDI(
                         fileObject, 
                         className, 
-                        ejbReference.getHomeName(refIType),
-                        ejbReference.getComponentName(refIType),
                         throwExceptions,
-                        refIType != refIType.REMOTE
+                        refIType,
+                        generateGlobalJNDI,
+                        ejbProject
                         );
             }
         } catch (IOException ioe) {
@@ -287,6 +293,16 @@ public class CallEjbGenerator {
     private static final String JNDI_LOOKUP_EJB3 =
             "javax.naming.Context c = new javax.naming.InitialContext();\n" +
             "return ({1}) c.lookup(\"java:comp/env/{0}\");\n";
+
+    /**
+     * Lookup code for EJB 3.1 beans in Java EE 6 environments.
+     * {0} - module name [<app name>/]<module name>
+     * {1} - bean name
+     * {2} - interface class
+     */
+    private static final String JNDI_LOOKUP_GLOBAL =
+            "javax.naming.Context c = new javax.naming.InitialContext();\n" +
+            "return ({2}) c.lookup(\"java:global/{0}/{1}!{2}\");\n";
     
     /**
      * Lookup code for EJB3 beans in Java SE environments.
@@ -383,17 +399,27 @@ public class CallEjbGenerator {
         return elementToOpen;
     }
     
-    private ElementHandle<ExecutableElement> generateJNDI(FileObject fileObject, final String className, String homeName, 
-            String componentName, boolean throwCheckedExceptions, boolean isLocal) throws IOException {
-        String name = "lookup" + ejbReferenceName.substring(ejbReferenceName.lastIndexOf('/') + 1);
+    private ElementHandle<ExecutableElement> generateJNDI(FileObject fileObject, final String className, 
+            boolean throwCheckedExceptions, EjbRefIType refIType, boolean global, Project ejbProject) throws IOException {
+        String name = "lookup" + ejbName + refIType;
         String body = null;
+        String componentName = ejbReference.getComponentName(refIType);
+        String homeName = ejbReference.getHomeName(refIType);
+        boolean isLocal = !refIType.equals(refIType.REMOTE);
         List<String> exceptions = new ArrayList<String>();
         boolean isTargetJavaSE = Utils.isTargetJavaSE(fileObject, className);
         String sessionCreate = "";
         if (isSession) {
             sessionCreate = ".create()";
         }
-        if (isSimplified && isTargetJavaSE){
+        if (global){
+            String moduleFullName = ProjectUtils.getInformation(ejbProject).getName();
+            Project project = FileOwnerQuery.getOwner(fileObject);
+            if (project != null && !project.equals(ejbProject)){
+                moduleFullName = ProjectUtils.getInformation(project).getName() + "/" + moduleFullName;
+            }
+            body = MessageFormat.format(JNDI_LOOKUP_GLOBAL, new Object[] {moduleFullName, ejbName, componentName});
+        } else if (isSimplified && isTargetJavaSE){
             body = MessageFormat.format(JNDI_LOOKUP_EJB3_JAVASE, new Object[] {ejbReference.getEjbClass(), componentName});
         } else if (isSimplified) {
             body = MessageFormat.format(JNDI_LOOKUP_EJB3, new Object[] {ejbReferenceName, componentName});
