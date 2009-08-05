@@ -284,7 +284,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // see IZ:165386, null in old value if update is from line translations
                 evt.getOldValue() != null) {
             revalidate();
-        } else if (pname.equals(GdbBreakpoint.PROP_FUNCTION_NAME) && state == State.VALIDATED) {
+        } else if (pname.equals(FunctionBreakpoint.PROP_FUNCTION_NAME) && state == State.VALIDATED) {
             revalidate();
         } else if (pname.equals(AddressBreakpoint.PROP_ADDRESS_VALUE) && state == State.VALIDATED) {
             revalidate();
