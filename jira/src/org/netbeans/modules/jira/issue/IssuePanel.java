@@ -1445,7 +1445,15 @@ public class IssuePanel extends javax.swing.JPanel {
 
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
-                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
+                        boolean subtask = issue.isSubtask();
+                        IssueType[] issueTypes = config.getIssueTypes(project);
+                        List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
+                        for (IssueType issueType : issueTypes) {
+                            if (issueType.isSubTaskType() == subtask) {
+                                types.add(issueType);
+                            }
+                        }
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(types.toArray(new IssueType[types.size()])));
                         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
 
                         // Reload components

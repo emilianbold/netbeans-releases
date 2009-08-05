@@ -502,6 +502,7 @@ public class Subversion {
 
         File original = null;
         try {
+            SvnClientFactory.checkClientAvailable();
             original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
@@ -509,6 +510,11 @@ public class Subversion {
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
+        } catch (SVNClientException ex) {
+            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file " + workingCopy.getAbsolutePath() + ")"); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
         } finally {
             if (original != null) {
                 try {
