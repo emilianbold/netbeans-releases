@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
@@ -60,11 +61,12 @@ import org.xml.sax.helpers.DefaultHandler;
 public final class PhpUnitLogParser extends DefaultHandler {
     enum Content { NONE, ERROR, FAILURE };
     private static final Logger LOGGER = Logger.getLogger(PhpUnitLogParser.class.getName());
+    private static final String NO_FILE = "NO_FILE"; // NOI18N
 
     private final XMLReader xmlReader;
     private final TestSessionVO testSession;
-    private TestSuiteVO testSuite; // actual test suite
-    private TestCaseVO testCase; // actual test case
+    private Stack<TestSuiteVO> testSuites = new Stack<TestSuiteVO>();
+    private TestCaseVO testCase;
     private String file; // actual file
     private Content content = Content.NONE;
     private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
@@ -83,8 +85,8 @@ public final class PhpUnitLogParser extends DefaultHandler {
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
             LOGGER.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            assert false;
+        } catch (Throwable ex) {
+            LOGGER.log(Level.WARNING, null, ex);
         } finally {
             try {
                 reader.close();
@@ -136,33 +138,31 @@ public final class PhpUnitLogParser extends DefaultHandler {
             // no active suite yet => set total/session info
             testSession.setTests(getTests(attributes));
             testSession.setTime(getTime(attributes));
+            file = getFile(attributes, NO_FILE);
+        } else {
+            file = getFile(attributes);
         }
+        assert file != null;
 
-        file = getFile(attributes);
-        if (file != null) {
-            testSuite = new TestSuiteVO(
-                    getName(attributes),
-                    file,
-                    getTime(attributes));
+        TestSuiteVO testSuite = new TestSuiteVO(getName(attributes), file, getTime(attributes));
+        testSuites.push(testSuite);
+        if (!file.equals(NO_FILE)) {
+            testSession.addTestSuite(testSuite);
         }
     }
 
     private void processTestSuiteEnd() {
-        if (testSuite != null) {
-            testSession.addTestSuite(testSuite);
-            testSuite = null;
-        }
+        testSuites.pop();
     }
 
     private void processTestCase(Attributes attributes) {
-        assert testSuite != null;
         assert testCase == null;
         testCase = new TestCaseVO(
                 getName(attributes),
                 getFile(attributes),
                 getLine(attributes),
                 getTime(attributes));
-        testSuite.addTestCase(testCase);
+        testSuites.lastElement().addTestCase(testCase);
     }
 
     private void startTestError(Attributes attributes) {
@@ -243,9 +243,16 @@ public final class PhpUnitLogParser extends DefaultHandler {
     }
 
     private String getFile(Attributes attributes) {
+        return getFile(attributes, null);
+    }
+
+    private String getFile(Attributes attributes, String defaultFile) {
         String f = attributes.getValue("file");
         if (f != null) {
             return f;
+        }
+        if (defaultFile != null) {
+            return defaultFile;
         }
         return file;
     }
