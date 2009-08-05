@@ -371,7 +371,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.html.editor</package>
                 <package>org.netbeans.modules.html.editor.completion</package>
                 <package>org.netbeans.modules.html.editor.gsf.api</package>
-                <package>org.netbeans.modules.html.editor.xhtml</package>
             </friend-packages>
         </data>
     </configuration>

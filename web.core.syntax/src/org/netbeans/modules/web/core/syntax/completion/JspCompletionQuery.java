@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
