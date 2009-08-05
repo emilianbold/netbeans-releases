@@ -127,7 +127,7 @@ public final class J2eePlatform {
      * Constant for the embedabble EJB (Java EE 6).
      * @since 1.60
      */
-    public static final String TOOL_EMBEDDABLE_EJB   = "embedabbleejb";  // NOI18N
+    public static final String TOOL_EMBEDDABLE_EJB   = "embeddableejb";  // NOI18N
 
     /**
      * Constant for the WSIMPORT tool.
