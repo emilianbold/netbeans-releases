@@ -40,7 +40,7 @@
 package org.netbeans.modules.java.source.usages;
 
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
-import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.tools.JavaFileObject;
@@ -51,9 +51,9 @@ import javax.tools.JavaFileObject;
  */
 public class ClassNamesForFileOraculumImpl implements ClassNamesForFileOraculum {
 
-    private final Map<URI, List<String>> misplacedSource2FQNs;
+    private final Map<JavaFileObject, List<String>> misplacedSource2FQNs;
 
-    public ClassNamesForFileOraculumImpl(Map<URI, List<String>> misplacedSource2FQNs) {
+    public ClassNamesForFileOraculumImpl(Map<JavaFileObject, List<String>> misplacedSource2FQNs) {
         this.misplacedSource2FQNs = misplacedSource2FQNs;
     }
     
@@ -62,14 +62,30 @@ public class ClassNamesForFileOraculumImpl implements ClassNamesForFileOraculum 
             return null;
         }
         
-        URI u = jfo.toUri();
-        List<String> result = misplacedSource2FQNs.get(u);
+        List<String> result = misplacedSource2FQNs.get(jfo);
         
         if (result != null) {
-            return result.toArray(new String[0]);
+            return result.toArray(new String[result.size()]);
         }
         
         return null;
     }
 
+    public JavaFileObject[] divineSources(String fqn) {
+        if (fqn == null || fqn.length() == 0 || misplacedSource2FQNs.isEmpty()) {
+            return null;
+        }
+
+        List<JavaFileObject> jfos = new LinkedList<JavaFileObject>();
+        for (Map.Entry<JavaFileObject, List<String>> entry : misplacedSource2FQNs.entrySet()) {
+            for (String s : entry.getValue()) {
+                if (s.startsWith(fqn)) {
+                    jfos.add(entry.getKey());
+                    break;
+                }
+            }
+        }
+        
+        return jfos.size() > 0 ? jfos.toArray(new JavaFileObject[jfos.size()]) : null;
+    }
 }
