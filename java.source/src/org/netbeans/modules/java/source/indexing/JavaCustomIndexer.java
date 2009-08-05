@@ -171,6 +171,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
+                            for (CompileTuple tuple : virtualSourceTuples) {
+                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                            }
                             toCompile.addAll(virtualSourceTuples);
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
