@@ -119,6 +119,8 @@ public class ContactList extends javax.swing.JPanel {
     }
 
     public void updateFilter() {
+        if (listModel.isEmpty())
+            return;
         if (filterCombo.getSelectedIndex()!=0) {
             oldFilter = (FilterItem) filterCombo.getSelectedItem();
             filterCombo.setSelectedIndex(0);
