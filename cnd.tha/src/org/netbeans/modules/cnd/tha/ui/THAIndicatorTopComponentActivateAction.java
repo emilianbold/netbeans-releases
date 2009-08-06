@@ -37,14 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.cnd.tha.ui;
 
-import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mt154047
  */
-interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(GizmoIndicatorsTopComponent source);
+public class THAIndicatorTopComponentActivateAction extends AbstractAction {
+
+     public THAIndicatorTopComponentActivateAction() {
+        super("activateRunMonitor");//NOI18N
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        //find and open VisualizerDispAction
+        THAIndicatorTopComponentRegsitry registry = THAIndicatorTopComponentRegsitry.getRegistry();
+        if (registry.getOpened() == null || registry.getOpened().size() == 0){
+            return;
+        }
+        TopComponent activatedTopComponent = registry.getActivated();
+        if (activatedTopComponent == null){
+            activatedTopComponent = registry.getOpened().iterator().next();
+        }
+        activatedTopComponent.requestActive();
+    }
+
 }

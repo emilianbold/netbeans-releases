@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha.actions;
+package org.netbeans.modules.cnd.tha.actions;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -46,7 +46,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.cnd.gizmo.tha.THAConfigurationImpl;
+import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.openide.awt.Actions.CheckboxMenuItem;
 import org.openide.awt.Actions.MenuItem;
 import org.openide.util.actions.Presenter;
