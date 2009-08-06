@@ -152,6 +152,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** document we work with */
     private StrongRef doc;
 
+    /** Lock used for access to <code>doc</code> variable. */
+    private final Object LOCK_STRONG_REF = new Object();
+    
     /** State of doc reference, it is set to true in prepareDocument when StrongRef is created
      * and set to false when document loading is finished. It helps to reset doc reference to weak just once. */
     private boolean isStrongSet = false;
@@ -545,9 +548,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterPrepareDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
-                                CloneableEditorSupport.this.doc.setStrong(false);
-                            }
+                            CloneableEditorSupport.this.setStrong(false, true);
                         }
                         task.removeTaskListener(this);
                     }
@@ -770,10 +771,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 if ((documentStatus == DOCUMENT_READY) || (documentStatus == DOCUMENT_LOADING) || (documentStatus == DOCUMENT_RELOADING)) {
                     counterOpenDocument++;
                     wasCounterIncremented = true;
-                    if (this.doc != null) {
-                        this.doc.setStrong(true);
-                        isStrongSet = true;
-                    }
+                    setStrong(true, true);
                 }
                 try {
                     counterOpenDocument++;
@@ -788,9 +786,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 }
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    if ((this.doc != null) && !isAlreadyModified()) {
-                        this.doc.setStrong(false);
-                    }
+                    setStrong(false, true);
                 }
             }
         }
@@ -888,10 +884,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     try {
                         counterGetDocument++;
-                        if (this.doc != null) {
-                            this.doc.setStrong(true);
-                            isStrongSet = true;
-                        }
+                        setStrong(true, true);
                         try {
                             doc = openDocumentCheckIOE();
                             return doc;
@@ -902,9 +895,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if ((this.doc != null) && !isAlreadyModified()) {
-                                this.doc.setStrong(false);
-                            }
+                            setStrong(false, true);
                         }
                     }
                 }
@@ -2486,9 +2477,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterOpenAtImpl--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
-                                CloneableEditorSupport.this.doc.setStrong(false);
-                            }
+                            CloneableEditorSupport.this.setStrong(false, true);
                         }
                     }
                 }
@@ -2539,25 +2528,44 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
 
         this.alreadyModified = alreadyModified;
-        if (this.doc != null) {
-            this.doc.setStrong(alreadyModified);
-        }
+        setStrong(alreadyModified, false);
     }
 
     private StyledDocument getDoc() {
-        StrongRef _doc = doc;
-        return _doc != null ? _doc.get() : null;
+        synchronized (LOCK_STRONG_REF) {
+            StrongRef _doc = doc;
+            return _doc != null ? _doc.get() : null;
+        }
     }
 
     private void setDoc(StyledDocument doc, boolean strong) {
-        if (doc == null) {
-            this.doc = null;
-            return;
+        synchronized (LOCK_STRONG_REF) {
+            if (doc == null) {
+                this.doc = null;
+                return;
+            }
+            this.doc = new StrongRef(doc, strong);
+            Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
         }
-        this.doc = new StrongRef(doc, strong);
-        Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
     }
 
+    private void setStrong (boolean strong, boolean setFlag) {
+        synchronized (LOCK_STRONG_REF) {
+            if (doc != null) {
+                if (strong) {
+                    doc.setStrong(true);
+                    if (setFlag) {
+                        isStrongSet = true;
+                    }
+                } else {
+                    if (!isAlreadyModified()) {
+                        doc.setStrong(false);
+                    }
+                }
+            }
+        }
+    }
+    
     private final class StrongRef extends WeakReference<StyledDocument> 
     implements Runnable {
         private StyledDocument doc;
