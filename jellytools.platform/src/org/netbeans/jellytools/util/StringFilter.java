@@ -158,7 +158,7 @@ public class StringFilter {
     }
     
     private static boolean isEmpty(String s) {
-        return s == "" || s == null;
+        return s == null || s.equals("");
     }
     
     /** Filters input string to a PrintStream.
@@ -181,7 +181,7 @@ public class StringFilter {
         }
     }
     
-    private class Pattern {
+    private static class Pattern {
         private String begin;
         private String end;
         private String replace;
