@@ -86,7 +86,7 @@ public class ProviderUtilTest extends NbTestCase {
     
 
     public void testSetTableGeneration1(){
-        Provider provider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider provider = ProviderUtil.ECLIPSELINK_PROVIDER;
         persistenceUnit1.setProvider(provider.getProviderClass());
         
         ProviderUtil.setTableGeneration(persistenceUnit1, Provider.TABLE_GENERATION_CREATE, provider);
@@ -115,7 +115,7 @@ public class ProviderUtilTest extends NbTestCase {
         ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit1.getProvider());
         
-        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider newProvider = ProviderUtil.ECLIPSELINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit1, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
         // assert that old providers properties were removed
         assertNoSuchProperty(persistenceUnit1, originalProvider.getTableGenerationPropertyName());
@@ -138,7 +138,7 @@ public class ProviderUtilTest extends NbTestCase {
         Provider originalProvider = ProviderUtil.KODO_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         
-        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider newProvider = ProviderUtil.ECLIPSELINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit1, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(newProvider.getTableGenerationPropertyName(),
                 ProviderUtil.getProperty(persistenceUnit1, newProvider.getTableGenerationPropertyName()).getName());
@@ -182,7 +182,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
 
     public void testSetTableGeneration2(){
-        Provider provider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider provider = ProviderUtil.ECLIPSELINK_PROVIDER;
         persistenceUnit2.setProvider(provider.getProviderClass());
 
         ProviderUtil.setTableGeneration(persistenceUnit2, Provider.TABLE_GENERATION_CREATE, provider);
@@ -211,7 +211,7 @@ public class ProviderUtilTest extends NbTestCase {
         ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit2.getProvider());
 
-        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider newProvider = ProviderUtil.ECLIPSELINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit2, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
         // assert that old providers properties were removed
         assertNoSuchProperty(persistenceUnit2, originalProvider.getTableGenerationPropertyName());
@@ -234,7 +234,7 @@ public class ProviderUtilTest extends NbTestCase {
         Provider originalProvider = ProviderUtil.KODO_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
 
-        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        Provider newProvider = ProviderUtil.ECLIPSELINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit2, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(newProvider.getTableGenerationPropertyName(),
                 ProviderUtil.getProperty(persistenceUnit2, newProvider.getTableGenerationPropertyName()).getName());

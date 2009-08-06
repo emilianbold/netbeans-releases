@@ -97,63 +97,81 @@ public class PHPNewLineIndenter {
         doc.runAtomic(new Runnable() {
 
             public void run() {
-                TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+                try {
+                    int newIndent = 0;
+                    boolean insideString = false;
+                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+                    int caretLineStart = Utilities.getRowStart(doc, Utilities.getRowStart(doc, offset) - 1);
+                    ts.move(offset);
+                    ts.moveNext();
 
-                ts.move(offset);
-                int newIndent = 0;
-                int bracketBalance = 0;
+                    if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) {
 
-                while (ts.movePrevious()) {
-                    Token token = ts.token();
-                    ScopeDelimiter delimiter = getScopeDelimiter(token);
-                    int anchor = ts.offset();
-                    int shiftAtAncor = 0;
+                        int stringLineStart = Utilities.getRowStart(doc, ts.offset());
 
-                    if (delimiter != null) {
-                        if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
-                            if (breakProceededByCase(ts)){
-                                newIndent = getIndentAtOffset(doc, anchor) - indentSize;
-                                break;
-                            }
-                            
-                            CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts);
-                            anchor = codeB4BreakData.expressionStartOffset;
-                            shiftAtAncor = codeB4BreakData.indentDelta;
-
-                            if (codeB4BreakData.processedByControlStmt){
-                                newIndent = getIndentAtOffset(doc, anchor) - indentSize;
-                                break;
-                            }
+                        if (stringLineStart >= caretLineStart){
+                            // string starts on the same line:
+                            // current line indent + continuation size
+                            newIndent = Utilities.getRowIndent(doc, stringLineStart) + continuationSize;
+                        } else {
+                            // string starts before:
+                            // repeat indent from the previous line
+                            newIndent = Utilities.getRowIndent(doc, caretLineStart);
                         }
 
-                        newIndent = getIndentAtOffset(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
-                        break;
-                    } else {
-                        if (ts.token().id() == PHPTokenId.PHP_TOKEN){
-                            char ch = ts.token().text().charAt(0);
+                        insideString = true;
+                    }
+                    
+                    int bracketBalance = 0;
 
-                            if (ch == ')'){
-                                bracketBalance ++;
-                            } else if (ch == '('){
-                                if (bracketBalance == 0){
-                                    newIndent = getIndentAtOffset(doc, ts.offset()) + continuationSize;
+                    while (!insideString && ts.movePrevious()) {
+                        Token token = ts.token();
+                        ScopeDelimiter delimiter = getScopeDelimiter(token);
+                        int anchor = ts.offset();
+                        int shiftAtAncor = 0;
+
+                        if (delimiter != null) {
+                            if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
+                                if (breakProceededByCase(ts)){
+                                    newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
                                     break;
                                 }
 
-                                bracketBalance --;
+                                CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts);
+                                anchor = codeB4BreakData.expressionStartOffset;
+                                shiftAtAncor = codeB4BreakData.indentDelta;
+
+                                if (codeB4BreakData.processedByControlStmt){
+                                    newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
+                                    break;
+                                }
+                            }
+
+                            newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                            break;
+                        } else {
+                            if (ts.token().id() == PHPTokenId.PHP_TOKEN){
+                                char ch = ts.token().text().charAt(0);
+
+                                if (ch == ')'){
+                                    bracketBalance ++;
+                                } else if (ch == '('){
+                                    if (bracketBalance == 0){
+                                        newIndent = Utilities.getRowIndent(doc, ts.offset()) + continuationSize;
+                                        break;
+                                    }
+
+                                    bracketBalance --;
+                                }
                             }
                         }
                     }
-                }
-
-                try {
-                    int lineStart = Utilities.getRowStart(doc, offset);
 
                     if (newIndent < 0){
                         newIndent = 0;
                     }
 
-                    context.modifyIndent(lineStart, newIndent);
+                    context.modifyIndent(Utilities.getRowStart(doc, offset), newIndent);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -236,17 +254,6 @@ public class PHPNewLineIndenter {
         }
         
         return retunValue;
-    }
-
-    private int getIndentAtOffset(BaseDocument doc, int offset) {
-        int indent = 0;
-        try {
-            indent = Utilities.getRowIndent(doc, offset);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return indent;
     }
 
     private ScopeDelimiter getScopeDelimiter(Token token){

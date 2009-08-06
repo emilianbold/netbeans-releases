@@ -53,16 +53,9 @@ public class BundleKeysTest extends TestBundleKeys {
     public static String propertiesName = "org/netbeans/jellytools/BundleKeysTest.properties";
 
     public BundleKeysTest(String bundleName) {
-        this(bundleName, null);
-    }
-    /** Constructor required by JUnit.
-     * @param testName method name to be used as testcase
-     */
-    public BundleKeysTest(String bundleName, String keys) {
         super(bundleName);
-        this.keys=keys;
     }
-
+   
     protected ClassLoader getDescendantClassLoader()
     {
         return BundleKeysTest.class.getClassLoader();
