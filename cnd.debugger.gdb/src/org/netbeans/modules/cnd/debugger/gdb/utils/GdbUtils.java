@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
