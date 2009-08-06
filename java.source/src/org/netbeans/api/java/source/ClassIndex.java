@@ -69,7 +69,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
-import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -97,12 +96,15 @@ public final class ClassIndex {
 
     //INV: Never null
     //@GuardedBy (this)
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     private final Set<URL> oldSources;
     //INV: Never null
     //@GuardedBy (this)
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     private final Set<URL> oldBoot;    
     //INV: Never null
     //@GuardedBy (this)
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     private final Set<URL> oldCompile;
     //INV: Never null
     //@GuardedBy (this)
@@ -568,7 +570,8 @@ public final class ClassIndex {
         public void classIndexRemoved (final ClassIndexManagerEvent event) {
             //Not important handled by propertyChange from ClassPath
         }
-        
+
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
@@ -629,18 +632,7 @@ public final class ClassIndex {
             Collection<? super URL> c = removedRoots;
             c.addAll(roots);
             return result;
-        }
-        
-        private boolean containsRoot (final Set<? extends URL> cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots) {            
-            boolean result = false;
-            for (URL url : cp) {
-                if (roots.contains(url)) {
-                    affectedRoots.add(url);
-                    result = true;                    
-                }
-            }
-            return result;
-        }
+        }                
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {

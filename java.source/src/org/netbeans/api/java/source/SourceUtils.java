@@ -357,7 +357,7 @@ public class SourceUtils {
             element = element.getEnclosingElement();
         }
         final ElementKind kind = prev.getKind();
-        if (prev == null || !(kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE)) {
+        if (!(kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE)) {
             return null;
         }        
         final ElementHandle<? extends Element> handle = ElementHandle.create(prev);

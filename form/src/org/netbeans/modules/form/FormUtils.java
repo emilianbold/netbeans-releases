@@ -490,8 +490,8 @@ public class FormUtils
         if (o.getClass() == Font.class) {
             return o;
         }
-        // Issue 49973
-        if ((o.getClass() == TitledBorder.class) && Utilities.isMac()) {
+        // Issue 49973 & 169933
+        if (o.getClass() == TitledBorder.class) {
             TitledBorder border = (TitledBorder)o;
             return new TitledBorder(
                 border.getBorder(),
