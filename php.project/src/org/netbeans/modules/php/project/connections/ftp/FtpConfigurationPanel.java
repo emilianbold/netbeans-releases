@@ -48,7 +48,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -66,15 +65,14 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
-    private static final long serialVersionUID = 623426654872730L;
+    private static final long serialVersionUID = 62342689756412730L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
+    private String warning = null;
 
     public FtpConfigurationPanel() {
         initComponents();
-
-        warningLabel.setText(" "); // NOI18N
 
         setEnabledLoginCredentials();
 
@@ -92,12 +90,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     public JComponent getComponent() {
         return this;
-    }
-
-    private void setWarning(String msg) {
-        warningLabel.setText(" "); // NOI18N
-        warningLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
-        warningLabel.setText(msg);
     }
 
     public boolean isValidConfiguration() {
@@ -141,6 +133,14 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     protected void setError(String error) {
         this.error = error;
+    }
+
+    public String getWarning() {
+        return warning;
+    }
+
+    public void setWarning(String warning) {
+        this.warning = warning;
     }
 
     void setEnabledLoginCredentials() {
@@ -214,7 +214,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
 
 
-
         hostLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
@@ -229,7 +228,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
         passiveModeCheckBox = new JCheckBox();
-        warningLabel = new JLabel();
         passwordLabelInfo = new JLabel();
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.hostLabel.text_1")); // NOI18N
         hostTextField.setMinimumSize(new Dimension(150, 19));
@@ -242,7 +240,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.timeoutLabel.text_1"));
         timeoutTextField.setMinimumSize(new Dimension(20, 19));
         Mnemonics.setLocalizedText(passiveModeCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passiveModeCheckBox.text_1"));
-        Mnemonics.setLocalizedText(warningLabel, "warning");
         Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.text_1"));
         passwordLabelInfo.setEnabled(false);
 
@@ -277,7 +274,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
                                         .add(portTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
                                     .add(GroupLayout.LEADING, anonymousCheckBox)))
                             .add(passwordLabelInfo)))
-                    .add(warningLabel)
                     .add(passiveModeCheckBox)))
         );
         layout.setVerticalGroup(
@@ -309,9 +305,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
                     .add(timeoutLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(passiveModeCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(warningLabel)
-                .addContainerGap())
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -332,7 +326,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     private JTextField timeoutTextField;
     private JLabel userLabel;
     private JTextField userTextField;
-    private JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 
     public String getHostName() {

@@ -66,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -75,6 +76,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,6 +97,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
+    private NotificationLineSupport notificationLineSupport = null;
     private JButton testConnectionButton = null;
     private RequestProcessor.Task testConnectionTask = null;
 
@@ -103,7 +106,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         this.configManager = configManager;
 
         initComponents();
-        errorLabel.setText(" "); // NOI18N
 
         // init
         configList.setModel(configListModel);
@@ -135,6 +137,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 null);
+        notificationLineSupport = descriptor.createNotificationLineSupport();
         descriptor.setClosingOptions(new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION});
         testConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -352,6 +355,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         configurationPanelHolder.validate();
         configurationPanelHolder.repaint();
         setError(null);
+        setWarning(null);
     }
 
     private boolean isValidConfiguration() {
@@ -362,14 +366,32 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         return configurationPanel.getError();
     }
 
-    private void setError(String msg) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-        errorLabel.setText(msg);
+    private String getWarning() {
+        return configurationPanel.getWarning();
+    }
 
+    private void setError(String msg) {
         assert descriptor != null;
-        descriptor.setValid(msg == null);
+        assert notificationLineSupport != null;
+
+        if (StringUtils.hasText(msg)) {
+            notificationLineSupport.setErrorMessage(msg);
+            descriptor.setValid(false);
+        } else {
+            notificationLineSupport.clearMessages();
+            descriptor.setValid(true);
+        }
+
         enableTestConnection();
+    }
+
+    private void setWarning(String msg) {
+        assert descriptor != null;
+        assert notificationLineSupport != null;
+
+        if (StringUtils.hasText(msg)) {
+            notificationLineSupport.setWarningMessage(msg);
+        }
     }
 
     private void refreshConfigList() {
@@ -394,6 +416,8 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         if (!valid) {
             return;
         }
+
+        setWarning(getWarning());
 
         // check whether all the configs are errorless
         checkAllConfigs();
@@ -462,14 +486,11 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         configurationPanelHolder = new javax.swing.JPanel();
-        errorLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
         typeLabel = new javax.swing.JLabel();
         typeTextField = new javax.swing.JTextField();
         separator = new javax.swing.JSeparator();
-
-        setFocusTraversalPolicy(null);
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
@@ -481,8 +502,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Remove")); // NOI18N
 
         configurationPanelHolder.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
 
         nameLabel.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Name")); // NOI18N
@@ -509,7 +528,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -545,8 +563,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
-                    .add(removeButton)
-                    .add(errorLabel))
+                    .add(removeButton))
                 .addContainerGap())
         );
 
@@ -558,8 +575,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
         configurationPanelHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleName")); // NOI18N
         configurationPanelHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleDescription")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -571,7 +586,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private javax.swing.JList configList;
     private javax.swing.JScrollPane configScrollPane;
     private javax.swing.JPanel configurationPanelHolder;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;
@@ -708,6 +722,10 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         }
 
         public String getError() {
+            return null;
+        }
+
+        public String getWarning() {
             return null;
         }
 
