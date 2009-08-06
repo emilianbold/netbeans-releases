@@ -59,6 +59,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
@@ -136,11 +137,11 @@ public class ContextBindingSupport {
         }
 
         // Use default implementation
-        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        FileObject fo = EditorContextBridge.getContext().getCurrentFileObject();
         if (fo != null) {
-            return new Context(fo, EditorContextDispatcher.getDefault().getCurrentLineNumber());
+            return new Context(fo, EditorContextBridge.getContext().getCurrentLineNumber());
         } else {
-            fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+            fo = EditorContextBridge.getContext().getMostRecentFileObject();
             if (fo != null) {
                 return new Context(fo, EditorContextDispatcher.getDefault().getMostRecentLineNumber());
             }

@@ -49,6 +49,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
@@ -57,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -136,8 +136,8 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
     }
     
     private static LineBreakpoint createBreakpoint() {
-	String url = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
-	int lnum = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+	String url = EditorContextBridge.getMostRecentURL();
+	int lnum = EditorContextBridge.getMostRecentLineNumber();
 
         // create an empty line breakpoint if url is empty
 	LineBreakpoint lb = (url.length() != 0) ? LineBreakpoint.create(url, lnum) : LineBreakpoint.create();

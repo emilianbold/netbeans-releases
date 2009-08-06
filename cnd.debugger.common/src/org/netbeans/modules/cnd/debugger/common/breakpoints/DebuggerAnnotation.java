@@ -39,62 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
+package org.netbeans.modules.cnd.debugger.common.breakpoints;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.FunctionBreakpointPanel;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.modules.cnd.debugger.common.EditorContext;
+import org.openide.text.Annotation;
+import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 /**
- * Implementation of breakpoint on function.
+ * Debugger Annotation class.
  *
- * @author   Egor Ushakov
+ * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
-public class FunctionBreakpointType extends BreakpointType {
-
-    public String getCategoryDisplayName() {
-        return NbBundle.getMessage(FunctionBreakpointType.class,
-                    "CTL_Common_breakpoint_events_category_name"); // NOI18N
+public class DebuggerAnnotation extends Annotation {
+    private String      type;
+    
+    public DebuggerAnnotation(String type, Line line) {
+        this.type = type;
+        attach(line);
     }
     
-    public JComponent getCustomizer() {
-        return new FunctionBreakpointPanel();
+    public String getAnnotationType() {
+        return type;
     }
     
-    @Override
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(FunctionBreakpointType.class, "CTL_Common_Function_Breakpoint"); // NOI18N
+    public Line getLine() {
+        return (Line)getAttachedAnnotatable();
     }
     
-    public boolean isDefault() {
-        // First, check for an open file. Is it one of ours?
-        String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
-        if (mime.length() > 0) {
-            return MIMENames.isFortranOrHeaderOrCppOrC(mime);
+    public String getShortDescription() {
+        if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
+        } else if (EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_CALLSITE"); // NOI18N
         }
-        
-        // Next, check the main project. Is it one of ours?
-        Project project = OpenProjects.getDefault().getMainProject();
-        if (project != null) {
-            NativeProject np = project.getLookup().lookup(NativeProject.class);
-            return np != null;
-        }
-
-        // FIXME: obscure code, rewrite
-        // Last, count breakpoint types. We define 3. If thats all that are returned, then
-        // we're the only active debugger and should be the default.
-//        List breakpointTypes = DebuggerManager.getDebuggerManager().lookup(null, BreakpointType.class);
-//        if (breakpointTypes.size() == 3) {
-//            return true;
-//        }
-        	
-	return false;
+        return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
     }
 }
-
