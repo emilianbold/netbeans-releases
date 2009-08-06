@@ -106,7 +106,7 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
             if (target instanceof NativeExecutableTarget) {
                 int pid = ((NativeExecutableTarget)target).getPID();
                 if (0 < pid) {
-                    CommonTasksSupport.sendSignal(target.getExecEnv(), pid, 10, null); // USR1
+                    CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
                 }
             }
         }

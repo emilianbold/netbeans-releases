@@ -43,64 +43,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
-import org.netbeans.modules.db.sql.editor.StringUtils;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SelectStatementAnalyzer {
-
-    // XXX SELECT-specific code should be refactored into a SelectStatementAnalyzer
-    // (package-)private class.
-
-    private final TokenSequence<SQLTokenId> seq;
-    private final boolean detectKind;
-    private final Quoter quoter;
+class SelectStatementAnalyzer extends SQLStatementAnalyzer {
 
     private final List<List<String>> selectValues = new ArrayList<List<String>>();
     private final List<FromTable> fromTables = new ArrayList<FromTable>();
     private final List<SelectStatement> subqueries = new ArrayList<SelectStatement>();
-    private final SortedMap<Integer, SelectContext> offset2Context = new TreeMap<Integer, SelectContext>();
-
-    private int startOffset;
-    private State state = State.START;
 
     public static SelectStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
-        SelectStatementAnalyzer sa = doParse(seq, quoter, false);
-        if (!sa.state.isAfter(State.START)) {
-            return null;
-        }
-        // Return a non-null FromClause iff there was a FROM clause in the statement.
-        FromClause fromClause = (sa.state.isAfter(State.FROM)) ? sa.createFromClause() : null;
-        return new SelectStatement(SQLStatementKind.SELECT, sa.startOffset, seq.offset() + seq.token().length(), Collections.unmodifiableList(sa.selectValues), fromClause, Collections.unmodifiableList(sa.subqueries), sa.offset2Context);
-    }
-
-    private static SelectStatementAnalyzer doParse(TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
         seq.moveStart();
         if (!seq.moveNext()) {
             return null;
         }
-        SelectStatementAnalyzer sa = new SelectStatementAnalyzer(seq, quoter, detectKind);
+        SelectStatementAnalyzer sa = new SelectStatementAnalyzer(seq, quoter);
         sa.parse();
-        return sa;
+        // Return a non-null FromClause if there was a FROM clause in the statement.
+        FromClause fromClause = sa.context.isAfter(Context.FROM) ? sa.createFromClause() : null;
+        return new SelectStatement(sa.startOffset, seq.offset() + seq.token().length(), Collections.unmodifiableList(sa.selectValues), fromClause, Collections.unmodifiableList(sa.subqueries), sa.offset2Context);
     }
 
-    private SelectStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
-        this.seq = seq;
-        this.quoter = quoter;
-        this.detectKind = detectKind;
+    private SelectStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
+        super(seq, quoter);
     }
 
     private FromClause createFromClause() {
@@ -122,13 +96,10 @@ public class SelectStatementAnalyzer {
         startOffset = seq.offset();
         boolean afterFromTableKeyword = false;
         do {
-            switch (state) {
+            switch (context) {
                 case START:
                     if (SQLStatementAnalyzer.isKeyword ("SELECT", seq)) { // NOI18N
-                        moveToState(State.SELECT);
-                        if (detectKind) {
-                            return;
-                        }
+                        moveToContext(Context.SELECT);
                     }
                     break;
                 case SELECT:
@@ -141,7 +112,7 @@ public class SelectStatementAnalyzer {
                             break;
                         case KEYWORD:
                             if (SQLStatementAnalyzer.isKeyword ("FROM", seq)) { // NOI18N
-                                moveToState(State.FROM);
+                                moveToContext(Context.FROM);
                                 afterFromTableKeyword = true;
                             }
                             break;
@@ -165,9 +136,9 @@ public class SelectStatementAnalyzer {
                             if (SQLStatementAnalyzer.isKeyword ("JOIN", seq)) { // NOI18N
                                 afterFromTableKeyword = true;
                             } else {
-                                State newState = getStateForKeywordAfterFrom();
-                                if (newState != null) {
-                                    moveToState(newState);
+                                Context newContext = getContextForKeywordAfterFrom();
+                                if (newContext != null) {
+                                    moveToContext(newContext);
                                 }
                             }
                             break;
@@ -176,31 +147,31 @@ public class SelectStatementAnalyzer {
                 case JOIN_CONDITION:
                     switch (seq.token().id()) {
                         case COMMA:
-                            moveToState(State.FROM);
+                            moveToContext(Context.FROM);
                             afterFromTableKeyword = true;
                             break;
                         case KEYWORD:
                             if (SQLStatementAnalyzer.isKeyword ("JOIN", seq)) { // NOI18N
-                                moveToState(State.FROM);
+                                moveToContext(Context.FROM);
                                 afterFromTableKeyword = true;
                             }
                             break;
                     }
                     break;
-                case GROUP_WITHOUT_BY:
-                    if (SQLStatementAnalyzer.isKeyword ("BY", seq)) { // NOI18N
-                        moveToState(State.GROUP_BY);
+                case GROUP:
+                    if (SQLStatementAnalyzer.isKeyword("BY", seq)) { // NOI18N
+                        moveToContext(Context.GROUP_BY);
                     }
                     break;
-                case ORDER_WITHOUT_BY:
-                    if (SQLStatementAnalyzer.isKeyword ("BY", seq)) { // NOI18N
-                        moveToState(State.ORDER_BY);
+                case ORDER:
+                    if (SQLStatementAnalyzer.isKeyword("BY", seq)) { // NOI18N
+                        moveToContext(Context.ORDER_BY);
                     }
                     break;
                 default:
-                    State newState = getStateForKeywordAfterFrom();
+                    Context newState = getContextForKeywordAfterFrom();
                     if (newState != null) {
-                        moveToState(newState);
+                        moveToContext(newState);
                     }
                     break;
             }
@@ -254,28 +225,27 @@ public class SelectStatementAnalyzer {
         return parts;
     }
 
+    /** Returns table name and its alias. */
     private FromTable parseFromTable() {
-        List<String> parts = new ArrayList<String>();
-        parts.add(getUnquotedIdentifier());
-        boolean afterDot = false;
+        QualIdent table = parseIdentifier();
+        if (table == null) {
+            return null;
+        }
+        String alias = parseAlias();
+        return new FromTable(table, alias);
+    }
+
+    /** Returns alias of table or null (e.g. returns c if statement is as
+     * follows "select * from customer as c". */
+    private String parseAlias() {
         String alias = null;
         main: while (nextToken()) {
             switch (seq.token().id()) {
-                case DOT:
-                    afterDot = true;
-                    break;
                 case IDENTIFIER:
-                    if (afterDot && alias == null) {
-                        afterDot = false;
-                        parts.add(getUnquotedIdentifier());
-                    } else {
-                        alias = getUnquotedIdentifier();
-                    }
+                    alias = getUnquotedIdentifier();
                     break;
                 case KEYWORD:
-                    if (SQLStatementAnalyzer.isKeyword ("AS", seq)) { // NOI18N
-                        afterDot = false;
-                    } else {
+                    if (!SQLStatementAnalyzer.isKeyword("AS", seq)) { // NOI18N
                         seq.movePrevious();
                         break main;
                     }
@@ -285,36 +255,16 @@ public class SelectStatementAnalyzer {
                     break main;
             }
         }
-        // Remove empty quoted identifiers, like in '"FOO".""."BAR"'.
-        // Actually, the example above would obviously be an invalid identifier,
-        // but safer and simpler to be forgiving.
-        for (Iterator<String> i = parts.iterator(); i.hasNext();) {
-            if (i.next().length() == 0) {
-                i.remove();
-            }
-        }
         if (alias != null && alias.length() == 0) {
             alias = null;
         }
-        if (!parts.isEmpty()) {
-            return new FromTable(new QualIdent(parts), alias);
-        }
-        return null;
+        return alias;
     }
 
-    private boolean nextToken() {
-        boolean move;
-        skip: while (move = seq.moveNext()) {
-            switch (seq.token().id()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
-                default:
-                    break skip;
-            }
-        }
-        if (state.isAfter(State.SELECT) && SQLStatementAnalyzer.isKeyword ("SELECT", seq)) { // NOI18N
+    @Override
+    protected boolean nextToken() {
+        boolean move = super.nextToken();
+        if (context.isAfter(Context.SELECT) && SQLStatementAnalyzer.isKeyword("SELECT", seq)) { // NOI18N
             // Looks like a subquery.
             int subStartOffset = seq.offset();
             int parLevel = 1;
@@ -339,69 +289,23 @@ public class SelectStatementAnalyzer {
         return move;
     }
 
-    private void moveToState(State state) {
-        this.state = state;
-        SelectContext context = state.getContext();
-        if (context != null) {
-            offset2Context.put(seq.offset() + seq.token().length(), context);
-        }
-    }
-
     private boolean isKeywordAfterFrom() {
-        return getStateForKeywordAfterFrom() != null;
+        return getContextForKeywordAfterFrom() != null;
     }
 
-    private State getStateForKeywordAfterFrom() {
-        if (seq.token().id() != SQLTokenId.KEYWORD) {
-            return null;
-        }
-        CharSequence keyword = seq.token().text();
-        if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
-            return State.JOIN_CONDITION;
-        } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
-            return State.WHERE;
-        } else if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
-            return State.GROUP_WITHOUT_BY;
-        } else if (StringUtils.textEqualsIgnoreCase("HAVING", keyword)) { // NOI18N
-            return State.HAVING;
-        } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
-            return State.ORDER_WITHOUT_BY;
+    private Context getContextForKeywordAfterFrom() {
+        if (SQLStatementAnalyzer.isKeyword("ON", seq)) { // NOI18N
+            return Context.JOIN_CONDITION;
+        } else if (SQLStatementAnalyzer.isKeyword("WHERE", seq)) { // NOI18N
+            return Context.WHERE;
+        } else if (SQLStatementAnalyzer.isKeyword("GROUP", seq)) { // NOI18N
+            return Context.GROUP;
+        } else if (SQLStatementAnalyzer.isKeyword("HAVING", seq)) { // NOI18N
+            return Context.HAVING;
+        } else if (SQLStatementAnalyzer.isKeyword("ORDER", seq)) { // NOI18N
+            return Context.ORDER;
         }
         return null;
-    }
-
-    private String getUnquotedIdentifier() {
-        return quoter.unquote(seq.token().text().toString());
-    }
-
-    private enum State {
-
-        START(0, null),
-        SELECT(1, SelectContext.SELECT),
-        FROM(2, SelectContext.FROM),
-        JOIN_CONDITION(3, SelectContext.JOIN_CONDITION),
-        WHERE(4, SelectContext.WHERE),
-        GROUP_WITHOUT_BY(5, null),
-        GROUP_BY(6, SelectContext.GROUP_BY),
-        HAVING(7, SelectContext.HAVING),
-        ORDER_WITHOUT_BY(8, null),
-        ORDER_BY(9, SelectContext.ORDER_BY);
-
-        private final int order;
-        private final SelectContext context;
-
-        private State(int order, SelectContext context) {
-            this.order = order;
-            this.context = context;
-        }
-
-        public boolean isAfter(State state) {
-            return this.order >= state.order;
-        }
-
-        public SelectContext getContext() {
-            return context;
-        }
     }
 
     private static class FromTable {
