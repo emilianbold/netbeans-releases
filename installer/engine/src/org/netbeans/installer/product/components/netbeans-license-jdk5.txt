@@ -6,7 +6,7 @@ found in the THIRDPARTYLICENSE.txt file. Please review the
 list of libraries and licenses provided for use. This
 license file contains three distinct licenses.
 
-Unless specified below, the use of NetBeans IDE 6.7 
+Unless specified below, the use of NetBeans IDE 6.7.1 
 and components from the GlassFish runtime are governed by
 the terms of either the GNU General Public License Version 2 
 with Classpath Exception or the Common Development and
