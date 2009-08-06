@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.NbBundle;
 
 /**
