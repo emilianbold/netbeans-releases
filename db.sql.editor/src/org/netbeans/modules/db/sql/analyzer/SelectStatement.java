@@ -55,27 +55,16 @@ import java.util.SortedMap;
  */
 public class SelectStatement extends SQLStatement {
 
-    // This should be renamed to SelectStatement.
-
-    private final SQLStatementKind kind;
-    int startOffset, endOffset;
     private final List<List<String>> selectValues;
     private final FromClause fromClause;
     private final List<SelectStatement> subqueries;
-    private final SortedMap<Integer, SelectContext> offset2Context;
 
-    SelectStatement(SQLStatementKind kind, int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SelectStatement> subqueries, SortedMap<Integer, SelectContext> offset2Context) {
-        this.kind = kind;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    SelectStatement(int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SelectStatement> subqueries, SortedMap<Integer, Context> offset2Context) {
+        super(startOffset, endOffset, offset2Context);
+        this.kind = SQLStatementKind.SELECT;
         this.selectValues = selectValues;
         this.fromClause = fromClause;
         this.subqueries = subqueries;
-        this.offset2Context = offset2Context;
-    }
-
-    public SQLStatementKind getKind() {
-        return kind;
     }
 
     public FromClause getFromClause() {
@@ -118,18 +107,6 @@ public class SelectStatement extends SQLStatement {
         return subqueries;
     }
 
-    public SelectContext getContextAtOffset(int offset) {
-        SelectContext result = null;
-        for (Entry<Integer, SelectContext> entry : offset2Context.entrySet()) {
-            if (offset >= entry.getKey()) {
-                result = entry.getValue();
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
     private void fillStatementPath(int offset, List<SelectStatement> path) {
         if (offset >= startOffset && offset <= endOffset) {
             path.add(this);
@@ -137,16 +114,5 @@ public class SelectStatement extends SQLStatement {
                 subquery.fillStatementPath(offset, path);
             }
         }
-    }
-
-    public enum SelectContext {
-
-        SELECT,
-        FROM,
-        JOIN_CONDITION,
-        WHERE,
-        GROUP_BY,
-        HAVING,
-        ORDER_BY
     }
 }

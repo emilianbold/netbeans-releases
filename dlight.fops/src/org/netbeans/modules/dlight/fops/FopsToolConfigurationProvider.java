@@ -120,9 +120,13 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
                         fileColumn,
-                        new Column("totalsize", Long.class, getMessage("Column.TotalSize"), null), // NOI18N
+                        new Column("bytes_read", Long.class, getMessage("Column.BytesRead"), null), // NOI18N
+                        new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
                         new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
-                "select file, sum(size) as totalsize, bool_or(operation='close') as closed from fops group by sid, file order by closed asc, totalsize desc", // NOI18N
+                "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
+                "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
+                "BOOL_OR(operation='close') AS closed FROM fops GROUP BY sid, file " +
+                "ORDER BY closed ASC", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);

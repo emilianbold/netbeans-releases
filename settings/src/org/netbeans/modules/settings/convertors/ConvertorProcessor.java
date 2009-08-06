@@ -54,7 +54,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.settings.ConvertAsJavaBean;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.settings.Env;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -66,7 +68,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.api.settings.ConvertAsProperties")//NOI18N
+@SupportedAnnotationTypes({
+    "org.netbeans.api.settings.ConvertAsProperties", //NOI18N
+    "org.netbeans.api.settings.ConvertAsJavaBean" //NOI18N
+})
 public class ConvertorProcessor extends LayerGeneratingProcessor {
 
 
@@ -82,7 +87,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         for (Element e : env.getElementsAnnotatedWith(ConvertAsProperties.class)) {
             ConvertAsProperties reg = e.getAnnotation(ConvertAsProperties.class);
 
-            String convElem = instantiableClassOrMethod(e);
+            String convElem = instantiableClassOrMethod(e, true);
             final String dtd = reg.dtd();
 
             String dtdCode = convertPublicId(dtd);
@@ -130,6 +135,18 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                 stringvalue("settings.instanceOf", convElem).
                 boolvalue("xmlproperties.preventStoring", !reg.autostore());
             commaSeparated(f, reg.ignoreChanges()).write();
+        }
+
+
+        for (Element e : env.getElementsAnnotatedWith(ConvertAsJavaBean.class)) {
+            ConvertAsJavaBean reg = e.getAnnotation(ConvertAsJavaBean.class);
+            String convElem = instantiableClassOrMethod(e, false);
+            File f = layer(e).file("xml/memory/" + convElem.replace('.', '/'));
+            f.stringvalue("settings.providerPath", "xml/lookups/NetBeans/DTD_XML_beans_1_0.instance");
+            if (reg.subclasses()) {
+                f.boolvalue(Env.EA_SUBCLASSES, true);
+            }
+            f.write();
         }
         return true;
     }
@@ -205,7 +222,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
     }
 
-    private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {
+    private String instantiableClassOrMethod(Element e, boolean checkMethods) throws IllegalArgumentException, LayerGenerationException {
         switch (e.getKind()) {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
@@ -224,9 +241,9 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                         throw new LayerGenerationException(clazz + " must have a no-argument constructor", e);
                     }
                 }
-                TypeMirror propType;
-                propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();
-                {
+                if (checkMethods) {
+                    TypeMirror propType;
+                    propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();
                     boolean hasRead = false;
                     boolean hasWrite = false;
                     for (ExecutableElement m : ElementFilter.methodsIn(e.getEnclosedElements())) {
@@ -256,7 +273,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                 return clazz;
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
+                throw new LayerGenerationException("Annotated element is not loadable as an instance: " + e);
         }
     }
 }

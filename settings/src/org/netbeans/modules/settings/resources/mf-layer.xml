@@ -50,6 +50,12 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.settings.convertors.SerialDataConvertor$Provider.create"/>
                     <attr name="settings.convertor" newvalue="org.netbeans.modules.settings.convertors.XMLSettingsSupport$Convertor"/>
               </file>
+            	<!-- Convertor handling XML beans -->
+                <file name="DTD_XML_beans_1_0.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.api.settings.Factory.create"/>
+                    <attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.convertors.XMLBeanConvertor.create"/>
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD XML beans 1.0//EN"/>
+              </file>
             </folder>
         </folder>
         <!-- registered convertors used by InstanceDataObject.create -->
@@ -67,6 +73,9 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
             	<file name="DTD_Session_settings_1_0" url="sessionsettings-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Session settings 1.0//EN"/>
+            	</file>
+            	<file name="DTD_XML_beans_1_0" url="javabeans-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD XML beans 1.0//EN"/>
             	</file>
             </folder>
         </folder>
