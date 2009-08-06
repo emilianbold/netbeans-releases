@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 
 /**
@@ -62,5 +63,11 @@ public class IndexedInterface extends IndexedType {
     public String getNamespaceName() {
         final String retval = getIn();
         return retval != null ? retval : "";//NOI18N
+    }
+
+    @Override
+    public String getFullyQualifiedName() {
+        QualifiedName qn = QualifiedName.createFullyQualified(name, getNamespaceName());
+        return qn.toString();
     }
 }

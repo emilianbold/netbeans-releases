@@ -41,10 +41,10 @@ package org.netbeans.modules.dlight.threadmap.storage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 public final class ThreadDataImpl implements ThreadData {
 
@@ -70,13 +70,13 @@ public final class ThreadDataImpl implements ThreadData {
         states.add(state);
     }
 
-    public StackTrace getStackTrace(final long timeStamp) {
+    public ThreadDump getStackTrace(final long timeStamp) {
         //TODO implement me!
-        return new StackTrace(){
-            public List<Stack> getStackTrace() {
-                return Collections.<Stack>emptyList();
+        return new ThreadDump(){
+            public List<ThreadSnapshot> getThreadStates() {
+                return Collections.<ThreadSnapshot>emptyList();
             }
-            public long getTimeStamp() {
+            public long getTimestamp() {
                 return timeStamp;
             }
         };

@@ -1463,7 +1463,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 ((MakeConfiguration) newconf).getMakefileConfiguration().getBuildCommandWorkingDir().setValue(buildDir);
             }
             ((MakeConfiguration) newconf).reCountLanguages((MakeConfigurationDescriptor) projectDescriptor);
-            return newconf;
+            return editActionImpl(newconf) ? newconf : null;
         }
 
         @Override
@@ -1499,6 +1499,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void editAction(Configuration o) {
+            editActionImpl(o);
+        }
+
+        /**
+         * Edits name
+         * @return true in the case user pressed OK, otherwise (if s/he pressed CANCEL) false
+         */
+        private boolean editActionImpl(Configuration o) {
             Configuration c = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("CONFIGURATION_RENAME_DIALOG_LABEL"), getString("CONFIGURATION_RENAME_DIALOG_TITLE")); // NOI18N
@@ -1506,14 +1514,15 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             // Rename conf
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
-                return;
+                return false;
             }
             if (c.getName().equals(notifyDescriptor.getInputText())) {
-                return; // didn't change the name
+                return true; // didn't change the name
             }
             String suggestedName = ConfigurationSupport.makeNameLegal(notifyDescriptor.getInputText());
             String name = ConfigurationSupport.getUniqueName(getConfs(), suggestedName);
             c.setName(name);
+            return true;
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,6 +57,12 @@ import javax.swing.*;
 import java.io.File;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Appears in a project's popup menu.
@@ -76,41 +82,22 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private JComponent [] createItems() {
         Node [] nodes = getActivatedNodes();
         if (nodes.length > 0) {
-            Set<VersioningSystem> owners = getOwners(nodes);
+            Set<VersioningSystem> owners = getOwnersForProjectNodes(nodes);
             if (owners.size() != 1) {
                 return new JComponent[0];
             }
             VersioningSystem owner = owners.iterator().next();
             VersioningSystem localHistory = getLocalHistory(nodes);
             List<JComponent> popups = new ArrayList<JComponent>();            
-            if (owner != null) {
-                JMenu menu = createVersioningSystemPopup(owner, nodes);
-                if (menu != null) {
-                    popups.add(menu);
-                }
-            } else {                
-                JMenu vmenu = new JMenu(NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu"));                
-                Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-                List<? extends VersioningSystem> vcs = new ArrayList(result.allInstances());
-                Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());                
-                for (VersioningSystem vs : vcs) {
-                    if (vs.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null) continue;
-                    JComponent [] items = createVersioningSystemItems(vs, nodes);
-                    if (items != null) {
-                        for (JComponent item : items) {
-                            vmenu.add(item);
-                        }
-                    }
-                }
-                vmenu.addSeparator();
-                vmenu.add(createmenuItem(SystemAction.get(PatchAction.class)));
-                popups.add(vmenu);
+            if (owner == null || owner.getVCSAnnotator() != null) {
+                // prepare a lazy menu, it's items will be properly created at the time the menu is expanded
+                JMenu menu = new LazyMenu(nodes, owner);
+                popups.add(menu);
             }
-            if(localHistory != null) {
-                JMenu localHistoryMenu = createVersioningSystemPopup(localHistory, nodes);
-                if(localHistoryMenu != null) {
-                    popups.add(localHistoryMenu);    
-                }                                    
+            if(localHistory != null && localHistory.getVCSAnnotator() != null) {
+                // prepare a lazy menu for the local history, it's items will be properly created at the time the menu is expanded
+                JMenu menu = new LazyMenu(nodes, localHistory);
+                popups.add(menu);
             }
             return popups.toArray(new JComponent[popups.size()]);
         }
@@ -118,9 +105,9 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
 
     private VersioningSystem getLocalHistory(Node [] nodes) {
-        VCSContext ctx = VCSContext.forNodes(nodes);
+        Set<File> rootFiles = getRootFilesForProjectNodes(nodes);
         VersioningSystem owner = null;
-        for (File file : ctx.getRootFiles()) {
+        for (File file : rootFiles) {
             VersioningSystem fileOwner = VersioningManager.getInstance().getLocalHistory(file);
             if (owner != null) {
                 if (fileOwner != null && fileOwner != owner) return null;
@@ -130,11 +117,11 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         }
         return owner;
     }
-
-    private Set<VersioningSystem> getOwners(Node [] nodes) {
-        VCSContext ctx = VCSContext.forNodes(nodes);
+    
+    private Set<VersioningSystem> getOwnersForProjectNodes(Node [] nodes) {
+        Set<File> rootFiles = getRootFilesForProjectNodes(nodes);
         Set<VersioningSystem> owners = new HashSet<VersioningSystem>(2);
-        for (File file : ctx.getRootFiles()) {
+        for (File file : rootFiles) {
             VersioningSystem fileOwner = VersioningManager.getInstance().getOwner(file);
             owners.add(fileOwner);
         }
@@ -175,16 +162,6 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return item;
     }
 
-    private JMenu createVersioningSystemPopup(VersioningSystem owner, Node[] nodes) {
-        JComponent [] items = createVersioningSystemItems(owner, nodes);
-        if (items == null) return null;
-        JMenu menu = new JMenu(Utils.getDisplayName(owner));
-        for (JComponent item : items) {
-            menu.add(item);
-        }
-        return menu;
-    }
-
     private Node[] getActivatedNodes() {
         return TopComponent.getRegistry().getActivatedNodes();
     }
@@ -196,6 +173,81 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return createItems();
+        }
+    }
+
+    private Set<File> getRootFilesForProjectNodes (Node[] nodes) {
+        Set<File> rootFiles = new HashSet<File>(nodes.length);
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            Project project =  node.getLookup().lookup(Project.class);
+            if (project != null) {
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                for (int j = 0; j < sourceGroups.length; j++) {
+                    SourceGroup sourceGroup = sourceGroups[j];
+                    FileObject srcRootFo = sourceGroup.getRootFolder();
+                    File rootFile = FileUtil.toFile(srcRootFo);
+                    if (rootFile == null) {
+                        continue;
+                    }
+                    rootFiles.add(rootFile);
+                }
+                continue;
+            }
+        }
+        return rootFiles;
+    }
+
+    /**
+     * Items for this popup menu are created when really needed, that is at the time when the menu is expanded.
+     */
+    private class LazyMenu extends JMenu {
+        private final Node[] nodes;
+        private final VersioningSystem owner;
+        boolean initialized; // create only once, prevents recreating items when user repeatedly expends and collapses the menu
+
+        private LazyMenu(Node[] nodes, VersioningSystem owner) {
+            // owner == null ? 'default versioning menu' : 'specific menu of a versioning system'
+            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : Utils.getDisplayName(owner));
+            this.nodes = nodes;
+            this.owner = owner;
+        }
+
+        @Override
+        public JPopupMenu getPopupMenu() {
+            if (!initialized) {
+                // clear created items
+                super.removeAll();
+                if (owner == null) {
+                    // default Versioning menu (Import into...)
+                    Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
+                    List<? extends VersioningSystem> vcs = new ArrayList(result.allInstances());
+                    Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
+                    for (VersioningSystem vs : vcs) {
+                        if (vs.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null) {
+                            continue;
+                        }
+                        addVersioningSystemItems(vs, nodes);
+                    }
+                    addSeparator();
+                    add(createmenuItem(SystemAction.get(PatchAction.class)));
+                } else {
+                    // specific versioning system menu
+                    addVersioningSystemItems(owner, nodes);
+                }
+                initialized = true;
+            }
+            return super.getPopupMenu();
+        }
+
+        private void addVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
+            JComponent[] items = createVersioningSystemItems(owner, nodes);
+            if (items != null) {
+                for (JComponent item : items) {
+                    add(item);
+                }
+            }
         }
     }
 }

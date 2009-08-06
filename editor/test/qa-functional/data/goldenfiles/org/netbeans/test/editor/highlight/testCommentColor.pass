@@ -282,7 +282,7 @@
     default separator
     display name Separator
     name separator
-220 221
+220 222
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]

@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 
@@ -75,6 +76,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
+    private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -331,7 +333,14 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
             // refresh all at once
             Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-            filesToRefresh.add(fileToRefresh);
+            if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
+                if ("dirstate".equals(fileToRefresh.getName())) {
+                    // XXX handle dirstate events
+                    Mercurial.STATUS_LOG.fine("special FS event handling for " + fileToRefresh.getAbsolutePath());
+                }
+            } else {
+                filesToRefresh.add(fileToRefresh);
+            }
         } else {
             // refresh one by one
             File parent = fileToRefresh.getParentFile();
@@ -342,6 +351,36 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
         refreshTask.schedule(delayMillis);
+    }
+
+    /**
+     * Checks if dirstate for a repository with the file is registered.
+     * If it is not yet registered, this creates a fileobject for the dirstate and keeps a reference to it.
+     * @param file
+     */
+    void pingRepositoryRootFor(final File file) {
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                // select repository root for the file and finds it's dirstate file
+                File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if (repositoryRoot != null) {
+                    File dirstate = new File(new File(repositoryRoot, ".hg"), "dirstate"); //NOI18N
+                    FileObject fo = FileUtil.toFileObject(dirstate);
+                    synchronized (dirStates) {
+                        if (!dirStates.contains(fo)) {
+                            // this means the repository has not yet been scanned, so scan it
+                            Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath());
+                            reScheduleRefresh(2000, repositoryRoot); // the whole clone
+                            if (fo != null && fo.isValid() && fo.isData()) {
+                                // however there might be NO dirstate file, especially for just initialized repositories
+                                // so keep the reference only for existing and valid dirstate files
+                                dirStates.add(fo);
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private class RefreshTask implements Runnable {

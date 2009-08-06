@@ -129,7 +129,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             recentlyReset = false;
         }
         if (locked) {
-            setMouseLine(-1);
+            resetCursor();
         }
         if (isWrapped()) {
             //Saves having OutputEditorKit have to do its own listening
@@ -341,6 +341,23 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
     }
 
+    public final void sendCaretToPos(int startPos, int endPos, boolean select) {
+        inSendCaretToLine = true;
+        getCaret().setVisible(true);
+        getCaret().setSelectionVisible(true);
+        if (select) {
+            scrollTo(endPos);
+            getCaret().setDot(endPos);
+            getCaret().moveDot(startPos);
+            textView.repaint();
+        } else {
+            getCaret().setDot(startPos);
+        }
+
+        locked = false;
+        inSendCaretToLine = false;
+    }
+
     private boolean inSendCaretToLine = false;
     private int lineToScroll = -1;
     public final boolean sendCaretToLine(int idx, boolean select) {
@@ -356,7 +373,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (select) {
             getCaret().setDot(el.getEndOffset() - 1);
             getCaret().moveDot(position);
-            getCaret().setSelectionVisible(true);
             textView.repaint();
         } else {
             getCaret().setDot(position);
@@ -369,7 +385,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         inSendCaretToLine = false;
         return true;
     }
-    
+
     boolean scrollToLine(int line) {
         int lineIdx = Math.min(getLineCount() - 1, line);
         Rectangle rect = null;
@@ -391,6 +407,25 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return line == lineIdx && visRect.y + visRect.height == rect.y + rect.height;
     }
 
+    boolean scrollToPos(int pos) {
+        Rectangle rect = null;
+        try {
+            rect = textView.modelToView(pos);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        if (rect == null) {
+            return false;
+        }
+
+        boolean oldLocked = locked;
+        textView.scrollRectToVisible(rect);
+        locked = oldLocked;
+
+        return true;
+    }
+
     public final void lockScroll() {
         if (!locked) {
             locked = true;
@@ -404,9 +439,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         lineToScroll = -1;
     }
 
-    protected abstract void caretEnteredLine (int line);
+    protected abstract void caretPosChanged(int pos);
     
-    protected abstract void lineClicked (int line, Point p);
+    protected abstract void lineClicked (int line, int pos);
     
     protected abstract void postPopupMenu (Point p, Component src);
     
@@ -469,13 +504,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
     }
 
-    private boolean caretLineChanged() {
-        int line = getCaretLine();
-        boolean result = line != lastCaretLine;
-        lastCaretLine = line;
-        return result;
-    }
-
     private void maybeSendCaretEnteredLine() {
         if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
             //User may have clicked a hyperlink, in which case, we'll test
@@ -487,10 +515,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //the selection, or if the caret moved because output was written - 
         //it can cause the controller to send events to OutputListeners which
         //should only happen for user events
-        if ((!locked && caretLineChanged()) && !inSendCaretToLine) {
+        if (!locked && !inSendCaretToLine) {
             boolean sel = textView.getSelectionStart() != textView.getSelectionEnd();
             if (!sel) {
-                caretEnteredLine(getCaretLine());
+                caretPosChanged(getCaretPos());
             }
             if (sel != hadSelection) {
                 hadSelection = sel;
@@ -547,50 +575,47 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public void mouseExited(MouseEvent e) {
-        setMouseLine (-1);
+        resetCursor();
     }
 
-    private int mouseLine = -1;
-    public void setMouseLine (int line, Point p) {
-        if (mouseLine != line) {
-            mouseLine = line;
-        }
-    }
-    
-    public final void setMouseLine (int line) {
-        setMouseLine (line, null);
-    }
-
-
-    public void mouseMoved(MouseEvent e) {
-        Point p = e.getPoint();
-        int pos = textView.viewToModel(p);
-        if (pos < getLength()) {
+    boolean isOnHyperlink(Point p) {
+        Document doc = getDocument();
+        if (doc instanceof OutputDocument) {
+            int pos = textView.viewToModel(p);
+            if (pos >= getLength()) {
+                return false;
+            }
             int line = getDocument().getDefaultRootElement().getElementIndex(pos);
             int lineStart = getDocument().getDefaultRootElement().getElement(line).getStartOffset();
-            int lineLength = getDocument().getDefaultRootElement().getElement(line).getEndOffset() -
-                    lineStart;
-
+            int lineLength = getDocument().getDefaultRootElement().getElement(line).getEndOffset() - lineStart;
             try {
-                Rectangle r = textView.modelToView(lineStart + lineLength -1);
-                int maxX = r.x + r.width;
-                boolean inLine = p.x <= maxX;
-                if (isWrapped()) {
-                    Rectangle ra = textView.modelToView(lineStart);
-                    if (ra.y <= r.y) {
-                        if (p.y < r.y) {
-                            inLine = true;
-                        }
-                    }
+                Rectangle r = textView.modelToView(lineStart + lineLength - 1);
+                boolean onLine = p.x <= r.x + r.width || (isWrapped() && p.y < r.y);
+                if (onLine) {
+                    return ((OutputDocument) doc).getLines().getListener(pos, null) != null;
                 }
-                
-                if (inLine) {
-                    setMouseLine (line, p);
-                } else {
-                    setMouseLine(-1);
+            } catch (BadLocationException ex) {
+            }
+        }
+        return false;
+    }
+
+    private void resetCursor() {
+        Cursor txtCursor = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
+        if (textView.getCursor() != txtCursor) {
+            textView.setCursor(txtCursor);
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        if (e.getSource() == textView) {
+            if (isOnHyperlink(e.getPoint())) {
+                Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                if (textView.getCursor() != hand) {
+                    textView.setCursor(hand);
                 }
-            } catch (BadLocationException ble) {
-                setMouseLine(-1);
+            } else {
+                resetCursor();
             }
         }
     }
@@ -638,7 +663,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if (pos != -1 && pos == lastPressedPos) {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
                 if (line >= 0) {
-                    lineClicked(line, e.getPoint());
+                    lineClicked(line,pos);
                     e.consume(); //do NOT allow this window's caret to steal the focus from editor window
                 }
             }

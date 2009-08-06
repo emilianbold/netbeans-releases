@@ -76,7 +76,7 @@ public class SchemaModelResolverTest {
     @Test
     public void testResolve1() throws Exception {
         // SchemaModel smB = Util.loadSchemaModel("resources/resolve1.zip", "resolve1/T1B.xsd");
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve1.zip", "resolve1/T1C.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve1.zip", "resolve1/T1C.xsd");
         assert(sm.getState() == State.VALID);
         GlobalComplexType gct = (GlobalComplexType)sm.getSchema().getChildren().get(0);
         assertEquals(gct.getName(), "C1");
@@ -98,7 +98,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve2() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve2.zip", "resolve2/T2A.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve2.zip", "resolve2/T2A.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
         assertEquals("A1", ge.getName());
@@ -117,7 +117,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve3() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve3.zip", "resolve3/T3A.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve3.zip", "resolve3/T3A.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
         assertEquals("A2", ge.getName());
@@ -138,7 +138,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve4() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve4.zip", "resolve4/T4B.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve4.zip", "resolve4/T4B.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
         assertEquals("B2",ge.getName());
@@ -175,7 +175,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve5() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve5.zip", "resolve5/T5B.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve5.zip", "resolve5/T5B.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
         assertEquals("B3", ge.getName());
@@ -204,7 +204,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve6() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve6.zip", "resolve6/T6A.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve6.zip", "resolve6/T6A.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
         assertEquals("G1", ge.getName());
@@ -249,7 +249,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve7() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve7.zip", "resolve7/T7B.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve7.zip", "resolve7/T7B.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
         assertEquals("elemH", ge.getName());
@@ -307,7 +307,7 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve12() throws Exception {
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve12.zip", "resolve12/T12F.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve12.zip", "resolve12/T12F.xsd");
         assertNotNull(sm);
         // 
         testResolve8to12("resources/resolve12.zip", "resolve12/T12B.xsd", "T12E.xsd"); // NOI18N
@@ -320,10 +320,10 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve13() throws Exception {
-        SchemaModel smF = Util.loadSchemaModel("resources/resolve13.zip", "resolve13/T13F.xsd");
+        SchemaModel smF = Util.loadSchemaModel2("resources/resolve13.zip", "resolve13/T13F.xsd");
         assertNotNull(smF);
         //
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve13.zip", "resolve13/T13B.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve13.zip", "resolve13/T13B.xsd");
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
         assertEquals("elemE", ge.getName()); // NOI18N
@@ -346,10 +346,10 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve14() throws Exception {
-        SchemaModel smB = Util.loadSchemaModel("resources/resolve14.zip", "resolve14/T14B.xsd");
+        SchemaModel smB = Util.loadSchemaModel2("resources/resolve14.zip", "resolve14/T14B.xsd");
         assertNotNull(smB);
         //
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve14.zip", "resolve14/T14C.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve14.zip", "resolve14/T14C.xsd");
         assertNotNull(sm);
         assert(sm.getState() == State.VALID);
         GlobalElement el = (GlobalElement)sm.getSchema().getChildren().get(0);
@@ -374,13 +374,13 @@ public class SchemaModelResolverTest {
      */
     @Test
     public void testResolve15() throws Exception {
-        SchemaModel smB = Util.loadSchemaModel("resources/resolve15.zip", "resolve15/T15B.xsd");
+        SchemaModel smB = Util.loadSchemaModel2("resources/resolve15.zip", "resolve15/T15B.xsd");
         assertNotNull(smB);
         //
-        SchemaModel smF = Util.loadSchemaModel("resources/resolve15.zip", "resolve15/T15F.xsd");
+        SchemaModel smF = Util.loadSchemaModel2("resources/resolve15.zip", "resolve15/T15F.xsd");
         assertNotNull(smF);
         //
-        SchemaModel sm = Util.loadSchemaModel("resources/resolve15.zip", "resolve15/T15C.xsd");
+        SchemaModel sm = Util.loadSchemaModel2("resources/resolve15.zip", "resolve15/T15C.xsd");
         assertNotNull(sm);
         assert(sm.getState() == State.VALID);
         GlobalElement el = (GlobalElement)sm.getSchema().getChildren().get(0);
@@ -401,7 +401,7 @@ public class SchemaModelResolverTest {
     private void testResolve8to12(String zipFile, String schemaFile, String referencedSchemaFile)
             throws Exception {
         //
-        SchemaModel sm = Util.loadSchemaModel(zipFile, schemaFile);
+        SchemaModel sm = Util.loadSchemaModel2(zipFile, schemaFile);
         assert(sm.getState() == State.VALID);
         GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
         assertEquals("elemE", ge.getName()); // NOI18N

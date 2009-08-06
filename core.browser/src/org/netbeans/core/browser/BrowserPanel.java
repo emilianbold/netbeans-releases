@@ -2,17 +2,18 @@ package org.netbeans.core.browser;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import org.mozilla.browser.MozillaExecutor;
 import org.mozilla.browser.MozillaKeyEvent;
 import org.mozilla.browser.MozillaMouseEvent;
 import org.mozilla.browser.MozillaPanel;
-import org.mozilla.browser.MozillaRuntimeException;
 import org.mozilla.browser.impl.ChromeAdapter;
 import org.mozilla.browser.impl.DOMUtils;
 import org.mozilla.dom.NodeFactory;
@@ -25,6 +26,7 @@ import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -43,9 +45,8 @@ public class BrowserPanel extends MozillaPanel {
     private boolean backEnabled = false;
     private boolean forwardEnabled = false;
     private String statusText;
-    private String url;
     private String title;
-    private Document doc;
+    private boolean browserAttached = false;
 
     public BrowserPanel(PropertyChangeSupport propSupport, BrowserCallback callback) {
         super(VisibilityMode.FORCED_HIDDEN, VisibilityMode.FORCED_HIDDEN);
@@ -53,6 +54,20 @@ public class BrowserPanel extends MozillaPanel {
         this.callback = callback;
         setUpdateTitle(false);
         setMinimumSize(new Dimension(10, 10));
+    }
+
+    @Override
+    public void attachNewBrowser() {
+        if( browserAttached )
+            return;
+        super.attachNewBrowser();
+        browserAttached = true;
+    }
+
+    @Override
+    public void onDetachBrowser() {
+        super.onDetachBrowser();
+        browserAttached = false;
     }
 
     @Override
@@ -72,7 +87,7 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingEnded() {
         super.onLoadingEnded();
-//            doc = getDocument();
+        statusText = null;
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_ENDED, null );
     }
@@ -80,6 +95,8 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onLoadingStarted() {
         super.onLoadingStarted();
+        backEnabled = true;
+        propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_BACKWARD, false, true);
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_STATUS_MESSAGE, false, true);
         callback.fireBrowserEvent( WebBrowserEvent.WBE_LOADING_STARTED, null );
     }
@@ -108,13 +125,7 @@ public class BrowserPanel extends MozillaPanel {
     @Override
     public void onSetUrlbarText(String url) {
         super.onSetUrlbarText(url);
-        this.url = url;
         propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_URL, false, true);
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
     }
 
     @Override
@@ -125,12 +136,39 @@ public class BrowserPanel extends MozillaPanel {
             callback.fireBrowserEvent( WebBrowserEvent.WBE_KEY_EVENT, e, mke.getSourceNode() );
         } else if( e instanceof MozillaMouseEvent ) {
             MozillaMouseEvent mme = (MozillaMouseEvent) e;
+            fixMouseHandling(mme);
             callback.fireBrowserEvent( WebBrowserEvent.WBE_KEY_EVENT, e, mme.getSourceNode() );
         }
     }
 
+    private void fixMouseHandling( MouseEvent e ) {
+        if( e.getID() == MouseEvent.MOUSE_PRESSED ) {
+            MenuSelectionManager.defaultManager().clearSelectedPath();
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
+            if( null != tc ) {
+                tc.requestActive();
+            }
+        } else if( e.getID() == MouseEvent.MOUSE_MOVED ) {
+            Window w = SwingUtilities.getWindowAncestor(this);
+            if( null != w ) {
+                //send this event to the parent frame to hide sliding (if any)
+                SwingUtilities.convertPoint(this, e.getPoint(), w);
+                w.dispatchEvent(e);
+            }
+        }
+    }
+
     public void dispose() {
-        //TODO implement
+        if( !browserAttached || null == getChromeAdapter() )
+            return;
+        MozillaExecutor.mozAsyncExec(new Runnable() {
+            public void run() {
+                if( !browserAttached || null == getChromeAdapter() )
+                    return;
+                onDetachBrowser();
+                browserAttached = false;
+            }
+        });
     }
 
     private void updateCopyPaste() {
@@ -190,21 +228,6 @@ public class BrowserPanel extends MozillaPanel {
         }
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        try {
-            if( null != doc ) {
-                loadHTML(doc.getTextContent());
-                doc = null;
-            } else if( null != url ) {
-                this.load(url);
-            }
-        } catch( MozillaRuntimeException e ) {
-            Logger.getLogger(BrowserFactory.class.getName()).log(Level.FINE, null, e);
-        }
-    }
-
     public String getStatusText() {
         return statusText;
     }
@@ -251,5 +274,13 @@ public class BrowserPanel extends MozillaPanel {
             }
         };
         mozAsyncExec(r);
+    }
+
+    public void reparent() {
+        if( !browserAttached )
+            return;
+        removeNotify();
+        browserAttached = false;
+        addNotify();
     }
 }

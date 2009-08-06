@@ -46,7 +46,21 @@ package org.netbeans.modules.j2ee.api.ejbjar;
  * @author Martin Adamek
  */
 public final class EjbReference {
-    public static enum EjbRefIType{NO_INTERFACE, LOCAL, REMOTE};
+    public static enum EjbRefIType{
+        NO_INTERFACE("Bean"),
+        LOCAL("Local"),
+        REMOTE("Remote");
+
+        private String name;
+        EjbRefIType(String name){
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    };
 
     private final String ejbClass;
     private final String ejbRefType;

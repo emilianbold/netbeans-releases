@@ -122,7 +122,7 @@ public final class JavaIndex {
         return CacheFolder.getSourceRootForDataFolder(folder);
     }
 
-    public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue, final boolean markDirty) throws IOException {
+    public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue) throws IOException {
         Properties p = loadProperties(root);
         final String current = p.getProperty(attributeName);
         if (current == null) {
@@ -140,9 +140,6 @@ public final class JavaIndex {
         } else {
             p.remove(attributeName);
         }
-//        if (markDirty) {
-//            p.setProperty(DIRTY_ROOT, "true"); //NOI18N
-//        }
         storeProperties(root, p);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue); //NOI18N

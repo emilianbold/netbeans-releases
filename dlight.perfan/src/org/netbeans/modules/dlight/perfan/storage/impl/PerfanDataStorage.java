@@ -42,11 +42,14 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.module.dlight.threads.api.Datarace;
+import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -174,6 +177,34 @@ public final class PerfanDataStorage extends DataStorage {
         }
 
         return result;
+    }
+
+    public List<? extends Datarace> getDataraces() {
+        List<DataraceImpl> result = null;
+
+        try {
+            result = er_print.getDataRaces(true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting deadlocks list...
+        } catch (IOException ex) {
+            log.log(Level.INFO, null, ex);
+        }
+
+        return result == null? Collections.<DataraceImpl>emptyList() : result;
+    }
+
+    public List<? extends Deadlock> getDeadlocks() {
+        List<DeadlockImpl> result = null;
+
+        try {
+            result = er_print.getDeadlocks(true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting deadlocks list...
+        } catch (IOException ex) {
+            log.log(Level.INFO, null, ex);
+        }
+
+        return result == null? Collections.<DeadlockImpl>emptyList() : result;
     }
 
     public ExperimentStatistics fetchSummaryData() {

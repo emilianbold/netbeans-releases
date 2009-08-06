@@ -45,7 +45,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author Radek Matous
  */
-public class IndexedType extends IndexedElement {
+public abstract class IndexedType extends IndexedFullyQualified {
     IndexedType(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
         super(name,in,index,fileUrl,offset,flags,kind);
     }

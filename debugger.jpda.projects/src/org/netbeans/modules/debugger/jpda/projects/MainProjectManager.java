@@ -218,6 +218,42 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             if (old != theMainProject) {
                 pcs.firePropertyChange (PROP_MAIN_PROJECT, old, theMainProject);
             }
+        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            // Test if the current project is still opened:
+            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+            Project theMainProject = OpenProjects.getDefault().getMainProject();
+            Project currentGone = null;
+            Project lastGone = null;
+            synchronized (this) {
+                boolean isCurrent = false;
+                boolean isLast = false;
+                Project last = lastSelectedProjectRef.get();
+                for (Project p : openProjects) {
+                    if (p == currentProject) {
+                        isCurrent = true;
+                    }
+                    if (p == last) {
+                        isLast = true;
+                    }
+                }
+                if (!isCurrent && currentProject != null) {
+                    currentGone = currentProject;
+                    currentProject = null;
+                }
+                if (!isLast && last != null) {
+                    if (isMainProject) {
+                        lastGone = last;
+                    }
+                    lastSelectedProjectRef = new WeakReference<Project>(null);
+                }
+                isMainProject = theMainProject != null;
+            }
+            if (currentGone != null) {
+                pcs.firePropertyChange (PROP_MAIN_PROJECT, currentGone, null);
+            }
+            if (lastGone != null) {
+                pcs.firePropertyChange (PROP_SELECTED_PROJECT, lastGone, null);
+            }
         }
     }
 }

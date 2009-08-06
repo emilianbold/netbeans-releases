@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -68,7 +69,7 @@ public final class ServerUpdateCache {
         return new ArrayList<ServerRecord>(hosts);
     }
 
-    public synchronized void setHosts(List<ServerRecord> newHosts) {
+    public synchronized void setHosts(Collection<? extends ServerRecord> newHosts) {
         hosts = new ArrayList<ServerRecord>(newHosts);
         if (defaultRecord != null && !hosts.contains(defaultRecord)) {
             defaultRecord = hosts.isEmpty() ? null : hosts.get(0);

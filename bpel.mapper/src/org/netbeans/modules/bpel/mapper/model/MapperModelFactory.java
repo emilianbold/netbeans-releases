@@ -20,16 +20,13 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
  *
- * @author nk160297
+ * @author Nikita Krjukov
  */
 public interface MapperModelFactory {
 
     MapperModel constructModel();
-    
-    CachingSchemaSearchVisitor getCachingSchemaSearchVisitor();
     
 }

@@ -91,7 +91,10 @@ public class TestCatalogModel2 implements CatalogModel {
         assert sourceFo != null : "Source file object has to be specified in the lookup";
         //
         FileObject fo = sourceFo.getParent().getFileObject(locationURI.toString());
-        assert fo != null : "Unknown file: " + locationURI.toString();
+        // assert fo != null : "Unknown file: " + locationURI.toString();
+        if (fo == null) {
+            return null;
+        }
         //
         Document doc = getDocument(fo);
         assert doc != null : "Can't load the document: " + locationURI.toString();

@@ -89,7 +89,7 @@ public class KenaiTest extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "http://testkenai.com");
+            System.setProperty("kenai.com.url", "https://testkenai.com");
             instance = Kenai.getDefault();
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
@@ -206,6 +206,20 @@ public class KenaiTest extends NbTestCase {
         System.out.println(prj.getDescription());
         if (!prj.getDescription().equals("JavaInline provides a way to embed Java code into Ruby code under JRuby and have it compiled and available at runtime. Depends on Java 6 compiler API.")) {
             fail("Description of the project has changed.");
+        }
+    }
+
+    @Test
+    /**
+     * Test of getDescription method of class KenaiProject
+     */
+    public void testGetImageUrl() throws Exception {
+        System.out.println("testGetImageURL");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getImageUrl());
+        if (!prj.getImageUrl().equals("https://testkenai.com/images/defaultProjectImage.jpg")) {
+            fail("Image URL has changed.");
         }
     }
 
@@ -639,6 +653,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
         _suite.addTest(new KenaiTest("testGetProject"));
         _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetImageUrl"));
         _suite.addTest(new KenaiTest("testGetDisplayName"));
         _suite.addTest(new KenaiTest("testGetWebLocation"));
         _suite.addTest(new KenaiTest("testGetTags"));
@@ -650,7 +665,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
+//        _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }

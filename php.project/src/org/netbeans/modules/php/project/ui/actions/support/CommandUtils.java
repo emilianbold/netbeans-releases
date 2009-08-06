@@ -47,13 +47,13 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -102,14 +102,14 @@ public final class CommandUtils {
      * @return a {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid.
      */
     public static PhpUnit getPhpUnit(boolean showCustomizer) {
-        final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
-        if (Utils.validatePhpUnit(phpUnitPath) != null) {
+        try {
+            return PhpUnit.getDefault();
+        } catch (InvalidPhpProgramException ex) {
             if (showCustomizer) {
                 OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH);
             }
-            return null;
         }
-        return new PhpUnit(phpUnitPath);
+        return null;
     }
 
     /**

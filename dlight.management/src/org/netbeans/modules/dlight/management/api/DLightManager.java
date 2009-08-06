@@ -486,6 +486,18 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    public void openVisualizerForIndicator(Indicator source, VisualizerConfiguration vc) {
+        DLightSession session = findIndicatorOwner(source);
+        //set active session
+        setActiveSession(session);
+        boolean found = openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc, session) != null;
+        if (!found) {
+            openEmptyVisualizer(IndicatorAccessor.getDefault().getToolName(source), session);
+        }
+    }
+
+
+
     public void mouseClickedOnIndicator(Indicator source) {
         DLightSession session = findIndicatorOwner(source);
         //set active session

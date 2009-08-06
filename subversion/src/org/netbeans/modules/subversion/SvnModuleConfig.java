@@ -214,7 +214,10 @@ public class SvnModuleConfig {
             }
         }
         handleCredentials(rc);
-        Utils.insert(prefs, KEY_RECENT_URL, RepositoryConnection.getString(rc), -1);
+        String url = RepositoryConnection.getString(rc);
+        if (!"".equals(url)) {                                          //NOI18N
+            Utils.insert(prefs, KEY_RECENT_URL, url, -1);
+        }
     }    
 
     public void setRecentUrls(List<RepositoryConnection> recentUrls) {
@@ -224,8 +227,11 @@ public class SvnModuleConfig {
         for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
             idx++;
             RepositoryConnection rc = it.next();
-            handleCredentials(rc);            
-            urls.add(RepositoryConnection.getString(rc));            
+            handleCredentials(rc);
+            String url = RepositoryConnection.getString(rc);
+            if (!"".equals(url)) {                                      //NOI18N
+                urls.add(url);
+            }
         }
         Preferences prefs = getPreferences();
         Utils.put(prefs, KEY_RECENT_URL, urls);

@@ -81,10 +81,10 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     private final EjbJar ejbModule;;
     private final SessionMethodController controller;
     
-    public SessionChildren(ClasspathInfo cpInfo, String ejbClass, EjbJar ejbModule) {
-        this.cpInfo = cpInfo;
-        this.ejbClass = ejbClass;
-        this.ejbModule = ejbModule;
+    public SessionChildren(EjbViewController ejbViewController) {
+        this.cpInfo = ejbViewController.getClasspathInfo();
+        this.ejbClass = ejbViewController.getEjbClass();
+        this.ejbModule = ejbViewController.getEjbModule();
         controller = new SessionMethodController(ejbClass, ejbModule.getMetadataModel());
     }
     

@@ -71,8 +71,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
-import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -99,6 +98,11 @@ public class JarFileSystem extends AbstractFileSystem {
 
     /** maxsize for passing ByteArrayInputStream*/
     private static final long MEM_STREAM_SIZE = 100000;
+
+    /** Maximal time for which closing of jar is postponed. */
+    private static final int CLOSE_DELAY_MAX = 5000;
+    /** Mininal time for which closing of jar is postponed. */
+    private static final int CLOSE_DELAY_MIN = 300;
 
     /**
     * Opened zip file of this filesystem is stored here or null.
@@ -137,6 +141,11 @@ public class JarFileSystem extends AbstractFileSystem {
     private transient Reference<Cache> softCache = new SoftReference<Cache>(null);
     private transient FileObject foRoot;
     private transient FileChangeListener fcl;
+
+    /** Actual time for which closing of jar is postponed. */
+    private transient int closeDelay = CLOSE_DELAY_MIN;
+    /** Time of request for opening of jar. */
+    private transient long openRequestTime = 0;
 
     /**
     * Default constructor.
@@ -249,19 +258,19 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         if (aRoot == null) {
-            FSException.io("EXC_NotValidFile", aRoot); // NOI18N        
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidFile", aRoot));
         }
 
         if (!aRoot.exists()) {
-            FSException.io("EXC_FileNotExists", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_FileNotExists", aRoot.getAbsolutePath()));
         }
 
         if (!aRoot.canRead()) {
-            FSException.io("EXC_CanntRead", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CanntRead", aRoot.getAbsolutePath()));
         }
 
         if (!aRoot.isFile()) {
-            FSException.io("EXC_NotValidFile", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidFile", aRoot.getAbsolutePath()));
         }
 
         String s;
@@ -274,7 +283,7 @@ public class JarFileSystem extends AbstractFileSystem {
             tempJar = new JarFile(s);
             LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
         } catch (ZipException e) {
-            FSException.io("EXC_NotValidJarFile2", e.getLocalizedMessage(), s); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
         }
 
         synchronized (closeSync) {
@@ -282,6 +291,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
             closeCurrentRoot(false);
             jar = tempJar;
+            openRequestTime = System.currentTimeMillis();
             root = new File(s);
 
             if (refreshRoot) {
@@ -359,7 +369,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * @return user presentable name of the filesystem
     */
     public String getDisplayName() {
-        return (root != null) ? root.getAbsolutePath() : getString("JAR_UnknownJar");
+        return root != null ? root.getAbsolutePath() : NbBundle.getMessage(JarFileSystem.class, "JAR_UnknownJar");
     }
 
     /** This filesystem is read-only.
@@ -593,7 +603,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected void lock(String name) throws IOException {
-        FSException.io("EXC_CannotLock", name, getDisplayName(), name); // NOI18N
+        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock", name, getDisplayName(), name));
     }
 
     protected void unlock(String name) {
@@ -671,6 +681,13 @@ public class JarFileSystem extends AbstractFileSystem {
                 closeTask.cancel();
             }
 
+            // #167527 - calculate adaptive delay before closing jar
+            long now = System.currentTimeMillis();
+            long requestPeriod = now - openRequestTime;
+            openRequestTime = now;
+            // 150% of time from last open request, but between CLOSE_DELAY_MIN and CLOSE_DELAY_MAX
+            closeDelay = (int) Math.min(CLOSE_DELAY_MAX, Math.max(CLOSE_DELAY_MIN, (1.5 * requestPeriod)));
+
             JarFile j = jar;
 
             if (j != null) {
@@ -698,7 +715,7 @@ public class JarFileSystem extends AbstractFileSystem {
             if (isRealClose) {
                 realClose().run();
             } else {
-                closeTask = req.post(realClose(), 300);
+                closeTask = req.post(realClose(), closeDelay);
             }
         }
     }
@@ -811,7 +828,7 @@ public class JarFileSystem extends AbstractFileSystem {
                             uniqueEntries.add(entry);
                         } else {
                             if (!duplicateReported) {
-                                LOGGER.warning(getString("EXC_DuplicateEntries", getJarFile(), name));  //NOI18N
+                                LOGGER.warning("Duplicate entries in " + getJarFile() + ": " + name + "; please report to JAR creator.");
                                 // report just once
                                 duplicateReported = true;
                             }

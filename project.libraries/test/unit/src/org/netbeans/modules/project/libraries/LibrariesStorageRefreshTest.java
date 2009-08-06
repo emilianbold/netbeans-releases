@@ -79,8 +79,9 @@ public class LibrariesStorageRefreshTest extends NbTestCase {
         this.storage.addPropertyChangeListener(l);
         assertEquals("No libraries found", 0, libs.length);
         LibrariesStorageTest.registerLibraryTypeProvider();
-        libs = this.storage.getLibraries();
-        assertEquals("Libraries count",1,libs.length);
+        Thread.sleep(1000); //The lookup for path fires with delay, wait for the event
+        libs = this.storage.getLibraries();        
+        assertEquals("Libraries count",1,libs.length);        
         assertEquals("One change", 1, l.getEventNames().size());
     }
     

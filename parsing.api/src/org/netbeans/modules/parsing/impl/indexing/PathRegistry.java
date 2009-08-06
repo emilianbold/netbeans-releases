@@ -386,6 +386,11 @@ public final class PathRegistry implements Runnable {
         return roots;
     }
 
+    public Set<String> getMimeTypesFor(URL root) {
+        PathIds pathIds = getRootPathIds().get(root);
+        return pathIds != null ? pathIds.getMimeTypes() : null;
+    }
+
     /**
      * If all the source path events where fired (task is finished) return true,
      * otherwise false. (Means there is waiting event to be fired.)
@@ -635,7 +640,7 @@ public final class PathRegistry implements Runnable {
         }
         pathIds.addAll(tcp.getPathIds());
 
-        for(String id : tcp.getPathIds().getAll()) {
+        for(String id : tcp.getPathIds().getAllIds()) {
             Set<URL> rootsWithId = pathIdToRootsResult.get(id);
             if (rootsWithId == null) {
                 rootsWithId = new HashSet<URL>();
@@ -649,10 +654,15 @@ public final class PathRegistry implements Runnable {
 
     private static void updateTranslatedPathIds(Collection<URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
         Set<String> sids = new HashSet<String>();
+        Set<String> mimeTypes = new HashSet<String>();
         for(String blid : tcp.getPathIds().getBlids()) {
             Set<String> ids = PathRecognizerRegistry.getDefault().getSourceIdsForBinaryLibraryId(blid);
             if (ids != null) {
                 sids.addAll(ids);
+            }
+            Set<String> mts = PathRecognizerRegistry.getDefault().getMimeTypesForBinaryLibraryId(blid);
+            if (mts != null) {
+                mimeTypes.addAll(mts);
             }
         }
         for(URL root : roots) {
@@ -662,6 +672,7 @@ public final class PathRegistry implements Runnable {
                 pathIdsResult.put(root, pathIds);
             }
             pathIds.getSids().addAll(sids);
+            pathIds.getMimeTypes().addAll(mimeTypes);
 
             for(String id : sids) {
                 Set<URL> rootsWithId = pathIdToRootsResult.get(id);
@@ -760,9 +771,13 @@ public final class PathRegistry implements Runnable {
                 }
                 switch (kind) {
                     case SOURCE:
-                        tcp.associateWithSourceId(id); break;
+                        tcp.associateWithSourceId(id);
+                        tcp.associateWithMimeTypes(PathRecognizerRegistry.getDefault().getMimeTypesForSourceId(id));
+                        break;
                     case LIBRARY:
-                        tcp.associateWithLibraryId(id); break;
+                        tcp.associateWithLibraryId(id);
+                        tcp.associateWithMimeTypes(PathRecognizerRegistry.getDefault().getMimeTypesForLibraryId(id));
+                        break;
                     case BINARY_LIBRARY:
                         tcp.associateWithBinaryLibraryId(id); break;
                 }
@@ -968,6 +983,10 @@ public final class PathRegistry implements Runnable {
         public void associateWithBinaryLibraryId(String id) {
             pathIds.getBlids().add(id);
         }
+
+        public void associateWithMimeTypes(Set<String> mimeTypes) {
+            pathIds.getMimeTypes().addAll(mimeTypes);
+        }
     } // End of TaggedClassPath class
 
     private static final class PathIds {
@@ -975,6 +994,7 @@ public final class PathRegistry implements Runnable {
         private final Set<String> sourcePathIds = new HashSet<String>();
         private final Set<String> libraryPathIds = new HashSet<String>();
         private final Set<String> binaryLibraryPathIds = new HashSet<String>();
+        private final Set<String> mimeTypes = new HashSet<String>();
 
         public Set<String> getSids() {
             return sourcePathIds;
@@ -988,7 +1008,11 @@ public final class PathRegistry implements Runnable {
             return binaryLibraryPathIds;
         }
 
-        public Set<String> getAll() {
+        public Set<String> getMimeTypes() {
+            return mimeTypes;
+        }
+
+        public Set<String> getAllIds() {
             Set<String> allIds = new HashSet<String>();
             allIds.addAll(sourcePathIds);
             allIds.addAll(libraryPathIds);
@@ -1000,6 +1024,7 @@ public final class PathRegistry implements Runnable {
             sourcePathIds.addAll(pathIds.getSids());
             libraryPathIds.addAll(pathIds.getLids());
             binaryLibraryPathIds.addAll(pathIds.getBlids());
+            mimeTypes.addAll(pathIds.getMimeTypes());
         }
 
         @Override

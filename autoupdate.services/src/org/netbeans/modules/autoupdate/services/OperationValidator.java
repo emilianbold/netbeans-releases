@@ -524,9 +524,18 @@ abstract class OperationValidator {
         for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getInstalledEagers ()) {
             // take a module
             UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
-            assert impl instanceof ModuleUpdateElementImpl : eagerEl + " is instanceof ModuleUpdateElementImpl";
-            ModuleInfo mi = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
-            installedEagers.add (Utilities.toModule (mi));
+            if(impl instanceof ModuleUpdateElementImpl) {
+                ModuleInfo mi = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
+                installedEagers.add (Utilities.toModule (mi));
+            } else if(impl instanceof FeatureUpdateElementImpl) {
+                List <ModuleInfo> infos = ((FeatureUpdateElementImpl) impl).getModuleInfos();
+                for(ModuleInfo mi : infos) {
+                    installedEagers.add (Utilities.toModule (mi));
+                }
+            } else {
+                assert false : eagerEl + " is instanceof neither ModuleUpdateElementImpl nor FeatureUpdateElementImpl";
+            }
+            
         }
         // add installedEagers into affected modules to don't break uninstall of candidates
         compactSet.addAll (installedEagers);

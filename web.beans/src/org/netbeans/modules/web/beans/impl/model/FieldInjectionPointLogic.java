@@ -52,6 +52,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
@@ -95,6 +96,13 @@ abstract class FieldInjectionPointLogic {
     {
         Set<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
+        return getResult(injectables, modelImpl );
+    }
+
+    protected Element getResult( Set<Element> injectables , 
+            WebBeansModelImplementation model )
+            throws AmbiguousDependencyException
+    {
         /*
          *  TODO : need to compare set before filtering and after.
          *  If after filtering there is only one element then 
@@ -107,6 +115,10 @@ abstract class FieldInjectionPointLogic {
          * 2) Several elements set means ambiguous dependency.    
          */
         filterBeans( injectables );
+        PoliciesTypeFilter<Element> filter = PoliciesTypeFilter.get( 
+                Element.class);
+            filter.init( model );
+            filter.filter( injectables );
         if ( injectables.size() ==1 ){
             return injectables.iterator().next();
         }
@@ -204,7 +216,7 @@ abstract class FieldInjectionPointLogic {
                  *  It should be either absent at all or binding types 
                  *  should contain @Current.  
                  */
-                filterBindnigsByCurrent( assignableTypes, modelImpl );
+                filterBindingsByCurrent( assignableTypes, modelImpl );
             }
             types.addAll( assignableTypes );
         }
@@ -249,12 +261,11 @@ abstract class FieldInjectionPointLogic {
             types.addAll( typesWithBindings );
         }
         
-        result.addAll( types );
-        
-        DeploymentTypeFilter<TypeElement> filter = DeploymentTypeFilter.get( 
+        /*PoliciesTypeFilter<TypeElement> filter = PoliciesTypeFilter.get( 
                 TypeElement.class);
         filter.init( modelImpl );
-        filter.filter( types );
+        filter.filter( types );*/
+        result.addAll( types );
         
         /*
          * This is list with production fields or methods ( they have @Produces annotation )
@@ -278,10 +289,10 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         
-        DeploymentTypeFilter<Element> deploymentFilter = DeploymentTypeFilter.get( 
-                Element.class);
-        deploymentFilter.init( modelImpl );
-        deploymentFilter.filter( productionElements );
+        /*PoliciesTypeFilter<Element> filter = PoliciesTypeFilter.get( 
+            Element.class);
+        filter.init( modelImpl );
+        filter.filter( productionElements );*/
         
         result.addAll( productionElements );
         return result;
@@ -295,43 +306,79 @@ abstract class FieldInjectionPointLogic {
         return checker.check();
     }
     
-    static Set<Element> getSpecialized( Element productionElement,
-            WebBeansModelImplementation model  )
+    private Set<Element> getChildSpecializes( Element productionElement,
+            WebBeansModelImplementation model )
     {
-        return getSpecialized(productionElement, model, null);
-    }
-
-    static Set<Element> getSpecialized( Element productionElement,
-            WebBeansModelImplementation model , String annotationName )
-    {
-        if ( !( productionElement instanceof ExecutableElement )){
-            return Collections.emptySet();
+        TypeElement typeElement = model.getHelper().getCompilationController()
+                .getElementUtilities().enclosingTypeElement(productionElement);
+        Set<TypeElement> implementors = getImplementors(model, typeElement);
+        implementors.remove( productionElement.getEnclosingElement());
+        Set<Element> specializeElements = new HashSet<Element>();
+        specializeElements.add(productionElement);
+        for (TypeElement implementor : implementors) {
+            inspectHierarchy(productionElement, implementor,
+                    specializeElements, model);
         }
-        Set<Element> set = new HashSet<Element>(); 
-        ExecutableElement current = (ExecutableElement)productionElement;
-        while ( true ){
-            ExecutableElement overridenElement = model.getHelper().getCompilationController().
-                getElementUtilities().getOverriddenMethod( current);
-            if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
-                    current, model.getHelper()))
+        specializeElements.remove(productionElement);
+        return specializeElements;
+    }
+    
+    private void inspectHierarchy( Element productionElement,
+            TypeElement implementor, Set<Element> specializeElements ,
+            WebBeansModelImplementation model )
+    {
+        List<? extends Element> enclosedElements = implementor.getEnclosedElements();
+        for (Element enclosedElement : enclosedElements) {
+            if ( enclosedElement.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            if ( !productionElement.getSimpleName().contentEquals(
+                    enclosedElement.getSimpleName()))
             {
-                set.add( overridenElement );
-                if ( annotationName!= null && AnnotationObjectProvider.
-                        hasAnnotation( overridenElement, annotationName, 
-                                model.getHelper()))
-                {
-                    return set;
-                }
-                current = overridenElement;
+                continue;
             }
-            else {
-                break;
+            Set<Element> probableSpecializes = new HashSet<Element>();
+            if ( collectSpecializes( productionElement ,
+                    (ExecutableElement)enclosedElement , model ,
+                    probableSpecializes , specializeElements))
+            {
+                // for one method there could be just one override method in considered class
+                specializeElements.addAll( probableSpecializes );
+                return;
             }
         }
-        return set;
+    }
+    
+    private boolean collectSpecializes( Element productionElement,
+            ExecutableElement element, WebBeansModelImplementation model,
+            Set<Element> probableSpecializes, Set<Element> specializeElements )
+    {
+        ElementUtilities elementUtilities =
+            model.getHelper().getCompilationController().getElementUtilities();
+        if ( !elementUtilities.overridesMethod(element)){
+            return false;
+        }
+        ExecutableElement overriddenMethod = elementUtilities.
+            getOverriddenMethod( element);
+        if ( overriddenMethod == null ){
+            return false;
+        }
+        if (!AnnotationObjectProvider.hasSpecializes(element,  model.getHelper())){
+            return false;
+        }
+        probableSpecializes.add( element);
+        if( overriddenMethod.equals( productionElement ) ||
+                specializeElements.contains( productionElement))
+        {
+            return true;
+        }
+        else {
+            return collectSpecializes(productionElement, overriddenMethod, model,
+                    probableSpecializes, specializeElements);
+        }
     }
 
-    static Set<TypeElement> doGetImplementors( WebBeansModelImplementation modelImpl,
+    private Set<TypeElement> doGetImplementors( WebBeansModelImplementation modelImpl,
             TypeElement typeElement )
     {
         Set<TypeElement> result = new HashSet<TypeElement>();
@@ -402,7 +449,7 @@ abstract class FieldInjectionPointLogic {
         filter.filter( productionElements );
     }
     
-    private void filterBindnigsByCurrent( Set<TypeElement> assignableTypes,
+    private void filterBindingsByCurrent( Set<TypeElement> assignableTypes,
             WebBeansModelImplementation modelImpl )
     {
         CurrentBindingTypeFilter<TypeElement> filter = CurrentBindingTypeFilter.get( 
@@ -503,34 +550,29 @@ abstract class FieldInjectionPointLogic {
     {
         List<Set<Element>> bindingCollections = 
             new ArrayList<Set<Element>>( bindingAnnotations.size());
+        /*
+         * One need to handle special case with @Current annotation 
+         * in case of specialization. There can be a case 
+         * when production method doesn't explicitly declare @Current but 
+         * specialize other method with several appropriate binding types.
+         * In this case original method will have @Current along with 
+         * binding types "inherited" from specialized methods.  
+         */
+        boolean hasCurrent = model.getHelper().getAnnotationsByType( bindingAnnotations ).
+                get(CURRENT_BINDING_ANNOTATION) != null ;
+        Set<Element> currentBindings = new HashSet<Element>();
         for (AnnotationMirror annotationMirror : bindingAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
             String annotationFQN = annotationElement.getQualifiedName().toString();
-            final Set<Element> binding = new HashSet<Element>();
-            try {
-                model.getHelper().getAnnotationScanner().findAnnotations( 
-                        annotationFQN, 
-                        EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
-                        new AnnotationHandler() {
-                            public void handleAnnotation( TypeElement type, 
-                                    Element element,AnnotationMirror annotation )
-                            {
-                                if ( AnnotationObjectProvider.hasAnnotation(element, 
-                                        PRODUCER_ANNOTATION, model.getHelper()))
-                                {
-                                    binding.add( element );
-                                    binding.addAll(getSpecialized( element , model ));
-                                }
-                            }
-                        });
-                bindingCollections.add( binding );
-            }
-            catch (InterruptedException e) {
-                LOGGER.warning("Finding annotation "+annotationFQN+
-                        " was interrupted"); // NOI18N
-            }
+            findAnnotation(model, bindingCollections, annotationFQN , hasCurrent,
+                    currentBindings );
         }
+
+        if ( hasCurrent ){
+            bindingCollections.add( currentBindings );
+        }
+        
         Set<Element> result= null;
         for ( int i=0; i<bindingCollections.size() ; i++ ){
             Set<Element> list = bindingCollections.get(i);
@@ -541,14 +583,74 @@ abstract class FieldInjectionPointLogic {
                 result.retainAll( list );
             }
         }
+        if ( result == null ){
+            return Collections.emptySet();
+        }
         return result;
+    }
+
+    private void findAnnotation( final WebBeansModelImplementation model,
+            final List<Set<Element>> bindingCollections, final String annotationFQN ,
+            final boolean hasCurrent , final Set<Element> currentBindings )
+    {
+        try {
+            final Set<Element> bindings = new HashSet<Element>();
+            model.getHelper().getAnnotationScanner().findAnnotations( 
+                    annotationFQN, 
+                    EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
+                    new AnnotationHandler() {
+                        public void handleAnnotation( TypeElement type, 
+                                Element element,AnnotationMirror annotation )
+                        {
+                            if ( AnnotationObjectProvider.hasAnnotation(element, 
+                                    PRODUCER_ANNOTATION, model.getHelper()))
+                            {
+                                bindings.add( element );
+                                bindings.addAll(getChildSpecializes( element , 
+                                        model ));
+                                if ( annotationFQN.contentEquals( 
+                                        CURRENT_BINDING_ANNOTATION )){
+                                    currentBindings.addAll( bindings );
+                                }
+                                else {
+                                    bindingCollections.add( bindings );
+                                }
+                            }
+                        }
+                    });
+            if ( hasCurrent ){
+                for (Element element : bindings) {
+                    if ( AnnotationObjectProvider.checkCurrent(
+                            element, model.getHelper()))
+                    {
+                        currentBindings.add( element );
+                    }
+                }
+            }
+        }
+        catch (InterruptedException e) {
+            LOGGER.warning("Finding annotation "+annotationFQN+
+                    " was interrupted"); // NOI18N
+        }
     }
 
     private Set<TypeElement> getBindingTypes( List<AnnotationMirror> bindingAnnotations ,
             WebBeansModelImplementation modelImpl )
     {
-        List<List<Binding>> bindingCollections = 
-            new ArrayList<List<Binding>>( bindingAnnotations.size());
+        List<Set<Binding>> bindingCollections = 
+            new ArrayList<Set<Binding>>( bindingAnnotations.size());
+
+        /*
+         * One need to handle special case with @Current annotation 
+         * in case of specialization. There can be a case 
+         * when bean doesn't explicitly declare @Current but 
+         * specialize other beans with several appropriate binding types.
+         * In this case original bean will have @Current along with 
+         * binding types "inherited" from specialized beans.  
+         */
+        boolean hasCurrent = modelImpl.getHelper().getAnnotationsByType( bindingAnnotations ).
+                get(CURRENT_BINDING_ANNOTATION) != null ;
+        Set<Binding> currentBindings = new HashSet<Binding>();
         for (AnnotationMirror annotationMirror : bindingAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
@@ -556,16 +658,37 @@ abstract class FieldInjectionPointLogic {
             PersistentObjectManager<Binding> manager = modelImpl.getManager( 
                     annotationFQN );
             Collection<Binding> bindings = manager.getObjects();
-            bindingCollections.add( new ArrayList<Binding>( bindings) );
-        }
-        List<Binding> result= null;
-        for ( int i=0; i<bindingCollections.size() ; i++ ){
-            List<Binding> list = bindingCollections.get(i);
-            if ( i==0 ){
-                result = list;
+            if ( annotationFQN.contentEquals( CURRENT_BINDING_ANNOTATION )){
+                currentBindings.addAll( bindings );
             }
             else {
-                result.retainAll( list );
+                bindingCollections.add( new HashSet<Binding>( bindings) );
+                if ( hasCurrent ){
+                    for (Binding binding : bindings) {
+                        if ( AnnotationObjectProvider.checkCurrent(
+                                binding.getTypeElement(), modelImpl.getHelper()))
+                        {
+                            currentBindings.add( new Binding( 
+                                    modelImpl.getHelper(), binding.getTypeElement(), 
+                                    CURRENT_BINDING_ANNOTATION));
+                        }
+                    }
+                }
+            }
+        }
+        
+        if ( hasCurrent ){
+            bindingCollections.add( currentBindings );
+        }
+        
+        Set<Binding> result= null;
+        for ( int i=0; i<bindingCollections.size() ; i++ ){
+            Set<Binding> set = bindingCollections.get(i);
+            if ( i==0 ){
+                result = set;
+            }
+            else {
+                result.retainAll( set );
             }
         }
         if ( result == null ){

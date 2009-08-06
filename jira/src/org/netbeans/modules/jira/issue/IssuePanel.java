@@ -53,8 +53,10 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -87,6 +89,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -128,6 +131,8 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField.setBackground(getBackground());
         projectField.setBackground(getBackground());
         statusField.setBackground(getBackground());
+        customFieldPanelLeft.setBackground(getBackground());
+        customFieldPanelRight.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -248,6 +253,59 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyCommentPanel, commentsPanel);
     }
 
+    private Map<String,JLabel> customFieldLabels = new HashMap<String,JLabel>();
+    private Map<String,JComponent> customFieldComponents = new HashMap<String,JComponent>();
+    private void initCustomFields() {
+        customFieldPanelLeft.removeAll();
+        customFieldPanelRight.removeAll();
+        List<NbJiraIssue.CustomField> supportedFields = getSupportedCustomFields();
+        customFieldPanelLeft.setVisible(!supportedFields.isEmpty());
+        customFieldPanelRight.setVisible(!supportedFields.isEmpty());
+        if (!supportedFields.isEmpty()) {
+            GroupLayout labelLayout = new GroupLayout(customFieldPanelLeft);
+            customFieldPanelLeft.setLayout(labelLayout);
+            GroupLayout fieldLayout = new GroupLayout(customFieldPanelRight);
+            customFieldPanelRight.setLayout(fieldLayout);
+            GroupLayout.ParallelGroup labelHorizontalGroup = labelLayout.createParallelGroup(GroupLayout.LEADING);
+            GroupLayout.SequentialGroup labelVerticalGroup = labelLayout.createSequentialGroup();
+            GroupLayout.ParallelGroup fieldHorizontalGroup = fieldLayout.createParallelGroup(GroupLayout.LEADING);
+            GroupLayout.SequentialGroup fieldVerticalGroup = fieldLayout.createSequentialGroup();
+            boolean first = true;
+            for (NbJiraIssue.CustomField cField : supportedFields) {
+                JLabel label = new JLabel(cField.getLabel());
+                JTextField field = new JTextField();
+                customFieldLabels.put(cField.getId(), label);
+                customFieldComponents.put(cField.getId(), field);
+                label.setLabelFor(field);
+                label.setPreferredSize(new Dimension(label.getPreferredSize().width, field.getPreferredSize().height));
+                if (!first) {
+                    labelVerticalGroup.addPreferredGap(LayoutStyle.RELATED);
+                    fieldVerticalGroup.addPreferredGap(LayoutStyle.RELATED);
+                }
+                labelHorizontalGroup.add(label);
+                labelVerticalGroup.add(label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+                fieldHorizontalGroup.add(field);
+                fieldVerticalGroup.add(field);
+                first = false;
+            }
+            labelLayout.setHorizontalGroup(labelHorizontalGroup);
+            labelLayout.setVerticalGroup(labelVerticalGroup);
+            fieldLayout.setHorizontalGroup(fieldHorizontalGroup);
+            fieldLayout.setVerticalGroup(fieldVerticalGroup);
+        }
+    }
+
+    private List<NbJiraIssue.CustomField> getSupportedCustomFields() {
+        NbJiraIssue.CustomField[] cFields = issue.getCustomFields();
+        List<NbJiraIssue.CustomField> supportedFields = new LinkedList<NbJiraIssue.CustomField>();
+        for (NbJiraIssue.CustomField cField : cFields) {
+            if (isSupportedCustomField(cField)) {
+                supportedFields.add(cField);
+            }
+        }
+        return supportedFields;
+    }
+
     private void attachFieldStatusListeners() {
         issueTypeCombo.addActionListener(new CancelHighlightListener(issueTypeLabel));
         statusCombo.addActionListener(new CancelHighlightListener(statusLabel));
@@ -299,6 +357,10 @@ public class IssuePanel extends javax.swing.JPanel {
         subtaskLabel.setVisible(false);
         dummySubtaskPanel.setVisible(false);
 
+        if (force) {
+            initCustomFields();
+        }
+
         // Operations
         boolean startProgressAvailable = false;
         boolean stopProgressAvailable = false;
@@ -343,6 +405,9 @@ public class IssuePanel extends javax.swing.JPanel {
             GroupLayout layout = (GroupLayout)getLayout();
             layout.replace(isNew ? cancelButton : dummyCancelButton, isNew ? dummyCancelButton : cancelButton);
         }
+
+        reloadCustomFields();
+
         JiraConfiguration config = issue.getRepository().getConfiguration();
         if (isNew) {
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -435,6 +500,22 @@ public class IssuePanel extends javax.swing.JPanel {
     private JComponent dummyCancelButton = new JLabel();
     private JComponent dummyActionPanel = new JLabel();
 
+    private void reloadCustomFields() {
+        for (NbJiraIssue.CustomField cField : getSupportedCustomFields()) {
+            String type = cField.getType();
+            if ("com.atlassian.jira.plugin.labels:labels".equals(type)) { // NOI18N
+                JTextField field = (JTextField)customFieldComponents.get(cField.getId());
+                if (field != null) {
+                    field.setText(cField.getValues().get(0));
+                }
+            }
+        }
+    }
+
+    private boolean isSupportedCustomField(NbJiraIssue.CustomField field) {
+        return "com.atlassian.jira.plugin.labels:labels".equals(field.getType()); // NOI18N
+    }
+
     private void reloadField(JComponent fieldComponent, Object fieldValue, NbJiraIssue.IssueField field) {
         if (fieldComponent instanceof JComboBox) {
             ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
@@ -511,6 +592,18 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         if (issue.getTaskData().isNew() || !identical) {
             issue.setFieldValues(field, values);
+        }
+    }
+
+    private void storeCustomFieldValue(NbJiraIssue.CustomField cField) {
+        String type = cField.getType();
+        if ("com.atlassian.jira.plugin.labels:labels".equals(type)) { // NOI18N
+            JTextField field = (JTextField)customFieldComponents.get(cField.getId());
+            if (field != null) {
+                List<String> values = Collections.singletonList(field.getText());
+                cField.setValues(values);
+                issue.setCustomField(cField);
+            }
         }
     }
 
@@ -764,6 +857,8 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField = new javax.swing.JTextField();
         projectField = new javax.swing.JTextField();
         statusField = new javax.swing.JTextField();
+        customFieldPanelLeft = new javax.swing.JPanel();
+        customFieldPanelRight = new javax.swing.JPanel();
         headerLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
@@ -1162,13 +1257,14 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(originalEstimatePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .add(headerLabel)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(customFieldPanelLeft, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(summaryLabel)
                             .add(environmentLabel)
                             .add(addCommentLabel)
                             .add(attachmentLabel)
                             .add(subtaskLabel)
-                            .add(originalEstimateLabelNew))
+                            .add(originalEstimateLabelNew, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(environmentScrollPane)
@@ -1181,7 +1277,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(originalEstimateHint))))
+                            .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
             .add(separator)
             .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1285,13 +1382,16 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(environmentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(addCommentLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(addCommentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(originalEstimateLabelNew))))
+                    .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(customFieldPanelLeft, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(addCommentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addCommentLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(originalEstimateLabelNew))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(originalEstimateHint)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1345,7 +1445,15 @@ public class IssuePanel extends javax.swing.JPanel {
 
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
-                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
+                        boolean subtask = issue.isSubtask();
+                        IssueType[] issueTypes = config.getIssueTypes(project);
+                        List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
+                        for (IssueType issueType : issueTypes) {
+                            if (issueType.isSubTaskType() == subtask) {
+                                types.add(issueType);
+                            }
+                        }
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(types.toArray(new IssueType[types.size()])));
                         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
 
                         // Reload components
@@ -1420,6 +1528,9 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
         storeFieldValue(NbJiraIssue.IssueField.DUE, dueField);
         storeFieldValue(NbJiraIssue.IssueField.ASSIGNEE, assigneeField);
+        for (NbJiraIssue.CustomField cField : getSupportedCustomFields()) {
+            storeCustomFieldValue(cField);
+        }
         String submitMessage;
         if (isNew) {
             String estimateCode = originalEstimateFieldNew.getText();
@@ -1606,6 +1717,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton createSubtaskButton;
     private javax.swing.JTextField createdField;
     private javax.swing.JLabel createdLabel;
+    private javax.swing.JPanel customFieldPanelLeft;
+    private javax.swing.JPanel customFieldPanelRight;
     private javax.swing.JFormattedTextField dueField;
     private javax.swing.JLabel dueLabel;
     private javax.swing.JPanel dummyAttachmentPanel;

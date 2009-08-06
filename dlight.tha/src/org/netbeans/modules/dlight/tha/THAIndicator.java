@@ -38,17 +38,31 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
-    private final THAControlPanel controlPanel = new THAControlPanel();
+    private final THAControlPanel controlPanel;
+    private final String dataracesColumnName;
+    private final String deadlocksColumnName;
+    private int dataraces;
+    private int deadlocks;
 
     public THAIndicator(final THAIndicatorConfiguration configuration) {
         super(configuration);
+        controlPanel = new THAControlPanel(false, new ToggleCollectorAction(), getDefaultAction());
+        dataracesColumnName = getMetadataColumnName(0);
+        deadlocksColumnName = getMetadataColumnName(1);
     }
 
     @Override
@@ -57,13 +71,23 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     }
 
     @Override
-    protected void tick() {
-        // throw new UnsupportedOperationException("Not supported yet.");
+    protected synchronized void tick() {
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                controlPanel.setDataRaces(dataraces);
+                controlPanel.setDeadlocks(deadlocks);
+            }
+        });
     }
 
     @Override
-    public void updated(List<DataRow> data) {
-//        controlPanel.
+    public synchronized void updated(List<DataRow> data) {
+        for (DataRow row : data) {
+            Object dataracesObj = row.getData(dataracesColumnName);
+            dataraces = Math.max(dataraces, DataUtil.toInt(dataracesObj));
+            Object deadlocksObj = row.getData(deadlocksColumnName);
+            deadlocks = Math.max(deadlocks, DataUtil.toInt(deadlocksObj));
+        }
     }
 
     @Override
@@ -74,5 +98,17 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     @Override
     public JComponent getComponent() {
         return controlPanel;
+    }
+
+    private class ToggleCollectorAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            DLightTarget target = getTarget();
+            if (target instanceof NativeExecutableTarget) {
+                int pid = ((NativeExecutableTarget)target).getPID();
+                if (0 < pid) {
+                    CommonTasksSupport.sendSignal(target.getExecEnv(), pid, 10, null); // USR1
+                }
+            }
+        }
     }
 }

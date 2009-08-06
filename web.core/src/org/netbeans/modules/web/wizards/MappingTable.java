@@ -189,7 +189,7 @@ class MappingTable extends JTable {
         super.paint(g);
     }
 
-    private class MappingTableModel extends AbstractTableModel {
+    private static class MappingTableModel extends AbstractTableModel {
 
         private final String[] colheaders = {
             NbBundle.getMessage(MappingTable.class, "LBL_filter_name"),

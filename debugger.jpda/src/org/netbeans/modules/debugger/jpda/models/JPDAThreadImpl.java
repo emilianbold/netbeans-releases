@@ -948,7 +948,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
-                suspendedNoFire = !doFire;
+                suspendedNoFire = false;
                 suspendRequested = false; // Regularly suspended now
                 suspendedToFire = Boolean.TRUE;
                 if (doFire) {
@@ -1456,7 +1456,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             List<JPDAThread> oldLockerThreadsList;
             List<JPDAThread> newLockerThreadsList;
             logger.fine("checkForBlockingThreads("+threadName+"): suspend all...");
-            debugger.accessLock.writeLock().lock();
+            // Do not wait for write lock if it's not available, since no one will get read lock!
+            boolean locked = debugger.accessLock.writeLock().tryLock();
+            if (!locked) return false;
             try {
                 VirtualMachineWrapper.suspend(vm);
                 try {
@@ -1609,7 +1611,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     for (ThreadReference tr : threadsToSuspend) {
                         try {
                             ThreadReferenceWrapper.suspend(tr); // Increases the suspend count to 2 so that it's not resumed by EventSet.resume()
-                        } catch (Exception e) {}
+                        } catch (IllegalThreadStateExceptionWrapper iex) {
+                            // The thread is gone
+                        } catch (InternalExceptionWrapper iex) {
+                            // ??
+                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                            // The thread is gone
+                        } catch (VMDisconnectedExceptionWrapper vdex) {}
                         JPDAThreadImpl t = debugger.getExistingThread(tr);
                         if (t != null) {
                             t.notifySuspended();
@@ -1628,6 +1636,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                                 logger.fine("Resuming thread "+threadName+" to finish method invoke...");
                                 resumedToFinishMethodInvocation = true;
                                     ThreadReferenceWrapper.resume(threadReference);
+                            } catch (IllegalThreadStateExceptionWrapper iex) {
+                                // The thread is gone
                             } catch (VMDisconnectedExceptionWrapper e) {
                                 // Ignored
                             } catch (Exception e) {
@@ -1708,7 +1718,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private String getThreadStateLog() {
-        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended;
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking;
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {

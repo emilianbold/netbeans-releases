@@ -48,9 +48,13 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
  *
- * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
+ * Copy of JavaTreeCellRenderer at java.navigation.
+ *
+ * @author ads
  */
 public final class JavaTreeCellRenderer extends DefaultTreeCellRenderer {
+    private static final long serialVersionUID = 8126878473944648830L;
+
     public Component getTreeCellRendererComponent(JTree tree, Object value,
         boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value,

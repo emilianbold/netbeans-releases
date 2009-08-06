@@ -76,7 +76,6 @@ import org.netbeans.api.debugger.Session;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
-import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
@@ -615,10 +614,6 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 // condition false => resume
                 logger.fine("BreakpointImpl: perform breakpoint (condition = " + success + "): " + this + " resume: " + (!success));
                 return success;
-            } catch (ParseException ex) {
-                conditionException = ex;
-                logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
-                return true; // Act as if the condition was satisfied when it's invalid
             } catch (InvalidExpressionException ex) {
                 conditionException = ex;
                 logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
@@ -719,7 +714,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         String condExpr, 
         StackFrame frame,
         int frameDepth
-    ) throws ParseException, InvalidExpressionException {
+    ) throws InvalidExpressionException {
         // 1) compile expression
         if ( compiledCondition == null || 
              !compiledCondition.getExpression ().equals (condExpr)

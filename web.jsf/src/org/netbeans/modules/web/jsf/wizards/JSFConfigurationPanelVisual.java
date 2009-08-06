@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Pisl, Radko Najman
+ * @author  Petr Pisl, Radko Najman, alexeybutenko
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
@@ -150,7 +150,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
             panel.setLibrary(null);
-        } else {
+        } else if (items.size() != 0 &&  panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED){
             rbRegisteredLibrary.setEnabled(true);
             rbRegisteredLibrary.setSelected(true);
             cbLibraries.setEnabled(true);
@@ -167,6 +167,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void updatePreferredLanguages() {
         boolean faceletsPresent = false;
         Library jsfLibrary = null;
+        if (panel.getLibraryType()==null)
+            return;
         if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
             jsfLibrary = panel.getLibrary();
         } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NEW) {
@@ -179,22 +181,27 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 faceletsPresent = true;
             }
         }
-        if (jsfLibrary !=null) {
+        if (jsfLibrary != null) {
             List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
             try {
-                faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet"); //NOI18N
-                if (!faceletsPresent)
-                    faceletsPresent = Util.containsClass(content, "com.sun.faces.facelets.Facelet"); //NOI18N
+                faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
+                                  Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS) ||   //NOI18N
+                                  Util.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
             }catch(Exception e) {
                 e.printStackTrace();
             }
         }
 
         preferredLanguages.clear();
-        preferredLanguages.add("JSP"); //NOI18N
+        preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.JSP.getName()); 
         if (faceletsPresent) {
-            preferredLanguages.add(0,"Facelets"); //NOI18N
-            panel.setEnableFacelets(true);
+            if (!customizer)
+                panel.setEnableFacelets(true);
+
+            if (panel.isEnableFacelets())
+                preferredLanguages.add(0,JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
+            else 
+                preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
         } else {
             panel.setEnableFacelets(false);
         }
@@ -527,6 +534,9 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             components[i].setEnabled(enable);
         }
         
+        cbPreferredLang.setEnabled(true);
+        jLabel1.setEnabled(true);
+        
         components = libPanel.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
@@ -625,61 +635,83 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
      *   according web module version.
      */
     private void initLibSettings(Profile profile, String serverInstanceID) {
-        try {
-            File[] cp;
-            J2eePlatform platform = null;
+        if (panel==null || panel.getLibraryType() == null) {
             try {
-                platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
-            } catch (InstanceRemovedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            // j2eeplatform can be null, when the target server is not accessible.
-            if (platform != null) {
-                cp = platform.getClasspathEntries();
-            }
-            else {
-                cp = new File[0];
-            }
-
-            // XXX: there should be a utility class for this:
-            boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
-            boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
-            boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-
-            String libName = null; //NOI18N
-            if (isJSF20) {
-                libName = "JSF 2.0"; //NOI18N
-            } else if (isJSF12) {
-                libName = "JSF 1.2"; //NOI18N
-            } else if (isJSF) {
-                libName = "JSF 1.1"; //NOI18N
-            } else {
-                rbNoneLibrary.setVisible(false);
-                Library profferedLibrary = null;
-                if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
+                File[] cp;
+                J2eePlatform platform = null;
+                try {
+                    if (serverInstanceID != null)
+                        platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                // j2eeplatform can be null, when the target server is not accessible.
+                if (platform != null) {
+                    cp = platform.getClasspathEntries();
                 } else {
-                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
+                    cp = new File[0];
                 }
 
-                if (profferedLibrary != null) {
-                    // if there is a proffered library, select
-                    rbRegisteredLibrary.setSelected(true);
-                    cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                // XXX: there should be a utility class for this:
+                boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
+                boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+                boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+
+                String libName = null; //NOI18N
+                if (isJSF20) {
+                    libName = "JSF 2.0"; //NOI18N
+                } else if (isJSF12) {
+                    libName = "JSF 1.2"; //NOI18N
+                } else if (isJSF) {
+                    libName = "JSF 1.1"; //NOI18N
                 } else {
-                    // there is not a proffered library -> select one or select creating new one
-                    if (jsfLibraries.size() == 0) {
-                        rbNewLibrary.setSelected(true);
+                    rbNoneLibrary.setVisible(false);
+                    Library profferedLibrary = null;
+                    if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
+                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
+                    } else {
+                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
+                    }
+
+                    if (profferedLibrary != null) {
+                        // if there is a proffered library, select
+                        rbRegisteredLibrary.setSelected(true);
+                        cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                    } else {
+                        // there is not a proffered library -> select one or select creating new one
+                        if (jsfLibraries.size() == 0) {
+                            rbNewLibrary.setSelected(true);
+                        }
                     }
                 }
+                if (libName != null) {
+                    rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
+                    rbNoneLibrary.setSelected(true);
+                    enableNewLibraryComponent(false);
+                    enableDefinedLibraryComponent(false);
+                }
+
+            } catch (IOException exception) {
+                Exceptions.printStackTrace(exception);
             }
-            if (libName != null) {
-                rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
-                rbNoneLibrary.setSelected(true);
+        } else {
+            switch( panel.getLibraryType()) {
+                case NEW: {
+                    rbNewLibrary.setSelected(true);
+                    break;
+                }
+                case USED: {
+                    rbRegisteredLibrary.setSelected(true);
+                    break;
+                }
+                case NONE: {
+                    rbNoneLibrary.setSelected(true);
+                    enableDefinedLibraryComponent(false);
+                    enableNewLibraryComponent(false);
+                    break;
+                }
             }
 
-        } catch (IOException exception) {
-            Exceptions.printStackTrace(exception);
         }
     }
 
@@ -721,7 +753,12 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     public boolean packageJars(){
         return cbPackageJars.isSelected();
     }
-    
+
+    protected String getPreferredLanguage() {
+        return (String) cbPreferredLang.getSelectedItem();
+    }
+
+
     private void updateLibrary(){
         if (cbLibraries.getItemCount() == 0)
             rbRegisteredLibrary.setEnabled(false);

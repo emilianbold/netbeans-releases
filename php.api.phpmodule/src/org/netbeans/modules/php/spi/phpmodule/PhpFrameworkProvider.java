@@ -42,6 +42,7 @@ package org.netbeans.modules.php.spi.phpmodule;
 import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -154,9 +155,20 @@ public abstract class PhpFrameworkProvider {
      * and the given PHP module.
      *
      * @param  phpModule the PHP module which visibility is going to be extended
-     * @return a new PHP module visibility extender, can be <code>null</code> if the framework doesn't need
+     * @return PHP module visibility extender, can be <code>null</code> if the framework doesn't need
      *         to recommend to hide any files or folders
      * @since 1.4
      */
     public abstract PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule);
+
+    /**
+     * Creates a {@link FrameworkCommandSupport framework command support} for this framework
+     * and the given PHP module.
+     *
+     * @param  phpModule the PHP module for which framework command support is to be created
+     * @return framework command support, can be <code>null</code> if the framework doesn't support
+     *         running external commands
+     * @since 1.8
+     */
+    public abstract FrameworkCommandSupport createFrameworkCommandSupport(PhpModule phpModule);
 }

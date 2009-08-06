@@ -97,7 +97,7 @@ public class CallEjbGeneratorTest extends TestBase {
                 referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
                 "statelesslr.StatelessLRBean2",
                 null,
-                false,
+                EjbReference.EjbRefIType.LOCAL,
                 false,
                 referencedEjb21Module.getProject()
                 );
@@ -127,7 +127,7 @@ public class CallEjbGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                ExecutableElement method = (ExecutableElement) getMember(typeElement, "lookupStatelessLRBean2");
+                ExecutableElement method = (ExecutableElement) getMember(typeElement, "lookupStatelessLRBean2Local");
                 assertNotNull(method);
                 MethodTree methodTree = controller.getTrees().getTree(method);
                 assertEquals(generatedMethodBody, methodTree.getBody().toString());
@@ -148,7 +148,7 @@ public class CallEjbGeneratorTest extends TestBase {
                 referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
                 "statelesslr.StatelessLRBean2",
                 null,
-                false,
+                EjbReference.EjbRefIType.LOCAL,
                 false,
                 referencedEjb21Module.getProject()
                 );

@@ -61,7 +61,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.editor.jspel.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;

@@ -65,21 +65,24 @@ public class CatCommand extends SvnCommand {
     private SVNUrl url;
     private File file;    
     private SVNRevision rev;
+    private final SVNRevision pegRevision;
     
     private byte[] bytes;
     
-    public CatCommand(SVNUrl url, SVNRevision rev) {        
+    public CatCommand(SVNUrl url, SVNRevision rev, SVNRevision pegRevision) {
         this.url = url;                
         this.rev = rev;        
         this.file = null;
+        this.pegRevision = pegRevision;
         type = CatType.url;
 
     }
     
-    public CatCommand(File file, SVNRevision rev) {        
+    public CatCommand(File file, SVNRevision rev) {
         this.file = file;
         this.rev = rev;        
-        this.url = null;                
+        this.url = null;
+        this.pegRevision = null;
         type = CatType.file;
     }
 
@@ -117,7 +120,11 @@ public class CatCommand extends SvnCommand {
         arguments.add("cat");        
         switch(type) {
             case url: 
-                arguments.add(url);                
+                if (pegRevision == null) {
+                    arguments.add(url);
+                } else {
+                    arguments.add(url, pegRevision);
+                }
                 break;
             case file:     
                 arguments.add(file);

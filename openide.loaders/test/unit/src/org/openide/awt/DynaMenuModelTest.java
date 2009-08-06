@@ -44,6 +44,7 @@ package org.openide.awt;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -52,6 +53,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import junit.framework.TestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -70,13 +72,13 @@ public class DynaMenuModelTest extends TestCase {
     public void testLoadSubmenu() {
         System.out.println("loadSubmenu");
         
-        List cInstances = new ArrayList();
+        List<Object> cInstances = new ArrayList<Object>();
         cInstances.add(new Act1());
         cInstances.add(new Act2());
         JMenu m = new JMenu();
         DynaMenuModel instance = new DynaMenuModel();
         
-        instance.loadSubmenu(cInstances, m);
+        instance.loadSubmenu(cInstances, m, Collections.<Object,FileObject>emptyMap());
         Component[] comps = m.getPopupMenu().getComponents();
         assertEquals("0", ((JMenuItem)comps[0]).getText());
         assertEquals("1", ((JMenuItem)comps[1]).getText());
@@ -88,13 +90,13 @@ public class DynaMenuModelTest extends TestCase {
      * Test of checkSubmenu method, of class org.openide.awt.DynaMenuModel.
      */
     public void testCheckSubmenu() {
-        List cInstances = new ArrayList();
+        List<Object> cInstances = new ArrayList<Object>();
         cInstances.add(new Act1());
         cInstances.add(new Act2());
         JMenu m = new JMenu();
         DynaMenuModel instance = new DynaMenuModel();
         
-        instance.loadSubmenu(cInstances, m);
+        instance.loadSubmenu(cInstances, m, Collections.<Object,FileObject>emptyMap());
         instance.checkSubmenu(m);
         
         Component[] comps = m.getPopupMenu().getComponents();

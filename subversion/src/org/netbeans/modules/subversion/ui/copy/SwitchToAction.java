@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,10 +54,6 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,11 +90,12 @@ public class SwitchToAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
-
-    protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
-    }        
     
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return super.enable(nodes) && nodes.length == 1;
+    }
+
     protected void performContextAction(final Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -222,6 +219,7 @@ public class SwitchToAction extends ContextAction {
             // the cache fires status change events to trigger the annotation refresh
             // unfortunatelly - we have to call the refresh explicitly for each file also 
             // from this place as the branch label was changed evern if the files status didn't
+            Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
             Subversion.getInstance().refreshAnnotations(fileArray);
             // refresh the inline diff
             Subversion.getInstance().versionedFilesChanged();

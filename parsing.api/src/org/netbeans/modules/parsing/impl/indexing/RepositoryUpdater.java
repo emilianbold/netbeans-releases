@@ -1113,7 +1113,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             progressHandle.progress(sb.toString());
         }
 
-        protected final void delete (final List<IndexableImpl> deleted, final URL root) throws IOException {
+        protected final void delete (final Collection<IndexableImpl> deleted, final URL root) throws IOException {
             if (deleted == null || deleted.size() == 0) {
                 return;
             }
@@ -1146,7 +1146,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-        protected final boolean index(List<IndexableImpl> resources, final URL root, final boolean allFiles, final boolean sourceForBinaryRoot) throws IOException {
+        protected final boolean index(Collection<IndexableImpl> resources, final URL root, final boolean allFiles, final boolean sourceForBinaryRoot) throws IOException {
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
@@ -1155,6 +1155,20 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 // process custom indexers first
                 Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexers();
                 for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
+
+                    Set<String> rootMimeTypes = PathRegistry.getDefault().getMimeTypesFor(root);
+                    if (rootMimeTypes != null && !cifInfo.isAllMimeTypesIndexer() && !Util.containsAny(rootMimeTypes, cifInfo.getMimeTypes())) {
+                        // ignore roots that are not marked to be scanned by the cifInfo indexer
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "Not using {0} registered for {1} to scan root {2} marked for {3}", new Object [] {
+                                cifInfo.getIndexerFactory().getIndexerName() + "/" + cifInfo.getIndexerFactory().getIndexVersion(),
+                                printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder()),
+                                root,
+                                PathRegistry.getDefault().getMimeTypesFor(root)
+                            });
+                        }
+                        continue;
+                    }
 
                     List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                     for(String mimeType : cifInfo.getMimeTypes()) {
@@ -1235,8 +1249,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 if (rootFo != null && rootFo.isFolder()) {
                     isFolder = true;
                     FileObjectCrawler crawler = new FileObjectCrawler(rootFo, true, null, getShuttdownRequest());
-                    List<IndexableImpl> modified = crawler.getResources();
-                    List<IndexableImpl> deleted = crawler.getDeletedResources();
+                    Collection<IndexableImpl> modified = crawler.getResources();
+                    Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
                         crawler.storeTimestamps();
                         if (deleted.size() == 0 && modified.size() == 0) {
@@ -1488,7 +1502,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         new FileObjectCrawler(rootFo, !forceRefresh, entry, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), !forceRefresh, entry, getShuttdownRequest()); // rescan selected files (no timestamp check)
 
-                    final List<IndexableImpl> resources = crawler.getResources();
+                    final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
                         if (index(resources, root, files.isEmpty() && forceRefresh, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
@@ -1653,8 +1667,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, false, entry, getShuttdownRequest());
-                        final List<IndexableImpl> resources = crawler.getResources();
-                        final List<IndexableImpl> deleted = crawler.getDeletedResources();
+                        final Collection<IndexableImpl> resources = crawler.getResources();
+                        final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
                         if (crawler.isFinished()) {
                             if (deleted.size() > 0) {
@@ -2050,6 +2064,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
+            int [] outOfDateFiles = new int [] { 0 };
+            int [] deletedFiles = new int [] { 0 };
             boolean finished = true;
 
             for (URL source : ctx.newRootsToScan) {
@@ -2061,7 +2077,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(source);
-                    if (scanSource (source)) {
+                    if (scanSource (source, outOfDateFiles, deletedFiles)) {
                         ctx.scannedRoots.add(source);
                     } else {
                         finished = false;
@@ -2083,14 +2099,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d)",
+                        scannedRootsCnt, completeTime, outOfDateFiles[0], deletedFiles[0])); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
             return finished;
         }
 
-        private boolean scanSource (URL root) throws IOException {
+        private boolean scanSource (URL root, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (noRootsScan && useInitialState && TimeStamps.existForRoot(root)) {
@@ -2139,12 +2156,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     final Crawler crawler = new FileObjectCrawler(rootFo, useInitialState, entry, getShuttdownRequest());
-                    final List<IndexableImpl> resources = crawler.getResources();
-                    final List<IndexableImpl> deleted = crawler.getDeletedResources();
+                    final Collection<IndexableImpl> resources = crawler.getResources();
+                    final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
                         delete(deleted, root);
                         if (index(resources, root, !useInitialState, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
+                            outOfDateFiles[0] += resources.size();
+                            deletedFiles[0] += deleted.size();
                             return true;
                         }
                     }

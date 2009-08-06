@@ -38,13 +38,13 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
@@ -62,7 +62,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return storage.queryThreadMapData(query);
     }
 
-    public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
+    public ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

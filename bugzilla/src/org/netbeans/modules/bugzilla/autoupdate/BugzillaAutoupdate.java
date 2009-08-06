@@ -119,10 +119,20 @@ public class BugzillaAutoupdate {
         return false;
     }
 
+    /**
+     * Checks if the repository version is supported
+     * @param repository
+     * @return true if the repositories version is supported, othrwise false
+     */
     boolean checkSupportedBugzillaServerVersion(BugzillaRepository repository) {
         BugzillaConfiguration conf = repository.getConfiguration();
+        if(!conf.isValid()) {
+            return true; // do not force the wrong version notification
+        }
         BugzillaVersion version = conf.getInstalledVersion();
-        
+        if(version == null) {
+            return true; // do not force the wrong version notification 
+        }
         boolean ret = isSupportedVersion(version);
         if(!ret) {
             Bugzilla.LOG.log(Level.WARNING,

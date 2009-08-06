@@ -825,6 +825,13 @@ public class WebProjectUtilities {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
 
+            // set j2ee.platform.embeddableejb.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
+                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
+                ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                        Utils.toClasspathString(ejbClasspath));
+            }
+
             // set j2ee.platform.wscompile.classpath
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
                 File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
@@ -887,6 +894,8 @@ public class WebProjectUtilities {
         // TODO constants
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                 "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "embeddableejb" + "}"); //NOI18N
         ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
                 "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
         ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,

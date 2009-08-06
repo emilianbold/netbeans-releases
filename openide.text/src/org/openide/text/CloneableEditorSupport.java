@@ -607,6 +607,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // The thread nume should be: "Loading document " + env; // NOI18N
             prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
+                                                   private boolean fireEvent;
 
                                                    public void run() {
                                                        doRun();
@@ -619,13 +620,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        // where another threads may operate already
                                                        if (!runningInAtomicLock) {
                                                            runningInAtomicLock = true;
-                                                           NbDocument.runAtomic(docToLoad[0],
-                                                                                this);
+                                                           NbDocument.runAtomic(docToLoad[0], this);
+                                                           if (fireEvent) {
+                                                               fireDocumentChange(getDoc(), false);
+                                                           }
                                                            return;
                                                        }
                                                        // Prevent operating on top of no longer active document
-                                                       boolean fireEvent = false;
-                                                       StyledDocument d = null;
                                                        synchronized (getLock()) {
                                                            if (documentStatus ==
                                                                DOCUMENT_NO) {
@@ -644,7 +645,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // assign before fireDocumentChange() as listener should be able to access getDocument()
                                                                documentStatus = DOCUMENT_READY;
                                                                fireEvent = true;
-                                                               d = getDoc();
                                                                // Confirm that whole loading succeeded
                                                                targetStatus = DOCUMENT_READY;
                                                                // Add undoable listener when all work in
@@ -671,9 +671,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                    getLock().notifyAll();
                                                                }
                                                            }
-                                                       }
-                                                       if (fireEvent) {
-                                                           fireDocumentChange(d, false);
                                                        }
                                                    }
                                                });
@@ -1812,7 +1809,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // before the reload.
         if (!isAlreadyModified() && !revertingUndoOrReloading) {
             setAlreadyModified(true);
-
+            
             if (!notifyModified()) {
                 setAlreadyModified(false);
                 revertingUndoOrReloading = true;
@@ -1874,7 +1871,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             locked = false;
         } catch (IOException e) { // locking failed
-
+            //#169695: Added exception log to investigate
+            ERR.log( Level.INFO, "Could not lock document", e);
+            //#169695: END
             String message = null;
 
             if ((Object)e.getMessage() != e.getLocalizedMessage()) {

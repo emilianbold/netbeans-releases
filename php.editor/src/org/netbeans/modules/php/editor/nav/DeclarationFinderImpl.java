@@ -43,6 +43,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -64,6 +69,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
@@ -121,21 +127,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         if (!inDocComment) {
             if (file != null) {
                 try {
-                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
 
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                             List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
-
                             if (path.size() == 0) {
                                 return;
                             }
-
                             path = new LinkedList<ASTNode>(path);
-
                             Collections.reverse(path);
-
                             Scalar where = null;
                             for (ASTNode n : path) {
                                 if (n instanceof Include) {
@@ -156,12 +158,21 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                             }
                         }
                     });
+                    try {
+                        f.get(300, TimeUnit.MILLISECONDS);
+                    } catch (Exception ex) {
+                        Logger.getLogger(DeclarationFinderImpl.class.getName()).fine(ex.getLocalizedMessage());
+                        if (!f.isDone()) {
+                            f.cancel(true);
+                        }
+                    }
+
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
                 try {
-                    ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
 
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
@@ -214,6 +225,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                             }
                         }
                     });
+                    try {
+                        f.get(300, TimeUnit.MILLISECONDS);
+                    } catch (Exception ex) {
+                        Logger.getLogger(DeclarationFinderImpl.class.getName()).fine(ex.getLocalizedMessage());
+                        if (!f.isDone()) {
+                            f.cancel(true);
+                        }
+                    }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -285,7 +304,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
             if (ek != null) {
                 formatter.name(ek, true);
-                formatter.appendText(modelElement.getName());
+                QualifiedName namespaceName = modelElement.getNamespaceName();
+                if (namespaceName.isDefaultNamespace()) {
+                    formatter.appendText(modelElement.getName());
+                } else {
+                    formatter.appendText(namespaceName.append(modelElement.getName()).toString());
+                }
                 formatter.name(ek, false);
             } else {
                 formatter.appendText(modelElement.getName());

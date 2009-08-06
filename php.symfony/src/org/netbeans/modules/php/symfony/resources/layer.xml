@@ -24,9 +24,6 @@
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider.getInstance"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="org-netbeans-modules-php-symfony-commands-SymfonyCommandSupport$SymfonyFactory.instance">
-                <attr name="position" intvalue="101"/>
-            </file>
         </folder>
     </folder>
     <folder name="Actions">

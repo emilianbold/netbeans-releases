@@ -40,13 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE someant  [
-  <!ENTITY links SYSTEM "javadoctools/links.xml">
-  <!ENTITY properties SYSTEM "javadoctools/properties.xml">
-  <!ENTITY replaces SYSTEM "javadoctools/replaces.xml">
-  <!ENTITY disallowed-links SYSTEM "javadoctools/disallowed-links.xml">
-]>
-
 <project name="nbbuild" default="build-nozip" basedir=".">
 
   <fail message="Please build using Ant 1.7.1 or higher.">
@@ -63,10 +56,6 @@ made subject to such option by the copyright holder.
   <target name="all" depends="build,commit-validation" description="Build the IDE and run basic validation tests."/>
 
   <target name="all-nozip" depends="build-nozip,commit-validation" description="Build the IDE (no ZIP file, unpacked) and run basic validation tests."/>
-
-  <target name="-load-build-properties">
-    <property file="build.properties"/>
-  </target>
 
   <target name="bootstrap" depends="-bootstrap,-download-all-extbins" description="Bootstrap NetBeans-specific Ant extensions."/>
   <target name="-bootstrap"
@@ -149,25 +138,6 @@ made subject to such option by the copyright holder.
     <checkmoduleconfigs nbroot=".."/>
   </target>
 
-  <target name="set-buildnumber" unless="buildnumber">
-    <tstamp>
-    	<format property="buildstamp" pattern="yyMMdd"/>
-    </tstamp>
-    <tstamp>
-    	<format property="buildday" pattern="d MMM yyyy" locale="en" />
-    </tstamp>
-
-    <property environment="hudson"/>
-    <condition property="buildnumber" value="${hudson.JOB_NAME}-${hudson.BUILD_NUMBER}-on-${buildstamp}">
-      <and>
-        <isset property="hudson.JOB_NAME"/>
-        <isset property="hudson.BUILD_NUMBER"/>
-      </and>
-    </condition>
-    <property name="buildnumber" value="${buildstamp}"/>
-    <echo message="${buildnumber}"/>
-  </target>
-
   <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
     <fail message="You need to have some modules checked out to build NetBeans. For example, try running the 'checkout' target.">
         <condition>
@@ -179,10 +149,7 @@ made subject to such option by the copyright holder.
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
-    <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
 
-    <!-- Overridable. Note: need not necessarily be a number at all): -->
-    <property name="buildnum" value="dev-${buildnumber}"/>
     <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
 
     <!-- Set up automatic all-* targets: -->
@@ -247,64 +214,11 @@ made subject to such option by the copyright holder.
       </verifyjnlp>
   </target>
   
-  <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
-      <pathconvert property="modules.fullpath" >
-          <path>
-              <dirset dir="${nb_all}" includes="${config.javadoc.all}" />
-          </path>
-          <mapper type="identity" />
-      </pathconvert>
-      
-      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
-      
-      <property name="export.interfaces" location="${netbeans.javadoc.dir}/../ModulesExportedInterfaces" />
-      <property name="export.apichanges" location="${netbeans.javadoc.dir}/../APIChanges" />
-      <mkdir dir="${export.interfaces}" />
-      <mkdir dir="${export.apichanges}" />
-      
-      <property name="javadoc.fail.on.error" value="true"/>
-      <subant-junit target="netbeans-javadoc" failonerror="${javadoc.fail.on.error}" report="build/build-all-javadoc.xml">
-          <buildpath path="${modules.sorted}"/>
-      </subant-junit>
-
-      <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
-      <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
-      <antcall inheritall="true" inheritrefs="true" target="javadoc-check-broken-links" />
-
-
-      <property name="javadoc.web.zip" value="NetBeans-${buildnum}-javadoc-web.zip"/>
-      <property name="javadoc.zip" value="NetBeans-${buildnum}-javadoc.zip"/>
-      <condition property="skip.javadoc.web.zip" value="true">
-          <equals arg1="${javadoc.web.zip}" arg2=""/>
-      </condition>
-
-
-      <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-web"/>
-      <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-lite"/>
+  <target name="build-javadoc">
+      <echo message="Deprecated, use nbbuild/javadoctools/build.xml directly"/>
+      <ant dir="javadoctools" target="build-javadoc"/>
   </target>
 
-  <target name="javadoc-build-zip-web" depends="init" unless="skip.javadoc.web.zip">
-    <zip destfile="${javadoc.web.zip}" update="true" duplicate="preserve" compress="true">
-      <zipfileset dir="${netbeans.javadoc.dir}" filemode="644" prefix="">
-        <include name="**/*"/>
-      </zipfileset>
-    </zip>
-  </target>
-  <target name="javadoc-build-zip-lite" depends="init">
-    <zip destfile="${javadoc.zip}" update="true" duplicate="preserve" compress="true">
-      <zipfileset dir="build/tmp" filemode="644" prefix="">
-        <include name="overview-summary.html"/>
-      </zipfileset>
-      <zipfileset dir="${netbeans.javadoc.dir}" filemode="644" prefix="">
-        <include name="**/*"/>
-        <exclude name="*.zip"/>
-        <exclude name="overview-summary.html"/>
-        <exclude name="tmp/**"/>
-      </zipfileset>
-    </zip>
-  </target>
-  
   <!-- build source zips for selected modules - useful for populating maven repository only-->
   <target name="build-source-zips" depends="init" description="Builds source zips for maven repository inclusion.">
       <pathconvert property="modules.fullpath" >
@@ -324,199 +238,6 @@ made subject to such option by the copyright holder.
   </target>
   
       
-  <target name="javadoc-generate-xml" depends="init" >
-      <echo file="${export.apichanges}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;changes&gt;
-</echo>
-      
-      <echo file="${export.apichanges}/footer.gen" >
-        &lt;/changes&gt;
-      </echo>
-      
-      <concat destfile="${netbeans.javadoc.dir}/apichanges.xml" >
-          <fileset dir="${export.apichanges}" includes="header.gen" />
-          <fileset dir="${export.apichanges}" includes="*" excludes="*.gen" />
-          <fileset dir="${export.apichanges}" includes="footer.gen" />
-      </concat>
-
-      
-      <echo file="${export.interfaces}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;apis&gt;
-</echo>
-      
-      <echo file="${export.interfaces}/footer.gen" >
-        &lt;/apis&gt;
-      </echo>
-      
-      <concat destfile="${netbeans.javadoc.dir}/modules.xml" >
-          <fileset dir="${export.interfaces}" includes="header.gen" />
-          <fileset dir="${export.interfaces}" includes="*" excludes="*.gen" />
-          <fileset dir="${export.interfaces}" includes="footer.gen" />
-      </concat>
-      
-    <taskdef 
-        name="javadoc-index" 
-        classpath="nbantext.jar" 
-        classname="org.netbeans.nbbuild.JavadocIndex"
-    />
-
-        
-    <javadoc-index target="${netbeans.javadoc.dir}/allclasses.xml" > 
-        <packageslist dir="${netbeans.javadoc.dir}" >
-            <include name="**/allclasses-noframe.html" />
-        </packageslist>
-    </javadoc-index>
-  </target>
-  
-  
-  <target name="javadoc-generate-html" depends="init" >            
-      <tstamp>
-        <format property="modules-javadoc-date" pattern="d MMM yyyy" locale="en" />
-      </tstamp>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/modules.xml" 
-        out="${netbeans.javadoc.dir}/usecases.html" 
-        style="javadoctools/export2usecases.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-      </style>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/apichanges.xml" 
-        out="${netbeans.javadoc.dir}/apichanges.html" 
-        style="javadoctools/export2apichanges.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-        <param name="changes-since-year" expression="${previous.release.year}"/>
-        <param name="changes-since-day" expression="${previous.release.day}"/>
-        <param name="changes-since-month" expression="${previous.release.month}"/>
-        <param name="include-introduction" expression="true" />
-      </style>
-
-      <tstamp>
-        <format property="atom-date" pattern="yyyy-MM-dd'T'HH:mm:ss'Z'" timezone="UTC"/>
-      </tstamp>
-      <style 
-        in="${netbeans.javadoc.dir}/apichanges.xml" 
-        out="${netbeans.javadoc.dir}/apichanges.atom" 
-        style="javadoctools/export2apichanges-atom.xsl"
-      >
-        <param name="date" expression="${atom-date}"/>
-      </style>
-      
-    <copy file="javadoctools/netbeans.css" tofile="${netbeans.javadoc.dir}/netbeans.css" />
-    <condition property="javadoc.style.sheet.exists" >
-        <available file="${netbeans.javadoc.dir}/org-openide-util/javadoc.css" />
-    </condition>
-    
-    <fail unless="javadoc.style.sheet.exists" >
-    The org-openide-util/javadoc.css has to exist as we are refering to
-    it from to master module javadoc pages. If it does not anymore, update
-    the javadoctools/export*.xsl templates.
-    </fail>
-
-      <style 
-        in="${netbeans.javadoc.dir}/allclasses.xml" 
-        out="${netbeans.javadoc.dir}/allclasses-frame.html" 
-        style="javadoctools/export2allclasses.xsl"
-      >
-      </style>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/modules.xml" 
-        out="${netbeans.javadoc.dir}/overview-frame.html" 
-        style="javadoctools/export2allmodules.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-      </style>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/modules.xml" 
-        out="${netbeans.javadoc.dir}/layers.html" 
-        style="javadoctools/export2layer.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-      </style>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/modules.xml" 
-        out="${netbeans.javadoc.dir}/overview-summary.html" 
-        style="javadoctools/export2html.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-        <param name="download" expression="true"/>
-      </style>
-      
-      <style 
-        in="${netbeans.javadoc.dir}/modules.xml" 
-        out="build/tmp/overview-summary.html"
-        style="javadoctools/export2html.xsl"
-      >
-        <param name="date" expression="${modules-javadoc-date}"/>
-        <param name="download" expression="false"/>
-      </style>
-      
-    <!-- at the end geneate the index.html so people know where to start -->      
-    <echo file="${netbeans.javadoc.dir}/index.html" ><![CDATA[
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
-<HTML><HEAD><TITLE>NetBeans API Index</TITLE>
-<link type="application/atom+xml" rel="alternate" href="apichanges.atom">
-</HEAD>
-<FRAMESET cols="20%,80%" title="" onLoad="top.loadFrames()">
-<FRAMESET rows="30%,70%" title="" onLoad="top.loadFrames()">
-<FRAME src="overview-frame.html" name="packageListFrame" title="All Modules">
-<FRAME src="allclasses-frame.html" name="packageFrame" title="All classes">
-</FRAMESET>
-<FRAME src="overview-summary.html" name="classFrame" title="Module, package, class and interface descriptions" scrolling="yes">
-<NOFRAMES>
-<H2>Frame Alert</H2>
-<P>
-This document is designed to be viewed using the frames feature. If you see this message, you are using a non-frame-capable web client.
-Link to <A HREF="overview-summary.html">Non-frame version.</A>
-</NOFRAMES>
-</FRAMESET>
-</HTML>
-]]></echo>
-        &properties;
-
-        <replace dir="${netbeans.javadoc.dir}">
-            <include name="*.html"/>
-            <replacefilter token="@JDK@" value="http://java.sun.com/j2se/1.5.0/docs/api"/>
-            &replaces;   
-            <replacefilter token="http://root/" value="." />
-            <replacefilter token="$${javadoc.web.root}" value="." />
-        </replace>
-    
-    <echo message="Javadoc index has been generated to ${netbeans.javadoc.dir}/index.html" />
-  </target>
-  
-  
-  <target name="javadoc-check-broken-links" depends="init" unless="javadoc.skip.brokenlinks.check" >
-        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
-            <classpath>
-                <pathelement location="nbantext.jar"/>
-            </classpath>
-        </taskdef>
-        <property name="javadoc.check.forbidden.links" value="true" />
-        <checklinks 
-        	basedir="${netbeans.javadoc.dir}" 
-          checkexternal="${javadoc.check.external.links}" 
-          checkforbidden="${javadoc.check.forbidden.links}" 
-          checkspaces="false" 
-          report="${netbeans.javadoc.dir}/checklinks-errors.xml"
-        >
-            <include name="*/overview-summary.html"/>
-            <include name="*/apichanges.html"/>
-            <include name="*/architecture-summary.html"/>
-            <include name="*/**/package-summary.html"/>
-            <include name="*/**/doc-files/**/*.html"/>
-            <include name="*.html" />
-                
-            &disallowed-links;
-        </checklinks>
-  </target>
-
   <target name="check-javahelpbin" depends="init" description="Validate intermodule links in helpsets.">
       <taskdef name="checkhelpsetsbin" classname="org.netbeans.nbbuild.CheckHelpSetsBin">
         <classpath>
@@ -592,8 +313,8 @@ ${hg.id.line}</echo>
           description="Create a complete build including a ZIP distribution (but do not try it).">
     <delete file="NetBeans-${buildnum}.zip"/>
     <delete file="NetBeans-${buildnum}-build-extra-data.zip"/>
-    <delete file="NetBeans-${buildnum}-javadoc-web.zip"/>
-    <delete file="NetBeans-${buildnum}-javadoc.zip"/>
+    <delete file="NetBeans-${buildnum}-javadoc-web.zip"/> <!-- XXX why? -->
+    <delete file="NetBeans-${buildnum}-javadoc.zip"/> <!-- XXX why? -->
 
     <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
 
