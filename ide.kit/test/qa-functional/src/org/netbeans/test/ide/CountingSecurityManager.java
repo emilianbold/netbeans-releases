@@ -95,6 +95,14 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
     }
 
+    private static boolean startsWith(String ths, String with) {
+        if (Utilities.isWindows()) {
+            return ths.toUpperCase().startsWith(with.toUpperCase());
+        } else {
+            return ths.startsWith(with);
+        }
+    }
+
     public enum Mode {
         CHECK_READ, CHECK_WRITE
     };
@@ -110,6 +118,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         setCnt(0);
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
+        if (prefix != null && Utilities.isWindows()) {
+            prefix = prefix.toUpperCase();
+        }
         CountingSecurityManager.prefix = prefix;
         CountingSecurityManager.mode = mode;
         allowed = allowedFiles;
@@ -423,7 +434,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             // still initializing
             return false;
         }
-        if (!file.startsWith(ud)) {
+        if (!startsWith(file, ud)) {
             return false;
         }
 
@@ -446,8 +457,8 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
         }
         
-        if (file.startsWith(ud)) {
-            if (f.startsWith("/")) {
+        if (startsWith(file, ud)) {
+            if (startsWith(f, "/")) {
                 f = f.substring(1);
             }
             if (allowed.contains(f)) {
@@ -465,11 +476,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
         }
 
-        return prefix == null || file.startsWith(prefix);
+        return prefix == null || startsWith(file, prefix);
     }
 
     private boolean acceptFileRead(String file) {
-        if (prefix != null && !file.startsWith(prefix)) {
+        if (prefix != null && !startsWith(file, prefix)) {
             return false;
         }
 
@@ -479,7 +490,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
+        if (startsWith(file, System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }
         if (!acceptFileInDir(file, System.getProperty("netbeans.home"))) {
@@ -501,12 +512,12 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         dirs = System.getProperty("java.ext.dirs");
         if (dirs != null) {
             for (String dir : dirs.split(File.pathSeparator)) {
-                if (file.startsWith(dir)) {
+                if (startsWith(file, dir)) {
                     return false;
                 }
             }
         }
-        if (Utilities.isMac() && file.startsWith("/System/Library/Frameworks/JavaVM.framework/")) {
+        if (Utilities.isMac() && startsWith(file, "/System/Library/Frameworks/JavaVM.framework/")) {
             return false;
         }
 
@@ -514,13 +525,13 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     }
 
     private static boolean acceptFileInDir(String file, String dir) {
-        if (file.startsWith(dir + File.separator + "lib")) {
+        if (startsWith(file, dir + File.separator + "lib")) {
             return false;
         }
-        if (file.startsWith(dir + File.separator + "core")) {
+        if (startsWith(file, dir + File.separator + "core")) {
             return false;
         }
-        if (file.startsWith(dir)) {
+        if (startsWith(file, dir)) {
             String sub = file.substring(dir.length() + 1);
             if (allowed.contains(sub)) {
                 return false;

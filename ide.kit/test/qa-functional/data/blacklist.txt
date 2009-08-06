@@ -430,6 +430,9 @@ org.netbeans.modules.profiler.categories.CategoryBuilder
 
 org.netbeans.modules.profiler.actions.SelfSamplerAction
 
+# IZ 143060
+org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction
+
 # don't load nodes from services tab
 org.netbeans.modules.db.explorer.node.RootNode
 org.netbeans.modules.hudson.ui.nodes.HudsonRootNode

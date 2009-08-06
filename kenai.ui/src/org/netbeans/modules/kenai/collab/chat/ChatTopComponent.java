@@ -134,8 +134,9 @@ public class ChatTopComponent extends TopComponent {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    if (chats.getTabCount()==1 && b && chats.isShowing())
-                        showPopup(null);
+                    if (chats.getTabCount()==1 && b && chats.isShowing()) {
+                        //showPopup(null);
+                    }
                 }
             });
         }
@@ -145,7 +146,8 @@ public class ChatTopComponent extends TopComponent {
     private ChatTopComponent() {
         initComponents();
         clearChatsTabbedPane();
-        newPanel.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE);
+        contactList.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE);
+        contactList.add(new ContactList(), BorderLayout.CENTER);
         setName(NbBundle.getMessage(ChatTopComponent.class, "CTL_ChatTopComponent"));
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
@@ -216,9 +218,9 @@ public class ChatTopComponent extends TopComponent {
     }
 
     private void addMoreChatsTab(int index) {
-        chats.add(newPanel);
-        chats.setDisabledIconAt(index, ImageUtilities.loadImageIcon(PLUS, true));
-        chats.setEnabledAt(index, false);
+        chats.add(contactList);
+        chats.setIconAt(index, ImageUtilities.loadImageIcon(PLUS, true));
+        //chats.setEnabledAt(index, false);
         chats.setToolTipTextAt(index, NbBundle.getMessage(ChatTopComponent.class, "LBL_MoreChats"));
 
     }
@@ -321,7 +323,6 @@ public class ChatTopComponent extends TopComponent {
     }
 
     public void addChat(ChatPanel chatPanel) { 
-        chats.remove(newPanel);
         //ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         int idx = chats.getTabCount();
         chats.add(chatPanel);
@@ -334,8 +335,6 @@ public class ChatTopComponent extends TopComponent {
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        addMoreChatsTab(idx+1);
 
         if (!chatPanel.isPrivate()) {
             open.add(chatPanel.getName());
@@ -460,8 +459,7 @@ public class ChatTopComponent extends TopComponent {
     private void initComponents() {
 
         chats = TabbedPaneFactory.createCloseButtonTabbedPane();
-        newPanel = new javax.swing.JPanel();
-        noChats = new javax.swing.JLabel();
+        contactList = new org.netbeans.modules.kenai.collab.chat.ContactList();
         loginScreen = new javax.swing.JPanel();
         loginLink = new javax.swing.JLabel();
         errorScreen = new javax.swing.JPanel();
@@ -478,20 +476,7 @@ public class ChatTopComponent extends TopComponent {
                 chatsMousePressed(evt);
             }
         });
-
-        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                newPanelMouseClicked(evt);
-            }
-        });
-        newPanel.setLayout(new java.awt.BorderLayout());
-
-        noChats.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        org.openide.awt.Mnemonics.setLocalizedText(noChats, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.noChats.text", new Object[] {})); // NOI18N
-        noChats.setEnabled(false);
-        newPanel.add(noChats, java.awt.BorderLayout.CENTER);
-
-        chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
+        chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.contactList.TabConstraints.tabTitle", new Object[] {}), contactList); // NOI18N
 
         loginScreen.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -577,14 +562,14 @@ public class ChatTopComponent extends TopComponent {
             .add(initPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addContainerGap(292, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(278, Short.MAX_VALUE))
+                .addContainerGap(279, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
@@ -605,13 +590,9 @@ public class ChatTopComponent extends TopComponent {
     private void chatsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMouseClicked
         int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
         if (tab == chats.getTabCount() - 1) {
-            showPopup(evt);
+        //    showPopup(evt);
         } 
     }//GEN-LAST:event_chatsMouseClicked
-
-    private void newPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newPanelMouseClicked
-        showPopup(evt);
-    }//GEN-LAST:event_newPanelMouseClicked
 
     private void loginLinkMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseExited
         loginLink.setCursor(Cursor.getDefaultCursor());
@@ -627,7 +608,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void chatsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMousePressed
         int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
-        if (tab != chats.getTabCount() - 1) {
+        if (tab != 0) {
             if (evt.isPopupTrigger()) {
                 JPopupMenu menu = new JPopupMenu();
                 menu.add(new Close());
@@ -642,14 +623,13 @@ public class ChatTopComponent extends TopComponent {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane chats;
+    private org.netbeans.modules.kenai.collab.chat.ContactList contactList;
     private javax.swing.JPanel errorScreen;
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
     private javax.swing.JLabel lblXmppError;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
-    private javax.swing.JPanel newPanel;
-    private javax.swing.JLabel noChats;
     private javax.swing.JLabel retryLink;
     // End of variables declaration//GEN-END:variables
     /**
@@ -707,6 +687,15 @@ public class ChatTopComponent extends TopComponent {
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
+    }
+
+    void refreshContactList() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                contactList.updateFilter();
+            }
+        });
     }
 
     final static class ResolvableHelper implements Serializable {
