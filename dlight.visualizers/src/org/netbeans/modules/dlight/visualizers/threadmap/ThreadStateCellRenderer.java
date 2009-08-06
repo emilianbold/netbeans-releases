@@ -231,7 +231,9 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     }
 
     private static String colorToHexString(Color c) {
-        return Integer.toHexString((c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
+        // Result must be exactly 6 digits long.
+        // Color values 0x0..0xf need special care.
+        return String.format("%06x", c.getRGB() & 0xFFFFFF); // NOI18N
     }
 
     /**
