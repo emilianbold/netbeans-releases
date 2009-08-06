@@ -39,7 +39,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,3,8,0,0,2,84"/>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,-14,0,0,2,84"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -56,66 +56,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Component id="separator" alignment="0" max="32767" attributes="0"/>
+          <Component id="dummyCommentPanel" alignment="0" max="32767" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="475" max="32767" attributes="0"/>
+              <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="priorityLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="priorityCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="projectCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="issueTypeCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="statusCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="resolutionCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="createdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="updatedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="assigneeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="assigneeField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="dueField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace pref="160" max="32767" attributes="0"/>
-                                      <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="affectsVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="affectsVersionScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="fixVersionScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="fixVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="remainingEstimateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -141,7 +91,6 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="customFieldPanelLeft" max="32767" attributes="1"/>
@@ -169,15 +118,66 @@
                           <Component id="customFieldPanelRight" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="priorityLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="priorityCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="projectCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="issueTypeCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="statusCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="resolutionCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="createdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="updatedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="assigneeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="assigneeField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dueField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="componentScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="affectsVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="affectsVersionScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="fixVersionScrollPane" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="fixVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="headerLabel" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                      <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-          </Group>
-          <Component id="separator" alignment="0" max="32767" attributes="0"/>
-          <Component id="dummyCommentPanel" alignment="0" max="32767" attributes="0"/>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="475" max="32767" attributes="0"/>
-              <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -186,9 +186,9 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="projectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="projectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -234,9 +234,9 @@
                           <Component id="fixVersionScrollPane" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="actionPanel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="originalEstimateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
