@@ -43,25 +43,26 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.collab.chat.ChatPanel;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.SPIAccessor;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiUser {
+public final class KenaiUser {
+
+    static {
+        SPIAccessor.DEFAULT = new SPIAccessorImpl();
+    }
 
     public static final String PROP_PRESENCE = "Presence";
 
@@ -74,23 +75,24 @@ public class KenaiUser {
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
     private Icon icon;
 
-    public KenaiUser(String user) {
+    private static HashMap<String, KenaiUser> users = new HashMap();
+
+    private KenaiUser(String user) {
         this.user=user;
         this.fullName = user+"@"+XMPP_SERVER;
     }
     
-    public static KenaiUser forName(final String user) {
-        XMPPConnection con = Kenai.getDefault().getXMPPConnection();
-        final KenaiUser result = new KenaiUser(user);
-        con.addPacketListener(new PacketListener() {
-            public void processPacket(Packet packet) {
-                if (packet.getFrom().equals(result.fullName)) {
-                    Presence presence = (Presence) packet;
-                    result.firePropertyChange(PROP_PRESENCE, presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
-                }
-            }
-        }, new PacketTypeFilter(Presence.class));
-        return result;
+    public static synchronized KenaiUser forName(final String user) {
+        KenaiUser kuser = users.get(user);
+        if (kuser==null) {
+            kuser = new KenaiUser(user);
+            users.put(user, kuser);
+        }
+        return kuser;
+    }
+
+    static synchronized void clear() {
+        users.clear();
     }
 
     /**
@@ -151,13 +153,12 @@ public class KenaiUser {
         return icon;
     }
 
-    private void firePropertyChange(String string, boolean b, boolean b0) {
+    void firePropertyChange(String string, boolean b, boolean b0) {
         propertyChangeSupport.firePropertyChange(string, b, b0);
     }
 
     public static boolean isOnline(String user) {
-        XMPPConnection con = Kenai.getDefault().getXMPPConnection();
-        return con.getRoster().getPresence(user+"@"+XMPP_SERVER).getType() == Presence.Type.available;
+        return KenaiConnection.getDefault().isUserOnline(user);
     }
 
     public JLabel createUserWidget() {

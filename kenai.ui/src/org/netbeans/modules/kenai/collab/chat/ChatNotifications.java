@@ -133,9 +133,11 @@ public class ChatNotifications {
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
+        ChatTopComponent.findInstance().repaint();
     }
 
     synchronized void addPrivateMessage(final Message msg) {
+        assert SwingUtilities.isEventDispatchThread();
         final String name = StringUtils.parseName(msg.getFrom());
         Notification n = privateNotifications.get(name);
         if (n != null) {
@@ -151,6 +153,7 @@ public class ChatNotifications {
             }
         }, Priority.NORMAL);
         privateNotifications.put(name, n);
+        ChatTopComponent.findInstance().repaint();
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
