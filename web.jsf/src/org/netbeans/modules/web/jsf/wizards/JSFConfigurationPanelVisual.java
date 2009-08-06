@@ -687,6 +687,8 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 if (libName != null) {
                     rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
                     rbNoneLibrary.setSelected(true);
+                    if (panel !=null)
+                        panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
                     enableNewLibraryComponent(false);
                     enableDefinedLibraryComponent(false);
                 }

@@ -54,6 +54,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -130,26 +131,18 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action[] getPopupActions(final ProjectHandle project) {
-        Action[] actions = new Action[]{
-            (Action) getDetailsAction(project),
-            new RemoveProjectAction(project),
-            new AbstractAction( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject") ) {
-                public void actionPerformed( ActionEvent e ) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
-                        try {
-                            Kenai.getDefault().getProject(project.getId(), true);
-                            project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
-                        } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-                }
-            }
-        };
-        return actions;
+        if (Dashboard.getDefault().isMemberProject(project)) {
+            return new Action[]{
+                        new RefreshAction(project),
+                        (Action) getDetailsAction(project),
+            };
+        } else {
+            return new Action[]{
+                        new RefreshAction(project),
+                        new RemoveProjectAction(project),
+                        (Action) getDetailsAction(project)
+            };
+        }
     }
 
     @Override
@@ -176,5 +169,29 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             Exceptions.printStackTrace(kenaiException);
         }
         return null;
+    }
+
+    private static class RefreshAction extends AbstractAction {
+
+        private final ProjectHandle project;
+
+        public RefreshAction(ProjectHandle project) {
+            super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
+            this.project = project;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        Kenai.getDefault().getProject(project.getId(), true);
+                        project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
 }

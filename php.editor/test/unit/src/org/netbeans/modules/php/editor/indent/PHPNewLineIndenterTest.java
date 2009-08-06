@@ -112,6 +112,22 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/indent_after_multiline_stmt1.php");
     }
 
+    public void testMultilineString1() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_string1.php");
+    }
+
+    public void testMultilineString2() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_string2.php");
+    }
+
+    public void testMultilineString3() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_string3.php");
+    }
+
+    public void testMultilineString4() throws Exception{
+        testIndentInFile("testfiles/indent/multiline_string4.php");
+    }
+
     public void testArrays1() throws Exception{
         testIndentInFile("testfiles/indent/arrays1.php");
     }

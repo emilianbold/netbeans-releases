@@ -51,17 +51,12 @@ public class PlatformBundleKeysTest extends TestBundleKeys
 
 
     public PlatformBundleKeysTest(String isBundleName) {
-        this(isBundleName, null);
+        super(isBundleName);
     }
 
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
-     */
-    public PlatformBundleKeysTest(String bundleName, String keys) {
-        super(bundleName);
-        this.keys=keys;
-    }
-
+     */    
     protected ClassLoader getDescendantClassLoader()
     {
         return PlatformBundleKeysTest.class.getClassLoader();

@@ -78,10 +78,11 @@ public class CompletionJListOperatorTest extends JellyTestCase {
     {
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
-        Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClassCompletion.java"); // NOI18N
+        Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new OpenAction().perform(node);
-        eo = new EditorOperator("SampleClassCompletion.java");   // NOI18N
-        eo.setCaretPositionToEndOfLine(56); //line containing "System.out"
+        eo = new EditorOperator("SampleClass1.java");   // NOI18N
+        eo.setCaretPositionToEndOfLine(55);
+        eo.insert("System.out");
     }
 
     protected void tearDown()
