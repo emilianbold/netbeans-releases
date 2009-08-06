@@ -181,10 +181,10 @@ public class CommentsPanel extends JPanel {
 
         // Layout
         horizontalGroup.add(layout.createSequentialGroup()
-            .add(leftLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .add(leftLabel, 0, 0, Short.MAX_VALUE)
             .addPreferredGap(LayoutStyle.RELATED)
             .add(replyButton)
-            .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addPreferredGap(LayoutStyle.RELATED)
             .add(rightLabel))
         .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
