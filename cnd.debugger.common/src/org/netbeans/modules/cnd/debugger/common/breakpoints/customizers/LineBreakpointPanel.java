@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common.breakpoints;
+package org.netbeans.modules.cnd.debugger.common.breakpoints.customizers;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -48,12 +48,16 @@ import java.net.URI;
 import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -72,7 +76,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 
     private ConditionsPanel     conditionsPanel;
     private ActionsPanel        actionsPanel;
-//    private LineBreakpoint      breakpoint;
+    private LineBreakpoint      breakpoint;
     private boolean             createBreakpoint = false;
     
     /** 
@@ -86,11 +90,11 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
     /** 
      * Creates new form LineBreakpointPanel
      */
-    public LineBreakpointPanel(CndBreakpoint b) {
+    public LineBreakpointPanel(LineBreakpoint b) {
 	String mime = null;
 	String url = b.getURL();
 	
-        //breakpoint = b;
+        breakpoint = b;
         initComponents();
 
         try {
@@ -107,23 +111,23 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	 * while a Java file had focus in the editor) then make the text field empty
 	 * but writable.
 	 */
-//	if (url.length() > 0 && MIMENames.isFortranOrHeaderOrCppOrC(mime)) {
-//	    try {
-//		URI uri = new URI(url);
-//		String path = uri.getPath();
-//		if (Utilities.isWindows() && path.charAt(0) == '/') {
-//		    path = path.substring(1);
-//		}
-//		tfFileName.setText(path);
-//	    } catch (Exception e) {
-//		tfFileName.setText(url);
-//	    }
-//	} else {
-//	    tfFileName.setEditable(true);
-//	}
-//        if (b.getLineNumber() > 0) {
-//            tfLineNumber.setText(Integer.toString(b.getLineNumber()));
-//        }
+	if (url.length() > 0 && MIMENames.isFortranOrHeaderOrCppOrC(mime)) {
+	    try {
+		URI uri = new URI(url);
+		String path = uri.getPath();
+		if (Utilities.isWindows() && path.charAt(0) == '/') {
+		    path = path.substring(1);
+		}
+		tfFileName.setText(path);
+	    } catch (Exception e) {
+		tfFileName.setText(url);
+	    }
+	} else {
+	    tfFileName.setEditable(true);
+	}
+        if (b.getLineNumber() > 0) {
+            tfLineNumber.setText(Integer.toString(b.getLineNumber()));
+        }
         
         conditionsPanel = new ConditionsPanel(b);
         pConditions.add(conditionsPanel, "Center");  // NOI18N
@@ -131,15 +135,14 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         pActions.add(actionsPanel, "Center");  // NOI18N
     }
     
-    private static CndBreakpoint createBreakpoint() {
-//	String url = EditorContextBridge.getMostRecentURL();
-//	int lnum = EditorContextBridge.getMostRecentLineNumber();
-//
-//        // create an empty line breakpoint if url is empty
-//	LineBreakpoint lb = (url.length() != 0) ? LineBreakpoint.create(url, lnum) : LineBreakpoint.create();
-//        lb.setPrintText(NbBundle.getBundle(LineBreakpointPanel.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
-//        return lb;
-        return new CndBreakpoint() {};
+    private static LineBreakpoint createBreakpoint() {
+	String url = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
+	int lnum = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+
+        // create an empty line breakpoint if url is empty
+	LineBreakpoint lb = (url.length() != 0) ? LineBreakpoint.create(url, lnum) : LineBreakpoint.create();
+        lb.setPrintText(NbBundle.getBundle(LineBreakpointPanel.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
+        return lb;
     }
     
     /** 
@@ -168,13 +171,13 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 
         setLayout(new java.awt.GridBagLayout());
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle"); // NOI18N
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Line_Breakpoint_BorderTitle"))); // NOI18N
         pSettings.setMinimumSize(new java.awt.Dimension(249, 105));
         pSettings.setPreferredSize(new java.awt.Dimension(144, 105));
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        lFileName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
+        lFileName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
         lFileName.setLabelFor(tfFileName);
         lFileName.setText(bundle.getString("L_Line_Breakpoint_File_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -199,7 +202,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         tfFileName.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name")); // NOI18N
         tfFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name")); // NOI18N
 
-        lLineNumber.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_Line_Number").charAt(0));
+        lLineNumber.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle").getString("MN_L_Line_Breakpoint_Line_Number").charAt(0));
         lLineNumber.setLabelFor(tfLineNumber);
         lLineNumber.setText(bundle.getString("L_Line_Breakpoint_Line_Number")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -256,56 +259,56 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
      * @return whether customizer can be closed
      */
     public boolean ok() {
-//        String msg = validateBreakpoint();
-//        if (msg != null) {
-//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-//            return false;
-//        }
-//        String lnum = tfLineNumber.getText().trim();
-//        if (lnum.length() > 0) {
-//            breakpoint.setLineNumber(Integer.parseInt(lnum));
-//        }
-//        conditionsPanel.ok();
-//        actionsPanel.ok();
-//
-//        // Check if this breakpoint is already set
-//        DebuggerManager dm = DebuggerManager.getDebuggerManager();
-//        Breakpoint[] bs = dm.getBreakpoints();
-//        int i, k = bs.length;
-//        for (i = 0; i < k; i++) {
-//            if (bs[i] instanceof LineBreakpoint) {
-//                LineBreakpoint lb = (LineBreakpoint) bs[i];
-//                // Compare line numbers
-//                if (breakpoint.getLineNumber() != lb.getLineNumber()) {
-//                    continue;
-//                }
-//                // Compare file names
-//                String url = breakpoint.getURL();
-//                if (!url.equals(lb.getURL())) {
-//                    continue;
-//                }
-//                // Compare conditions
-//                String condition = breakpoint.getCondition();
-//                if (condition != null) {
-//                    if (!condition.equals(lb.getCondition())) {
-//                        continue;
-//                    }
-//                } else {
-//                    if (lb.getCondition() != null) {
-//                        continue;
-//                    }
-//                }
-//                // Check if this breakpoint is enabled
-//                if (!lb.isEnabled()) {
-//                    bs[i].enable();
-//                }
-//                return true;
-//            }
-//        }
-//        // Create a new breakpoint
-//        if (createBreakpoint) {
-//	    dm.addBreakpoint(breakpoint);
-//	}
+        String msg = validateBreakpoint();
+        if (msg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+            return false;
+        }
+        String lnum = tfLineNumber.getText().trim();
+        if (lnum.length() > 0) {
+            breakpoint.setLineNumber(Integer.parseInt(lnum));
+        }
+        conditionsPanel.ok();
+        actionsPanel.ok();
+        
+        // Check if this breakpoint is already set
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Breakpoint[] bs = dm.getBreakpoints();
+        int i, k = bs.length;
+        for (i = 0; i < k; i++) {
+            if (bs[i] instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) bs[i];
+                // Compare line numbers
+                if (breakpoint.getLineNumber() != lb.getLineNumber()) {
+                    continue;
+                }
+                // Compare file names
+                String url = breakpoint.getURL();
+                if (!url.equals(lb.getURL())) {
+                    continue;
+                }
+                // Compare conditions
+                String condition = breakpoint.getCondition();
+                if (condition != null) {
+                    if (!condition.equals(lb.getCondition())) {
+                        continue;
+                    }
+                } else {
+                    if (lb.getCondition() != null) {
+                        continue;
+                    }
+                }
+                // Check if this breakpoint is enabled
+                if (!lb.isEnabled()) {
+                    bs[i].enable();
+                }
+                return true;
+            }
+        }
+        // Create a new breakpoint
+        if (createBreakpoint) {
+	    dm.addBreakpoint(breakpoint);
+	}
         return true;
     }
     
@@ -333,19 +336,18 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         if (!file.exists()) {
             return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
         }
-        //breakpoint.setURL(file.getAbsolutePath());
+        breakpoint.setURL(file.getAbsolutePath());
 	
 	// No validation for the (currently unsupported) condition
         return null;
     }
     
     private String getRunDirectory() {
-        return ".";  // NOI18N
-//        try {
-//            return FileUtil.toFile(OpenProjects.getDefault().getMainProject().getProjectDirectory()).getAbsolutePath();
-//        } catch (Exception ex) {
-//            return "."; // NOI18N
-//        }
+        try {
+            return FileUtil.toFile(OpenProjects.getDefault().getMainProject().getProjectDirectory()).getAbsolutePath();
+        } catch (Exception ex) {
+            return "."; // NOI18N
+        }
     }
     
     

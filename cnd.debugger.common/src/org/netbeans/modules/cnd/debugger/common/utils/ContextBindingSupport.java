@@ -39,13 +39,23 @@
 
 package org.netbeans.modules.cnd.debugger.common.utils;
 
+import java.awt.AWTKeyStroke;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.DialogBinding;
@@ -186,6 +196,41 @@ public class ContextBindingSupport {
 //        } else {
 //            SwingUtilities.invokeLater(runnable);
 //        }
+    }
+
+    public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
+        editorPane.setKeymap(new FilteredKeymap(editorPane));
+        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        editorPane.setBorder(
+                new CompoundBorder(editorPane.getBorder(),
+                new EmptyBorder(0, 0, 0, 0)));
+
+        JTextField referenceTextField = new JTextField("M"); // NOI18N
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(referenceTextField.getBackground());
+        sp.setBorder(referenceTextField.getBorder());
+        sp.setBackground(referenceTextField.getBackground());
+
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(editorPane, gridBagConstraints);
+        sp.setViewportView(panel);
+
+        int preferredHeight = referenceTextField.getPreferredSize().height;
+        if (sp.getPreferredSize().height < preferredHeight) {
+            sp.setPreferredSize(referenceTextField.getPreferredSize());
+        }
+        sp.setMinimumSize(sp.getPreferredSize());
+
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+        return sp;
     }
 
     public static final class Context {

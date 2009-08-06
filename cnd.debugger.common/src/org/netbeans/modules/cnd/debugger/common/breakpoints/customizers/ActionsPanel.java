@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common.breakpoints;
+package org.netbeans.modules.cnd.debugger.common.breakpoints.customizers;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.openide.util.NbBundle;
 
 /**
@@ -138,11 +139,11 @@ public class ActionsPanel extends JPanel implements ItemListener {
         tfPrintText = new javax.swing.JTextField();
         lPrintText = new javax.swing.JLabel();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle"); // NOI18N
         setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Actions_Panel_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        lSuspend.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle").getString("MN_L_Actions_Panel_Suspend").charAt(0));
+        lSuspend.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle").getString("MN_L_Actions_Panel_Suspend").charAt(0));
         lSuspend.setLabelFor(cbSuspend);
         lSuspend.setText(bundle.getString("L_Actions_Panel_Suspend")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -165,7 +166,7 @@ public class ActionsPanel extends JPanel implements ItemListener {
         cbSuspend.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CB_Actions_Panel_Suspend")); // NOI18N
         cbSuspend.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CB_Actions_Panel_Suspend")); // NOI18N
 
-        lThreadID.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle").getString("MN_ThreadID").charAt(0));
+        lThreadID.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle").getString("MN_ThreadID").charAt(0));
         lThreadID.setLabelFor(tfThreadID);
         lThreadID.setText(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "L_Actions_Panel_ThreadID")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -198,7 +199,7 @@ public class ActionsPanel extends JPanel implements ItemListener {
         tfPrintText.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TF_Actions_Panel_Print_Text")); // NOI18N
         tfPrintText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Actions_Panel_Print_Text")); // NOI18N
 
-        lPrintText.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle").getString("MN_L_Actions_Panel_Print_Text").charAt(0));
+        lPrintText.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle").getString("MN_L_Actions_Panel_Print_Text").charAt(0));
         lPrintText.setLabelFor(tfPrintText);
         lPrintText.setText(bundle.getString("L_Actions_Panel_Print_Text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
