@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.debugger.common.breakpoints;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author eu155513
@@ -54,7 +56,10 @@ public class AddressBreakpoint extends CndBreakpoint implements Comparable {
     }
     
     public static AddressBreakpoint create(String address) {
-        return new AddressBreakpoint(address);
+        AddressBreakpoint b = new AddressBreakpoint(address);
+        b.setPrintText(NbBundle.getBundle (AddressBreakpoint.class).getString
+                ("CTL_Address_Breakpoint_Print_Text")); // NOI18N
+        return b;
     }
 
     public String getAddress() {

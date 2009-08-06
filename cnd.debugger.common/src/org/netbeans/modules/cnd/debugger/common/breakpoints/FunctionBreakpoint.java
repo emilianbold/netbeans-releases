@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.debugger.common.breakpoints;
 
+import org.openide.util.NbBundle;
+
 /**
  * Notifies about function breakpoint events.
  *
@@ -69,6 +71,8 @@ public class FunctionBreakpoint extends CndBreakpoint {
     public static FunctionBreakpoint create(String function) {
         FunctionBreakpoint b = new FunctionBreakpointComparable();
         b.setFunctionName(function);
+        b.setPrintText(NbBundle.getBundle(FunctionBreakpoint.class).getString
+                ("CTL_Function_Breakpoint_Print_Text")); // NOI18N
         return b;
     }
     

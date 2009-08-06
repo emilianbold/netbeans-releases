@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -81,6 +82,7 @@ public class LineBreakpoint extends CndBreakpoint {
     public static LineBreakpoint create(String url, int lineNumber) {
         LineBreakpoint b = new LineBreakpointComparable(url);
         b.setLineNumber(lineNumber);
+        b.setPrintText(NbBundle.getBundle(LineBreakpoint.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
         return b;
     }
 

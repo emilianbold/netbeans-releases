@@ -69,14 +69,10 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
     
     
     private static FunctionBreakpoint createBreakpoint() {
-        FunctionBreakpoint mb = FunctionBreakpoint.create (
+        return FunctionBreakpoint.create (
             // EditorContextBridge.getCurrentFunction ()
             "main" // DEBUG // NOI18N
         );
-        mb.setPrintText(NbBundle.getBundle (FunctionBreakpointPanel.class).getString
-                ("CTL_Function_Breakpoint_Print_Text")); // NOI18N
-        
-        return mb;
     }
     
     

@@ -69,16 +69,10 @@ public class AddressBreakpointPanel extends JPanel implements Controller {
     
     
     private static AddressBreakpoint createBreakpoint() {
-        AddressBreakpoint ab = AddressBreakpoint.create (
-            // EditorContextBridge.getCurrentFunction ()
+        return AddressBreakpoint.create (
             "0x000000" // DEBUG // NOI18N
         );
-        ab.setPrintText(NbBundle.getBundle (AddressBreakpointPanel.class).getString
-                ("CTL_Address_Breakpoint_Print_Text")); // NOI18N
-        
-        return ab;
     }
-    
     
     /** 
      * Creates new form FunctionBreakpointPanel

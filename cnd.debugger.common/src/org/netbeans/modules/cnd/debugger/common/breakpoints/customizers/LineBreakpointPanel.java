@@ -141,7 +141,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 
         // create an empty line breakpoint if url is empty
 	LineBreakpoint lb = (url.length() != 0) ? LineBreakpoint.create(url, lnum) : LineBreakpoint.create();
-        lb.setPrintText(NbBundle.getBundle(LineBreakpointPanel.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
         return lb;
     }
     
