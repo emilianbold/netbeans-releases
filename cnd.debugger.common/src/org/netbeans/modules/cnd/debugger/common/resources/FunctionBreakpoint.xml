@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 <type
     name='FunctionBreakpoint'
     description_key='HINT_FUNCTION_BREAKPOINT'
-    localizing_bundle='org.netbeans.modules.cnd.debugger.gdb.common.resources.Bundle'
+    localizing_bundle='org.netbeans.modules.cnd.debugger.common.resources.Bundle'
     visible='true' 
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint.gif'
     highlight='0xFC9D9F' 
