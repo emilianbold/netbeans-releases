@@ -125,7 +125,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                         new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
                 "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
-                "BOOL_OR(operation='close') AS closed FROM fops GROUP BY sid, file " +
+                "BOOL_OR(operation='close') AS closed FROM fops GROUP BY sid, file " + // NOI18N
                 "ORDER BY closed ASC", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
