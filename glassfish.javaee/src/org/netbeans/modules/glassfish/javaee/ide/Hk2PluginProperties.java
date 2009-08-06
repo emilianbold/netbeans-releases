@@ -91,7 +91,7 @@ public class Hk2PluginProperties {
     public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
 
     private InstanceProperties ip;
-    private static final int DEBUGPORT = 8787;
+    private static final int DEBUGPORT = 9009;
     private ServerUtilities su;
 
     /**
@@ -249,7 +249,7 @@ public class Hk2PluginProperties {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        List retVal = new ArrayList<URL>();
+        List<URL> retVal = new ArrayList<URL>();
         retVal.addAll(urlSet);
         return retVal;
     }
