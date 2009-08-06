@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Edit|Replace" main menu item,
@@ -54,9 +55,12 @@ public class ReplaceAction extends ActionNoBlock {
     private static final String replaceMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                               + "|"
                                               + Bundle.getStringTrimmed("org.openide.actions.Bundle", "Replace");
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
     
     /** creates new ReplaceAction instance */
     public ReplaceAction() {
-        super(replaceMenu, null, "org.openide.actions.ReplaceAction");
+        super(replaceMenu, null, "org.openide.actions.ReplaceAction", keystroke);
     }
 }

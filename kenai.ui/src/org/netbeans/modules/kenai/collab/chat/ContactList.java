@@ -51,6 +51,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.Roster;
@@ -78,7 +79,6 @@ public class ContactList extends javax.swing.JPanel {
         Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 KenaiConnection.getDefault().post(new Runnable() {
-
                     public void run() {
                         XMPPConnection xMPPConnection = Kenai.getDefault().getXMPPConnection();
                         if (xMPPConnection != null) {
@@ -250,7 +250,7 @@ public class ContactList extends javax.swing.JPanel {
 
     private void filterComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_filterComboItemStateChanged
         listModel.clear();
-        if (filterCombo.getSelectedIndex()==0) {
+        if (filterCombo.getSelectedIndex()<=0) {
 
             for (FakeRosterGroup group : roster.getGroups()) {
                 listModel.addElement(new GroupListItem(group));

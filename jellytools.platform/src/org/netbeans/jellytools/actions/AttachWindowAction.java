@@ -139,15 +139,15 @@ public class AttachWindowAction extends Action {
     /** Set sideItem and sideConstant from given parameter.
      */
     private void mapSide(String side) {
-        if(side == null || side == AS_LAST_TAB) {
+        if(side == null || side.equals(AS_LAST_TAB)) {
             sideConstant = AS_LAST_TAB;
-        } else if(side == RIGHT) {
+        } else if(side.equals(RIGHT)) {
             sideConstant = RIGHT;
-        } else if(side == LEFT) {
+        } else if(side.equals(LEFT)) {
             sideConstant = LEFT;
-        } else if(side == TOP) {
+        } else if(side.equals(TOP)) {
             sideConstant = TOP;
-        } else if(side == BOTTOM) {
+        } else if(side.equals(BOTTOM)) {
             sideConstant = BOTTOM;
         } else {
             throw new JemmyException("Cannot attach to position \""+side+"\".");
