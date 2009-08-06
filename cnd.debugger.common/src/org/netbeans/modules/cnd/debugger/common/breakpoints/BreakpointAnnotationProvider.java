@@ -90,7 +90,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
-    private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
+    private final Logger log = Logger.getLogger("cnd.breakpoint.annotations"); // NOI18N
 
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
