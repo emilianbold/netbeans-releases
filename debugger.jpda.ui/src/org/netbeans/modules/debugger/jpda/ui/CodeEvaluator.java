@@ -71,6 +71,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -207,7 +208,22 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return button;
     }
 
+    private Timer setupContextTimer;
+
     private void setupContext() {
+        if (setupContextTimer == null) {
+            setupContextTimer = new Timer(500, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    setupContextLazily();
+                }
+            });
+            setupContextTimer.setRepeats(false);
+        }
+        // Setting up a context takes time.
+        setupContextTimer.restart();
+    }
+
+    private void setupContextLazily() {
         final String text = codePane.getText();
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {

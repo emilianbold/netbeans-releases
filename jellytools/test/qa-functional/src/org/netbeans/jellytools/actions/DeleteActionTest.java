@@ -88,8 +88,7 @@ public class DeleteActionTest extends JellyTestCase {
     
     private static Node node;
     
-    public void setUp() throws IOException {
-        new DeleteAction().getKeyStrokes();
+    public void setUp() throws IOException {        
         System.out.println("### "+getName()+" ###");  // NOI18N
         openDataProjects("SampleProject");
         if(node == null) {
@@ -98,9 +97,9 @@ public class DeleteActionTest extends JellyTestCase {
     }
     
     public void tearDown() {
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).close();
+        // "Delete"
+        String deleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
+        new NbDialogOperator(deleteTitle).close();
         // On some linux it may happen autorepeat is activated and it 
         // opens dialog multiple times. So, we need to close all modal dialogs.
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
