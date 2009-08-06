@@ -133,13 +133,15 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     public Action[] getPopupActions(final ProjectHandle project) {
         if (Dashboard.getDefault().isMemberProject(project)) {
             return new Action[]{
+                        new RefreshAction(project),
                         (Action) getDetailsAction(project),
-                        new RefreshAction(project)};
+            };
         } else {
             return new Action[]{
-                        (Action) getDetailsAction(project),
+                        new RefreshAction(project),
                         new RemoveProjectAction(project),
-                        new RefreshAction(project)};
+                        (Action) getDetailsAction(project)
+            };
         }
     }
 
