@@ -70,11 +70,11 @@ import org.openide.util.TaskListener;
  * @author Tomas Mysik
  * @author Pavel Flaska
  */
-public class ConfigurationPanel extends JPanel {
+public class ConfigurationPanel extends JPanel implements Runnable {
     private static final long serialVersionUID = 27938464212508L;
     
     final DownloadProgressMonitor progressMonitor = new DownloadProgressMonitor();
-    private FeatureInfo featureInfo;
+    private final FeatureInfo featureInfo;
     private Callable<JComponent> callable;
     private final Boolean autoActivate;
 
@@ -176,16 +176,14 @@ public class ConfigurationPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public void run() {
+        ModulesInstaller.installModules(progressMonitor, featureInfo);
+    }
+
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
-        final FeatureInfo info = featureInfo;
-        Task task = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
-                ModulesInstaller.installModules(progressMonitor, info);
-            }
-        });
+        Task task = FeatureManager.getInstance().create(this);
         task.addTaskListener(new TaskListener() {
 
             public void taskFinished(org.openide.util.Task task) {
