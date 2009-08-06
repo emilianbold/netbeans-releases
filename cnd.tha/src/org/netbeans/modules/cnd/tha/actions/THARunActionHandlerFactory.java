@@ -36,49 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha.actions;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import org.openide.awt.Actions.CheckboxMenuItem;
-import org.openide.util.actions.BooleanStateAction;
+package org.netbeans.modules.cnd.tha.actions;
 
-public class CheckBoxMenuItemFactory {
+import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.lookup.ServiceProvider;
 
-    private CheckBoxMenuItemFactory() {
-    }
+/**
+ * @author Alexey Vladykin
+ */
+@ServiceProvider(service=ProjectActionHandlerFactory.class, position=4000)
+public class THARunActionHandlerFactory implements ProjectActionHandlerFactory {
 
-    public static CheckboxMenuItem createCheckboxMenuItem(final BooleanStateAction action) {
-        CheckboxMenuItem result = new CheckboxMenuItem(action, true);
+    private static final boolean ENABLE = Util.getBoolean("cnd.tha.prof.enable", true);
 
-        final MouseListener[] listeners = result.getMouseListeners();
-        for (MouseListener l : listeners) {
-            result.removeMouseListener(l);
+    public boolean canHandle(Type type, Configuration configuration) {
+        switch (type) {
+            case CUSTOM_ACTION:
+                return ENABLE;
+            default:
+                return false;
         }
-
-        result.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseEntered(e);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseEntered(e);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                action.actionPerformed(null);
-            }
-        });
-
-        return result;
     }
+
+    public ProjectActionHandler createHandler() {
+        return new THARunActionHandler();
+    }
+
 }

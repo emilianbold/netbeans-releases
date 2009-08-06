@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.cnd.tha.ui;
 
 import javax.swing.Action;
 
@@ -45,6 +45,6 @@ import javax.swing.Action;
  *
  * @author mt154047
  */
-interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(GizmoIndicatorsTopComponent source);
+interface THAIndicatorsTopComponentActionsProvider {
+    Action[] getActions(THAIndicatorsTopComponent source);
 }

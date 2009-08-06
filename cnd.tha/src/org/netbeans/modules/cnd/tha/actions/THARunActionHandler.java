@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.actions;
+package org.netbeans.modules.cnd.tha.actions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,14 +53,12 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
-import org.netbeans.modules.cnd.gizmo.GizmoToolsController;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
@@ -84,7 +82,7 @@ import org.openide.windows.InputOutput;
 /**
  * @author Alexey Vladykin
  */
-public class GizmoRunActionHandler implements ProjectActionHandler, DLightTargetListener {
+public class THARunActionHandler implements ProjectActionHandler, DLightTargetListener {
 
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
@@ -94,7 +92,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private InputOutput io;
     private long startTimeMillis;
 
-    public GizmoRunActionHandler() {
+    public THARunActionHandler() {
         this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
     }
 
@@ -126,8 +124,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             targetConf.setX11Forwarding(true);
         }
 
+        targetConf.putInfo(THAServiceInfo.THA_RUN, "true");
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
-        targetConf.putInfo(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN(), "gizmo.run");
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
@@ -164,12 +162,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         // Setup simple output convertor factory...
         targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
 
-        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
-        if (options instanceof GizmoConfigurationOptions) {
-            ((GizmoConfigurationOptions) options).configure(pae.getProject());
-        }
-
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
 
@@ -287,12 +281,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             l.executionFinished(exitCode);
         }
 
-        // TODO: hack!!! fix me!
-        // see THAActionProvider .... we need a way to diable THA tool...
-        // Should we do this after run???
-        // Need to think-over
 
-        GizmoToolsController.getDefault().disableTool(pae.getProject(), "dlight.tool.tha"); // NOI18N
     }
 
     private static String formatTime(long millis) {
@@ -316,7 +305,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     private static String getMessage(String name, Object... params) {
-        return NbBundle.getMessage(GizmoRunActionHandler.class, name, params);
+        return NbBundle.getMessage(THARunActionHandler.class, name, params);
     }
 
     private static class SimpleOutputConvertorFactory implements LineConvertorFactory {

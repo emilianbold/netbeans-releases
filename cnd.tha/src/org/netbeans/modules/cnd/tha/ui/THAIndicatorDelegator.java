@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.cnd.tha.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
+import org.netbeans.modules.cnd.tha.THAServiceInfo;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
@@ -23,7 +23,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mt154047
  */
 @ServiceProvider(service = IndicatorComponentDelegator.class, position = 100)
-public final class GizmoIndicatorDelegator implements IndicatorComponentDelegator, GizmoIndicatorsTopComponentActionsProvider {
+public final class THAIndicatorDelegator implements IndicatorComponentDelegator, THAIndicatorsTopComponentActionsProvider {
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
         if (oldSession == newSession) {
@@ -96,12 +96,12 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         return projectFolder;
     }
 
-    private GizmoIndicatorsTopComponent getComponent(DLightSession newSession) {
+    private THAIndicatorsTopComponent getComponent(DLightSession newSession) {
         String projectFolder = getProjectFolder(newSession);
         //get all opened
-        GizmoIndicatorsTopComponent topComponent = GizmoIndicatorsTopComponent.findInstance();
+        THAIndicatorsTopComponent topComponent = THAIndicatorsTopComponent.findInstance();
         topComponent.setActionsProvider(this);
-        if (GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
+        if (THAIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
             return topComponent;
         }
         //if default is opened for unsupported platform and current platform is also unsupported do not open it again
@@ -109,7 +109,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(topComponent.getSession()))) {
             return topComponent;
         }
-        for (GizmoIndicatorsTopComponent tc : GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
+        for (THAIndicatorsTopComponent tc : THAIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
             DLightSession tcSession = tc.getSession();
             if (tcSession == null && newSession != null){
                 tc.setActionsProvider(this);
@@ -131,7 +131,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
                 }
             }
         }
-        GizmoIndicatorsTopComponent result = GizmoIndicatorsTopComponent.newInstance();
+        THAIndicatorsTopComponent result = THAIndicatorsTopComponent.newInstance();
         result.setActionsProvider(this);
         return result;
     }
@@ -145,11 +145,11 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
             UIThread.invoke(new Runnable() {
 
                 public void run() {
-                    GizmoIndicatorsTopComponent indicators = getComponent(session);
+                    THAIndicatorsTopComponent indicators = getComponent(session);
                     indicators.setSession(session);
                     indicators.open();
                     //invoke requestActive only once per IDE session
-                    if (GizmoServiceInfo.isPlatformSupported(getPlatform(session)) || !GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().contains(indicators)){
+                    if (GizmoServiceInfo.isPlatformSupported(getPlatform(session)) || !THAIndicatorTopComponentRegsitry.getRegistry().getOpened().contains(indicators)){
                         indicators.requestActive();
                     }
                 }
@@ -164,8 +164,8 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     public void sessionRemoved(DLightSession removedSession) {
     }
 
-    public Action[] getActions(GizmoIndicatorsTopComponent source) {
-        GizmoIndicatorTopComponentRegsitry registry = GizmoIndicatorTopComponentRegsitry.getRegistry();
+    public Action[] getActions(THAIndicatorsTopComponent source) {
+        THAIndicatorTopComponentRegsitry registry = THAIndicatorTopComponentRegsitry.getRegistry();
         if (registry.getOpened() == null || registry.getOpened().size() == 0){
             return null;
         }
@@ -175,7 +175,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         }
         Action[] result = new Action[registry.getOpened().size() -1 ];
         int i = 0;
-        for (final GizmoIndicatorsTopComponent tc : registry.getOpened()){
+        for (final THAIndicatorsTopComponent tc : registry.getOpened()){
             if (tc == source){
                 i++;
                 continue;
@@ -193,13 +193,13 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     private boolean needToHandle(DLightSession session){
         List<ServiceInfoDataStorage> infoStorages = session.getServiceInfoDataStorages();
         for (ServiceInfoDataStorage storage : infoStorages){
-            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
+            if (storage.getValue(THAServiceInfo.THA_RUN) != null){
                 return true;
             }
         }
         List<DataStorage> storages = session.getStorages();
         for (DataStorage storage : storages){
-            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
+            if (storage.getValue(THAServiceInfo.THA_RUN) != null){
                 return true;
             }
         }

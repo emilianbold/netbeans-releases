@@ -37,14 +37,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.ui;
-
-import javax.swing.Action;
+package org.netbeans.modules.cnd.tha;
 
 /**
  *
  * @author mt154047
  */
-interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(GizmoIndicatorsTopComponent source);
+public interface THAServiceInfo {
+    String THA_RUN = "project.tha.run";//NOI18N
+
 }

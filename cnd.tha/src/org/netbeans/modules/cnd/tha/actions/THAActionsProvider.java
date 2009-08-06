@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha.actions;
+package org.netbeans.modules.cnd.tha.actions;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -47,9 +47,10 @@ import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.gizmo.GizmoToolsController;
-import org.netbeans.modules.cnd.gizmo.tha.THAProjectSupport;
-import org.netbeans.modules.cnd.gizmo.tha.THAConfigurationImpl;
+import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
+import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
@@ -111,20 +112,14 @@ public final class THAActionsProvider {
                     }
                 }
 
-                // Enable THATool ...
-                GizmoToolsController.getDefault().enableTool(project, "dlight.tool.tha"); // NOI18N
-
-                // TODO: need a way to disable the THA tool (not to show-up on common run)
-                //
-
 
 
                 // Initiate RUN ...
                 ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
 
                 if (ap != null) {
-                    if (Arrays.asList(ap.getSupportedActions()).contains("run")) { // NOI18N
-                        ap.invokeAction("run", Lookups.fixed(THAConfigurationImpl.getDefault())); // NOI18N
+                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
+                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.getDefault())); // NOI18N
                     }
                 }
 
@@ -135,8 +130,8 @@ public final class THAActionsProvider {
 
         startThreadAnalyzer.putValue("command", "THAProfile"); // NOI18N
         startThreadAnalyzer.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        startThreadAnalyzer.putValue("iconBase", "org/netbeans/modules/cnd/gizmo/resources/bomb24.png"); // NOI18N
-        startThreadAnalyzer.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/gizmo/resources/bomb16.png", false)); // NOI18N
+        startThreadAnalyzer.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
+        startThreadAnalyzer.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
 
         removeInstrumentation = new RemoveInstrumentationAction();
     }

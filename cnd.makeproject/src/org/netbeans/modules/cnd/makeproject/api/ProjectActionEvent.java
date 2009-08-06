@@ -53,6 +53,7 @@ public class ProjectActionEvent {
         BUILD("Build"), // NOI18N
         CLEAN("Clean"), // NOI18N
         RUN("Run"), // NOI18N
+        PROFILE("Profile"),//NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
         DEBUG_LOAD_ONLY("Debug"), // NOI18N

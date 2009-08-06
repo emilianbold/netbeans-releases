@@ -37,14 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.ui;
+package org.netbeans.modules.cnd.gizmo.support;
 
-import javax.swing.Action;
+import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 
 /**
  *
  * @author mt154047
  */
-interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(GizmoIndicatorsTopComponent source);
+public final class GizmoServiceInfo {
+
+    static{
+        GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
+    }
+    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
+    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
+    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
+    public static final String PLATFORM = "gizmo.platform";//NOI18N
+    static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
+
+    public static   boolean isPlatformSupported(String platform){
+        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    }
+
+    static final class GizmoServiceInfoAccessorImpl extends GizmoServiceInfoAccessor{
+
+        @Override
+        public String getGIZMO_RUN() {
+            return GIZMO_RUN;
+        }
+
+    }
 }
