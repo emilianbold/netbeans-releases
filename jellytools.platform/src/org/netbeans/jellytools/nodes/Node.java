@@ -179,11 +179,11 @@ public class Node {
         if (path==null) return null;
         int pathCount=path.getPathCount();
         if (pathCount<2) return "";
-        String result = path.getPathComponent(1).toString();
+        StringBuffer bufResult = new StringBuffer(path.getPathComponent(1).toString());
         for(int i = 2; i < pathCount; i++) {
-            result += "|" + path.getPathComponent(i).toString();
+            bufResult.append("|").append(path.getPathComponent(i).toString());
         }
-        return result;
+        return bufResult.toString();
     }
     
     /** getter for node path
@@ -342,7 +342,7 @@ public class Node {
         });
     }
     
-    class StringArraySubPathChooser implements JTreeOperator.TreePathChooser {
+    static class StringArraySubPathChooser implements JTreeOperator.TreePathChooser {
         String[] arr;
         int[] indices;
         JTreeOperator.StringComparator comparator;
@@ -389,14 +389,16 @@ public class Node {
         /** implementation of JTreeOperator.TreePathChooser
          * @return String description */
         public String getDescription() {
-            String desc = "";
+            StringBuffer bufDesc = new StringBuffer()
+                    ;
             Object parr[]=parentPath.getPath();
             for(int i = 0; i < parr.length; i++) {
-                desc = desc + parr[i].toString() + ", ";
+                bufDesc.append(parr[i].toString()).append(", ");
             }
             for(int i = 0; i < arr.length; i++) {
-                desc = desc + arr[i] + ", ";
+                bufDesc.append(arr[i]).append(", ");
             }
+            String desc = bufDesc.toString();
             if(desc.length() > 0) {
                 desc = desc.substring(0, desc.length() - 2);
             }

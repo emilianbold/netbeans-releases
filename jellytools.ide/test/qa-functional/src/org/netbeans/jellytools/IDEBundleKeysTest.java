@@ -50,14 +50,7 @@ public class IDEBundleKeysTest extends TestBundleKeys {
     public static String propertiesName = "org/netbeans/jellytools/IDEBundleKeysTest.properties";
 
     public IDEBundleKeysTest(String isBundleName) {
-        this(isBundleName, null);
-    }
-    /** Constructor required by JUnit.
-     * @param testName method name to be used as testcase
-     */
-    public IDEBundleKeysTest(String isBundleName, String isKeys) {
         super(isBundleName);
-        this.keys=isKeys;
     }
 
     @Override
