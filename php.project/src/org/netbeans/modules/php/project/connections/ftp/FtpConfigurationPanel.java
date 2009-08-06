@@ -410,7 +410,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         cfg.putValue(FtpConnectionProvider.USER, getUserName());
         cfg.putValue(FtpConnectionProvider.PASSWORD, getPassword(), true);
         cfg.putValue(FtpConnectionProvider.ANONYMOUS_LOGIN, String.valueOf(isAnonymousLogin()));
-        cfg.putValue(FtpConnectionProvider.INITIAL_DIRECTORY, getInitialDirectory());
+        cfg.putValue(FtpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(FtpConnectionProvider.TIMEOUT, getTimeout());
         cfg.putValue(FtpConnectionProvider.PASSIVE_MODE, String.valueOf(isPassiveMode()));
     }

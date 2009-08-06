@@ -474,7 +474,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         cfg.putValue(SftpConnectionProvider.PASSWORD, getPassword(), true);
         cfg.putValue(SftpConnectionProvider.KNOWN_HOSTS_FILE, getKnownHostsFile());
         cfg.putValue(SftpConnectionProvider.IDENTITY_FILE, getIdentityFile());
-        cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, getInitialDirectory());
+        cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(SftpConnectionProvider.TIMEOUT, getTimeout());
     }
 

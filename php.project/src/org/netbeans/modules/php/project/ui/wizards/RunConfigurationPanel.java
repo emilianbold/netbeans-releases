@@ -336,7 +336,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(URL, runAsRemoteWeb.getUrl());
         settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
         settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
-        settings.putProperty(REMOTE_DIRECTORY, runAsRemoteWeb.getUploadDirectory());
+        settings.putProperty(REMOTE_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true));
         settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
     }
 
