@@ -106,8 +106,10 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
                     public void handleAnnotation(TypeElement type, 
                             Element element, AnnotationMirror annotation) 
                     {
-                        result.add( new Binding( getHelper(), type , 
+                        if ( !set.contains( type )){
+                            result.add( new Binding( getHelper(), type , 
                                 getAnnotationName()));
+                        }
                         set.add( type );
                         if ( !getHelper().hasAnnotation( annotation.
                                 getAnnotationType().asElement().
@@ -315,7 +317,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
             TypeElement element = toProcess.iterator().next();
             toProcess.remove(element);
             Set<TypeElement> implementors = doCollectSpecializedImplementors(
-                    element, set, bindings);
+                    element,bindings);
             if (implementors.size() == 0) {
                 continue;
             }
@@ -333,7 +335,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     }
     
     private Set<TypeElement> doCollectSpecializedImplementors( TypeElement type, 
-            Set<TypeElement> set, List<Binding> bindings )
+            List<Binding> bindings )
     {
         Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle.create(type);
