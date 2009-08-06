@@ -3,76 +3,59 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.wag.manager</code-name-base>
+            <code-name-base>org.netbeans.modules.wag.codegen.php</code-name-base>
             <module-dependencies>
+              
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>1.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core.ide</code-name-base>
+                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.15</specification-version>
+                        <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.wag</code-name-base>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.wag.codegen</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>0.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <code-name-base>org.netbeans.modules.wag.manager</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.actions</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.7</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>0.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -80,7 +63,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.6</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -88,7 +71,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.6</specification-version>
+                        <specification-version>7.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,15 +79,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8</specification-version>
+                        <specification-version>7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
+                    <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.9</specification-version>
+                        <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,7 +95,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.17</specification-version>
+                        <specification-version>6.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -120,27 +103,11 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.15</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.19</specification-version>
+                        <specification-version>7.16</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.wag.codegen</friend>
-                <friend>org.netbeans.modules.wag.codegen.j2ee</friend>
-                <friend>org.netbeans.modules.wag.codegen.java</friend>
-                <friend>org.netbeans.modules.wag.codegen.php</friend>
-                <friend>org.netbeans.modules.wag.kit</friend>
-                <package>org.netbeans.modules.wag.manager.model</package>
-                <package>org.netbeans.modules.wag.manager.spi</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
