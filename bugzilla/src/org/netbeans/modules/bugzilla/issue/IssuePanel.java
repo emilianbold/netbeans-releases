@@ -80,6 +80,7 @@ import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
@@ -260,6 +261,7 @@ public class IssuePanel extends javax.swing.JPanel {
         refreshButton.setVisible(!isNew);
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        assignedField.setEditable(issue.isNew() || issue.canReassign());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
@@ -483,6 +485,8 @@ public class IssuePanel extends javax.swing.JPanel {
         List<String> allStatuses = bc.getStatusValues();
         List<String> openStatuses = bc.getOpenStatusValues();
         List<String> statuses = new LinkedList<String>();
+        boolean oldRepository = (issue.getRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        String nev = "NEW"; // NOI18N
         String unconfirmed = "UNCONFIRMED"; // NOI18N
         String reopened = "REOPENED"; // NOI18N
         String resolved = "RESOLVED"; // NOI18N
@@ -494,6 +498,9 @@ public class IssuePanel extends javax.swing.JPanel {
             if (!reopened.equals(status)) {
                 statuses.remove(reopened);
             }
+            if (oldRepository && !nev.equals(status)) {
+                statuses.remove(nev);
+            }
             statuses.add(resolved);
         } else {
             if (allStatuses.contains(reopened)) {
@@ -502,13 +509,18 @@ public class IssuePanel extends javax.swing.JPanel {
                 // Pure guess
                 statuses.addAll(openStatuses);
                 statuses.remove(unconfirmed);
+                if (oldRepository) {
+                    statuses.remove(nev);
+                }
             }
             if (resolved.equals(status)) {
                 List<String> closedStatuses = new LinkedList<String>(allStatuses);
                 closedStatuses.removeAll(openStatuses);
                 statuses.addAll(closedStatuses);
             } else {
-                statuses.add(resolved);
+                if (!oldRepository) {
+                    statuses.add(resolved);
+                }
                 if(!status.equals("")) {
                     for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
                         String s = allStatuses.get(i);
@@ -578,6 +590,21 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void storeFieldValue(BugzillaIssue.IssueField field, String value) {
         if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field))) {
+            if (field == BugzillaIssue.IssueField.STATUS) {
+                if (value.equals("CLOSED")) { // NOI18N
+                    issue.close();
+                } else if (value.equals("VERIFIED")) { // NOI18N
+                    issue.verify();
+                } else if (value.equals("REOPENED")) { // NOI18N
+                    issue.reopen();
+                } else if (value.equals("RESOLVED")) { // NOI18N
+                    issue.resolve(resolutionCombo.getSelectedItem().toString());
+                } else if (value.equals("ASSIGNED")) { // NOI18N
+                    issue.accept();
+                }
+            } else if ((field == BugzillaIssue.IssueField.ASSIGNED_TO) && !issue.isNew()) {
+                issue.reassign(value);
+            }
             issue.setFieldValue(field, value);
         }
     }
