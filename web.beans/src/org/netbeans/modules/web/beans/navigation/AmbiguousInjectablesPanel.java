@@ -65,7 +65,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -400,17 +402,9 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
             List<AnnotationMirror> bindings , CompilationController controller )
     {
         TypeMirror typeMirror  = var.asType();
-        Element element = controller.getTypes().asElement( typeMirror );
-        if ( element == null ){
-            myShortTypeName ="";
-            myFqnTypeName = "";
-        }
-        else {
-            myFqnTypeName = ( element instanceof TypeElement )?
-                    ((TypeElement)element).getQualifiedName().toString() :
-                        element.getSimpleName().toString();
-            myShortTypeName =element.getSimpleName().toString();
-        }
+        myShortTypeName = new StringBuilder();
+        myFqnTypeName = new StringBuilder();
+        setInjectableType(typeMirror, controller);
         
         StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();
@@ -436,7 +430,36 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         
         reloadInjectionPoint();
     }
+
+    private void setInjectableType( TypeMirror typeMirror,
+            CompilationController controller )
+    {
+        if ( typeMirror.getKind().isPrimitive()){
+            myShortTypeName.append( typeMirror.getKind().toString().toLowerCase());
+            myFqnTypeName.append(  myShortTypeName);
+            return;
+        }
+        if ( typeMirror.getKind() == TypeKind.ARRAY ){
+            setInjectableArrayType( typeMirror , controller );
+            myShortTypeName = myShortTypeName.append("[]");     // NOI18N
+            myFqnTypeName = myFqnTypeName.append("[]");         // NOI18N
+        }
+        Element element = controller.getTypes().asElement( typeMirror );
+        if ( element != null ){
+            myFqnTypeName.append( (element instanceof TypeElement )?
+                    ((TypeElement)element).getQualifiedName().toString() :
+                        element.getSimpleName().toString());
+            myShortTypeName.append(element.getSimpleName().toString());
+        }
+    }
     
+    private void setInjectableArrayType( TypeMirror typeMirror,
+            CompilationController controller )
+    {
+        TypeMirror componentType = ((ArrayType)typeMirror).getComponentType();
+        setInjectableType(componentType, controller);
+    }
+
     private void appendBinding( AnnotationMirror mirror , StringBuilder builder , 
             boolean isFqn )
     {
@@ -510,11 +533,11 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     private void reloadInjectionPoint(){
         if ( myShowFQNToggleButton.isSelected() ) {
             myBindings.setText( myFqnBindings );
-            myType.setText(myFqnTypeName);
+            myType.setText(myFqnTypeName.toString());
         }
         else {
             myBindings.setText( myShortBindings );
-            myType.setText(myShortTypeName);
+            myType.setText(myShortTypeName.toString());
         } 
     }
     
@@ -924,8 +947,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     public javax.swing.JLabel myАiltersLabel;
     // End of variables declaration//GEN-END:variables
     
-    private String myFqnTypeName;
-    private String myShortTypeName;
+    private StringBuilder myFqnTypeName;
+    private StringBuilder myShortTypeName;
     
     private String myFqnBindings;
     private String myShortBindings;

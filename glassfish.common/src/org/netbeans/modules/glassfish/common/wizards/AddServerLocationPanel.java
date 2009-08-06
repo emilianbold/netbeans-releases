@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -252,7 +253,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         while(dir != null && !dir.exists()) {
             dir = dir.getParentFile();
         }
-        return dir != null ? dir.canRead() && dir.canWrite() : false;
+        return dir != null ? dir.canRead() && Utils.canWrite(dir) : false;
     }
     
     public void removeChangeListener(ChangeListener l) {
@@ -289,7 +290,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         if (!testFile.exists()) {
             testFile = domainDir;
         }
-        return testFile.canWrite() && readServerConfiguration(domainDir, null);
+        return Utils.canWrite(testFile) && readServerConfiguration(domainDir, null);
     }
     
     private File getGlassfishRoot(File installDir) {
