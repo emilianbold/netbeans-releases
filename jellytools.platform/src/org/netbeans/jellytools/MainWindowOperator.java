@@ -524,7 +524,8 @@ public class MainWindowOperator extends JFrameOperator {
         }
         
         /** Calls {@link #stop} at the end of life cycle of this class. */
-        public void finalize() {
+        @Override
+        protected void finalize() {
             stop();
         }
 

@@ -232,7 +232,7 @@ public class OutputTabOperator extends JComponentOperator {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[] {new Integer(0), new Integer(length)}).toString();
+                    return getTextMethod.invoke(document, new Object[] {Integer.valueOf(0), Integer.valueOf(length)}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
@@ -314,10 +314,10 @@ public class OutputTabOperator extends JComponentOperator {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
                     getLineStartMethod.setAccessible(true);
-                    Integer lineStart = (Integer)getLineStartMethod.invoke(document, new Object[] {new Integer(line)});
+                    Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[] {Integer.valueOf(line)});
                     Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[] {int.class});
                     getLineEndMethod.setAccessible(true);
-                    Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Object[] {new Integer(line)});
+                    Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Object[] {Integer.valueOf(line)});
                     if(lineStart.intValue() == lineEnd.intValue()) {
                         // line is empty
                         return "";

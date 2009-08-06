@@ -96,6 +96,19 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <!-- JSF Page  -->
+            <file name="JSF.jsp" url="templates/JSP.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="105"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
+            </file>
+        </folder>
+
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
             <attr name="position" intvalue="700"/>

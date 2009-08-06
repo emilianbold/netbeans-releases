@@ -76,7 +76,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     private static final String TLD_IN_JAVALIB_FOLDER="META-INF"; //NOI18N
     private static final String NEW_FILE_PREFIX =
         NbBundle.getMessage( TargetChooserPanelGUI.class, "LBL_TargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
-
+    private static final String FACELETS_EXT="xhtml"; //NOI18N
     
     private TargetChooserPanel wizardPanel;
     private Project project;
@@ -129,7 +129,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             jspSyntaxButton = new javax.swing.JRadioButton();
             if (!FileType.JSF.equals(fileType))
                 xmlSyntaxButton = new javax.swing.JRadioButton();
-            if (isFaceletsAvailable() && FileType.JSF.equals(fileType))
+            if (FileType.JSF.equals(fileType))
                 faceletsSyntaxButton = new javax.swing.JRadioButton();
             
             optionsPanel = new javax.swing.JPanel();
@@ -159,7 +159,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             optionsPanel.add(optionLabel, gridBagConstraints);
 
-            if (isFaceletsAvailable() && FileType.JSF.equals(fileType)) {
+            if (FileType.JSF.equals(fileType)) {
                 faceletsSyntaxButton.setSelected(true);
                 segmentBox.setEnabled(false);
                 faceletsSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_Facelets_mnem").charAt(0));
@@ -478,7 +478,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                 xmlSyntaxButton.getAccessibleContext().setAccessibleDescription(
                     NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_JSP_XML"));
             }
-            if (isFaceletsAvailable() && FileType.JSF.equals(fileType)) {
+            if (FileType.JSF.equals(fileType)) {
                 faceletsSyntaxButton.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_Facelets"));
                 faceletsSyntaxButton.getAccessibleContext().setAccessibleDescription(
                     NbBundle.getMessage(TargetChooserPanelGUI.class, "DESC_FACELETS"));
@@ -486,7 +486,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             segmentBox.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "OPT_JspSegment"));
             segmentBox.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_DESC_JSP_segment"));
-            if (isFaceletsAvailable() && FileType.JSF.equals(fileType))
+            if (FileType.JSF.equals(fileType))
                 descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_FACELETS"));
             else
                 descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_JSP"));
@@ -587,6 +587,8 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         } else 
             folderTextField.setText( target == null ? "" : target ); // NOI18N      
         String ext = template == null ? "" : template.getExt(); // NOI18N
+        if (isFacelets())
+            ext = FACELETS_EXT;
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
 
         //set default new file name
@@ -900,7 +902,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             if (documentName.length() == 0) {
                 fileTextField.setText(""); // NOI18N
             } else {
-                String extension = isFacelets() ? ".xhtml" : expectedExtension+(isSegment()?"f":(isXml()?"x":""));
+                String extension = isFacelets() ? "."+FACELETS_EXT : expectedExtension+(isSegment()?"f":(isXml()?"x":""));
                 File newFile = new File(new File(rootDirFile, folderTextField.getText().replace('/', File.separatorChar)),
                                         documentName + extension); //NOI18N
                 fileTextField.setText(newFile.getAbsolutePath());
@@ -969,9 +971,9 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                 } else if(isFacelets()) {
                     descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_FACELETS"));
                     if (createdFile.endsWith("jspf") || createdFile.endsWith("jspx")) { //NOI18N
-                        fileTextField.setText(createdFile.substring(0,createdFile.length()-4)+"xhtml"); //NOI18N
+                        fileTextField.setText(createdFile.substring(0,createdFile.length()-4)+FACELETS_EXT); //NOI18N
                     } else if(createdFile.endsWith("jsp")) { //NOI18N
-                        fileTextField.setText(createdFile.substring(0,createdFile.length()-3)+"xhtml"); //NOI18N
+                        fileTextField.setText(createdFile.substring(0,createdFile.length()-3)+FACELETS_EXT); //NOI18N
                     }
                     segmentBox.setEnabled(false);
                 } else {
