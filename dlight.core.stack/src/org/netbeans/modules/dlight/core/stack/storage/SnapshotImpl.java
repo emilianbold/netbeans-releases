@@ -77,7 +77,7 @@ final class SnapshotImpl implements ThreadSnapshot {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         FunctionCall call = storage.getFunctionCall(stackID);
 
-        storage.getCallers(path, true)
+        storage.getCallers(path, true);
 
         return result;
     }
