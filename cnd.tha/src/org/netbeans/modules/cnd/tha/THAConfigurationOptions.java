@@ -36,15 +36,54 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.tha;
 
-package org.netbeans.modules.cnd.gizmo.ui;
-
-import javax.swing.Action;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 
 /**
  *
  * @author mt154047
  */
-interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(GizmoIndicatorsTopComponent source);
+public final class THAConfigurationOptions implements DLightConfigurationOptions {
+
+    public boolean profileOnRun() {
+        return false;
+    }
+
+    public void turnCollectorsState(boolean turnState) {
+    }
+
+    public boolean areCollectorsTurnedOn() {
+        return true;
+    }
+
+    public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        return tool.getCollectors();
+    }
+
+    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
+        return tool.getIndicatorDataProviders();
+    }
+
+    public boolean validateToolsRequiredUserInteraction() {
+        return false;
+    }
+
+    public Collection<String> getActiveToolNames() {
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
+        List<DLightTool> tools = configuration.getToolsSet();
+        Collection<String> result = new ArrayList<String>();
+        for (DLightTool tool : tools) {
+            result.add(tool.getName());
+        }
+        return result;
+    }
 }
