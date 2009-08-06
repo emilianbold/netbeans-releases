@@ -4,18 +4,18 @@
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-        <TitledBorder title="&lt;L_Conditions_Breakpoint_BorderTitle&gt;">
-          <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="L_Conditions_Breakpoint_BorderTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <TitledBorder title="Conditions">
+          <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_Conditions_Breakpoint_BorderTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </TitledBorder>
       </Border>
     </Property>
   </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="L_Conditions_Breakpoint_BorderTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_Conditions_Breakpoint_BorderTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ACSD_Conditions" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSD_Conditions" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
@@ -35,10 +35,10 @@
     <Component class="javax.swing.JCheckBox" name="cbCondition">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="L_cbCondition" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_cbCondition" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="TT_cbCondition" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="TT_cbCondition" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -61,11 +61,11 @@
     <Container class="javax.swing.JScrollPane" name="spCondition">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ConditionsPanel.spCondition.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ConditionsPanel.spCondition.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="//FIXME&#xa;//spCondition = WatchPanel.createScrollableLineEditor(tfCondition);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="spCondition = ContextBindingSupport.createScrollableLineEditor(tfCondition);"/>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
       <Constraints>
@@ -82,7 +82,7 @@
               <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ConditionsPanel.tfCondition.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ConditionsPanel.tfCondition.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ConditionsPanel.tfCondition.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
@@ -100,10 +100,10 @@
         <Component class="javax.swing.JCheckBox" name="cbSkipCount">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="L_SkipCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_SkipCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="TT_SkiptCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="TT_SkiptCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -126,16 +126,16 @@
         <Component class="javax.swing.JTextField" name="tfSkipCount">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="TT_SkipCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="TT_SkipCount" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ACSN_HitCountTF" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSN_HitCountTF" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle.properties" key="ACSD_HitCountTF" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSD_HitCountTF" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Constraints>

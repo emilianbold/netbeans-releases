@@ -50,11 +50,11 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -97,7 +97,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         }
         
         // 2) find and remove existing line breakpoint
-        GdbBreakpoint lb = findBreakpoint(url, ln);
+        CndBreakpoint lb = findBreakpoint(url, ln);
         if (lb != null) {
             log.fine("ToggleBreakpointActionProvider.doAction: Removing breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
             d.removeBreakpoint(lb);
@@ -126,7 +126,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         d.addBreakpoint(lb);
     }
     
-    static GdbBreakpoint findBreakpoint(String url, int lineNumber) {
+    static CndBreakpoint findBreakpoint(String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         Disassembly dis = Disassembly.getCurrent();
         boolean inDis = Disassembly.isDisasm(url);

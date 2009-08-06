@@ -52,9 +52,9 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 
 
 /**
@@ -107,7 +107,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         Map<String, Integer> maxLines = new HashMap<String, Integer>();
         
         for (i = 0; i < k; i++) {
-            if ((!verbose) && (ch [i] instanceof GdbBreakpoint) && ((GdbBreakpoint) ch [i]).isHidden()) {
+            if ((!verbose) && (ch [i] instanceof CndBreakpoint) && ((CndBreakpoint) ch [i]).isHidden()) {
                 continue;
             }
             if (--from >= 0) {
