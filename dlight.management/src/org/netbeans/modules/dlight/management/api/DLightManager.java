@@ -325,7 +325,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DataModelScheme dataModel = configuration.getSupportedDataScheme();
 
         for (DataStorage storage : activeDataStorages) {
-            if (!storage.hasData(configuration.getMetadata())) {
+            if (configuration.getMetadata() != null && !storage.hasData(configuration.getMetadata())) {
                 continue;
             }
             Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
@@ -340,11 +340,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 } else {
                     // Found! Can craete visualizer with this id for this dataProvider
                     visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
-//                    if (visualizer instanceof SessionStateListener) {
-//                        dlightSession.addSessionStateListener((SessionStateListener) visualizer);
-//                        ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
-//
-//                    }
+                    if (visualizer instanceof SessionStateListener) {
+                        dlightSession.addSessionStateListener((SessionStateListener) visualizer);
+                        ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
+
+                    }
                     //  visualizer = Visualiz.newVisualizerInstance(visualizerID, activeSession, dataProvider, configuration);
                     dataProvider.attachTo(storage);
                     activeSession.addDataFilterListener(dataProvider);
