@@ -45,7 +45,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 

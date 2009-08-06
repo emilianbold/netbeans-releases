@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
-import org.netbeans.modules.cnd.debugger.gdb.models.WatchPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -213,7 +212,7 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbCondition, gridBagConstraints);
 
-        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
+        spCondition = ContextBindingSupport.createScrollableLineEditor(tfCondition);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
 
         tfCondition.setContentType(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.contentType")); // NOI18N

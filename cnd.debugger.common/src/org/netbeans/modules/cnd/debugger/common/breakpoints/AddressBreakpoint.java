@@ -37,43 +37,61 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
-
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.AddressBreakpointPanel;
-import org.netbeans.spi.debugger.ui.BreakpointType;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.debugger.common.breakpoints;
 
 /**
  *
- * @author   Egor Ushakov
+ * @author eu155513
  */
-public class AddressBreakpointType extends BreakpointType {
-    public String getCategoryDisplayName() {
-        return NbBundle.getMessage(LineBreakpointType.class,
-                    "CTL_Common_breakpoint_events_category_name"); // NOI18N
+public class AddressBreakpoint extends CndBreakpoint implements Comparable {
+    public static final String          PROP_ADDRESS_VALUE = "address"; // NOI18N
+    public static final String          PROP_REFRESH = "refresh"; // NOI18N
+    
+    private String address;
+
+    private AddressBreakpoint(String address) {
+        this.address = address;
     }
     
-    public JComponent getCustomizer() {
-        return new AddressBreakpointPanel();
+    public static AddressBreakpoint create(String address) {
+        return new AddressBreakpoint(address);
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String newAddress) {
+        String old;
+        synchronized (this) {
+            if (newAddress.equals(address)) {
+                return;
+            }
+            old = address;
+            address = newAddress;
+        }
+        firePropertyChange(PROP_ADDRESS_VALUE, old, newAddress);
+    }
+
+    @Override
+    public int getLineNumber() {
+        return 1; // to look like line breakpoint
     }
     
     @Override
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(LineBreakpointType.class, "CTL_Common_Address_Breakpoint"); // NOI18N
+    public String toString() {
+        return "AddressBreakpoint " + address; // NOI18N
     }
     
-    /**
-     *  Tell debuggercore if this should be the default breakpoint.
-     *
-     *  Currently we always return false because we want to defer to FunctionBreakpointType.
-     *  Eventually, this class and FunctionBreakpointType should both become smart enough
-     *  that FBT is the default if the cursor is inside a function and LBT if its outside
-     *  of a function (in both cases, its false if the current file in the editor isn't a
-     *  C, C++, or Fortran file)
-     */
-    public boolean isDefault() {	
-	return false;	// do false for now because FunctionBreakpointType currently
-			// overrides this anyway.
+    public void refresh() {
+        firePropertyChange(PROP_REFRESH, null, null);
+    }
+
+    public int compareTo(Object o) {
+        if (o instanceof AddressBreakpoint) {
+            return this.address.compareTo(((AddressBreakpoint)o).address);
+        } else {
+            return -1;
+        }
     }
 }
