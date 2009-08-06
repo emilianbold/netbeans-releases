@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -94,7 +95,19 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             d.removeBreakpoint(lb);
             return;
         }
-        
+
+        //FIXME : obtain DisassemblyProvider from the debugger
+        DisassemblyProvider disProvider = null;
+        if (disProvider != null && disProvider.isDis(url)) {
+            lb = AddressBreakpoint.create(disProvider.getLineAddress(ln));
+            lb.setPrintText(
+                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Address_Breakpoint_Print_Text")
+            );
+            log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
+            d.addBreakpoint(lb);
+            return;
+
+        }
 //        if (Disassembly.isDisasm(url)) {
 //            Disassembly dis = Disassembly.getCurrent();
 //            if (dis == null) {
@@ -117,6 +130,9 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     
     static CndBreakpoint findBreakpoint(String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        //FIXME : obtain DisassemblyProvider from the debugger
+        DisassemblyProvider disProvider = null;
+        boolean inDis = disProvider != null && disProvider.isDis(url);
 //        Disassembly dis = Disassembly.getCurrent();
 //        boolean inDis = Disassembly.isDisasm(url);
         for (Breakpoint b : breakpoints) {
@@ -125,12 +141,12 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
                 if (lb.getURL().equals(url) && lb.getLineNumber() == lineNumber) {
                     return lb;
                 }
-            } //else if (inDis && b instanceof AddressBreakpoint && (dis != null)) {
-//                AddressBreakpoint ab = (AddressBreakpoint)b;
-//                if (dis.getAddressLine(ab.getAddress()) == lineNumber) {
-//                    return ab;
-//                }
-//            }
+            } else if (inDis && b instanceof AddressBreakpoint) {
+                AddressBreakpoint ab = (AddressBreakpoint)b;
+                if (disProvider.getAddressLine(ab.getAddress()) == lineNumber) {
+                    return ab;
+                }
+            }
         }
         return null;
     }

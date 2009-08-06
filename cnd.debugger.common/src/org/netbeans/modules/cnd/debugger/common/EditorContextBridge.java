@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -116,28 +117,6 @@ public class EditorContextBridge {
 	return false;
     }
 
-    // FIXME
-//    public static boolean showDis(CallStackFrame csf) {
-//        Disassembly dis = Disassembly.getCurrent();
-//        if (dis == null) {
-//            return false;
-//        }
-//        int line = dis.getAddressLine(csf.getAddr());
-//        if (line != -1) {
-//            FileObject fo = Disassembly.getFileObject();
-//            if (fo != null) {
-//                try {
-//                    return getContext().showSource(DataObject.find(fo), line, null);
-//                } catch (DataObjectNotFoundException dex) {
-//                    // do nothing
-//                }
-//            }
-//        } else {
-//            Disassembly.open();
-//        }
-//        return false;
-//    }
-    
     public static String getUrl(File file) {
         try {
             file = file.getCanonicalFile();
@@ -178,23 +157,6 @@ public class EditorContextBridge {
     /**
      * Adds annotation to given url on given line.
      *
-     * @param url a url of source annotation should be set into
-     * @param lineNumber a number of line annotation should be set into
-     * @param annotationType a type of annotation to be set
-     *
-     * @return annotation
-     */    
-    public static Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
-        return getContext().annotate(url, lineNumber, annotationType, timeStamp);
-    }
-    
-    public static Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
-        return getContext().annotate(dobj, lineNumber, annotationType, timeStamp);
-    }
-
-    /**
-     * Adds annotation to given url on given line.
-     *
      * @param csf The current CallStackFrame
      * @return annotation
      */    
@@ -215,26 +177,6 @@ public class EditorContextBridge {
 	}
 	return null;
     }
-    
-    // FIXME
-//    public static Object annotateDis(CallStackFrame csf, String annotationType) {
-//        Disassembly dis = Disassembly.getCurrent();
-//        if (dis == null) {
-//            return null;
-//        }
-//        int line = dis.getAddressLine(csf.getAddr());
-//        if (line != -1) {
-//            FileObject fo = Disassembly.getFileObject();
-//            if (fo != null) {
-//                try {
-//                    return getContext().annotate(DataObject.find(fo), line, annotationType, null);
-//                } catch (DataObjectNotFoundException dex) {
-//                    // do nothing
-//                }
-//            }
-//        }
-//        return null;
-//    }
     
     /**
      * Removes given annotation.
@@ -381,7 +323,12 @@ public class EditorContextBridge {
             }
             return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
         } else if (b instanceof AddressBreakpoint) {
-            // FIXME
+            //FIXME : obtain DisassemblyProvider from the debugger
+            DisassemblyProvider disProvider = null;
+            if (disProvider != null) {
+                return disProvider.showAddress(((AddressBreakpoint)b).getAddress());
+            }
+
 //            FileObject fo = Disassembly.getFileObject();
 //            if (fo != null) {
 //                try {
@@ -404,60 +351,6 @@ public class EditorContextBridge {
 
     public static String getDefaultType() {
         return LINE;
-    }
-
-    public static Object annotate(CndBreakpoint b) {
-        String url = b.getURL();
-        int lineNumber = b.getLineNumber();
-        if (lineNumber < 1) {
-            return null;
-        }
-        String condition = b.getCondition();
-        boolean isConditional = condition.trim().length() > 0;
-        String annotationType;
-        if (b instanceof FunctionBreakpoint) {
-            if (b.isEnabled()) {
-                annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
-            } else {
-                annotationType =  isConditional ? EditorContext.DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
-            }
-        } else if (b instanceof AddressBreakpoint) {
-            // FIXME
-//            Disassembly dis = Disassembly.getCurrent();
-//            if (dis == null) {
-//                return null;
-//            }
-//            lineNumber = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
-//            if (lineNumber == -1) {
-//                return null;
-//            }
-//            if (b.isEnabled()) {
-//                annotationType = isConditional ? EditorContext.CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
-//                             EditorContext.ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
-//            } else {
-//                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
-//                             EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
-//            }
-//            try {
-//                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, b);
-//            } catch (DataObjectNotFoundException doe) {
-//                doe.printStackTrace();
-//                return null;
-//            }
-            return null;
-        } else {
-            if (b.isEnabled()) {
-                annotationType = isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.BREAKPOINT_ANNOTATION_TYPE;
-            } else {
-                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE;
-            }
-        }
-
-        return annotate(url, lineNumber, annotationType, b);
     }
 
     public static String getRelativePath(String className) {

@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 
 import org.netbeans.modules.cnd.debugger.common.EditorContext;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -301,6 +302,16 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             return null;
         } else if (b instanceof AddressBreakpoint) {
+            //FIXME : obtain DisassemblyProvider from the debugger
+            DisassemblyProvider disProvider = null;
+            if (disProvider != null) {
+                int res = disProvider.getAddressLine(((AddressBreakpoint)b).getAddress());
+                if (res < 0) {
+                    return null;
+                } else {
+                    return new int[] {res};
+                }
+            }
 //            if (fo != Disassembly.getFileObject()) {
 //                return null;
 //            }
