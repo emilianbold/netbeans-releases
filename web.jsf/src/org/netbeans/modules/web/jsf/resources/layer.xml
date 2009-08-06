@@ -96,6 +96,42 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <attr name="position" intvalue="600"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/WebInfo.html"/>
+             JSP Page  
+            <file name="JSF.jsp" url="templates/JSP.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="105"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
+            </file>
+             Facelet 
+            <file name="JSP.xhtml" url="templates/simpleFacelets.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+             JSP Document  
+            <file name="JSPX.jspx" url="templates/JSPDoc.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+             JSP Segment  
+            <file name="JSPF.jspf" url="templates/JSPF.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+             JSP XML segemnt  
+            <file name="JSPFX.jspf" url="templates/JSPDocX.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
+
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
             <attr name="position" intvalue="700"/>
