@@ -33,7 +33,18 @@
             <file name="org-netbeans-modules-cnd-tha-actions-THAToolbarDropdownAction.instance"/>
         </folder>
     </folder>
-
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="THAIndicatorsTopComponent.settings" url="THAIndicatorsTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="explorer">
+                <file name="THAIndicatorsTopComponent.wstcref" url="THAIndicatorsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2500"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-cnd-tha-actions-THAToolbarDropdownAction.shadow">

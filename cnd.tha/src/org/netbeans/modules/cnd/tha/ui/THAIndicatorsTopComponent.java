@@ -91,7 +91,7 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
     private DLightSession session;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
-    private static final String PREFERRED_ID = "GizmoIndicatorsTopComponent"; // NOI18N
+    private static final String PREFERRED_ID = "THAIndicatorsTopComponent"; // NOI18N
     private static final AtomicInteger index = new AtomicInteger();
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
