@@ -895,8 +895,8 @@ final public class WebProjectProperties {
             privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
             // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDABBLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDABBLE_EJB);
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
+                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
                 privateProps.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
                         Utils.toClasspathString(ejbClasspath));
             } else {

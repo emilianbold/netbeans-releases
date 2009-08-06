@@ -41,8 +41,8 @@
 package org.netbeans.modules.web.jsf.editor.completion;
 
 import javax.swing.ImageIcon;
-import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import org.openide.util.ImageUtilities;
 
 /**

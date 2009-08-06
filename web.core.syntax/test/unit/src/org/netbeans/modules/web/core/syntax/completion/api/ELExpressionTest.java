@@ -36,25 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.dataprovider;
 
-import org.netbeans.module.dlight.threads.api.ThreadDump;
-import org.netbeans.module.dlight.threads.api.storage.ThreadInfo;
-import org.netbeans.module.dlight.threads.api.storage.ThreadMapDataQuery;
-import org.netbeans.module.dlight.threads.api.storage.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+package org.netbeans.modules.web.core.syntax.completion.api;
+
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Alexander Simon
+ * @author marekfukala
  */
-public interface ThreadMapDataProvider extends VisualizerDataProvider {
+public class ELExpressionTest {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    public ELExpressionTest() {
+    }
 
-    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
+    @Test
+    public void testGetPropertyName() {
+        NbTestCase.assertEquals("id", ELExpression.getPropertyName("getId", 3));
+        NbTestCase.assertEquals("ID", ELExpression.getPropertyName("getID", 3));
+        NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
+    }
+
 }

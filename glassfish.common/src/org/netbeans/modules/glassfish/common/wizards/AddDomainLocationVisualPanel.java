@@ -53,6 +53,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,7 +81,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         File candidates[] = domainsDir.listFiles(new FileFilter() {
             public boolean accept(File dir) {
                 File logsDir = new File(dir, "logs");
-                return logsDir.canWrite();
+                return Utils.canWrite(logsDir);
             }
             
         });

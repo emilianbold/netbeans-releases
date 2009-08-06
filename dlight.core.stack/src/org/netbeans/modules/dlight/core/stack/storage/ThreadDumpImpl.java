@@ -36,26 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.storage;
 
-package org.netbeans.modules.web.core.syntax.completion;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
+final class ThreadDumpImpl implements ThreadDump {
 
-/**
- *
- * @author marekfukala
- */
-public class ELExpressionTest {
+    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
+    private final long timestamp;
 
-    public ELExpressionTest() {
+    public ThreadDumpImpl(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    @Test
-    public void testGetPropertyName() {
-        NbTestCase.assertEquals("id", ELExpression.getPropertyName("getId", 3));
-        NbTestCase.assertEquals("ID", ELExpression.getPropertyName("getID", 3));
-        NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
+    public List<ThreadSnapshot> getThreadStates() {
+        return stacks;
     }
 
+    public void addStack(ThreadSnapshot stack) {
+        stacks.add(stack);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

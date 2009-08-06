@@ -65,7 +65,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorPrint;
-import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -110,7 +109,7 @@ public final class JavaAntLogger extends AntLogger {
                 if (IOColorPrint.isSupported(io)) {
                     try {
                         io.getErr().print(prePart);
-                        IOColorPrint.print(io, midPart, hyperlink, true, IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
+                        IOColorPrint.print(io, midPart, hyperlink, true, null);
                         io.getErr().println(endPart);
                         return;
                     } catch (IOException x) {
