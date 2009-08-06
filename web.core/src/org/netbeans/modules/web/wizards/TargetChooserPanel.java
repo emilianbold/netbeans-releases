@@ -49,11 +49,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -175,7 +177,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         java.io.File file = gui.getTargetFile();
         FileObject template = Templates.getTemplate( templateWizard );
         String ext = template.getExt ();
-        if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType)) {
+        if (FileType.JSP.equals(fileType) || FileType.TAG.equals(fileType) || FileType.JSF.equals(fileType)) {
             if (isSegment()) ext+="f"; //NOI18N
             else if (isXml()) ext+="x"; //NOI18N
             else if (isFacelets()) ext="xhtml"; //NOI18N
@@ -262,6 +264,13 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             return;
         }
         if( isValid() ) {
+            if (isFacelets()) {
+                Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+                String key = "jsf.language";  //NOI18N
+                String value = "Facelets";//NOI18N
+                if (!preferences.get(key, "").equals(value))
+                preferences.put(key, value);
+            }
             File f = new File(gui.getCreatedFilePath());
             File ff = new File(f.getParentFile().getPath());
             if ( !ff.exists() ) {
