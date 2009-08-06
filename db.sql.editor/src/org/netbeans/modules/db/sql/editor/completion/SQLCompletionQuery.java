@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
+import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -67,17 +68,12 @@ import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.DropStatement;
-import org.netbeans.modules.db.sql.analyzer.DropStatement.DropContext;
-import org.netbeans.modules.db.sql.analyzer.DropStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
 import org.netbeans.modules.db.sql.analyzer.InsertStatement;
-import org.netbeans.modules.db.sql.analyzer.InsertStatement.InsertContext;
-import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.analyzer.SelectStatement;
-import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
-import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
@@ -95,7 +91,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private static final Logger LOGGER = Logger.getLogger(SQLCompletionQuery.class.getName());
 
-    // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
 
     private final DatabaseConnection dbconn;
@@ -169,31 +164,20 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             return null;
         }
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
-        SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
-        if (kind == null) {
+        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+        if (statement == null) {
             return items;
         }
+        SQLStatementKind kind = statement.getKind();
         switch (kind) {
             case SELECT:
-                statement = SelectStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.SELECT : statement.getKind ();
-                    completeSelect ();
-                }
+                completeSelect();
                 break;
             case INSERT:
-                statement = InsertStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.INSERT : statement.getKind ();
-                    completeInsert ();
-                }
+                completeInsert();
                 break;
             case DROP:
-                statement = DropStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.DROP : statement.getKind ();
-                    completeDrop();
-                }
+                completeDrop();
                 break;
         }
         return items;
@@ -201,7 +185,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
-        SelectContext context = selectStatement.getContextAtOffset(env.getCaretOffset());
+        Context context = selectStatement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
@@ -223,6 +207,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case JOIN_CONDITION:
                 insideClauseAfterFrom(ident);
                 break;
+            case ORDER:
+            case GROUP:
+                // nothing to complete
+                break;
             default:
                 if (fromClause != null) {
                     insideClauseAfterFrom(ident);
@@ -232,7 +220,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
-        InsertContext context = insertStatement.getContextAtOffset(env.getCaretOffset());
+        Context context = insertStatement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
@@ -244,9 +232,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = ident.anchorOffset;
         substitutionOffset = ident.substitutionOffset;
         switch (context) {
-            case INSERT:
-                break;
-            case INTO:
+            case INSERT_INTO:
                 completeTable(ident);
                 break;
             case COLUMNS:
@@ -259,7 +245,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeDrop() {
         DropStatement dropStatement = (DropStatement) statement;
-        DropContext context = dropStatement.getContextAtOffset(env.getCaretOffset());
+        Context context = dropStatement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
@@ -271,7 +257,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = ident.anchorOffset;
         substitutionOffset = ident.substitutionOffset;
         switch (context) {
-            case TABLE:
+            case DROP_TABLE:
                 completeTable(ident);
                 break;
             default:
