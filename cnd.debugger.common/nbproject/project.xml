@@ -185,11 +185,12 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.actions</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>
+                <package>org.netbeans.modules.cnd.debugger.common.models</package>
                 <package>org.netbeans.modules.cnd.debugger.common.utils</package>
             </friend-packages>
         </data>

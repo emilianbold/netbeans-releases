@@ -120,11 +120,11 @@ public abstract class CndBreakpoint extends Breakpoint {
         setLineNumber(ln, true);
     }
     
-    protected void setValid() {
+    public void setValid() {
         setValidity(Breakpoint.VALIDITY.VALID, null);
     }
     
-    protected void setInvalid(String msg) {
+    public void setInvalid(String msg) {
         setValidity(Breakpoint.VALIDITY.INVALID, msg);
     }
     

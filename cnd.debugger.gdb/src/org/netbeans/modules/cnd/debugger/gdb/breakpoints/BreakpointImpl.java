@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -67,13 +70,13 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected final GdbDebugger debugger;
-    private final GdbBreakpoint breakpoint;
+    private final CndBreakpoint breakpoint;
     private State state = State.UNVALIDATED;
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
-    protected BreakpointImpl(GdbBreakpoint breakpoint, GdbDebugger debugger) {
+    protected BreakpointImpl(CndBreakpoint breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
         this.breakpoint = breakpoint;
     }
@@ -264,21 +267,21 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
-        if (pname.equals(GdbBreakpoint.PROP_CONDITION)) {
+        if (pname.equals(CndBreakpoint.PROP_CONDITION)) {
             if (breakpointNumber > 0) {
                 send(conditionCMD(evt.getNewValue().toString()));
             }
-        } else if (pname.equals(GdbBreakpoint.PROP_SKIP_COUNT)) {
+        } else if (pname.equals(CndBreakpoint.PROP_SKIP_COUNT)) {
             if (breakpointNumber > 0) {
                 send(breakAfterCMD((Integer)evt.getNewValue()));
             }
-        } else if (pname.equals(GdbBreakpoint.PROP_ENABLED)) {
+        } else if (pname.equals(CndBreakpoint.PROP_ENABLED)) {
             if (breakpointNumber > 0) {
                 send(enableCMD(breakpoint.isEnabled()));
             }
-        } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
+        } else if (pname.equals(CndBreakpoint.PROP_SUSPEND)) {
             revalidate();
-        } else if (pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) &&
+        } else if (pname.equals(CndBreakpoint.PROP_LINE_NUMBER) &&
                 state == State.VALIDATED &&
                 !(getBreakpoint() instanceof FunctionBreakpoint) &&
                 // see IZ:165386, null in old value if update is from line translations
@@ -312,7 +315,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
     }
 
-    public GdbBreakpoint getBreakpoint() {
+    public CndBreakpoint getBreakpoint() {
         return breakpoint;
     }
 

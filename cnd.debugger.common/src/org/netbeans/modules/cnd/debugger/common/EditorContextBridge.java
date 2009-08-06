@@ -115,7 +115,8 @@ public class EditorContextBridge {
         }
 	return false;
     }
-    
+
+    // FIXME
 //    public static boolean showDis(CallStackFrame csf) {
 //        Disassembly dis = Disassembly.getCurrent();
 //        if (dis == null) {
@@ -215,6 +216,7 @@ public class EditorContextBridge {
 	return null;
     }
     
+    // FIXME
 //    public static Object annotateDis(CallStackFrame csf, String annotationType) {
 //        Disassembly dis = Disassembly.getCurrent();
 //        if (dis == null) {
@@ -379,6 +381,7 @@ public class EditorContextBridge {
             }
             return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
         } else if (b instanceof AddressBreakpoint) {
+            // FIXME
 //            FileObject fo = Disassembly.getFileObject();
 //            if (fo != null) {
 //                try {
@@ -421,6 +424,7 @@ public class EditorContextBridge {
                              EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
             }
         } else if (b instanceof AddressBreakpoint) {
+            // FIXME
 //            Disassembly dis = Disassembly.getCurrent();
 //            if (dis == null) {
 //                return null;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -79,12 +80,12 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
 import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
@@ -200,7 +201,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean dlopenPending = false;
     private int shareToken;
     private final Disassembly disassembly;
-    private GdbBreakpoint currentBreakpoint = null;
+    private CndBreakpoint currentBreakpoint = null;
     private ExecutionEnvironment execEnv;
     private int platform;
     private PathMap pathMap;
@@ -1568,8 +1569,8 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
-    private static void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
-        breakpoint.fireGdbBreakpointChange(event);
+    private static void fireBreakpointEvent(CndBreakpoint breakpoint, CndBreakpointEvent event) {
+        breakpoint.fireCndBreakpointChange(event);
     }
 
     /**
@@ -1654,15 +1655,15 @@ public class GdbDebugger implements PropertyChangeListener {
                         return;
                     }
                 } else {
-                    GdbBreakpoint breakpoint = impl.getBreakpoint();
-                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE && lastGo == LastGoState.CONTINUE) {
-                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                    CndBreakpoint breakpoint = impl.getBreakpoint();
+                    if (breakpoint.getSuspend() == CndBreakpoint.SUSPEND_NONE && lastGo == LastGoState.CONTINUE) {
+                        fireBreakpointEvent(breakpoint, new CndBreakpointEvent(
+                                breakpoint, this, CndBreakpointEvent.CONDITION_NONE));
                         gdb.exec_continue();
                     } else {
                         updateCurrentCallStack();
-                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        fireBreakpointEvent(breakpoint, new CndBreakpointEvent(
+                                breakpoint, this, CndBreakpointEvent.CONDITION_NONE));
                         setStopped();
                     }
                 }
@@ -2589,7 +2590,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return disassembly;
     }
 
-    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
+    public void setCurrentBreakpoint(CndBreakpoint currentBreakpoint) {
         this.currentBreakpoint = currentBreakpoint;
     }
 

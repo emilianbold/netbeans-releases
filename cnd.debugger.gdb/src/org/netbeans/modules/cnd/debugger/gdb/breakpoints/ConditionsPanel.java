@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
@@ -54,10 +55,10 @@ import org.openide.util.NbBundle;
  */
 public class ConditionsPanel extends JPanel {
     
-    private GdbBreakpoint  breakpoint;
+    private CndBreakpoint  breakpoint;
     
     /** Creates new form ConditionsPanel */
-    public ConditionsPanel(final GdbBreakpoint breakpoint) {
+    public ConditionsPanel(final CndBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         initComponents();
 
