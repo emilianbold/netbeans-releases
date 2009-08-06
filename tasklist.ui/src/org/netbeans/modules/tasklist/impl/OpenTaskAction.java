@@ -143,7 +143,7 @@ public class OpenTaskAction extends AbstractAction {
     private boolean canOpenTask() {
         if( null != Accessor.getDefaultAction( task ) )
             return true;
-        
+
         URL url = Accessor.getURL( task );
         if( null != url )
             return true;
