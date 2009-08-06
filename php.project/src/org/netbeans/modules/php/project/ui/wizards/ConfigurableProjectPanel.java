@@ -64,7 +64,7 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     protected final ProjectFolder projectFolderComponent;
 
     public ConfigurableProjectPanel(ConfigureProjectPanel wizardPanel) {
-        projectFolderComponent = new ProjectFolder(this);
+        projectFolderComponent = new ProjectFolder(this, wizardPanel);
         projectFolderComponent.addProjectFolderListener(this);
 
         setName(wizardPanel.getSteps()[STEP_INDEX]);

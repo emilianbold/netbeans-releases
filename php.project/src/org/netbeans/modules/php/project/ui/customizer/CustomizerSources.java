@@ -628,4 +628,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerSources.class);
     }
+
+    public void addChangeListener(ChangeListener listener) {
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+    }
 }
