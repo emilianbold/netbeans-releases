@@ -244,6 +244,14 @@ public class NbKeymapTest extends NbTestCase {
         assertEquals("four", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
     }
 
+    public void testBrokenShadow() throws Exception { // #169887
+        FileObject def = make("Menu/x.shadow");
+        def.setAttribute("originalFile", "Action/nonexistent.instance");
+        Action a = new DummyAction("x");
+        a.putValue("definingFile", def);
+        new NbKeymap().getKeyStrokesForAction(a);
+    }
+
     private static final class DummyAction extends AbstractAction {
         public DummyAction(String name) {
             super(name);
