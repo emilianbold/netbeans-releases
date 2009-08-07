@@ -420,7 +420,7 @@ public final class SQLStackStorage {
 
         try {
             // First, we need ts of the thread threadID when it was in required state.
-          PreparedStatement start_ts_st = sqlStorage.prepareStatement("SELECT min(time_stamp) FROM CallStack" );
+          PreparedStatement start_ts_st = sqlStorage.prepareStatement("SELECT min(time_stamp) FROM CallStack" ); // NOI18N
           ResultSet rs_start_ts = start_ts_st.executeQuery();
             long start_ts = 0;
 
@@ -428,18 +428,18 @@ public final class SQLStackStorage {
                 start_ts = rs_start_ts.getLong(1);
             }
 
-          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack");
+          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack"); // NOI18N
           ResultSet rs1 = st.executeQuery();
           ResultSetMetaData rsm= rs1.getMetaData();
           int columnsCount = rsm.getColumnCount();
-          System.out.print("\nColumns   :");
+          System.out.print("\nColumns   :"); // NOI18N
           for ( int i = 0 ; i < columnsCount; i++){
-              System.out.print(" " + rsm.getColumnName(i + 1));
+              System.out.print(" " + rsm.getColumnName(i + 1)); // NOI18N
           }
           while (rs1.next()){
-              System.out.print("\nNew record :");
+              System.out.print("\nNew record :"); // NOI18N
             for (int i=0; i < columnsCount; i++){
-                System.out.print(" " + rs1.getObject(i + 1));
+                System.out.print(" " + rs1.getObject(i + 1)); // NOI18N
             }
           }
 
@@ -494,7 +494,7 @@ public final class SQLStackStorage {
             while (iterator.hasNext()){
                 int thread_id = iterator.next();
                 long t = idToTime.get(thread_id);
-                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id=" + thread_id + " AND time_stamp=" + t);
+                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id=" + thread_id + " AND time_stamp=" + t); // NOI18N
                 ResultSet set = statement.executeQuery();
                 if (set.next()){
                     int leaf_id  = set.getInt(1);
@@ -506,7 +506,7 @@ public final class SQLStackStorage {
             
 
         } catch (SQLException ex) {
-            System.err.println("ex: " + ex.getSQLState());
+            System.err.println("ex: " + ex.getSQLState());  // NOI18N
         }
 
         return result;

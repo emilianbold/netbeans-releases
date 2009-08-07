@@ -124,7 +124,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
             targetConf.setX11Forwarding(true);
         }
 
-        targetConf.putInfo(THAServiceInfo.THA_RUN, "true");
+        targetConf.putInfo(THAServiceInfo.THA_RUN, "true"); // NOI18N
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N

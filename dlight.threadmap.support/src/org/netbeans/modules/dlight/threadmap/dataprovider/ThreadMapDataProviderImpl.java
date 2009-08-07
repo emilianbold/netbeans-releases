@@ -93,6 +93,6 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     }
 
     public ThreadDump getStackTrace(long timestamp, long threadID, int threadstate) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
