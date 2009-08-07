@@ -113,15 +113,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean fullSilentInstaller = isJDK6U15orLater();                                        
-                    final boolean javadbBundled = getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
-                    
-                    if(fullSilentInstaller) {
+                    final boolean isFullSilentInstaller = isJDK6U15orLater();
+                    //TODO: JavaDB feature is turned off for 64-bit OS
+                    final boolean javadbBundled =
+                            getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
+                    final boolean jreAlreadyInstalled = (jre != null);
+                    if(isFullSilentInstaller) {
                         LogManager.log("... perform full silent installation");
                         overallProgress.addChild(jdkProgress, progress.COMPLETE);
                     } else {
                         //before jdk6u15 there were separate jre and javadb installers
-                        if(jre!=null) {
+                        if(jreAlreadyInstalled) {
                             if(javadbBundled) {
                                 overallProgress.addChild(jdkProgress,    progress.COMPLETE * 6 / 7);
                                 overallProgress.addChild(javadbProgress, progress.COMPLETE * 1 / 7);
@@ -139,25 +141,28 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             }
                         }
                     }
-                    results = runJDKInstallerWindows(location, installer, jdkProgress);                    
+                    results = runJDKInstallerWindows(location, installer, jdkProgress,
+                            isFullSilentInstaller, jreAlreadyInstalled, javadbBundled);
                     if(results.getErrorCode()==0) {
                         getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
                                 "" + true);
                     }
                     addUninsallationJVM(results, location);
                     
-                    if(fullSilentInstaller) {
-                        if (jre==null) {
+                    if(isFullSilentInstaller) {
+                        if (!jreAlreadyInstalled) {
                             configureJREProductWindows(results);
                         } else {
                               LogManager.log("... jre " + getProduct().getVersion() +
                                         " is already installed, skipping its configuration");
                         }
-                        configureJavaDBProductWindows(results);
+                        if(javadbBundled) {
+                            configureJavaDBProductWindows(results);
+                        }
                     } else {
-                        //before jdk6u15(with fullSilentInstaller) there were separate jre and javadb installers
+                        //before jdk6u15(isFullSilentInstaller == true) there were separate jre and javadb installers
                         if(!progress.isCanceled() && results.getErrorCode()==0) {
-                            if(jre == null) {
+                            if(!jreAlreadyInstalled) {
                                 jreInstallation = true;
                                 final File jreInstaller = findJREWindowsInstaller();
                                 if(jreInstaller!=null) {
@@ -231,7 +236,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         }
     }
-    private ExecutionResults runJDKInstallerWindows(File location, File installer, Progress progress) throws InstallationException {
+    private ExecutionResults runJDKInstallerWindows(File location,
+            File installer, Progress progress,
+            final boolean isFullSilentInstaller,
+            final boolean jreAlreadyInstalled,
+            final boolean javadbBundled) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
         final File tempDir;
         try {
@@ -268,9 +277,26 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "/s",
             "/v" + loggingOption + installLocationOption};
         
+             List<File> directories = new ArrayList<File>();
+        directories.add(location);
+        directories.add(tempDir);
+        long maxDeltaSize = getJDKinstallationSize()  + getProduct().getDownloadSize();
+
+        //after jdk6u15 jre and javaDB installation is included into silent jdk installation
+        if(isFullSilentInstaller) {
+            if(!jreAlreadyInstalled) {
+                directories.add(getJREInstallationLocationWindows());
+                maxDeltaSize += getJREinstallationSize();
+            }
+            if(javadbBundled) {
+                directories.add(getJavaDBInstallationLocationWindows());
+                maxDeltaSize += getJavaDBInstallationSize();
+            }
+        }
+
         ProgressThread progressThread = new ProgressThread(progress,
-                new File[] {location, tempDir},
-                getJDKinstallationSize()  + getProduct().getDownloadSize());
+                directories.toArray(new File[directories.size()]),
+                maxDeltaSize);
         try {
             progressThread.start();
             return SystemUtils.executeCommand(location, commands);
@@ -417,8 +443,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         final String [] command = commands.toArray(new String [] {});
         
-        final File location = new File(parseString("$E{ProgramFiles}"),
-                "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
+        final File location = getJREInstallationLocationWindows();
         LogManager.log("... JRE installation location (default) : " + location);
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
@@ -484,7 +509,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         
-        final File location = new File(parseString(SUN_JAVADB_DEFAULT_LOCATION));
+        final File location = getJavaDBInstallationLocationWindows();
                 
         LogManager.log("... JavaDB installation location (default) : " + location);
         try {
@@ -663,7 +688,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         LogManager.log("... found JavaDB windows installer at " + javadbInstallerFile.getPath());
         return javadbInstallerFile;
     }
-    
+
+    private File getJREInstallationLocationWindows() {
+        return new File(parseString("$E{ProgramFiles}"),
+                "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
+    }
+    private File getJavaDBInstallationLocationWindows() {
+        return new File(parseString(SUN_JAVADB_DEFAULT_LOCATION));
+    }
     private long getJREinstallationSize() {
         return getProduct().getVersion().getMinor()==5 ?
             70000000L :
@@ -691,7 +723,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         } else if(getProduct().getVersion().getMinor()==6) {
             if(SystemUtils.isWindows()) {
-                size = 170000000L ;
+                size = 190000000L ;
             } else if(SystemUtils.isLinux()){
                 size = 200000000L ;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
