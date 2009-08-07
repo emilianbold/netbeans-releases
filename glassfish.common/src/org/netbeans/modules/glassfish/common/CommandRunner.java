@@ -42,9 +42,11 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -58,6 +60,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -467,10 +470,11 @@ public class CommandRunner extends BasicTask<OperationState> {
         if(istream != null) {
             ZipOutputStream ostream = null;
             try {
-                ostream = new ZipOutputStream(new BufferedOutputStream(hconn.getOutputStream(), 1024));
+                ostream = new ZipOutputStream(new BufferedOutputStream(hconn.getOutputStream(), 1024*1024));
                 ZipEntry e = new ZipEntry(serverCmd.getInputName());
+                e.setExtra(getExtraProperties());
                 ostream.putNextEntry(e);
-                byte buffer[] = new byte[1024];
+                byte buffer[] = new byte[1024*1024];
                 while (true) {
                     int n = istream.read(buffer);
                     if (n < 0) {
@@ -484,9 +488,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                 try {
                     istream.close();
                 } catch(IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
-                
                 if(ostream != null) {
                     try { 
                         ostream.close(); 
@@ -496,11 +499,39 @@ public class CommandRunner extends BasicTask<OperationState> {
                     ostream = null;
                 }
             }
-        } else if("PUT".equalsIgnoreCase(serverCmd.getRequestMethod())) { // NOI18N
-            Logger.getLogger("glassfish").log(Level.INFO, "HTTP PUT request but no data stream provided"); // NOI18N
+        } else if("POST".equalsIgnoreCase(serverCmd.getRequestMethod())) { // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO, "HTTP POST request but no data stream provided"); // NOI18N
         }
     }
     
+    private byte [] getExtraProperties() {
+        boolean success = false;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        try {
+            Properties props = new Properties();
+            props.setProperty("data-request-type", "file-xfer"); // NOI18N
+            props.setProperty("data-request-name", serverCmd.getInputName()); // NOI18N
+            props.setProperty("last-modified", serverCmd.getLastModified()); // NOI18N
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(props);
+        } catch(IOException ex) {
+            Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
+                    "Error writing zip properties for archive deployment of " + serverCmd.getInputName(), ex); // NOI18N
+        } finally {
+            if(oos != null) {
+                try {
+                    oos.close();
+                    success = true;
+                } catch(IOException ex) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
+                            "Error writing zip properties for archive deployment of " + serverCmd.getInputName(), ex); // NOI18N
+                }
+            }
+        }
+        return success ? baos.toByteArray() : new byte [0];
+    }
+
     private boolean handleReceive(HttpURLConnection hconn) throws IOException {
         boolean result = false;
         InputStream httpInputStream = hconn.getInputStream();
