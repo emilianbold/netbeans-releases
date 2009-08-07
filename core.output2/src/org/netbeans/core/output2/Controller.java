@@ -118,6 +118,7 @@ public class Controller {
         if (io.getToolTipText() != null) {
             ioContainer.setToolTipText(result, io.getToolTipText());
         }
+        io.setClosed(false);
 
         //Make sure names are boldfaced for all open streams - if the tabbed
         //pane was just added in, it will just have used the name of the
