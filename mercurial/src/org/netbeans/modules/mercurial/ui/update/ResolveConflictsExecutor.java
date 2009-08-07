@@ -119,7 +119,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
     private void handleMergeFor(final File file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
-        String ext = "."+fo.getExt(); // NOI18N
+        String ext = (fo == null) ? "" : "." + fo.getExt();             //NOI18N
         File f1 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
         File f2 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
         File f3 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
