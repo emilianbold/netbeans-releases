@@ -823,8 +823,11 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
+                            boolean vis = isInputVisible();
+                            boolean closed = io.isStreamClosed();
                             writer.reset();
-                            disableHtmlName();
+                            setInputVisible(vis);
+                            io.setStreamClosed(closed);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
