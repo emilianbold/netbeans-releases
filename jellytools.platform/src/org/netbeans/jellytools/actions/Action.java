@@ -243,8 +243,10 @@ public class Action {
             } catch (ClassNotFoundException e2) {
                 this.systemActionClass = null;
             }
-        }            
-        this.keystrokes = keystrokes.clone();
+        }
+
+        if (this.keystrokes != null)
+            this.keystrokes = keystrokes.clone();
     }
 
     

@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
@@ -63,10 +65,14 @@ public class SaveAllAction extends Action {
                        + Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
     
     private static final String systemActionClassname = "org.openide.actions.SaveAllAction";
+
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
     
     /** Creates new SaveAllAction instance. */
     public SaveAllAction() {
-        super(saveAllMenu, null, systemActionClassname);
+        super(saveAllMenu, null, systemActionClassname, keystroke);
     }
     
     /** Performs action through main menu and wait until action is not finished. */
