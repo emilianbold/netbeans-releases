@@ -41,13 +41,20 @@
 
 package org.netbeans.modules.form.layoutdesign.support;
 
-import java.io.*;
-import java.awt.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import javax.swing.*;
-
-import org.netbeans.modules.form.layoutdesign.*;
+import java.util.Map;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
+import org.netbeans.modules.form.layoutdesign.LayoutConstants;
+import org.netbeans.modules.form.layoutdesign.LayoutInterval;
+import org.netbeans.modules.form.layoutdesign.LayoutModel;
 
 /**
  * Generates Java layout code based on the passed layout model.
