@@ -36,86 +36,49 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha.actions;
+package org.netbeans.modules.cnd.tha.actions;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import org.openide.awt.Actions;
-import org.openide.awt.DropDownButtonFactory;
+import org.openide.awt.Actions.CheckboxMenuItem;
+import org.openide.util.actions.BooleanStateAction;
 
-public final class AutoDropDownButtonFactory {
+public class CheckBoxMenuItemFactory {
 
-    private AutoDropDownButtonFactory() {
+    private CheckBoxMenuItemFactory() {
     }
 
-    public static JButton createDropDownButton(final Icon icon, final JPopupMenu dropDownMenu, final Action action) {
-        final JButton button = DropDownButtonFactory.createDropDownButton(icon, dropDownMenu);
+    public static CheckboxMenuItem createCheckboxMenuItem(final BooleanStateAction action) {
+        CheckboxMenuItem result = new CheckboxMenuItem(action, true);
 
-        final MouseListener[] listeners = button.getMouseListeners();
-
+        final MouseListener[] listeners = result.getMouseListeners();
         for (MouseListener l : listeners) {
-            button.removeMouseListener(l);
+            result.removeMouseListener(l);
         }
 
-        button.addMouseListener(new MouseAdapter() {
+        result.addMouseListener(new MouseAdapter() {
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                if (!action.isEnabled()) {
-                    return;
-                }
-                
+            public void mouseEntered(MouseEvent e) {
                 for (MouseListener l : listeners) {
-                    l.mousePressed(e);
-                }
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseClicked(e);
+                    l.mouseEntered(e);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 for (MouseListener l : listeners) {
-                    l.mouseExited(e);
+                    l.mouseEntered(e);
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseReleased(e);
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!action.isEnabled()) {
-                    return;
-                }
-
-                if (e.getSource() != button) {
-                    return;
-                }
-
-                int dx = button.getWidth() - e.getX() - 1;
-                e.translatePoint(dx, 0);
-                for (MouseListener l : listeners) {
-                    l.mousePressed(e);
-                }
+                action.actionPerformed(null);
             }
         });
 
-        Actions.connect(button, action);
-
-        return button;
+        return result;
     }
 }

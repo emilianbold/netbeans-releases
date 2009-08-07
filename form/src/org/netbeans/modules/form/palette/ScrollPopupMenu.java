@@ -42,9 +42,8 @@
 package org.netbeans.modules.form.palette;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 import javax.swing.*;
-import java.lang.reflect.*;
-import org.openide.awt.*;
 
 
 /** Hacked JPopupMenu(Plus) - displayed in JScrollPane if too long.

@@ -85,5 +85,5 @@ public interface StackDataStorage {//extends StackSupport {
      * @param timestamp
      * @return
      */
-    ThreadDump getThreadDump(long timestamp, int threadID, int threadState);
+    ThreadDump getThreadDump(long timestamp, long threadID, int threadState);
 }

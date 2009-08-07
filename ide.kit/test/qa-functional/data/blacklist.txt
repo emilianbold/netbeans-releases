@@ -450,3 +450,10 @@ org.netbeans.modules.php.editor.palette.PHPPaletteCustomizerAction
 org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction
 org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction
 
+# IZ 167640
+javax.xml.transform.Transformer
+javax.xml.transform.TransformerFactory
+javax.xml.transform.stream.StreamResult
+javax.xml.xpath.XPath
+javax.xml.xpath.XPathExpression
+javax.xml.xpath.XPathFactory

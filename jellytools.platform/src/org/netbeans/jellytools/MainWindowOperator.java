@@ -101,7 +101,7 @@ import org.netbeans.jemmy.util.NameComponentChooser;
 public class MainWindowOperator extends JFrameOperator {
     
     /** Singleton instance of MainWindowOperator. */
-    private static MainWindowOperator defaultMainWindowOperator;
+    //private static MainWindowOperator defaultMainWindowOperator;
     /** JMenuBarOperator instance. */
     private JMenuBarOperator _menuBar;
     /** Instance of StatusTextTracer for this MainWindowOperator instance */
@@ -109,8 +109,10 @@ public class MainWindowOperator extends JFrameOperator {
     
     /** Creates new instance of MainWindowOperator. It gets instance of main window
      * Frame.
+     *
+     * Note: costructor made public, so this class is not neccessarily used as singleton.
      */
-    protected MainWindowOperator() {
+    public MainWindowOperator() {
         // run in dispatch thread
         super((JFrame)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("getMainWindow") {    // NOI18N
             public Object launch() {
@@ -119,16 +121,24 @@ public class MainWindowOperator extends JFrameOperator {
         })
         );
     }
-    
+
+    //TODO: If making this non-singleton proves to really fix the C/V tests, mark this as deprecated.
     /** Returns instance of MainWindowOperator. It is singleton, so this method
      * is only way how to obtain instance. If instance not exists, it creates one.
      * @return instance of MainWindowOperator
      */
     public static synchronized MainWindowOperator getDefault() {
+        /*
+         * This is done, because having this class as singleton kept a static reference
+         * to MainWindow and sometimes kept a reference to a document which would have been
+         * otherwise GDed. This behavior sometimes caused commit validation tests
+         * to fail.
+         *
         if(defaultMainWindowOperator == null) {
             defaultMainWindowOperator = new MainWindowOperator();
         }
-        return defaultMainWindowOperator;
+         */
+        return new MainWindowOperator();
     }
     
     /** Returns operator of main menu bar.
@@ -547,7 +557,7 @@ public class MainWindowOperator extends JFrameOperator {
          */
         public void printStatusTextHistory(PrintStream outputPrintStream) {
             for (int i = 0; i < statusTextHistory.size(); i ++) {
-                outputPrintStream.println(statusTextHistory.get(i).toString());
+                outputPrintStream.println(statusTextHistory.get(i));
             }
         }
     }

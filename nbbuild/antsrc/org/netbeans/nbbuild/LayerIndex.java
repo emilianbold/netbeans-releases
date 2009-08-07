@@ -504,7 +504,7 @@ public class LayerIndex extends Task {
             final Map<String,Integer> servicePositions) throws IOException {
         PrintWriter pw = new PrintWriter(serviceOutput, "UTF-8");
         for (Map.Entry<String,Set<String>> entry : serviceImpls.entrySet()) {
-            pw.println(entry.getKey());
+            pw.println("SERVICE " + entry.getKey());
             SortedSet<String> impls = new TreeSet<String>(new ServiceComparator(servicePositions));
             impls.addAll(entry.getValue());
             Set<String> masked = new HashSet<String>();
@@ -519,7 +519,7 @@ public class LayerIndex extends Task {
                 if (servicePositions.containsKey(impl)) {
                     impl += " @" + servicePositions.get(impl);
                 }
-                pw.println("  " + impl);
+                pw.println("  PROVIDER " + impl);
             }
         }
         pw.close();

@@ -101,6 +101,8 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         panel.setLayout(new GridBagLayout());
         pane.setViewportView(panel);
         int y = 0;
+        // TODO: convert this timestamp to time since program start
+        // now it's nanoseconds since some unspecified moment in the past
         final long time = descriptor.getTimestamp();
         String timeString = TimeLineUtils.getMillisValue(time);
         if (false) {
