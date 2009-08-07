@@ -968,7 +968,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 //                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
 //                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
 //                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                            detailsCallback.showStack(manager.getStartTime(), manager.getThreadData(row).getThreadID());
+                            detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID());
                         }
                         refreshUI();
                     }

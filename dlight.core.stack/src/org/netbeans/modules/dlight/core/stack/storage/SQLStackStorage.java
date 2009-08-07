@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -205,10 +204,33 @@ public final class SQLStackStorage {
         return result;
     }
 
-    public FunctionCall getFunctionCall(int stackID) {
-        return null;
-    }
+    public List<FunctionCall> getStack(final int stackID) {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+        try {
+            int nodeID = stackID;
+            while (0 < nodeID) {
+                PreparedStatement ps = sqlStorage.prepareStatement(
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name " + // NOI18N
+                        "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id " + // NOI18N
+                        "WHERE node_id = ?"); // NOI18N
+                ps.setInt(1, nodeID);
 
+                ResultSet rs = ps.executeQuery();
+                try {
+                    while (rs.next()) {
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), rs.getString(5), rs.getString(5));
+                        result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
+                        nodeID = rs.getInt(2);
+                        break;
+                    }
+                } finally {
+                    rs.close();
+                }
+            }
+        } catch (SQLException ex) {
+        }
+        return result;
+    }
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
@@ -419,37 +441,30 @@ public final class SQLStackStorage {
         ThreadDumpImpl result = null;
 
         try {
+
+//          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack"); // NOI18N
+//          ResultSet rs1 = st.executeQuery();
+//          ResultSetMetaData rsm= rs1.getMetaData();
+//          int columnsCount = rsm.getColumnCount();
+//          System.out.print("\nColumns   :"); // NOI18N
+//          for ( int i = 0 ; i < columnsCount; i++){
+//              System.out.print(" " + rsm.getColumnName(i + 1)); // NOI18N
+//          }
+//          while (rs1.next()){
+//              System.out.print("\nNew record :"); // NOI18N
+//            for (int i=0; i < columnsCount; i++){
+//                System.out.print(" " + rs1.getObject(i + 1)); // NOI18N
+//            }
+//          }
+
             // First, we need ts of the thread threadID when it was in required state.
-          PreparedStatement start_ts_st = sqlStorage.prepareStatement("SELECT min(time_stamp) FROM CallStack" ); // NOI18N
-          ResultSet rs_start_ts = start_ts_st.executeQuery();
-            long start_ts = 0;
-
-            if (rs_start_ts.next()) {
-                start_ts = rs_start_ts.getLong(1);
-            }
-
-          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack"); // NOI18N
-          ResultSet rs1 = st.executeQuery();
-          ResultSetMetaData rsm= rs1.getMetaData();
-          int columnsCount = rsm.getColumnCount();
-          System.out.print("\nColumns   :"); // NOI18N
-          for ( int i = 0 ; i < columnsCount; i++){
-              System.out.print(" " + rsm.getColumnName(i + 1)); // NOI18N
-          }
-          while (rs1.next()){
-              System.out.print("\nNew record :"); // NOI18N
-            for (int i=0; i < columnsCount; i++){
-                System.out.print(" " + rs1.getObject(i + 1)); // NOI18N
-            }
-          }
-
             PreparedStatement statement = sqlStorage.prepareStatement(
                     "select max(time_stamp) from CallStack where " + // NOI18N
      //               "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
                                    "thread_id = ? and time_stamp <= ? "); // NOI18N
 
             statement.setLong(1, threadID);
-            statement.setLong(2, timestamp + start_ts);
+            statement.setLong(2, timestamp);
             //statement.setInt(3, threadState);
 
             ResultSet rs = statement.executeQuery();
@@ -478,7 +493,7 @@ public final class SQLStackStorage {
                     "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
                     "time_stamp <= ? group by thread_id"); // NOI18N
 
-            statement.setLong(1, ts + start_ts);
+            statement.setLong(1, ts);
 
             rs = statement.executeQuery();
 
@@ -489,6 +504,8 @@ public final class SQLStackStorage {
                 long callStackTimeStamp = rs.getLong(2);
                 idToTime.put(callStackThreadId, callStackTimeStamp);
             }
+            rs.close();
+
             //get leaf_id's
             Iterator<Integer> iterator = idToTime.keySet().iterator();
             while (iterator.hasNext()){
@@ -497,9 +514,11 @@ public final class SQLStackStorage {
                 statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id=" + thread_id + " AND time_stamp=" + t); // NOI18N
                 ResultSet set = statement.executeQuery();
                 if (set.next()){
-                    int leaf_id  = set.getInt(1);
+                    int stackID  = set.getInt(1);
+                    result.addStack(new SnapshotImpl(this, thread_id, stackID));
                     break;
                 }
+                set.close();
 
             }
             // Next, get stacks from database having tstamps and thread ids..
