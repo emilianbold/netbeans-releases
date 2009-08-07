@@ -46,7 +46,6 @@ import java.beans.*;
 import java.util.ResourceBundle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * A class that provides some support for simplier BeanInfos in this package.
