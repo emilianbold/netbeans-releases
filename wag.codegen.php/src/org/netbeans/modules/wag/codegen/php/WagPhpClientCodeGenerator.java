@@ -48,6 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.wag.codegen.Constants;
 import org.netbeans.modules.wag.codegen.WagClientCodeGenerator;
+import org.netbeans.modules.wag.codegen.php.util.PhpUtil;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 import org.openide.filesystems.FileObject;
@@ -55,21 +56,19 @@ import org.openide.filesystems.FileObject;
 /**
  * Code generator for Accessing Saas services.
  *
- * @author nam
+ * @author Peter Liu
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.wag.codegen.spi.WagCodeGenerationProvider.class)
 public class WagPhpClientCodeGenerator extends WagClientCodeGenerator {
 
-    private FileObject defaultPkg;
-    private String packageName;
     private WagService service;
 
     public WagPhpClientCodeGenerator() {
-        setDropFileType(Constants.DropFileType.JAVA_CLIENT);
+        setDropFileType(Constants.DropFileType.PHP);
     }
 
     public boolean canAccept(WagService service, Document doc) {
-        return false;
+        return PhpUtil.isPhp(doc);
     }
 
     @Override
@@ -96,26 +95,30 @@ public class WagPhpClientCodeGenerator extends WagClientCodeGenerator {
 
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
-            String paramStr = "new String[][] {";
+            String paramStr = "array(";
 
             int index = 0;
             for (WagServiceParameter p : service.getParameters()) {
                 if (index++ > 0) {
                     paramStr += ", ";
                 }
-                paramStr += "{\"" + p.getName() + "\", " + "null}";
+                paramStr += "'" + p.getName() + "' => NULL";
             }
 
-            paramStr += "}";
+            paramStr += ")";
 
-            String code = "try {";
-            code += "String result = Zembly.getInstance().callService(\"" + service.getCallableName() + "\", " + paramStr + ");" +
-                    "System.out.println(\"result: \" + result);";
-            code += "} catch (Exception ex) {" +
-                    "ex.printStackTrace();" +
-                    "}";
+            String code = "require_once('zclphp/zembly.php');\n" +
+                    "try {\n" +
+                    "\t$config = new Configuration('your_zembly_key', 'your_zembly_secret');\n" +
+                    "\t$result = Zembly::getInstance($config)->callService(\n" +
+                    "\t\t'" + service.getCallableName() + "',\n" +
+                    "\t\t" + paramStr + ");\n" +
+                    "echo('result: ' . $result);\n" +
+                     "} catch (Exception $e) {\n" +
+                    "\techo $e->getMessage();\n" +
+                    "}\n";
 
-            insert(code, true);
+            insert(PhpUtil.wrapWithTag(code, getTargetDocument(), getStartPosition()), true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
