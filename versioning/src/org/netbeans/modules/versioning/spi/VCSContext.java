@@ -130,7 +130,6 @@ public final class VCSContext {
             VCSContext ctx = contextCached.get();
             if (ctx != null) return ctx;
         }
-        Set<File> files = new HashSet<File>(nodes.length);
         Set<File> rootFiles = new HashSet<File>(nodes.length);
         Set<File> rootFileExclusions = new HashSet<File>(5);
         for (int i = 0; i < nodes.length; i++) {

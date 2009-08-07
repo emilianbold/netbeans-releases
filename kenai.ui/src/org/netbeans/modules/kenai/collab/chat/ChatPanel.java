@@ -195,8 +195,8 @@ public class ChatPanel extends javax.swing.JPanel {
             Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
 
     private void selectIssueReport(Matcher m) {
-        String issueNumber = m.group(3);
-        KenaiProject proj = null;
+        final String issueNumber = m.group(3);
+        final KenaiProject proj;
         try {
             proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
         } catch (KenaiException ex) {
@@ -213,7 +213,12 @@ public class ChatPanel extends javax.swing.JPanel {
             return;
         }
         if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) { // open BZ issue in the IDE
-            KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+                }
+            });
         } else { //... and open Jira issues in the browser
             try {
                 URLDisplayer.getDefault().showURL(new URL(trackers[0].getWebLocation() + "-" + issueNumber));
@@ -473,15 +478,19 @@ public class ChatPanel extends javax.swing.JPanel {
 
         KenaiProject proj = null; // This try/catch block is just to determine if the project has some issue trackers
         try {
-            proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
-            KenaiFeature[] trackers = null;
-            try {
-                trackers = proj.getFeatures(Type.ISSUES);
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (trackers.length != 0) { // Issue trackers found, replace issue references
-                result = ISSUE_REPORT.matcher(result).replaceAll("<a href=\"$0\">$0</a>"); //NOI18N
+            if (this.muc != null) {
+                proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+                if (proj != null) {
+                    KenaiFeature[] trackers = null;
+                    try {
+                        trackers = proj.getFeatures(Type.ISSUES);
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (trackers.length != 0) { // Issue trackers found, replace issue references
+                        result = ISSUE_REPORT.matcher(result).replaceAll("<a href=\"$0\">$0</a>"); //NOI18N
+                    }
+                }
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);

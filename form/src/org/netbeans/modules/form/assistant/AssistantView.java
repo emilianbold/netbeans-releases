@@ -54,7 +54,6 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Assistant view.

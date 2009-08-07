@@ -38,13 +38,17 @@
  */
 package org.netbeans.modules.bugtracking.kenai;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -65,7 +69,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
      */
     @Override
     public void open(final KenaiProject project, final String issueID) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueID}));
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
         handle.start();
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
 
@@ -75,54 +79,58 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 final ProgressHandle[] handle = new ProgressHandle[1];
                 handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueID}));
                 handle[0].start();
-                final IssueTopComponent tc = IssueTopComponent.find(issueID);
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        final Issue issue = tc.getIssue();
-                        if (issue == null) {
-                            tc.initNoIssue();
-                        }
-                        tc.open();
-                        tc.requestActive();
+                        try {
+                            final IssueTopComponent tc = IssueTopComponent.find(issueID);
+                            final Issue issue = tc.getIssue();
+                            if (issue == null) {
+                                tc.initNoIssue();
+                            }
+                            tc.open();
+                            tc.requestActive();
 
-                        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
 
-                            public void run() {
-                                try {
-                                    if (issue != null) {
-                                        handle[0].finish();
-                                        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueID}));
-                                        handle[0].start();
-                                        issue.refresh();
-                                    } else {
-                                        final Issue refIssue = repo.getIssue(issueID);
-                                        if (refIssue == null) { // probably no issue exists with the issueID
+                                public void run() {
+                                    try {
+                                        if (issue != null) {
+                                            handle[0].finish();
+                                            handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueID}));
+                                            handle[0].start();
+                                            issue.refresh();
+                                        } else {
+                                            final Issue refIssue = repo.getIssue(issueID);
+                                            if (refIssue == null) { // probably no issue exists with the issueID
+                                                SwingUtilities.invokeLater(new Runnable() {
+
+                                                    public void run() {
+                                                        tc.close();
+                                                    }
+                                                });
+                                                return;
+                                            }
                                             SwingUtilities.invokeLater(new Runnable() {
 
                                                 public void run() {
-                                                    tc.close();
+                                                    tc.setIssue(refIssue);
                                                 }
                                             });
-                                            return;
-                                        }
-                                        SwingUtilities.invokeLater(new Runnable() {
-
-                                            public void run() {
-                                                tc.setIssue(refIssue);
+                                            try {
+                                                refIssue.setSeen(true);
+                                            } catch (IOException ex) {
+                                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                                             }
-                                        });
-                                        try {
-                                            refIssue.setSeen(true);
-                                        } catch (IOException ex) {
-                                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                                         }
+                                    } finally {
+                                        handle[0].finish();
                                     }
-                                } finally {
-                                    handle[0].finish();
                                 }
-                            }
-                        });
+                            });
+                        } catch (NullPointerException e) {
+                            handle[0].finish();
+                        }
                     }
                 });
             }
