@@ -91,17 +91,17 @@ public abstract class ServerCommand {
      * Override to change the type of HTTP method used for this command.
      * Default is GET.
      * 
-     * @return HTTP method (GET, PUT, etc.)
+     * @return HTTP method (GET, POST, etc.)
      */
     public String getRequestMethod() {
         return "GET"; // NOI18N
     }
     
     /**
-     * Override and return true to send information to the server (HTTP PUT).
+     * Override and return true to send information to the server (HTTP POST).
      * Default is false.
      * 
-     * @return HTTP method (GET, PUT, etc.)
+     * @return true if using HTTP POST to send to server, false otherwise
      */
     public boolean getDoOutput() {
         return false;
@@ -111,14 +111,14 @@ public abstract class ServerCommand {
      * Override to set the content-type of information sent to the server.
      * Default is null (not set).
      * 
-     * @return HTTP method (GET, PUT, etc.)
+     * @return content-type of data sent to server via HTTP POST
      */
     public String getContentType() {
         return null;
     }
     
     /**
-     * Override to provide a data stream for PUT requests.  Data will be read
+     * Override to provide a data stream for POST requests.  Data will be read
      * from this stream [until EOF?] and sent to the server.
      * 
      * @return a new InputStream derivative that provides the data to send
@@ -126,6 +126,28 @@ public abstract class ServerCommand {
      *  return null, in which case no data will be sent.
      */
     public InputStream getInputStream() {
+        return null;
+    }
+
+    /**
+     * Override to provide a name for the data source whose inputstream is
+     * returned by getInputStream.  Must not return null if getInputStream()
+     * does not return null;
+     *
+     * @return the name to associate with the input stream
+     */
+    public String getInputName() {
+        return null;
+    }
+
+    /**
+     * Override to provide the lastModified date for data source whose
+     * inputstream is returned by getInputStream.  Must not return null if
+     * getInputStream() does not return null;
+     *
+     * @return String format of long integer from lastModified date of source.
+     */
+    public String getLastModified() {
         return null;
     }
 
@@ -204,7 +226,7 @@ public abstract class ServerCommand {
     
     /**
      * Override to parse, validate, and/or format any data read from the 
-     * server in readResponse().
+     * server in readResponse() / readManifest().
      * 
      * @return true if data was processed correctly.
      */
@@ -220,19 +242,6 @@ public abstract class ServerCommand {
     @Override
     public String toString() {
         return (query == null) ? command : command + QUERY_SEPARATOR + query;
-    }
-
-    /**
-     * A name for the source of an the input stream.
-     *
-     * This should not return null if getInputStream returns a non-null.
-     *
-     * Used during the construction of a zip-stream to support data upload.
-     *
-     * @return the name to associate with the input stream
-     */
-    public String getInputName() {
-        return null;
     }
 
     /**
