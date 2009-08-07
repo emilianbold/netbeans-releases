@@ -706,8 +706,9 @@ to <module-dependencies>. Since 5.0u1 uses public-package-only JARs where
 appropriate.
 
 module.run.classpath [since 5.0u1] - your main module source's run-time
-classpath, according to <module-dependencies>. Currently identical to
-${module.classpath} except does not use public-package-only JARs.
+classpath, according to <module-dependencies>. Similar to ${module.classpath}
+except does not use public-package-only JARs; includes run-time-only
+dependencies; and processes dependencies transitively.
 
 module.jar - location of module JAR relative to cluster directory. Do not
 override directly; override ${module.jar.basename} (default
