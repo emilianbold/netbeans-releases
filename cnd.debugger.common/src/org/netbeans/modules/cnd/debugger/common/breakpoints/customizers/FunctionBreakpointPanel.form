@@ -20,7 +20,7 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Settings">
-              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="L_Function_Breakpoint_BorderTitle" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_Function_Breakpoint_BorderTitle" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </TitledBorder>
           </Border>
         </Property>
@@ -39,18 +39,18 @@
         <Component class="javax.swing.JLabel" name="lFunctionName">
           <Properties>
             <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="MN_L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="MN_L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tfFunctionName"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="ACSD_L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSD_L_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Constraints>
@@ -62,15 +62,15 @@
         <Component class="javax.swing.JTextField" name="tfFunctionName">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="TTT_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="TTT_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="ACSD_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSD_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/Bundle.properties" key="ACSD_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/debugger/common/breakpoints/customizers/Bundle.properties" key="ACSD_TF_Function_Breakpoint_Function_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Constraints>

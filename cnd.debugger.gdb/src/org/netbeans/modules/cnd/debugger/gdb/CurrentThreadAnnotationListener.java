@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
@@ -200,7 +201,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             }
                             
                             // 4) annotate dis
-                            da = EditorContextBridge.annotateDis(csf, annotationType);
+                            // FIXME
+                            //da = EditorContextBridge.annotateDis(csf, annotationType);
                             
                             // 5) add new dis line to hashMap
                             if (da != null) {
