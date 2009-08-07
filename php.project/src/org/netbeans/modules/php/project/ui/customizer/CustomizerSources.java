@@ -630,8 +630,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     public void addChangeListener(ChangeListener listener) {
+        throw new IllegalStateException();
     }
 
     public void removeChangeListener(ChangeListener listener) {
+        throw new IllegalStateException();
     }
 }
