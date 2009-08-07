@@ -43,7 +43,6 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -56,17 +55,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
@@ -82,10 +77,6 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Union2;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 /**
  * Support for working with Ant properties and property files.
@@ -347,142 +338,6 @@ public class PropertyUtils {
         @Override
         public String toString() {
             return "FilePropertyProvider[" + properties + ":" + getProperties() + "]"; // NOI18N
-        }
-    }
-    
-    /**
-     * Evaluate all properties in a list of property mappings.
-     * <p>
-     * If there are any cyclic definitions within a single mapping,
-     * the evaluation will fail and return null.
-     * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
-     * @param predefs an unevaluated set of initial definitions
-     * @return values for all defined properties, or null if a circularity error was detected
-     */
-    private static Map<String,String> evaluateAll(Map<String,String> predefs, List<Map<String,String>> defs) {
-        Map<String,String> m = new HashMap<String,String>(predefs);
-        for (Map<String,String> curr : defs) {
-            // Set of properties which we are deferring because they subst sibling properties:
-            Map<String,Set<String>> dependOnSiblings = new HashMap<String,Set<String>>();
-            for (Map.Entry<String,String> entry : curr.entrySet()) {
-                String prop = entry.getKey();
-                if (!m.containsKey(prop)) {
-                    String rawval = entry.getValue();
-                    //System.err.println("subst " + prop + "=" + rawval + " with " + m);
-                    Union2<String,Set<String>> o = substitute(rawval, m, curr.keySet());
-                    if (o.hasFirst()) {
-                        m.put(prop, o.first());
-                    } else {
-                        dependOnSiblings.put(prop, o.second());
-                    }
-                }
-            }
-            Set<String> toSort = new HashSet<String>(dependOnSiblings.keySet());
-            for (Set<String> s : dependOnSiblings.values()) {
-                toSort.addAll(s);
-            }
-            List<String> sorted;
-            try {
-                sorted = Utilities.topologicalSort(toSort, dependOnSiblings);
-            } catch (TopologicalSortException e) {
-                //System.err.println("Cyclic property refs: " + Arrays.asList(e.unsortableSets()));
-                return null;
-            }
-            Collections.reverse(sorted);
-            for (String prop : sorted) {
-                if (!m.containsKey(prop)) {
-                    String rawval = curr.get(prop);
-                    m.put(prop, substitute(rawval, m, /*Collections.EMPTY_SET*/curr.keySet()).first());
-                }
-            }
-        }
-        return m;
-    }
-    
-    /**
-     * Try to substitute property references etc. in an Ant property value string.
-     * @param rawval the raw value to be substituted
-     * @param predefs a set of properties already defined
-     * @param siblingProperties a set of property names that are yet to be defined
-     * @return either a String, in case everything can be evaluated now;
-     *         or a Set<String> of elements from siblingProperties in case those properties
-     *         need to be defined in order to evaluate this one
-     */
-    private static Union2<String,Set<String>> substitute(String rawval, Map<String,String> predefs, Set<String> siblingProperties) {
-        assert rawval != null : "null rawval passed in";
-        if (rawval.indexOf('$') == -1) {
-            // Shortcut:
-            //System.err.println("shortcut");
-            return Union2.createFirst(rawval);
-        }
-        // May need to subst something.
-        int idx = 0;
-        // Result in progress, if it is to be a String:
-        StringBuffer val = new StringBuffer();
-        // Or, result in progress, if it is to be a Set<String>:
-        Set<String> needed = new HashSet<String>();
-        while (true) {
-            int shell = rawval.indexOf('$', idx);
-            if (shell == -1 || shell == rawval.length() - 1) {
-                // No more $, or only as last char -> copy all.
-                //System.err.println("no more $");
-                if (needed.isEmpty()) {
-                    val.append(rawval.substring(idx));
-                    return Union2.createFirst(val.toString());
-                } else {
-                    return Union2.createSecond(needed);
-                }
-            }
-            char c = rawval.charAt(shell + 1);
-            if (c == '$') {
-                // $$ -> $
-                //System.err.println("$$");
-                if (needed.isEmpty()) {
-                    val.append('$');
-                }
-                idx += 2;
-            } else if (c == '{') {
-                // Possibly a property ref.
-                int end = rawval.indexOf('}', shell + 2);
-                if (end != -1) {
-                    // Definitely a property ref.
-                    String otherprop = rawval.substring(shell + 2, end);
-                    //System.err.println("prop ref to " + otherprop);
-                    if (predefs.containsKey(otherprop)) {
-                        // Well-defined.
-                        if (needed.isEmpty()) {
-                            val.append(rawval.substring(idx, shell));
-                            val.append(predefs.get(otherprop));
-                        }
-                        idx = end + 1;
-                    } else if (siblingProperties.contains(otherprop)) {
-                        needed.add(otherprop);
-                        // don't bother updating val, it will not be used anyway
-                        idx = end + 1;
-                    } else {
-                        // No def, leave as is.
-                        if (needed.isEmpty()) {
-                            val.append(rawval.substring(idx, end + 1));
-                        }
-                        idx = end + 1;
-                    }
-                } else {
-                    // Unclosed ${ sequence, leave as is.
-                    if (needed.isEmpty()) {
-                        val.append(rawval.substring(idx));
-                        return Union2.createFirst(val.toString());
-                    } else {
-                        return Union2.createSecond(needed);
-                    }
-                }
-            } else {
-                // $ followed by some other char, leave as is.
-                // XXX is this actually right?
-                if (needed.isEmpty()) {
-                    val.append(rawval.substring(idx, idx + 2));
-                }
-                idx += 2;
-            }
         }
     }
     
@@ -780,122 +635,5 @@ public class PropertyUtils {
             }
         }
     }
-    
-    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener {
-        
-        private final PropertyProvider preprovider;
-        private final PropertyProvider[] providers;
-        private Map<String,String> defs;
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        
-        public SequentialPropertyEvaluator(final PropertyProvider preprovider, final PropertyProvider[] providers) {
-            this.preprovider = preprovider;
-            this.providers = providers;
-            // XXX defer until someone asks for them
-            defs = ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
-                public Map<String,String> run() {
-                    return compose(preprovider, providers);
-                }
-            });
-            // XXX defer until someone is listening?
-            if (preprovider != null) {
-                preprovider.addChangeListener(WeakListeners.change(this, preprovider));
-            }
-            for (PropertyProvider pp : providers) {
-                pp.addChangeListener(WeakListeners.change(this, pp));
-            }
-        }
-        
-        public String getProperty(final String prop) {
-            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-                public String run() {
-                    if (defs == null) {
-                        return null;
-                    }
-                    return defs.get(prop);
-                }
-            });
-        }
-        
-        public String evaluate(final String text) {
-            if (text == null) {
-                throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
-            }
-            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-                public String run() {
-                    if (defs == null) {
-                        return null;
-                    }
-                    Union2<String,Set<String>> result = substitute(text, defs, Collections.<String>emptySet());
-                    assert result.hasFirst() : "Unexpected result " + result + " from " + text + " on " + defs;
-                    return result.first();
-                }
-            });
-        }
-        
-        public Map<String,String> getProperties() {
-            return ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
-                public Map<String,String> run() {
-                    return defs;
-                }
-            });
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-            Map<String,String> newdefs = compose(preprovider, providers);
-            // compose() may return null upon circularity errors
-            Map<String,String> _defs = defs != null ? defs : Collections.<String,String>emptyMap();
-            Map<String,String> _newdefs = newdefs != null ? newdefs : Collections.<String,String>emptyMap();
-            if (!_defs.equals(_newdefs)) {
-                Set<String> props = new HashSet<String>(_defs.keySet());
-                props.addAll(_newdefs.keySet());
-                List<PropertyChangeEvent> events = new LinkedList<PropertyChangeEvent>();
-                for (String prop : props) {
-                    assert prop != null;
-                    String oldval = _defs.get(prop);
-                    String newval = _newdefs.get(prop);
-                    if (newval != null) {
-                        if (newval.equals(oldval)) {
-                            continue;
-                        }
-                    } else {
-                        assert oldval != null : "should not have had " + prop;
-                    }
-                    events.add(new PropertyChangeEvent(this, prop, oldval, newval));
-                }
-                assert !events.isEmpty();
-                defs = newdefs;
-                for (PropertyChangeEvent ev : events) {
-                    pcs.firePropertyChange(ev);
-                }
-            }
-        }
-        
-        private static Map<String,String> compose(PropertyProvider preprovider, PropertyProvider[] providers) {
-            assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-            Map<String,String> predefs;
-            if (preprovider != null) {
-                predefs = preprovider.getProperties();
-            } else {
-                predefs = Collections.emptyMap();
-            }
-            List<Map<String,String>> defs = new ArrayList<Map<String,String>>(providers.length);
-            for (PropertyProvider pp : providers) {
-                defs.add(pp.getProperties());
-            }
-            return evaluateAll(predefs, defs);
-        }
 
-    }
-
-    
 }
