@@ -62,8 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
@@ -389,39 +388,26 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertGC("Class can be garbage collected", ref);
     }
 
-    public void testListenersAreNotifiedWithoutHoldingALockIssue36035() throws Exception {
-        final Lookup l = getTestedLookup(c2);
-        final Class xface = c1.loadClass("org.foo.Interface");
-        final Lookup.Result res = l.lookup(new Lookup.Template(Object.class));
-
-        class L implements LookupListener, Runnable {
-            private Thread toInterrupt;
-
-            public void run() {
-                assertNotNull("Possible to query lookup", l.lookup(xface));
-                assertEquals("and there are two items", 2, res.allInstances().size());
-                toInterrupt.interrupt();
-            }
-
-            public synchronized void resultChanged(LookupEvent ev) {
-                toInterrupt = Thread.currentThread();
-                Executors.newSingleThreadScheduledExecutor().schedule(this, 0, TimeUnit.MICROSECONDS);
-                try {
-                    wait(3000);
-                    fail("Should be interrupted - means it was not possible to finish query in run() method");
-                } catch (InterruptedException ex) {
-                    // this is what we want
+    public void testSuperTypes() throws Exception {
+        doTestSuperTypes(createLookup(c2));
+        doTestSuperTypes(new ProxyLookup(createLookup(c2)));
+    }
+    private void doTestSuperTypes(Lookup l) throws Exception {
+        final Class<?> xface = c1.loadClass("org.foo.Interface");
+        final Lookup.Result<Object> res = l.lookupResult(Object.class);
+        assertEquals("Nothing yet", 0, res.allInstances().size());
+        final AtomicBoolean event = new AtomicBoolean();
+        final Thread here = Thread.currentThread();
+        res.addLookupListener(new LookupListener() {
+            public void resultChanged(LookupEvent ev) {
+                if (Thread.currentThread() == here) {
+                    event.set(true);
                 }
             }
-        }
-        L listener = new L();
-
-        res.addLookupListener(listener);
-        assertEquals("Nothing yet", 0, res.allInstances().size());
-
+        });
         assertNotNull("Interface found", l.lookup(xface));
-        assertNotNull("Listener notified", listener.toInterrupt);
-
+        assertFalse(event.get());
+        MetaInfServicesLookup.RP.post(new Runnable() {public void run() {}}).waitFinished();
         assertEquals("Now two", 2, res.allInstances().size());
     }
     

@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +72,6 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -279,6 +280,21 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
                         new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
+                if (LOG.isLoggable(Level.FINE)) {
+                    try {
+                        for (Class c = projectEl.getClass(); c != null; c = c.getSuperclass()) {
+                            for (Field f : c.getDeclaredFields()) {
+                                if ((f.getModifiers() & Modifier.STATIC) > 0) {
+                                    continue;
+                                }
+                                f.setAccessible(true);
+                                LOG.fine(c.getName() + "." + f.getName() + "=" + f.get(projectEl));
+                            }
+                        }
+                    } catch (Exception x) {
+                        x.printStackTrace();
+                    }
+                }
                 return null;
             }
             if (!"project".equals(projectEl.getLocalName())) { // NOI18N
