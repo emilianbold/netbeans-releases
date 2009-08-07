@@ -261,7 +261,7 @@ public final class Task {
             !this.url.equals(test.url))
             return false;
         if (this.file != test.file && this.file != null &&
-            !this.url.equals(test.file))
+            !this.file.equals(test.file))
             return false;
         return true;
     }
