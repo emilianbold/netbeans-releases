@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.openide.util.lookup;
+package org.netbeans.modules.ide.ergonomics.fod;
 
+import org.openide.text.AnnotationProvider;
+import org.openide.text.Line.Set;
 import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
+import org.openide.util.lookup.ServiceProvider;
 
-
-/** Test finding services from manifest.
- * @author Jaroslav Tulach
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
-    static {
-        MockLookup.init();
-    }
-    public NamedServicesLookupTest(String name) {
-        super(name);
+@ServiceProvider(service=AnnotationProvider.class)
+public final class FoDEditorOpened implements AnnotationProvider {
+    static boolean anEditorIsOpened;
+    
+    public void annotate(Set set, Lookup context) {
+        if (!anEditorIsOpened) {
+            anEditorIsOpened = true;
+            FoDFileSystem.getInstance().resultChanged(null);
+        }
     }
 
-    @Override
-    protected String prefix() {
-        return "META-INF/namedservices/sub/path/";
-    }
-    
-    @Override
-    protected Lookup createLookup(ClassLoader c) {
-        MockLookup.setInstances(c);
-        Thread.currentThread().setContextClassLoader(c);
-        Lookup l = Lookups.forPath("sub/path");
-        return l;
-    }
-    
-    //
-    // this is not much inheriting test, as we mask most of the tested methods
-    // anyway, but the infrastructure to generate the JAR files is useful
-    //
-    
-    public @Override void testLoaderSkew() {}
-    public @Override void testStability() throws Exception {}
-    public @Override void testMaskingOfResources() throws Exception {}
-    public @Override void testOrdering() throws Exception {}
-    public @Override void testNoCallToGetResourceForObjectIssue65124() throws Exception {}
-    public @Override void testSuperTypes() throws Exception {}
-    public @Override void testWrongOrderAsInIssue100320() throws Exception {}
-    
 }
