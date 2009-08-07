@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha;
+package org.netbeans.modules.cnd.tha.support;
 
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.openide.util.HelpCtx;

@@ -8,9 +8,6 @@
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
                     </file>
-                    <file name="DLightTHAToolConfigurationProvider.shadow">
-                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightTHAToolConfigurationProvider.instance"/>
-                    </file>
                     <file name="SyncToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
                     </file>
@@ -44,9 +41,6 @@
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
         </folder>
-        <folder name="Profile">
-            <file name="org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.instance"/>
-        </folder>
     </folder>
     <folder name="Windows2">
         <folder name="Components">
@@ -72,14 +66,6 @@
         </folder>
     </folder>-->
     
-    <folder name="Toolbars">
-        <folder name="Build">
-            <file name="org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.instance"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
    
     <folder name="Shortcuts">
         <file name="A-S-G.shadow">

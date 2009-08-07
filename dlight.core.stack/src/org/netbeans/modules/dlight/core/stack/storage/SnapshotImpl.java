@@ -39,13 +39,11 @@
 
 package org.netbeans.modules.dlight.core.stack.storage;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 
 final class SnapshotImpl implements ThreadSnapshot {
     private final ThreadInfo threadInfo;
@@ -74,12 +72,7 @@ final class SnapshotImpl implements ThreadSnapshot {
     }
 
     public List<FunctionCall> getStack() {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-//        FunctionCall call = storage.getFunctionCall(stackID);
-
-//        storage.getCallers(path, true)
-
-        return result;
+        return storage.getStack(stackID);
     }
 
     public MSAState getState() {

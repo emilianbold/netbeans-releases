@@ -133,7 +133,7 @@ implements Runnable, ChangeListener, LookupListener {
                 empty = false;
             }
         }
-        if (empty && noAdditionalProjects()) {
+        if (empty && noAdditionalProjects() && !FoDEditorOpened.anEditorIsOpened) {
             LOG.fine("adding default layer"); // NOI18N
             urls.add(0, FoDFileSystem.class.getResource("default.xml")); // NOI18N
         }
