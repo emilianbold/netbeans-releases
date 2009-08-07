@@ -862,7 +862,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         synchronized (lastOwningSourceRootCacheLock) {
             FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();
-            if (lastOwningSourceRootUrl != null && rootFo != null && FileUtil.isParentOf(rootFo, fo)) {
+            if (lastOwningSourceRootUrl != null && rootFo != null && rootFo.isValid() && FileUtil.isParentOf(rootFo, fo)) {
                 return lastOwningSourceRootUrl;
             }
 
@@ -875,6 +875,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     return root;
                 }
             }
+
+            lastOwningSourceRootRef = null;
+            lastOwningSourceRootUrl = null;
         }
 
         return null;
