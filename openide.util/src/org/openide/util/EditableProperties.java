@@ -658,7 +658,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             return output.toString();
         }
 
-        private static String encode(String input, boolean escapeSpace) {
+        private static String encode(String input, boolean forKey) {
             int len = input.length();
             StringBuilder output = new StringBuilder(len*2);
 
@@ -666,10 +666,11 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 char ch = input.charAt(x);
                 switch(ch) {
                     case ' ':
-                        if (x == 0 || escapeSpace)  {
+                    case '#':
+                        if (x == 0 || forKey)  {
                             output.append('\\');
                         }
-                        output.append(' ');
+                        output.append(ch);
                         break;
                     case '\\':
                         output.append("\\\\");
@@ -685,6 +686,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                         break;
                     case '\f':
                         output.append("\\f");
+                        break;
+                    case '=':
+                    case ':':
+                        if (forKey) {
+                            output.append('\\');
+                        }
+                        output.append(ch);
                         break;
                     default:
                         if ((ch < 0x0020) || (ch > 0x007e)) {
