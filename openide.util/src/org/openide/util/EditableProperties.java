@@ -220,12 +220,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         if (!(key instanceof String)) {
             return null;
         }
-        for (Item item : items) {
-            if (key.equals(item.getKey())) {
-                return item.getValue();
-            }
-        }
-        return null;
+        Item item = itemIndex.get((String) key);
+        return item != null ? item.getValue() : null;
     }
 
     @Override
