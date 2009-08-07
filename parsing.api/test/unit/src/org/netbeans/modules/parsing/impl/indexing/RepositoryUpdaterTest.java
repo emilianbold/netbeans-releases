@@ -80,6 +80,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -669,17 +670,40 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
 
     public void testFileListWork164622() throws FileStateInvalidException {
-        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false, true, false);
-        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false, true, false);
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false);
+        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false);
         assertTrue("The flw2 job was not absorbed", flw1.absorb(flw2));
 
         FileObject [] children = srcRootWithFiles1.getChildren();
         assertTrue(children.length > 0);
-        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false);
         assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
 
-        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(srcRoot1.getURL(), false, false, true, false);
+        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false);
         assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
+    }
+
+    public void testIndexManagerRefreshIndexListensOnChanges() throws Exception {
+        final File _wd = this.getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(_wd);
+        final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertNotNull(refreshedRoot);
+        assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
+        IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
+        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        //Register the root => EMPTY_DEPS changes to regular deps
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
+        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
+        handler.await();
+        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
+        assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
     public static class TestHandler extends Handler {
