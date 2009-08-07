@@ -77,8 +77,8 @@ made subject to such option by the copyright holder.
         <multithreading>
             <none flags="" default="true"/>
             <safe flags="-mt"/>
-            <automatic flags="-xautopar -xvector -xreduction -xloopinfo" default="true"/>
-            <open_mp flags="-xopenmp"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3" default="true"/>
+            <open_mp flags="-xopenmp -O3"/>
         </multithreading>
         <standard>
             <old flags="-xc99=none"/>
@@ -126,8 +126,8 @@ made subject to such option by the copyright holder.
         <multithreading>
             <none flags="" default="true"/>
             <safe flags="-mt"/>
-            <automatic flags="-xautopar -xvector -xreduction -xloopinfo"/>
-            <open_mp flags="-xopenmp"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3"/>
+            <open_mp flags="-xopenmp -O3"/>
         </multithreading>
         <standard>
             <old flags="-compat"/>
