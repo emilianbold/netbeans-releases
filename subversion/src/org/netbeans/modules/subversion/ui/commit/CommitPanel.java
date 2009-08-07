@@ -235,6 +235,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    /**
+     * Do NOT remove this method. It may seem unused but is in fact called from {@link #invokeInitPanelMethod(java.lang.String)}
+     * through reflection.
+     */
     private void initFilesPanel() {
 
         /* this method is called using reflection from 'invokeInitPanelMethod()' */
@@ -251,6 +255,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         filesPanel.setAlignmentX(LEFT_ALIGNMENT);
     }
 
+    /**
+     * Do NOT remove this method. It may seem unused but is in fact called from {@link #invokeInitPanelMethod(java.lang.String)}
+     * through reflection.
+     */
     private void initHooksPanel() {
 
         /* this method is called using reflection from 'invokeInitPanelMethod()' */

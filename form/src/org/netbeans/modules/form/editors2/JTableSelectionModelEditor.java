@@ -133,6 +133,7 @@ public class JTableSelectionModelEditor extends EnumEditor implements FormCodeAw
     private static final String XML_TABLE_SELECTION_MODEL = "JTableSelectionModel"; // NOI18N
     private static final String ATTR_SELECTION_MODE = "selectionMode"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         Object[] values = getEnumerationValues();
@@ -148,6 +149,7 @@ public class JTableSelectionModelEditor extends EnumEditor implements FormCodeAw
         setValue(value);
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         int selectionMode = -1;
