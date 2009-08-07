@@ -361,7 +361,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         FileObject fo = fe.getFile();
         URL root = null;
         
-        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot(fo);
             if (root != null) {
                 boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root);
@@ -398,7 +398,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         FileObject fo = fe.getFile();
         URL root = null;
 
-        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
@@ -431,7 +431,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         final FileObject fo = fe.getFile();
         URL root = null;
 
-        if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
@@ -460,51 +460,55 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return;
         }
         
-        final FileObject newFile = fe.getFile();
-        final String oldNameExt = fe.getExt().length() == 0 ? fe.getName() : fe.getName() + "." + fe.getExt(); //NOI18N
-        final URL root = getOwningSourceRoot(newFile);
+        FileObject newFile = fe.getFile();
+        String oldNameExt = fe.getExt().length() == 0 ? fe.getName() : fe.getName() + "." + fe.getExt(); //NOI18N
+        URL root = null;
         boolean processed = false;
 
-        if (root != null) {
-            FileObject rootFo = URLMapper.findFileObject(root);
-            String oldFilePath = FileUtil.getRelativePath(rootFo, newFile.getParent()) + "/" + oldNameExt; //NOI18N
+        if (newFile != null && newFile.isValid() && !isCacheFile(newFile)) {
+            root = getOwningSourceRoot(newFile);
+            if (root != null) {
+                FileObject rootFo = URLMapper.findFileObject(root);
+                String oldFilePath = FileUtil.getRelativePath(rootFo, newFile.getParent()) + "/" + oldNameExt; //NOI18N
 
-            if (newFile.isData()) {
-                scheduleWork(new DeleteWork(root, Collections.singleton(oldFilePath)), false);
-            } else {
-                Set<String> oldFilePaths = new HashSet<String>();
-                collectFilePaths(newFile, oldFilePath, oldFilePaths);
-                scheduleWork(new DeleteWork(root, oldFilePaths), false);
-            }
-
-            if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
-                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                if (entry == null || entry.includes(newFile)) {
-                    // delaying of this task was just copied from the old java.source RepositoryUpdater
-                    RequestProcessor.getDefault().create(new Runnable() {
-                        public void run() {
-                            scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot), false);
-                        }
-                    }).schedule(FILE_LOCKS_DELAY);
+                if (newFile.isData()) {
+                    scheduleWork(new DeleteWork(root, Collections.singleton(oldFilePath)), false);
+                } else {
+                    Set<String> oldFilePaths = new HashSet<String>();
+                    collectFilePaths(newFile, oldFilePath, oldFilePaths);
+                    scheduleWork(new DeleteWork(root, oldFilePaths), false);
                 }
-            }
-            processed = true;
-        } else {
-            URL binaryRoot = getOwningBinaryRoot(newFile);
-            if (binaryRoot != null) {
-                final File parentFile = FileUtil.toFile(newFile.getParent());
-                if (parentFile != null) {
-                    try {
-                        URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
-                        scheduleWork(new BinaryWork(oldBinaryRoot), false);
-                    } catch (MalformedURLException mue) {
-                        LOGGER.log(Level.WARNING, null, mue);
+
+                if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
+                    final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                    ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                    if (entry == null || entry.includes(newFile)) {
+                        // delaying of this task was just copied from the old java.source RepositoryUpdater
+                        final FileListWork flw = new FileListWork(root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot);
+                        RequestProcessor.getDefault().create(new Runnable() {
+                            public void run() {
+                                scheduleWork(flw, false);
+                            }
+                        }).schedule(FILE_LOCKS_DELAY);
                     }
                 }
-
-                scheduleWork(new BinaryWork(binaryRoot), false);
                 processed = true;
+            } else {
+                root = getOwningBinaryRoot(newFile);
+                if (root != null) {
+                    final File parentFile = FileUtil.toFile(newFile.getParent());
+                    if (parentFile != null) {
+                        try {
+                            URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
+                            scheduleWork(new BinaryWork(oldBinaryRoot), false);
+                        } catch (MalformedURLException mue) {
+                            LOGGER.log(Level.WARNING, null, mue);
+                        }
+                    }
+
+                    scheduleWork(new BinaryWork(root), false);
+                    processed = true;
+                }
             }
         }
 
@@ -921,6 +925,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
         return true;
+    }
+
+    private boolean isCacheFile(FileObject f) {
+        return FileUtil.isParentOf(CacheFolder.getCacheFolder(), f);
     }
 
     private static void collectFilePaths(FileObject folder, String pathPrefix, Set<String> collectedPaths) {
