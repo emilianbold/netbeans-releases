@@ -63,8 +63,6 @@ import org.netbeans.modules.form.layoutdesign.LayoutModel;
  */
 public class SwingLayoutCodeGenerator {
     private static final String LAYOUT_VAR_NAME = "layout"; // NOI18N
-    /** Layout model of the form. */
-    private LayoutModel layoutModel;
     private String layoutVarName;
     private boolean useLayoutLibrary;
 
@@ -80,7 +78,6 @@ public class SwingLayoutCodeGenerator {
      */
     public SwingLayoutCodeGenerator(LayoutModel layoutModel) {
         componentIDMap = new HashMap<String,ComponentInfo>();
-        this.layoutModel = layoutModel;
     }
 
     /**
