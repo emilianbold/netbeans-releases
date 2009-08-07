@@ -750,7 +750,7 @@ public class CodeStructure {
               +undoMap.size()+" > "+undoRedoHardLimit); // NOI18N
 
         while (undoMap.size() > undoRedoHardLimit) {
-            Object mark = new Integer(oldestMark++);
+            Integer mark = new Integer(oldestMark++);
             undoMap.remove(mark);
         }
     }
@@ -772,7 +772,7 @@ public class CodeStructure {
         t("release marks from " + m1 + " to " + m2); // NOI18N
 
         while (m1 < m2) {
-            Object m = new Integer(m1);
+            Integer m = new Integer(m1);
             undoMap.remove(m);
             redoMap.remove(m);
             m1++;
@@ -787,7 +787,7 @@ public class CodeStructure {
 
         t("undo to mark "+mark); // NOI18N
 
-        if (undoMap.get(mark) == null) {
+        if (undoMap.get((Integer)mark) == null) {
             t("mark already dropped from the queue"); // NOI18N
             return false;
         }
