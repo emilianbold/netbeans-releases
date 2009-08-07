@@ -362,17 +362,13 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <!-- ruby.rhtml and groovy.gsp modules needs the dependency
-                since they extend the HtmlKit -->
                 <friend>org.netbeans.modules.groovy.gsp</friend>
-                <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
-                <!-- TODO: remove the web.core.syntax dep. -
-                just JspSyntaxSupport.getAutocompletedEndTag(int offset) needs it -->
+                <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <package>org.netbeans.modules.html.editor</package>
-                <!-- TODO: fix, just because of JspSyntaxSupport.getAutocompletedEndTag -->
                 <package>org.netbeans.modules.html.editor.completion</package>
                 <package>org.netbeans.modules.html.editor.gsf.api</package>
             </friend-packages>

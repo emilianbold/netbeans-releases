@@ -88,7 +88,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
     private static final int BINARY_ORDER = 1024;
     private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
+    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
 
     private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
     private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
@@ -199,7 +199,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), 1024, // NOI18N
+                loc("indicator.title"), BINARY_ORDER, // NOI18N
                 Arrays.asList(
                     new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
                 new DataRowToMemoryPlot(indicatorColumns));
@@ -302,15 +302,15 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static String formatValue(long value) {
         double dbl = value;
         int i = 0;
-        while (BINARY_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
             dbl /= BINARY_ORDER;
             ++i;
         }
-        if (DECIMAL_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
             dbl /= BINARY_ORDER;
             ++i;
         }
         NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
-        return nf.format(dbl) + SIFFIXES[i];
+        return nf.format(dbl) + SUFFIXES[i];
     }
 }

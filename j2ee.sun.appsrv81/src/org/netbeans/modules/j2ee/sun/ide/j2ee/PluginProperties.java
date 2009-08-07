@@ -91,7 +91,6 @@ public class PluginProperties  {
     private static final String GROUP_PREFIX = "groupEntry."; // NOI18N
     private static final String LOG_LEVEL_KEY = "logLevel";  // NOI18N
     private static final String CHARSET_DISP_PREF_KEY = "charsetDisplayPreference"; // NOI18N
-    private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     private static final String PROP_FIRST_RUN = "first_run";
     
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
@@ -418,7 +417,7 @@ public class PluginProperties  {
 
     
     public  static String getDefaultInstallRoot() {
-        String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
+        String candidate = System.getProperty(ServerLocationManager.INSTALL_ROOT_PROP_NAME); //NOI18N
         if (null != candidate){            
             File f = new File(candidate);
             if (f.exists()){

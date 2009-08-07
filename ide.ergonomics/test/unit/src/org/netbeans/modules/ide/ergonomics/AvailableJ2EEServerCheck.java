@@ -55,6 +55,7 @@ import org.openide.util.lookup.Lookups;
 public class AvailableJ2EEServerCheck extends NbTestCase {
 
     private static final Logger LOG = Logger.getAnonymousLogger();
+    private static final String SERVER_WIZARD = "serverwizard.";
     
     public AvailableJ2EEServerCheck(final String name) {
         super(name);
@@ -77,7 +78,7 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         }
         Collections.sort(providers, comparator); // ?
         for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
-           System.setProperty("wizard." + ++cnt, wizard.getDisplayName());
+           System.setProperty(SERVER_WIZARD + ++cnt, wizard.getDisplayName());
            LOG.info("full: " + wizard.getDisplayName());
         }
     }
@@ -92,9 +93,13 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         }
         Collections.sort(providers, comparator);
         for (ServerWizardProvider wizard : providers) {
-           String name = System.getProperty("wizard." + ++cnt);
+           String name = System.getProperty(SERVER_WIZARD + ++cnt);
            LOG.info("ergo: " + wizard.getDisplayName());
            assertEquals(name, wizard.getDisplayName());
+           System.clearProperty(SERVER_WIZARD + cnt);
+        }
+        for (Object key : System.getProperties().keySet()) {
+            assertFalse("Found additional server " + System.getProperty((String) key), ((String) key).startsWith(SERVER_WIZARD));
         }
     }
 }

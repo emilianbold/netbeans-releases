@@ -39,7 +39,12 @@
 package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
@@ -76,6 +81,12 @@ public final class HostInfoFactory {
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
 
+        if (initData.containsKey("LOCALTIME")) { // NOI18N
+            long localTime = (Long)initData.get("LOCALTIME"); // NOI18N
+            long remoteTime = getTime(initData, "DATETIME", localTime); // NOI18N
+            info.clockSkew = remoteTime - localTime;
+        }
+
         return info;
     }
 
@@ -92,6 +103,21 @@ public final class HostInfoFactory {
         return result;
     }
 
+    private static long getTime(Properties props, String key, long defaultValue) {
+        long result = defaultValue;
+        String value = props.getProperty(key, null);
+        if (value != null) {
+            try {
+                DateFormat df = new SimpleDateFormat("y-M-d H:m:s"); // NOI18N
+                df.setTimeZone(TimeZone.getTimeZone("GMT")); // NOI18N
+                Date date = df.parse(value);
+                result = date.getTime();
+            } catch (ParseException ex) {
+            }
+        }
+        return result;
+    }
+
     static private class HostInfoImpl implements HostInfo {
 
         private OS os;
@@ -100,6 +126,7 @@ public final class HostInfoFactory {
         private String shell;
         private String tempDir;
         private int cpuNum;
+        private long clockSkew;
 
         public OS getOS() {
             return os;
@@ -135,6 +162,10 @@ public final class HostInfoFactory {
             } else {
                 return new File(tempDir);
             }
+        }
+
+        public long getClockSkew() {
+            return clockSkew;
         }
     }
 

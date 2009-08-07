@@ -48,16 +48,18 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
-import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -80,12 +82,18 @@ class ConfigActionScript extends ConfigAction {
         boolean valid = true;
         if (indexFileNeeded && !isIndexFileValid(sourceRoot)) {
             valid = false;
-        } else if (RunAsValidator.validateScriptFields(
-                ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
-                FileUtil.toFile(sourceRoot),
-                null,
-                ProjectPropertiesSupport.getArguments(project)) != null) {
-            valid = false;
+        } else {
+            try {
+                if (RunAsValidator.validateScriptFields(
+                        ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
+                        FileUtil.toFile(sourceRoot),
+                        null,
+                        ProjectPropertiesSupport.getArguments(project)) != null) {
+                    valid = false;
+                }
+            } catch (PhpProgram.InvalidPhpProgramException ex) {
+                valid = false;
+            }
         }
         if (!valid) {
             showCustomizer();
@@ -136,7 +144,15 @@ class ConfigActionScript extends ConfigAction {
         }
 
         public ScriptProvider(Lookup context) {
-            program = ProjectPropertiesSupport.getPhpInterpreter(project);
+            PhpProgram prg = null;
+            try {
+                prg = ProjectPropertiesSupport.getPhpInterpreter(project);
+            } catch (InvalidPhpProgramException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            assert prg.isValid() : String.format("php program %s must be valid", prg);
+
+            program = prg;
             startFile = getStartFile(context);
         }
 
@@ -152,25 +168,19 @@ class ConfigActionScript extends ConfigAction {
         public ExecutionDescriptor getDescriptor() throws IOException {
             assert startFile != null;
             RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
-            return new ExecutionDescriptor()
+            return PhpProgram.getExecutionDescriptor()
                     .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
-                    .inputVisible(true)
-                    .showProgress(true)
                     .optionsPath(UiUtils.OPTIONS_PATH)
                     .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
                     .outProcessorFactory(redirector)
                     .postExecution(redirector)
                     .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
-
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
             assert startFile != null;
-            ExternalProcessBuilder builder = new ExternalProcessBuilder(program.getProgram());
-            for (String param : program.getParameters()) {
-                builder = builder.addArgument(param);
-            }
-            builder = builder.addArgument(startFile.getName());
+            ExternalProcessBuilder builder = program.getProcessBuilder()
+                    .addArgument(startFile.getName());
             String argProperty = ProjectPropertiesSupport.getArguments(project);
             if (StringUtils.hasText(argProperty)) {
                 for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N

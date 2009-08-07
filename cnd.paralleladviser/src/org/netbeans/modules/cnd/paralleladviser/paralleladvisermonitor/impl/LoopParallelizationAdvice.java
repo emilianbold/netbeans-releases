@@ -68,9 +68,16 @@ import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils
  */
 public class LoopParallelizationAdvice implements Advice {
 
+    private final static int REPRESENTATION_TYPE_FULL = 0;
+    private final static int REPRESENTATION_TYPE_REDUSED = 1;
+    private final static int REPRESENTATION_TYPE_FOLDING = 2;
+    private final static int representationType = REPRESENTATION_TYPE_FULL;
     private final CsmFunction function;
     private final CsmLoopStatement loop;
     private final double processorUtilization;
+    private final static boolean MORE = true;
+    private final static boolean LESS = false;
+    private boolean moreOrLess = MORE;
 
     public LoopParallelizationAdvice(CsmFunction function, CsmLoopStatement loop, double processorUtilization) {
         this.function = function;
@@ -86,28 +93,61 @@ public class LoopParallelizationAdvice implements Advice {
         return loop;
     }
 
+    public double getProcessorUtilization() {
+        return processorUtilization;
+    }
+
     public JComponent getComponent() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
-        return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl, "Loop for parallelization has been found", // NOI18N
-                "There is <b><a href=\"loop\">loop</a></b> in function <b><a href=\"function\">" + function.getName() + "</a></b> that could be effectively parallelized.<br>" + // NOI18N
-                "Processor utilizastion is only <b>" + String.format("%1$.1f", processorUtilization) + "%</b> now.<br><br>" + // NOI18N
-                "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
-                "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
-                "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
-                "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>." // NOI18N
-                , // NOI18N
+        return ParallelAdviserAdviceUtils.createAdviceComponent(
+                getHtml(),
                 new HyperlinkListener() {
 
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getDescription().equals("function")) { // NOI18N
-                        CsmUtilities.openSource(function);
+                    public void hyperlinkUpdate(HyperlinkEvent e) {
+                        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                            if (e.getDescription().equals("function")) { // NOI18N
+                                CsmUtilities.openSource(function);
+                            }
+                            if (e.getDescription().equals("loop")) { // NOI18N
+                                CsmUtilities.openSource(loop);
+                            }
+                            if (e.getDescription().equals("more")) { // NOI18N
+                                moreOrLess = MORE;
+                                ParallelAdviserTopComponent.findInstance().updateTips();
+                            }
+                            if (e.getDescription().equals("less")) { // NOI18N
+                                moreOrLess = LESS;
+                                ParallelAdviserTopComponent.findInstance().updateTips();
+                            }
+                        }
                     }
-                    if (e.getDescription().equals("loop")) { // NOI18N
-                        CsmUtilities.openSource(loop);
-                    }
-                }
+                });
+    }
+
+    public String getHtml() {
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
+
+        String html = "There is <b><a href=\"loop\">loop</a></b> in function <b><a href=\"function\">" + function.getName() + "</a></b> that could be effectively parallelized.<br>" + // NOI18N
+                "Processor utilization is only <b>" + String.format("%1$.1f", processorUtilization) + "%</b> now."; // NOI18N
+        if (representationType == REPRESENTATION_TYPE_FULL) {
+            html += "<br><br>" + // NOI18N
+                    "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
+                    "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
+                    "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
+                    "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
+        }
+        if (representationType == REPRESENTATION_TYPE_FOLDING) {
+            if (moreOrLess == MORE) {
+                html += "<br><br>" + // NOI18N
+                        "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
+                        "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
+                        "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
+                        "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
+                html += "<br><a href=\"less\">Less...</a>"; // NOI18N
+            } else {
+                html += "<br><a href=\"more\">More...</a>"; // NOI18N
             }
-        });
+        }
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Loop for parallelization has been found", // NOI18N
+                html, 800); // NOI18N
     }
 }

@@ -57,7 +57,8 @@ public class MessagePanel extends JPanel {
         assert StringUtils.hasText(message);
 
         initComponents();
-        messageLabel.setText(message);
+        // #169115 - is there a better way?
+        messageLabel.setText("<html>" + message.replaceAll("(\r?\n|\r)", "<br />")); // NOI18N
     }
 
     public boolean doNotShowThisMessageAgain() {

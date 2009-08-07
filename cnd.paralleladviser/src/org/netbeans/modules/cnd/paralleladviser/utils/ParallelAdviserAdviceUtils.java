@@ -69,40 +69,9 @@ public class ParallelAdviserAdviceUtils {
     private ParallelAdviserAdviceUtils() {
     }
 
-    public static JComponent createAdviceComponent(URL icon, String title, String text, HyperlinkListener listner) {
+    public static JComponent createAdviceComponent(String html, HyperlinkListener listner) {
 
-        URL tr = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_right.png");
-        URL tl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_left.png");
-        URL br = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_right.png");
-        URL bl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_left.png");
-        URL bm = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_middle.png");
-
-        JEditorPane jEditorPane = createJEditorPane("<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
-                "        <tr bgcolor=\"#c7e3e8\">" + // NOI18N
-                "            <td><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
-                "            <td colspan=\"2\" width=\"800\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
-                "            <td><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
-                "        </tr>" + // NOI18N
-                "    </table>" + // NOI18N
-                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
-                "        <tr>" + // NOI18N
-                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" + // NOI18N
-                "            <td width=\"50\" style=\"margin:4px;\">" + // NOI18N
-                "                <img src=\"" + icon + "\">" + // NOI18N
-                "            </td>" + // NOI18N
-                "            <td width=\"762\" style=\"margin:4px;\">" + // NOI18N
-                text +
-                "            </td>" + // NOI18N
-                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" + // NOI18N
-                "        </tr>" + // NOI18N
-                "    </table>" + // NOI18N
-                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
-                "        <tr>" + // NOI18N
-                "            <td><img src=\"" + bl + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
-                "            <td colspan=\"2\" width=\"800\"><img src=\"" + bm + "\" height=\"6\" width=\"800\"></td>" + // NOI18N
-                "            <td><img src=\"" + br + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
-                "        </tr>" + // NOI18N
-                "    </table>", true, listner); // NOI18N
+        JEditorPane jEditorPane = createJEditorPane(html, true, listner);
 
         jEditorPane.setBackground(new java.awt.Color(255, 255, 255));
         jEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -110,8 +79,51 @@ public class ParallelAdviserAdviceUtils {
         return jEditorPane;
     }
 
+    public static String createAdviceHtml(URL icon, String title, String text, int width) {
+        URL tr = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_right.png");
+        URL tl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_top_left.png");
+        URL br = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_right.png");
+        URL bl = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_left.png");
+        URL bm = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_middle.png");
+
+        String html = "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr bgcolor=\"#c7e3e8\">" + // NOI18N
+                "            <td><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"" + (width - 14) + "\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
+                "            <td><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>" + // NOI18N
+                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr>" + // NOI18N
+                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>"; // NOI18N
+
+        if (icon != null) {
+            html += "            <td width=\"50\" style=\"margin:4px;\">" + // NOI18N
+                    "                <img src=\"" + icon + "\">" + // NOI18N
+                    "            </td>"; // NOI18N
+            html += "            <td width=\"" + (width - 52) + "\" style=\"margin:4px;\">" + // NOI18N
+                    text +
+                    "            </td>"; // NOI18N
+        } else {
+            html += "            <td width=\"" + (width - 2) + "\" style=\"margin:4px;\">" + // NOI18N
+                    text +
+                    "            </td>"; // NOI18N
+        }
+        html += "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>" + // NOI18N
+                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr>" + // NOI18N
+                "            <td><img src=\"" + bl + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"" + (width - 14) + "\"><img src=\"" + bm + "\" height=\"6\" width=\"" + (width - 14) + "\"></td>" + // NOI18N
+                "            <td><img src=\"" + br + "\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>"; // NOI18N
+        return html;
+    }
+
     public static JEditorPane createJEditorPane(String text, boolean needHTMLTags, HyperlinkListener listner) {
-        JEditorPane editorPane = new JEditorPane("text/html", needHTMLTags || !text.startsWith("<html>") ? "<html> <body bgcolor=\"#ffffff\">" + text + "</body></html>" : text);//NOI18N
+        JEditorPane editorPane = new JEditorPane("text/html", needHTMLTags || !text.startsWith("<html>") ? "<html> <body bgcolor=\"#ffffff\">" + text + "</body></html>" : text); //NOI18N
         if (listner != null) {
             editorPane.addHyperlinkListener(listner);
         }
@@ -120,7 +132,7 @@ public class ParallelAdviserAdviceUtils {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = e.getURL();
-                    if(url != null) {
+                    if (url != null) {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     }
                 }
@@ -132,7 +144,25 @@ public class ParallelAdviserAdviceUtils {
 //                "font-size: " + font.getSize() + "pt; }";//NOI18N
 
         String rule1 = "body {margin:6px 6px 6px 6px;}"; // NOI18N
+//        String rule2 = "table.inner" + // NOI18N
+//                "{" + // NOI18N
+//                "    border-color: #600;" + // NOI18N
+//                "    border-width: 0 0 1px 1px;" + // NOI18N
+//                "    border-style: solid;" + // NOI18N
+//                "}"; // NOI18N
+//
+//        String rule3 = "td.inner" + // NOI18N
+//                "{" + // NOI18N
+//                "    border-color: #600;" + // NOI18N
+//                "    border-width: 1px 1px 0 0;" + // NOI18N
+//                "    border-style: solid;" + // NOI18N
+//                "    margin: 0;" + // NOI18N
+//                "    padding: 4px;" + // NOI18N
+//                "    background-color: #FFC;" + // NOI18N
+//                "}"; // NOI18N
         ((HTMLDocument) editorPane.getDocument()).getStyleSheet().addRule(rule1);
+//        ((HTMLDocument) editorPane.getDocument()).getStyleSheet().addRule(rule2);
+//        ((HTMLDocument) editorPane.getDocument()).getStyleSheet().addRule(rule3);
 
         editorPane.setOpaque(false);
         editorPane.setEditable(false);

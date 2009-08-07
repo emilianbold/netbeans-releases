@@ -180,8 +180,14 @@ public class PhpUnitLogParserTest extends NbTestCase {
 
         PhpUnitLogParser.parse(reader, testSession);
 
-        assertSame(2, testSession.getTestSuites().size());
+        assertSame(3, testSession.getTestSuites().size());
         TestSuiteVO testSuite = testSession.getTestSuites().get(0);
+        assertEquals("LoginTest", testSuite.getName());
+        assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
+        assertSame(1, testSuite.getTestCases().size());
+        assertEquals(TestCaseVO.pendingTestCase().toString(), testSuite.getTestCases().get(0).toString());
+
+        testSuite = testSession.getTestSuites().get(1);
         assertEquals("LoginTest: Firefox on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
@@ -189,13 +195,49 @@ public class PhpUnitLogParserTest extends NbTestCase {
         TestCaseVO testCase = testSuite.getTestCases().get(0);
         assertEquals("testLogin", testCase.getName());
 
-        testSuite = testSession.getTestSuites().get(1);
+        testSuite = testSession.getTestSuites().get(2);
         assertEquals("LoginTest: Internet Explorer on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
         assertSame(1, testSuite.getTestCases().size());
         testCase = testSuite.getTestCases().get(0);
         assertEquals("testLogin", testCase.getName());
+    }
+
+    public void testParseLogIssue169433() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue169433.xml")));
+        TestSessionVO testSession = new TestSessionVO();
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(4, testSession.getTestSuites().size());
+        TestSuiteVO testSuite = testSession.getTestSuites().get(0);
+        assertEquals("E2_ConfigTest", testSuite.getName());
+        assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/E2_ConfigTest.php", testSuite.getFile());
+
+        assertSame(4, testSuite.getTestCases().size());
+        TestCaseVO testCase = testSuite.getTestCases().get(0);
+        assertEquals("test__get", testCase.getName());
+        testCase = testSuite.getTestCases().get(3);
+        assertEquals("testIterator", testCase.getName());
+
+        testSuite = testSession.getTestSuites().get(1);
+        assertEquals("E2_ConfigTest::testConstructException", testSuite.getName());
+        assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/E2_ConfigTest.php", testSuite.getFile());
+
+        assertSame(3, testSuite.getTestCases().size());
+        testCase = testSuite.getTestCases().get(0);
+        assertEquals("testConstructException with data set #0", testCase.getName());
+        testCase = testSuite.getTestCases().get(2);
+        assertEquals("testConstructException with data set #2", testCase.getName());
+
+        testSuite = testSession.getTestSuites().get(3);
+        assertEquals("E2_Crypt_EncryptTest", testSuite.getName());
+        assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/Crypt/E2_Crypt_McryptTest.php", testSuite.getFile());
+
+        assertSame(1, testSuite.getTestCases().size());
+        testCase = testSuite.getTestCases().get(0);
+        assertEquals("testDecryption", testCase.getName());
     }
 
     private File getLogForMoreSuites() throws Exception {

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
@@ -70,46 +69,44 @@ public class Commands {
     // ------------------------------------------------------------------------
     // Specific server commands.
     // ------------------------------------------------------------------------
-    
     /**
      * Command to start a server domain
      */
     public static final ServerCommand START = new ServerCommand("start-domain") { // NOI18N
     };
-    
     /**
      * Command to stop a server domain
      */
     public static final ServerCommand STOP = new ServerCommand("stop-domain") { // NOI18N
     };
-    
+
     /**
      * Command to list applications current deployed on the server.
      */
     public static final class ListAppsCommand extends ServerCommand {
-        
+
         private final String container;
         private Manifest list;
-        private Map<String, List<AppDesc>> appMap; 
-        
+        private Map<String, List<AppDesc>> appMap;
+
         public ListAppsCommand() {
             this(null);
         }
-        
+
         public ListAppsCommand(final String container) {
             super("list-applications"); // NOI18N
             this.container = container;
         }
-        
-        public String [] getContainers() {
-            String [] result = null;
+
+        public String[] getContainers() {
+            String[] result = null;
             if(appMap != null && appMap.size() > 0) {
                 Set<String> containers = appMap.keySet();
                 result = containers.toArray(new String[containers.size()]);
             }
             return result != null ? result : new String[0];
         }
-        
+
         public Map<String, List<AppDesc>> getApplicationMap() {
             // !PW Can still modify sublist... is there a better structure?
             if(appMap != null) {
@@ -118,49 +115,49 @@ public class Commands {
                 return Collections.emptyMap();
             }
         }
-        
+
         @Override
         public void readManifest(Manifest manifest) throws IOException {
             list = manifest;
         }
-        
+
         @Override
         public boolean processResponse() {
             if(list == null) {
                 return false;
             }
-            
+
             String appsList = list.getMainAttributes().getValue("children"); // NOI18N
             if(appsList == null || appsList.length() == 0) {
                 // no applications deployed...
                 return true;
             }
 
-            String [] apps = appsList.split(";"); // NOI18N
-            for(String appKey: apps) {
+            String[] apps = appsList.split(";"); // NOI18N
+            for(String appKey : apps) {
                 if("null".equals(appKey)) { // NOI18N
                     Logger.getLogger("glassfish").log(Level.WARNING, "list-applications contains an invalid result.  " + "Check server log for possible exceptions."); // NOI18N
                     continue;
                 }
-                
+
                 Attributes appAttrs = list.getAttributes(appKey);
                 if(appAttrs == null) {
                     continue;
                 }
-                
+
                 String engine = getPreferredEngine(appAttrs.getValue("nb-engine_value")); // NOI18N
-                
+
                 String name = appAttrs.getValue("nb-name_value");  // NOI18N
                 if(name == null || name.length() == 0) {
                     Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // NOI18N  FIXME better log message.
                     continue;
                 }
-                
+
                 String path = appAttrs.getValue("nb-location_value");  // NOI18N
                 if(path.startsWith("file:")) {  // NOI18N
                     path = path.substring(5);
                 }
-                
+
                 String contextRoot = appAttrs.getValue("nb-context-root_value"); // NOI18N
                 if(contextRoot == null) {
                     contextRoot = name;
@@ -178,21 +175,20 @@ public class Commands {
                     appList = new ArrayList<AppDesc>();
                     appMap.put(engine, appList);
                 }
-                
+
                 appList.add(new AppDesc(name, path, contextRoot));
             }
 
             return true;
         }
-
         // XXX temporary patch to handle engine descriptions like <web, ejb>
         // until we have better display semantics for such things.
         // XXX bias order of list for JavaONE demos.
-        private static final List<String> engineBias = 
-                Arrays.asList(new String [] { "jruby", "web", "ejb" }); // NOI18N
-        
+        private static final List<String> engineBias =
+                Arrays.asList(new String[]{"jruby", "web", "ejb"}); // NOI18N
+
         private String getPreferredEngine(String engineList) {
-            String [] engines = engineList.split(",");  // NOI18N
+            String[] engines = engineList.split(",");  // NOI18N
             String engine = null;
             int bias = -1;
             for(int i = 0; i < engines.length; i++) {
@@ -223,9 +219,8 @@ public class Commands {
          */
         private boolean skipContainer(String currentContainer) {
             return container != null ? !container.equals(currentContainer) :
-                "security_ContractProvider".equals(currentContainer); // NOI18N
+                    "security_ContractProvider".equals(currentContainer); // NOI18N
         }
-        
     };
 
     /**
@@ -247,8 +242,8 @@ public class Commands {
             this.container = container;
         }
 
-        public String [] getContainers() {
-            String [] result = null;
+        public String[] getContainers() {
+            String[] result = null;
             if(appMap != null && appMap.size() > 0) {
                 Set<String> containers = appMap.keySet();
                 result = containers.toArray(new String[containers.size()]);
@@ -282,14 +277,14 @@ public class Commands {
                 return true;
             }
 
-            String [] apps = appsList.split(";"); // NOI18N
-            for(String appKey: apps) {
+            String[] apps = appsList.split(";"); // NOI18N
+            for(String appKey : apps) {
                 if("null".equals(appKey)) { // NOI18N
                     Logger.getLogger("glassfish").log(Level.WARNING, "list-components contains an invalid result.  " + "Check server log for possible exceptions."); // NOI18N
                     continue;
                 }
-                
-                String [] keys = appKey.split("[<>]");
+
+                String[] keys = appKey.split("[<>]");
                 String name = keys[0];
                 if(name == null || name.length() == 0) {
                     Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // NOI18N  FIXME better log message.
@@ -311,16 +306,14 @@ public class Commands {
 
             return true;
         }
-
-
         // XXX temporary patch to handle engine descriptions like <web, ejb>
         // until we have better display semantics for such things.
         // XXX bias order of list for JavaONE demos.
         private static final List<String> engineBias =
-                Arrays.asList(new String [] { "ear", "jruby", "web", "ejb", "appclient", "connector" }); // NOI18N
+                Arrays.asList(new String[]{"ear", "jruby", "web", "ejb", "appclient", "connector"}); // NOI18N
 
         private String getPreferredEngine(String engineList) {
-            String [] engines = engineList.split(",");  // NOI18N
+            String[] engines = engineList.split(",");  // NOI18N
             String engine = null;
             int bias = -1;
             for(int i = 0; i < engines.length; i++) {
@@ -351,12 +344,10 @@ public class Commands {
          */
         private boolean skipContainer(String currentContainer) {
             return container != null ? !container.equals(currentContainer) :
-                "security_ContractProvider".equals(currentContainer); // NOI18N
+                    "security_ContractProvider".equals(currentContainer); // NOI18N
         }
-
     };
-    
-    
+
     /**
      * Command to list resources of various types currently available on the server.
      */
@@ -371,7 +362,7 @@ public class Commands {
 
             cmdSuffix = resourceCmdSuffix;
         }
-        
+
         public List<ResourceDesc> getResourceList() {
             if(resList != null) {
                 return Collections.unmodifiableList(resList);
@@ -379,26 +370,26 @@ public class Commands {
                 return Collections.emptyList();
             }
         }
-        
+
         @Override
         public void readManifest(Manifest manifest) throws IOException {
             list = manifest;
         }
-        
+
         @Override
         public boolean processResponse() {
             if(list == null) {
                 return false;
             }
-            
+
             String resourceList = list.getMainAttributes().getValue("children"); // NOI18N
             if(resourceList == null || resourceList.length() == 0) {
                 // no resources running...
                 return true;
             }
 
-            String [] resources = resourceList.split("[,;]"); // NOI18N
-            for(String r: resources) {
+            String[] resources = resourceList.split("[,;]"); // NOI18N
+            for(String r : resources) {
                 if(skipResource(r)) {
                     continue;
                 }
@@ -419,41 +410,32 @@ public class Commands {
                     Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r); // NOI18N
                 }
             }
-            
+
             return true;
         }
 
         private boolean skipResource(String r) {
             return r.equals(NbBundle.getMessage(Commands.class, "nothingToList")); //NOI18N
         }
-    
     };
 
- 
     /**
      * Command to deploy a directory
      */
-    public static final class DeployCommand extends ServerCommand {        
+    public static final class DeployCommand extends ServerCommand {
 
-        private String path = null;
-        private String fileName = null;
+        private final boolean isDirDeploy;
+        private final File path;
 
         public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions) {
             super("deploy"); // NOI18N
+
+            this.isDirDeploy = path.isDirectory();
+            this.path = path;
             
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("path="); // NOI18N
-            String usePath = path.getAbsolutePath();
-//            // support for remote deployment...
-//            if (path.isFile()) {
-//                this.path = usePath;
-//                int end = usePath.lastIndexOf(File.separatorChar);
-//                if (end > -1) {
-//                    usePath = usePath.substring(end+1);
-//                }
-//            }
-            cmd.append(usePath);
-            fileName = usePath;
+            cmd.append(path.getAbsolutePath());
             if(name != null && name.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
                 cmd.append(name);
@@ -465,46 +447,50 @@ public class Commands {
             cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
             query = cmd.toString();
         }
-        
 
         @Override
         public String getContentType() {
-            return null==path?null:"application/zip"; // NOI18N
+            return isDirDeploy ? null : "application/zip"; // NOI18N
         }
 
         @Override
         public boolean getDoOutput() {
-            return path!=null;
+            return !isDirDeploy;
         }
 
         @Override
         public InputStream getInputStream() {
             try {
-                return null!=path?new FileInputStream(path):null;
-            } catch (FileNotFoundException ex) {
+                return isDirDeploy ? null : new FileInputStream(path);
+            } catch(FileNotFoundException ex) {
                 return null;
             }
         }
 
         @Override
         public String getRequestMethod() {
-            return null==path?super.getRequestMethod():"POST"; // NOI18N
+            return isDirDeploy ? super.getRequestMethod() : "POST"; // NOI18N
         }
 
         @Override
         public String getInputName() {
-            return fileName;
+            return path.getName();
+        }
+
+        @Override
+        public String getLastModified() {
+            return Long.toString(path.lastModified());
         }
     }
-    
+
     /**
      * Command to redeploy a directory deployed app that is already deployed.
      */
     public static final class RedeployCommand extends ServerCommand {
-        
+
         public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions) {
             super("redeploy"); // NOI18N
-            
+
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("name="); // NOI18N
             cmd.append(name);
@@ -512,36 +498,34 @@ public class Commands {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            addKeepSessions(cmd,preserveSessions);
+            addKeepSessions(cmd, preserveSessions);
             query = cmd.toString();
         }
-        
     }
-    
+
     private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
-        if (Boolean.TRUE.equals(preserveSessions)) {
+        if(Boolean.TRUE.equals(preserveSessions)) {
             cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
             cmd.append("keepSessions=true");  // NOI18N
-        }        
+        }
     }
-    
+
     /**
      * Command to undeploy a deployed application.
      */
     public static final class UndeployCommand extends ServerCommand {
-        
+
         public UndeployCommand(final String name) {
             super("undeploy"); // NOI18N
             query = "name=" + name; // NOI18N
         }
-        
     }
-    
+
     /**
      * Command to unregister a resource.
      */
     public static final class UnregisterCommand extends ServerCommand {
-        
+
         public UnregisterCommand(final String name, final String resourceCmdSuffix,
                 final String cmdPropertyName, final boolean cascade) {
             super("delete-" + resourceCmdSuffix); // NOI18N
@@ -556,16 +540,15 @@ public class Commands {
             cmd.append(name);
             query = cmd.toString();
         }
-        
     }
-    
+
     /**
      * Command to get version information from the server.
      */
     public static final class VersionCommand extends ServerCommand {
 
         private Manifest info;
-        
+
         public VersionCommand() {
             super("version"); // NOI18N
         }
@@ -579,9 +562,8 @@ public class Commands {
         public boolean processResponse() {
             return true;
         }
-        
     }
-    
+
     /**
      * Command to get version information from the server.
      */
@@ -590,11 +572,11 @@ public class Commands {
         private Manifest info;
         private String installRoot;
         private String domainRoot;
-        
+
         public LocationCommand() {
             super("__locations"); // NOI18N
         }
-        
+
         public String getInstallRoot() {
             return installRoot;
         }
@@ -613,13 +595,13 @@ public class Commands {
             if(info == null) {
                 return false;
             }
-            
+
             Attributes mainAttrs = info.getMainAttributes();
             if(mainAttrs != null) {
                 installRoot = mainAttrs.getValue("Base-Root_value");  // NOI18N
                 domainRoot = mainAttrs.getValue("Domain-Root_value");  // NOI18N
             }
-            
+
             return true;
         }
     }

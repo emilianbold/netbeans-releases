@@ -61,7 +61,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -176,13 +175,13 @@ public final class JavaSource {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link JavaSource} should be created
      * @return a new {@link JavaSource}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null        
+     * @throws IllegalArgumentException if fileObject or cpInfo is null        
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull FileObject... files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, Arrays.asList(files));
+        return _create(cpInfo, Arrays.asList(files));
     }
 
     /**
@@ -191,9 +190,15 @@ public final class JavaSource {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link JavaSource} should be created
      * @return a new {@link JavaSource}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
+     * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
+        return _create(cpInfo, files);
+    }
+
+    //where
+
+    private static @NullUnknown JavaSource _create(final ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
             throw new IllegalArgumentException ();
         }    
@@ -214,7 +219,7 @@ public final class JavaSource {
      * it returns null if the {@link Document} is not associanted with data type providing the {@link JavaSource}.
      * @param fileObject for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if fileObject is null
+     * @throws IllegalArgumentException if fileObject is null
      */
     public static @CheckForNull JavaSource forFileObject(@NonNull FileObject fileObject) throws IllegalArgumentException {
         if (fileObject == null) {
@@ -280,7 +285,7 @@ public final class JavaSource {
                 if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N                    
                     return null;
                 }
-                js = create(null, Collections.singletonList(fileObject));
+                js = _create(null, Collections.singletonList(fileObject));
             }
             file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
@@ -293,7 +298,7 @@ public final class JavaSource {
      * associated with data type providing the {@link JavaSource}.
      * @param doc {@link Document} for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if doc is null
+     * @throws IllegalArgumentException if doc is null
      */
     public static @CheckForNull JavaSource forDocument(@NonNull Document doc) throws IllegalArgumentException {
         if (doc == null) {
@@ -319,7 +324,8 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {        
+    private JavaSource (final ClasspathInfo cpInfo,
+                        final @NonNull Collection<? extends FileObject> files) throws IOException {
         boolean multipleSources = files.size() > 1;
         final List<Source> sources = new LinkedList<Source>();
         final List<FileObject> fl = new LinkedList<FileObject>();
@@ -344,8 +350,17 @@ public final class JavaSource {
         this.sources = Collections.unmodifiableList(sources);
         this.classpathInfo = cpInfo;        
     }
-    
-    private JavaSource (final ClasspathInfo info, final FileObject classFileObject, final FileObject root) throws IOException {
+
+    /**
+     * Creates a new instance of JavaSource for an class file
+     * @param info the compilation info to be used
+     * @param classFileObject the class file
+     * @param root owning the class file
+     * @throws IOException
+     */
+    private JavaSource (final @NonNull ClasspathInfo info,
+                        final @NonNull FileObject classFileObject,
+                        final @NonNull FileObject root) throws IOException {
         assert info != null;
         assert classFileObject != null;
         assert root != null;

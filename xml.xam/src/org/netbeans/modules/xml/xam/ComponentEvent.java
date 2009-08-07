@@ -97,6 +97,7 @@ public class ComponentEvent extends EventObject {
         return event;
     }
     
+    @Override
     public String toString() {
         return event + ":" + source;
     }

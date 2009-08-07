@@ -46,14 +46,12 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import javax.swing.tree.TreePath;
 //import org.netbeans.core.NbKeymap;
 
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.ClassReference;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -67,7 +65,6 @@ import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
-import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 
@@ -119,10 +116,7 @@ public class Action {
     protected String popupPath;
     /** SystemAction class of current action or null when API_MODE is not supported */    
     protected Class systemActionClass;
-    /** array of shortcuts of current action or null when SHORTCUT_MODE is not supported.
-     * @deprecated Use {@link #keystrokes} instead
-    */
-    protected Shortcut[] shortcuts;
+
     /** Array of key strokes or null when SHORTCUT_MODE is not supported. */
     protected KeyStroke[] keystrokes;
 
@@ -250,7 +244,7 @@ public class Action {
                 this.systemActionClass = null;
             }
         }            
-        this.keystrokes = keystrokes;
+        this.keystrokes = keystrokes.clone();
     }
 
     
@@ -259,7 +253,7 @@ public class Action {
         JellyVersion.checkJemmyVersion();
 
         if (JemmyProperties.getCurrentProperty("Action.DefaultMode")==null)
-            JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(POPUP_MODE));
+            JemmyProperties.setCurrentProperty("Action.DefaultMode", Integer.valueOf(POPUP_MODE));
         Timeouts.initDefault("Action.WaitAfterShortcutTimeout", WAIT_AFTER_SHORTCUT_TIMEOUT);
         // Set case sensitive comparator as default because of 
         // very often clash between Cut and Execute menu items.
@@ -631,12 +625,9 @@ public class Action {
      * @throws IllegalArgumentException when given nodes does not pass */    
     protected void testNodes(Node[] nodes) {
         if ((nodes==null)||(nodes.length==0))
-            throw new IllegalArgumentException("argument nodes is null or empty");
-        Class myClass = getClass();
+            throw new IllegalArgumentException("argument nodes is null or empty");       
         Component nodesTree=nodes[0].tree().getSource();
         for (int i=0; i<nodes.length; i++) {
-//            if (!nodes[i].hasAction(myClass))
-//                throw new IllegalArgumentException(this.toString()+" could not be performed on "+nodes[i].toString());
             if (nodes[i]==null)
                 throw new IllegalArgumentException("argument nodes contains null value");
             if (!nodesTree.equals(nodes[i].tree().getSource()))
@@ -672,7 +663,7 @@ public class Action {
         if (mode<0 || mode>3) {
             mode = POPUP_MODE;
         }
-        JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(mode));
+        JemmyProperties.setCurrentProperty("Action.DefaultMode", Integer.valueOf(mode));
         return oldMode;
     }
     
@@ -717,47 +708,16 @@ public class Action {
     public Class getSystemActionClass() {
         return systemActionClass;
     }
-    
-    /** getter for array of shortcuts
-     * @return Shortcut[] (or null if not suported)
-     * @deprecated Use {@link #getKeyStrokes} instead
-     */    
-    public Shortcut[] getShortcuts() {
-        return shortcuts;
-    }
-
-    /** Returns an array of KeyStroke objects.
-     * If systemActionClass is defined and no keystrokes defined in constructor,
-     * it tries to find key strokes in NbKeymap.
-     * Otherwise it returns keystrokes defined in constructor, which can be null.
-     * It helps to overcome differencies on platforms (e.g. on mac).
-     * @return an array of KeyStroke objects or null if not found.
+   
+    /** Returns an array of KeyStroke objects.     
+     * @return an array of KeyStroke objects or null if not defined.
      */
     public KeyStroke[] getKeyStrokes() {
-        if (this.keystrokes == null && systemActionClass != null) {
-            try {
-            //ClassReference keymapRef = new ClassReference(getClass().getClassLoader(), "org.netbeans.core.NbKeymap");
-            Lookup lu = Lookup.getDefault();
-            //ClassReference keymapRef = new ClassReference()
-            ClassReference keymapRef = new ClassReference(lu.lookup(Keymap.class));
-            //NbKeymap keymap = (NbKeymap) Lookup.getDefault().lookup(NbKeymap.class);
-            javax.swing.Action myAction = null;
-            javax.swing.Action[] actions = (javax.swing.Action[]) keymapRef.invokeMethod("getBoundActions", new Object[0], new Class[0]);
-            //javax.swing.Action[] actions = keymap.getBoundActions();
-            for (int i = 0; i < actions.length; i++) {
-                if(actions[i].getClass().equals(systemActionClass)) {
-                    // Returns just first keystroke. For actions like copy can 
-                    // can exists more than one (Ctrl+C, Ctrl+Insert, Copy key).
-                    KeyStroke[] strokes = (KeyStroke[]) keymapRef.invokeMethod("getKeyStrokesForAction", new Object[] {actions[i]}, new Class[] {javax.swing.Action.class});
-                    return new KeyStroke[] {strokes[0]};
-                    //return new KeyStroke[] {keymap.getKeyStrokesForAction(actions[i])[0]};
-                }
-            }
-            } catch (Exception e) {
-                throw new JemmyException("Exception while gettting keystrokes", e);
-            }
+        if (keystrokes != null){
+            return keystrokes.clone();
         }
-        return this.keystrokes;
+
+        return null;
     }
     
     /** Checks whether this action is enabled. If IDE system action class

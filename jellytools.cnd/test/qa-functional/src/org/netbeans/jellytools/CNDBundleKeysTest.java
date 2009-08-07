@@ -51,15 +51,7 @@ public class CNDBundleKeysTest extends TestBundleKeys
 
 
     public CNDBundleKeysTest(String isBundleName) {
-        this(isBundleName, null);
-    }
-
-    /** Constructor required by JUnit.
-     * @param testName method name to be used as testcase
-     */
-    public CNDBundleKeysTest(String bundleName, String keys) {
-        super(bundleName);
-        this.keys=keys;
+        super(isBundleName);
     }
 
     protected ClassLoader getDescendantClassLoader()

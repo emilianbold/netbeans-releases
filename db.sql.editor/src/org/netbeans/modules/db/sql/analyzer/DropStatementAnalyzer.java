@@ -38,169 +38,51 @@
  */
 package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.DropStatement.DropContext;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
  *
  * @author Jiri Skrivanek
  */
-public class DropStatementAnalyzer {
+class DropStatementAnalyzer extends SQLStatementAnalyzer {
 
-    private final TokenSequence<SQLTokenId> seq;
-    private final boolean detectKind;
-    private final Quoter quoter;
-    private final SortedMap<Integer, DropContext> offset2Context = new TreeMap<Integer, DropContext>();
     private QualIdent table = null;
-    private int startOffset;
-    private State state = State.START;
 
-    public static DropStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
-        DropStatementAnalyzer sa = doParse(seq, quoter, false);
-        if (!sa.state.isAfter(State.START)) {
-            return null;
-        }
-        return new DropStatement(SQLStatementKind.DROP, sa.startOffset, seq.offset() + seq.token().length(), sa.table, sa.offset2Context);
+    private DropStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
+        super(seq, quoter);
     }
 
-    private static DropStatementAnalyzer doParse(TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
+    public static DropStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         seq.moveStart();
         if (!seq.moveNext()) {
             return null;
         }
-        DropStatementAnalyzer sa = new DropStatementAnalyzer(seq, quoter, detectKind);
+        DropStatementAnalyzer sa = new DropStatementAnalyzer(seq, quoter);
         sa.parse();
-        return sa;
-    }
-
-    private DropStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
-        this.seq = seq;
-        this.quoter = quoter;
-        this.detectKind = detectKind;
+        return new DropStatement(sa.startOffset, seq.offset() + seq.token().length(), sa.table, sa.offset2Context);
     }
 
     private void parse() {
         startOffset = seq.offset();
         do {
-            switch (state) {
+            switch (context) {
                 case START:
                     if (SQLStatementAnalyzer.isKeyword("DROP", seq)) { // NOI18N
-                        moveToState(State.DROP);
-                        if (detectKind) {
-                            return;
+                        if (nextToken() && SQLStatementAnalyzer.isKeyword("TABLE", seq)) { // NOI18N
+                            moveToContext(Context.DROP_TABLE);
                         }
                     }
                     break;
-                case DROP:
-                    if (SQLStatementAnalyzer.isKeyword("TABLE", seq)) { // NOI18N
-                        moveToState(State.TABLE);
-                    }
-                    break;
-                case TABLE:
-                    switch (seq.token().id()) {
-                        case IDENTIFIER:
-                            table = parseIdentifier();
-                            break;
+                case DROP_TABLE:
+                    if (seq.token().id() == SQLTokenId.IDENTIFIER) {
+                        table = parseIdentifier();
                     }
                     break;
                 default:
             }
         } while (nextToken());
-    }
-
-    //TODO - move to super class
-    /** Returns fully qualified identifier or null. */
-    private QualIdent parseIdentifier() {
-        List<String> parts = new ArrayList<String>();
-        parts.add(getUnquotedIdentifier());
-        boolean afterDot = false;
-        main:
-        while (nextToken()) {
-            switch (seq.token().id()) {
-                case DOT:
-                    afterDot = true;
-                    break;
-                case IDENTIFIER:
-                    if (afterDot) {
-                        afterDot = false;
-                        parts.add(getUnquotedIdentifier());
-                    }
-                    break;
-                default:
-                    seq.movePrevious();
-                    break main;
-            }
-        }
-        // Remove empty quoted identifiers, like in '"FOO".""."BAR"'.
-        // Actually, the example above would obviously be an invalid identifier,
-        // but safer and simpler to be forgiving.
-        for (Iterator<String> i = parts.iterator(); i.hasNext();) {
-            if (i.next().length() == 0) {
-                i.remove();
-            }
-        }
-        if (!parts.isEmpty()) {
-            return new QualIdent(parts);
-        }
-        return null;
-    }
-
-    private boolean nextToken() {
-        boolean move;
-        skip:
-        while (move = seq.moveNext()) {
-            switch (seq.token().id()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
-                default:
-                    break skip;
-            }
-        }
-        return move;
-    }
-
-    private void moveToState(State state) {
-        this.state = state;
-        DropContext context = state.getContext();
-        if (context != null) {
-            offset2Context.put(seq.offset() + seq.token().length(), context);
-        }
-    }
-
-    private String getUnquotedIdentifier() {
-        return quoter.unquote(seq.token().text().toString());
-    }
-
-    private enum State {
-
-        START(0, null),
-        DROP(1, DropContext.DROP),
-        TABLE(2, DropContext.TABLE);
-
-        private final int order;
-        private final DropContext context;
-
-        private State(int order, DropContext context) {
-            this.order = order;
-            this.context = context;
-        }
-
-        public boolean isAfter(State state) {
-            return this.order >= state.order;
-        }
-
-        public DropContext getContext() {
-            return context;
-        }
     }
 }
