@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -707,6 +708,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
     private IndexingController controller;
 
+    private Reference<FileObject> lastOwningSourceRootRef = null;
+    private URL lastOwningSourceRootUrl = null;
+    private final String lastOwningSourceRootCacheLock = new String("lastOwningSourceRootCacheLock"); //NOI18N
+
     private RepositoryUpdater () {
         // no-op
     }
@@ -853,13 +858,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (fo == null) {
             return null;
         }
-        List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
-        for (URL root : clone) {
-            FileObject rootFo = URLMapper.findFileObject(root);
-            if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
-                return root;
+        
+        synchronized (lastOwningSourceRootCacheLock) {
+            FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();
+            if (lastOwningSourceRootUrl != null && rootFo != null && FileUtil.isParentOf(rootFo, fo)) {
+                return lastOwningSourceRootUrl;
+            }
+
+            List<URL> clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
+            for (URL root : clone) {
+                rootFo = URLCache.getInstance().findFileObject(root);
+                if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
+                    lastOwningSourceRootRef = new WeakReference<FileObject>(rootFo);
+                    lastOwningSourceRootUrl = root;
+                    return root;
+                }
             }
         }
+
         return null;
     }
 
@@ -2649,6 +2665,46 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
     } // End of Controller class
+
+    private static final class URLCache {
+
+        public static synchronized URLCache getInstance() {
+            if (instance == null) {
+                instance = new URLCache();
+            }
+            return instance;
+        }
+
+        public FileObject findFileObject(URL url) {
+            synchronized (cache) {
+                Reference<FileObject> ref = cache.get(url);
+                FileObject f = ref == null ? null : ref.get();
+
+                try {
+                    if (f != null && f.isValid() && url.equals(f.getURL())) {
+                        return f;
+                    }
+                } catch (FileStateInvalidException fsie) {
+                    // ignore
+                }
+
+                f = URLMapper.findFileObject(url);
+                if (f != null && f.isValid()) {
+                    cache.put(url, new WeakReference<FileObject>(f));
+                }
+
+                return f;
+            }
+        }
+
+        private static URLCache instance = null;
+        private final Map<URL, Reference<FileObject>> cache = new WeakHashMap<URL, Reference<FileObject>>();
+
+        private URLCache() {
+
+        }
+
+    } // End of URLCache class
 
     // -----------------------------------------------------------------------
     // Methods for tests
