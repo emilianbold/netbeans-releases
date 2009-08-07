@@ -182,10 +182,15 @@ public class ScanProjectPerfTest extends NbTestCase {
                     StringTokenizer tokenizer = new StringTokenizer(message, " ");
                     int count = tokenizer.countTokens();
                     res.name = projectName + " source scan";
-                    for (int i = 0; i < count-2; i++) {
-                        tokenizer.nextToken();
+                    
+                    String token = "0";
+                    for (int i = 0; i < count; i++) {
+                        String next = tokenizer.nextToken();
+                        if (next.startsWith("ms")) {
+                            break;
+                        }
+                        token = next;
                     }
-                    String token = tokenizer.nextToken();
                     res.value = Long.parseLong(token);
                     res.unit = "ms";
                     res.runOrder = 0;

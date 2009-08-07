@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

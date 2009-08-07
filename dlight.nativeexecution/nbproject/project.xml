@@ -133,6 +133,7 @@
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.dlight</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
