@@ -244,7 +244,7 @@ public class Action {
                 this.systemActionClass = null;
             }
         }            
-        this.keystrokes = keystrokes;
+        this.keystrokes = keystrokes.clone();
     }
 
     
