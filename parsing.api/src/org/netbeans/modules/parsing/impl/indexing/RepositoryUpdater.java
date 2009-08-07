@@ -253,10 +253,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (files.size() > 0) {
-                flw = new FileListWork(rootUrl, files, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
+                flw = new FileListWork(scannedRoots2Dependencies, rootUrl, files, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
             }
         } else {
-            flw = new FileListWork(rootUrl, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
+            flw = new FileListWork(scannedRoots2Dependencies, rootUrl, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
         }
 
         if (flw != null) {
@@ -367,7 +367,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root);
                 ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
                 if (entry == null || entry.includes(fo)) {
-                    scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot), false);
+                    scheduleWork(new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot), false);
                     processed = true;
                 }
             } else {
@@ -404,7 +404,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                 ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
                 if (entry == null || entry.includes(fo)) {
-                    scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot), false);
+                    scheduleWork(new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot), false);
                     processed = true;
                 }
             } else {
@@ -484,7 +484,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     // delaying of this task was just copied from the old java.source RepositoryUpdater
                     RequestProcessor.getDefault().create(new Runnable() {
                         public void run() {
-                            scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot), false);
+                            scheduleWork(new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot), false);
                         }
                     }).schedule(FILE_LOCKS_DELAY);
                 }
@@ -610,7 +610,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, Collections.singleton(f), false, openedInEditor, true, sourcesForBinaryRoots.contains(root));
+                                job = new FileListWork(scannedRoots2Dependencies, root, Collections.singleton(f), false, openedInEditor, true, sourcesForBinaryRoots.contains(root));
                                 jobs.put(root, job);
                             } else {
                                 // XXX: strictly speaking we should set 'checkEditor' for each file separately
@@ -689,6 +689,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
     private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
+    /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
@@ -1462,17 +1463,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Collection<FileObject> files = new HashSet<FileObject>();
         private final boolean forceRefresh;
         private final boolean sourceForBinaryRoot;
+        private final Map<URL, List<URL>> scannedRoots2Depencencies;
 
-        public FileListWork (URL root, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
+        public FileListWork (Map<URL, List<URL>> scannedRoots2Depencencies, URL root, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
             super(followUpJob, checkEditor, true);
 
             assert root != null;
             this.root = root;
             this.forceRefresh = forceRefresh;
             this.sourceForBinaryRoot = sourceForBinaryRoot;
+            this.scannedRoots2Depencencies = scannedRoots2Depencencies;
         }
 
-        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
+        public FileListWork (Map<URL, List<URL>> scannedRoots2Depencencies, URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
             super(followUpJob, checkEditor, followUpJob);
             
             assert root != null;
@@ -1481,6 +1484,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             this.files.addAll(files);
             this.forceRefresh = forceRefresh;
             this.sourceForBinaryRoot = sourceForBinaryRoot;
+            this.scannedRoots2Depencencies = scannedRoots2Depencencies;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("FileListWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", file=" + files); //NOI18N
             }
@@ -1519,6 +1523,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                         d.putProperty(PROP_LAST_DIRTY_VERSION, null);
                                     }
                                 }
+                            }
+
+                            //If the root is unknown ass it into scannedRoots2Depencencies to allow listening on changes under this root
+                            if (!scannedRoots2Depencencies.containsKey(root)) {
+                                scannedRoots2Depencencies.put(root, EMPTY_DEPS);
                             }
                         }
                     }
@@ -1890,9 +1899,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Set<String> libraryIds,
                 Set<String> binaryLibraryIds)
         {
-            if (ctx.useInitialState && ctx.initialRoots2Deps.containsKey(rootURL)) {
-                ctx.oldRoots.remove(rootURL);
-                return;
+            if (ctx.useInitialState) {
+                final List<URL> deps = ctx.initialRoots2Deps.get(rootURL);
+                if (deps != null && deps != EMPTY_DEPS) {
+                    ctx.oldRoots.remove(rootURL);
+                    return;
+                }
             }
             if (ctx.newRoots2Deps.containsKey(rootURL)) {
                 return;
@@ -2662,6 +2674,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     //Unit test method
     /* test */ Set<URL> getScannedSources () {
         return this.scannedRoots2Dependencies.keySet();
+    }
+
+    //Unit test method
+    /* test */ Map<URL,List<URL>> getScannedRoots2Dependencies() {
+        return this.scannedRoots2Dependencies;
     }
 
     //Unit test method
