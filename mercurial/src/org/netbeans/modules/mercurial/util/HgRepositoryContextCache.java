@@ -54,17 +54,17 @@ import org.netbeans.modules.versioning.spi.VCSContext;
  * @author John Rice
  */
 public class HgRepositoryContextCache {
-    private static boolean hasHistory;
-    private static String pushDefault;
-    private static String pullDefault;
-    private static File root;
+    private boolean hasHistory;
+    private String pushDefault;
+    private String pullDefault;
+    private File root;
 
-    private static VCSContext rootCtx;
-    private static Set<File> historyCtxRootFiles;
-    private static Set<File> pushCtxRootFiles;
-    private static Set<File> pullCtxRootFiles;
+    private VCSContext rootCtx;
+    private Set<File> historyCtxRootFiles;
+    private Set<File> pushCtxRootFiles;
+    private Set<File> pullCtxRootFiles;
 
-    private static Map<File, DefaultPaths> rootToDefaultPaths;
+    private Map<File, DefaultPaths> rootToDefaultPaths;
 
     private static HgRepositoryContextCache instance;
 

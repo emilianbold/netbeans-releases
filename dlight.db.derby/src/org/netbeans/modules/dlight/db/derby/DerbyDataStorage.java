@@ -257,7 +257,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
-    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
         return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 

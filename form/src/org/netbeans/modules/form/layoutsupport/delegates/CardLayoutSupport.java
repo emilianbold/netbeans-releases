@@ -42,8 +42,6 @@
 package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
-import java.beans.*;
-import java.util.*;
 
 import org.openide.nodes.Node;
 

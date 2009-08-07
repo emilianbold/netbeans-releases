@@ -39,17 +39,38 @@
 
 package org.netbeans.modules.cnd.gizmo;
 
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
+
 /**
  *
  * @author mt154047
  */
-public final class GizmoServiceInfo {
-    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
-    public static final String PLATFORM = "gizmo.platform";//NOI18N
+public abstract class GizmoServiceInfoAccessor {
+ private static volatile GizmoServiceInfoAccessor DEFAULT;
 
-    public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    public static GizmoServiceInfoAccessor getDefault() {
+        GizmoServiceInfoAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(GizmoServiceInfo.class.getName(), true,
+                    GizmoServiceInfo.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
+
+    public static void setDefault(GizmoServiceInfoAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public GizmoServiceInfoAccessor() {
+    }
+
+    public abstract String getGIZMO_RUN();
 }

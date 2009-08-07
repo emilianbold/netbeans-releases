@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <description>Builds and tests the project org.netbeans.modules.visualweb.designtime.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="init" depends="library-init,projectized.init"/>
+    <target name="init" depends="projectized.init,library-init"/>
     
     <!-- Build the J2SE project JAR on which this library wrapper module depends. -->
     <target name="library-init">

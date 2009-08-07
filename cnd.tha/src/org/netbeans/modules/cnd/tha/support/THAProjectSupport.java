@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gizmo.tha;
+package org.netbeans.modules.cnd.tha.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
