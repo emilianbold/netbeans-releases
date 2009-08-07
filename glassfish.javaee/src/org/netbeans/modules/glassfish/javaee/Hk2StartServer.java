@@ -86,16 +86,11 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     public Hk2StartServer(DeploymentManager jdm) {
         if (!(jdm instanceof Hk2DeploymentManager)) {
-            throw new IllegalArgumentException("Only GlassFish v3 Prelude is supported"); //NOI18N
+            throw new IllegalArgumentException("Only GlassFish v3 is supported"); //NOI18N
         }
         this.dm = (Hk2DeploymentManager) jdm;
         this.ip = dm.getProperties().getInstanceProperties();
         this.serverName = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
-    }
-    
-    @Override
-    public boolean supportsStartDebugging(Target target) {
-        return true;
     }
     
     public InstanceProperties getInstanceProperties() {
@@ -107,29 +102,34 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
+    public boolean supportsStartDeploymentManager() {
+        GlassfishModule commonSupport = getCommonServerSupport();
+        return commonSupport != null && !commonSupport.isRemote();
+    }
+
     // start server
     public ProgressObject startDeploymentManager() {
-        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
-                fireHandleProgressEvent(null,new Hk2DeploymentStatus(
-                CommandType.START, StateType.FAILED, ActionType.EXECUTE, 
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName))); // NOI18N
-                return this; //we failed to start the server.
-        }
-
-        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                CommandType.START, StateType.RUNNING, ActionType.EXECUTE, 
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)
-                )); // NOI18N
-        GlassfishModule commonSupport = getCommonServerSupport();
-        if(commonSupport != null) {
-            commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
-            commonSupport.startServer(new OperationStateListener() {        
-                public void operationStateChanged(OperationState newState, String message) {
-                    fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                            CommandType.START, translateState(newState), ActionType.EXECUTE, 
-                            message));
-                }
-            });
+        if(ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+            fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                    CommandType.START, StateType.FAILED, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName) // NOI18N
+                    ));
+        } else {
+            fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                    CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName) // NOI18N
+                    ));
+            GlassfishModule commonSupport = getCommonServerSupport();
+            if(commonSupport != null && !commonSupport.isRemote()) {
+                commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
+                commonSupport.startServer(new OperationStateListener() {
+                    public void operationStateChanged(OperationState newState, String message) {
+                        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                                CommandType.START, translateState(newState), ActionType.EXECUTE,
+                                message));
+                    }
+                });
+            }
         }
         return this;
     }
@@ -137,8 +137,8 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     public ProgressObject stopDeploymentManager() {
         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                 CommandType.START, StateType.RUNNING, ActionType.EXECUTE, 
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)
-                )); // NOI18N
+                NbBundle.getMessage(Hk2StartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName) // NOI18N
+                ));
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
             commonSupport.stopServer(new OperationStateListener() {
@@ -166,46 +166,52 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         return StateType.FAILED;
     }
     
+    @Override
+    public boolean supportsStartDebugging(Target target) {
+        return supportsStartDeploymentManager();
+    }
+
     public ProgressObject startDebugging(Target target) {
         if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
-                fireHandleProgressEvent(null,new Hk2DeploymentStatus(
-                CommandType.START, StateType.FAILED, ActionType.EXECUTE, 
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName)));  // NOI18N
-                return this; //we failed to start the server.
-        }
-
-        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                CommandType.START, StateType.RUNNING, ActionType.EXECUTE, 
-                NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)
-                )); // NOI18N
-        GlassfishModule commonSupport = getCommonServerSupport();
-        if(commonSupport != null) {
-            commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
-            commonSupport.startServer(new OperationStateListener() {
-                public void operationStateChanged(OperationState newState, String message) {
-                    fireHandleProgressEvent(null, new Hk2DeploymentStatus(
-                            CommandType.START, translateState(newState), ActionType.EXECUTE, 
-                            message));
-                }
-            });
+            fireHandleProgressEvent(null,new Hk2DeploymentStatus(
+                    CommandType.START, StateType.FAILED, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName) // NOI18N
+                    ));
+        } else {
+            fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                    CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName) // NOI18N
+                    ));
+            GlassfishModule commonSupport = getCommonServerSupport();
+            if(commonSupport != null && !commonSupport.isRemote()) {
+                commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
+                commonSupport.startServer(new OperationStateListener() {
+                    public void operationStateChanged(OperationState newState, String message) {
+                        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                                CommandType.START, translateState(newState), ActionType.EXECUTE,
+                                message));
+                    }
+                });
+            }
         }
         return this;
     }
     
     public boolean isDebuggable(Target target) {
         GlassfishModule commonSupport = getCommonServerSupport();
-        if (null == commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
-            // for now we assume a remote server is started in debug mode... the debugger won't connect
-            // if it isn't... but this help prevent the IDE from attempting to start something that cannot be started.
-            return true;
-        }
-        if(commonSupport != null) {
-            if(!GlassfishModule.DEBUG_MODE.equals(commonSupport.getInstanceProperties().get(GlassfishModule.JVM_MODE))) {
-                return false;
-            }
-        }
         if (!isRunning()) {
             return false;
+        }
+        if(commonSupport != null) {
+            if(commonSupport.isRemote()) {
+                // Assume a remote server is started in debug mode. The debugger
+                // won't connect if it isn't, but this prevents the IDE from
+                // attempting to start something that cannot be started.
+                return true;
+            } else if(!GlassfishModule.DEBUG_MODE.equals(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.JVM_MODE))) {
+                return false;
+            }
         }
         return true;
     }
@@ -224,10 +230,11 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         return retVal;
     }
     
-    public boolean supportsStartDeploymentManager() {
-        return true;
+    @Override
+    public boolean needsRestart(Target target) {
+         return false;
     }
-    
+
     public boolean needsStartForTargetList() {
         return false;
     }
@@ -239,7 +246,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     public boolean needsStartForAdminConfig() {
         return false;
     }
-    
+
     public boolean isRunning() {
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
