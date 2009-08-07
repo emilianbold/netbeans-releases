@@ -477,7 +477,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
             public void actionPerformed(ActionEvent e) {
                 Profile j2eeProfile = Profile.fromPropertiesString(project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
                 if (j2eeProfile == null) {
-                    j2eeProfile = Profile.JAVA_EE_5;
+                    j2eeProfile = Profile.JAVA_EE_6_FULL;
                     Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+AppClientProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeProfile); // NOI18N

@@ -338,8 +338,17 @@ public final class AppClientProvider extends J2eeModuleProvider
             Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
         }
         if (version == null) {
-            // XXX should return a version based on the Java EE version
-            version = AppClient.VERSION_5_0;
+            Profile p = Profile.fromPropertiesString(project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
+            if (p == null) {
+                p = Profile.JAVA_EE_6_FULL;
+            }
+            if (Profile.JAVA_EE_5.equals(p)) {
+                version = AppClient.VERSION_5_0;
+            } else if (Profile.J2EE_14.equals(p)) {
+                version = AppClient.VERSION_1_4;
+            } else {
+                version = AppClient.VERSION_6_0;
+            }
         }
         return version;
     }
