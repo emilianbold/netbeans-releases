@@ -93,12 +93,12 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {
 
-                public void handleProgressEvent(ProgressEvent arg0) {
+                public void handleProgressEvent(ProgressEvent event) {
                     // todo -- enable when this is ready
-                    if (arg0.getDeploymentStatus().isCompleted()) {
+                    if (event.getDeploymentStatus().isCompleted()) {
                         commonSupport.restartServer(startProgress);
                     } else {
-                        startProgress.fireHandleProgressEvent(arg0.getDeploymentStatus());
+                        startProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
                 }
             });

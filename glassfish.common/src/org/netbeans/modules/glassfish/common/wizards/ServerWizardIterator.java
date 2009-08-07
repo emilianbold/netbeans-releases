@@ -231,7 +231,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
     
-    // !PW All servers local for now...
     private int httpPort = -1; // GlassfishInstance.DEFAULT_HTTP_PORT;
     private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
     private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
