@@ -169,7 +169,7 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
             fail("Parser is not expected to call this method");
             return null;
         }
