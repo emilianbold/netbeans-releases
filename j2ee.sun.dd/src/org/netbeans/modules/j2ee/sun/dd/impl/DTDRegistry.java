@@ -43,15 +43,9 @@
 
 package org.netbeans.modules.j2ee.sun.dd.impl;
 
-import java.util.Hashtable;
-
 public final class DTDRegistry {
 
      public static final String Package = "com.sun.enterprise.deployment.xml";
-
-     public static final String DTD_LOCATION= System.getProperty("com.sun.aas.installRoot") + java.io.File.separator + "lib" + java.io.File.separator + "dtds";
-
-     public static final String SCHEMA_LOCATION=System.getProperty("com.sun.aas.installRoot") + java.io.File.separator + "lib" + java.io.File.separator + "schemas";
 
      // Standard DTDs
     
