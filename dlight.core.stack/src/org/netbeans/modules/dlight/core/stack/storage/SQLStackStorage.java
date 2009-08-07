@@ -507,22 +507,19 @@ public final class SQLStackStorage {
             rs.close();
 
             //get leaf_id's
-            Iterator<Integer> iterator = idToTime.keySet().iterator();
-            while (iterator.hasNext()){
-                int thread_id = iterator.next();
-                long t = idToTime.get(thread_id);
-                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id=" + thread_id + " AND time_stamp=" + t); // NOI18N
+            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()){
+                int thread_id = entry.getKey();
+                long t = entry.getValue();
+                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id= ? AND time_stamp = ?"); // NOI18N
+                statement.setInt(1, thread_id);
+                statement.setLong(2, t);
                 ResultSet set = statement.executeQuery();
-                if (set.next()){
+                if (set.next()) {
                     int stackID  = set.getInt(1);
                     result.addStack(new SnapshotImpl(this, thread_id, stackID));
-                    break;
                 }
                 set.close();
-
             }
-            // Next, get stacks from database having tstamps and thread ids..
-            
 
         } catch (SQLException ex) {
             System.err.println("ex: " + ex.getSQLState());  // NOI18N
