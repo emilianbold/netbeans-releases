@@ -137,8 +137,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
-        if (leftFileRevision != null) leftFileRevision.trim();
-        if (rightFileRevision != null) rightFileRevision.trim();
+        if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
+        if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
         if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
