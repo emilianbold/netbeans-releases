@@ -194,10 +194,10 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
-            IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
-            if (emptyContent != null) {
-                indicators = emptyContent.getEmptyContent();
-            }
+//            IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
+//            if (emptyContent != null) {
+//                indicators = emptyContent.getEmptyContent();
+//            }
 
         }
         Collections.sort(indicators, new Comparator<Indicator>() {
@@ -324,7 +324,7 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
     @Override
     public int getPersistenceType() {
         if (!dock) {
-            return TopComponent.PERSISTENCE_ALWAYS;
+            return TopComponent.PERSISTENCE_NEVER;
         }
         return TopComponent.PERSISTENCE_NEVER;
     }
