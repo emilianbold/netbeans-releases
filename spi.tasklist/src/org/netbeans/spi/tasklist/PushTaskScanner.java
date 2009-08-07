@@ -146,6 +146,7 @@ public abstract class PushTaskScanner {
         /**
          * Add/remove Tasks that aren't associated with a particular resource.
          * @param tasks Tasks associated with this TaskScanner or an empty list to remove previously provided Tasks.
+         * @since 1.6
          */
         public void setTasks( List<? extends Task> tasks ) {
             tm.setTasks( scanner, tasks );
