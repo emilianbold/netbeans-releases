@@ -216,6 +216,19 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     }
 
     @Override
+    public String get(Object key) {
+        if (!(key instanceof String)) {
+            return null;
+        }
+        for (Item item : items) {
+            if (key.equals(item.getKey())) {
+                return item.getValue();
+            }
+        }
+        return null;
+    }
+
+    @Override
     public String put(String key, String value) {
         Parameters.notNull("key", key);
         Parameters.notNull(key, value);
@@ -518,7 +531,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
 
         public void setValue(List<String> value) {
-            StringBuffer val = new StringBuffer();
+            StringBuilder val = new StringBuilder();
             List<String> l = new ArrayList<String>();
             if (!value.isEmpty()) {
                 l.add(encode(key, true) + "=\\"); // NOI18N
@@ -610,7 +623,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         private static String decode(String input) {
             char ch;
             int len = input.length();
-            StringBuffer output = new StringBuffer(len);
+            StringBuilder output = new StringBuilder(len);
             for (int x=0; x<len; x++) {
                 ch = input.charAt(x);
                 if (ch != '\\') {
@@ -651,7 +664,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
         private static String encode(String input, boolean escapeSpace) {
             int len = input.length();
-            StringBuffer output = new StringBuffer(len*2);
+            StringBuilder output = new StringBuilder(len*2);
 
             for(int x=0; x<len; x++) {
                 char ch = input.charAt(x);
@@ -696,7 +709,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         private static String decodeUnicode(String input) {
             char ch;
             int len = input.length();
-            StringBuffer output = new StringBuffer(len);
+            StringBuilder output = new StringBuilder(len);
             for (int x = 0; x < len; x++) {
                 ch = input.charAt(x);
                 if (ch != '\\') {
@@ -733,7 +746,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
         private static String encodeUnicode(String input) {
             int len = input.length();
-            StringBuffer output = new StringBuffer(len * 2);
+            StringBuilder output = new StringBuilder(len * 2);
             for (int x = 0; x < len; x++) {
                 char ch = input.charAt(x);
                 if ((ch < 0x0020) || (ch > 0x007e)) {
