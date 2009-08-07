@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
@@ -81,6 +83,11 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -122,6 +129,12 @@ public class ChatPanel extends javax.swing.JPanel {
     };
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
+
+    private static final String ISSUE_REPORT_STRING = "(issue|bug) #?([A-Z_]+-)*([0-9]+)"; //NOI18N
+    /**
+     * Pattern for matching issue references in the form "issue 123", "issue #123", "bug 123" and "bug #123"
+     */
+    private static final Pattern ISSUE_REPORT = Pattern.compile(ISSUE_REPORT_STRING, Pattern.CASE_INSENSITIVE);
 
     private static final String STACK_TRACE_STRING =
             "(|catch.)at.((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)";//NOI18N
@@ -180,6 +193,35 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private static final Pattern RESOURCES =
             Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
+
+    private void selectIssueReport(Matcher m) {
+        String issueNumber = m.group(3);
+        KenaiProject proj = null;
+        try {
+            proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+        } catch (KenaiException ex) {
+            // no project with given name was found or 1to1 chat -> return
+            return;
+        }
+        KenaiFeature[] trackers = null;
+        try {
+            trackers = proj.getFeatures(Type.ISSUES);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (trackers.length == 0) { // No issue trackers found for the project
+            return;
+        }
+        if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) { // open BZ issue in the IDE
+            KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+        } else { //... and open Jira issues in the browser
+            try {
+                URLDisplayer.getDefault().showURL(new URL(trackers[0].getWebLocation() + "-" + issueNumber));
+            } catch (MalformedURLException ex) {
+                //
+            }
+        }
+    }
 
     private void selectStackTrace(Matcher m) {
         String pkg = m.group(2);
@@ -342,6 +384,11 @@ public class ChatPanel extends javax.swing.JPanel {
                                     m=ABSOLUTE_RESOURCE.matcher(link);
                                     if (m.matches()) {
                                         selectAbsoluteResource(m);
+                                    } else {
+                                        m = ISSUE_REPORT.matcher(link);
+                                        if (m.matches()) {
+                                            selectIssueReport(m);
+                                        }
                                     }
                                 }
                             }
@@ -423,6 +470,23 @@ public class ChatPanel extends javax.swing.JPanel {
         String result = body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
 
         result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");  //NOI18N
+
+        KenaiProject proj = null; // This try/catch block is just to determine if the project has some issue trackers
+        try {
+            proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+            KenaiFeature[] trackers = null;
+            try {
+                trackers = proj.getFeatures(Type.ISSUES);
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (trackers.length != 0) { // Issue trackers found, replace issue references
+                result = ISSUE_REPORT.matcher(result).replaceAll("<a href=\"$0\">$0</a>"); //NOI18N
+            }
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         return result.replaceAll("  ", " &nbsp;"); //NOI18N
     }
 

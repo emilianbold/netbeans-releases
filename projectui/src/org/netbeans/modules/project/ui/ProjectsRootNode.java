@@ -457,7 +457,7 @@ public class ProjectsRootNode extends AbstractNode {
                 fsRefreshTask.schedule(DELAY);
             }
         };
-        private final RequestProcessor.Task fsRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        private final RequestProcessor.Task fsRefreshTask = Hacks.RP.create(new Runnable() {
             public void run() {
                 setProjectFiles();
             }
@@ -653,7 +653,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
+                task = Hacks.RP.create(this);
             }
 
             synchronized (privateLock) {
@@ -781,7 +781,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            RequestProcessor.getDefault().post(new Runnable () {
+            Hacks.RP.post(new Runnable () {
                 public void run() {
                     setProjectFiles();
                 }
