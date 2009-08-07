@@ -54,8 +54,6 @@ import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.xml.XMLUtil;
-import org.openide.actions.*;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 

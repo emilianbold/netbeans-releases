@@ -48,12 +48,9 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -66,8 +63,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  * Create action for mercurial: 
@@ -245,7 +240,6 @@ public class CreateAction extends ContextAction {
                 try {
                     File[] files = HgUtils.getProjectRootFiles(proj);
                     FileStatusCache cache = hg.getFileStatusCache();
-                    FileInformation fi = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, null, false);
 
                     for (int j = 0; j < files.length; j++) {
                         File rootFile = files[j];

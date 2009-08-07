@@ -53,7 +53,6 @@ import java.awt.Stroke;
 import java.util.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
 

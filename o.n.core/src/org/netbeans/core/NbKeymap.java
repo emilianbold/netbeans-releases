@@ -355,6 +355,9 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             String path = (String) f.getAttribute("originalFile");
             if (path != null) {
                 f = FileUtil.getConfigFile(path);
+                if (f == null) {
+                    return path; // #169887: some race condition with layer init?
+                }
             } else {
                 try {
                     DataObject d = DataObject.find(f);

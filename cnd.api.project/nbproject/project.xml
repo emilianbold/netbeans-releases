@@ -46,6 +46,7 @@
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>
+                <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
             </friend-packages>
         </data>

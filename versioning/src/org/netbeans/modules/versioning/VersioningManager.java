@@ -270,9 +270,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         for (VersioningSystem system : versioningSystems) {
             if (system != localHistory) {    // currently, local history is never an owner of a file
                 File topmost = system.getTopmostManagedAncestor(folder);
-                LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system != null ? system.getClass().getName() : null, topmost }) ;
+                LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
                 if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
-                    LOG.log(Level.FINE, " owner = {0}", new Object[] { system != null ? system.getClass().getName() : null }) ;
+                    LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
                     owner = system;
                     closestParent = topmost;
                 }
