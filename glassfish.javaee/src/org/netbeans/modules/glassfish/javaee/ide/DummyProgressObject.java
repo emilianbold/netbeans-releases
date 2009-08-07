@@ -74,7 +74,7 @@ public class DummyProgressObject implements ProgressObject {
         return moduleIDs.clone();
     }
 
-    public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
+    public ClientConfiguration getClientConfiguration(TargetModuleID tmid) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
