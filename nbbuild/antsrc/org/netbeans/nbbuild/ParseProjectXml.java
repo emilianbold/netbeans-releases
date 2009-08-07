@@ -831,8 +831,8 @@ public final class ParseProjectXml extends Task {
         Set<String> excludedModules = excludedModulesProp != null ?
             new HashSet<String>(Arrays.asList(excludedModulesProp.split(" *, *"))) :
             null;
-        for (Dep dep : deps) { // XXX should operative transitively if runtime
-            if (!dep.compile) { // XXX should be sensitive to runtime
+        for (Dep dep : deps) {
+            if (!runtime && !dep.compile) {
                 continue;
             }
             String cnb = dep.codenamebase;
@@ -867,7 +867,7 @@ public final class ParseProjectXml extends Task {
                 additions.addAll(Arrays.asList(entry.getClassPathExtensions()));
             }
             
-            if (!dep.impl && /* #71807 */ dep.run) {
+            if (!dep.impl && /* #71807 */ dep.run && !runtime) {
                 String friends = attr.getValue("OpenIDE-Module-Friends");
                 if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
                     throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
@@ -875,7 +875,7 @@ public final class ParseProjectXml extends Task {
                 String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
                 if ("-".equals(pubpkgs)) {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
-                } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
+                } else if (pubpkgs != null && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
                     additions.clear();
                     additions.add(splitJar);
