@@ -1570,7 +1570,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (operator.flushStaledEvents()) {
             return ;
         }
-        setState (STATE_RUNNING);
+        PropertyChangeEvent stateChangeEvent;
         //notifyToBeResumedAll();
         VirtualMachine vm;
         synchronized (virtualMachineLock) {
@@ -1581,6 +1581,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             List<JPDAThread> allThreads = getAllThreads();
             accessLock.writeLock().lock();
             logger.finer("Debugger WRITE lock taken.");
+            stateChangeEvent = setStateNoFire(STATE_RUNNING);
             // We must resume only threads which are regularly suspended.
             // Otherwise we may unexpectedly resume threads which just hit an event!
             
@@ -1630,6 +1631,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } finally {
                 accessLock.writeLock().unlock();
                 logger.finer("Debugger WRITE lock released.");
+                if (stateChangeEvent != null) {
+                    firePropertyChange(stateChangeEvent);
+                }
                 for (JPDAThreadImpl t : threadsToResume) {
                     try {
                         t.fireAfterResume();
