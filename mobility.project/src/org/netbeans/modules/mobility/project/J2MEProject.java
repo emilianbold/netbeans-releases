@@ -64,11 +64,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1222,22 +1220,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     @Override
     public String toString() {
         //Better logging for issue 153666
-        return super.toString() + "[root=" + helper.getProjectDirectory().getPath() + //NOI18N
-                " props="+ toString(helper.getProperties( //NOI18N
-                AntProjectHelper.PROJECT_PROPERTIES_PATH)) + ']'; //NOI18N
+        return super.toString() + "[root=" + helper.getProjectDirectory().getPath() + ']'; //NOI18N
     }
 
-    private static String toString (EditableProperties props) {
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Entry<String,String>> i=props.entrySet().iterator(); i.hasNext();) {
-            Entry<String,String> e = i.next();
-            sb.append (e.getKey());
-            sb.append('='); //NOI18N
-            sb.append(e.getValue());
-            if (i.hasNext()) {
-                sb.append(','); //NOI18N
-            }
-        }
-        return sb.toString();
-    }
 }

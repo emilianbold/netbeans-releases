@@ -77,7 +77,7 @@ public class DebugJavaFileAction extends Action {
         this.menuPath = runItem+"|"+
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
                                         "LBL_DebugSingleAction_Name",
-                                        new Object[] {new Integer(1), node.getText()});
+                                        new Object[] {Integer.valueOf(1), node.getText()});
         super.performMenu(node);
     }
 
@@ -89,7 +89,7 @@ public class DebugJavaFileAction extends Action {
         this.popupPath =
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
                                         "LBL_DebugSingleAction_Name",
-                                        new Object[] {new Integer(1), node.getText()});
+                                        new Object[] {Integer.valueOf(1), node.getText()});
         super.performPopup(node);
     }
 }
