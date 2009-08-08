@@ -59,6 +59,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2DeploymentStatus;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
+import org.netbeans.modules.glassfish.javaee.ui.DebugPortQuery;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
@@ -67,6 +68,9 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -223,11 +227,30 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     public ServerDebugInfo getDebugInfo(Target target) {
         String debugPort = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
         ServerDebugInfo retVal = null;
+        if(debugPort == null || debugPort.length() == 0) {
+            debugPort = queryDebugPort();
+        }
         if (null != debugPort && !"".equals(debugPort)) {
             retVal = new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
                 Integer.parseInt(debugPort));
         }
         return retVal;
+    }
+
+    private String queryDebugPort() {
+        String debugPort = null;
+        String name = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DISPLAY_NAME_ATTR);
+        DebugPortQuery debugPortQuery = new DebugPortQuery();
+        DialogDescriptor desc = new DialogDescriptor(debugPortQuery, 
+                NbBundle.getMessage(Hk2StartServer.class, "TITLE_QueryDebugPort", name)); // NOI18N
+        if(DialogDisplayer.getDefault().notify(desc) == NotifyDescriptor.OK_OPTION) {
+            debugPort = debugPortQuery.getDebugPort();
+            if(debugPortQuery.shouldPersist()) {
+                getCommonServerSupport().setEnvironmentProperty(
+                        GlassfishModule.DEBUG_PORT, debugPort, true);
+            }
+        }
+        return debugPort;
     }
     
     @Override
