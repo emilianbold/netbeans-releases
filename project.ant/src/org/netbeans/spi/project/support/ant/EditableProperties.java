@@ -129,6 +129,11 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     }
 
     @Override
+    public String get(Object key) {
+        return key instanceof String ? delegate.get((String) key) : null;
+    }
+
+    @Override
     public String put(String key, String value) {
         return delegate.put(key, value);
     }

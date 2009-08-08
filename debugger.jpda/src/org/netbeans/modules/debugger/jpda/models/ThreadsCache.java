@@ -59,6 +59,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -83,6 +85,8 @@ public class ThreadsCache implements Executor {
     public static final String PROP_THREAD_STARTED = "threadStarted";   // NOI18N
     public static final String PROP_THREAD_DIED = "threadDied";         // NOI18N
     public static final String PROP_GROUP_ADDED = "groupAdded";         // NOI18N
+
+    private static final Logger logger = Logger.getLogger(ThreadsCache.class.getName());
     
     private VirtualMachine vm;
     private JPDADebuggerImpl debugger;
@@ -351,6 +355,152 @@ public class ThreadsCache implements Executor {
     }
 
     public void removed(EventRequest eventRequest) {
+    }
+
+    /**
+     * Check if the given thread is in the threads cache and add it if it's not.
+     * This should be called when we have a suspicion that we did not receive
+     * some events or that thread IDs changed (see e.g.: http://bugs.sun.com/view_bug.do?bug_id=6862295).
+     */
+    public void assureThreadIsCached(ThreadReference tref) {
+        boolean contains;
+        synchronized (this) {
+            contains = allThreads.contains(tref);
+        }
+        if (!contains) {
+            logger.info("Must SYNCHRONIZE ThreadsCache, did not found "+tref);
+            sync();
+        }
+    }
+
+    /**
+     * Synchronize the cached threads with VM threads.
+     * This should be called when we have a suspicion that we did not receive
+     * some events or that thread IDs changed (see e.g.: http://bugs.sun.com/view_bug.do?bug_id=6862295).
+     */
+    private void sync() {
+        List<ThreadReference> newThreads;
+        List<ThreadReference> oldThreads;
+        List<ThreadGroupReference> addedGroups = null;
+        synchronized (this) {
+            // Synchronize soon so that we do not add back threads removed from events,
+            // or remove threads added from events
+            List<ThreadReference> allThreadsNew;
+            try {
+                allThreadsNew = new ArrayList<ThreadReference>(VirtualMachineWrapper.allThreads(vm));
+            } catch (InternalExceptionWrapper iex) {
+                return ;
+            } catch (VMDisconnectedExceptionWrapper vmdex) {
+                return ;
+            }
+
+            newThreads = new ArrayList<ThreadReference>(allThreadsNew);
+            newThreads.removeAll(allThreads);
+            oldThreads = new ArrayList<ThreadReference>(allThreads);
+            oldThreads.removeAll(allThreadsNew);
+
+            // Add new threads:
+            for (ThreadReference thread : newThreads) {
+                ThreadGroupReference group;
+                try {
+                    group = ThreadReferenceWrapper.threadGroup(thread);
+                } catch (InternalExceptionWrapper ex) {
+                    continue;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    continue;
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    continue;
+                }
+                if (group != null) {
+                    if (addedGroups == null) {
+                        addedGroups = addGroups(group);
+                    } else {
+                        addedGroups.addAll(addGroups(group));
+                    }
+                }
+                List<ThreadReference> threads = threadMap.get(group);
+                if (!threads.contains(thread)) { // could be added by init()
+                    threads.add(thread);
+                }
+            }
+            allThreads.addAll(newThreads);
+
+            // Remove old threads:
+            for (ThreadReference thread : oldThreads) {
+                ThreadGroupReference group;
+                try {
+                    group = ThreadReferenceWrapper.threadGroup(thread);
+                } catch (InternalExceptionWrapper ex) {
+                    group = null;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    group = null;
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    group = null;
+                }
+                List<ThreadReference> threads;
+                if (group != null) {
+                    threads = threadMap.get(group);
+                } else {
+                    threads = null;
+                    for (List<ThreadReference> testThreads : threadMap.values()) {
+                        if (testThreads.contains(thread)) {
+                            threads = testThreads;
+                        }
+                    }
+                }
+                if (threads != null) {
+                    threads.remove(thread);
+                }
+            }
+            allThreads.removeAll(oldThreads);
+        } // End synchronized
+
+        synchronized (canFireChanges) {
+            if (!canFireChanges[0]) {
+                try {
+                    canFireChanges.wait();
+                } catch (InterruptedException ex) {}
+            }
+        }
+        if (logger.isLoggable(Level.CONFIG)) {
+            logger.config("SYNCHRONIZE of ThreadsCache discovered new threads: "+threadsListing(newThreads));
+            logger.config("                      and removed obsolete threads: "+threadsListing(oldThreads));
+        }
+        if (addedGroups != null) {
+            for (ThreadGroupReference g : addedGroups) {
+                pcs.firePropertyChange(PROP_GROUP_ADDED, null, g);
+            }
+        }
+        for (ThreadReference thread : newThreads) {
+            pcs.firePropertyChange(PROP_THREAD_STARTED, null, thread);
+        }
+        for (ThreadReference thread : oldThreads) {
+            pcs.firePropertyChange(PROP_THREAD_DIED, thread, null);
+        }
+    }
+
+    private static String threadsListing(List<ThreadReference> threads) {
+        StringBuilder nt = new StringBuilder("[\n");
+        for (ThreadReference t : threads) {
+            String s;
+            try {
+                s = t.toString();
+            } catch (Exception ex) {
+                s = ex.toString();
+            }
+            nt.append(s);
+            nt.append(",\n");
+        }
+        int l = nt.length();
+        if (l > 1) {
+            nt.delete(l - 2, l);
+        }
+        nt.append(']');
+        return nt.toString();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

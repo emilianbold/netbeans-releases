@@ -324,7 +324,7 @@ public class OutputTabOperator extends JComponentOperator {
                     }
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[] {lineStart, new Integer(lineEnd.intValue()-lineStart.intValue())}).toString();
+                    return getTextMethod.invoke(document, new Object[] {lineStart, Integer.valueOf(lineEnd.intValue()-lineStart.intValue())}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
