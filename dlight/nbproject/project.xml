@@ -97,6 +97,7 @@
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.threads</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
+                <friend>org.netbeans.modules.dlight.toolsui</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.dlight.api.collector</package>
