@@ -83,7 +83,7 @@ public final class DLightConfigurationManager {
     return null;
   }
   
-  List<DLightConfiguration> getDLightConfigurations(){
+  public List<DLightConfiguration> getDLightConfigurations(){
     List<DLightConfiguration> result = new ArrayList<DLightConfiguration>();
     FileObject configurationsFolder = getToolsFSRoot();
 
