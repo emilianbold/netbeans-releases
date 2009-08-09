@@ -534,11 +534,6 @@ public final class JavaSource {
         }
     }
 
-    @PatchedPublic
-    private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
-        final Task<CompilationController> _task = task;
-        this.runUserActionTask (_task, shared);
-    }
     
     
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
@@ -626,11 +621,6 @@ public final class JavaSource {
         }
     }
 
-    @PatchedPublic
-    private Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
-        final Task<CompilationController> _task = task;
-        return this.runWhenScanFinished (_task, shared);
-    }
        
     /** Runs a task which permits for modifying the sources.
      * Call to this method will cancel processing of all the phase completion tasks until
@@ -704,11 +694,6 @@ public final class JavaSource {
         }        
     }
 
-    @PatchedPublic
-    private ModificationResult runModificationTask(CancellableTask<WorkingCopy> task) throws IOException { 
-        final Task<WorkingCopy> _task = task;
-        return this.runModificationTask (_task);
-    }
     /**
      * Returns the classpaths ({@link ClasspathInfo}) used by this
      * {@link JavaSource}
