@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.cnd.debugger.common;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -75,8 +75,8 @@ public class EditorContextBridge {
     
     public static EditorContext getContext() {
         if (context == null) {
-            List l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
-            context = (EditorContext) l.get(0);
+            List<? extends EditorContext> l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
+            context = l.get(0);
             int i, k = l.size();
             for (i = 1; i < k; i++) {
                 context = new CompoundContextProvider((EditorContext) l.get(i), context);
@@ -115,28 +115,23 @@ public class EditorContextBridge {
         }
 	return false;
     }
-    
-    public static boolean showDis(CallStackFrame csf) {
-        Disassembly dis = Disassembly.getCurrent();
-        if (dis == null) {
-            return false;
+
+    public static DisassemblyService getCurrentDisassemblyService() {
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            return null;
         }
-        int line = dis.getAddressLine(csf.getAddr());
-        if (line != -1) {
-            FileObject fo = Disassembly.getFileObject();
-            if (fo != null) {
-                try {
-                    return getContext().showSource(DataObject.find(fo), line, null);
-                } catch (DataObjectNotFoundException dex) {
-                    // do nothing
-                }
-            }
-        } else {
-            Disassembly.open();
+        return currentEngine.lookupFirst(null, DisassemblyService.class);
+    }
+
+    public static boolean showDis(CallStackFrame csf) {
+        DisassemblyService disService = getCurrentDisassemblyService();
+        if (disService != null) {
+            return disService.showAddress(csf.getAddr());
         }
         return false;
     }
-    
+
     public static String getUrl(File file) {
         try {
             file = file.getCanonicalFile();
@@ -177,23 +172,6 @@ public class EditorContextBridge {
     /**
      * Adds annotation to given url on given line.
      *
-     * @param url a url of source annotation should be set into
-     * @param lineNumber a number of line annotation should be set into
-     * @param annotationType a type of annotation to be set
-     *
-     * @return annotation
-     */    
-    public static Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
-        return getContext().annotate(url, lineNumber, annotationType, timeStamp);
-    }
-    
-    public static Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
-        return getContext().annotate(dobj, lineNumber, annotationType, timeStamp);
-    }
-
-    /**
-     * Adds annotation to given url on given line.
-     *
      * @param csf The current CallStackFrame
      * @return annotation
      */    
@@ -216,24 +194,13 @@ public class EditorContextBridge {
     }
     
     public static Object annotateDis(CallStackFrame csf, String annotationType) {
-        Disassembly dis = Disassembly.getCurrent();
-        if (dis == null) {
-            return null;
-        }
-        int line = dis.getAddressLine(csf.getAddr());
-        if (line != -1) {
-            FileObject fo = Disassembly.getFileObject();
-            if (fo != null) {
-                try {
-                    return getContext().annotate(DataObject.find(fo), line, annotationType, null);
-                } catch (DataObjectNotFoundException dex) {
-                    // do nothing
-                }
-            }
+        DisassemblyService disService = getCurrentDisassemblyService();
+        if (disService != null) {
+            return disService.annotateAddress(csf.getAddr(), annotationType);
         }
         return null;
     }
-    
+
     /**
      * Removes given annotation.
      */
@@ -353,7 +320,7 @@ public class EditorContextBridge {
     
     // utility methods .........................................................
 
-    public static String getFileName(GdbBreakpoint b) { 
+    public static String getFileName(CndBreakpoint b) {
         try {
             return basename(new File(new URL(b.getURL()).getFile()).getName());
         } catch (MalformedURLException e) {
@@ -372,28 +339,16 @@ public class EditorContextBridge {
     }
 
     
-    public static boolean showSource(GdbBreakpoint b, Object timeStamp) {
+    public static boolean showSource(CndBreakpoint b, Object timeStamp) {
         if (b instanceof LineBreakpoint) {
             if (b.getLineNumber() < 1) {
                 return EditorContextBridge.showSource(b.getURL(), 1, timeStamp);
             }
             return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
         } else if (b instanceof AddressBreakpoint) {
-            FileObject fo = Disassembly.getFileObject();
-            if (fo != null) {
-                try {
-                    Disassembly dis = Disassembly.getCurrent();
-                    if (dis != null) {
-                        int line = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
-                        if (line != -1) {
-                            return getContext().showSource(DataObject.find(fo), dis.getAddressLine(((AddressBreakpoint)b).getAddress()), null);
-                        } else {
-                            Disassembly.open();
-                        }
-                    }
-                } catch (DataObjectNotFoundException dex) {
-                    // do nothing
-                }
+            DisassemblyService disService = getCurrentDisassemblyService();
+            if (disService != null) {
+                return disService.showAddress(((AddressBreakpoint)b).getAddress());
             }
         }
         return false;
@@ -401,58 +356,6 @@ public class EditorContextBridge {
 
     public static String getDefaultType() {
         return LINE;
-    }
-
-    public static Object annotate(GdbBreakpoint b) {
-        String url = b.getURL();
-        int lineNumber = b.getLineNumber();
-        if (lineNumber < 1) {
-            return null;
-        }
-        String condition = b.getCondition();
-        boolean isConditional = condition.trim().length() > 0;
-        String annotationType;
-        if (b instanceof FunctionBreakpoint) {
-            if (b.isEnabled()) {
-                annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
-            } else {
-                annotationType =  isConditional ? EditorContext.DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
-            }
-        } else if (b instanceof AddressBreakpoint) {
-            Disassembly dis = Disassembly.getCurrent();
-            if (dis == null) {
-                return null;
-            }
-            lineNumber = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
-            if (lineNumber == -1) {
-                return null;
-            }
-            if (b.isEnabled()) {
-                annotationType = isConditional ? EditorContext.CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
-            } else {
-                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
-            }
-            try {
-                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, b);
-            } catch (DataObjectNotFoundException doe) {
-                doe.printStackTrace();
-                return null;
-            }
-        } else {
-            if (b.isEnabled()) {
-                annotationType = isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.BREAKPOINT_ANNOTATION_TYPE;
-            } else {
-                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE;
-            }
-        }
-
-        return annotate(url, lineNumber, annotationType, b);
     }
 
     public static String getRelativePath(String className) {
@@ -542,6 +445,14 @@ public class EditorContextBridge {
                 dobj = cp2.getMostRecentDataObject();
             }
             return dobj;
+        }
+
+        public FileObject getMostRecentFileObject() {
+            FileObject fobj = cp1.getMostRecentFileObject();
+            if (fobj == null) {
+                fobj = cp2.getMostRecentFileObject();
+            }
+            return fobj;
         }
 
         public FileObject getCurrentFileObject() {

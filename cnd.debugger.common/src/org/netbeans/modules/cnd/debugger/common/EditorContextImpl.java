@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.cnd.debugger.common;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -53,6 +53,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.DebuggerBreakpointAnnotation;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -62,9 +65,6 @@ import org.openide.text.Line;
 import org.openide.util.Utilities;
 import org.openide.filesystems.URLMapper;
 
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerBreakpointAnnotation;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Annotation;
 
@@ -151,9 +151,9 @@ public class EditorContextImpl extends EditorContext {
     }
     
     public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
-        GdbBreakpoint b = null;
-        if (timeStamp instanceof GdbBreakpoint) {
-            b = (GdbBreakpoint) timeStamp;
+        CndBreakpoint b = null;
+        if (timeStamp instanceof CndBreakpoint) {
+            b = (CndBreakpoint) timeStamp;
             timeStamp = null;
         }
         Line l =  getLine(dobj, lineNumber, timeStamp);
@@ -418,6 +418,10 @@ public class EditorContextImpl extends EditorContext {
 
     public FileObject getCurrentFileObject() {
         return EditorContextDispatcher.getDefault().getCurrentFile();
+    }
+
+    public FileObject getMostRecentFileObject() {
+        return EditorContextDispatcher.getDefault().getMostRecentFile();
     }
 
     public DataObject getMostRecentDataObject() {

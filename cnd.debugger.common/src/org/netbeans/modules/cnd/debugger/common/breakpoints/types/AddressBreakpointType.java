@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.AddressBreakpointPanel;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.openide.util.NbBundle;
 
