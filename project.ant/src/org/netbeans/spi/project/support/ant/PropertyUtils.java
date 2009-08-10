@@ -99,6 +99,10 @@ public class PropertyUtils {
     }
     
     private static Map<File,Reference<PropertyProvider>> globalPropertyProviders = new HashMap<File,Reference<PropertyProvider>>();
+    private static EditableProperties currentGlobalProperties;
+    private static File currentGlobalPropertiesFile;
+    private static long currentGlobalPropertiesLastModified;
+    private static long currentGlobalPropertiesLength;
     
     /**
      * Load global properties defined by the IDE in the user directory.
@@ -114,11 +118,22 @@ public class PropertyUtils {
             public EditableProperties run() {
                 File ubp = userBuildProperties();
                 if (ubp != null && ubp.isFile() && ubp.canRead()) {
+                    long lastModified = ubp.lastModified();
+                    long length = ubp.length();
+                    if (ubp.equals(currentGlobalPropertiesFile) &&
+                            lastModified == currentGlobalPropertiesLastModified &&
+                            length == currentGlobalPropertiesLength) {
+                        return currentGlobalProperties.cloneProperties();
+                    }
                     try {
                         InputStream is = new FileInputStream(ubp);
                         try {
                             EditableProperties properties = new EditableProperties(true);
                             properties.load(is);
+                            currentGlobalProperties = properties.cloneProperties();
+                            currentGlobalPropertiesFile = ubp;
+                            currentGlobalPropertiesLastModified = lastModified;
+                            currentGlobalPropertiesLength = length;
                             return properties;
                         } finally {
                             is.close();
@@ -147,6 +162,14 @@ public class PropertyUtils {
                 public Void run() throws IOException {
                     File ubp = userBuildProperties();
                     if (ubp != null) {
+                        long lastModified = ubp.lastModified();
+                        long length = ubp.length();
+                        if (ubp.equals(currentGlobalPropertiesFile) &&
+                                lastModified == currentGlobalPropertiesLastModified &&
+                                length == currentGlobalPropertiesLength &&
+                                properties.equals(currentGlobalProperties)) {
+                            return null;
+                        }
                         FileObject bp = FileUtil.toFileObject(ubp);
                         if (bp == null) {
                             if (!ubp.exists()) {
@@ -173,6 +196,10 @@ public class PropertyUtils {
                         } finally {
                             os.close();
                         }
+                        currentGlobalProperties = properties.cloneProperties();
+                        currentGlobalPropertiesFile = ubp;
+                        currentGlobalPropertiesLastModified = lastModified;
+                        currentGlobalPropertiesLength = length;
                     } else {
                         throw new IOException("Do not know where to store build.properties; must set netbeans.user!"); // NOI18N
                     }
