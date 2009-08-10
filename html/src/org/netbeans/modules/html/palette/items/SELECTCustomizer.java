@@ -69,8 +69,16 @@ public class SELECTCustomizer extends javax.swing.JPanel {
      */
     public SELECTCustomizer(SELECT select) {
         this.select = select;
-        
+
         initComponents();
+        try {
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class,"ACSN_SELECT_Options_Spinner"));
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class,"ACSD_SELECT_Options_Spinner"));
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class,"ACSN_SELECT_Visible_Options_Spinner"));
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class,"ACSD_SELECT_Visible_Options_Spinner"));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public boolean showDialog() {
@@ -154,6 +162,8 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
+        jTextField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Name_TextField")); // NOI18N
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Name_TextField")); // NOI18N
 
         jLabel1.setLabelFor(jTextField1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_Name")); // NOI18N
@@ -191,7 +201,6 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Options")); // NOI18N
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Options")); // NOI18N
 
-        jLabel4.setLabelFor(jCheckBox1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_Multi")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -240,7 +249,6 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jSpinner1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Options_Spinner")); // NOI18N
         jSpinner1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Options_Spinner")); // NOI18N
 
-        jLabel5.setLabelFor(jCheckBox2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_State")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
