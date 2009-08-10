@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.errorstripe;
-
-import javax.swing.JComponent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.MimeTypeInitializer;
-import org.netbeans.editor.SideBarFactory;
-import org.openide.ErrorManager;
-
-
+package org.netbeans.editor;
 
 /**
- *
- * @author Jan Lahoda
+ * Interface which help initialize lookups needed by {@link SideBarFactory}
+ * implementations.
+ * 
+ * @author Max Sauer
  */
-public class AnnotationViewFactory implements SideBarFactory, MimeTypeInitializer {
+public interface MimeTypeInitializer {
 
-    /** Creates a new instance of AnnotationViewFactory */
-    public AnnotationViewFactory() {
-    }
+    public void init(String mimeType);
 
-    public JComponent createSideBar(JTextComponent target) {
-        long start = System.currentTimeMillis();
-
-        AnnotationView view = new AnnotationView(target);
-        
-        long end = System.currentTimeMillis();
-        
-        if (AnnotationView.TIMING_ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            AnnotationView.TIMING_ERR.log(ErrorManager.INFORMATIONAL, "creating AnnotationView component took: " + (end - start));
-        }
-        
-        return view;
-    }
-
-    public void init(String mimeType) {
-        AnnotationViewDataImpl.initProviders(mimeType);
-    }
-    
 }
