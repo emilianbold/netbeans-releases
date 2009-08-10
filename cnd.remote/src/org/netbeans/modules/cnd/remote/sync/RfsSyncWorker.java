@@ -97,9 +97,10 @@ class RfsSyncWorker extends ZipSyncWorker {
         if (line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
         } else {
-            System.err.printf("Protocol error\n"); // NOI18N
+            String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
+            System.err.printf(message); // NOI18N
             remoteControllerProcess.destroy();
-            throw new ExecutionException("Protocol error", null); //NOI18N
+            throw new ExecutionException(message, null); //NOI18N
         }
         logger.fine("Remote Controller listens port " + port); // NOI18N
         RequestProcessor.getDefault().post(localController);
