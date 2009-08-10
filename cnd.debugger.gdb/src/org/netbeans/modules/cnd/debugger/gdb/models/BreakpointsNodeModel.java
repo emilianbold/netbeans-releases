@@ -44,18 +44,18 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.utils.GeneralUtils;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 
 import org.openide.util.NbBundle;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 
 /**
  * @author   Jan Jancura and Gordon Prieur
@@ -95,9 +95,9 @@ public class BreakpointsNodeModel implements NodeModel {
             Integer maxInt = BreakpointsTreeModelFilter.MAX_LINES.get(b);
             if (maxInt != null) {
                 int max = maxInt.intValue();
-                int num0 = GdbUtils.log10(max) - GdbUtils.log10(lineNum);
+                int num0 = GeneralUtils.log10(max) - GeneralUtils.log10(lineNum);
                 if (num0 > 0) {
-                    line = GdbUtils.zeros(num0) + line;
+                    line = GeneralUtils.zeros(num0) + line;
                 }
             }
             return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Line_Breakpoint", // NOI18N
@@ -165,7 +165,7 @@ public class BreakpointsNodeModel implements NodeModel {
         boolean disabled = !((Breakpoint) o).isEnabled();
         boolean invalid = ((Breakpoint) o).getValidity() == Breakpoint.VALIDITY.INVALID;
         if (o instanceof LineBreakpoint || o instanceof AddressBreakpoint) {
-            String condition = ((GdbBreakpoint) o).getCondition();
+            String condition = ((CndBreakpoint) o).getCondition();
             boolean conditional = condition != null && condition.trim().length() > 0;
             String iconBase;
             if (current) {
@@ -245,7 +245,7 @@ public class BreakpointsNodeModel implements NodeModel {
 //    }
 //    
     
-    void fireNodeChanged(GdbBreakpoint b) {
+    void fireNodeChanged(CndBreakpoint b) {
         for (ModelListener listener : listeners) {
             listener.modelChanged(new ModelEvent.NodeChanged(this, b));
         }
@@ -262,14 +262,14 @@ public class BreakpointsNodeModel implements NodeModel {
         return s.substring(i + 1);
     }
     
-    private GdbBreakpoint currentBreakpoint;
-    private String bold(GdbBreakpoint b, String name) {
+    private CndBreakpoint currentBreakpoint;
+    private String bold(CndBreakpoint b, String name) {
         return b == currentBreakpoint ?
                 BoldVariablesTableModelFilterFirst.toHTML(name, true, false, null) : name;
     }
     
-    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
-        GdbBreakpoint oldCurrentBreakpoint = this.currentBreakpoint;
+    public void setCurrentBreakpoint(CndBreakpoint currentBreakpoint) {
+        CndBreakpoint oldCurrentBreakpoint = this.currentBreakpoint;
         this.currentBreakpoint = currentBreakpoint;
         if (oldCurrentBreakpoint != null) {
             fireNodeChanged (oldCurrentBreakpoint);

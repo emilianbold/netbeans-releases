@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.identity.server.manager.ui.actions.InfoAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.identity.server.manager.ui.actions.Bundle#CTL_InfoAction"/>
+                <attr name="serverNodeHidden" boolvalue="true"/>
             </file>
         </folder>
     </folder>

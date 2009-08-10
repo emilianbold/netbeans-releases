@@ -98,6 +98,8 @@ public class RADIOCustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_Dialog"));
         dialog.setVisible(true);
         repaint();
         

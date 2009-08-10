@@ -51,7 +51,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
  */
 public class RacesVisualizerConfiguration implements VisualizerConfiguration {
 
-    /*package*/ static final String ID = "racesVisualizer"; // NOI18N
+    /*package*/ static final String ID = "dataracesVisualizer"; // NOI18N
 
     public String getID() {
         return ID;
@@ -59,10 +59,10 @@ public class RacesVisualizerConfiguration implements VisualizerConfiguration {
 
     public DataTableMetadata getMetadata() {
         return SunStudioDCConfiguration.getDataRaceTableMetadata(
-                SunStudioDCConfiguration.c_Deadlocks);
+                SunStudioDCConfiguration.c_Datarace);
     }
 
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:races"); //NOI18N
+        return DataModelSchemeProvider.getInstance().getScheme("model:dataraces"); //NOI18N
     }
 }
