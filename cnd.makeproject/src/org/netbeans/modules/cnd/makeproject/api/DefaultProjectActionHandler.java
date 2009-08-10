@@ -224,6 +224,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 }
                 env = env1;
             }
+            if (Boolean.getBoolean("cnd.remote.fs")) { // a temporary stub for testing remote FS
+                String preload = System.getProperty("cnd.remote.fs.preload");
+                String dir =  System.getProperty("cnd.remote.fs.dir");
+                if (preload != null && dir != null) {
+                    String[] env2 = new String[env.length+2];
+                    for (int i = 0; i < env.length; i++) {
+                        env2[i] = env[i];
+                    }
+                    env2[env2.length-1] = "LD_PRELOAD=" + preload; // NOI18N
+                    env2[env2.length-2] = "RFS_CONTROLLER_DIR=" + dir; // NOI18N
+                    env = env2;
+                }
+            }
             NativeExecutor projectExecutor = new NativeExecutor(
                     execEnv,
                     runDirectory,

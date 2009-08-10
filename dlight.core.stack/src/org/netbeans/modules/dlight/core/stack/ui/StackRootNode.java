@@ -41,20 +41,30 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Icon;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-public final class StackRootNode extends AbstractNode{
+final class StackRootNode extends AbstractNode{
     private final String stackName;
-    
-    public StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        super(new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(0)));
+    private final Image icon;
+
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
+        super(stack == null ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
         this.stackName = stackName;
+        this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
+    }
+    
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
+        this(sourceFileInfoDataProvider, null, stackName, stack);
+
     }
 
     @Override
@@ -64,8 +74,14 @@ public final class StackRootNode extends AbstractNode{
 
     @Override
     public Image getIcon(int type) {
-      return null;
+      return icon;
     }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
 
 
 

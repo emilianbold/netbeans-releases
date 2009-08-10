@@ -40,24 +40,18 @@
  */
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.awt.AWTKeyStroke;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
-import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -100,7 +94,7 @@ public class WatchPanel {
         };
         ContextBindingSupport.getDefault().setupContext(editorPane, editorPaneUpdated);
 
-        JScrollPane sp = createScrollableLineEditor(editorPane);
+        JScrollPane sp = ContextBindingSupport.createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
         int size = 2 * fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
         Insets eInsets = editorPane.getInsets();
@@ -129,41 +123,6 @@ public class WatchPanel {
 
     public String getExpression() {
         return editorPane.getText().trim();
-    }
-
-    public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
-        editorPane.setKeymap(new FilteredKeymap(editorPane));
-        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        editorPane.setBorder(
-                new CompoundBorder(editorPane.getBorder(),
-                new EmptyBorder(0, 0, 0, 0)));
-
-        JTextField referenceTextField = new JTextField("M"); // NOI18N
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(referenceTextField.getBackground());
-        sp.setBorder(referenceTextField.getBorder());
-        sp.setBackground(referenceTextField.getBackground());
-
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(editorPane, gridBagConstraints);
-        sp.setViewportView(panel);
-
-        int preferredHeight = referenceTextField.getPreferredSize().height;
-        if (sp.getPreferredSize().height < preferredHeight) {
-            sp.setPreferredSize(referenceTextField.getPreferredSize());
-        }
-        sp.setMinimumSize(sp.getPreferredSize());
-
-        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
-        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        return sp;
     }
 
     private static final class Context {

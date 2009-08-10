@@ -176,7 +176,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
         }
     }
 
-    public boolean isStepOutValid() {
+    private boolean isStepOutValid() {
         List<CallStackFrame> callstack = getDebugger().getCallStack();
         return callstack.size() == 1 ||
                 (callstack.size() > 1 && callstack.get(1).isValid());

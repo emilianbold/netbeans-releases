@@ -52,9 +52,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -200,7 +200,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         }
     }
 
-    protected void waitForBreakpoint(GdbBreakpoint breakpoint) {
+    protected void waitForBreakpoint(CndBreakpoint breakpoint) {
         long timeout = WAIT_TIMEOUT;
         long start = System.currentTimeMillis();
 
@@ -229,7 +229,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         }
     }
 
-    protected void waitForBPValid(GdbBreakpoint breakpoint) {
+    protected void waitForBPValid(CndBreakpoint breakpoint) {
         long timeout = WAIT_TIMEOUT;
         long start = System.currentTimeMillis();
 
@@ -260,7 +260,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         breakpoint.removePropertyChangeListener(listener);
     }
 
-    protected GdbBreakpoint setLineBreakpoint(String filename, int lineNo) {
+    protected CndBreakpoint setLineBreakpoint(String filename, int lineNo) {
         String bpPath = new File(project_dir, filename).getAbsolutePath();
         LineBreakpoint lb = LineBreakpoint.create(bpPath, lineNo);
         //new LineBreakpointImpl(lb, debugger);
@@ -269,7 +269,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         return lb;
     }
 
-    protected GdbBreakpoint setFunctionBreakpoint(String function) {
+    protected CndBreakpoint setFunctionBreakpoint(String function) {
         FunctionBreakpoint fb = FunctionBreakpoint.create(function);
         //new FunctionBreakpointImpl(fb, debugger);
         dm.addBreakpoint(fb);

@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="MimeTypeInitializer">
+            <summary>Adding interface enabling initialization of lookups performed by SideBarFactory implementations.</summary>
+            <version major="1" minor="41"/>
+            <date day="10" month="8" year="2009"/>
+            <author login="msauer"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                Adding <code>MimeTypeInitializer</code> providing <code>init(mimeType)</code>
+                method. <code>SideBarFactory</code> implementations
+                can use this to perform time-consuming operations (ie. lookups) outside AWT.
+                </p>
+            </description>
+            <issue number="137416"/>
+        </change>
+
         <change id="EditorUI.textLimitWidth">
             <summary>Making method EditorUI.textLimitWidth protected</summary>
             <version major="1" minor="38"/>

@@ -60,11 +60,12 @@ final class CallStackTreeModel {
     FunctionCall getCaller(FunctionCall call){
         //find in the list
         int index = stack.indexOf(call);
+        //if the last one show it self
         //return the next one
-        if (index == stack.size() - 1 ){
+        if (index == 0 ){
             return null;
         }
-        return stack.get(index + 1);
+        return stack.get(index - 1);
     }
 
 
