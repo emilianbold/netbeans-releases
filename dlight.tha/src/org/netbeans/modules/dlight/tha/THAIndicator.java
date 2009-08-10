@@ -60,7 +60,17 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
     public THAIndicator(final THAIndicatorConfiguration configuration) {
         super(configuration);
-        controlPanel = new THAControlPanel(false, new ToggleCollectorAction(), getDefaultAction());
+        controlPanel = new THAControlPanel(false, new ToggleCollectorAction(), new AbstractAction("deadlocks") {//NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                notifyListeners(DeadlockVisualizerConfiguration.ID);
+            }
+        }, new AbstractAction("dataraces") {//NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                notifyListeners(RacesVisualizerConfiguration.ID);
+            }
+        });
         dataracesColumnName = getMetadataColumnName(0);
         deadlocksColumnName = getMetadataColumnName(1);
     }

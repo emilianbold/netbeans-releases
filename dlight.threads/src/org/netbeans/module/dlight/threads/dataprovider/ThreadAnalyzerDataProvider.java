@@ -41,11 +41,12 @@ package org.netbeans.module.dlight.threads.dataprovider;
 import java.util.List;
 import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.module.dlight.threads.api.Deadlock;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
  * @author Alexey Vladykin
  */
-public interface ThreadAnalyzerDataProvider {
+public interface ThreadAnalyzerDataProvider extends SourceFileInfoDataProvider {
 
     List<? extends Datarace> getDataraces();
 

@@ -36,57 +36,47 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+package org.netbeans.modules.dlight.spi.support;
 
+import java.util.Iterator;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author Maria Tishkova
  */
-public final class StackPanelFactory {
+public final class DefaultIndicatorComponentEmptyContentProvider {
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
+
+    private DefaultIndicatorComponentEmptyContentProvider() {
+    }
+
+    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
+        return instance;
+    }
+
+    public List<Indicator> getEmptyContent(String configurationName) {
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
+
+        if (gizmoConfiguration == null) {
+            return null;
+        }
+
+        List<Indicator> indicators = gizmoConfiguration.getIndicators();
+
+        Iterator<Indicator> it = indicators.iterator();
+
+        while (it.hasNext()) {
+            Indicator ind = it.next();
+            if (!ind.isVisible()) {
+                it.remove();
+            }
+        }
+
+        return indicators;
     }
 }
