@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -94,6 +95,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -102,6 +104,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -133,6 +136,7 @@ public class IssuePanel extends javax.swing.JPanel {
         statusField.setBackground(getBackground());
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
+        parentHeaderPanel.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -408,6 +412,46 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
         reloadCustomFields();
+
+        final String parentKey = issue.getParentKey();
+        boolean hasParent = (parentKey != null) && (parentKey.trim().length() > 0);
+        if  (hasParent) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final Issue parent = issue.getRepository().getIssue(parentKey);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            parentHeaderPanel.setVisible(true);
+                            headerLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/subtask.png", true)); // NOI18N
+                            GroupLayout layout = new GroupLayout(parentHeaderPanel);
+                            JLabel parentLabel = new JLabel();
+                            parentLabel.setText(parent.getSummary());
+                            LinkButton parentButton = new LinkButton(new AbstractAction() {
+                                public void actionPerformed(ActionEvent e) {
+                                    parent.open();
+                                }
+                            });
+                            parentButton.setText(parentKey+':');
+                            layout.setHorizontalGroup(
+                                layout.createSequentialGroup()
+                                    .add(parentButton)
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(parentLabel)
+                            );
+                            layout.setVerticalGroup(
+                                layout.createParallelGroup(GroupLayout.BASELINE)
+                                    .add(parentButton)
+                                    .add(parentLabel)
+                            );
+                            parentHeaderPanel.setLayout(layout);
+                        }
+                    });
+                }
+            });
+        } else {
+            parentHeaderPanel.setVisible(false);
+            headerLabel.setIcon(null);
+        }
 
         JiraConfiguration config = issue.getRepository().getConfiguration();
         if (isNew) {
@@ -861,6 +905,7 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField = new javax.swing.JTextField();
         projectField = new javax.swing.JTextField();
         statusField = new javax.swing.JTextField();
+        parentHeaderPanel = new javax.swing.JPanel();
         customFieldPanelLeft = new javax.swing.JPanel();
         customFieldPanelRight = new javax.swing.JPanel();
         headerLabel = new javax.swing.JLabel();
@@ -1201,8 +1246,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(remainingEstimateLabel)
                             .add(timeSpentLabel)
@@ -1221,7 +1266,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(originalEstimatePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(customFieldPanelLeft, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(summaryLabel)
@@ -1286,8 +1331,9 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(fixVersionLabel)))
-                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(parentHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -1308,6 +1354,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(parentHeaderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(0, 0, 0)
                         .add(headerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -1745,6 +1793,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel originalEstimateLabel;
     private javax.swing.JLabel originalEstimateLabelNew;
     private javax.swing.JPanel originalEstimatePanel;
+    private javax.swing.JPanel parentHeaderPanel;
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
