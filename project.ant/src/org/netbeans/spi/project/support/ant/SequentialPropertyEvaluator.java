@@ -43,6 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,6 +77,8 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
 
     private final PropertyProvider preprovider;
     private final PropertyProvider[] providers;
+    private Map<String,String> predefs;
+    private List<Map<String,String>> orderedDefs;
     private Map<String, String> defs;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -84,23 +87,27 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
      * @param providers a sequential list of property groups
      */
     public SequentialPropertyEvaluator(final PropertyProvider preprovider, final PropertyProvider... providers) {
-        super();
         this.preprovider = preprovider;
         this.providers = providers;
-        // XXX defer until someone asks for them
-        defs = ProjectManager.mutex().readAccess(new Mutex.Action<Map<String, String>>() {
-
-            public Map<String, String> run() {
-                return compose(preprovider, providers);
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                if (preprovider != null) {
+                    predefs = new HashMap<String,String>(preprovider.getProperties()); // defensive copying
+                    // XXX defer until someone is listening?
+                    preprovider.addChangeListener(WeakListeners.change(SequentialPropertyEvaluator.this, preprovider));
+                } else {
+                    predefs = Collections.emptyMap();
+                }
+                orderedDefs = new ArrayList<Map<String, String>>(providers.length);
+                for (PropertyProvider pp : providers) {
+                    orderedDefs.add(new HashMap<String,String>(pp.getProperties()));
+                    pp.addChangeListener(WeakListeners.change(SequentialPropertyEvaluator.this, pp));
+                }
+                return null;
             }
         });
-        // XXX defer until someone is listening?
-        if (preprovider != null) {
-            preprovider.addChangeListener(WeakListeners.change(this, preprovider));
-        }
-        for (PropertyProvider pp : providers) {
-            pp.addChangeListener(WeakListeners.change(this, pp));
-        }
+        // XXX defer until someone asks for them?
+        defs = evaluateAll(predefs, orderedDefs);
     }
 
     public String getProperty(final String prop) {
@@ -151,7 +158,27 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
 
     public void stateChanged(ChangeEvent e) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        Map<String, String> newdefs = compose(preprovider, providers);
+        PropertyProvider pp = (PropertyProvider) e.getSource();
+        Map<String, String> nue = new HashMap<String,String>(pp.getProperties());
+        if (pp == preprovider) {
+            if (predefs.equals(nue)) {
+                return;
+            } else {
+                predefs = nue;
+            }
+        } else {
+            int i = Arrays.asList(providers).indexOf(pp);
+            if (i == -1) {
+                assert false : "got change from unexpected source: " + pp;
+                return;
+            }
+            if (orderedDefs.get(i).equals(nue)) {
+                return;
+            } else {
+                orderedDefs.set(i, nue);
+            }
+        }
+        Map<String,String> newdefs = evaluateAll(predefs, orderedDefs);
         // compose() may return null upon circularity errors
         Map<String, String> _defs = defs != null ? defs : Collections.<String, String>emptyMap();
         Map<String, String> _newdefs = newdefs != null ? newdefs : Collections.<String, String>emptyMap();
@@ -178,21 +205,6 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
                 pcs.firePropertyChange(ev);
             }
         }
-    }
-
-    private static Map<String, String> compose(PropertyProvider preprovider, PropertyProvider[] providers) {
-        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        Map<String, String> predefs;
-        if (preprovider != null) {
-            predefs = preprovider.getProperties();
-        } else {
-            predefs = Collections.emptyMap();
-        }
-        List<Map<String, String>> defs = new ArrayList<Map<String, String>>(providers.length);
-        for (PropertyProvider pp : providers) {
-            defs.add(pp.getProperties());
-        }
-        return evaluateAll(predefs, defs);
     }
 
     /**
