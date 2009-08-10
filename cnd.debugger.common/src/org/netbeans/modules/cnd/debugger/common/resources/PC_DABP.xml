@@ -43,12 +43,19 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type
-    name='DisabledAddressBreakpoint'
-    description_key='HINT_DISABLED_ADDRESS_BREAKPOINT'
-    localizing_bundle='org.netbeans.modules.cnd.debugger.gdb.resources.Bundle'
+    name='debugger-PC_DABP'
+    description_key='HINT_PC_DISABLED_ADDRESS_BREAKPOINT'
+    localizing_bundle='org.netbeans.modules.cnd.debugger.common.resources.Bundle'
     visible='true' 
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint.gif'
-    highlight='0xDCDCD8' 
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint+PC.png'
+    highlight='0xBDE6AA'
     type='line'
-    actions='BreakpointActions'
-/>
+    severity='ok'
+    priority='100'
+    custom_sidebar_color='0xBDE6AA'>
+
+    <combination order='600'>
+        <combine annotationtype='DisabledAddressBreakpoint'/>
+        <combine annotationtype='CurrentPC'/>
+    </combination>
+</type>
