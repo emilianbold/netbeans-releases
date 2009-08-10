@@ -53,7 +53,7 @@ public final class StackRootNode extends AbstractNode{
     private final String stackName;
     
     public StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        super(new FunctionCallChildren( new CallStackTreeModel(stack), stack.get(0)));
+        super(new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(0)));
         this.stackName = stackName;
     }
 

@@ -57,7 +57,7 @@ public final class CallStackPanel extends JPanel implements ExplorerManager.Prov
         BeanTreeView treeView = new BeanTreeView();
         setLayout(new BorderLayout());
         add(treeView, BorderLayout.CENTER);
-        manager.setRootContext(new StackRootNode("Stack", stack));//NOI18N
+        manager.setRootContext(new StackRootNode(null, "Stack", stack));//NOI18N
     }
 
     public ExplorerManager getExplorerManager() {
