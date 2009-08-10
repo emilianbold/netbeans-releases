@@ -69,6 +69,21 @@ public class TABLECustomizer extends javax.swing.JPanel {
         this.table = table;
 
         initComponents();
+        try {
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner1.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner1.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner2.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner2.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner3.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner3.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner3.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner3.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner4.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner4.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner4.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner4.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner5.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner5.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner5.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner5.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)widthSpinner.getEditor()).getTextField().getAccessibleContext().setAccessibleName(widthSpinner.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)widthSpinner.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(widthSpinner.getAccessibleContext().getAccessibleDescription());
+        } catch (Exception e) {
+        }
     }
     
     public boolean showDialog() {

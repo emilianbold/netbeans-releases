@@ -70,7 +70,12 @@ public class ULCustomizer extends javax.swing.JPanel {
         this.ul = ul;
         
         initComponents();
-        
+        try {
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class,"ACSN_UL_Items_Spinner"));
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class,"ACSD_UL_Items_Spinner"));
+        }catch (Exception e) {
+
+        }
         if (ul.getType().equals(UL.DEFAULT))
             jRadioButton1.setSelected(true);
         else if (ul.getType().equals(UL.DISC))
@@ -236,6 +241,10 @@ public class ULCustomizer extends javax.swing.JPanel {
         add(jSpinner1, gridBagConstraints);
         jSpinner1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_Items_Spinner")); // NOI18N
         jSpinner1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_Items_Spinner")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_Form")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_Form")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
     
     
