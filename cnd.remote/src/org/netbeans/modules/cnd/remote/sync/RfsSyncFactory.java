@@ -37,37 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mt154047
+ * @author Vladimir Kvashin
  */
-final class CallStackTreeModel {
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
+class RfsSyncFactory extends RemoteSyncFactory {
 
-    private final List<FunctionCall> stack;
-    private final SourceFileInfoDataProvider dataProvider;
-
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
-        this.dataProvider = dataProvider;
+    @Override
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        return new RfsSyncWorker(localDir, executionEnvironment, out, err, privProjectStorageDir);
     }
 
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
-        }
-        return stack.get(index - 1);
+    @Override
+    public String getDisplayName() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "RFS_Factory_Name");
     }
 
+    @Override
+    public String getDescription() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "RFS_Factory_Description");
+    }
 
+    @Override
+    public String getID() {
+        return "rfs"; //NOI18N
+    }
 
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return Boolean.getBoolean("cnd.remote.fs") && ! RemoteUtil.isForeign(execEnv);
+    }
 }

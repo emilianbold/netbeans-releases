@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  */
 public class ToolsManagerPanel extends javax.swing.JPanel {
 
-    private List<DLightTool> dlightTools = null;
+    private List<DLightTool> allDLightTools = null;
     private static String manageConfigurations = getString("ManageConfiurations");
     private String lastSelectedConfigurationName = null;
     private ToolsTable toolsTable = null;
@@ -69,6 +69,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     /** Creates new form ToolsManagerPanel */
     public ToolsManagerPanel() {
         initComponents();
+
+        DLightConfiguration allDlightConfiguration = DLightConfiguration.getDefault();
+        allDLightTools = allDlightConfiguration.getToolsSet();
 
         // profile configuration combobox
         List<DLightConfiguration> dlightConfigurations = DLightConfigurationManager.getInstance().getDLightConfigurations();
@@ -81,17 +84,33 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         setPreferredSize(new Dimension(600, 400));
     }
 
+    private static boolean inList(DLightTool dlightTool, List<DLightTool> list) {
+        for (DLightTool dt : list) {
+            if (dt.getID().equals(dlightTool.getID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void initConfigurationPanel(String configurationName) {
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);
         assert gizmoConfiguration != null;
         profileOnRunCheckBox.setSelected(true);
         defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
         defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
-        dlightTools = gizmoConfiguration.getToolsSet();
-        toolsTable = new ToolsTable(dlightTools);
+        List<DLightTool> confDlightTools = gizmoConfiguration.getToolsSet();
+        for (DLightTool dlightTool : allDLightTools) {
+            if (inList(dlightTool, confDlightTools)) {
+                dlightTool.enable();
+            }
+            else {
+                dlightTool.disable();
+            }
+        }
+        toolsTable = new ToolsTable(allDLightTools, new MySelectionListener());
         toolsList.setViewportView(toolsTable);
-        toolsTable.getSelectionModel().addListSelectionListener(new MySelectionListener());
-        toolsTable.getSelectionModel().setSelectionInterval(0, 0);
+        toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
     }
 
     public boolean apply() {
@@ -102,8 +121,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         public void valueChanged(ListSelectionEvent e) {
             int row = toolsTable.getSelectedRow();
-            DLightTool tool = dlightTools.get(row);
+            DLightTool tool = allDLightTools.get(row);
             toolNameTextField.setText(tool.getName());
+            onByDefaultCheckBox.setSelected(true);
             detailsLabel.setText(tool.getDetailedName());
 
             newButton.setEnabled(true);
@@ -293,7 +313,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void profileOnRunCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileOnRunCheckBoxActionPerformed
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+        
     }//GEN-LAST:event_profileOnRunCheckBoxActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
@@ -301,7 +321,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_newButtonActionPerformed
 
     private void onByDefaultCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onByDefaultCheckBoxActionPerformed
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+        
     }//GEN-LAST:event_onByDefaultCheckBoxActionPerformed
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed

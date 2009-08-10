@@ -37,37 +37,40 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author mt154047
+ * @author Vladimir Kvashin
  */
-final class CallStackTreeModel {
+public class TimestampAndSharabilityFilter extends SharabilityFilter {
 
-    private final List<FunctionCall> stack;
-    private final SourceFileInfoDataProvider dataProvider;
+    final FileTimeStamps timeStamps;
 
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
-        this.dataProvider = dataProvider;
+    public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+        timeStamps = new FileTimeStamps(privProjectStorageDir, executionEnvironment);
     }
 
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
+    @Override
+    public boolean acceptImpl(File file) {
+        boolean accept = super.acceptImpl(file);
+        if (accept && ! file.isDirectory()) {
+            if (timeStamps.isChanged(file)) {
+                //System.out.printf("FILE %s CHANGED\n", file.getAbsolutePath());
+                timeStamps.rememberTimeStamp(file);
+            } else {
+                //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
+                accept = false;
+            }
         }
-        return stack.get(index - 1);
+        return accept;
     }
 
-
-
+    public void flush() throws IOException {
+        timeStamps.flush();
+    }
 }

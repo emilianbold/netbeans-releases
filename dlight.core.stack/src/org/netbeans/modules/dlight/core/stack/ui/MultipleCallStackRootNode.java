@@ -36,57 +36,75 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
 
+package org.netbeans.modules.dlight.core.stack.ui;
+
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import javax.swing.Icon;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public final class StackPanelFactory {
+final class MultipleCallStackRootNode extends AbstractNode{
+    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
+    private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+    MultipleCallStackRootNode() {
+        super(Children.LEAF);
     }
+
+
+
+    void add(StackRootNode node){
+        children.add(node);
+        setChildren(new MultipleCallStackRootChildren(children));
+    }
+
+    void removeAll(){
+        setChildren(Children.LEAF);
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return icon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+
+
+    @Override
+    public String getHtmlDisplayName() {
+        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
+    }
+
+    
+
+    class MyIcon implements Icon{
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            
+        }
+
+        public int getIconWidth() {
+            return 1;
+        }
+
+        public int getIconHeight() {
+            return 1;
+        }
+        
+    }
+
 }

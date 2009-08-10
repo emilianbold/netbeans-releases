@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.BorderLayout;
 import java.util.List;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.openide.explorer.ExplorerManager;
@@ -52,12 +53,18 @@ import org.openide.explorer.view.BeanTreeView;
  */
 public final class CallStackPanel extends JPanel implements ExplorerManager.Provider{
     private final ExplorerManager manager = new ExplorerManager();
+
+    public CallStackPanel(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
+        BeanTreeView treeView = new BeanTreeView();
+        treeView.setRootVisible(isRootVisible);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(treeView);
+        manager.setRootContext(new StackRootNode(null, rootName, stack));//NOI18N
+    }
+
     
     public CallStackPanel(List<FunctionCall> stack) {
-        BeanTreeView treeView = new BeanTreeView();
-        setLayout(new BorderLayout());
-        add(treeView, BorderLayout.CENTER);
-        manager.setRootContext(new StackRootNode(null, "Stack", stack));//NOI18N
+        this(null, false, stack);
     }
 
     public ExplorerManager getExplorerManager() {

@@ -4,6 +4,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.api.impl;
 
+import java.util.List;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -51,4 +52,6 @@ public abstract class AdvancedTableViewVisualizerConfigurationAccessor {
     public abstract String getEmptyAnalyzeMessage(AdvancedTableViewVisualizerConfiguration configuration);
 
     public abstract String getRowNodeColumnName(AdvancedTableViewVisualizerConfiguration configuration);
+
+    public abstract List<String> getHiddenColumnNames(AdvancedTableViewVisualizerConfiguration configuration);
 }
