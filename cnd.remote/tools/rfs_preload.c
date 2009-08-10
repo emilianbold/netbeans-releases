@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 #include "rfs_controller.h"
 #include "rfs_util.h"
@@ -157,14 +158,17 @@ static int on_open(const char *path, int flags) {
     if (inside) {
         return true; // recursive!
     }
+    if (flags && O_TRUNC) { // don't need existent content
+        return true;
+    }
     if (my_dir == 0) { // isn't yet initialized?
         return true;
     }
     inside = 1;
 
-    {
+    if (path[0] != '/') {
         char real_path[PATH_MAX]; // TODO: optimize (a single malloc per thread?)
-        if (realpath(path, real_path)) {
+        if ( realpath(path, real_path)) {
             path = real_path;
         } else {
             trace("Can not resolve path %s\n", path);
