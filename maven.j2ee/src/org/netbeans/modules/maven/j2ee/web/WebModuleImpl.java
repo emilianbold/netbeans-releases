@@ -135,6 +135,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
             }
         }
         //make 15 the default..
+        //TODO how to differentiate with 1.6??
         return Profile.JAVA_EE_5;
     }
     
