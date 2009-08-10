@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -76,9 +77,12 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 import org.openide.actions.UndoAction;
@@ -89,6 +93,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.MacroDialogSupport;
+import org.netbeans.editor.MimeTypeInitializer;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
@@ -124,7 +129,7 @@ public class NbEditorKit extends ExtKit implements Callable {
 
     static final long serialVersionUID =4482122073483644089L;
     
-    private static final Map contentTypeTable;
+    private static final Map<String, String> contentTypeTable;
 
     /** Name of the action for generating of Go To popup menu*/
     public static final String generateGoToPopupAction = "generate-goto-popup"; // NOI18N
@@ -138,7 +143,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     private Map systemAction2editorAction = new HashMap();
     
     static {
-        contentTypeTable = new HashMap();
+        contentTypeTable = new HashMap<String, String>();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
         contentTypeTable.put("org.netbeans.modules.web.core.syntax.JSPKit", "text/x-jsp"); // NOI18N
         contentTypeTable.put("org.netbeans.modules.css.text.syntax.CSSEditorKit", "text/css"); // new  - open source package // NOI18N
@@ -901,7 +906,20 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
     public Object call() {
-        CustomizableSideBar.getFactoriesMap(getContentType());
+        Map<SideBarPosition, List<SideBarFactory>> factoriesMap = CustomizableSideBar.getFactoriesMap(getContentType());
+        //initialize all factories
+        for (Entry<SideBarPosition, List<SideBarFactory>> e : factoriesMap.entrySet()) {
+            for (SideBarFactory f : e.getValue()) {
+                if (f instanceof MimeTypeInitializer) { //TODO: SideBarFactory should probably implement MimeTypeInitializer
+                    try {
+                        ((MimeTypeInitializer) f).init(getContentType());
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
         NbEditorToolBar.initKeyBindingList(getContentType());
         ToolbarActionsProvider.getToolbarItems(getContentType());
         ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
