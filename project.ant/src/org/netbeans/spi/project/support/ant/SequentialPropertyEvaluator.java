@@ -214,7 +214,7 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
         // May need to subst something.
         int idx = 0;
         // Result in progress, if it is to be a String:
-        StringBuffer val = new StringBuffer();
+        StringBuilder val = new StringBuilder();
         // Or, result in progress, if it is to be a Set<String>:
         Set<String> needed = new HashSet<String>();
         while (true) {

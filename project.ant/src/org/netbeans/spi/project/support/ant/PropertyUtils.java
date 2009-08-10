@@ -68,7 +68,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
@@ -168,16 +167,11 @@ public class PropertyUtils {
                                 return null;
                             }
                         }
-                        FileLock lock = bp.lock();
+                        OutputStream os = bp.getOutputStream();
                         try {
-                            OutputStream os = bp.getOutputStream(lock);
-                            try {
-                                properties.store(os);
-                            } finally {
-                                os.close();
-                            }
+                            properties.store(os);
                         } finally {
-                            lock.releaseLock();
+                            os.close();
                         }
                     } else {
                         throw new IOException("Do not know where to store build.properties; must set netbeans.user!"); // NOI18N
@@ -393,7 +387,7 @@ public class PropertyUtils {
         if (basedir.equals(file)) {
             return "."; // NOI18N
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         File base = basedir;
         String filepath = file.getAbsolutePath();
         while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
@@ -433,7 +427,7 @@ public class PropertyUtils {
     }
     
     /*public? */ static String resolvePath(File basedir, String path) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         String[] toks = tokenizePath(path);
         for (int i = 0; i < toks.length; i++) {
             if (i > 0) {
@@ -529,7 +523,7 @@ public class PropertyUtils {
         if (isUsablePropertyName(name)) {
             return name;
         }
-        StringBuffer sb = new StringBuffer(name);
+        StringBuilder sb = new StringBuilder(name);
         for (int i=0; i<sb.length(); i++) {
             if (!isUsablePropertyName(sb.substring(i,i+1))) {
                 sb.replace(i,i+1,"_");
