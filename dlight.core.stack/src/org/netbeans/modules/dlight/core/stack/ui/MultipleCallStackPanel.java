@@ -40,34 +40,69 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 
 /**
  *
  * @author mt154047
  */
-final class CallStackTreeModel {
+public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider{
+    private final ExplorerManager manager = new ExplorerManager();
+    private final MultipleCallStackRootNode rootNode = new MultipleCallStackRootNode();
+    private final BeanTreeView treeView;
 
-    private final List<FunctionCall> stack;
-    private final SourceFileInfoDataProvider dataProvider;
+//    public MultipleCallStackPanel(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
+//        BeanTreeView treeView = new BeanTreeView();
+//        treeView.setRootVisible(isRootVisible);
+//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//        add(treeView);
+//        manager.setRootContext(new StackRootNode(null, rootName, stack));//NOI18N
+//    }
+//
+//
+//    public MultipleCallStackPanel(List<FunctionCall> stack) {
+//        this(null, false, stack);
+//    }
 
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
-        this.dataProvider = dataProvider;
+    private MultipleCallStackPanel(){
+        treeView = new BeanTreeView();
+        treeView.setRootVisible(true);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(treeView);
+        manager.setRootContext(rootNode);//NOI18N
     }
 
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
-        }
-        return stack.get(index - 1);
+    public static final  MultipleCallStackPanel createInstance(){
+        return new MultipleCallStackPanel();
     }
 
+    public void clean(){
+        rootNode.removeAll();
+        treeView.setRootVisible(true);
+    }
+
+    public void setRootVisible(String rootName){
+        treeView.setRootVisible(true);
+        rootNode.setDisplayName(rootName);
+    }
+
+    public final void add(String rootName, Icon icon, List<FunctionCall> stack){
+        rootNode.add(new StackRootNode(null, icon, rootName, stack));
+    }
+
+    public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack){
+        treeView.setRootVisible(false);
+        rootNode.add(new StackRootNode(null, rootName, stack));
+    }
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
 
 
 }

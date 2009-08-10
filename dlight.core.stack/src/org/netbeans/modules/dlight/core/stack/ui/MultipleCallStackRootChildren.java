@@ -40,34 +40,33 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author mt154047
  */
-final class CallStackTreeModel {
+final class MultipleCallStackRootChildren extends Children.Keys<StackRootNode>{
+    private final List<StackRootNode> children;
 
-    private final List<FunctionCall> stack;
-    private final SourceFileInfoDataProvider dataProvider;
-
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
-        this.dataProvider = dataProvider;
-    }
-
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
-        }
-        return stack.get(index - 1);
+    MultipleCallStackRootChildren(List<StackRootNode> children) {
+        this.children  = children;
     }
 
 
+
+    @Override
+    protected Node[] createNodes(StackRootNode key) {
+        return new StackRootNode[]{key};
+    }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(children);
+    }
+
+    
 
 }

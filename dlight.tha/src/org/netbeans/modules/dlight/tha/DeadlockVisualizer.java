@@ -39,12 +39,17 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.Component;
+import java.awt.GridLayout;
 import java.util.List;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
 import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
+import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -102,12 +107,12 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     private static class DeadlockRenderer implements Renderer {
 
-        private List<FunctionCall> stack;
+        private List<DeadlockThreadSnapshot> snapshots;
 
         public void setValue(Object aValue, boolean isSelected) {
             if (aValue instanceof Deadlock) {
                 Deadlock d = (Deadlock) aValue;
-                stack = d.getThreadStates().get(0).getHeldLockCallStack();
+                snapshots = d.getThreadStates();//.get(0).getHeldLockCallStack();
 //                StringBuilder buf = new StringBuilder();
 //                buf.append(d).append('\n');
 //                for (DeadlockThreadSnapshot dts : d.getThreadStates()) {
@@ -120,7 +125,13 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            return new CallStackPanel(stack);
+            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance();
+            for (DeadlockThreadSnapshot dts : snapshots){
+                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()) , true, dts.getHeldLockCallStack());//NOI18N
+                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()) , true, dts.getRequestedLockCallStack());//NOI18N
+            }
+            return stackPanel;
+//            return StackPanelFactory.newStackPanel(stack);
         }
     }
 }
