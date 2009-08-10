@@ -40,11 +40,17 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.Component;
+import java.awt.GridLayout;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -103,11 +109,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
     private static class RacesRenderer implements Renderer {
 
-        private List<FunctionCall> stack;
+        private List<ThreadDump> threadDumps;
 
         public void setValue(Object aValue, boolean isSelected) {
             if (aValue instanceof Datarace) {
                 Datarace d = (Datarace) aValue;
+                this.threadDumps = d.getThreadDumps();
                 //stack = d.getThreadStates().get(0).getHeldLockCallStack();
 //                StringBuilder buf = new StringBuilder();
 //                buf.append(d).append('\n');
@@ -121,8 +128,17 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
 
         public Component getComponent() {
-            return StackPanelFactory.newStackPanel(stack);
+            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance();
+            for (ThreadDump threadDump : threadDumps){
+                List<ThreadSnapshot> threads = threadDump.getThreadStates();
+                for (ThreadSnapshot snap : threads){
+                   stackPanel.add("Access  ", true, snap.getStack());
+                }
+            }
+            return stackPanel;
+            //return StackPanelFactory.newStackPanel(stack);
         }
+        
     }
 }
 

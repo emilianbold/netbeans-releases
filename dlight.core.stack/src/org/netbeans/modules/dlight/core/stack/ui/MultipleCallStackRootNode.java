@@ -39,35 +39,72 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import javax.swing.Icon;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-final class CallStackTreeModel {
+final class MultipleCallStackRootNode extends AbstractNode{
+    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
+    private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
 
-    private final List<FunctionCall> stack;
-    private final SourceFileInfoDataProvider dataProvider;
-
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
-        this.dataProvider = dataProvider;
+    MultipleCallStackRootNode() {
+        super(Children.LEAF);
     }
 
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
+
+
+    void add(StackRootNode node){
+        children.add(node);
+        setChildren(new MultipleCallStackRootChildren(children));
+    }
+
+    void removeAll(){
+        setChildren(Children.LEAF);
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return icon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+
+
+    @Override
+    public String getHtmlDisplayName() {
+        return "<h2>" + getDisplayName() + "</h2>";
+    }
+
+    
+
+    class MyIcon implements Icon{
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            
         }
-        return stack.get(index - 1);
+
+        public int getIconWidth() {
+            return 1;
+        }
+
+        public int getIconHeight() {
+            return 1;
+        }
+        
     }
-
-
 
 }

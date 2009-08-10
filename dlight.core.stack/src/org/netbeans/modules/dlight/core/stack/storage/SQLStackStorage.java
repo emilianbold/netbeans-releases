@@ -229,6 +229,7 @@ public final class SQLStackStorage {
             }
         } catch (SQLException ex) {
         }
+        Collections.reverse(result);
         return result;
     }
 
