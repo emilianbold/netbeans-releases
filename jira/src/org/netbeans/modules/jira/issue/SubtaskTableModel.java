@@ -37,52 +37,66 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.util;
+package org.netbeans.modules.jira.issue;
 
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.table.DefaultTableModel;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  * @author Jan Stola
  */
-public class PriorityRenderer extends DefaultListCellRenderer implements TableCellRenderer {
+public class SubtaskTableModel extends DefaultTableModel {
 
-    private Object valueToRender(Object value) {
-        if (value instanceof Priority) {
-            return ((Priority)value).getName();
-        }
-        return value;
+    public SubtaskTableModel(NbJiraIssue issue) {
+        super(data(issue), columnNames());
     }
 
-    private void setPriorityIcon(JLabel label, Object value) {
-        if (value instanceof Priority) {
-            label.setIcon(JiraConfig.getInstance().getPriorityIcon(((Priority)value).getId()));
-        }
+    private static String[] columnNames() {
+        ResourceBundle bundle = NbBundle.getBundle(SubtaskTableModel.class);
+        String subTask = bundle.getString("SubtaskTableModel.subTask"); // NOI18N
+        String summary = bundle.getString("SubtaskTableModel.summary"); // NOI18N
+        String status = bundle.getString("SubtaskTableModel.status"); // NOI18N
+        String priority = bundle.getString("SubtaskTableModel.priority"); // NOI18N
+        return new String[] {subTask, summary, status, priority};
     }
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        JLabel label = (JLabel) super.getListCellRendererComponent(list, valueToRender(value), index, isSelected, cellHasFocus);
-        setPriorityIcon(label, value);
-        return label;
+    public Class<?> getColumnClass(int columnIndex) {
+        Class clazz = String.class;
+        switch (columnIndex) {
+            case 2: clazz = JiraStatus.class; break;
+            case 3: clazz = Priority.class; break;
+        }
+        return clazz;
     }
 
-    private DefaultTableCellRenderer tableCellRenderer;
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (tableCellRenderer == null) {
-            tableCellRenderer = new DefaultTableCellRenderer();
+    private static Object[][] data(NbJiraIssue issue) {
+        JiraRepository repository = issue.getRepository();
+        IssueCache cache = repository.getIssueCache();
+        List<String> keys = issue.getSubtaskKeys();
+        Object[][] data = new Object[keys.size()][];
+        int count = 0;
+        for (String key : keys) {
+            NbJiraIssue subTask = (NbJiraIssue)cache.getIssue(key);
+            if (subTask == null) {
+                subTask = (NbJiraIssue)repository.getIssue(key);
+            }
+            data[count] = new Object[] {key, subTask.getSummary(), subTask.getStatus(), subTask.getPriority()};
+            count++;
         }
-        JLabel label = (JLabel)tableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        setPriorityIcon(label, value);
-        return label;
+        return data;
     }
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+
 }
