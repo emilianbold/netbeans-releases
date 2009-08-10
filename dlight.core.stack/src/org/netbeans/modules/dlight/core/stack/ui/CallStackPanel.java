@@ -36,57 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
 
+package org.netbeans.modules.dlight.core.stack.ui;
+
+import java.awt.BorderLayout;
 import java.util.List;
-import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 
 /**
- * @author Alexey Vladykin
+ * This class will represent panel were CallStack can be displayed
+ * @author Maria Tishkova
  */
-public final class StackPanelFactory {
-
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+public final class CallStackPanel extends JPanel implements ExplorerManager.Provider{
+    private final ExplorerManager manager = new ExplorerManager();
+    
+    public CallStackPanel(List<FunctionCall> stack) {
+        BeanTreeView treeView = new BeanTreeView();
+        setLayout(new BorderLayout());
+        add(treeView, BorderLayout.CENTER);
+        manager.setRootContext(new StackRootNode("Stack", stack));//NOI18N
     }
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+
 }

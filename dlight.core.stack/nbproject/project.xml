@@ -22,6 +22,22 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.explorer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -56,6 +72,7 @@
                 <package>org.netbeans.modules.dlight.core.stack.api.support</package>
                 <package>org.netbeans.modules.dlight.core.stack.dataprovider</package>
                 <package>org.netbeans.modules.dlight.core.stack.storage</package>
+                <package>org.netbeans.modules.dlight.core.stack.ui</package>
             </friend-packages>
         </data>
     </configuration>

@@ -36,57 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.dlight.tha;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public final class StackPanelFactory {
+@ServiceProvider(service = VisualizerFactory.class)
+public final class RacesVisualizerFactory implements VisualizerFactory<RacesVisualizerConfiguration> {
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+    public String getID() {
+        return RacesVisualizerConfiguration.ID;
+    }
+
+    public Visualizer<RacesVisualizerConfiguration> create(RacesVisualizerConfiguration configuration, VisualizerDataProvider provider) {
+        if (provider instanceof ThreadAnalyzerDataProvider) {
+            return new RacesVisualizer(configuration, (ThreadAnalyzerDataProvider) provider);
+        } else {
+            return null;
+        }
     }
 }
+
