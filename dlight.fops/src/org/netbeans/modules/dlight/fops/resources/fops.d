@@ -20,7 +20,7 @@ syscall::creat*:return
 {
     this->sid = arg0? ++sid : 0;
     fd2sid[arg0] = this->sid;
-    printf("%d %s %d \"%s\" %d", timestamp, "open", this->sid, copyinstr(self->pathaddr), 0);
+    printf("%d %s %d \"%s\" %d", timestamp, "open", this->sid, arg0? fds[arg0].fi_pathname : copyinstr(self->pathaddr), 0);
     ustack();
     printf("\n");
 

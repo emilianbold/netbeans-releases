@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -111,7 +112,7 @@ final class StackDataProviderImpl implements StackDataProvider {
      //   throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);

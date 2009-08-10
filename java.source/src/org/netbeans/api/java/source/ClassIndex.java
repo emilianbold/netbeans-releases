@@ -69,7 +69,13 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -525,45 +531,66 @@ public final class ClassIndex {
         
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
-            assertParserEventThread();
-            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-            for (ClassIndexListener l : listeners) {
-                l.typesAdded(_event);
-            }
+            final Runnable action = new Runnable () {
+                public void run() {
+                    assertParserEventThread();
+                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+                    for (ClassIndexListener l : listeners) {
+                        l.typesAdded(_event);
+                    }
+                }
+            };
+            fireByWorker(action);
         }
         
         public void typesRemoved (final ClassIndexImplEvent event) {
             assert event != null;
-            assertParserEventThread();
-            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-            for (ClassIndexListener l : listeners) {
-                l.typesRemoved(_event);
-            }
+            final Runnable action = new Runnable() {
+                public void run() {
+                    assertParserEventThread();
+                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+                    for (ClassIndexListener l : listeners) {
+                        l.typesRemoved(_event);
+                    }
+                }
+            };
+            fireByWorker(action);
         }
         
         public void typesChanged (final ClassIndexImplEvent event) {
             assert event != null;
-            assertParserEventThread();
-            TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-            for (ClassIndexListener l : listeners) {
-                l.typesChanged(_event);
-            }
+            final Runnable action = new Runnable() {
+                public void run() {
+                    assertParserEventThread();
+                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
+                    for (ClassIndexListener l : listeners) {
+                        l.typesChanged(_event);
+                    }
+                }
+            };
+            fireByWorker(action);
         }        
         
         public void classIndexAdded (final ClassIndexManagerEvent event) {
+            assert event != null;
             final Set<? extends URL> roots = event.getRoots();
             assert roots != null;
-            assertParserEventThread();
-            List<URL> ar = new LinkedList<URL>();
+            final List<URL> ar = new LinkedList<URL>();
             boolean srcF = containsRoot (sourcePath,roots,ar, false);
             boolean depF = containsRoot (bootPath, roots, ar, true);
-            depF |= containsRoot (classPath, roots, ar, true);            
+            depF |= containsRoot (classPath, roots, ar, true);
             if (srcF || depF) {
                 reset (srcF, depF);
-                final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
-                for (ClassIndexListener l : listeners) {
-                    l.rootsAdded(e);
-                }
+                final Runnable action = new Runnable() {
+                    public void run() {
+                        assertParserEventThread();
+                        final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
+                        for (ClassIndexListener l : listeners) {
+                            l.rootsAdded(e);
+                        }
+                    }
+                };
+                fireByWorker(action);
             }
         }
         
@@ -699,8 +726,39 @@ public final class ClassIndex {
         }
     }
 
+    private void fireByWorker (final Runnable action) {
+        assert action != null;
+        if (Utilities.isTaskProcessorThread(Thread.currentThread())) {
+            action.run();
+        }
+        else {
+            Utilities.scheduleSpecialTask(
+                new ParserResultTask() {
+                    @Override
+                    public int getPriority() {
+                        return 0;
+                    }
+
+                    @Override
+                    public Class<? extends Scheduler> getSchedulerClass() {
+                        return null;
+                    }
+
+                    @Override
+                    public void cancel() {
+                        //Firing not cancallable
+                    }
+
+                    @Override
+                    public void run(Result _null, SchedulerEvent event) {
+                        action.run();
+                    }
+
+                });
+        }
+    }
+
     private static void assertParserEventThread() {
-//issue #166210 uncommenting this assert proves that events are fired outside dispatch tread
-//        assert Utilities.isTaskProcessorThread(Thread.currentThread());
+        assert Utilities.isTaskProcessorThread(Thread.currentThread());
     }
 }

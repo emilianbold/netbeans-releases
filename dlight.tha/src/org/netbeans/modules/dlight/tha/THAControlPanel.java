@@ -49,14 +49,14 @@ public class THAControlPanel extends javax.swing.JPanel {
 
     private final boolean started;
     private final Action toggleAction;
-    private final Action deadlocksAction;
 
     /** Creates new form THAControlPanel */
-    public THAControlPanel(boolean started, Action toggleAction, Action deadlocksAction) {
+    public THAControlPanel(boolean started, Action toggleAction, Action deadlocksAction, Action racesAction) {
         this.started = started;
         this.toggleAction = toggleAction;
-        this.deadlocksAction = deadlocksAction;
         initComponents();
+        deadlocksButton.setAction(deadlocksAction);
+        racesButton.setAction(racesAction);
     }
 
     /** This method is called from within the constructor to
@@ -77,11 +77,9 @@ public class THAControlPanel extends javax.swing.JPanel {
         toggleButton.setAction(toggleAction);
         toggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/start24.png"))); // NOI18N
         toggleButton.setSelected(started);
-        toggleButton.setRolloverEnabled(false);
         toggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/pause24.png"))); // NOI18N
         add(toggleButton);
 
-        deadlocksButton.setAction(deadlocksAction);
         deadlocksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"))); // NOI18N
         deadlocksButton.setText(org.openide.util.NbBundle.getMessage(THAControlPanel.class, "THAControlPanel.deadlocksButton.nodeadlocks")); // NOI18N
         deadlocksButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive24.png"))); // NOI18N

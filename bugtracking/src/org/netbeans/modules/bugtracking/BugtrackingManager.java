@@ -69,7 +69,7 @@ public final class BugtrackingManager implements LookupListener {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1); // NOI18N
+    private RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
 
     /**
      * Holds all registered connectors.

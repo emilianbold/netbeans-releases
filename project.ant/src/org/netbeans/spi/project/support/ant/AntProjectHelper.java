@@ -359,16 +359,11 @@ public final class AntProjectHelper {
                             try {
                                 runSaveAA(new AtomicAction() {
                                     public void run() throws IOException {
-                                        FileLock lock = xml.lock();
+                                        OutputStream os = xml.getOutputStream();
                                         try {
-                                            OutputStream os = xml.getOutputStream(lock);
-                                            try {
-                                                os.write(data);
-                                            } finally {
-                                                os.close();
-                                            }
+                                            os.write(data);
                                         } finally {
-                                            lock.releaseLock();
+                                            os.close();
                                         }
                                         maybeCallPendingHook();
                                     }
