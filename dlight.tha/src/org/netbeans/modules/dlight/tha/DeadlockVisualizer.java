@@ -44,6 +44,7 @@ import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
@@ -119,7 +120,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            return StackPanelFactory.newStackPanel(stack);
+            return new CallStackPanel(stack);
         }
     }
 }

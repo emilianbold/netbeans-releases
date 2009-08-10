@@ -61,6 +61,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
@@ -248,7 +249,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {

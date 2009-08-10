@@ -6,6 +6,9 @@ package org.netbeans.modules.dlight.visualizers.api;
 
 import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -38,6 +41,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
     private TableModel tableModelImpl;
     private String emptyRuntimeMessage;
     private String emptyAnalyzeMessage;
+    private List<String> hiddenColumns;
 
     static{
         AdvancedTableViewVisualizerConfigurationAccessor.setDefault(new AdvancedTableViewVisualizerConfigurationAccessorImpl());
@@ -54,6 +58,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         this.dataTableMetadata = dataTableMetadata;
         this.nodeColumnName = nodeColumnName;
         this.nodeRowColumnID = nodeRowColumnID;
+        this.hiddenColumns = Collections.emptyList();
     }
 
     public void setEmptyRunningMessage(String emptyRuntimeMessage) {
@@ -86,6 +91,11 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         this.tableModelImpl = tableModelImpl;
     }
 
+    public final void setHiddenColumnNames(List<String> hiddenColumns) {
+        this.hiddenColumns = Collections.unmodifiableList(
+                new ArrayList<String>(hiddenColumns));
+    }
+
     NodeActionsProvider getNodeActionProvider() {
         return nodeActionProvider;
     }
@@ -100,6 +110,10 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
 
     TableModel getTableModel() {
         return tableModelImpl;
+    }
+
+    List<String> getHiddenColumnNames() {
+        return hiddenColumns;
     }
 
     public DataModelScheme getSupportedDataScheme() {
@@ -196,7 +210,11 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         public String getEmptyAnalyzeMessage(AdvancedTableViewVisualizerConfiguration configuration) {
             return configuration.getEmptyAnalyzeMessage();
         }
-        
-    }
 
+        @Override
+        public List<String> getHiddenColumnNames(AdvancedTableViewVisualizerConfiguration configuration) {
+            return configuration.getHiddenColumnNames();
+        }
+
+    }
 }

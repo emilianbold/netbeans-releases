@@ -105,12 +105,19 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
     private List<VisualizerConfiguration> visualizerConfigurations;
 
-    protected final void notifyListeners(VisualizerConfiguration vc){
+    protected final void notifyListeners(String  vcID){
+        for (VisualizerConfiguration vc : visualizerConfigurations){
+            if (vc.getID().equals(vcID)){
+                notifyListeners(vc);
+            }
+        }
+    }
+
+    private void notifyListeners(VisualizerConfiguration vc){
         for (IndicatorActionListener l : listeners) {
             l.openVisualizerForIndicator(this, vc);
         }
     }
-
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
             l.mouseClickedOnIndicator(this);
@@ -293,7 +300,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.toolName = toolName;
     }
 
-    List<VisualizerConfiguration> getVisualizerConfigurations() {
+    final List<VisualizerConfiguration> getVisualizerConfigurations() {
         return visualizerConfigurations;
     }
 
