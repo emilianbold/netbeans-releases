@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
 
 /**
@@ -111,6 +112,8 @@ public abstract class Issue {
             ISSUE_STATUS_MODIFIED;
     
     private Repository repository;
+
+    private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
 
     /**
      * Creates an issue
@@ -214,7 +217,7 @@ public abstract class Issue {
                 tc.open();
                 tc.requestActive();
 
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                rp.post(new Runnable() {
 
                     public void run() {
                         try {
@@ -269,7 +272,7 @@ public abstract class Issue {
                 tc.open();
                 tc.requestActive();
 
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                rp.post(new Runnable() {
 
                     public void run() {
                         try {

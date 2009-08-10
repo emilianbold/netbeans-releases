@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.support;
 
-package org.netbeans.modules.kenai.collab.chat;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.jivesoftware.smack.util.StringUtils;
-import org.openide.util.ImageUtilities;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /**
- * Participant representation.
- * Just id with icon
- * @author Jan Becicka
+ *
+ * @author Maria Tishkova
  */
-public class Buddy implements Comparable<Buddy> {
-    
-    private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
+public final class DefaultIndicatorComponentEmptyContentProvider {
 
-    public Buddy(String jid) {
-        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
-        this.jid = jid;
+    private static final DefaultIndicatorComponentEmptyContentProvider instance = new DefaultIndicatorComponentEmptyContentProvider();
+
+    private DefaultIndicatorComponentEmptyContentProvider() {
     }
 
-    Icon getIcon() {
-        return ONLINE_ICON;
+    public static final DefaultIndicatorComponentEmptyContentProvider getInstance() {
+        return instance;
     }
 
-    String getLabel() {
-        return StringUtils.parseName(jid);
-    }
+    public List<Indicator> getEmptyContent(String configurationName) {
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);//NOI18N
 
-    public String getJid() {
-        return jid;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        if (gizmoConfiguration == null) {
+            return null;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Buddy other = (Buddy) obj;
-        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
-            return false;
-        }
-        return true;
-    }
 
-    @Override
-    public int hashCode() {
-        return jid.hashCode();
-    }
+        List<Indicator> indicators = gizmoConfiguration.getIndicators();
 
-    public int compareTo(Buddy o) {
-        return this.getLabel().compareTo(o.getLabel());
+        Iterator<Indicator> it = indicators.iterator();
+
+        while (it.hasNext()) {
+            Indicator ind = it.next();
+            if (!ind.isVisible()) {
+                it.remove();
+            }
+        }
+
+        return indicators;
     }
 }

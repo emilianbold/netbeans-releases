@@ -115,9 +115,11 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
-        //TODO??
         if (EjbJar.VERSION_3_0.equals(getModuleVersion())) {
             return Profile.JAVA_EE_5;
+        }
+        if (EjbJar.VERSION_3_1.equals(getModuleVersion())) {
+            return Profile.JAVA_EE_6_FULL;
         }
         return Profile.J2EE_14;
     }

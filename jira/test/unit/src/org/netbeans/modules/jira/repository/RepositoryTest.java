@@ -40,6 +40,7 @@
 package org.netbeans.modules.jira.repository;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -49,19 +50,21 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
+import org.netbeans.modules.jira.LogHandler;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -93,83 +96,132 @@ public class RepositoryTest extends NbTestCase {
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
-//    public void testController() throws Throwable {
-//        BugzillaConnector bc = getConnector();
-//        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
-//        assertNotNull(repo);
-//        BugtrackingController c = repo.getController();
-//        assertNotNull(c);
-//        assertFalse(c.isValid());
-//
-//        // populate
-//        // only name
-//        populate(c, REPO_NAME, "", "", "");
-//        assertFalse(c.isValid());
-//
-//        // only url
-//        populate(c, "", REPO_URL, "", "");
-//        assertFalse(c.isValid());
-//
-//        // only user
-//        populate(c, "", "", REPO_USER, "");
-//        assertFalse(c.isValid());
-//
-//        // only passwd
-//        populate(c, "", "", "", REPO_PASSWD);
-//        assertFalse(c.isValid());
-//
-//        // only user & passwd
-//        populate(c, "", "", REPO_USER, REPO_PASSWD);
-//        assertFalse(c.isValid());
-//
-//        // name & url
-//        populate(c, REPO_NAME, REPO_URL, "", "");
-//        assertFalse(c.isValid());
-//
-//        // full house
-//        populate(c, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
-//        assertTrue(c.isValid());
-//
-//        // no crap, its valid!
-//        c.applyChanges();
-//        try {
-//            Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(repo.getTaskRepository(), NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
-//        } catch (Exception ex) {
-//            TestUtil.handleException(ex);
-//        }
-//    }
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        JiraConfig.getInstance().removeRepository(REPO_NAME);
+    }
 
+
+    public void testController() throws Throwable, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException {
+        RepositoryController c = getController();
+
+        // populate
+        // only name
+        populate(c, REPO_NAME, "", "", "");
+        assertFalse(c.isValid());
+
+        // only url
+        populate(c, "", JiraTestUtil.REPO_URL, "", "");
+        assertFalse(c.isValid());
+
+        // only user
+        populate(c, "", "", JiraTestUtil.REPO_USER, "");
+        assertFalse(c.isValid());
+
+        // only passwd
+        populate(c, "", "", "", JiraTestUtil.REPO_PASSWD);
+        assertFalse(c.isValid());
+
+        // only user & passwd
+        populate(c, "", "", JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
+        assertFalse(c.isValid());
+
+        // wrong url format
+        populate(c, REPO_NAME, "", JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
+        assertFalse(c.isValid());
+
+        populate(c, REPO_NAME, "crap", JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
+        assertFalse(c.isValid());
+
+        populate(c, REPO_NAME, "crap://crap", JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
+        assertFalse(c.isValid());
+
+        // name & url
+        populate(c, REPO_NAME, JiraTestUtil.REPO_URL, "", "");
+        assertTrue(c.isValid());
+
+        // full house
+        populate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
+        assertTrue(c.isValid());
+    }
+
+    public void testControllerOnValidate() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
+        RepositoryController c = getController();
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, null, JiraTestUtil.REPO_PASSWD, false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, "", JiraTestUtil.REPO_PASSWD, false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, "xxx", JiraTestUtil.REPO_PASSWD, false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, null, false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, "", false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, "xxx", false);
+
+        checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, true);
+    }
+
+    private void checkOnValidate(RepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
+
+        populate(c, repoName, repoUrl, user, psswd); //
+        assertTrue(c.isValid());
+
+        try {
+            LogHandler lh = new LogHandler("validate for", LogHandler.Compare.STARTS_WITH);
+            LogHandler lhAutoupdate = new LogHandler("JiraAutoupdate.checkAndNotify start", LogHandler.Compare.STARTS_WITH);
+            onValidate(c);
+            lh.waitUntilDone();
+            assertFalse(lhAutoupdate.isDone());
+            lhAutoupdate.reset();
+            String msg = lh.getInterceptedMessage();
+            boolean worked = msg.indexOf("worked") > -1;
+            if(assertWorked) {
+                assertTrue(worked);
+            } else {
+                assertFalse(worked);
+            }
+        } catch (Exception ex) {
+            JiraTestUtil.handleException(ex);
+        }
+    }
 //    public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-//        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+//        JiraRepository repo = new JiraRepository(REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
 //
 //        // test queries
-//        Query[] queries = repo.getQueries();
+//        Query[] queries = getLocalQueries(repo);
 //        assertEquals(0, queries.length);
 //
 //        Query q = repo.createQuery();
-//        queries = repo.getQueries();
+//        queries = getLocalQueries(repo);
 //        assertEquals(0, queries.length); // returns only saved queries
 //
 //        // save query
 //        long lastRefresh = System.currentTimeMillis();
-//        String parameters = "&product=zaibatsu";
-//        BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, lastRefresh);
-//        repo.saveQuery(bq);
-//        queries = repo.getQueries();
+//        FilterDefinition fd = new FilterDefinition();
+//        LogHandler lh = new LogHandler("Finnished populate query controller", LogHandler.Compare.STARTS_WITH, 60);
+//        JiraQuery jq = new JiraQuery(QUERY_NAME, repo, fd, lastRefresh);
+//        lh.waitUntilDone();
+//        System.out.println("DONE2 !!!");
+//        repo.saveQuery(jq);
+//
+//        queries = getLocalQueries(repo);
 //        assertEquals(1, queries.length); // returns only saved queries
 //
 //        // remove query
-//        repo.removeQuery(bq);
-//        queries = repo.getQueries();
+//        repo.removeQuery(jq);
+//        queries = getLocalQueries(repo);
 //        assertEquals(0, queries.length);
 //
 //        // XXX repo.createIssue();
 //
 //        // get issue
-//        String id = TestUtil.createIssue(repo, "somari");
+//        RepositoryResponse rr = JiraTestUtil.createIssue("somari", "Trobleu", "Bug");
+//        String id = rr.getTaskId();
 //        Issue i = repo.getIssue(id);
 //        assertNotNull(i);
-//        assertEquals(id, i.getID());
 //        assertEquals("somari", i.getSummary());
 //    }
 
@@ -214,13 +266,16 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(1, issues.length);
         assertEquals(summary1, issues[0].getSummary());
 
-        issues = repo.simpleSearch(id1);
+        String key1 = getKey(repo, id1);
+        String key2 = getKey(repo, id2);
+
+        issues = repo.simpleSearch(key1);
         // at least one as id might be also contained
         // in another issues summary
         assertTrue(issues.length > 0);
         Issue i = null;
         for(Issue issue : issues) {
-            if(issue.getID().equals(id1)) {
+            if(issue.getID().equals(key1)) {
                 i = issue;
                 break;
             }
@@ -237,8 +292,8 @@ public class RepositoryTest extends NbTestCase {
         }
         assertTrue(summaries.contains(summary1));
         assertTrue(summaries.contains(summary2));
-        assertTrue(ids.contains(id1));
-        assertTrue(ids.contains(id2));
+        assertTrue(ids.contains(key1));
+        assertTrue(ids.contains(key2));
     }
 
     private JiraConnector getConnector() {
@@ -252,6 +307,28 @@ public class RepositoryTest extends NbTestCase {
         }
         assertNotNull(bc);
         return bc;
+    }
+
+    private RepositoryController getController() {
+        JiraConnector bc = getConnector();
+        JiraRepository repo = (JiraRepository) bc.createRepository();
+        assertNotNull(repo);
+        RepositoryController c = (RepositoryController) repo.getController();
+        assertNotNull(c);
+        assertFalse(c.isValid());
+        return c;
+    }
+
+    private Query[] getLocalQueries(JiraRepository repo) {
+        Query[] queries = repo.getQueries();
+        List<Query> ret = new ArrayList<Query>();
+        for (Query query : queries) {
+            JiraQuery jq = (JiraQuery) query;
+            if(jq.getFilterDefinition() instanceof FilterDefinition) {
+                ret.add(jq);
+            }
+        }
+        return ret.toArray(new Query[ret.size()]);
     }
 
     private RepositoryPanel getRepositoryPanel(BugtrackingController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -286,5 +363,16 @@ public class RepositoryTest extends NbTestCase {
                 && (Modifier.isPrivate(actual) || Modifier.isProtected(actual)));
         // static must remain static and vice-versa
         assertEquals(Modifier.isStatic(expected), Modifier.isStatic(actual));
+    }
+
+    private String getKey(JiraRepository repo, String id1) {
+        Issue i = repo.getIssue(id1);
+        return i.getID();
+    }
+
+    private void onValidate(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("onValidate");
+        m.setAccessible(true);
+        m.invoke(c);
     }
 }
