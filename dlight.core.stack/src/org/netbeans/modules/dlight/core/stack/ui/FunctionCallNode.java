@@ -58,7 +58,7 @@ public class FunctionCallNode extends AbstractNode {
 
 
      FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
-         super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, functionCall));
+         super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
          this.functionCall = functionCall;
     }
 
@@ -69,7 +69,7 @@ public class FunctionCallNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.mergeImages(functionIcon, downBadge, 0, 0);
+        return ImageUtilities.mergeImages(functionIcon, upBadge, 0, 0);
     }
 
     @Override

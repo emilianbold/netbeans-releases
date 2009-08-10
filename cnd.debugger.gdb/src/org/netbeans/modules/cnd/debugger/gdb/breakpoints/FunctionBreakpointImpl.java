@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**

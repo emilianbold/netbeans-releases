@@ -39,17 +39,11 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -64,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
  */
 /*package-local*/ class ZipSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
-    private SmartFilter filter;
+    private TimestampAndSharabilityFilter filter;
 
     private int totalCount;
     private int uploadCount;
@@ -92,7 +86,17 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             System.out.printf("Uploading %s to %s ...\n", localDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
-        filter = new SmartFilter();
+        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
+        filter.setStatisticsCallback(new SharabilityFilter.StatisticsCallback() {
+            public void onAccept(File file, boolean accepted) {
+                totalCount++;
+                totalSize += file.length();
+                if (accepted) {
+                    uploadCount++;
+                    uploadSize += file.length();
+                }
+            }
+        });
         // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;
@@ -106,7 +110,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
-            Zipper zipper = new Zipper(zipFile);
+            Zipper zipper = createZipper(zipFile);
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();                
@@ -208,96 +212,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return false;
     }
 
-    private class SmartFilter extends SharabilityFilter {
-
-        final FileTimeStamps timeStamps;
-
-        public SmartFilter() {
-            timeStamps = new FileTimeStamps();
-        }
-
-        @Override
-        public boolean accept(File file) {
-            totalCount++;
-            totalSize += file.length();
-            boolean accept = super.accept(file);
-            if (accept && ! file.isDirectory()) {
-                if (timeStamps.isChanged(file)) {
-                    //System.out.printf("FILE %s CHANGED\n", file.getAbsolutePath());
-                    timeStamps.rememberTimeStamp(file);
-                } else {
-                    //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
-                    accept = false;
-                }
-            }
-            if (accept) {
-                uploadCount++;
-                uploadSize += file.length();
-            }
-            return accept;
-        }
-
-        public void flush() throws IOException {
-            timeStamps.flush();
-        }
-    }
-
-    private class FileTimeStamps {
-
-        private final Properties data;
-        private final File dataFile;
-
-        public FileTimeStamps() {
-            data = new Properties();
-            String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
-                    '-' + executionEnvironment.getUser()+ //NOI18N
-                    '-' + executionEnvironment.getSSHPort(); //NOI18N
-            dataFile = new File(privProjectStorageDir, dataFileName);
-            if (dataFile.exists()) {
-                try {
-                    long time = System.currentTimeMillis();
-                    final FileInputStream is = new FileInputStream(dataFile);
-                    data.load(new BufferedInputStream(is));
-                    is.close();                    
-                    if (logger.isLoggable(Level.FINEST)) {
-                        time = System.currentTimeMillis() - time;
-                        System.out.printf("\treading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    data.clear();
-                }
-            }
-        }
-
-        public boolean isChanged(File file) {
-            String strValue = data.getProperty(getFileKey(file), "-1");
-            long lastTimeStamp;
-            try {
-                lastTimeStamp = Long.parseLong(strValue);
-            } catch (NumberFormatException nfe) {
-                lastTimeStamp = -1;
-            }
-            long currTimeStamp = file.lastModified();
-            return currTimeStamp != lastTimeStamp;
-        }
-
-        public void rememberTimeStamp(File file) {
-            data.put(getFileKey(file), Long.toString(file.lastModified()));
-        }
-
-        private String getFileKey(File file) {
-            return file.getAbsolutePath();
-        }
-
-        public void flush() throws IOException {
-            File dir = dataFile.getParentFile();
-            if (!dir.exists()) {
-                dir.mkdirs(); // no ret value check - the code below will throw exception
-            }
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
-            data.store(os, null);
-            os.close();
-        }
+    protected Zipper createZipper(File zipFile) {
+        return new Zipper(zipFile);
     }
 }

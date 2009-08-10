@@ -49,24 +49,24 @@ import org.openide.nodes.Node;
  */
 public class FunctionCallChildren extends Children.Keys<FunctionCall> {
     private final CallStackTreeModel stackModel;
-    private final FunctionCall parentCall;
+    private final FunctionCall call;
 
-    FunctionCallChildren(CallStackTreeModel stackModel, FunctionCall parentCall) {
+    FunctionCallChildren(CallStackTreeModel stackModel, FunctionCall call) {
         this.stackModel = stackModel;
-        this.parentCall = parentCall;
+        this.call = call;
     }
 
     @Override
     protected void addNotify() {
         super.addNotify();
-        setKeys(new FunctionCall[]{parentCall});
+        setKeys(new FunctionCall[]{call});
     }
 
 
 
     @Override
     protected Node[] createNodes(FunctionCall key) {
-        return new FunctionCallNode[]{new FunctionCallNode(stackModel, stackModel.getCaller(key))};
+        return new FunctionCallNode[]{new FunctionCallNode(stackModel, call)};
     }
 
 }

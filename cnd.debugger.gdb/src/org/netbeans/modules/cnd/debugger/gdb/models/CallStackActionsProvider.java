@@ -45,7 +45,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
