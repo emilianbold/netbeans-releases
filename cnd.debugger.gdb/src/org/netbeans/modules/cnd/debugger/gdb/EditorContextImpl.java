@@ -64,7 +64,7 @@ import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerBreakpointAnnotation;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Annotation;
 
@@ -151,9 +151,9 @@ public class EditorContextImpl extends EditorContext {
     }
     
     public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
-        GdbBreakpoint b = null;
-        if (timeStamp instanceof GdbBreakpoint) {
-            b = (GdbBreakpoint) timeStamp;
+        CndBreakpoint b = null;
+        if (timeStamp instanceof CndBreakpoint) {
+            b = (CndBreakpoint) timeStamp;
             timeStamp = null;
         }
         Line l =  getLine(dobj, lineNumber, timeStamp);
