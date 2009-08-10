@@ -94,6 +94,8 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Dialog"));
         dialog.setVisible(true);
         repaint();
         

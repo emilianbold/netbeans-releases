@@ -96,6 +96,8 @@ public class TABLECustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Dialog"));
         dialog.setVisible(true);
         repaint();
         
