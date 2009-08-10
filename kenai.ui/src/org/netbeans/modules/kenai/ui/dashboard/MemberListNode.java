@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.plaf.UIResource;
+package org.netbeans.modules.kenai.ui.dashboard;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
+import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.openide.util.NbBundle;
 
 /**
- * Renderer for Buddies
- * @see Buddy
+ * Node for project's sources section.
+ *
  * @author Jan Becicka
  */
-final class BuddyListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+public class MemberListNode extends SectionNode {
 
-    public BuddyListCellRenderer() {
-        super();
-        setOpaque(false);
+    public MemberListNode( ProjectNode parent ) {
+        super( NbBundle.getMessage(MemberListNode.class, "LBL_Members"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
     }
 
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        // #93658: GTK needs name to render cell renderer "natively"
-        setName("ComboBox.listRenderer"); // NOI18N
-        // NOI18N
-        if (value instanceof Buddy) {
-            Buddy pkgitem = (Buddy) value;
-            setText(pkgitem.getLabel());
-            setIcon(pkgitem.getIcon());
-        } else {
-            // #49954: render a specially inserted package somehow.
-            String pkgitem = (String) value;
-            setText(pkgitem);
-            setIcon(null);
-        }
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        return this;
-    }
-
-    // #93658: GTK needs name to render cell renderer "natively"
     @Override
-    public String getName() {
-        String name = super.getName();
-        return name == null ? "ComboBox.renderer" : name; // NOI18N
+    protected List<TreeListNode> createChildren() {
+        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
+        MemberAccessor accessor = MemberAccessor.getDefault();
+        List<MemberHandle> sources = accessor.getMembers(project);
+        for (MemberHandle s : sources) {
+            res.add(new MemberNode(s, this));
+        }
+        return res;
     }
 }
