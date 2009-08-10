@@ -72,8 +72,7 @@ public interface WebBeansModelProvider {
     
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
 
-    List<AnnotationMirror> getBindings( Element element );
-
-    AnnotationMirror getDeploymentType( Element element );
+    List<AnnotationMirror> getBindings( Element element , 
+            AbstractModelImplementation impl );
 
 }

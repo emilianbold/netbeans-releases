@@ -128,14 +128,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     private void updateLineNumber() {
-        int line = getBreakpoint().getLineNumber();
-        String url = getBreakpoint().getURL();
+        // int line = getBreakpoint().getLineNumber();
         // We need to retrieve the original line number which is associated
         // with the start of this session.
-        line = EditorContextBridge.getContext().getLineNumber(
+        lineNumber = EditorContextBridge.getContext().getLineNumber(
                 getBreakpoint(),
                 getDebugger());
-        lineNumber = line;
     }
 
     @Override

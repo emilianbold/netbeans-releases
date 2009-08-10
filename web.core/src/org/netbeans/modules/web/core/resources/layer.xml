@@ -59,6 +59,11 @@ made subject to such option by the copyright holder.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
       </file>
+      <!-- Facelet -->
+      <file name="JSP.xhtml" url="templates/simpleFacelets.template">
+          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+          <attr name="position" intvalue="0"/>
+      </file>
       <!--  JSP Document --> 
       <file name="JSPX.jspx" url="templates/JSPDoc.template">
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

@@ -55,7 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.modules.project.libraries.WritableLibraryProvider;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
@@ -69,7 +68,6 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
-import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 
 /**
@@ -225,10 +223,8 @@ public final class LibraryManager {
         synchronized (this) {
             assert l != null;
             if (this.eventId == myId) {
-                if (!ProjectManager.mutex().isReadAccess() && !ProjectManager.mutex().isWriteAccess()) {
-                    cache = l;
-                }
-                return l.toArray(new Library[0]);
+                cache = l;
+                return cache.toArray(new Library[0]);
             }
             else {
                 return l.toArray(new Library[0]);

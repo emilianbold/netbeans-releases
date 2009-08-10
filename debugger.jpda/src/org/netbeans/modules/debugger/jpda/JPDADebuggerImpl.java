@@ -130,11 +130,10 @@ import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
-import org.netbeans.modules.debugger.jpda.expr.EvaluationException2;
-import org.netbeans.modules.debugger.jpda.expr.Evaluator;
-import org.netbeans.modules.debugger.jpda.expr.Expression2;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
+import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
-import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.modules.debugger.jpda.expr.TreeEvaluator;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
@@ -271,7 +270,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             old = suspend;
             suspend = s;
         }
-        firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
+        firePropertyChange (PROP_SUSPEND, Integer.valueOf(old), Integer.valueOf(s));
     }
 
     /**
@@ -307,7 +306,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
         if (csf == null && t != null) {
-            t.getReadAccessLock().lock();
+            Lock l = t.getReadAccessLock();
+            l.lock();
             try {
                 if (t.isSuspended()) {
                     // Must not call this under currentThreadAndFrameLock, other lock acquired.
@@ -320,7 +320,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             } catch (Exception ex) {
             } finally {
-                t.getReadAccessLock().unlock();
+                l.unlock();
             }
         }
         return csf;
@@ -477,25 +477,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
         try {
             // 1) redefine classes
             Map<ReferenceType, byte[]> map = new HashMap<ReferenceType, byte[]>();
-            Iterator<String> i = classes.keySet ().iterator ();
+            Iterator<Map.Entry<String, byte[]>> e = classes.entrySet ().iterator ();
             VirtualMachine vm = getVirtualMachine();
             if (vm == null) {
                 return ; // The session has finished
             }
             try {
-                while (i.hasNext ()) {
-                    String className = i.next ();
+                while (e.hasNext ()) {
+                    Map.Entry<String, byte[]> classEntry = e.next();
+                    String className = classEntry.getKey();
+                    byte[] bytes = classEntry.getValue();
                     List<ReferenceType> classRefs = VirtualMachineWrapper.classesByName (vm, className);
                     int j, jj = classRefs.size ();
                     for (j = 0; j < jj; j++)
                         map.put (
                             classRefs.get (j),
-                            classes.get (className)
+                            bytes
                         );
                 }
                 VirtualMachineWrapper.redefineClasses (vm, map);
-            } catch (InternalExceptionWrapper e) {
-            } catch (VMDisconnectedExceptionWrapper e) {
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
             }
 
             // update breakpoints
@@ -520,7 +522,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         updateCurrentCallStackFrame (t);
                         setState (STATE_STOPPED);
                     }
-                } catch (InvalidStackFrameException e) {
+                } catch (InvalidStackFrameException ex) {
                 }
             }
 
@@ -544,7 +546,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         // Just reset the time stamp so that new line numbers are taken.
         EditorContextBridge.getContext().disposeTimeStamp(this);
         EditorContextBridge.getContext().createTimeStamp(this);
-        bel.fixBreakpointImpls ();
+        if (bel != null) bel.fixBreakpointImpls ();
     }
 
     public Session getSession() {
@@ -776,7 +778,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     // * it's collection must be enabled again.
     private Value evaluateIn (String expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
         Expression expr = null;
-        expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
+        expr = Expression.parse(expression, Expression.LANGUAGE_JAVA_1_5);
         return evaluateIn (expr, csf, var);
     }
 
@@ -921,119 +923,63 @@ public class JPDADebuggerImpl extends JPDADebugger {
             final List<EventRequest>[] disabledBreakpoints =
                     new List[] { null };
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
-            boolean useNewEvaluator = !Boolean.getBoolean("debugger.evaluatorOld");
             EvaluationContext context;
-            if (useNewEvaluator) {
-                Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
-                org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 =
-                    expression2.evaluator(
-                        context = new EvaluationContext(
-                            trImpl,
-                            frame,
-                            frameDepth,
-                            var,
-                            imports,
-                            staticImports,
-                            methodCallsUnsupportedExc == null,
-                            new Runnable() {
-                                public void run() {
-                                    if (disabledBreakpoints[0] == null) {
-                                        JPDAThreadImpl theResumedThread = getThread(tr);
-                                        try {
-                                            theResumedThread.notifyMethodInvoking();
-                                        } catch (PropertyVetoException pvex) {
-                                            throw new RuntimeException(
-                                                new InvalidExpressionException (pvex.getMessage()));
-                                        }
-                                        try {
-                                            disabledBreakpoints[0] = disableAllBreakpoints();
-                                            resumedThread[0] = theResumedThread;
-                                        } catch (InternalExceptionWrapper ex) {
-                                        } catch (VMDisconnectedExceptionWrapper ex) {
-                                        }
+            TreeEvaluator evaluator =
+                expression.evaluator(
+                    context = new EvaluationContext(
+                        trImpl,
+                        frame,
+                        frameDepth,
+                        var,
+                        imports,
+                        staticImports,
+                        methodCallsUnsupportedExc == null,
+                        new Runnable() {
+                            public void run() {
+                                if (disabledBreakpoints[0] == null) {
+                                    JPDAThreadImpl theResumedThread = getThread(tr);
+                                    try {
+                                        theResumedThread.notifyMethodInvoking();
+                                    } catch (PropertyVetoException pvex) {
+                                        throw new RuntimeException(
+                                            new InvalidExpressionException (pvex.getMessage()));
+                                    }
+                                    try {
+                                        disabledBreakpoints[0] = disableAllBreakpoints();
+                                        resumedThread[0] = theResumedThread;
+                                    } catch (InternalExceptionWrapper ex) {
+                                    } catch (VMDisconnectedExceptionWrapper ex) {
                                     }
                                 }
-                            },
-                            this
-                        )
-                    );
-                try {
-                    return evaluator2.evaluate ();
-                } finally {
-                    if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
-                        methodCallsUnsupportedExc =
-                                new InvalidExpressionException(new UnsupportedOperationException());
-                    }
-                    if (disabledBreakpoints[0] != null) {
-                        enableAllBreakpoints (disabledBreakpoints[0]);
-                    }
-                    if (resumedThread[0] != null) {
-                        resumedThread[0].notifyMethodInvokeDone();
-                    }
+                            }
+                        },
+                        this
+                    )
+                );
+            try {
+                return evaluator.evaluate ();
+            } finally {
+                if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
+                    methodCallsUnsupportedExc =
+                            new InvalidExpressionException(new UnsupportedOperationException());
                 }
-            } else {
-                org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator =
-                    expression.evaluator (
-                        context = new EvaluationContext (
-                            trImpl,
-                            frame,
-                            frameDepth,
-                            var,
-                            imports,
-                            staticImports,
-                            methodCallsUnsupportedExc == null,
-                            new Runnable() {
-                                public void run() {
-                                    if (disabledBreakpoints[0] == null) {
-                                        JPDAThreadImpl theResumedThread = getThread(tr);
-                                        try {
-                                            theResumedThread.notifyMethodInvoking();
-                                        } catch (PropertyVetoException pvex) {
-                                            throw new RuntimeException(
-                                                new InvalidExpressionException (pvex.getMessage()));
-                                        }
-                                        try {
-                                            disabledBreakpoints[0] = disableAllBreakpoints();
-                                            resumedThread[0] = theResumedThread;
-                                        } catch (InternalExceptionWrapper ex) {
-                                        } catch (VMDisconnectedExceptionWrapper ex) {
-                                        }
-                                    }
-                                }
-                            },
-                            this
-                        )
-                    );
-                try {
-                    return evaluator.evaluate ();
-                } finally {
-                    if (methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
-                        methodCallsUnsupportedExc =
-                                new InvalidExpressionException(new UnsupportedOperationException());
-                    }
-                    if (disabledBreakpoints[0] != null) {
-                        enableAllBreakpoints (disabledBreakpoints[0]);
-                    }
-                    if (resumedThread[0] != null) {
-                        resumedThread[0].notifyMethodInvokeDone();
-                    }
+                if (disabledBreakpoints[0] != null) {
+                    enableAllBreakpoints (disabledBreakpoints[0]);
+                }
+                if (resumedThread[0] != null) {
+                    resumedThread[0].notifyMethodInvokeDone();
                 }
             }
         } catch (InternalExceptionWrapper e) {
             throw new InvalidExpressionException(e.getLocalizedMessage());
         } catch (VMDisconnectedExceptionWrapper e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_disconnected"));
+                TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (InvalidStackFrameExceptionWrapper e) {
             Exceptions.printStackTrace(e); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (EvaluationException e) {
-            InvalidExpressionException iee = new InvalidExpressionException (e);
-            iee.initCause (e);
-            Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
-            throw iee;
-        } catch (EvaluationException2 e) {
             InvalidExpressionException iee = new InvalidExpressionException (e);
             iee.initCause (e);
             Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
@@ -1624,7 +1570,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (operator.flushStaledEvents()) {
             return ;
         }
-        setState (STATE_RUNNING);
+        PropertyChangeEvent stateChangeEvent;
         //notifyToBeResumedAll();
         VirtualMachine vm;
         synchronized (virtualMachineLock) {
@@ -1635,6 +1581,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             List<JPDAThread> allThreads = getAllThreads();
             accessLock.writeLock().lock();
             logger.finer("Debugger WRITE lock taken.");
+            stateChangeEvent = setStateNoFire(STATE_RUNNING);
             // We must resume only threads which are regularly suspended.
             // Otherwise we may unexpectedly resume threads which just hit an event!
             
@@ -1684,6 +1631,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } finally {
                 accessLock.writeLock().unlock();
                 logger.finer("Debugger WRITE lock released.");
+                if (stateChangeEvent != null) {
+                    firePropertyChange(stateChangeEvent);
+                }
                 for (JPDAThreadImpl t : threadsToResume) {
                     try {
                         t.fireAfterResume();

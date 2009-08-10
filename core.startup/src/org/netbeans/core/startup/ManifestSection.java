@@ -273,6 +273,7 @@ public abstract class ManifestSection<T> {
             warnObsolete(sectionName, module);
             return null;
         } else if (sectionName.equalsIgnoreCase("Loader")) { // NOI18N
+            warnObsolete(sectionName, module);
             return new LoaderSection(name, attr, module);
         } else if (sectionName.equalsIgnoreCase("Filesystem")) { // NOI18N
             warnObsolete(sectionName, module);
@@ -298,6 +299,9 @@ public abstract class ManifestSection<T> {
     }
     
     private static void warnObsolete(String sectionName, Module module) {
+        if (module == null) {
+            return; // NbLoaderPoolResolverChangeTest
+        }
         Util.err.warning("Use of OpenIDE-Module-Class: " + sectionName + " in " + module.getCodeNameBase() + " is obsolete.");
         Util.err.warning("(Please use layer-based installation of objects instead.)");
     }

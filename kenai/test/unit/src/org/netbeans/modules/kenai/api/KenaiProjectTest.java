@@ -74,7 +74,7 @@ public class KenaiProjectTest extends NbTestCase {
     @Override
     public void setUp() {
         try {
-            System.setProperty("kenai.com.url","http://testkenai.com");
+            System.setProperty("kenai.com.url","https://testkenai.com");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

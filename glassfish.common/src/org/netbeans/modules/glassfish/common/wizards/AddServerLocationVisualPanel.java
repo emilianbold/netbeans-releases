@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -247,7 +248,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                 DownloadState state = AddServerLocationVisualPanel.this.downloadState;
                 boolean licenseAccepted = agreeCheckBox.isSelected();
                 File val = new File(hk2HomeTextField.getText().trim());
-                boolean writableLoc = AddServerLocationPanel.canCreate(val) || val.canWrite();
+                boolean writableLoc = AddServerLocationPanel.canCreate(val) || Utils.canWrite(val);
                 String buttonTextKey = 
                         state == DownloadState.DOWNLOADING ? "LBL_CancelDownload" : 
                         state == DownloadState.COMPLETED ? "LBL_DownloadComplete" : "LBL_DownloadNow";
@@ -267,6 +268,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         updateMessageText("");
         if(downloadState == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
+        } else {
+            updateButton();
         }
     }
        
@@ -423,7 +426,7 @@ private void agreeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             setDownloadState(DownloadState.AVAILABLE);
         } else {
             File val = new File(hk2HomeTextField.getText().trim());
-            boolean writableLoc = AddServerLocationPanel.canCreate(val) || val.canWrite();
+            boolean writableLoc = AddServerLocationPanel.canCreate(val) || Utils.canWrite(val);
             downloadButton.setEnabled(agreeCheckBox.isSelected() && writableLoc);
         }
 }//GEN-LAST:event_agreeCheckBoxActionPerformed

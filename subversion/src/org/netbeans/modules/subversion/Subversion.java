@@ -56,7 +56,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -193,8 +192,6 @@ public class Subversion {
                                String username,
                                String password,
                                int handledExceptions) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
@@ -225,8 +222,6 @@ public class Subversion {
                                String username,
                                String password,
                                SvnProgressSupport support) throws SVNClientException {
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -290,8 +285,6 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
-        // ping config file copying
-        SvnConfigFiles.getInstance();
         if(attachListeners) {
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
@@ -509,6 +502,7 @@ public class Subversion {
 
         File original = null;
         try {
+            SvnClientFactory.checkClientAvailable();
             original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
@@ -516,6 +510,11 @@ public class Subversion {
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
+        } catch (SVNClientException ex) {
+            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file " + workingCopy.getAbsolutePath() + ")"); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
         } finally {
             if (original != null) {
                 try {

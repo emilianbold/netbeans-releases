@@ -16,7 +16,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="httpCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="httpCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="321" max="32767" attributes="0"/>
+          </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="27" pref="27" max="27" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -29,40 +32,42 @@
                   <Component id="httpUserField" alignment="0" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Group type="103" groupAlignment="1" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="validateButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="validateLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="progressPanel" pref="318" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="psswdLabel" min="-2" max="-2" attributes="0"/>
-                      <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="psswdField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="userField" alignment="0" max="32767" attributes="1"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="psswdLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="psswdField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="userField" alignment="0" max="32767" attributes="1"/>
+                          </Group>
                           <Component id="urlField" alignment="0" max="32767" attributes="1"/>
                           <Component id="nameField" alignment="0" max="32767" attributes="1"/>
                       </Group>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="validateButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="validateLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="progressPanel" pref="187" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="connectionLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="nameField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -72,7 +77,7 @@
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="userLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="userField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -94,15 +99,14 @@
                   <Component id="httpPsswdField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="psswdLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="validateLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="progressPanel" min="-2" pref="13" max="-2" attributes="0"/>
+              <EmptySpace pref="10" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="validateButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="progressPanel" alignment="2" min="-2" pref="14" max="-2" attributes="1"/>
+                  <Component id="validateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="connectionLabel" alignment="2" min="-2" max="-2" attributes="1"/>
               </Group>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace min="239" pref="239" max="239" attributes="0"/>
-              <Component id="validateButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -260,6 +264,19 @@
     <Component class="javax.swing.JPasswordField" name="httpPsswdField">
       <Properties>
         <Property name="columns" type="int" value="15"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="connectionLabel">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="ff" id="green" palette="1" red="0" type="palette"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/repository/Bundle.properties" key="RepositoryPanel.connectionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>

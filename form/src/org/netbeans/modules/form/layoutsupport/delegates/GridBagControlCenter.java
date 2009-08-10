@@ -47,7 +47,6 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * @author  phrebejk

@@ -38,17 +38,22 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
+import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
+    private StackDataStorage stackDataStorage;
     private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
@@ -62,7 +67,32 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return storage.queryThreadMapData(query);
     }
 
-    public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
+    public ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
+        if (stackDataStorage == null) {
+            return null;
+        }
+        return stackDataStorage.getThreadDump(timestamp, threadInfo.getThreadId(), 1);
+    }
+
+    public void attachTo(DataStorage storage) {
+        if (storage instanceof StackDataStorage) {
+            stackDataStorage = (StackDataStorage) storage;
+        } else {
+            stackDataStorage = null;
+        }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+    }
+
+    public ThreadDump getStackTrace(long timestamp, long threadID) {
+        if (stackDataStorage == null) {
+            return null;
+        }
+        return stackDataStorage.getThreadDump(timestamp, threadID, 1);
+    }
+
+    public ThreadDump getStackTrace(long timestamp, long threadID, int threadstate) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

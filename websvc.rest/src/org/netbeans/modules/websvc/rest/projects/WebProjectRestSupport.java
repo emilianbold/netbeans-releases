@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -63,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -79,7 +74,6 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -229,17 +223,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                     WSTool wsTool = wsStack.getWSTool(JaxRs.Tool.JAXRS);
                     if (wsTool != null) {
                         URL[] libs = wsTool.getLibraries();
-                        try {
-                            List<File> jars = new ArrayList<File>();
-                            for (URL lib : libs) {
-                                if (!new File(lib.toURI()).exists()) {
-                                    return;
-                                }
-                                jars.add(new File(lib.toURI()));
-                            }
-                            swdpLibrary = createSwdpLibrary(jars, libName);
-                        } catch (URISyntaxException e) {
-                        }
+                        swdpLibrary = createSwdpLibrary(libs, libName);
                     }
                 }
                 if (swdpLibrary != null) {
@@ -249,12 +233,11 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private Library createSwdpLibrary(List<File> jars, final String libraryName) throws IOException {
+    private Library createSwdpLibrary(URL[] libs, final String libraryName) throws IOException {
         // obtain URLs of the jar file
         List <URL> urls = new ArrayList <URL> ();
-        for (File jar:jars) {
-            URL url = jar.toURL();
-            url = FileUtil.getArchiveRoot(url);
+        for (URL lib:libs) {
+            URL url = FileUtil.getArchiveRoot(lib);
             urls.add(url);
         }
         // create new library and regist in the Library Manager.
@@ -269,43 +252,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         return lib;
     }
 
-//    private boolean hasRestServletAdaptor(WebApp webApp) {
-//        return getRestServletAdaptor(webApp) != null;
-//    }
-
-//    private Servlet getRestServletAdaptor(WebApp webApp) {
-//        if (webApp != null) {
-//            for (Servlet s : webApp.getServlet()) {
-//                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
-//                    return s;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    public static ServletMapping getRestServletMapping(Project project) throws IOException {
-//        return getRestServletMapping(getWebApp());
-//    }
-//
-//    public static ServletMapping getRestServletMapping(WebApp webApp) {
-//        for (ServletMapping sm : webApp.getServletMapping()) {
-//            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-//                return sm;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private boolean hasRestServletAdaptor() {
-//        try {
-//            return hasRestServletAdaptor(getWebApp());
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//            return false;
-//        }
-//    }
-
     private FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
@@ -314,89 +260,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         return null;
     }
 
-//    private void addResourceConfigToWebApp() throws IOException {
-//        FileObject ddFO = getDeploymentDescriptor();
-//        WebApp webApp = getWebApp();
-//        if (webApp == null) {
-//            return;
-//        }
-//        boolean needsSave = false;
-//        try {
-//            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-//            if (adaptorServlet == null) {
-//                adaptorServlet = (Servlet) webApp.createBean("Servlet");
-//                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-//                adaptorServlet.setServletClass(getServletAdapterClass());
-//                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
-//                webApp.addServlet(adaptorServlet);
-//                needsSave = true;
-//            }
-//
-//            ServletMapping sm = getRestServletMapping(webApp);
-//            if (sm == null) {
-//                sm = (ServletMapping) webApp.createBean("ServletMapping");
-//                sm.setServletName(adaptorServlet.getServletName());
-//                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
-//                webApp.addServletMapping(sm);
-//                needsSave = true;
-//            }
-//            if (needsSave) {
-//                webApp.write(ddFO);
-//            }
-//        } catch (IOException ioe) {
-//            throw ioe;
-//        } catch (ClassNotFoundException ex) {
-//            throw new IllegalArgumentException(ex);
-//        }
-//    }
-//
-//    private void removeResourceConfigFromWebApp() throws IOException {
-//        FileObject ddFO = getDeploymentDescriptor();
-//        WebApp webApp = getWebApp();
-//        if (webApp == null) {
-//            return;
-//        }
-//        boolean needsSave = false;
-//        Servlet restServlet = getRestServletAdaptor(webApp);
-//        if (restServlet != null) {
-//            webApp.removeServlet(restServlet);
-//            needsSave = true;
-//        }
-//        ServletMapping sm = getRestServletMapping(webApp);
-//        if (sm != null) {
-//            webApp.removeServletMapping(sm);
-//            needsSave = true;
-//        }
-//        if (needsSave) {
-//            webApp.write(ddFO);
-//        }
-//    }
-
-//    private WebApp getWebApp() throws IOException {
-//        return getWebApp(project);
-//    }
-//
-//    public static WebApp getWebApp(Project project) throws IOException {
-//        FileObject fo = getWebXml(project);
-//        if (fo != null) {
-//            return DDProvider.getDefault().getDDRoot(fo);
-//        }
-//        return null;
-//    }
-//
-//    public FileObject getWebXml() throws IOException {
-//        return getWebXml(project);
-//    }
-//
-//    public static FileObject getWebXml(Project project) throws IOException {
-//        WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
-//        if(jp == null) {
-//            throw new IOException(
-//                    NbBundle.getMessage(WebProjectRestSupport.class,
-//                    "MSG_InvalidWebProject", project.getProjectDirectory()));
-//        }
-//        return jp.getDeploymentDescriptor();
-//    }
 
     @Override
     public FileObject getPersistenceXml() {

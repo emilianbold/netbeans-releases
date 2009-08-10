@@ -45,11 +45,13 @@ package org.netbeans.modules.form.fakepeer;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import java.awt.peer.ComponentPeer;
 
 
 /**
  *
  * @author Tran Duc Trung
+ * @author Jan Stola
  */
 
 abstract class FakeComponentPeer
@@ -317,6 +319,15 @@ abstract class FakeComponentPeer
 
     // JDK 1.5
     public void layout() {
+    }
+
+    // JDK 1.7
+    public boolean updateGraphicsData(GraphicsConfiguration gc) {
+        return false;
+    }
+
+    // JDK 1.7
+    public void setZOrder(ComponentPeer above) {
     }
 
     // deprecated

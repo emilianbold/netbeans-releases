@@ -62,11 +62,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.mozilla.browser.MozillaRuntimeException;
 import org.mozilla.browser.XPCOMUtils;
-import org.mozilla.interfaces.nsICookie2;
+import org.mozilla.interfaces.nsICookie;
 import org.mozilla.interfaces.nsICookieManager;
 import org.mozilla.interfaces.nsICookieManager2;
 import org.mozilla.interfaces.nsISimpleEnumerator;
 import org.mozilla.interfaces.nsISupports;
+import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.BrowserCallback;
 import org.netbeans.core.browser.BrowserManager;
 import org.netbeans.core.browser.BrowserPanel;
@@ -195,6 +196,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         try {
             browser.load(url);
         } catch( MozillaRuntimeException ex ) {
+            //invalid URL
+            Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
+        } catch( XPCOMException ex ) {
+            //invalid URL
             Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
         }
     }
@@ -204,7 +209,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         if( !isInitialized() )
             return null;
         try {
-            return browser.getUrl();
+            String url = browser.getUrl();
+            if( null == url )
+                url = urlToLoad;
+            return url;
         } catch( MozillaRuntimeException ex ) {
             Logger.getLogger(WebBrowserImpl.class.getName()).log(Level.FINE, null, ex);
         }
@@ -236,7 +244,11 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void forward() {
         if( !isInitialized() )
             return;
-        browser.goForward();
+        try {
+            browser.goForward();
+        } catch( MozillaRuntimeException e ) {
+            LOG.log(Level.FINE, null, e);
+        }
     }
 
     @Override
@@ -250,7 +262,11 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void backward() {
         if( !isInitialized() )
             return;
-        browser.goBack();
+        try {
+            browser.goBack();
+        } catch( MozillaRuntimeException e ) {
+            LOG.log(Level.FINE, null, e);
+        }
     }
 
     @Override
@@ -294,7 +310,6 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         synchronized( LOCK ) {
             disposed = true;
             if( isInitialized() ) {
-                browser.dispose();
                 container.removeAll();
                 browser = null;
             }
@@ -326,10 +341,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             nsICookieManager cm = XPCOMUtils.getService(SERVICE_COOKIE_MANAGER, nsICookieManager.class);
             if( null != cm ) {
                 nsISimpleEnumerator enumerator = cm.getEnumerator();
-                nsICookie2 theCookie = null;
+                nsICookie theCookie = null;
                 while( enumerator.hasMoreElements() ) {
                     nsISupports obj = enumerator.getNext();
-                    nsICookie2 cookie = XPCOMUtils.qi(obj, nsICookie2.class);
+                    nsICookie cookie = XPCOMUtils.qi(obj, nsICookie.class);
                     if( null == cookie )
                         continue;
                     LOG.log(Level.FINER, "Cookie: domain={0}, name={1}, path={2}, value={3}", //NOI18N
@@ -409,6 +424,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     public boolean fireBrowserEvent(int type, String url) {
         WebBrowserEvent event = WebBrowserEvent.create(type, this, url);
+        urlToLoad = url;
         synchronized( browserListners ) {
             for( WebBrowserListener l : browserListners ) {
                 l.onDispatchEvent(event);
@@ -449,14 +465,14 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         };
     }
 
-    private static Map<String, String> cookie2map(nsICookie2 cookie) {
+    private static Map<String, String> cookie2map(nsICookie cookie) {
         Map<String, String> res = new HashMap<String, String>(10);
         res.put(CA_PATH, cookie.getPath());
         res.put(CA_DOMAIN, cookie.getHost());
-        res.put(CA_EXPIRY, String.valueOf(cookie.getExpiry()));
-        res.put(CA_IS_HTTP_ONLY, String.valueOf(cookie.getIsHttpOnly()));
+//        res.put(CA_EXPIRY, String.valueOf(cookie.getExpiry()));
+//        res.put(CA_IS_HTTP_ONLY, String.valueOf(cookie.getIsHttpOnly()));
         res.put(CA_IS_SECURE, String.valueOf(cookie.getIsSecure()));
-        res.put(CA_IS_SESSION, String.valueOf(cookie.getIsSession()));
+//        res.put(CA_IS_SESSION, String.valueOf(cookie.getIsSession()));
         res.put(CA_NAME, cookie.getName());
         res.put(CA_VALUE, cookie.getValue());
         return res;

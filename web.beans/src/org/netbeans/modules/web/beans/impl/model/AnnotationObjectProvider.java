@@ -106,8 +106,10 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
                     public void handleAnnotation(TypeElement type, 
                             Element element, AnnotationMirror annotation) 
                     {
-                        result.add( new Binding( getHelper(), type , 
+                        if ( !set.contains( type )){
+                            result.add( new Binding( getHelper(), type , 
                                 getAnnotationName()));
+                        }
                         set.add( type );
                         if ( !getHelper().hasAnnotation( annotation.
                                 getAnnotationType().asElement().
@@ -142,7 +144,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         if (annotationMirror != null ) {
             result.add( new Binding(getHelper(), type, getAnnotationName()));
         }
-        if ( !getHelper().hasAnnotation( annotationMirror.
+        if ( annotationMirror == null || !getHelper().hasAnnotation( annotationMirror.
                 getAnnotationType().asElement().
                 getAnnotationMirrors(), 
                 Inherited.class.getCanonicalName()))
@@ -182,7 +184,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         
         TypeElement superClass = helper.getSuperclass(type);
         if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.equals( annotationName)){
-            if ( checkCurrent( superClass, helper )){
+            if ( checkSpecializedCurrent( superClass, helper )){
                 return superClass;
             }
         }
@@ -205,7 +207,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
             if ( el instanceof TypeElement ){
                 TypeElement interfaceElement = (TypeElement) el;
                 if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.equals( annotationName)){
-                    if ( checkCurrent( interfaceElement, helper )){
+                    if ( checkSpecializedCurrent( interfaceElement, helper )){
                         return superClass;
                     }
                 }
@@ -222,7 +224,28 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         return null;
     }
     
-    static boolean checkCurrent( Element element , AnnotationModelHelper helper){
+    /*
+     * This method is called only for parent which are specialized.
+     * In this case @Current is not "inherited" child from parents. 
+     */
+    static boolean checkSpecializedCurrent( Element element , AnnotationModelHelper helper){
+        /*
+        Set<String> bindingNames = getBindings(element, helper);
+        if ( bindingNames.contains(
+                        WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
+        {
+            return true;
+        }
+        if ( bindingNames.size() == 0 ){
+            return true;
+        }
+        */
+        return helper.hasAnnotation( helper.getCompilationController().
+                getElements().getAllAnnotationMirrors(element), 
+                WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
+    }
+    
+    static  boolean checkCurrent( Element element , AnnotationModelHelper helper){
         Set<String> bindingNames = getBindings(element, helper);
         if ( bindingNames.contains(
                         WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
@@ -294,7 +317,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
             TypeElement element = toProcess.iterator().next();
             toProcess.remove(element);
             Set<TypeElement> implementors = doCollectSpecializedImplementors(
-                    element, set, bindings);
+                    element,bindings);
             if (implementors.size() == 0) {
                 continue;
             }
@@ -312,7 +335,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     }
     
     private Set<TypeElement> doCollectSpecializedImplementors( TypeElement type, 
-            Set<TypeElement> set, List<Binding> bindings )
+            List<Binding> bindings )
     {
         Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle.create(type);

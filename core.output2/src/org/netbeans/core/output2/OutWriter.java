@@ -47,12 +47,12 @@
 package org.netbeans.core.output2;
 
 import java.awt.Color;
-import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.util.Collection;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -78,7 +78,7 @@ class OutWriter extends PrintWriter {
     /**
      * Byte array used to write the line separator after line writes.
      */
-    static String lineSeparator = System.getProperty ("line.separator" );
+    static final String LINE_SEPARATOR = "\n";
 
     /** The read-write backing storage.  May be heap or */
     private Storage storage;
@@ -262,20 +262,14 @@ class OutWriter extends PrintWriter {
             return;
         }
         synchronized (this) {
-            if (lines.hasHyperlinks()) {
-                int[] listenerLines = lines.allListenerLines();
+            if (lines.hasListeners()) {
+                int[] listenerLines = lines.getLinesWithListeners();
                 Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
                 for (int i=0; i < listenerLines.length; i++) {
-                    OutputListener ol = lines.getListenerForLine(listenerLines[i]);
-                    if (Controller.LOG) {
-                        Controller.log("Clearing listener " + ol);
-                    }
+                    Collection<OutputListener> ols = lines.getListenersForLine(listenerLines[i]);
                     e.setLine(listenerLines[i]);
-                    if (ol != null) {
+                    for (OutputListener ol : ols) {
                         ol.outputLineCleared(e);
-                    } else {
-                        //#56826 - debug messaging
-                        Logger.getAnonymousLogger().warning("issue #56826 - There was a null OutputListener on line:" + listenerLines[i]);
                     }
                 }
             } else {
@@ -336,7 +330,7 @@ class OutWriter extends PrintWriter {
         return disposed || trouble;
     }
 
-    class CharArrayWrapper implements CharSequence {
+    static class CharArrayWrapper implements CharSequence {
 
         private char[] arr;
         private int off;
@@ -381,8 +375,8 @@ class OutWriter extends PrintWriter {
     }
     
     /** write buffer size in chars */
-    static private final int writeBuffSize = 16*1024;
-    private final String tabReplacement = "        ";
+    private static final int WRITE_BUFF_SIZE = 16*1024;
+    static final String TAB_REPLACEMENT = "        ";
     public synchronized int doWrite(CharSequence s, int off, int len) {
         if (checkError() || len == 0) {
             return 0;
@@ -391,21 +385,23 @@ class OutWriter extends PrintWriter {
         int lineCount = 0;
         try {
             boolean written = false;
-            ByteBuffer byteBuff = getStorage().getWriteBuffer(writeBuffSize * 2);
+            ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
             CharBuffer charBuff = byteBuff.asCharBuffer();
             for (int i = off; i < off + len; i++) {
-                if (charBuff.position() + tabReplacement.length() >= writeBuffSize) {
+                if (charBuff.position() + TAB_REPLACEMENT.length() >= WRITE_BUFF_SIZE) {
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
                     written = true;
                 }
                 if (written) {
-                    byteBuff = getStorage().getWriteBuffer(writeBuffSize * 2);
+                    byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
                     charBuff = byteBuff.asCharBuffer();
                     written = false;
                 }
                 char c = s.charAt(i);
                 if (c == '\t') {
-                    charBuff.put(tabReplacement);
+                    charBuff.put(TAB_REPLACEMENT);
+                } else if (c == '\r') {
+                    // skip
                 } else if (c == '\n') {
                     charBuff.put(c);
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), true);
@@ -432,7 +428,7 @@ class OutWriter extends PrintWriter {
 
     @Override
     public synchronized void println() {
-        doWrite(lineSeparator, 0, lineSeparator.length());
+        doWrite("\n", 0, 1);
     }
 
     /**
@@ -456,26 +452,24 @@ class OutWriter extends PrintWriter {
     }
 
     public synchronized void println(String s, OutputListener l, boolean important) {
-        print(s, l, important, null, true);
+        print(s, l, important, null, false, true);
     }
 
-    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean addLS) {
-        int addedCount = doWrite(s, 0, s.length());
+    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean err, boolean addLS) {
+        int lastLine = lines.getLineCount() - 1;
+        int lastPos = lines.getCharCount();
+        doWrite(s, 0, s.length());
         if (addLS) {
             println();
-            addedCount++;
         }
-        if (checkError()) {
-            return;
-        }
-        int newCount = lines.getLineCount()-1;
-        for (int i = newCount - addedCount; i < newCount; i++) {
-            if (l != null) {
-                lines.addListener(i, l, important);
-            }
-            if (c != null) {
-                lines.setColor(i, c);
-            }
+        lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c);
+    }
+
+    synchronized void print(CharSequence s, LineInfo info, boolean important) {
+        int line = lines.getLineCount() - 1;
+        doWrite(s, 0, s.length());
+        if (info != null) {
+            lines.addLineInfo(line, info, important);
         }
     }
 

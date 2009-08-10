@@ -40,9 +40,9 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -82,7 +82,7 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     @Override
-    protected boolean collectResources(List<IndexableImpl> result) {
+    protected boolean collectResources(Collection<IndexableImpl> result) {
         final boolean finished;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
@@ -121,7 +121,7 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     private boolean collect (FileObject[] fos, FileObject root,
-            final List<IndexableImpl> cache,
+            final Collection<IndexableImpl> cache,
             final Stats stats, final ClassPath.Entry entry) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater

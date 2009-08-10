@@ -56,9 +56,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -177,7 +181,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
-            FileObject welcomeFile = webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"); //NOI18N
+            FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
+                                                                webModule.getDocumentBase().getFileObject(WELCOME_JSF);
             if (welcomeFile != null) {
                 result.add(welcomeFile);
             }
@@ -223,7 +228,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new JSFConfigurationPanel(this, controller, !defaultValue);
+        if (webModule != null) {
+            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
+        } else {
+            panel = new JSFConfigurationPanel(this, controller, !defaultValue);
+        }
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
@@ -239,13 +250,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         
         return panel;
     }
-    
+
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         FileObject dd = webModule.getDeploymentDescriptor();
         return (dd != null && ConfigurationUtils.getFacesServlet(webModule) != null);
     }
-    
+
     public String getServletPath(FileObject file){
         String url = null;
         if (file == null) return url;
@@ -467,16 +478,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
-                        welcomeFiles.addWelcomeFile(FORWARD_JSF);
-                        if (canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) {
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
-                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
-                                content = content.replaceAll("__ENCODING__", encoding.name());
-                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, encoding.name());  //NOI18N
-                        }
-//                        welcomeFiles.addWelcomeFile("forward.jsp"); //NOI18N
+                          welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
                     }
                     ddRoot.write(dd);                    
                     
@@ -597,12 +599,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
                 }
-//                if (webModule.getDocumentBase().getFileObject("forward.jsp") == null) {
-//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + "forward.jsp");
-//                    content = readResource(is, encoding.name());
-//                    target = FileUtil.createData(webModule.getDocumentBase(), "forward.jsp");//NOI18N
-//                    createFile(target, content, encoding.name());
-//                }
                 if (webModule.getDocumentBase().getFileObject(CSS_FOLDER+File.separator+DEFAULT_CSS) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
                     .getResourceAsStream(baseFolder + DEFAULT_CSS);  

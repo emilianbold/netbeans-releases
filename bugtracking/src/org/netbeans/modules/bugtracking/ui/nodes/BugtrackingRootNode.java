@@ -53,6 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
@@ -122,7 +123,7 @@ public class BugtrackingRootNode extends AbstractNode {
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            BugtrackingManager.getInstance().addPropertyChangeListener(this);
+            RepositoriesSupport.getInstance().addPropertyChangeListener(this);
         }
 
         @Override
@@ -160,7 +161,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
                 refreshKeys();
             }
         }

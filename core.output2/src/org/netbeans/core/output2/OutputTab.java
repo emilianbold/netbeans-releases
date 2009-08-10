@@ -41,7 +41,6 @@
 
 package org.netbeans.core.output2;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -136,7 +135,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         assert SwingUtilities.isEventDispatchThread();
         Document old = getDocument();
         hasOutputListeners = false;
-        firstNavigableListenerLine = -1;
         super.setDocument(doc);
         if (old != null && old instanceof OutputDocument) {
             ((OutputDocument) old).dispose();
@@ -145,10 +143,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void reset() {
         if (origPane != null) {
-            setOutputPane(origPane);
+            setFilter(null, false, false);
         }
         setDocument(new OutputDocument(((NbWriter) io.getOut()).out()));
-        io.setClosed(false);
     }
 
     public OutputDocument getDocument() {
@@ -197,49 +194,21 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         io.getIOContainer().requestActive();
     }
 
-    public void lineClicked(int line) {
+    public void lineClicked(int line, int pos) {
         OutWriter out = getOut();
         if (out == null) {
             return;
         }
-        OutputListener l = out.getLines().getListenerForLine(line);
+        int range[] = new int[2];
+        OutputListener l = out.getLines().getListener(pos, range);
         if (l != null) {
             ControllerOutputEvent oe = new ControllerOutputEvent(io, out, line);
             l.outputLineAction(oe);
             //Select the text on click
-            getOutputPane().sendCaretToLine(line, true);
+            getOutputPane().sendCaretToPos(range[0], range[1], true);
         }
     }
 
-    boolean linePressed(int line, Point p) {
-        OutWriter out = getOut();
-        if (out != null) {
-            return out.getLines().getListenerForLine(line) != null;
-        } else {
-            return false;
-        }
-    }
-
-    private int firstNavigableListenerLine = -1;
-    /**
-     * Do not unlock scrollbar unless there is a bona-fide error to 
-     * show - deprecation warnings should be ignored.
-     */
-    public int getFirstNavigableListenerLine() {
-        if (firstNavigableListenerLine != -1) {
-            return firstNavigableListenerLine;
-        }
-        
-        int result = -1;
-        OutWriter out = getOut();
-        if (out != null) {
-            if (Controller.LOG) Controller.log ("Looking for first appropriate" +
-                " listener line to send the caret to");
-            result = out.getLines().firstImportantListenerLine();
-        }
-        return result;
-    }
-    
     @Override
     public String toString() {
         return "OutputTab@" + System.identityHashCode(this) + " for " + io;
@@ -275,11 +244,11 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private void navigateToFirstErrorLine() {
         OutWriter out = getOut();
         if (out != null) {
-            int line = getFirstNavigableListenerLine();
+            int line = out.getLines().firstImportantListenerLine();
             if (Controller.LOG) {
                 Controller.log("NAV TO FIRST LISTENER LINE: " + line);
             }
-            if (line > 0) {
+            if (line >= 0) {
                 getOutputPane().sendCaretToLine(line, false);
                 if (isSDI()) {
                     requestActive();
@@ -305,6 +274,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void closed() {
         io.setClosed(true);
+        io.setStreamClosed(true);
         Controller.getDefault().removeTab(io);
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
@@ -340,19 +310,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     /**
-     * Fetch the output listener for a given line
-     *
-     * @param line The line to find a listener on
-     * @return An output listener or null
-     */
-    private OutputListener listenerForLine(int line) {
-        OutWriter out = getOut();
-        if (out != null) {
-            return out.getLines().getListenerForLine(line);
-        }
-        return null;
-    }
-    /**
      * Flag used to block navigating the editor to the first error line when
      * selecting the error line in the output window after a build (or maybe
      * it should navigate the editor there?  Could be somewhat rude...)
@@ -360,55 +317,50 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     boolean ignoreCaretChanges = false;
 
     /**
-     * Called when the text caret has changed lines - will call OutputListener.outputLineSelected if
-     * there is a listener for that line.
+     * Called when the text caret has changed position - will call OutputListener.outputLineSelected if
+     * there is a listener for that position.
      *
-     * @param line The line the caret is in
+     * @param pos The line the caret is in
      */
-    void caretEnteredLine(int line) {
+    int lastCaretListenerRange[];
+    void caretPosChanged(int pos) {
         if (!ignoreCaretChanges) {
-            OutputListener l = listenerForLine(line);
-            if (l != null) {
-                ControllerOutputEvent oe = new ControllerOutputEvent(io, line);
-                l.outputLineSelected(oe);
+            if (lastCaretListenerRange != null && pos >= lastCaretListenerRange[0] && pos < lastCaretListenerRange[1]) {
+                return;
+            }
+            OutWriter out = getOut();
+            if (out != null) {
+                int[] range = new int[2];
+                OutputListener l = out.getLines().getListener(pos, range);
+                if (l != null) {
+                    ControllerOutputEvent oe = new ControllerOutputEvent(io, out.getLines().getLineAt(pos));
+                    l.outputLineSelected(oe);
+                    lastCaretListenerRange = range;
+                } else {
+                    lastCaretListenerRange = null;
+                }
             }
         }
     }
 
-    /**
-     * Sends the caret in a tab to the nearest error line to its current position, selecting
-     * that line.
-     *
-     * @param backward If the search should be done in reverse
-     */
     private void sendCaretToError(boolean backward) {
         OutWriter out = getOut();
         if (out != null) {
-            int line = getOutputPane().getCaretLine();
-            if (!getOutputPane().isLineSelected(line)) {
-                line += backward ? 1 : -1;
-            }
+            AbstractOutputPane op = getOutputPane();
+            int selStart = op.getSelectionStart();
+            int selEnd = op.getSelectionEnd();
+            int pos = op.getCaretPos();
 
-            if (line >= getOutputPane().getLineCount() - 1) {
-                line = 0;
+            // check if link is selected
+            if (selStart != selEnd && pos == selStart && out.getLines().isListener(selStart, selEnd)) {
+                pos = backward ? selStart - 1 : selEnd + 1;
             }
-            //FirstF12: #48485 - caret is already on the first listener line,
-            //so F12 jumps to the second error.  So search from 0 the first time after a reset
-            int newline = out.getLines().nearestListenerLine(line, backward);
-            if (newline == line) {
-                if (!backward && line != getOutputPane().getLineCount()) {
-                    newline = out.getLines().nearestListenerLine(line + 1, backward);
-                } else if (backward && line > 0) {
-                    newline = out.getLines().nearestListenerLine(line - 1, backward);
-                } else {
-                    return;
-                }
-            }
-            if (newline != -1) {
-                getOutputPane().sendCaretToLine(newline, true);
+            int[] lpos = new int[2];
+            OutputListener l = out.getLines().nearestListener(pos, backward, lpos);
+            if (l != null) {
+                op.sendCaretToPos(lpos[0], lpos[1], true);
                 if (!io.getIOContainer().isActivated()) {
-                    OutputListener l = out.getLines().getListenerForLine(newline);
-                    ControllerOutputEvent ce = new ControllerOutputEvent(io, newline);
+                    ControllerOutputEvent ce = new ControllerOutputEvent(io,  out.getLines().getLineAt(lpos[0]));
                     l.outputLineAction(ce);
                 }
             }
@@ -543,17 +495,18 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * Called when a line is clicked - if an output listener is listening on that
      * line, it will be sent <code>outputLineAction</code>.
      */
-    private void openLineIfError() {
+    private void openHyperlink() {
         OutWriter out = getOut();
         if (out != null) {
-            int line = getOutputPane().getCaretLine();
-            OutputListener lis = out.getLines().getListenerForLine(line);
-            if (lis != null) {
+            int pos = getOutputPane().getCaretPos();
+            int[] range = new int[2];
+            OutputListener l = out.getLines().getListener(pos, range);
+            if (l != null) {
                 ignoreCaretChanges = true;
-                getOutputPane().sendCaretToLine(line, true);
+                getOutputPane().sendCaretToPos(range[0], range[1], true);
                 ignoreCaretChanges = false;
-                ControllerOutputEvent coe = new ControllerOutputEvent(io, line);
-                lis.outputLineAction(coe);
+                ControllerOutputEvent coe = new ControllerOutputEvent(io, out.getLines().getLineAt(pos));
+                l.outputLineAction(coe);
             }
         }
     }
@@ -629,7 +582,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         saveAsAction.setEnabled(enable);
         selectAllAction.setEnabled(enable);
         copyAction.setEnabled(pane.hasSelection());
-        boolean hasErrors = out == null ? false : out.getLines().firstListenerLine() != -1;
+        boolean hasErrors = out == null ? false : out.getLines().hasListeners();
         nextErrorAction.setEnabled(hasErrors);
         prevErrorAction.setEnabled(hasErrors);
     }
@@ -861,7 +814,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     find(true);
                     break;
                 case ACTION_NAVTOLINE:
-                    openLineIfError();
+                    openHyperlink();
                     break;
                 case ACTION_POSTMENU:
                     postPopupMenu(new Point(0, 0), OutputTab.this);
@@ -870,8 +823,11 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
+                            boolean vis = isInputVisible();
+                            boolean closed = io.isStreamClosed();
                             writer.reset();
-                            disableHtmlName();
+                            setInputVisible(vis);
+                            io.setStreamClosed(closed);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
@@ -1054,18 +1010,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     if (!passFilter(str)) {
                         continue;
                     }
-                    OutputListener l = lines.getListenerForLine(line);
-                    Color c = lines.getLineColor(line);
-                    boolean imp = lines.isImportantHyperlink(line);
-                    boolean err = lines.isErr(line);
-                    if (l != null || c != null) {
-                        out.print(str, l, imp, c, false);
-                    } else {
-                        out.print(str);
-                    }
-                    if (err) {
-                        ((AbstractLines) out.getLines()).markErr();
-                    }
+                    LineInfo info = lines.getExistingLineInfo(line);
+                    out.print(str, info, lines.isImportantLine(line));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

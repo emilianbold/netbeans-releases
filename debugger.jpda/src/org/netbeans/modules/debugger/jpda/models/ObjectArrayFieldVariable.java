@@ -82,8 +82,7 @@ org.netbeans.api.debugger.jpda.Field {
         super (
             debugger, 
             value, 
-            parentID + '.' + index +
-                (value instanceof ObjectReference ? "^" : "")
+            parentID + '.' + index + "^"
         );
         this.index = index;
         this.maxIndexLog = ArrayFieldVariable.log10(maxIndex);

@@ -49,8 +49,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
-import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -183,14 +182,14 @@ public class SelectStatementAnalyzerTest extends TestCase {
                 "where vip = 1 group by customer_id having count(items) < 2 order by customer_id asc";
         SelectStatement statement = doAnalyze(sql);
         assertNull(statement.getContextAtOffset(0));
-        assertEquals(SelectContext.SELECT, statement.getContextAtOffset(sql.indexOf(" customer_id")));
-        assertEquals(SelectContext.FROM, statement.getContextAtOffset(sql.indexOf("customer ")));
-        assertEquals(SelectContext.JOIN_CONDITION, statement.getContextAtOffset(sql.indexOf(".id =")));
-        assertEquals(SelectContext.FROM, statement.getContextAtOffset(sql.indexOf(" foobar")));
-        assertEquals(SelectContext.WHERE, statement.getContextAtOffset(sql.indexOf("vip")));
-        assertEquals(SelectContext.GROUP_BY, statement.getContextAtOffset(sql.indexOf("customer_id having")));
-        assertEquals(SelectContext.HAVING, statement.getContextAtOffset(sql.indexOf("count")));
-        assertEquals(SelectContext.ORDER_BY, statement.getContextAtOffset(sql.indexOf("customer_id asc")));
+        assertEquals(Context.SELECT, statement.getContextAtOffset(sql.indexOf(" customer_id")));
+        assertEquals(Context.FROM, statement.getContextAtOffset(sql.indexOf("customer ")));
+        assertEquals(Context.JOIN_CONDITION, statement.getContextAtOffset(sql.indexOf(".id =")));
+        assertEquals(Context.FROM, statement.getContextAtOffset(sql.indexOf(" foobar")));
+        assertEquals(Context.WHERE, statement.getContextAtOffset(sql.indexOf("vip")));
+        assertEquals(Context.GROUP_BY, statement.getContextAtOffset(sql.indexOf("customer_id having")));
+        assertEquals(Context.HAVING, statement.getContextAtOffset(sql.indexOf("count")));
+        assertEquals(Context.ORDER_BY, statement.getContextAtOffset(sql.indexOf("customer_id asc")));
     }
 
     public void testDetectKind() throws Exception {

@@ -103,7 +103,13 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
     }
-    private List<VisualizerConfiguration> visualizerConfiguraitons;
+    private List<VisualizerConfiguration> visualizerConfigurations;
+
+    protected final void notifyListeners(VisualizerConfiguration vc){
+        for (IndicatorActionListener l : listeners) {
+            l.openVisualizerForIndicator(this, vc);
+        }
+    }
 
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
@@ -114,7 +120,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     protected Indicator(T configuration) {
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
-        this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
+        this.visualizerConfigurations = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
         this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
         this.actionDisplayName = IndicatorConfigurationAccessor.getDefault().getActionDisplayName(configuration);
         tickerListener = new TickerListener() {
@@ -288,7 +294,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
 
     List<VisualizerConfiguration> getVisualizerConfigurations() {
-        return visualizerConfiguraitons;
+        return visualizerConfigurations;
     }
 
     void addIndicatorActionListener(IndicatorActionListener l) {

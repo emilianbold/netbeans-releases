@@ -83,8 +83,8 @@ made subject to such option by the copyright holder.
         <multithreading>
             <none flags="" default="true"/>
             <safe flags="-mt"/>
-            <automatic flags="-xautopar -xvector -xreduction -xloopinfo" default="true"/>
-            <open_mp flags="-xopenmp"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3" default="true"/>
+            <open_mp flags="-xopenmp -O3"/>
         </multithreading>
         <standard>
             <old flags="-xc99=none"/>
@@ -132,8 +132,8 @@ made subject to such option by the copyright holder.
         <multithreading>
             <none flags="" default="true"/>
             <safe flags="-mt"/>
-            <automatic flags="-xautopar -xvector -xreduction -xloopinfo"/>
-            <open_mp flags="-xopenmp"/>
+            <automatic flags="-xautopar -xvector -xreduction -xloopinfo -O3"/>
+            <open_mp flags="-xopenmp -O3"/>
         </multithreading>
         <standard>
             <old flags="-compat"/>
@@ -241,7 +241,11 @@ made subject to such option by the copyright holder.
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>
     <debugger>
-        <tool name="dbx"/>
-        <version flags="-V" />
+        <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>

@@ -151,6 +151,7 @@ final public class WebProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
@@ -892,6 +893,15 @@ final public class WebProjectProperties {
         if (setFromServer) {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+
+            // set j2ee.platform.embeddableejb.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
+                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
+                privateProps.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                        Utils.toClasspathString(ejbClasspath));
+            } else {
+                privateProps.remove(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH);
+            }
 
             // update j2ee.platform.wscompile.classpath
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {

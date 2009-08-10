@@ -8,11 +8,6 @@
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
                     </file>
-                    <!-- THA
-                    <file name="DLightTHAToolConfigurationProvider.shadow">
-                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightTHAToolConfigurationProvider.instance"/>
-                    </file>
-                    -->
                     <file name="SyncToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
                     </file>
@@ -22,12 +17,12 @@
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
                     </file>
-          <file name="DLightParallelAdviserToolConfigurationProvider.shadow">
-            <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightParallelAdviserToolConfigurationProvider.instance"/>
-          </file>
-          <!--file name="FopsToolConfigurationProvider.shadow">
-            <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
-          </file-->
+                    <file name="DLightParallelAdviserToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightParallelAdviserToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="FopsToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
+                    </file>
                 </folder>
                 <folder name="ConfigurationOptions">
                     <file name="GizmoConfigurationOptions.instance">
@@ -46,11 +41,6 @@
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
         </folder>
-        <!-- THA
-        <folder name="Profile">
-            <file name="org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.instance"/>
-        </folder>
-        -->
     </folder>
     <folder name="Windows2">
         <folder name="Components">
@@ -75,16 +65,8 @@
             </folder>
         </folder>
     </folder>-->
-    <!--
-    <folder name="Toolbars">
-        <folder name="Build">
-            <file name="org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-cnd-gizmo-tha-actions-THAToolbarDropdownAction.instance"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
-    -->
+    
+   
     <folder name="Shortcuts">
         <file name="A-S-G.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-gizmo-ui-GizmoIndicatorTopComponentActivateAction.instance"/>

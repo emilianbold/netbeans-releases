@@ -50,9 +50,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 
 /**
  * @author Alexander Simon
@@ -208,11 +208,9 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N
-                    buf.append("<font bgcolor=#");// NOI18N
-                    buf.append(Integer.toHexString(res.color.getRed()));
-                    buf.append(Integer.toHexString(res.color.getGreen()));
-                    buf.append(Integer.toHexString(res.color.getBlue()));
-                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("<font bgcolor=\"#");// NOI18N
+                    buf.append(colorToHexString(res.color));
+                    buf.append("\">&nbsp;&nbsp;");// NOI18N
                     buf.append("</font></td>");// NOI18N
                     buf.append("<td>");// NOI18N
                     buf.append(res.name);
@@ -256,6 +254,12 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
         }
         return count;
+    }
+
+    private static String colorToHexString(Color c) {
+        // Result must be exactly 6 digits long.
+        // Color values 0x0..0xf need special care.
+        return String.format("%06x", c.getRGB() & 0xFFFFFF); // NOI18N
     }
 
     private int sumStates(MSAState ... states){

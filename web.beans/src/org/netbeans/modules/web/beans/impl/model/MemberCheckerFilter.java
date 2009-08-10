@@ -123,7 +123,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.
                         equals( annotationName))
                 {
-                    if ( AnnotationObjectProvider.checkCurrent(
+                    if ( AnnotationObjectProvider.checkSpecializedCurrent(
                             overridenElement, model.getHelper()))
                     {
                         return overridenElement;

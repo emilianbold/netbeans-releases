@@ -71,15 +71,14 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.ImageUtilities;
-import org.tigris.subversion.svnclientadapter.*;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -136,6 +135,11 @@ public class Annotator {
     public static String ANNOTATION_MIME_TYPE   = "mime_type";
 
     public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
+    private final RequestProcessor.Task modifiedFilesRPScanTask;
+    private final ModifiedFilesScanTask modifiedFilesScanTask;
+    private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
+    private final WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
+    private Map<File, FileInformation> modifiedFiles = null;
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -145,6 +149,7 @@ public class Annotator {
 
     Annotator(Subversion svn) {
         this.cache = svn.getStatusCache();
+        modifiedFilesRPScanTask = rp.create(modifiedFilesScanTask = new ModifiedFilesScanTask());
         initDefaults();
     }
 
@@ -172,6 +177,7 @@ public class Annotator {
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
+        cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
     }
 
     private void initDefaultColor(String name) {
@@ -222,12 +228,12 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
-                String sticky = SvnUtils.getCopy(file);
-                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
                     textAnnotation = "";  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
-                } else if (sticky == null) {
+                } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) {
                         textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
@@ -293,23 +299,11 @@ public class Annotator {
             statusString = info.getShortStatusText();
         }
 
-        String revisionString = "";     // NOI18N
-        String binaryString = "";       // NOI18N
-
-
-        ISVNStatus snvStatus = info.getEntry(file);
-        if (snvStatus != null) {
-            SVNRevision rev = snvStatus.getRevision();
-            revisionString = rev != null ? rev.toString() : "";
-            if(mimeTypeFlag) {
-                binaryString = getMimeType(file);
-            }
-        }
-
-        String stickyString = SvnUtils.getCopy(file);
-        if (stickyString == null) {
-            stickyString = ""; // NOI18N
-        }
+        FileStatusCache.FileLabelCache.FileLabelInfo labelInfo;
+        labelInfo = cache.getLabelsCache().getLabelInfo(file, mimeTypeFlag);
+        String revisionString = labelInfo.getRevisionString();
+        String binaryString = labelInfo.getBinaryString();
+        String stickyString = labelInfo.getStickyString();
 
         Object[] arguments = new Object[] {
             revisionString,
@@ -326,21 +320,6 @@ public class Annotator {
         }
     }
 
-    private String getMimeType(File file) {
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            ISVNProperty prop = client.propertyGet(file, ISVNProperty.MIME_TYPE);
-            if(prop != null) {
-                String mime = prop.getValue();
-                return mime != null ? mime : "";
-            }
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
-            return "";
-        }
-        return "";
-    }
-
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
         name = htmlEncode(name);
         int status = info.getStatus();
@@ -351,20 +330,12 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
-                String sticky;
-                ISVNStatus lstatus = info.getEntry(file);
-                if (lstatus != null && lstatus.getUrl() != null) {
-                    sticky = SvnUtils.getCopy(lstatus.getUrl());
-                } else {
-                    // slower
-                    sticky = SvnUtils.getCopy(file);
-                }
-
-                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
                     textAnnotation = ""; // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
-                } else  if (sticky == null) {
+                } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) { // NOI18N
                         textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
@@ -438,6 +409,11 @@ public class Annotator {
         boolean folderAnnotation = false;
 
         for (File file : context.getRootFiles()) {
+            if (SvnUtils.isPartOfSubversionMetadata(file)) {
+                // no need to handle .svn files, eliminates some warnings as 'no repository url found for managed file .svn'
+                // happens e.g. when annotating a Project folder
+                continue;
+            }
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 // status not in cache, plan refresh
@@ -706,77 +682,223 @@ public class Annotator {
         if (!isVersioned) {
             return null;
         }
-        SvnModuleConfig config = SvnModuleConfig.getDefault();
-        boolean allExcluded = true;
-        boolean modified = false;
-        Map map = cache.getAllModifiedFiles();
-        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) map.get(file);
-            if(info != null) {
-                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                    modifiedFiles.put(file, info);
-                }
-            } else {
-                Subversion.LOG.log(Level.WARNING, "null FileInformation returned for {0}", new Object[] { file });
-            }
-        }
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if (VersioningSupport.isFlat(file)) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (mf == null) {
-                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
-                    } else {
-                        if (file.equals(mf.getParentFile())) {
-                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                            if (info.isDirectory()) {
-                                continue;
-                            }
-                            int status = info.getStatus();
-                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                                Image badge = ImageUtilities.assignToolTipToImage(
-                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                            }
-                            modified = true;
-                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
-                        }
-                    }
-                }
-            } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (mf == null) {
-                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
-                    } else {
-                        if (Utils.isAncestorOrEqual(file, mf)) {
-                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                            int status = info.getStatus();
-                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
-                                continue;
-                            }
-                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                                Image badge = ImageUtilities.assignToolTipToImage(
-                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                            }
-                            modified = true;
-                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
-                        }
-                    }
-                }
-            }
-        }
-        if (modified && !allExcluded) {
-            Image badge = ImageUtilities.assignToolTipToImage(
-                    ImageUtilities.loadImage(badgeModified, true), toolTipModified); // NOI18N
-            return ImageUtilities.mergeImages(icon, badge, 16, 9);
+        
+        IconSelector sc = new IconSelector(context.getRootFiles(), icon);
+        // return the icon as soon as possible and schedule a complete scan if needed
+        sc.scanFilesLazy();
+        return sc.getBadge();
+    }
+
+    /**
+     * Returns modified files from tha cache.
+     * @param changed if not null, returns cached modified files and changed[0] denotes if the returned values are outdated.
+     * If null, performs the complete scan which may access I/O
+     * @return
+     */
+    private Map<File, FileInformation> getLocallyChangedFiles (final boolean changed[]) {
+        Map<File, FileInformation> map;
+        if (changed != null) {
+            // return cached values
+            map = cache.getAllModifiedFilesCached(changed);
         } else {
-            return null;
+            // perform complete scan if needed
+            map = cache.getAllModifiedFiles();
+        }
+        Map<File, FileInformation> m = null;
+        synchronized (allModifiedFiles) {
+            for (Map<File, FileInformation> sm : allModifiedFiles) {
+                m = sm;
+                break;
+            }
+            if (modifiedFiles == null || map != m) {
+                allModifiedFiles.clear();
+                allModifiedFiles.add(map);
+                modifiedFiles = new HashMap<File, FileInformation>();
+                for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+                    File file = (File) i.next();
+                    FileInformation info = map.get(file);
+                    if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                        modifiedFiles.put(file, info);
+                    }
+                }
+            }
+            return modifiedFiles;
         }
     }
 
+    /**
+     * A task which performs a complete modified files scan, reevaluates all registered icon selectors
+     * and fires events if a wrong folder badge should be repainted
+     */
+    private class ModifiedFilesScanTask implements Runnable {
+
+        private final LinkedList<IconSelector> scanners;
+
+        public ModifiedFilesScanTask() {
+            scanners = new LinkedList<IconSelector>();
+        }
+
+        public void run() {
+            LinkedList<IconSelector> toScan;
+            synchronized (scanners) {
+                toScan = new LinkedList<IconSelector>(scanners);
+                scanners.clear();
+            }
+            // complete modified files scan
+            Map<File, FileInformation> modifiedFiles = getLocallyChangedFiles(null);
+            Set<File> filesToRefresh = new HashSet<File>();
+            for (IconSelector scanner : toScan) {
+                // all registered iconn selectors are re-evaluated
+                scanner.scanFiles(modifiedFiles);
+                filesToRefresh.addAll(scanner.getFilesToRefresh());
+            }
+            // fire an event if needed
+            if (filesToRefresh.size() > 0) {
+                Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+            }
+        }
+
+        /**
+         * Registers a given badge selector and reschedules this task
+         *@param scanner
+         */
+        public void schedule(IconSelector scanner) {
+            synchronized (scanners) {
+                scanners.add(scanner);
+                modifiedFilesRPScanTask.schedule(1000);
+            }
+        }
+    }
+
+    /**
+     * Evaluates root files' status and return their common badge. It tries to evaluate as fast as possible so it can return a fake badge.
+     *
+     * If cached all modified files, which it uses in the evaluation, are outdated, it schedules a complete scan of those files (which may access I/O)
+     * With these freshly scanned files it recalculates the icon and if that differs from the one returned after the first scan,
+     * the instance method getFilesToRefresh returns a non-empty set of responsible files which should be refreshed.
+     */
+    private final class IconSelector {
+
+        private Set<File> rootFiles;
+        private final Image initialIcon;
+        private Image badge = null;
+        private String badgePath;
+        private String originalBadgePath;
+        private final Set<File> responsibleFiles;
+        boolean allExcluded;
+        boolean modified;
+
+        public IconSelector(Set<File> rootFiles, Image initialIcon) {
+            this.rootFiles = rootFiles;
+            this.initialIcon = initialIcon;
+            this.responsibleFiles = new HashSet<File>();
+        }
+
+        void scanFilesLazy() {
+            boolean changed[] = new boolean[1];
+            Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles(changed);
+            scanFiles(locallyChangedFiles);
+            if (changed[0]) {
+                // schedule a scan
+                scheduleDeepScan();
+            }
+        }
+
+        /**
+         * Computes the badge for given root files.
+         * Iterates through all root files and check if any of its children is by any chance included in a map of modified files.
+         * If it finds any such child, it sets the badge to modified (or conflicted if any of rootfile's children is in conflict).
+         * @param locallyChangedFiles
+         */
+        private void scanFiles(Map<File, FileInformation> locallyChangedFiles) {
+            allExcluded = true;
+            modified = false;
+            SvnModuleConfig config = SvnModuleConfig.getDefault();
+            responsibleFiles.clear();
+            for (File file : rootFiles) {
+                for (Map.Entry<File, FileInformation> entry : locallyChangedFiles.entrySet()) {
+                    File mf = entry.getKey();
+                    if (mf == null) {
+                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
+                        continue;
+                    }
+                    FileInformation info = entry.getValue();
+                    int status = info.getStatus();
+                    if (VersioningSupport.isFlat(file)) {
+                        if (mf.getParentFile().equals(file)) {
+                            if (info.isDirectory()) {
+                                continue;
+                            }
+                            if (checkConflictAndUpdateFlags(mf, config, status)) {
+                                return;
+                            }
+                        }
+                    } else {
+                        if (Utils.isAncestorOrEqual(file, mf)) {
+                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
+                                continue;
+                            }
+                            if (checkConflictAndUpdateFlags(mf, config, status)) {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (modified && !allExcluded) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgePath = badgeModified, true), toolTipModified);
+                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
+            } else {
+                badge = null;
+                badgePath = "";
+                responsibleFiles.addAll(rootFiles);
+            }
+        }
+
+        /**
+         *
+         * @param modifiedFile
+         * @param config
+         * @param status
+         * @return true if the badge should be 'CONFLICT', false otherwise
+         */
+        private boolean checkConflictAndUpdateFlags(File modifiedFile, SvnModuleConfig config, int status) {
+            responsibleFiles.add(modifiedFile);
+            // conflict - this status has the highest weight
+            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                badge = ImageUtilities.assignToolTipToImage(
+                        ImageUtilities.loadImage(badgePath = badgeConflicts, true), toolTipConflict);
+                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
+                return true;
+            }
+            modified = true;
+            allExcluded &= config.isExcludedFromCommit(modifiedFile.getAbsolutePath());
+            return false;
+        }
+
+        Image getBadge() {
+            return badge;
+        }
+
+        private void scheduleDeepScan() {
+            originalBadgePath = badgePath; // save the badge path for later comparison
+            modifiedFilesScanTask.schedule(this);
+        }
+
+        /**
+         * Returns files which are responsible for a badge being changed and whose refresh should result in badge repainting.
+         * @return
+         */
+        public Set<File> getFilesToRefresh() {
+            assert originalBadgePath != null; // scan has been already run
+            if (!badgePath.equals(originalBadgePath)) {
+                // badge has changed
+                return responsibleFiles;
+            } else {
+                return Collections.EMPTY_SET;
+            }
+        }
+    }
 }

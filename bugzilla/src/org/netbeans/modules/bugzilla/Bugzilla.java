@@ -142,16 +142,16 @@ public class Bugzilla {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;
         }
-        BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
+            BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         }
     }
 
     public void removeRepository(BugzillaRepository repository) {
-        BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
+            BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
         }
     }
 

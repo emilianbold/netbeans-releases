@@ -66,8 +66,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -75,6 +77,7 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -366,25 +369,35 @@ public class AttachmentsPanel extends JPanel {
                 public void run() {
                     try {
                         File file = saveToTempFile(attachment);
-                        FileObject fob = FileUtil.toFileObject(file);
                         boolean isPatch = false;
                         try {
-                            isPatch = BugtrackingUtil.isPatch(fob);
+                            isPatch = PatchUtils.isPatch(file);
                         } catch (IOException ioex) {
                             Jira.LOG.log(Level.INFO, null, ioex);
                         }
                         if (isPatch && shouldApplyPatch(attachment.getFilename())) {
                             File context = BugtrackingUtil.selectPatchContext();
                             if (context != null) {
-                                BugtrackingUtil.applyPatch(file, context);
+                                PatchUtils.applyPatch(file, context);
                             }
                         } else {
-                            DataObject dob = DataObject.find(fob);
-                            OpenCookie open = dob.getCookie(OpenCookie.class);
-                            if (open != null) {
-                                open.open();
+                            String contentType = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+                            if ((contentType == null) || ("content/unknown".equals(contentType))) { // NOI18N
+                                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
+                            }
+                            if ("image/png".equals(contentType) // NOI18N
+                                || "image/gif".equals(contentType) // NOI18N
+                                || "image/jpeg".equals(contentType)) { // NOI18N
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
                             } else {
-                                // PENDING
+                                FileObject fob = FileUtil.toFileObject(file);
+                                DataObject dob = DataObject.find(fob);
+                                OpenCookie open = dob.getCookie(OpenCookie.class);
+                                if (open != null) {
+                                    open.open();
+                                } else {
+                                    // PENDING
+                                }
                             }
                         }
                     } catch (DataObjectNotFoundException dnfex) {

@@ -225,7 +225,11 @@ public class Operator {
                              if (breakpointsDisabled) {
                                  if (EventSetWrapper.suspendPolicy(eventSet) == EventRequest.SUSPEND_ALL) {
                                     staledEvents.add(eventSet);
-                                    EventSetWrapper.resume(eventSet);
+                                    try {
+                                        EventSetWrapper.resume(eventSet);
+                                    } catch (IllegalThreadStateExceptionWrapper itex) {
+                                        logger.throwing(Operator.class.getName(), "loop", itex);
+                                    }
                                     if (logger.isLoggable(Level.FINE)) {
                                         logger.fine("RESUMING "+eventSet);
                                     }
@@ -242,6 +246,20 @@ public class Operator {
                      JPDAThreadImpl suspendedThread = null;
                      Lock eventAccessLock = null;
                      try {
+                     ThreadReference thref = null;
+                     boolean isThreadEvent = false;
+                     for (Event e: eventSet) {
+                         if (e instanceof ThreadStartEvent || e instanceof ThreadDeathEvent) {
+                             isThreadEvent = true;
+                         }
+                         thref = getEventThread(e);
+                         if (thref != null) {
+                             break;
+                         }
+                     }
+                     if (thref != null && !isThreadEvent) {
+                         debugger.getThreadsCache().assureThreadIsCached(thref);
+                     }
                      if (!silent && suspendedAll) {
                          eventAccessLock = debugger.accessLock.writeLock();
                          eventAccessLock.lock();
@@ -249,31 +267,24 @@ public class Operator {
                          debugger.notifySuspendAllNoFire();
                      }
                      if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
-                         ThreadReference tref = null;
-                         for (Event e: eventSet) {
-                            tref = getEventThread(e);
-                            if (tref != null) {
-                                break;
-                            }
-                         }
-                         if (tref != null && !silent) {
-                            suspendedThread = debugger.getThread(tref);
+                         if (thref != null && !silent) {
+                            suspendedThread = debugger.getThread(thref);
                             eventAccessLock = suspendedThread.accessLock.writeLock();
                             eventAccessLock.lock();
-                            if (!ThreadReferenceWrapper.isSuspended(tref)) {
+                            if (!ThreadReferenceWrapper.isSuspended(thref)) {
                                 // Can not do anything, someone already resumed the thread in the mean time.
                                 // The event is missed. We will therefore ignore it.
-                                logger.warning("!!\nMissed event "+eventSet+" thread "+tref+" is not suspended!\n");
+                                logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
                                 continue;
                             }
                             // We check for multiple-suspension when event is received
                             try {
-                                int sc = ThreadReferenceWrapper.suspendCount(tref);
+                                int sc = ThreadReferenceWrapper.suspendCount(thref);
                                 if (logger.isLoggable(Level.FINER)) {
-                                    logger.finer("Suspend count of "+tref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
+                                    logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
                                 }
                                 while (sc-- > 1) {
-                                    ThreadReferenceWrapper.resume(tref);
+                                    ThreadReferenceWrapper.resume(thref);
                                 }
                             } catch (ObjectCollectedExceptionWrapper e) {
                             } catch (IllegalThreadStateExceptionWrapper e) {
@@ -283,8 +294,8 @@ public class Operator {
                             }
                             if (logger.isLoggable(Level.FINE)) {
                                 try {
-                                    logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+tref);
-                                    logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
+                                    logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+thref);
+                                    logger.fine(" event thread "+thref.name()+" is suspended = "+thref.isSuspended());
                                 } catch (Exception ex) {}
                             }
                             suspendedThread.notifySuspendedNoFire();
@@ -313,7 +324,11 @@ public class Operator {
                          if (!silent && suspendedThread != null) {
                              resume = resume && suspendedThread.notifyToBeResumedNoFire();
                          }
-                         EventSetWrapper.resume(eventSet);
+                         try {
+                            EventSetWrapper.resume(eventSet);
+                         } catch (IllegalThreadStateExceptionWrapper itex) {
+                             logger.throwing(Operator.class.getName(), "loop", itex);
+                         }
                          continue;
                      }
                      if (logger.isLoggable(Level.FINE)) {
@@ -444,8 +459,11 @@ public class Operator {
                      if (!startEventOnly) {
                          if (resume) {
                              //resumeLock.writeLock().lock();
-                             //try {
-                                EventSetWrapper.resume(eventSet);
+                             try {
+                                 EventSetWrapper.resume(eventSet);
+                             } catch (IllegalThreadStateExceptionWrapper itex) {
+                                 logger.throwing(Operator.class.getName(), "loop", itex);
+                             }
                              //} finally {
                              //    resumeLock.writeLock().unlock();
                              //}

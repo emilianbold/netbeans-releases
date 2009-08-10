@@ -139,7 +139,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
                     try {
                         for (String line = r.readLine(); line != null; line = r.readLine()) {
                             if (!line.startsWith("#!")) { // NOI18N
-                                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey())); // NOI18N
+                                w.write(line.replaceAll("(print[af]\\(\")", "$1" + entry.getKey())); // NOI18N
                                 w.write('\n'); // NOI18N
                             }
                         }

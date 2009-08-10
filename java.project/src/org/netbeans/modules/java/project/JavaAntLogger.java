@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,7 +62,11 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.IOColorPrint;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
 
 /**
  * Ant logger which handles Java- and Java-project-specific UI.
@@ -74,37 +79,79 @@ import org.openide.util.lookup.ServiceProvider;
 public final class JavaAntLogger extends AntLogger {
     
     static final class StackTraceParse {
+        final String line;
         final String resource;
         final int lineNumber;
-        StackTraceParse(String resource, int lineNumber) {
+        final String prePart, midPart, endPart;
+        StackTraceParse(String line, String resource, int lineNumber, String prePart, String midPart, String endPart) {
+            this.line = line;
             this.resource = resource;
             this.lineNumber = lineNumber;
+            this.prePart = prePart;
+            this.midPart = midPart;
+            this.endPart = endPart;
         }
         public @Override String toString() {
             return resource + ":" + lineNumber;
+        }
+        void hyperlink(AntSession session, AntEvent event, FileObject source,
+                int messageLevel, int sessionLevel, SessionData data) {
+            if (messageLevel <= sessionLevel && !event.isConsumed()) {
+                OutputListener hyperlink;
+                try {
+                    hyperlink = session.createStandardHyperlink(source.getURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1);
+                } catch (FileStateInvalidException e) {
+                    assert false : e;
+                    return;
+                }
+                event.consume();
+                InputOutput io = session.getIO();
+                if (IOColorPrint.isSupported(io)) {
+                    try {
+                        io.getErr().print(prePart);
+                        IOColorPrint.print(io, midPart, hyperlink, true, null);
+                        io.getErr().println(endPart);
+                        return;
+                    } catch (IOException x) {
+                        Exceptions.printStackTrace(x);
+                    }
+                }
+                session.println(line, true, hyperlink);
+            }
         }
     }
     /** Java identifier */
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
     // should be consistent with o.apache.tools.ant.module.STACK_TRACE
     // would be nice to match org.netbeans.modules.hudson.impl.JavaHudsonLogger.STACK_TRACE, but would need to copy more
+    /**
+     * <ol>
+     * <li>non-hyperlinkable initial portion
+     * <li>package
+     * <li>class
+     * <li>hyperlinkable portion
+     * <li>filename
+     * <li>line number
+     * <li>non-hyperlinkable final portion
+     * </ol>
+     */
     private static final Pattern STACK_TRACE = Pattern.compile(
-            "((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
-            "[(](?:(" + JIDENT + "[.]java):([0-9]+)|Unknown Source)[)]"); // NOI18N
+            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
     static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
         Matcher m = STACK_TRACE.matcher(line);
-        if (m.find()) {
+        if (m.matches()) {
             // We have a stack trace.
-            String pkg = m.group(1);
-            String filename = m.group(3);
+            String pkg = m.group(2);
+            String filename = m.group(5);
             int lineNumber;
             if (filename == null) {
-                filename = m.group(2).replaceFirst("[$].+", "") + ".java"; // NOI18N
+                filename = m.group(3).replaceFirst("[$].+", "") + ".java"; // NOI18N
                 lineNumber = 1;
             } else {
-                lineNumber = Integer.parseInt(m.group(4));
+                lineNumber = Integer.parseInt(m.group(6));
             }
-            return new StackTraceParse(pkg.replace('.', '/') + filename, lineNumber);
+            return new StackTraceParse(line, pkg.replace('.', '/') + filename, lineNumber, m.group(1), m.group(4), m.group(7));
         } else {
             return null;
         }
@@ -237,7 +284,7 @@ public final class JavaAntLogger extends AntLogger {
                 FileObject source = root.getFileObject(parse.resource);
                 if (source != null) {
                     // Got it!
-                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, parse.lineNumber);
+                    parse.hyperlink(session, event, source, messageLevel, sessionLevel, data);
                     break;
                 }
             }
@@ -249,7 +296,7 @@ public final class JavaAntLogger extends AntLogger {
             if (!event.isConsumed()) {
                 FileObject source = GlobalPathRegistry.getDefault().findResource(parse.resource);
                 if (source != null) {
-                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, parse.lineNumber);
+                    parse.hyperlink(session, event, source, messageLevel, sessionLevel, data);
                 } else if (messageLevel <= sessionLevel && "java".equals(event.getTaskName())) {
                     event.consume();
                     session.println(line, event.getLogLevel() <= AntEvent.LOG_WARN, null);
@@ -291,18 +338,6 @@ public final class JavaAntLogger extends AntLogger {
             }
         }
         return null;
-    }
-    
-    private static void hyperlink(String line, AntSession session, AntEvent event, FileObject source,
-            int messageLevel, int sessionLevel, SessionData data, int lineNumber) {
-        if (messageLevel <= sessionLevel && !event.isConsumed()) {
-            event.consume();
-            try {
-                session.println(line, true, session.createStandardHyperlink(source.getURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1));
-            } catch (FileStateInvalidException e) {
-                assert false : e;
-            }
-        }
     }
     
     /**

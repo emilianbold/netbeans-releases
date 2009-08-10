@@ -24,8 +24,8 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
+ * Micro//S ystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -41,36 +41,37 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
-import java.io.StringReader;
 import java.util.Random;
 
 /**
  * Represents an pre-parsed Java expression to be later evaluated in a specific JVM context.
  * The expression can have a 1.4 or 1.5 syntax.
  *
- * @author Maros Sandor
+ * 
+ * Uses Compiler API
+ * 1) Generate a method (like evaluate_<long random number>), which takes all local variables as arguments
+ * 2) Add that method into the current source file
+ * 3) Compile the current source file, like http://www.javabeat.net/javabeat/java6/articles/java_6_0_compiler_api_4.php
+ * 4) Traverse the parsed tree and perform the evaluation - http://java.sun.com/javase/6/docs/jdk/api/javac/tree/com/sun/source/util/JavacTask.html
+ * 5) Instead of (4) it would be cool to be able to do a hot-swap. But we can not add new methods. :-(
+ * 
+ * 
+ * @author Martin Entlicher
  */
 public class Expression {
 
-    public static final String LANGUAGE_JAVA_1_4 = JavaParser.LANGUAGE_JAVA_1_4;
-    public static final String LANGUAGE_JAVA_1_5 = JavaParser.LANGUAGE_JAVA_1_5;
+    public static final String LANGUAGE_JAVA_1_5 = "1.5.0"; // NOI18N
 
     private static final String REPLACE_return = "return01234";
     private static final String REPLACE_class = "class01234";
 
     static final String RETURN_MACRO = "{return}";
     static final String CLASS_MACRO = "{class}";
-
+    
     private String       strExpression;
     private String       language;
-    private SimpleNode   root;
     private String       replace_return;
     private String       replace_class;
-
-    public Expression(String expr, String language) {
-        this.strExpression = expr;
-        this.language = language;
-    }
 
     /**
      * Creates a new expression by pre-parsing the given String representation of the expression.
@@ -80,8 +81,8 @@ public class Expression {
      * @return pre-parsed Java expression
      * @throws ParseException if the expression has wrong syntax
      */
-    public static Expression parse (String expr, String language)
-    throws ParseException {
+    public static Expression parse (String expr, String language) {
+    //throws ParseException {
         String replace_return = REPLACE_return;
         while (expr.indexOf(replace_return) >= 0) {
             replace_return = "return" + new Random().nextLong(); // NOI18N
@@ -92,19 +93,9 @@ public class Expression {
         }
         String replacedExpr = replaceSpecialVar(expr, RETURN_MACRO, replace_return); // NOI18N
         replacedExpr = replaceSpecialVar(replacedExpr, CLASS_MACRO, replace_class); // NOI18N
-        StringReader reader = new StringReader(replacedExpr);
-        try {
-            JavaParser parser = new JavaParser(reader);
-            parser.setTargetJDK(language);
-            SimpleNode root = parser.Expression();
-            return new Expression(expr, language, root, replace_return, replace_class);
-        } catch (Error e) {
-            throw new ParseException(e.getMessage());
-        } finally {
-            reader.close();
-        }
+        return new Expression(replacedExpr, language, replace_return, replace_class);
     }
-
+    
     private static String replaceSpecialVar(String expr, String var, String replace_var) {
         int i = expr.indexOf(var);
         while (i >= 0) {
@@ -137,12 +128,11 @@ public class Expression {
         }
         return expr;
     }
-
-    private Expression(String expression, String language, SimpleNode root,
+    
+    private Expression(String expression, String language,
                        String replace_return, String replace_class) {
         strExpression = expression;
         this.language = language;
-        this.root = root;
         this.replace_return = replace_return;
         this.replace_class = replace_class;
     }
@@ -154,12 +144,8 @@ public class Expression {
      * @param context a runtime JVM context
      * @return the evaluator engine
      */
-    public Evaluator evaluator(EvaluationContext context) {
-        return new Evaluator(this, context);
-    }
-
-    SimpleNode getRoot() {
-        return root;
+    public TreeEvaluator evaluator(EvaluationContext context) {
+        return new TreeEvaluator(this, context);
     }
 
     public String getLanguage() {
@@ -169,11 +155,11 @@ public class Expression {
     public String getExpression() {
         return strExpression;
     }
-
+    
     String returnReplaced() {
         return replace_return;
     }
-
+    
     String classReplaced() {
         return replace_class;
     }

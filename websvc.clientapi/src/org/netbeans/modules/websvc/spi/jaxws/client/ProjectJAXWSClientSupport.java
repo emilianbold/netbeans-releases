@@ -93,6 +93,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
+    private static final String PACKAGE_OPTION = "package"; //NOI18N
     private static final String WSDL_LOCATION = "wsdlLocation"; //NOI18N
     
     Project project;
@@ -215,6 +216,12 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                         wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(XENDORSED_OPTION);
                         wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                        wsimportOptions.addWsimportOption(wsimportOption);
+                    }
+                    if (packageName != null) {
+                        wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption.setWsimportOptionName(PACKAGE_OPTION);
+                        wsimportOption.setWsimportOptionValue(packageName); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
                 }

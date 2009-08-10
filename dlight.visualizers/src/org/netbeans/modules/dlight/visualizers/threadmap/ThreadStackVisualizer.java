@@ -58,19 +58,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
-import org.netbeans.modules.dlight.api.stack.OpenInEditor;
-import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
-import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.module.dlight.threads.api.OpenInEditor;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,16 +78,16 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
-    private StackTraceColumn descriptor;
+    private ThreadDump descriptor;
 
-    ThreadStackVisualizer(StackTraceColumn descriptor) {
+    ThreadStackVisualizer(ThreadDump descriptor) {
         this.descriptor = descriptor;
         init();
     }
 
     public String getDisplayName(){
-        if (descriptor.getStacks().size() > 0) {
-            return descriptor.getStacks().get(0).getThreadInfo().getThreadName();
+        if (!descriptor.getThreadStates().isEmpty()) {
+            return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
@@ -101,15 +101,17 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         panel.setLayout(new GridBagLayout());
         pane.setViewportView(panel);
         int y = 0;
-        final long time = descriptor.getTime();
+        // TODO: convert this timestamp to time since program start
+        // now it's nanoseconds since some unspecified moment in the past
+        final long time = descriptor.getTimestamp();
         String timeString = TimeLineUtils.getMillisValue(time);
         if (false) {
             // for testing only
-            if (descriptor.getStacks().size() == 0) {
-                descriptor = new StackTraceColumn() {
-                    public List<Stack> getStacks() {
-                        List<Stack> res = new ArrayList<Stack>();
-                        res.add(new Stack(){
+            if (descriptor.getThreadStates().isEmpty()) {
+                descriptor = new ThreadDump() {
+                    public List<ThreadSnapshot> getThreadStates() {
+                        List<ThreadSnapshot> res = new ArrayList<ThreadSnapshot>();
+                        res.add(new ThreadSnapshot(){
                             public List<FunctionCall> getStack() {
                                 List<FunctionCall> calls = new ArrayList<FunctionCall>();
                                 calls.add(new FunctionCall() {
@@ -155,16 +157,20 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
                             public MSAState getState() {
                                 return MSAState.Running;
                             }
+
+                            public MemoryAccessType getMemoryAccessType() {
+                                return null;
+                            }
                         });
                         return res;
                     }
-                    public long getTime() {
+                    public long getTimestamp() {
                         return time;
                     }
                 };
             }
         }
-        if (descriptor.getStacks().size() > 0) {
+        if (!descriptor.getThreadStates().isEmpty()) {
             String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
             panel.add(new JLabel(message),
                     new GridBagConstraints(0, y,
@@ -172,7 +178,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
                                 1., 0.,
                                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                                 new Insets(10, 10, 0, 0), 0, 0));
-            for(Stack stack : descriptor.getStacks()){
+            for(ThreadSnapshot stack : descriptor.getThreadStates()){
                 y = addThread(panel, y, stack);
             }
         } else {
@@ -186,7 +192,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         }
     }
 
-    private int addThread(JPanel panel, int y, Stack stack){
+    private int addThread(JPanel panel, int y, ThreadSnapshot stack){
         MSAState msa = stack.getState();
         ThreadStateResources res = ThreadStateResources.forState(msa);
         if (res != null) {
@@ -202,7 +208,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         return y;
     }
 
-    private int addStack(JPanel panel, int y, Stack stack) {
+    private int addStack(JPanel panel, int y, ThreadSnapshot stack) {
         for(FunctionCall call : stack.getStack()) {
             y++;
             final JButton button = new JButton(new OpenAction(call));

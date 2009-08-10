@@ -71,6 +71,8 @@ public class Hacks {
     private Hacks() {}
     
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+
+    static final RequestProcessor RP = new RequestProcessor("Project UI"); // NOI18N
     
     /**
      * Show name of project corresponding to selection in Main Window title bar.
@@ -78,7 +80,7 @@ public class Hacks {
      */
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
-        final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+        final RequestProcessor.Task task = RP.create(new Runnable() {
             public void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();

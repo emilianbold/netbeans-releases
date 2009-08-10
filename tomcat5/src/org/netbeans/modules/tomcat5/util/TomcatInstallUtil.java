@@ -65,6 +65,7 @@ import org.openide.cookies.SaveCookie;
 import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -318,7 +319,7 @@ public class TomcatInstallUtil {
      * @throws IOException if something goes wrong
      */
     public static void patchCatalinaProperties(File catalinaProperties) throws IOException {
-        EditableProperties props = new EditableProperties();
+        EditableProperties props = new EditableProperties(false);
         InputStream is = new BufferedInputStream(new FileInputStream(catalinaProperties));
         try {
             props.load(is);

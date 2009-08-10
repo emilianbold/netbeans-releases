@@ -54,10 +54,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.module.dlight.threads.api.Datarace;
+import org.netbeans.module.dlight.threads.api.Deadlock;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
@@ -97,7 +100,7 @@ import org.openide.util.Lookup;
  *      request.
  *
  */
-class SSStackDataProvider implements StackDataProvider {
+class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
     private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
@@ -209,6 +212,14 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         return Collections.emptyList();
+    }
+
+    public List<? extends Deadlock> getDeadlocks() {
+        return storage.getDeadlocks();
+    }
+
+    public List<? extends Datarace> getDataraces() {
+        return storage.getDataraces();
     }
 
     // TODO: !!!

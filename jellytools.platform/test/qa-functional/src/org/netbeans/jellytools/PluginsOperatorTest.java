@@ -127,8 +127,9 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - type "netbeans.org Source Browser" into Search text field
      * - finish installation
      */
-    public void testInstall() {
+    public void testInstall() {        
         pluginsOper.selectAvailablePlugins();
+        pluginsOper.reloadCatalog();
         pluginsOper.search(TEST_PLUGIN);
         pluginsOper.install(TEST_PLUGIN);
     }

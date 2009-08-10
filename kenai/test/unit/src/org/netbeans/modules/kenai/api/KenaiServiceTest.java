@@ -76,7 +76,7 @@ public class KenaiServiceTest extends NbTestCase {
     @Override
     public void setUp() {
         try {
-            System.setProperty("kenai.com.url", "http://testkenai.com");
+            System.setProperty("kenai.com.url", "https://testkenai.com");
             if (servicesChecker == null) {
                 final String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "services.data";
                 System.out.println(_fileName);
@@ -105,7 +105,7 @@ public class KenaiServiceTest extends NbTestCase {
         // - WIKIHome
         // - WebSite
         int UNKNOWN_SERVICES = 2;
-        if (services.size() + UNKNOWN_SERVICES != servicesChecker.serviceDescriptions.size()) {
+        if (services.size() - UNKNOWN_SERVICES != servicesChecker.serviceDescriptions.size()) {
             System.out.println("UNKNOWN SERVICES: " + UNKNOWN_SERVICES);
             System.out.println("SERVER RETURNED SERVICES: " + services.size());
             System.out.println("GOLDEN SERVICES: " + servicesChecker.serviceDescriptions.size());
