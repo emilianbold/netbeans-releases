@@ -37,23 +37,58 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import java.awt.Image;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
+public class FunctionCallNode extends AbstractNode {
+    private final FunctionCall functionCall;
+    /*package-local*/ static Image downBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/down_20.png" ); // NOI18N
+    private static Image upBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/up_8.png" ); // NOI18N
+    private static Image functionIcon = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/global_function.png" ); // NOI18N
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
+
+     FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
+         super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, functionCall));
+         this.functionCall = functionCall;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return functionCall.getDisplayedName();
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.mergeImages(functionIcon, downBadge, 0, 0);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return super.getPreferredAction();
+    }
+
+
+
 
    
+
+
+
+
+
 }

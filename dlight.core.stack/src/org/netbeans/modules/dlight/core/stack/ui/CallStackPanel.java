@@ -37,23 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.BorderLayout;
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import javax.swing.JPanel;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 
 /**
- *
- * @author mt154047
+ * This class will represent panel were CallStack can be displayed
+ * @author Maria Tishkova
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
+public final class CallStackPanel extends JPanel implements ExplorerManager.Provider{
+    private final ExplorerManager manager = new ExplorerManager();
+    
+    public CallStackPanel(List<FunctionCall> stack) {
+        BeanTreeView treeView = new BeanTreeView();
+        setLayout(new BorderLayout());
+        add(treeView, BorderLayout.CENTER);
+        manager.setRootContext(new StackRootNode("Stack", stack));//NOI18N
+    }
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
 
-   
+
 }

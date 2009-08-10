@@ -37,23 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author mt154047
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
+public class FunctionCallChildren extends Children.Keys<FunctionCall> {
+    private final CallStackTreeModel stackModel;
+    private final FunctionCall parentCall;
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
+    FunctionCallChildren(CallStackTreeModel stackModel, FunctionCall parentCall) {
+        this.stackModel = stackModel;
+        this.parentCall = parentCall;
+    }
 
-   
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(new FunctionCall[]{parentCall});
+    }
+
+
+
+    @Override
+    protected Node[] createNodes(FunctionCall key) {
+        return new FunctionCallNode[]{new FunctionCallNode(stackModel, stackModel.getCaller(key))};
+    }
+
 }

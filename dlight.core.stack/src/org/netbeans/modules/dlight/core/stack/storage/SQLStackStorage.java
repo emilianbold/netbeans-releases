@@ -110,7 +110,7 @@ public final class SQLStackStorage {
     }
 
     private void initTables() throws SQLException, IOException {
-        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql"); //NOI18N
+        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             sqlStorage.execute(reader);

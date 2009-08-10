@@ -37,23 +37,40 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.Image;
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.nodes.AbstractNode;
 
 /**
  *
  * @author mt154047
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
+public final class StackRootNode extends AbstractNode{
+    private final String stackName;
+    
+    public StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
+        super(new FunctionCallChildren( new CallStackTreeModel(stack), stack.get(0)));
+        this.stackName = stackName;
+    }
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
+    @Override
+    public String getDisplayName() {
+        return stackName;
+    }
 
-   
+    @Override
+    public Image getIcon(int type) {
+      return null;
+    }
+
+
+
+
+    
+
+
 }

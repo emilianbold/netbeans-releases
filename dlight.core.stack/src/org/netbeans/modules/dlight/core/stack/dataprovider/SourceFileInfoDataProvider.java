@@ -39,21 +39,14 @@
 
 package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 
 /**
  *
  * @author mt154047
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
-
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
-
-   
+public interface SourceFileInfoDataProvider extends DataProvider {
+    SourceFileInfo getSourceFileInfo(FunctionCall functionCall);
 }

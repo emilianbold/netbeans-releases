@@ -37,23 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
  *
  * @author mt154047
  */
-public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
+final class CallStackTreeModel {
 
-    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
-        FunctionDatatableDescription functionDescription,
-        List<Column> metricsColumn);
+    private final List<FunctionCall> stack;
+    private final SourceFileInfoDataProvider dataProvider;
 
-   
+    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
+        this.stack = stack;
+        this.dataProvider = dataProvider;
+    }
+
+    FunctionCall getCaller(FunctionCall call){
+        //find in the list
+        int index = stack.indexOf(call);
+        //return the next one
+        if (index == stack.size() - 1 ){
+            return null;
+        }
+        return stack.get(index + 1);
+    }
+
+
+
 }
