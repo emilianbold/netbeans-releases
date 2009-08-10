@@ -245,7 +245,7 @@ public class Action {
             }
         }
 
-        if (this.keystrokes != null)
+        if (keystrokes != null)
             this.keystrokes = keystrokes.clone();
     }
 
