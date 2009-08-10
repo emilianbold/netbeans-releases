@@ -2,7 +2,7 @@ org.netbeans.modules.cnd.debugger.gdb.actions.StepActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.PauseActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.StartActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.KillActionProvider
-org.netbeans.modules.cnd.debugger.gdb.actions.ToggleBreakpointActionProvider
+org.netbeans.modules.cnd.debugger.gdb.actions.ToggleBreakpointActionProvider-hidden
 org.netbeans.modules.cnd.debugger.gdb.actions.MakeCalleeCurrentActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.MakeCallerCurrentActionProvider
 org.netbeans.modules.cnd.debugger.gdb.actions.PopToHereActionProvider

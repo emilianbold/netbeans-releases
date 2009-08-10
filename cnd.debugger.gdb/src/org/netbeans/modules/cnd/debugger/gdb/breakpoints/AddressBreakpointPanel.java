@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;

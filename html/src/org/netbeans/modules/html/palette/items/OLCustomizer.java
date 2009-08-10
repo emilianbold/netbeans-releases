@@ -71,6 +71,12 @@ public class OLCustomizer extends javax.swing.JPanel {
         
         initComponents();
 
+        try {
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner1.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner1.getAccessibleContext().getAccessibleDescription());
+        }catch (Exception e) {
+
+        }
         if (ol.getType().equals(OL.DEFAULT))
             jRadioButton1.setSelected(true);
         else if (ol.getType().equals(OL.ARABIC_NUMBERS))
@@ -110,6 +116,8 @@ public class OLCustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSN_OL_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSD_OL_Dialog"));
         dialog.setVisible(true);
         
         return dialogOK;

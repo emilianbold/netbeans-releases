@@ -45,14 +45,11 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.BreakpointType;
-
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-
 
 /**
  * Implementation of breakpoint on function.
@@ -77,12 +74,9 @@ public class FunctionBreakpointType extends BreakpointType {
     
     public boolean isDefault() {
         // First, check for an open file. Is it one of ours?
-        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
-        if (fo != null) {
-            String mime = fo.getMIMEType();
-            if (mime.length() > 0) {
-                return MIMENames.isFortranOrHeaderOrCppOrC(mime);
-            }
+        String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
+        if (mime.length() > 0) {
+            return MIMENames.isFortranOrHeaderOrCppOrC(mime);
         }
         
         // Next, check the main project. Is it one of ours?

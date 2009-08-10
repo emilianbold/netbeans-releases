@@ -42,18 +42,35 @@ package org.netbeans.modules.jira.util;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 
 /**
  *
  * @author Tomas Stupka
+ * @author Jan Stola
  */
-public class StatusRenderer extends DefaultListCellRenderer {
+public class StatusRenderer extends DefaultListCellRenderer implements TableCellRenderer {
+
+    private Object valueToRender(Object value) {
+        if(value instanceof JiraStatus) {
+            return ((JiraStatus)value).getName();
+        }
+        return value;
+    }
+
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if(value instanceof JiraStatus) {
-            value = ((JiraStatus) value).getName();
+        return super.getListCellRendererComponent(list, valueToRender(value), index, isSelected, cellHasFocus);
+    }
+
+    private DefaultTableCellRenderer tableCellRenderer;
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (tableCellRenderer == null) {
+            tableCellRenderer = new DefaultTableCellRenderer();
         }
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        return tableCellRenderer.getTableCellRendererComponent(table, valueToRender(value), isSelected, hasFocus, row, column);
     }
 }

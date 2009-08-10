@@ -2030,11 +2030,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (t.getStackDepth () > 0)
             try {
                 CallStackFrame f = t.getCallStack (0, 1) [0];
-                List l = f.getAvailableStrata ();
+                List<String> l = f.getAvailableStrata ();
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     if (!languages.contains (l.get (i))) {
-                        String language = (String) l.get (i);
+                        String language = l.get (i);
                         DebuggerManager.getDebuggerManager ().startDebugging (
                             createJSR45DI (language)
                         );

@@ -147,7 +147,6 @@ public class ChatTopComponent extends TopComponent {
         initComponents();
         clearChatsTabbedPane();
         contactList.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE);
-        contactList.add(new ContactList(), BorderLayout.CENTER);
         setName(NbBundle.getMessage(ChatTopComponent.class, "CTL_ChatTopComponent"));
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));

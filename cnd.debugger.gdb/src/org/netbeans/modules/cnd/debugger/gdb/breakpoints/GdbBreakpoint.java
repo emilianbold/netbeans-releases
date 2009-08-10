@@ -46,8 +46,8 @@ import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -66,7 +66,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
     public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
-    public static final String          PROP_FUNCTION_NAME = "functionName"; // NOI18N
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     public static final String          PROP_SKIP_COUNT = "skipCount"; // NOI18N
@@ -82,7 +81,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private int                         suspend = SUSPEND_ALL;
     private String                      threadID = "1"; // NOI18N
     private String                      printText;
-    private final Set<GdbBreakpointListener>  breakpointListeners = new CopyOnWriteArraySet<GdbBreakpointListener>();
+    private final Set<CndBreakpointListener>  breakpointListeners = new CopyOnWriteArraySet<CndBreakpointListener>();
     private String                      condition = ""; // NOI18N
     private int                         skipCount = 0;
     private String                      url = "";       // NOI18N
@@ -372,7 +371,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
      *
      * @param listener the listener to add
      */
-    public synchronized void addGdbBreakpointListener(GdbBreakpointListener listener) {
+    public synchronized void addGdbBreakpointListener(CndBreakpointListener listener) {
         breakpointListeners.add(listener);
     }
     
@@ -382,7 +381,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
      *
      * @param listener the listener to remove
      */
-    public synchronized void removeGdbBreakpointListener(GdbBreakpointListener listener){
+    public synchronized void removeGdbBreakpointListener(CndBreakpointListener listener){
         breakpointListeners.remove(listener);
     }
     
@@ -391,8 +390,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      *
      * @param event a event to be fired
      */
-    public void fireGdbBreakpointChange(GdbBreakpointEvent event) {
-        for (GdbBreakpointListener listener : breakpointListeners) {
+    public void fireGdbBreakpointChange(CndBreakpointEvent event) {
+        for (CndBreakpointListener listener : breakpointListeners) {
             listener.breakpointReached(event);
         }
     }
