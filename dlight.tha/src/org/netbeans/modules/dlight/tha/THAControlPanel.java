@@ -49,15 +49,11 @@ public class THAControlPanel extends javax.swing.JPanel {
 
     private final boolean started;
     private final Action toggleAction;
-    private final Action deadlocksAction;
-    private final Action dataracesAction;
 
     /** Creates new form THAControlPanel */
     public THAControlPanel(boolean started, Action toggleAction, Action deadlocksAction, Action racesAction) {
         this.started = started;
         this.toggleAction = toggleAction;
-        this.deadlocksAction = deadlocksAction;
-        this.dataracesAction = racesAction;
         initComponents();
         deadlocksButton.setAction(deadlocksAction);
         racesButton.setAction(racesAction);
