@@ -73,7 +73,7 @@ public class CommentsTest extends GeneratorTest {
         return suite;
     }
 
-    public void DISABLEtestAddStatement() throws Exception {
+    public void testAddStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -100,7 +100,7 @@ public class CommentsTest extends GeneratorTest {
             "        /**\n" +
             "         * becko\n" +
             "         */\n" +
-            "        int b;\n" +
+            "        int b; //NOI18N\n" +
             "        // cecko\n" +
             "        int c;\n" +
             "    }\n" +
@@ -124,7 +124,7 @@ public class CommentsTest extends GeneratorTest {
                         "    /**\n" +
                         "     * becko\n" +
                         "     */\n" +
-                        "    int b;\n" +
+                        "    int b; //NOI18N\n" +
                         "    // cecko\n" +
                         "    int c; // trail\n" +
                         "}";
