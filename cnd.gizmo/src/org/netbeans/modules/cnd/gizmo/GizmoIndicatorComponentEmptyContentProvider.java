@@ -38,10 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.support.DefaultIndicatorComponentEmptyContentProvider;
@@ -55,6 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider {
 
     public List<Indicator> getEmptyContent() {
-        return DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("Gizmo");
+        return DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("Gizmo"); // NOI18N
     }
 }

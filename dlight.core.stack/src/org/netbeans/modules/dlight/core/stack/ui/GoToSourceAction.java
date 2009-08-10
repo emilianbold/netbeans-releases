@@ -48,11 +48,11 @@ import javax.swing.AbstractAction;
 class GoToSourceAction extends AbstractAction {
 
     public GoToSourceAction() {
-        super("Test");
+        super("Test"); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
 
