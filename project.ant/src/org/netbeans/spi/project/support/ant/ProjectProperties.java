@@ -399,13 +399,12 @@ final class ProjectProperties {
             diskChange(fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            diskChange(fe);
-        }
-
         public void fileDeleted(FileEvent fe) {
             diskChange(fe);
         }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {}
+
     }
 
     /**
