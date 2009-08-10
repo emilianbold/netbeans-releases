@@ -42,6 +42,8 @@ package org.netbeans.modules.jira.issue;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.table.DefaultTableModel;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbBundle;
@@ -63,6 +65,16 @@ public class SubtaskTableModel extends DefaultTableModel {
         String status = bundle.getString("SubtaskTableModel.status"); // NOI18N
         String priority = bundle.getString("SubtaskTableModel.priority"); // NOI18N
         return new String[] {subTask, summary, status, priority};
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        Class clazz = String.class;
+        switch (columnIndex) {
+            case 2: clazz = JiraStatus.class; break;
+            case 3: clazz = Priority.class; break;
+        }
+        return clazz;
     }
 
     private static Object[][] data(NbJiraIssue issue) {
