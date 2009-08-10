@@ -68,7 +68,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
@@ -168,16 +167,11 @@ public class PropertyUtils {
                                 return null;
                             }
                         }
-                        FileLock lock = bp.lock();
+                        OutputStream os = bp.getOutputStream();
                         try {
-                            OutputStream os = bp.getOutputStream(lock);
-                            try {
-                                properties.store(os);
-                            } finally {
-                                os.close();
-                            }
+                            properties.store(os);
                         } finally {
-                            lock.releaseLock();
+                            os.close();
                         }
                     } else {
                         throw new IOException("Do not know where to store build.properties; must set netbeans.user!"); // NOI18N
