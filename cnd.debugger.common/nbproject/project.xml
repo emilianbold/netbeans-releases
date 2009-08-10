@@ -199,6 +199,7 @@
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.actions</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>
+                <package>org.netbeans.modules.cnd.debugger.common.disassembly</package>
                 <package>org.netbeans.modules.cnd.debugger.common.models</package>
                 <package>org.netbeans.modules.cnd.debugger.common.utils</package>
             </friend-packages>

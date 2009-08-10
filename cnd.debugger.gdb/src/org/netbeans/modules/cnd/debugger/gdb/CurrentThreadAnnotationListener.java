@@ -201,8 +201,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             }
                             
                             // 4) annotate dis
-                            // FIXME
-                            //da = EditorContextBridge.annotateDis(csf, annotationType);
+                            da = EditorContextBridge.annotateDis(csf, annotationType);
                             
                             // 5) add new dis line to hashMap
                             if (da != null) {

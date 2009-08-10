@@ -336,15 +336,15 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public List<RegisterValue> getRegisterValues() {
-        List<RegisterValue> res = new ArrayList<RegisterValue>();
+    public List<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue> getRegisterValues() {
+        List<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue> res = new ArrayList<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue>();
         for (Integer idx : regValues.keySet()) {
             String name = regNames.get(idx);
             if (name == null) {
                 log.severe("Unknown register: " + idx); // NOI18N
                 name = String.valueOf(idx);
             }
-            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
+            res.add(new org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }

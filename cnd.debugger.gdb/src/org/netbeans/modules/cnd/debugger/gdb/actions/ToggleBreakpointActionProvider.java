@@ -104,19 +104,19 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             return;
         }
         
-        if (Disassembly.isDisasm(url)) {
-            Disassembly dis = Disassembly.getCurrent();
-            if (dis == null) {
-                return;
-            }
-            lb = AddressBreakpoint.create(dis.getLineAddress(ln));
-            lb.setPrintText(
-                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Address_Breakpoint_Print_Text")
-            );
-            log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
-            d.addBreakpoint(lb);
-            return;
-        }
+//        if (Disassembly.isDisasm(url)) {
+//            Disassembly dis = Disassembly.getCurrent();
+//            if (dis == null) {
+//                return;
+//            }
+//            lb = AddressBreakpoint.create(dis.getLineAddress(ln));
+//            lb.setPrintText(
+//                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Address_Breakpoint_Print_Text")
+//            );
+//            log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
+//            d.addBreakpoint(lb);
+//            return;
+//        }
         
         // 3) create a new line breakpoint
         lb = LineBreakpoint.create(url, ln);

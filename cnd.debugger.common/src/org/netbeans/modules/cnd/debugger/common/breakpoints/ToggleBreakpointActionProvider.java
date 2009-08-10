@@ -50,7 +50,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.util.NbBundle;
@@ -95,8 +95,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             return;
         }
 
-        //FIXME : obtain DisassemblyProvider from the debugger
-        DisassemblyProvider disProvider = null;
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         if (disProvider != null && disProvider.isDis(url)) {
             lb = AddressBreakpoint.create(disProvider.getLineAddress(ln));
             lb.setPrintText(
@@ -107,19 +106,6 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             return;
 
         }
-//        if (Disassembly.isDisasm(url)) {
-//            Disassembly dis = Disassembly.getCurrent();
-//            if (dis == null) {
-//                return;
-//            }
-//            lb = AddressBreakpoint.create(dis.getLineAddress(ln));
-//            lb.setPrintText(
-//                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Address_Breakpoint_Print_Text")
-//            );
-//            log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
-//            d.addBreakpoint(lb);
-//            return;
-//        }
         
         // 3) create a new line breakpoint
         lb = LineBreakpoint.create(url, ln);
@@ -129,11 +115,8 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     
     static CndBreakpoint findBreakpoint(String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        //FIXME : obtain DisassemblyProvider from the debugger
-        DisassemblyProvider disProvider = null;
+        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         boolean inDis = disProvider != null && disProvider.isDis(url);
-//        Disassembly dis = Disassembly.getCurrent();
-//        boolean inDis = Disassembly.isDisasm(url);
         for (Breakpoint b : breakpoints) {
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;

@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -75,8 +75,8 @@ public class EditorContextBridge {
     
     public static EditorContext getContext() {
         if (context == null) {
-            List l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
-            context = (EditorContext) l.get(0);
+            List<? extends EditorContext> l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
+            context = l.get(0);
             int i, k = l.size();
             for (i = 1; i < k; i++) {
                 context = new CompoundContextProvider((EditorContext) l.get(i), context);
@@ -91,8 +91,7 @@ public class EditorContextBridge {
     
     public static boolean showSource(CallStackFrame csf, boolean inDis) {
         if (inDis) {
-            //return showDis(csf);
-            return false;
+            return showDis(csf);
         } else {
             return showCode(csf);
         }
@@ -115,6 +114,22 @@ public class EditorContextBridge {
 	    }
         }
 	return false;
+    }
+
+    public static DisassemblyService getCurrentDisassemblyService() {
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            return null;
+        }
+        return currentEngine.lookupFirst(null, DisassemblyService.class);
+    }
+
+    public static boolean showDis(CallStackFrame csf) {
+        DisassemblyService disService = getCurrentDisassemblyService();
+        if (disService != null) {
+            return disService.showAddress(csf.getAddr());
+        }
+        return false;
     }
 
     public static String getUrl(File file) {
@@ -178,6 +193,14 @@ public class EditorContextBridge {
 	return null;
     }
     
+    public static Object annotateDis(CallStackFrame csf, String annotationType) {
+        DisassemblyService disService = getCurrentDisassemblyService();
+        if (disService != null) {
+            return disService.annotateAddress(csf.getAddr(), annotationType);
+        }
+        return null;
+    }
+
     /**
      * Removes given annotation.
      */
@@ -323,28 +346,10 @@ public class EditorContextBridge {
             }
             return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
         } else if (b instanceof AddressBreakpoint) {
-            //FIXME : obtain DisassemblyProvider from the debugger
-            DisassemblyProvider disProvider = null;
-            if (disProvider != null) {
-                return disProvider.showAddress(((AddressBreakpoint)b).getAddress());
+            DisassemblyService disService = getCurrentDisassemblyService();
+            if (disService != null) {
+                return disService.showAddress(((AddressBreakpoint)b).getAddress());
             }
-
-//            FileObject fo = Disassembly.getFileObject();
-//            if (fo != null) {
-//                try {
-//                    Disassembly dis = Disassembly.getCurrent();
-//                    if (dis != null) {
-//                        int line = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
-//                        if (line != -1) {
-//                            return getContext().showSource(DataObject.find(fo), dis.getAddressLine(((AddressBreakpoint)b).getAddress()), null);
-//                        } else {
-//                            Disassembly.open();
-//                        }
-//                    }
-//                } catch (DataObjectNotFoundException dex) {
-//                    // do nothing
-//                }
-//            }
         }
         return false;
     }

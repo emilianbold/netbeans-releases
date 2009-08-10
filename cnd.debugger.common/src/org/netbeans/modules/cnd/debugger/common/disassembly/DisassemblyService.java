@@ -43,13 +43,21 @@ package org.netbeans.modules.cnd.debugger.common.disassembly;
  *
  * @author Egor Ushakov
  */
-public interface DisassemblyProvider {
+public interface DisassemblyService {
     /**
      * Opens disassembly and show the line related to the address specified
      * @param address
      * @return
      */
     boolean showAddress(String address);
+
+    /**
+     * Annotates address
+     * @param address
+     * @param annotationType
+     * @return
+     */
+    Object annotateAddress(String address, String annotationType);
 
     /**
      * Returns line number of the instruction with the address specified, -1 if not found

@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.AddressBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.LineBreakpointPanel;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyProvider;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -103,8 +103,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         loc("CTL_Breakpoint_GoToDis_Label"), // NOI18N
         new Models.ActionPerformer() {
             public boolean isEnabled(Object node) {
-                //FIXME : obtain DisassemblyProvider from the debugger
-                DisassemblyProvider disProvider = null;
+                DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
                 return disProvider != null;
             }
             public void perform(Object[] nodes) {
