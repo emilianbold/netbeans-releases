@@ -92,14 +92,6 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
     private final boolean alphabetize;
     
-    private static final String keyValueSeparators = "=: \t\r\n\f";
-
-    private static final String strictKeyValueSeparators = "=:";
-
-    private static final String whiteSpaceChars = " \t\r\n\f";
-
-    private static final String commentChars = "#!";
-    
     private static final String INDENT = "    ";
 
     // parse states:
@@ -402,11 +394,14 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     // does line start with comment delimiter? (whitespaces are ignored)
     private static boolean isComment(String line) {
         line = trimLeft(line);
-        if (line.length() != 0 && commentChars.indexOf(line.charAt(0)) != -1) {
-            return true;
-        } else {
-            return false;
+        if (line.length() > 0) {
+            switch (line.charAt(0)) {
+            case '#':
+            case '!':
+                return true;
+            }
         }
+        return false;
     }
 
     // is line empty? (whitespaces are ignored)
@@ -417,11 +412,19 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     // remove all whitespaces from left
     private static String trimLeft(String line) {
         int start = 0;
-        while (start < line.length()) {
-            if (whiteSpaceChars.indexOf(line.charAt(start)) == -1) {
+        int len = line.length();
+        NONWS: while (start < len) {
+            switch (line.charAt(start)) {
+            case ' ':
+            case '\t':
+            case '\r':
+            case '\n':
+            case '\f':
+                start++;
                 break;
+            default:
+                break NONWS;
             }
-            start++;
         }
         return line.substring(start);
     }
@@ -576,6 +579,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
         
         private String mergeLines(List<String> lines) {
+            if (lines.size() == 1) {
+                return trimLeft(lines.get(0));
+            }
             StringBuilder line = new StringBuilder();
             Iterator<String> it = lines.iterator();
             while (it.hasNext()) {
@@ -592,14 +598,22 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         
         private void splitKeyValue(String line) {
             int separatorIndex = 0;
-            while (separatorIndex < line.length()) {
+            int len = line.length();
+            POS: while (separatorIndex < len) {
                 char ch = line.charAt(separatorIndex);
                 if (ch == '\\') {
                     // ignore next one character
                     separatorIndex++;
                 } else {
-                    if (keyValueSeparators.indexOf(ch) != -1) {
-                        break;
+                    switch (ch) {
+                    case '=':
+                    case ':':
+                    case ' ':
+                    case '\t':
+                    case '\r':
+                    case '\n':
+                    case '\f':
+                        break POS;
                     }
                 }
                 separatorIndex++;
@@ -610,7 +624,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 value = "";
                 return;
             }
-            if (strictKeyValueSeparators.indexOf(line.charAt(0)) != -1) {
+            switch (line.charAt(0)) {
+            case '=':
+            case ':':
                 line = trimLeft(line.substring(1));
             }
             value = decode(line);
