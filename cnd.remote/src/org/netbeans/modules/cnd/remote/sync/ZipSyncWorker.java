@@ -110,7 +110,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
-            Zipper zipper = new Zipper(zipFile);
+            Zipper zipper = createZipper(zipFile);
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();                
@@ -210,5 +210,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     @Override
     public boolean cancel() {
         return false;
+    }
+
+    protected Zipper createZipper(File zipFile) {
+        return new Zipper(zipFile);
     }
 }
