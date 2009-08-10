@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.collab.chat;
+package org.netbeans.modules.kenai.ui;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.jivesoftware.smack.util.StringUtils;
-import org.openide.util.ImageUtilities;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
+import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Participant representation.
- * Just id with icon
+ *
  * @author Jan Becicka
  */
-public class Buddy implements Comparable<Buddy> {
-    
-    private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
+@ServiceProvider(service=MemberAccessor.class)
+public class MemberAccessorImpl extends MemberAccessor{
 
-    public Buddy(String jid) {
-        assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
-        this.jid = jid;
-    }
-
-    Icon getIcon() {
-        return ONLINE_ICON;
-    }
-
-    String getLabel() {
-        return StringUtils.parseName(jid);
-    }
-
-    public String getJid() {
-        return jid;
+    @Override
+    public List<MemberHandle> getMembers(ProjectHandle project) {
+        ArrayList<MemberHandle> handles = new ArrayList();
+        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
+            handles.add(new MemberHandleImpl(user));
+        }
+        return handles;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Buddy other = (Buddy) obj;
-        if ((this.jid == null) ? (other.jid != null) : !this.jid.equals(other.jid)) {
-            return false;
-        }
-        return true;
+    public Action getStartChatAction(final MemberHandle member) {
+        return new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                KenaiUser.forName(member.getName()).startChat();
+            }
+        };
     }
 
-    @Override
-    public int hashCode() {
-        return jid.hashCode();
-    }
-
-    public int compareTo(Buddy o) {
-        return this.getLabel().compareTo(o.getLabel());
-    }
 }
