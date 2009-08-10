@@ -50,9 +50,6 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 class ParameterImpl implements Parameter {
     private String name;
     private String defaultValue;
-    ParameterImpl(String name) {
-        this(name, null);
-    }
 
     ParameterImpl(String name, String defaultValue) {
         this.name = name;
