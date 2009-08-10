@@ -70,6 +70,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
@@ -359,7 +361,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         createSubtaskButton.setVisible(false);
         convertToSubtaskButton.setVisible(false);
-        subtaskLabel.setVisible(false);
         dummySubtaskPanel.setVisible(false);
 
         if (force) {
@@ -418,7 +419,11 @@ public class IssuePanel extends javax.swing.JPanel {
         if  (hasParent) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    final Issue parent = issue.getRepository().getIssue(parentKey);
+                    Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
+                    if (parentIssue == null) {
+                        parentIssue = issue.getRepository().getIssue(parentKey);
+                    }
+                    final Issue parent = parentIssue;
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             parentHeaderPanel.setVisible(true);
@@ -541,12 +546,51 @@ public class IssuePanel extends javax.swing.JPanel {
             // Attachments
             attachmentsPanel.setIssue(issue);
             BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+
+            // Sub-tasks
+            boolean hasSubtasks = issue.hasSubtasks();
+            subtaskLabel.setVisible(hasSubtasks);
+            if (subTaskScrollPane != null) {
+                subTaskScrollPane.setVisible(hasSubtasks);
+            }
+            if (hasSubtasks) {
+                if (subTaskTable == null) {
+                    subTaskTable = new JTable();
+                    subTaskScrollPane = new JScrollPane(subTaskTable);
+                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                subTaskTable.setModel(tableModel);
+
+                                // Table height tweaks
+                                int height = 0;
+                                for(int row=0; row<tableModel.getRowCount(); row++) {
+                                    height += subTaskTable.getRowHeight(row);
+                                }
+                                subTaskTable.setPreferredScrollableViewportSize(new Dimension(
+                                        subTaskTable.getPreferredScrollableViewportSize().width,
+                                        height
+                                ));
+
+                                if (subTaskScrollPane.getParent() == null) {
+                                    ((GroupLayout)getLayout()).replace(dummySubtaskPanel, subTaskScrollPane);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         }
         updateFieldStatuses();
         reloading = false;
     }
     private JComponent dummyCancelButton = new JLabel();
     private JComponent dummyActionPanel = new JLabel();
+    private JTable subTaskTable;
+    private JScrollPane subTaskScrollPane;
 
     private void reloadCustomFields() {
         for (NbJiraIssue.CustomField cField : getSupportedCustomFields()) {
@@ -779,9 +823,12 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
-    private void attachIssueListener(NbJiraIssue issue) {
+    private void attachIssueListener(final NbJiraIssue issue) {
         issue.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getSource() != issue) {
+                    return;
+                }
                 if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                     reloadFormInAWT(false);
                 } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
