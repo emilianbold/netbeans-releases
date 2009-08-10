@@ -387,7 +387,7 @@ public class PropertyUtils {
         if (basedir.equals(file)) {
             return "."; // NOI18N
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         File base = basedir;
         String filepath = file.getAbsolutePath();
         while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {
@@ -427,7 +427,7 @@ public class PropertyUtils {
     }
     
     /*public? */ static String resolvePath(File basedir, String path) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         String[] toks = tokenizePath(path);
         for (int i = 0; i < toks.length; i++) {
             if (i > 0) {
@@ -523,7 +523,7 @@ public class PropertyUtils {
         if (isUsablePropertyName(name)) {
             return name;
         }
-        StringBuffer sb = new StringBuffer(name);
+        StringBuilder sb = new StringBuilder(name);
         for (int i=0; i<sb.length(); i++) {
             if (!isUsablePropertyName(sb.substring(i,i+1))) {
                 sb.replace(i,i+1,"_");

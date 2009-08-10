@@ -337,8 +337,8 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testGetUsablePropertyName() throws Exception {
-        StringBuffer bad = new StringBuffer();
-        StringBuffer good = new StringBuffer();
+        StringBuilder bad = new StringBuilder();
+        StringBuilder good = new StringBuilder();
         for (int i=0; i<ILLEGAL_CHARS.length(); i++) {
             bad.append(ILLEGAL_CHARS.substring(i, i+1));
             bad.append("x");

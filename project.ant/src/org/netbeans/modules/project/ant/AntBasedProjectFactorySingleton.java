@@ -366,7 +366,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     public void saveProject(Project project) throws IOException, ClassCastException {
         Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
-            StringBuffer sBuff = new StringBuffer();
+            StringBuilder sBuff = new StringBuilder();
             sBuff.append(project.getClass().getName() + "\n"); // NOI18N
             sBuff.append("argument project: " + project + " => " + project.hashCode() + "\n"); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
