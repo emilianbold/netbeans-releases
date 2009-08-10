@@ -178,6 +178,29 @@ public class ModelUtils {
 
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final QuerySupport.Kind nameKind, final QualifiedName qualifiedName) {
+        final QualifiedNameKind kind = qualifiedName.getKind();
+        final String name = qualifiedName.toName().toString();
+        final String namespaceName = qualifiedName.toNamespaceName().toString();
+        return filter(allElements, new ElementFilter<T>() {
+            public boolean isAccepted(T element) {
+                if (nameKindMatch(element.getName(), nameKind, name)) {
+                    switch(kind) {
+                        case QUALIFIED:
+                            //TODO: not implemented yet behaves like UNQUALIFIED for now
+                        case UNQUALIFIED:
+                            return true;
+                        case FULLYQUALIFIED:
+                            return nameKindMatch(element.getNamespaceName().toString(), nameKind, namespaceName);
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
             final String... elementName) {
         return filter(allElements, QuerySupport.Kind.EXACT, elementName);
     }
