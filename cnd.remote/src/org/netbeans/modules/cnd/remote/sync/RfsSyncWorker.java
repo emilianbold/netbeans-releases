@@ -144,28 +144,35 @@ class RfsSyncWorker extends ZipSyncWorker {
                         break;
                     }
                     if (remoteFile.startsWith(remoteDir)) {
-                        String localFile =  localDir.getAbsolutePath() + '/' + remoteFile.substring(remoteDir.length());
-                        logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
-                        Future<Integer> task = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remoteFile, 0777, err);
-                        try {
-                            int rc = task.get();
-                            logger.finest("LC: uploading " + localFile + " to " + remoteFile + " finished; rc=" + rc);
-                            if (rc == 0) {
-                                responseStream.printf("1\n"); // NOI18N
-                            } else {
-                                responseStream.printf("0 1\n"); // NOI18N
+                        File localFile =  new File(localDir, remoteFile.substring(remoteDir.length()));
+                        if (localFile.exists()) {
+                            logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
+                                    executionEnvironment, remoteFile, 0777, err);
+                            try {
+                                int rc = task.get();
+                                logger.finest("LC: uploading " + localFile + " to " + remoteFile + " finished; rc=" + rc);
+                                if (rc == 0) {
+                                    responseStream.printf("1\n"); // NOI18N
+                                } else {
+                                    responseStream.printf("0 1\n"); // NOI18N
+                                }
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                                break;
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                                responseStream.printf("0 2 execution exception\n"); // NOI18N
+                            } finally {
+                                responseStream.flush();
                             }
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                            break;
-                        } catch (ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
-                            responseStream.printf("0 2 execution exception\n"); // NOI18N
-                        } finally {
+                        } else {
+                            responseStream.printf("1\n"); // NOI18N
                             responseStream.flush();
                         }
                     } else {
                         responseStream.printf("1\n"); // NOI18N
+                        responseStream.flush();
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex); //TODO: error processing
