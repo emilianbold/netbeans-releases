@@ -556,6 +556,8 @@ public class IssuePanel extends javax.swing.JPanel {
             if (hasSubtasks) {
                 if (subTaskTable == null) {
                     subTaskTable = new JTable();
+                    subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
+                    subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
