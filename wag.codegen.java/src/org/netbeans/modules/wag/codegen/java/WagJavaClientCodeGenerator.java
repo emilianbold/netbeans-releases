@@ -139,28 +139,33 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
         JavaUtil.addImportsToSource(getTargetSource(), imports);
     }
 
+    protected String getSaasServiceAccessCode() {
+        String paramStr = "new String[][] {";
+
+        int index = 0;
+        for (WagServiceParameter p : service.getParameters()) {
+            if (index++ > 0) {
+                paramStr += ", ";
+            }
+            paramStr += "{\"" + p.getName() + "\", " + "null}";
+        }
+
+        paramStr += "}";
+
+        String code = "    try {\n";
+        code += "        String result = Zembly.getInstance().callService(\"" + service.getCallableName() +
+                "\",\n            " + paramStr + ");\n" +
+                "        " + this.getDropFileType().getPrintWriterType() + ".println(\"result: \" + result);\n";
+        code += "    } catch (Exception ex) {\n" +
+                "        ex.printStackTrace();\n" +
+                "    }";
+
+        return code;
+    }
+
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
-            String paramStr = "new String[][] {";
-
-            int index = 0;
-            for (WagServiceParameter p : service.getParameters()) {
-                if (index++ > 0) {
-                    paramStr += ", ";
-                }
-                paramStr += "{\"" + p.getName() + "\", " + "null}";
-            }
-
-            paramStr += "}";
-
-            String code = "try {";
-            code += "String result = Zembly.getInstance().callService(\"" + service.getCallableName() + "\", " + paramStr + ");" +
-                    "System.out.println(\"result: \" + result);";
-            code += "} catch (Exception ex) {" +
-                    "ex.printStackTrace();" +
-                    "}";
-
-            insert(code, true);
+            insert(getSaasServiceAccessCode(), true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
