@@ -289,7 +289,7 @@ public class BugtrackingOwnerSupport {
     private static Repository getKenaiBugtrackingRepository(String remoteLocation) throws KenaiException {
         KenaiProject project = KenaiProject.forRepository(remoteLocation);//throws KenaiException
         return (project != null)
-               ? BugtrackingUtil.getKenaiBugtrackingRepository(project)
+               ? KenaiUtil.getKenaiBugtrackingRepository(project)
                : null;        //not a Kenai project repository
     }
 
