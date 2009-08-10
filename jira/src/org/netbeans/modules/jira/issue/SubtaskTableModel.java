@@ -94,4 +94,9 @@ public class SubtaskTableModel extends DefaultTableModel {
         return data;
     }
 
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+
 }
