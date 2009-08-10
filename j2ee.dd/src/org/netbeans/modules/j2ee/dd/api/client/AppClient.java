@@ -58,6 +58,7 @@ public interface AppClient extends RootInterface {
     public static final String PROPERTY_VERSION="dd_version"; //NOI18N
     public static final String VERSION_1_4="1.4"; //NOI18N
     public static final String VERSION_5_0="5"; //NOI18N
+    public static final String VERSION_6_0="6"; //NOI18N
     public static final int STATE_VALID=0;
     public static final int STATE_INVALID_PARSABLE=1;
     public static final int STATE_INVALID_UNPARSABLE=2;
