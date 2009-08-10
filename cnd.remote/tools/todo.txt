@@ -1,0 +1,1 @@
+- optimize: if the file is open for writing, do not ask
