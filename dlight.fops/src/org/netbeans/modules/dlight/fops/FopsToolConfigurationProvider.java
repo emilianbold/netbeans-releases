@@ -122,10 +122,15 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                         fileColumn,
                         new Column("bytes_read", Long.class, getMessage("Column.BytesRead"), null), // NOI18N
                         new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
+                        new Column("open_stack_id", Long.class), // NOI18N
+                        new Column("close_stack_id", Long.class), // NOI18N
                         new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
                 "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
-                "BOOL_OR(operation='close') AS closed FROM fops GROUP BY sid, file " + // NOI18N
+                "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
+                "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
+                "BOOL_OR(operation='close') AS closed " + // NOI18N
+                "FROM fops GROUP BY sid, file " + // NOI18N
                 "ORDER BY closed ASC", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
@@ -146,6 +151,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
+        tableConfiguration.setHiddenColumnNames(Arrays.asList("open_stack_id", "close_stack_id")); // NOI18N
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
         indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
