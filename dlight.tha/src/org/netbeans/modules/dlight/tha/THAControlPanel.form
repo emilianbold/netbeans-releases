@@ -32,7 +32,6 @@
         <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="started" type="code"/>
         </Property>
-        <Property name="rolloverEnabled" type="boolean" value="false"/>
         <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/netbeans/modules/dlight/tha/resources/pause24.png"/>
         </Property>
@@ -40,9 +39,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="deadlocksButton">
       <Properties>
-        <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="deadlocksAction" type="code"/>
-        </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/netbeans/modules/dlight/tha/resources/deadlock_active24.png"/>
         </Property>

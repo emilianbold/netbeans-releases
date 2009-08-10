@@ -93,16 +93,15 @@ public class JiraExecutor {
         try {
             try {
 
+                cmd.setFailed(true);
+                
                 if (ensureConfiguration) {
                     repository.getConfiguration(); // XXX hack
                 }
 
                 if(checkVersion) {
-                    JiraAutoupdate jau = new JiraAutoupdate();
-                    jau.checkAndNotify(repository);
+                    checkAutoupdate();
                 }
-                
-                cmd.setFailed(true);
 
                 cmd.execute();
 
@@ -159,6 +158,15 @@ public class JiraExecutor {
     public boolean handleIOException(IOException io) {
         Jira.LOG.log(Level.SEVERE, null, io);
         return true;
+    }
+
+    private void checkAutoupdate() {
+        try {
+            JiraAutoupdate jau = new JiraAutoupdate();
+            jau.checkAndNotify(repository);
+        } catch(Throwable t) {
+            Jira.LOG.log(Level.SEVERE, "Exception in JIRA autoupdate check.", t);
+        }
     }
 
     private static abstract class ExceptionHandler {

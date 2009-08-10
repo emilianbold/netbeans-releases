@@ -92,13 +92,23 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     public void visit(Block node) {
         super.visit(node);
         
-        // do not indent virtual blocks created by namespace declarations
         if (getPath().get(0) instanceof NamespaceDeclaration){
             return;
         }
 
-        // end of hot fix
-        indentListOfStatements(node.getStatements());
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
+        ts.move(node.getStartOffset());
+        ts.moveNext();
+        ts.moveNext();
+        int start = ts.offset();
+        ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+        ts.move(node.getEndOffset());
+        ts.movePrevious();
+        ts.movePrevious();
+        
+        int end = ts.offset();
+        addIndentLevel(start, indentSize);
+        addIndentLevel(end, -1 * indentSize);  
     }
 
     @Override

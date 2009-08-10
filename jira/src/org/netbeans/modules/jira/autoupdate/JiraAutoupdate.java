@@ -43,6 +43,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
@@ -85,24 +86,30 @@ public class JiraAutoupdate {
      *         downloaded
      */
     public boolean checkAndNotify(JiraRepository repository) {
-        if(wasCheckedToday(getLastCheck(repository))) {
-            return true;
-        }
-        if(!JiraConfig.getInstance().getCheckUpdates()) {
-            return true;
-        }
-        if(!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
-            AutoupdatePanel panel = new AutoupdatePanel();
-            if(JiraUtils.show(
-                    panel,
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"),             // NOI18N
-                    new HelpCtx(JiraAutoupdate.class)))
-            {
-                BugtrackingUtil.openPluginManager();
-                return false;
+        Jira.LOG.log(Level.FINE, "JiraAutoupdate.checkAndNotify start");
+
+        try {
+            if (wasCheckedToday(getLastCheck(repository))) {
+                return true;
             }
+            if (!JiraConfig.getInstance().getCheckUpdates()) {
+                return true;
+            }
+            if (!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
+                AutoupdatePanel panel = new AutoupdatePanel();
+                if (JiraUtils.show(
+                        panel,
+                        NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                        NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"), // NOI18N
+                        new HelpCtx(JiraAutoupdate.class))) {
+                    BugtrackingUtil.openPluginManager();
+                    return false;
+                }
+            }
+        } finally {
+            Jira.LOG.log(Level.FINE, "JiraAutoupdate.checkAndNotify finish");                    
         }
+
         return true;
     }
 

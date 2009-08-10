@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.plaf.UIResource;
+package org.netbeans.modules.kenai.ui;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.ui.spi.KenaiUser;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
+import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Renderer for Buddies
- * @see Buddy
+ *
  * @author Jan Becicka
  */
-final class BuddyListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+@ServiceProvider(service=MemberAccessor.class)
+public class MemberAccessorImpl extends MemberAccessor{
 
-    public BuddyListCellRenderer() {
-        super();
-        setOpaque(false);
-    }
-
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        // #93658: GTK needs name to render cell renderer "natively"
-        setName("ComboBox.listRenderer"); // NOI18N
-        // NOI18N
-        if (value instanceof Buddy) {
-            Buddy pkgitem = (Buddy) value;
-            setText(pkgitem.getLabel());
-            setIcon(pkgitem.getIcon());
-        } else {
-            // #49954: render a specially inserted package somehow.
-            String pkgitem = (String) value;
-            setText(pkgitem);
-            setIcon(null);
-        }
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        return this;
-    }
-
-    // #93658: GTK needs name to render cell renderer "natively"
     @Override
-    public String getName() {
-        String name = super.getName();
-        return name == null ? "ComboBox.renderer" : name; // NOI18N
+    public List<MemberHandle> getMembers(ProjectHandle project) {
+        ArrayList<MemberHandle> handles = new ArrayList();
+        for (String user : KenaiConnection.getDefault().getMembers(project.getId())) {
+            handles.add(new MemberHandleImpl(user));
+        }
+        return handles;
     }
+
+    @Override
+    public Action getStartChatAction(final MemberHandle member) {
+        return new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                KenaiUser.forName(member.getName()).startChat();
+            }
+        };
+    }
+
 }
