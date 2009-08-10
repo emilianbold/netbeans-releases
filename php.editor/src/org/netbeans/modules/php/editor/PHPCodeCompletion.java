@@ -48,7 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -77,7 +76,6 @@ import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedNamespace;
@@ -93,7 +91,6 @@ import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -577,37 +574,34 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             tokenSequence.movePrevious();
 
             String varName = tokenSequence.token().text().toString();
-            String typeName = null;
+            Collection<? extends TypeScope> types = Collections.emptyList();
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
+            Model model = ModelFactory.getModel(request.result);
             if (varName.equals("self")) { //NOI18N
                 varKind = VariableKind.SELF;
-                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-                if (classDecl != null) {
-                    typeName = classDecl.getName().getName();
+                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+                if (!types.isEmpty()) {
                     staticContext = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
                 varKind = VariableKind.PARENT;
                 invalidProposalsForClsMembers = Collections.emptyList();
-
-                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-                if (classDecl != null) {
-                    Expression superIdentifier = classDecl.getSuperClass();
-                    if (superIdentifier != null) {
-                        typeName = CodeUtils.extractUnqualifiedSuperClassName(classDecl);
+                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+                if (!types.isEmpty()) {
+                    TypeScope type = ModelUtils.getFirst(types);
+                    if (type != null) {
                         staticContext = instanceContext = true;
                         attrMask |= Modifier.PROTECTED;
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
                 varKind = VariableKind.THIS;
-                ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (staticContext) {
                     return;
                 }
-                if (classDecl != null) {
-                    typeName = classDecl.getName().getName();
+                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+                if (!types.isEmpty()) {
                     staticContext = false;
                     instanceContext = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
@@ -618,37 +612,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         return;
                     }
                 }
-                assert typeName == null;
-                Model model = ModelFactory.getModel(request.result);
-                Collection<? extends TypeScope> types =
-                        ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-                if (!types.isEmpty()) {
-                    Set<String> typeSet = new HashSet<String>();
-                    StringBuilder sb = null;
-                    for (TypeScope type : types) {
-                        boolean added = typeSet.add(type.getName());
-                        if (!added) continue;
-                        if (sb == null) {
-                            sb = new StringBuilder();
-                        } else {
-                            sb.append("|");//NOI18N
-                        }
-                        sb.append(type.getName());
-                    }
-                    typeName = sb.toString();
-                }
+                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             }
 
-            if (typeName != null){
-                // the type can be defined as mixed type and then we need to combine all types
-                StringTokenizer stringTokenizer = new StringTokenizer(typeName, "|"); //NOI18N
-                while (stringTokenizer.hasMoreElements()) {
-                    String tokenType = stringTokenizer.nextToken().trim();
-                    if (PHPDocTypeTag.ORDINAL_TYPES.contains(tokenType.toUpperCase())) {
+            if (types != null) {
+                Set<QualifiedName> processedTypeNames = new HashSet<QualifiedName>();
+                for (TypeScope typeScope : types) {
+                    String typeName = typeScope.getName();
+                    if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
                         continue;
                     }
+                    final QualifiedName qualifiedTypeName = typeScope.getNamespaceName().append(typeName);
+                    if (!processedTypeNames.add(qualifiedTypeName)) continue;
                     Collection<IndexedClassMember<IndexedFunction>> methods =
-                            request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
+                            request.index.getAllMethods(request.result,qualifiedTypeName, request.prefix, nameKind, attrMask);
 
                     for (IndexedClassMember<IndexedFunction> classMember: methods){
                         IndexedFunction method = classMember.getMember();
@@ -663,7 +640,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                     String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
                             ? request.prefix.substring(1) : request.prefix;
-                    Collection<IndexedClassMember<IndexedConstant>> properties = request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask);
+                    Collection<IndexedClassMember<IndexedConstant>> properties =
+                            request.index.getAllFields(request.result, qualifiedTypeName, prefix, nameKind, attrMask);
 
                     for (IndexedClassMember<IndexedConstant> classMember : properties){
                         IndexedConstant prop = classMember.getMember();
@@ -679,12 +657,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
 
                     if (staticContext) {
-                        Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllTypeConstants(request.result, tokenType, request.prefix, nameKind);
+                        Collection<IndexedClassMember<IndexedConstant>> allClassConstants =
+                                request.index.getAllTypeConstants(request.result, qualifiedTypeName, request.prefix, nameKind);
                         for (IndexedClassMember<IndexedConstant> indexedClassMember : allClassConstants) {
                             proposals.add(new PHPCompletionItem.ClassConstantItem(indexedClassMember, request));
                         }
                     }
-                }
+                }                
             }
         }
     }
