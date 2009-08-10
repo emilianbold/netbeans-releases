@@ -82,7 +82,7 @@ public class BugzillaConfig {
         return instance;
     }
 
-    public Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(BugzillaConfig.class);
     }
 
