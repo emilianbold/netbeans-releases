@@ -276,8 +276,8 @@ public class ReadRegistryTestCase extends NbTestCase {
         String[] MT_LEVEL_OPTIONS = {
             "", // None // NOI18N
             "-mt", // Safe // NOI18N
-            "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-            "-xopenmp", // Open MP // NOI18N
+            "-xautopar -xvector -xreduction -xloopinfo -O3", // Automatic // NOI18N
+            "-xopenmp -O3", // Open MP // NOI18N
         };
         String[] STANDARD_OPTIONS = {
             "-xc99=none", // Old // NOI18N
@@ -328,8 +328,8 @@ public class ReadRegistryTestCase extends NbTestCase {
         String[] MT_LEVEL_OPTIONS = {
             "", // None // NOI18N
             "-mt", // Safe // NOI18N
-            "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-            "-xopenmp", // Open MP // NOI18N
+            "-xautopar -xvector -xreduction -xloopinfo -O3", // Automatic // NOI18N
+            "-xopenmp -O3", // Open MP // NOI18N
         };
         String[] STANDARD_OPTIONS = {
             "-compat", // Old // NOI18N

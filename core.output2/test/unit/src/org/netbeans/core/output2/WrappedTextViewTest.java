@@ -157,7 +157,7 @@ public class WrappedTextViewTest extends TestCase {
                 float x = charWidth * 50;
                 float y = charHeight * 1 + fontDescent;
                 charPos = pane.getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
-                expCharPos = (Utilities.getOperatingSystem() & Utilities.OS_WINDOWS_MASK) != 0 ? 45 : 43;
+                expCharPos = Utilities.isWindows() ? 45 : 43;
             }
         }
         R r = new R();
@@ -182,7 +182,7 @@ public class WrappedTextViewTest extends TestCase {
         class R implements Runnable {
             boolean errorsFound;
             java.awt.image.BufferedImage img;
-            ArrayList errors;
+            ArrayList<String> errors;
 
             public void run() {
                 AbstractOutputPane pane = ((OutputTab) iowin.getSelected()).getOutputPane();
@@ -200,7 +200,7 @@ public class WrappedTextViewTest extends TestCase {
 
                 text.paint(img.getGraphics());
                 errorsFound = false;
-                errors = new ArrayList();
+                errors = new ArrayList<String>();
 
                 System.out.println("...scanning " + (text.getWidth() * text.getHeight() + " pixels to make sure viewToModel() matches modeltoView().  Expect it to take about 10 minutes."));
 

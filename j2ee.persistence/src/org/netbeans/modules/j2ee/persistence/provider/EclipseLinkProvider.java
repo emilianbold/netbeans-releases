@@ -61,19 +61,19 @@ class EclipseLinkProvider extends Provider {
     }
 
     public String getJdbcUrl() {
-        return "eclipselink.jdbc.url";
+        return "javax.persistence.jdbc.url";
     }
 
     public String getJdbcDriver() {
-        return "eclipselink.jdbc.driver";
+        return "javax.persistence.jdbc.driver";
     }
 
     public String getJdbcUsername() {
-        return "eclipselink.jdbc.user";
+        return "javax.persistence.jdbc.user";
     }
 
     public String getJdbcPassword() {
-        return "eclipselink.jdbc.password";
+        return "javax.persistence.jdbc.password";
     }
 
     public String getTableGenerationPropertyName() {

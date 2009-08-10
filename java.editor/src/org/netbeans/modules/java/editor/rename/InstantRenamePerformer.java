@@ -56,6 +56,8 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
@@ -354,9 +356,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
         return null;
     }
-    
+
     private static boolean allowInstantRename(Element e) {
         if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
+            return true;
+        }
+        
+        if (isInaccessibleOutsideOuterClass(e)) {
             return true;
         }
         
@@ -381,6 +387,50 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return true;
         }
         
+        return false;
+    }
+
+    /**
+     * computes accessibility of members of nested classes
+     * @param e member
+     * @return {@code true} if the member cannot be accessed outside the outer class
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=169377">169377</a>
+     */
+    private static boolean isInaccessibleOutsideOuterClass(Element e) {
+        Element enclosing = e.getEnclosingElement();
+        boolean isStatic = e.getModifiers().contains(Modifier.STATIC);
+        ElementKind kind = e.getKind();
+        if (isStatic || kind == ElementKind.CLASS) {
+            // static declaration of nested class, interface, enum, ann type, method, field
+            // or inner class
+            return isAnyEncloserPrivate(e);
+        } else if (enclosing != null) {
+            // final is enum, ann type and some classes
+            ElementKind enclosingKind = enclosing.getKind();
+            boolean isEnclosingFinal = enclosing.getModifiers().contains(Modifier.FINAL)
+                    // ann type is not final even if it cannot be subclassed
+                    || enclosingKind == ElementKind.ANNOTATION_TYPE
+                    // enum implementing an interface is not final even if it cannot be subclassed
+                    || enclosingKind == ElementKind.ENUM;
+            // do not try to rename members of class that extends or implements anything
+            // it would require deeper analyze
+            boolean isSubclass = enclosingKind == ElementKind.CLASS
+                    && ( !"java.lang.Object".equals(((TypeElement) enclosing).getSuperclass().toString())
+                            || !((TypeElement) enclosing).getInterfaces().isEmpty() );
+            return isEnclosingFinal && !isSubclass && isAnyEncloserPrivate(e);
+        }
+        return false;
+    }
+
+    private static boolean isAnyEncloserPrivate(Element e) {
+        Element enclosing = e.getEnclosingElement();
+        while (enclosing != null && (enclosing.getKind().isClass() || enclosing.getKind().isInterface())) {
+            boolean isPrivateClass = enclosing.getModifiers().contains(Modifier.PRIVATE);
+            if (isPrivateClass) {
+                return true;
+            }
+            enclosing = enclosing.getEnclosingElement();
+        }
         return false;
     }
     

@@ -98,7 +98,8 @@ public class HtmlCompletionQuery extends UserTask {
         if (parserResult == null) {
             return;
         }
-        if (parserResult.getSnapshot().getMimeType().equals("text/html")) {
+        String resultMimeType = parserResult.getSnapshot().getMimeType();
+        if (resultMimeType.equals("text/html")) {
             //proceed only on html content
             this.completionResult = query((HtmlParserResult) parserResult);
         }

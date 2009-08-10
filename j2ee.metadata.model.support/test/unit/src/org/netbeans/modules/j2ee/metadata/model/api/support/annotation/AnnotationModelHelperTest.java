@@ -233,9 +233,6 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testWhenScanFinished() throws Exception {
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
-        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.COMPILE) });
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.BOOT) });
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch startLatch = new CountDownLatch(1);
@@ -272,13 +269,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
-
-        // create something to workaround issue #167933
-        TestUtilities.copyStringToFileObject(srcFO, "foo/X.java",
-                "package foo;" +
-                "public interface X {" +
-                "}");
-
+       
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         TestUtilities.copyStringToFileObject(srcFO, "Person.java",
                 "public interface Person {" +

@@ -48,28 +48,28 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.ListModel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -104,14 +104,6 @@ public class HtmlBrowser extends JPanel {
     /** home page URL */
     private static String homePage = null;
 
-    /** Icons for buttons. */
-    private Icon iBack;
-    private Icon iForward;
-    private Icon iHome;
-    private Icon iReload;
-    private Icon iStop;
-    private Icon iHistory;
-
     // variables .................................................................
 
     /** currently used implementation of browser */
@@ -137,20 +129,13 @@ public class HtmlBrowser extends JPanel {
     private JButton bForward;
 
     // visual components .........................................................
-    private JButton bHome;
-
-    // visual components .........................................................
     private JButton bReload;
 
     // visual components .........................................................
     private JButton bStop;
 
-    // visual components .........................................................
-    private JButton bHistory;
-
     /** URL chooser */
-    private JComboBox cbLocation;
-    private JLabel cbLabel;
+    private JTextField txtLocation;
     private JLabel lStatusLine;
     final Component browserComponent;
     private JPanel head;
@@ -184,8 +169,6 @@ public class HtmlBrowser extends JPanel {
      * @param statusLine visibility of statusLine
     */
     public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine) {
-        init();
-
         Impl impl = null;
         Component comp = null;
 
@@ -313,95 +296,96 @@ public class HtmlBrowser extends JPanel {
     }
 
     /**
-    * Default initializations.
-    */
-    private void init() {
-        try     {
-            if (iBack != null) {
-                return;
-            }
-            iBack = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/back.gif"))); // NOI18N
-            iForward = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/forward.gif"))); // NOI18N
-            iHome = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/home.gif"))); // NOI18N
-            iReload = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/refresh.gif"))); // NOI18N
-            iStop = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/stop.gif"))); // NOI18N
-            iHistory = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/history.gif"))); // NOI18N
-        }
-        catch (IOException ex) {
-            Logger.getLogger(HtmlBrowser.class.getName()).log(java.util.logging.Level.SEVERE,
-                                                             ex.getMessage(), ex);
-        }
-}
-
-    /**
     * Default initialization of toolbar.
     */
     private void initToolbar() {
         toolbarVisible = true;
 
         // create visual compoments .............................
-        head = new JPanel();
-        head.setLayout(new BorderLayout(11, 0));
+        head = new JPanel(new GridBagLayout());
 
-        JPanel p = new JPanel(new GridBagLayout());
-        p.add(bBack = new JButton(iBack));
-        bBack.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back"));
+        bBack = new JButton();
+        bBack.setBorder(BorderFactory.createEmptyBorder());
+        bBack.setBorderPainted(false);
+        bBack.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_normal.png", true)); //NOI18N
+        bBack.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_hover.png", true)); //NOI18N
+        bBack.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_disabled.png", true)); //NOI18N
+        bBack.setSelectedIcon(bBack.getIcon());
+        bBack.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Back")); //NOI18N
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bForward = new JButton(iForward), gbc);
-        bForward.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward"));
-        p.add(bStop = new JButton(iStop));
-        bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop"));
-        gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bReload = new JButton(iReload), gbc);
-        bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload"));
-        p.add(bHome = new JButton(iHome));
-        bHome.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Home"));
-        gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(bHistory = new JButton(iHistory), gbc);
-        bHistory.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_History"));
+        bForward = new JButton();
+        bForward.setBorder(BorderFactory.createEmptyBorder());
+        bForward.setBorderPainted(false);
+        bForward.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_normal.png", true)); //NOI18N
+        bForward.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_hover.png", true)); //NOI18N
+        bForward.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_disabled.png", true)); //NOI18N
+        bForward.setSelectedIcon(bForward.getIcon());
+        bForward.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward")); //NOI18N
+
+        bReload = new JButton();
+//        bReload.setBorder(BorderFactory.createEmptyBorder());
+//        bReload.setBorderPainted(false);
+        bReload.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
+        bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
+        bReload.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
+        bReload.setSelectedIcon(bReload.getIcon());
+        bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload")); //NOI18N
+
+        bStop = new JButton();
+//        bStop.setBorder(BorderFactory.createEmptyBorder());
+//        bStop.setBorderPainted(false);
+        bStop.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
+        bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
+        bStop.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
+        bStop.setSelectedIcon(bStop.getIcon());
+        bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop")); //NOI18N
+
+        txtLocation = new JTextField();
+        txtLocation.setEditable(true);
+        txtLocation.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if( e.getClickCount() == 1 ) {
+                    if( null != txtLocation.getSelectedText()
+                            || txtLocation.isFocusOwner() )
+                        return;
+                    txtLocation.selectAll();
+                }
+            }
+
+        });
+
+
+        head.add(bBack, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,1), 0, 0));
+        head.add(bForward, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
+        head.add(txtLocation, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,4), 0, 0));
+        head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,1), 0, 0));
+        head.add(bStop, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+
+        head.setBorder( BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
         if (browserImpl != null) {
             bBack.setEnabled(browserImpl.isBackward());
             bForward.setEnabled(browserImpl.isForward());
-            bHistory.setEnabled(browserImpl.isHistory());
         }
 
-        JToolBar.Separator ts = new JToolBar.Separator();
-        gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5);
-        p.add(ts, gbc);
-        ts.updateUI();
-        p.add(cbLabel = new JLabel());
-        Mnemonics.setLocalizedText(cbLabel, NbBundle.getMessage(HtmlBrowser.class, "CTL_Location")); // NOI18N
-        head.add("West", p); // NOI18N
-
-        head.add("Center", cbLocation = new JComboBox()); // NOI18N
-        cbLocation.setEditable(true);
-        cbLabel.setLabelFor(cbLocation);
-        add(head, "North"); // NOI18N
-
         // add listeners ..................... .............................
-        cbLocation.addActionListener(browserListener);
-        bHistory.addActionListener(browserListener);
+        txtLocation.addActionListener(browserListener);
         bBack.addActionListener(browserListener);
         bForward.addActionListener(browserListener);
         bReload.addActionListener(browserListener);
-        bHome.addActionListener(browserListener);
         bStop.addActionListener(browserListener);
 
-        bHistory.getAccessibleContext().setAccessibleName(bHistory.getToolTipText());
         bBack.getAccessibleContext().setAccessibleName(bBack.getToolTipText());
         bForward.getAccessibleContext().setAccessibleName(bForward.getToolTipText());
         bReload.getAccessibleContext().setAccessibleName(bReload.getToolTipText());
-        bHome.getAccessibleContext().setAccessibleName(bHome.getToolTipText());
         bStop.getAccessibleContext().setAccessibleName(bStop.getToolTipText());
-        cbLocation.getAccessibleContext().setAccessibleDescription(
+        txtLocation.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(HtmlBrowser.class, "ACSD_HtmlBrowser_Location")
         );
+
+        add(head, BorderLayout.NORTH);
     }
 
     /**
@@ -440,27 +424,16 @@ public class HtmlBrowser extends JPanel {
     * @param str URL to show in this browser.
     */
     public void setURL(String str) {
-        URL URL;
-
-        try {
-            URL = new URL(str);
-        } catch (MalformedURLException ee) {
+        if( null != str ) {
             try {
-                URL = new URL("http://" + str); // NOI18N
-            } catch (MalformedURLException e) {
-                if (browserImpl instanceof SwingBrowserImpl) {
-                    ((SwingBrowserImpl) browserImpl).setStatusText(
-                        NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { str })
-                    );
-                } else {
-                    Exceptions.printStackTrace(ee);
-                }
-
-                return;
+                str = new URL(str).toExternalForm();
+            } catch( ThreadDeath td ) {
+                throw td;
+            } catch( Throwable e ) {
+                //ignore
             }
         }
-
-        setURL(URL);
+        browserImpl.setLocation(str);
     }
 
     /**
@@ -470,6 +443,7 @@ public class HtmlBrowser extends JPanel {
     */
     public void setURL(final URL url) {
         if (url == null) {
+            txtLocation.setText(null);
             return;
         }
 
@@ -495,43 +469,45 @@ public class HtmlBrowser extends JPanel {
                 }
             }
         }
-        rp.getDefault().post(new URLSetter());
+        rp.post(new URLSetter());
     }
 
     /**
     * Gets current document url.
-    */
+     * @return
+     */
     public final URL getDocumentURL() {
         return browserImpl.getURL();
     }
 
     /**
     * Enables/disables Home button.
-    */
+     * @param b
+     */
     public final void setEnableHome(boolean b) {
-        bHome.setEnabled(b);
-        bHome.setVisible(b);
     }
 
     /**
     * Enables/disables location.
-    */
+     * @param b
+     */
     public final void setEnableLocation(boolean b) {
-        cbLocation.setEditable(b);
-        cbLocation.setVisible(b);
-        cbLabel.setVisible(b);
+        txtLocation.setEnabled(b);
+        txtLocation.setVisible(b);
     }
 
     /**
     * Gets status line state.
-    */
+     * @return
+     */
     public boolean isStatusLineVisible() {
         return statusLineVisible;
     }
 
     /**
     * Shows/hides status line.
-    */
+     * @param v
+     */
     public void setStatusLineVisible(boolean v) {
         if (v == statusLineVisible) {
             return;
@@ -546,14 +522,16 @@ public class HtmlBrowser extends JPanel {
 
     /**
     * Gets status toolbar.
-    */
+     * @return
+     */
     public boolean isToolbarVisible() {
         return toolbarVisible;
     }
 
     /**
     * Shows/hides toolbar.
-    */
+     * @param v
+     */
     public void setToolbarVisible(boolean v) {
         if (v == toolbarVisible) {
             return;
@@ -589,6 +567,7 @@ public class HtmlBrowser extends JPanel {
     /**
     * Returns preferred size.
     */
+    @Override
     public java.awt.Dimension getPreferredSize() {
         java.awt.Dimension superPref = super.getPreferredSize();
 
@@ -604,17 +583,16 @@ public class HtmlBrowser extends JPanel {
         if (toolbarVisible) {
             everythinkIListenInCheckBoxIsUnimportant = true;
 
-            URL url = browserImpl.getURL();
+            String url = browserImpl.getLocation();
 
-            if (url != null) {
-                cbLocation.setSelectedItem(url.toString());
-            }
+            txtLocation.setText(url);
 
             everythinkIListenInCheckBoxIsUnimportant = false;
         }
     }
 
     ////// Accessibility //////
+    @Override
     public void requestFocus() {
         if (browserComponent != null) {
             boolean ownerFound = false;
@@ -631,6 +609,7 @@ public class HtmlBrowser extends JPanel {
         }
     }
 
+    @Override
     public boolean requestFocusInWindow() {
         if (browserComponent != null) {
             boolean ownerFound = false;
@@ -649,6 +628,7 @@ public class HtmlBrowser extends JPanel {
         }
     }
 
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleHtmlBrowser();
@@ -665,7 +645,8 @@ public class HtmlBrowser extends JPanel {
     public interface Factory {
         /**
         * Returns a new instance of BrowserImpl implementation.
-        */
+         * @return
+         */
         public Impl createHtmlBrowserImpl();
     }
 
@@ -708,8 +689,6 @@ public class HtmlBrowser extends JPanel {
                 bForward.setEnabled(browserImpl.isForward());
             } else if (property.equals(Impl.PROP_BACKWARD) && (bBack != null)) {
                 bBack.setEnabled(browserImpl.isBackward());
-            } else if (property.equals(Impl.PROP_HISTORY) && (bHistory != null)) {
-                bHistory.setEnabled(browserImpl.isHistory());
             }
         }
 
@@ -717,43 +696,20 @@ public class HtmlBrowser extends JPanel {
         * Listens on changes in HtmlBrowser visual components.
         */
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == cbLocation) {
+            if (e.getSource() == txtLocation) {
                 // URL manually changed
                 if (everythinkIListenInCheckBoxIsUnimportant) {
                     return;
                 }
 
-                JComboBox cb = (JComboBox) e.getSource();
-                Object o = cb.getSelectedItem();
+                String txt = txtLocation.getText();
 
-                if (o == null) { // empty combo box
+                if (txt == null || txt.length() == 0) { // empty combo box
 
                     return;
                 }
 
-                setURL((String) o);
-
-                ListModel lm = cb.getModel();
-                int i;
-                int k = lm.getSize();
-
-                for (i = 0; i < k; i++)
-                    if (o.equals(lm.getElementAt(i))) {
-                        break;
-                    }
-
-                if (i != k) {
-                    return;
-                }
-
-                if (k == 20) {
-                    cb.removeItem(lm.getElementAt(k - 1));
-                }
-
-                cb.insertItemAt(o, 0);
-            } else
-             if (e.getSource() == bHistory) {
-                browserImpl.showHistory();
+                setURL(txt);
             } else
              if (e.getSource() == bBack) {
                 browserImpl.backward();
@@ -764,9 +720,6 @@ public class HtmlBrowser extends JPanel {
              if (e.getSource() == bReload) {
                 updateLocationBar();
                 browserImpl.reloadDocument();
-            } else
-             if (e.getSource() == bHome) {
-                setURL(getHomePage());
             } else
              if (e.getSource() == bStop) {
                 browserImpl.stopLoading();
@@ -830,6 +783,46 @@ public class HtmlBrowser extends JPanel {
         * @return current URL.
         */
         public abstract URL getURL();
+
+        /**
+         * Retrieve current browser location. It doesn't have to be a valid URL,
+         * e.g. "about:config".
+         * @return Browser location or null.
+         * @since 7.13
+         */
+        public String getLocation() {
+            URL url = getURL();
+            return null == url ? null : url.toString();
+        }
+
+        /**
+         * Change current browser location.
+         * @param location New location to show in the browser. It doesn't
+         * have to be a valid URL, e.g. "about:config" may be accepted as well.
+         * @since 7.13
+         */
+        public void setLocation( String location ) {
+            URL url;
+
+            try {
+                url = new URL(location);
+            } catch (MalformedURLException ee) {
+                try {
+                    url = new URL("http://" + location); // NOI18N
+                } catch (MalformedURLException e) {
+                    String errorMessage = NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { location }); //NOI18N
+                    if (this instanceof SwingBrowserImpl) {
+                        ((SwingBrowserImpl) this).setStatusText( errorMessage );
+                    } else {
+                        Logger.getLogger(HtmlBrowser.class.getName()).log(Level.INFO, errorMessage, ee);
+                    }
+
+                    return;
+                }
+            }
+
+            setURL(url);
+        }
 
         /**
         * Returns status message representing status of html browser.
@@ -953,6 +946,7 @@ public class HtmlBrowser extends JPanel {
         AccessibleHtmlBrowser() {
         }
 
+        @Override
         public void setAccessibleName(String name) {
             super.setAccessibleName(name);
 
@@ -961,6 +955,7 @@ public class HtmlBrowser extends JPanel {
             }
         }
 
+        @Override
         public void setAccessibleDescription(String desc) {
             super.setAccessibleDescription(desc);
 

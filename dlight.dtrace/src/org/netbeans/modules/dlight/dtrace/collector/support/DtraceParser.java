@@ -114,8 +114,8 @@ public class DtraceParser {
                     stringValue = stringValue.substring(0,
                             stringValue.length() - 1);
                 }
-                stringValue = squote +
-                        stringValue.replaceAll(squote, dquote) + squote;
+//                stringValue = squote +
+//                        stringValue.replaceAll(squote, dquote) + squote;
                 data.add(i, stringValue);
             } else {
                 data.add(i, matchList.get(i));

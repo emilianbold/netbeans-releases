@@ -50,6 +50,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,6 +96,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping.ServerInfo;
 import java.util.jar.JarOutputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.List;
 import org.netbeans.modules.j2ee.sun.share.plan.Util;
 
 
@@ -551,10 +553,12 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         
     }
+
+    private static final String MAGIC_HACK_CONST =  "org.jvnet.glassfish.comms.deployment.backend.SipArchiveDeployer";
+
     
     public TargetModuleID[] getAvailableModules(ModuleType modType, Target[] target)
     throws TargetException, IllegalStateException {
-        
         try {
             ThrowExceptionIfSuspended();
         } catch (RuntimeException re) {
@@ -567,21 +571,120 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             try {
                 grabInnerDM(holder,false);
                 TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
-    /*     	System.out.println("in getAvailableModules "+modType);
-             for(int i = 0; i < target.length; i++) {
-                    System.out.println("Target is "+i+" "+target[i]);
-             }
-            for(int j = 0; j < tm.length; j++) {
-                    System.out.println("TargetModuleID is "+j+" "+tm[j]);
-             }
-     */
-                return tm;
+
+                // This scary looking bit of introspection
+                // forces the server jar side of the bridge
+                // initialize to support the SipArchiveDeployer
+                //
+                if (ModuleType.WAR.equals(modType)) {
+                    // watchout for SIP stuff here.
+                    Class xmt = null;
+                    try {
+                            xmt = getExtendedClassLoader().loadClass("com.sun.enterprise.deployment.util.XModuleType");
+                    } catch (ClassNotFoundException cnfe) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, cnfe);
+                    }
+                    if (null == xmt) {
+                        return tm;
+                    }
+                    Method m = null;
+                    try {
+                        m = xmt.getMethod("getModuleType", String.class);
+                    } catch (NoSuchMethodException nsme) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, nsme);
+                     }
+                    if (null == m) {
+                        return tm;
+                    }
+                    Object mt = null;
+                    try {
+                        mt = m.invoke(null,MAGIC_HACK_CONST);
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    }
+                    if (null == mt) {
+                        return tm;
+                    }
+                    Integer v = null;
+                    try {
+                        m = mt.getClass().getMethod("getValue", new Class[] { });
+                        v = (Integer) m.invoke(mt, new Object[] {});
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    }  catch (NoSuchMethodException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    } catch (SecurityException ex) {
+                        Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.INFO, null, ex);
+                    }
+                    if (null == v) {
+                        return tm;
+                    }
+                    TargetModuleID[] stm =  innerDM.getAvailableModules(new MyMT(v.intValue()), target);
+                    if (null != stm && stm.length > 0) {
+                        List<TargetModuleID> l = new ArrayList<TargetModuleID>();
+                        for (TargetModuleID e: tm) {
+                            l.add(e);
+                        }
+                        for (TargetModuleID e: stm) {
+                            l.add(e);
+                        }
+                        return l.toArray(new TargetModuleID[l.size()]);
+                    } else {
+                        return tm;
+                    }
+                } else {
+                    return tm;
+                }
             } finally {
                 releaseInnerDM(holder);
             }
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
         }
+    }
+
+    class MyMT extends ModuleType {
+        MyMT(int foo) {
+            super(foo);
+        }
+
+        @Override
+        protected ModuleType[] getEnumValueTable() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected int getOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected String[] getStringTable() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return MAGIC_HACK_CONST;
+        }
+
+        @Override
+        public int getValue() {
+            return super.getValue();
+        }
+        @Override
+        public String getModuleExtension() {
+            return "";
+        }
+
     }
     
     public Locale getCurrentLocale() {//TODO change the classloader there also!!! Ludo

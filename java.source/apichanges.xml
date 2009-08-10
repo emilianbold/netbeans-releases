@@ -105,6 +105,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavaSource.patchedPublic">
+             <api name="general"/>
+             <summary>Removing the binary compatibility methods (using bytecode patching) from JavaSource</summary>
+             <version major="0" minor="46"/>
+             <date day="6" month="8" year="2009"/>
+             <author login="tzezula"/>
+             <compatibility binary="incompatible" deletion="yes" source="compatible"/>
+             <description>
+                 The JavaSource class contains methods introduced to keep binary compatibility among milestones of NB 6.0.
+                 These methods are not needed anymore and will be removed.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaSource"/>
+        </change>
         <change id="TreeMaker.Method">
              <api name="general"/>
              <summary>Added new Method allowing creating varargs methods.</summary>

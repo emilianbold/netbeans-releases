@@ -58,6 +58,8 @@ import org.openide.util.Lookup;
  *   <li> Extend {@link IOColors} and implement its abstract methods
  *   <li> Place instance of {@link IOColors} to {@link Lookup} provided by {@link InputOutput}
  * </ul>
+ * @see IOColorLines
+ * @see IOColorPrint
  * @since 1.16
  * @author Tomas Holy
  */

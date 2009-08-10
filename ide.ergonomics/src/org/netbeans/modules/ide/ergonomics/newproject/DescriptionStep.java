@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -80,7 +81,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor> {
@@ -138,7 +138,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     implements Runnable, PropertyChangeListener {
         public void propertyChange (PropertyChangeEvent evt) {
             if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
-                RequestProcessor.getDefault().post(this);
+                FeatureManager.getInstance().create(this).schedule(0);
             }
         }
         public void run () {
@@ -231,7 +231,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             if (templateResource.startsWith("Servers/WizardProvider")) {
                 try {
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-                    Class clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
+                    Class<?> clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
                     Collection c = Lookups.forPath("J2EE/DeploymentPlugins/" +
                             templateResource.substring(templateResource.indexOf('-') + 1, templateResource.indexOf('.')) + "/").lookupAll(clazz);
                     if (!c.isEmpty()) {
@@ -259,6 +259,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 iterator = null;
                 if (++i == 10) {
                     Logger.getLogger(DescriptionStep.class.getName()).severe("Giving up to find iterator for " + fo); // NOI18N
+                    Logger.getLogger(DescriptionStep.class.getName()).severe(threadDump()); // NOI18N
                     boolean npe = false;
                     assert npe = true;
                     if (npe) {
@@ -367,5 +368,24 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         return (WizardDescriptor.InstantiatingIterator<?>)o;
     }
 
+    private static String threadDump() {
+        Map<Thread, StackTraceElement[]> all = Thread.getAllStackTraces();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Thread dump:\n"); // NOI18N
+        for (Map.Entry<Thread, StackTraceElement[]> entry : all.entrySet()) {
+            sb.append(entry.getKey().getName()).append('\n');
+            if (entry.getValue() == null) {
+                sb.append("  no information\n"); // NOI18N
+                continue;
+            }
+            for (StackTraceElement stackTraceElement : entry.getValue()) {
+                sb.append("  ");
+                sb.append(stackTraceElement.getClassName()).append('.');
+                sb.append(stackTraceElement.getMethodName()).append(':');
+                sb.append(stackTraceElement.getLineNumber()).append('\n');
+            }
+        }
+        return sb.toString();
+    }
 }
 

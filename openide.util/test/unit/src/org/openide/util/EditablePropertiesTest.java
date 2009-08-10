@@ -227,12 +227,12 @@ public class EditablePropertiesTest extends NbTestCase {
         String output = getAsString(ep);
         String expected = "a\\ a=a space a"+System.getProperty("line.separator")+
                 "b\\u4567=val\\u1234"+System.getProperty("line.separator")+
-                "@!#$%^\\\\=!@#$%^&*(){}\\\\"+System.getProperty("line.separator")+
+                "@!\\#$%^\\\\=!@#$%^&*(){}\\\\"+System.getProperty("line.separator")+
                 "d\\nd=d\\nnewline\\nd"+System.getProperty("line.separator")+
                 "umlaut=\\u00fc"+System.getProperty("line.separator")+
                 "_a\\ a=\\"+System.getProperty("line.separator")+"    a space a"+System.getProperty("line.separator")+
                 "_b\\u4567=\\"+System.getProperty("line.separator")+"    val\\u1234"+System.getProperty("line.separator")+
-                "_@!#$%^\\\\=\\"+System.getProperty("line.separator")+"    !@#$%^&*\\\\\\"+System.getProperty("line.separator")+
+                "_@!\\#$%^\\\\=\\"+System.getProperty("line.separator")+"    !@#$%^&*\\\\\\"+System.getProperty("line.separator")+
                     "    (){}\\\\"+System.getProperty("line.separator")+
                 "_d\\nd=\\"+System.getProperty("line.separator")+"    d\\nnew\\"+System.getProperty("line.separator")+
                     "    line\\nd\\"+System.getProperty("line.separator")+
@@ -251,6 +251,22 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("!@#$%^&*\\(){}\\", ep.getProperty("_@!#$%^\\"));
         assertEquals("d\nnewline\nd\nend", ep.getProperty("_d\nd"));
         assertEquals(umlaut+umlaut, ep.getProperty("_umlaut"));
+    }
+
+    public void testMetaCharacters() throws Exception {
+        testRoundTrip("foo=bar", "v1");
+        testRoundTrip("foo:bar", "v2");
+        testRoundTrip("#foobar", "v3");
+        testRoundTrip(" foo bar ", "v4");
+    }
+    private void testRoundTrip(String key, String value) throws Exception {
+        EditableProperties ep = new EditableProperties(false);
+        ep.setProperty(key, value);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ep.store(baos);
+        ep = new EditableProperties(false);
+        ep.load(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals(baos.toString(), Collections.singletonMap(key, value), ep);
     }
     
     // test that iterator implementation is OK

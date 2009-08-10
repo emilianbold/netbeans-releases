@@ -38,20 +38,10 @@
  */
 package org.netbeans.modules.dlight.tha;
 
-import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.GroupLayout.ParallelGroup;
-import org.jdesktop.layout.GroupLayout.SequentialGroup;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
 
 /**
  * @author Alexey Vladykin
@@ -59,43 +49,44 @@ import org.netbeans.modules.dlight.api.stack.FunctionCall;
 public final class StackPanelFactory {
 
     public static JComponent newStackPanel(List<FunctionCall> stack) {
-        JPanel panel = new JPanel();
-        GroupLayout layout = new GroupLayout(panel);
-        panel.setLayout(layout);
-
-        MouseListener mouseListener = new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                ((JButton)e.getComponent()).setContentAreaFilled(true);
-            }
-            @Override
-            public void mouseExited(MouseEvent e) {
-                ((JButton)e.getComponent()).setContentAreaFilled(false);
-            }
-        };
-
-        List<JButton> buttons = new ArrayList<JButton>();
-        for (FunctionCall call : stack) {
-            JButton button = new JButton(call.getDisplayedName());
-            button.setBorder(BorderFactory.createEmptyBorder());
-            button.setContentAreaFilled(false);
-            button.setForeground(Color.BLUE);
-            button.addMouseListener(mouseListener);
-            buttons.add(button);
-        }
-
-        SequentialGroup verticalGroup = layout.createSequentialGroup();
-        for (int i = buttons.size() - 1; 0 <= i; --i) {
-            verticalGroup.add(buttons.get(i));
-        }
-        layout.setVerticalGroup(verticalGroup);
-
-        ParallelGroup horizontalGroup = layout.createParallelGroup();
-        for (int i = 0; i < buttons.size(); ++i) {
-            horizontalGroup.add(buttons.get(i));
-        }
-        layout.setHorizontalGroup(horizontalGroup);
-
-        return panel;
+        return new CallStackPanel(stack);
+//        JPanel panel = new JPanel();
+//        GroupLayout layout = new GroupLayout(panel);
+//        panel.setLayout(layout);
+//
+//        MouseListener mouseListener = new MouseAdapter() {
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//                ((JButton)e.getComponent()).setContentAreaFilled(true);
+//            }
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//                ((JButton)e.getComponent()).setContentAreaFilled(false);
+//            }
+//        };
+//
+//        List<JButton> buttons = new ArrayList<JButton>();
+//        for (FunctionCall call : stack) {
+//            JButton button = new JButton(call.getDisplayedName());
+//            button.setBorder(BorderFactory.createEmptyBorder());
+//            button.setContentAreaFilled(false);
+//            button.setForeground(Color.BLUE);
+//            button.addMouseListener(mouseListener);
+//            buttons.add(button);
+//        }
+//
+//        SequentialGroup verticalGroup = layout.createSequentialGroup();
+//        for (int i = buttons.size() - 1; 0 <= i; --i) {
+//            verticalGroup.add(buttons.get(i));
+//        }
+//        layout.setVerticalGroup(verticalGroup);
+//
+//        ParallelGroup horizontalGroup = layout.createParallelGroup();
+//        for (int i = 0; i < buttons.size(); ++i) {
+//            horizontalGroup.add(buttons.get(i));
+//        }
+//        layout.setHorizontalGroup(horizontalGroup);
+//
+//        return panel;
     }
 }

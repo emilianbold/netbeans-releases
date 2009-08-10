@@ -216,6 +216,15 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     }
 
     @Override
+    public String get(Object key) {
+        if (!(key instanceof String)) {
+            return null;
+        }
+        Item item = itemIndex.get((String) key);
+        return item != null ? item.getValue() : null;
+    }
+
+    @Override
     public String put(String key, String value) {
         Parameters.notNull("key", key);
         Parameters.notNull(key, value);
@@ -518,7 +527,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
 
         public void setValue(List<String> value) {
-            StringBuffer val = new StringBuffer();
+            StringBuilder val = new StringBuilder();
             List<String> l = new ArrayList<String>();
             if (!value.isEmpty()) {
                 l.add(encode(key, true) + "=\\"); // NOI18N
@@ -610,7 +619,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         private static String decode(String input) {
             char ch;
             int len = input.length();
-            StringBuffer output = new StringBuffer(len);
+            StringBuilder output = new StringBuilder(len);
             for (int x=0; x<len; x++) {
                 ch = input.charAt(x);
                 if (ch != '\\') {
@@ -649,18 +658,19 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             return output.toString();
         }
 
-        private static String encode(String input, boolean escapeSpace) {
+        private static String encode(String input, boolean forKey) {
             int len = input.length();
-            StringBuffer output = new StringBuffer(len*2);
+            StringBuilder output = new StringBuilder(len*2);
 
             for(int x=0; x<len; x++) {
                 char ch = input.charAt(x);
                 switch(ch) {
                     case ' ':
-                        if (x == 0 || escapeSpace)  {
+                    case '#':
+                        if (x == 0 || forKey)  {
                             output.append('\\');
                         }
-                        output.append(' ');
+                        output.append(ch);
                         break;
                     case '\\':
                         output.append("\\\\");
@@ -676,6 +686,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                         break;
                     case '\f':
                         output.append("\\f");
+                        break;
+                    case '=':
+                    case ':':
+                        if (forKey) {
+                            output.append('\\');
+                        }
+                        output.append(ch);
                         break;
                     default:
                         if ((ch < 0x0020) || (ch > 0x007e)) {
@@ -696,7 +713,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         private static String decodeUnicode(String input) {
             char ch;
             int len = input.length();
-            StringBuffer output = new StringBuffer(len);
+            StringBuilder output = new StringBuilder(len);
             for (int x = 0; x < len; x++) {
                 ch = input.charAt(x);
                 if (ch != '\\') {
@@ -733,7 +750,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
         private static String encodeUnicode(String input) {
             int len = input.length();
-            StringBuffer output = new StringBuffer(len * 2);
+            StringBuilder output = new StringBuilder(len * 2);
             for (int x = 0; x < len; x++) {
                 char ch = input.charAt(x);
                 if ((ch < 0x0020) || (ch > 0x007e)) {

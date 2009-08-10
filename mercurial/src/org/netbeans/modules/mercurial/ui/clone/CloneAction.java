@@ -116,16 +116,17 @@ public class CloneAction extends ContextAction {
         if (!clone.showDialog()) {
             return;
         }
-        performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null);
+        performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null, true);
     }
 
     public static RequestProcessor.Task performClone(final HgURL source, final File target, boolean projIsRepos,
-            File projFile, final HgURL pullPath, final HgURL pushPath) {
-        return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath);
+            File projFile, final HgURL pullPath, final HgURL pushPath, boolean scanForProjects) {
+        return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath, scanForProjects);
     }
 
     private static RequestProcessor.Task performClone(final HgURL source, final File target,
-            final boolean projIsRepos, final File projFile, final boolean isLocalClone, final HgURL pullPath, final HgURL pushPath) {
+            final boolean projIsRepos, final File projFile, final boolean isLocalClone, final HgURL pullPath, final HgURL pushPath,
+            final boolean scanForProjects) {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         final HgProgressSupport support = new HgProgressSupport() {
@@ -181,7 +182,7 @@ public class CloneAction extends ContextAction {
                                 cloneProjFile = normalizedCloneFolder;
                             }
                             openProject(cloneProjFile, projectManager, hg);
-                        } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
+                        } else if (scanForProjects) {
                             CloneCompleted cc = new CloneCompleted(target);
                             if (isCanceled()) {
                                 return;

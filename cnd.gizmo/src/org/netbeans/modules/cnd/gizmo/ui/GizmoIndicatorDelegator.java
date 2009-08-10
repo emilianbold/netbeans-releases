@@ -8,7 +8,8 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
+import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
@@ -16,13 +17,12 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mt154047
  */
-@ServiceProvider(service = IndicatorComponentDelegator.class, position = 10)
+@ServiceProvider(service = IndicatorComponentDelegator.class, position = 100)
 public final class GizmoIndicatorDelegator implements IndicatorComponentDelegator, GizmoIndicatorsTopComponentActionsProvider {
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
@@ -138,6 +138,10 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
 
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
         if (newState == SessionState.STARTING) {
+            if (!needToHandle(session)){
+                session.removeSessionStateListener(this);
+                return;
+            }
             UIThread.invoke(new Runnable() {
 
                 public void run() {
@@ -160,7 +164,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     public void sessionRemoved(DLightSession removedSession) {
     }
 
-    public Action[] getActions(TopComponent source) {
+    public Action[] getActions(GizmoIndicatorsTopComponent source) {
         GizmoIndicatorTopComponentRegsitry registry = GizmoIndicatorTopComponentRegsitry.getRegistry();
         if (registry.getOpened() == null || registry.getOpened().size() == 0){
             return null;
@@ -184,5 +188,22 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
              i++;
         }
         return result;
+    }
+
+    private boolean needToHandle(DLightSession session){
+        List<ServiceInfoDataStorage> infoStorages = session.getServiceInfoDataStorages();
+        for (ServiceInfoDataStorage storage : infoStorages){
+            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
+                return true;
+            }
+        }
+        List<DataStorage> storages = session.getStorages();
+        for (DataStorage storage : storages){
+            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
+                return true;
+            }
+        }
+
+        return false;
     }
 }
