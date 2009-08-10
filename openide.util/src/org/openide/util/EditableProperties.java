@@ -657,6 +657,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
         
         private static String decode(String input) {
+            if (input.indexOf('\\') == -1) {
+                return input; // shortcut
+            }
             char ch;
             int len = input.length();
             StringBuilder output = new StringBuilder(len);
