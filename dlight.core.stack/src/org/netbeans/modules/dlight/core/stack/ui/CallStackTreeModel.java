@@ -36,57 +36,37 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
+
+package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
-import javax.swing.JComponent;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public final class StackPanelFactory {
+final class CallStackTreeModel {
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+    private final List<FunctionCall> stack;
+    private final SourceFileInfoDataProvider dataProvider;
+
+    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
+        this.stack = stack;
+        this.dataProvider = dataProvider;
     }
+
+    FunctionCall getCaller(FunctionCall call){
+        //find in the list
+        int index = stack.indexOf(call);
+        //return the next one
+        if (index == stack.size() - 1 ){
+            return null;
+        }
+        return stack.get(index + 1);
+    }
+
+
+
 }

@@ -36,57 +36,59 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
 
-import java.util.List;
-import javax.swing.JComponent;
+package org.netbeans.modules.dlight.core.stack.ui;
+
+import java.awt.Image;
+import javax.swing.Action;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public final class StackPanelFactory {
+public class FunctionCallNode extends AbstractNode {
+    private final FunctionCall functionCall;
+    /*package-local*/ static Image downBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/down_20.png" ); // NOI18N
+    private static Image upBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/up_8.png" ); // NOI18N
+    private static Image functionIcon = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/global_function.png" ); // NOI18N
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+
+     FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
+         super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, functionCall));
+         this.functionCall = functionCall;
     }
+
+    @Override
+    public String getDisplayName() {
+        return functionCall.getDisplayedName();
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.mergeImages(functionIcon, downBadge, 0, 0);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return super.getPreferredAction();
+    }
+
+
+
+
+   
+
+
+
+
+
 }

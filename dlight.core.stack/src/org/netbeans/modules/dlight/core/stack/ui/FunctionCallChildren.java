@@ -36,57 +36,37 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.tha;
 
-import java.util.List;
-import javax.swing.JComponent;
+package org.netbeans.modules.dlight.core.stack.ui;
+
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackPanel;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author mt154047
  */
-public final class StackPanelFactory {
+public class FunctionCallChildren extends Children.Keys<FunctionCall> {
+    private final CallStackTreeModel stackModel;
+    private final FunctionCall parentCall;
 
-    public static JComponent newStackPanel(List<FunctionCall> stack) {
-        return new CallStackPanel(stack);
-//        JPanel panel = new JPanel();
-//        GroupLayout layout = new GroupLayout(panel);
-//        panel.setLayout(layout);
-//
-//        MouseListener mouseListener = new MouseAdapter() {
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(true);
-//            }
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//                ((JButton)e.getComponent()).setContentAreaFilled(false);
-//            }
-//        };
-//
-//        List<JButton> buttons = new ArrayList<JButton>();
-//        for (FunctionCall call : stack) {
-//            JButton button = new JButton(call.getDisplayedName());
-//            button.setBorder(BorderFactory.createEmptyBorder());
-//            button.setContentAreaFilled(false);
-//            button.setForeground(Color.BLUE);
-//            button.addMouseListener(mouseListener);
-//            buttons.add(button);
-//        }
-//
-//        SequentialGroup verticalGroup = layout.createSequentialGroup();
-//        for (int i = buttons.size() - 1; 0 <= i; --i) {
-//            verticalGroup.add(buttons.get(i));
-//        }
-//        layout.setVerticalGroup(verticalGroup);
-//
-//        ParallelGroup horizontalGroup = layout.createParallelGroup();
-//        for (int i = 0; i < buttons.size(); ++i) {
-//            horizontalGroup.add(buttons.get(i));
-//        }
-//        layout.setHorizontalGroup(horizontalGroup);
-//
-//        return panel;
+    FunctionCallChildren(CallStackTreeModel stackModel, FunctionCall parentCall) {
+        this.stackModel = stackModel;
+        this.parentCall = parentCall;
     }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(new FunctionCall[]{parentCall});
+    }
+
+
+
+    @Override
+    protected Node[] createNodes(FunctionCall key) {
+        return new FunctionCallNode[]{new FunctionCallNode(stackModel, stackModel.getCaller(key))};
+    }
+
 }

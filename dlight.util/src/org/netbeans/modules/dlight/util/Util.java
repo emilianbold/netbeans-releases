@@ -109,6 +109,8 @@ public class Util {
             return result_file.getCanonicalPath();
         } catch (IOException ex) {
             log.info("copyResource failed: " + ex.getMessage()); // NOI18N
+        }catch(NullPointerException ex1){
+            return null;
         }
         return null;
 
