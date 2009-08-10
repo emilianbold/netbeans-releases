@@ -281,6 +281,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
                         new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
                 if (LOG.isLoggable(Level.FINE)) {
+                    // XXX sometimes on deadlock get a bogus DeferredElementNSImpl;
+                    // all fields null except fNodeIndex=1, ownerDocument/ownerNode, previousSibling=this
                     try {
                         for (Class c = projectEl.getClass(); c != null; c = c.getSuperclass()) {
                             for (Field f : c.getDeclaredFields()) {
