@@ -83,7 +83,7 @@ class RfsSyncWorker extends ZipSyncWorker {
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-        pb.setExecutable("/tmp/rfs_controller");
+        pb.setExecutable("/tmp/rfs_controller"); // NOI18N
         NativeProcess remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
@@ -94,14 +94,14 @@ class RfsSyncWorker extends ZipSyncWorker {
         // read port
         String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
         String port;
-        if (line.startsWith("PORT ")) {
+        if (line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
         } else {
-            System.err.printf("Protocol error\n");
+            System.err.printf("Protocol error\n"); // NOI18N
             remoteControllerProcess.destroy();
             throw new ExecutionException("Protocol error", null); //NOI18N
         }
-        logger.fine("Remote Controller listens port " + port);
+        logger.fine("Remote Controller listens port " + port); // NOI18N
         RequestProcessor.getDefault().post(localController);
     }
 
@@ -151,21 +151,21 @@ class RfsSyncWorker extends ZipSyncWorker {
                             int rc = task.get();
                             logger.finest("LC: uploading " + localFile + " to " + remoteFile + " finished; rc=" + rc);
                             if (rc == 0) {
-                                responseStream.printf("1\n");
+                                responseStream.printf("1\n"); // NOI18N
                             } else {
-                                responseStream.printf("0 1\n");
+                                responseStream.printf("0 1\n"); // NOI18N
                             }
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                             break;
                         } catch (ExecutionException ex) {
                             Exceptions.printStackTrace(ex);
-                            responseStream.printf("0 2 execution exception\n");
+                            responseStream.printf("0 2 execution exception\n"); // NOI18N
                         } finally {
                             responseStream.flush();
                         }
                     } else {
-                        responseStream.printf("1\n");
+                        responseStream.printf("1\n"); // NOI18N
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex); //TODO: error processing

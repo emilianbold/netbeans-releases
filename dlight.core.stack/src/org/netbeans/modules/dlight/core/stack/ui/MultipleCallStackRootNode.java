@@ -86,7 +86,7 @@ final class MultipleCallStackRootNode extends AbstractNode{
 
     @Override
     public String getHtmlDisplayName() {
-        return "<h2>" + getDisplayName() + "</h2>";
+        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
     }
 
     

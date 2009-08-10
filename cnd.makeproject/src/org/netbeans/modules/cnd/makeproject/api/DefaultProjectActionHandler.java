@@ -232,8 +232,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     for (int i = 0; i < env.length; i++) {
                         env2[i] = env[i];
                     }
-                    env2[env2.length-1] = "LD_PRELOAD=" + preload;
-                    env2[env2.length-2] = "RFS_CONTROLLER_DIR=" + dir;
+                    env2[env2.length-1] = "LD_PRELOAD=" + preload; // NOI18N
+                    env2[env2.length-2] = "RFS_CONTROLLER_DIR=" + dir; // NOI18N
                     env = env2;
                 }
             }

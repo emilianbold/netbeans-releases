@@ -111,12 +111,12 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
             MSAState msa = stack.getState();
             ThreadStateResources res = ThreadStateResources.forState(msa);
             if (res != null) {
-                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), stack.getStack());
+                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), stack.getStack()); // NOI18N
             }
 
         }
 
-        cardLayout.show(this, "stack");//NOI18BN
+        cardLayout.show(this, "stack");//NOI18N
     }
 
     public String getDisplayName() {
