@@ -46,20 +46,14 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.Roster;
 //import org.jivesoftware.smack.RosterEntry;
 //import org.jivesoftware.smack.RosterGroup;
 //import org.jivesoftware.smack.RosterListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.packet.Presence;
 import org.netbeans.modules.kenai.api.Kenai;
 
 /**
@@ -76,51 +70,39 @@ public class ContactList extends javax.swing.JPanel {
     /** Creates new form ContactList */
     public ContactList() {
         initComponents();
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                KenaiConnection.getDefault().post(new Runnable() {
-                    public void run() {
-                        XMPPConnection xMPPConnection = Kenai.getDefault().getXMPPConnection();
-                        if (xMPPConnection != null) {
-
-                            roster = new FakeRoster(xMPPConnection);
-                            roster.addRosterListener(new CLRosterListener());
-                            filterModel.removeAllElements();
-                            filterModel.addElement(new FilterItem());
-                            for (FakeRosterGroup group : roster.getGroups()) {
-                                filterModel.addElement(new FilterItem(group.getName()));
-                            }
-                            filterCombo.setSelectedIndex(0);
-                        }
-                    }
-                });
-
-            }
-        });
-        searchPanel.setVisible(false);
         filterCombo.setModel(filterModel);
+        filterCombo.setRenderer(new FilterRenderer());
         contactJList.setModel(listModel);
         contactJList.setCellRenderer(new ContactListCellRenderer());
-        filterCombo.setRenderer(new FilterRenderer());
+        searchPanel.setVisible(false);
         searchField.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                updateFilter();
+                updateContacts();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                updateFilter();
+                updateContacts();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                updateFilter();
+                updateContacts();
             }
         });
     }
 
+
     public void updateFilter() {
-        if (listModel.isEmpty())
-            return;
+        roster = new FakeRoster(Kenai.getDefault().getXMPPConnection());
+        filterModel.removeAllElements();
+        filterModel.addElement(new FilterItem());
+        for (FakeRosterGroup group : roster.getGroups()) {
+            filterModel.addElement(new FilterItem(group.getName()));
+        }
+        filterCombo.setSelectedIndex(0);
+        
+    }
+    public void updateContacts() {
         if (filterCombo.getSelectedIndex()!=0) {
             oldFilter = (FilterItem) filterCombo.getSelectedItem();
             filterCombo.setSelectedIndex(0);
@@ -346,24 +328,4 @@ public class ContactList extends javax.swing.JPanel {
     private javax.swing.JPanel searchPanel;
     // End of variables declaration//GEN-END:variables
 
-
-    private static class CLRosterListener implements FakeRosterListener {
-
-        public void entriesAdded(Collection<String> arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void entriesUpdated(Collection<String> arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void entriesDeleted(Collection<String> arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void presenceChanged(Presence arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
 }
