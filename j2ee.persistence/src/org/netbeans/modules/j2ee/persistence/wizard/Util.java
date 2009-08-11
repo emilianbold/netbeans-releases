@@ -297,6 +297,18 @@ public class Util {
             createPUButton.setEnabled(false);
         }
         Object result = DialogDisplayer.getDefault().notify(nd);
+        //add necessary libraries before pu creation
+        if (result == createPUButton) {
+            if (isContainerManaged) {
+                //TODO: may be require to add some libraries also.
+            } else {
+                PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
+                Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
+                if (lib != null){
+                    addLibraryToProject(project, lib);
+                }
+            }
+        }
         String version=PersistenceUtils.getJPAVersion(project);
         if (result == createPUButton) {
             PersistenceUnit punit = null;
@@ -327,10 +339,6 @@ public class Util {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(),version);
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
-                Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
-                if (lib != null){
-                    addLibraryToProject(project, lib);
-                }
             }
             punit.setName(panel.getPersistenceUnitName());
             ProviderUtil.setTableGeneration(punit, panel.getTableGeneration(), project);
