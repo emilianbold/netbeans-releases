@@ -77,7 +77,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
         for (DLightConfiguration dLightConfiguration : DLightConfigurationManager.getInstance().getDLightConfigurations()) {
-            list.add(new DLightConfigurationWrapper(dLightConfiguration));
+            list.add(new DLightConfigurationWrapper(dLightConfiguration, allDLightTools));
         }
         initDialog(list);
         setPreferredSize(new Dimension(700, 400));
@@ -94,15 +94,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         profileConfigurationComboBox.setSelectedIndex(0);
     }
 
-    private static boolean inList(DLightTool dlightTool, List<DLightTool> list) {
-        for (DLightTool dt : list) {
-            if (dt.getID().equals(dlightTool.getID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void initConfigurationPanel(DLightConfigurationWrapper dlightConfigurationWrapper) {
         DLightConfiguration gizmoConfiguration = dlightConfigurationWrapper.getdLightConfiguration();
         assert gizmoConfiguration != null;
@@ -110,16 +101,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         defaultDataProviderComboBox.removeAllItems();
         defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
         defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
-        List<DLightTool> confDlightTools = gizmoConfiguration.getToolsSet();
-        for (DLightTool dlightTool : allDLightTools) {
-            if (inList(dlightTool, confDlightTools)) {
-                dlightTool.enable();
-            }
-            else {
-                dlightTool.disable();
-            }
-        }
-        toolsTable = new ToolsTable(allDLightTools, new MySelectionListener());
+        toolsTable = new ToolsTable(dlightConfigurationWrapper.getTools(), new MySelectionListener());
         toolsList.setViewportView(toolsTable);
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
     }
@@ -347,71 +329,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
 
-    class DLightConfigurationWrapper {
-        private DLightConfiguration dLightConfiguration;
-        private boolean custom;
-        private String name;
-
-        public DLightConfigurationWrapper(DLightConfiguration dLightConfiguration) {
-            this.dLightConfiguration = dLightConfiguration;
-            this.name = dLightConfiguration.getConfigurationName();
-            this.custom = false;
-        }
-
-        public DLightConfigurationWrapper(String name) {
-            this.dLightConfiguration = DLightConfigurationManager.getInstance().getDefaultConfiguration();
-            this.name = name;
-            this.custom = true;
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
-
-        /**
-         * @return the name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @param name the name to set
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        /**
-         * @return the custom
-         */
-        public boolean isCustom() {
-            return custom;
-        }
-
-        /**
-         * @param custom the custom to set
-         */
-        public void setCustom(boolean custom) {
-            this.custom = custom;
-        }
-
-        /**
-         * @return the dLightConfiguration
-         */
-        public DLightConfiguration getdLightConfiguration() {
-            return dLightConfiguration;
-        }
-
-        /**
-         * @param dLightConfiguration the dLightConfiguration to set
-         */
-        public void setdLightConfiguration(DLightConfiguration dLightConfiguration) {
-            this.dLightConfiguration = dLightConfiguration;
-        }
-    }
-
     class MyListEditorPanel extends ListEditorPanel<DLightConfigurationWrapper> {
         public MyListEditorPanel(List<DLightConfigurationWrapper> list) {
             super(list, null);
@@ -427,12 +344,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 return null;
             }
             String newS = notifyDescriptor.getInputText();
-            return new DLightConfigurationWrapper(newS);
+            return new DLightConfigurationWrapper(newS, allDLightTools);
         }
 
         @Override
         public DLightConfigurationWrapper copyAction(DLightConfigurationWrapper o) {
-            DLightConfigurationWrapper copy = new DLightConfigurationWrapper(getString("CopyOf", o.getName()));
+            DLightConfigurationWrapper copy = new DLightConfigurationWrapper(getString("CopyOf", o.getName()), allDLightTools);
             return copy;
         }
 
