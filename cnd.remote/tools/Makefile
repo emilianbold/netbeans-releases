@@ -41,6 +41,7 @@ INSTALLDIR = /dev/null
 
 PRELOAD_NAME=rfs_preload
 CONTROLLER_NAME=rfs_controller
+FILEDATA_NAME=rfs_filedata
 
 CFLAGS-Linux := -c -fPIC -D_GNU_SOURCE
 CFLAGS-SunOS := -c -fPIC -D_GNU_SOURCE
@@ -109,6 +110,7 @@ PRELOAD_OBJ=${PLATFORM_BUILD}/${PRELOAD_NAME}.o
 
 CONTROLLER_PATH=${PLATFORM_DIST}/${CONTROLLER_NAME}
 CONTROLLER_OBJ=${PLATFORM_BUILD}/${CONTROLLER_NAME}.o
+FILEDATA_OBJ=${PLATFORM_BUILD}/${FILEDATA_NAME}.o
 
 all: check init ${PRELOAD_PATH} ${CONTROLLER_PATH}
 
@@ -120,11 +122,14 @@ ${PRELOAD_OBJ}: ${PRELOAD_NAME}.c
 	gcc ${CFLAGS} -o ${PRELOAD_OBJ} ${PRELOAD_NAME}.c
 
 #appliction:
-${CONTROLLER_PATH}: ${CONTROLLER_OBJ}
-	gcc ${LDFLAGS_APP} -o ${CONTROLLER_PATH} ${CONTROLLER_OBJ}
+${CONTROLLER_PATH}: ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
+	gcc ${LDFLAGS_APP} -o ${CONTROLLER_PATH} ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
 
 ${CONTROLLER_OBJ}: ${CONTROLLER_NAME}.c
 	gcc ${CFLAGS} -o ${CONTROLLER_OBJ} ${CONTROLLER_NAME}.c
+
+${FILEDATA_OBJ}: ${FILEDATA_NAME}.c
+	gcc ${CFLAGS} -o ${FILEDATA_OBJ} ${FILEDATA_NAME}.c
 
 clean:
 	rm -rf ${PLATFORM_BUILD} ${PLATFORM_DIST}
@@ -153,7 +158,15 @@ check:
 		exit 1; \
 	fi
 
-test:
+
+test: test_build
+	${PLATFORM_BUILD}/rfs_filedata_test
+
+test_build: all
+	gcc ${CFLAGS} -o ${PLATFORM_BUILD}/rfs_filedata_test.o test/rfs_filedata_test.c
+	gcc ${LDFLAGS_APP} -o ${PLATFORM_BUILD}/rfs_filedata_test ${FILEDATA_OBJ} ${PLATFORM_BUILD}/rfs_filedata_test.o
+
+test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"
 	@echo "UNAME_M = [${UNAME_M}]"
 	@echo "UNAME_P = [${UNAME_P}]"
@@ -163,4 +176,3 @@ test:
 	@echo "LDFLAGS_LIB = [${LDFLAGS_LIB}]"
 	@echo "LDFLAGS_APP = [${LDFLAGS_APP}]"
 	@echo "${APP_NAME} = [${APP_PATH}]"
-
