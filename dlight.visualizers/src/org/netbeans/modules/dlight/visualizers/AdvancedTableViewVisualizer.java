@@ -103,6 +103,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
 
+    private final boolean dualPaneMode;
+    private final DualPaneSupport dualPaneSupport;
+
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
@@ -139,6 +142,23 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
+        this.dualPaneMode = accessor.isDualPaneMode(configuration);
+        if (dualPaneMode) {
+            this.dualPaneSupport = DualPaneSupport.forExplorerManager(
+                    this, this.explorerManager,
+                    accessor.getDetailsRenderer(configuration),
+                    new DualPaneSupport.DataAdapter<Node, DataRow>() {
+                        public DataRow convert(Node obj) {
+                            if (obj instanceof DataRowNode) {
+                                return ((DataRowNode)obj).getDataRow();
+                            } else {
+                                return null;
+                            }
+                        }
+                    });
+        } else {
+            this.dualPaneSupport = null;
+        }
     }
 
     public ExplorerManager getExplorerManager() {
@@ -324,7 +344,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     public JComponent getComponent() {
-        return this;
+        return dualPaneMode? dualPaneSupport : this;
     }
 
     public void timerStopped() {

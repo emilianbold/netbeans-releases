@@ -68,7 +68,7 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
     private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
     private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
     private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
-    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS;
+    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
 
     private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
 

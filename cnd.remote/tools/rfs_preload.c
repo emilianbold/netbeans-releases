@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <memory.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -156,18 +157,21 @@ static char * my_realpath(const char *file_name, char *resolved_name, int resolv
 static int on_open(const char *path, int flags) {
     static int __thread inside = 0;
     if (inside) {
+        trace("%s recursive - returning\n", path);
         return true; // recursive!
     }
-    if (flags && O_TRUNC) { // don't need existent content
+    if (flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT)) { // don't need existent content
+        trace("%s O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT - returning\n", path);
         return true;
     }
     if (my_dir == 0) { // isn't yet initialized?
+        trace("%s not yet initialized - returning\n", path);
         return true;
     }
     inside = 1;
 
     if (path[0] != '/') {
-        char real_path[PATH_MAX]; // TODO: optimize (a single malloc per thread?)
+        static __thread char real_path[PATH_MAX];
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
@@ -194,11 +198,12 @@ static int on_open(const char *path, int flags) {
             perror("send");
         } else {
             char response_buf[512];
+            memset(response_buf, 0, sizeof(response_buf));
             int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
             if (response_size == -1) {
                 perror("receive");
                 // TODO: correct error processing
-            } else {              
+            } else {
                 trace("Got %s for %s, %d\n", response_buf, path, flags);
                 if (response_buf[0] == response_ok) {
                     result = true;
