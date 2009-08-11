@@ -46,6 +46,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -55,6 +58,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -63,7 +67,6 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
@@ -74,6 +77,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -205,35 +209,92 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (j2eeModuleProvider == null) {
             return null;
         }
-        return Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+        try {
+            return Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID()).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            return null;
+        }
     }
 
     private void addSwdpLibrary() throws IOException {
-        if (!hasSwdpLibrary()) { //platform does not have swdp library, so add defaults {restapi, restlib}
-            addSwdpLibrary(classPathTypes);
-        } else {//add library jars from platform
-            J2eePlatform platform = getPlatform();
-            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
-            if (wsStack != null) { //GF
-                String libName = SWDP_LIBRARY_IN_GFV3;
-                if(wsStack.getVersion().equals(WSStackVersion.valueOf(2, 1, 3, 0)))
-                    libName = SWDP_LIBRARY_IN_GFV2;
-                Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
-                if (swdpLibrary == null) { //Create one if does not exist
-                    WSTool wsTool = wsStack.getWSTool(JaxRs.Tool.JAXRS);
-                    if (wsTool != null) {
-                        URL[] libs = wsTool.getLibraries();
-                        swdpLibrary = createSwdpLibrary(libs, libName);
+
+        // check if rest library provided by server corresponds to selected server
+        WSStack<JaxRs> wsStack = null;
+        J2eeModuleProvider j2eeModuleProvider = null;
+        String libName = null;
+        J2eePlatform platform = getPlatform();
+        if (platform != null) {
+            wsStack = JaxRsStackProvider.getJaxRsStack(platform);
+            if (wsStack != null) {
+                j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+                if (j2eeModuleProvider != null) {
+                    libName = getServerRestLibraryName(j2eeModuleProvider);
+                    Library oldLibrary = LibraryManager.getDefault().getLibrary(libName);
+                    if (oldLibrary != null && !isServerLibrary(libName, j2eeModuleProvider)) {
+                        LibraryManager.getDefault().removeLibrary(oldLibrary);
                     }
                 }
-                if (swdpLibrary != null) {
-                    addSwdpLibrary(classPathTypes, swdpLibrary);
+            }
+        }
+
+        // get or create REST library, from selected J2EE server, and add it to project's classpath
+        if (!hasSwdpLibrary()) {
+            //platform does not have swdp library, so add defaults {restapi, restlib}
+            addSwdpLibrary(classPathTypes);
+        } else {//add library jars from platform
+            if (wsStack != null) { //GF
+                if (j2eeModuleProvider != null) {
+                    Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
+                    if (swdpLibrary == null) { //Create one if does not exist
+                        WSTool wsTool = wsStack.getWSTool(JaxRs.Tool.JAXRS);
+                        if (wsTool != null && wsTool.getLibraries().length > 0) {
+                            swdpLibrary = createSwdpLibrary(wsTool.getLibraries(), libName);
+                            setServerRestLibraryName(j2eeModuleProvider);
+                        }
+                    }
+                    if (swdpLibrary != null) {
+                        addSwdpLibrary(classPathTypes, swdpLibrary);
+                    }
                 }
             }
         }
     }
 
-    private Library createSwdpLibrary(URL[] libs, final String libraryName) throws IOException {
+    static String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
+        return "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+    }
+
+    static void setServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
+        Preferences prefs = NbPreferences.forModule(WebProjectRestSupport.class);
+        if (prefs != null) {
+            prefs.put("restlib_"+ j2eeModuleProvider.getServerID(), j2eeModuleProvider.getServerInstanceID());
+        }
+    }
+
+    static boolean isServerLibrary(String libraryName, J2eeModuleProvider j2eeModuleProvider) {
+        Preferences prefs = NbPreferences.forModule(WebProjectRestSupport.class);
+        if (prefs != null) {
+            String oldServerInstanceId = prefs.get(libraryName , null);
+            if (oldServerInstanceId != null && oldServerInstanceId.equals(j2eeModuleProvider.getServerInstanceID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){
+        String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
+        if(serverInstanceID != null && serverInstanceID.length() > 0) {
+            try {
+                return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger(WebProjectRestSupport.class.getName()).log(Level.INFO, "Failed to find J2eePlatform");
+            }
+        }
+        return null;
+    }
+
+    static Library createSwdpLibrary(URL[] libs, final String libraryName) throws IOException {
         // obtain URLs of the jar file
         List <URL> urls = new ArrayList <URL> ();
         for (URL lib:libs) {
@@ -241,11 +302,11 @@ public class WebProjectRestSupport extends WebRestSupport {
             urls.add(url);
         }
         // create new library and regist in the Library Manager.
-        LibraryManager libraryManager = LibraryManager.getDefault();
+        LibraryManager libraryManager = LibraryManager.getDefault();       
         LibraryImplementation libImpl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary(); //NOI18N
         libImpl.setName(libraryName);  //NOI18N
         libImpl.setDescription(libraryName);
-        libImpl.setLocalizingBundle("org/netbeans/modules/websvc/rest/projects/Bundle");
+        //libImpl.setLocalizingBundle("org/netbeans/modules/websvc/rest/projects/Bundle");
         libImpl.setContent("classpath", urls);  //NOI18N
         Library lib = LibraryFactory.createLibrary(libImpl);
         libraryManager.addLibrary(lib);
