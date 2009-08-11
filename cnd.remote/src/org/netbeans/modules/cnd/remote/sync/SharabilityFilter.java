@@ -50,10 +50,27 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public class SharabilityFilter implements FileFilter {
 
+    public interface StatisticsCallback {
+        void onAccept(File file, boolean accepted);
+    }
+
     private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final boolean TRACE_SHARABILITY = Boolean.getBoolean("cnd.remote.trace.sharability"); //NOI18N
+    private StatisticsCallback statisticsCallback;
 
-    public boolean accept(File file) {
+    public final boolean accept(File file) {
+        boolean accepted = acceptImpl(file);
+        if (statisticsCallback != null) {
+            statisticsCallback.onAccept(file, accepted);
+        }
+        return accepted;
+    }
+
+    public void setStatisticsCallback(StatisticsCallback statisticsCallback) {
+        this.statisticsCallback = statisticsCallback;
+    }
+
+    protected boolean acceptImpl(File file) {
         final int sharability = SharabilityQuery.getSharability(file);
         if(TRACE_SHARABILITY) {
             logger.info(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));

@@ -55,7 +55,6 @@ import java.util.Properties;
 import junit.framework.TestResult;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -239,11 +238,9 @@ public class PropertyUtilsTest extends NbTestCase {
         p.setProperty("key1", "val1a");
         FileObject fo = FileUtil.toFileObject(ubp);
         assertNotNull("there is USER_BUILD_PROPERTIES on disk", fo);
-        FileLock lock = fo.lock();
-        OutputStream os = fo.getOutputStream(lock);
+        OutputStream os = fo.getOutputStream();
         p.store(os);
         os.close();
-        lock.releaseLock();
         l.msg("got a change from the Filesystems API").assertEvent();
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val for key1", "val1a", gpp.getProperties().get("key1"));
@@ -282,37 +279,26 @@ public class PropertyUtilsTest extends NbTestCase {
         scratch.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 testProperties[0] = FileUtil.createData(scratch, "test.properties");
-                FileLock lock = testProperties[0].lock();
+                OutputStream os = testProperties[0].getOutputStream();
                 try {
-                    OutputStream os = testProperties[0].getOutputStream(lock);
-                    try {
-                        
-                        PrintWriter pw = new PrintWriter(os);
-                        pw.println("a=aval");
-                        pw.flush();
-                    } finally {
-                        os.close();
-                    }
+                    PrintWriter pw = new PrintWriter(os);
+                    pw.println("a=aval");
+                    pw.flush();
                 } finally {
-                    lock.releaseLock();
+                    os.close();
                 }
             }
         });
         l.msg("got a change when file was created").assertEvent();
         assertEquals("one key", Collections.singletonMap("a", "aval"), pp.getProperties());
-        FileLock lock = testProperties[0].lock();
+        OutputStream os = testProperties[0].getOutputStream();
         try {
-            OutputStream os = testProperties[0].getOutputStream(lock);
-            try {
-                PrintWriter pw = new PrintWriter(os);
-                pw.println("a=aval");
-                pw.println("b=bval");
-                pw.flush();
-            } finally {
-                os.close();
-            }
+            PrintWriter pw = new PrintWriter(os);
+            pw.println("a=aval");
+            pw.println("b=bval");
+            pw.flush();
         } finally {
-            lock.releaseLock();
+            os.close();
         }
         Map<String,String> m = new HashMap<String,String>();
         m.put("a", "aval");
@@ -351,8 +337,8 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testGetUsablePropertyName() throws Exception {
-        StringBuffer bad = new StringBuffer();
-        StringBuffer good = new StringBuffer();
+        StringBuilder bad = new StringBuilder();
+        StringBuilder good = new StringBuilder();
         for (int i=0; i<ILLEGAL_CHARS.length(); i++) {
             bad.append(ILLEGAL_CHARS.substring(i, i+1));
             bad.append("x");

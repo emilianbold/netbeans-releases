@@ -117,9 +117,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property> result = new ArrayList<Property>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
-            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName)) {
+            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     c.getColumnUName(), c.getColumnUName(), true, false) {

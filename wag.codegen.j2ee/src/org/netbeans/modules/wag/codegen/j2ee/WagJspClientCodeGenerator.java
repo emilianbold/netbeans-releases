@@ -41,23 +41,12 @@
 package org.netbeans.modules.wag.codegen.j2ee;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.wag.codegen.Constants;
 import org.netbeans.modules.wag.codegen.java.WagJavaClientCodeGenerator;
-import org.netbeans.modules.wag.codegen.util.Util;
+import org.netbeans.modules.wag.codegen.j2ee.util.J2eeUtil;
 import org.netbeans.modules.wag.manager.model.WagService;
-//import org.netbeans.modules.wag.codegen.java.support.JavaSourceHelper;
-//import org.netbeans.modules.wag.codegen.java.support.JavaUtil;
-//import org.netbeans.modules.wag.codegen.java.support.SourceGroupSupport;
-import org.netbeans.modules.wag.manager.model.WagServiceParameter;
-import org.openide.filesystems.FileObject;
 
 /**
  * Code generator for Accessing Saas services.
@@ -66,81 +55,29 @@ import org.openide.filesystems.FileObject;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.wag.codegen.spi.WagCodeGenerationProvider.class)
 public class WagJspClientCodeGenerator extends WagJavaClientCodeGenerator {
-
-    private JavaSource targetSource;
-    private FileObject defaultPkg;
-    private String packageName;
-    private WagService service;
-
     public WagJspClientCodeGenerator() {
-        //setDropFileType(Constants.DropFileType.JAVA_CLIENT);
+        setDropFileType(Constants.DropFileType.JSP);
     }
 
+    @Override
     public boolean canAccept(WagService service, Document doc) {
-        //if (Util.isJava(doc)) {
-        //    return true;
-        //}
+        if (J2eeUtil.isJsp(doc)) {
+            return true;
+        }
         return false;
     }
 
     @Override
-    public void init(WagService service, Document doc) throws IOException {
-        super.init(service, doc);
-        targetSource = JavaSource.forFileObject(getTargetFile());
-       // packageName = JavaSourceHelper.getPackageName(targetSource);
-        this.service = service;
+    protected void addImportsToTargetFile() throws IOException {
     }
-
-    protected JavaSource getTargetSource() {
-        return this.targetSource;
-    }
-
 
     @Override
-    public Set<FileObject> generate() throws IOException {
-
-        preGenerate();
-
-        //No need to check scanning, since we are not locking document
-        //Util.checkScanning();
-        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
-        addImportsToTargetFile();
-
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
-    }
-
-    protected void addWagLib() throws IOException {
-        //JavaUtil.addWagLib(getProject());
-    }
-
-    protected void addImportsToTargetFile() throws IOException {
-        List<String> imports = Arrays.asList("com.zembly.gateway.client.Zembly");
-        //JavaUtil.addImportsToSource(getTargetSource(), imports);
-    }
-
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        try {
-            String paramStr = "new String[][] {";
+        String code = J2eeUtil.wrapWithTag(getSaasServiceAccessCode(), getTargetDocument(), getStartPosition());
 
-            int index = 0;
-            for (WagServiceParameter p : service.getParameters()) {
-                if (index++ > 0) {
-                    paramStr += ", ";
-                }
-                paramStr += "{\"" + p.getName() + "\", " + "null}";
-            }
-
-            paramStr += "}";
-
-            String code = "try {";
-            code += "String result = Zembly.getInstance().callService(\"" + service.getCallableName() + "\", " + paramStr + ");" +
-                    "System.out.println(\"result: \" + result);";
-            code += "} catch (Exception ex) {" +
-                    "ex.printStackTrace();" +
-                    "}";
-
+        code = "<%@ page import=\"com.zembly.gateway.client.Zembly\" %>\n" + code;
+        
+        try  {
             insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());

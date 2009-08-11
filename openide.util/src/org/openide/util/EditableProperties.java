@@ -82,23 +82,34 @@ import java.util.Set;
  * @since org.openide.util 7.26
  */
 public final class EditableProperties extends AbstractMap<String,String> implements Cloneable {
+
+    private static class State {
+        /** whether multiple EP instances are currently linking to this */
+        boolean shared;
+        /** List of Item instances as read from the properties file. Order is important.
+         * Saving properties will save then in this order. */
+        final LinkedList<Item> items;
+        /** Map of [property key, Item instance] for faster access. */
+        final Map<String, Item> itemIndex;
+        /** create fresh state */
+        State() {
+            items = new LinkedList<Item>();
+            itemIndex = new HashMap<String,Item>();
+        }
+        /** duplicate state */
+        State(State original) {
+            items = new LinkedList<Item>();
+            itemIndex = new HashMap<String,Item>(original.items.size() * 4 / 3 + 1);
+            for (Item _i : original.items) {
+                Item i = (Item) _i.clone();
+                items.add(i);
+                itemIndex.put(i.getKey(), i);
+            }
+        }
+    }
     
-    /** List of Item instances as read from the properties file. Order is important.
-     * Saving properties will save then in this order. */
-    private final LinkedList<Item> items;
-
-    /** Map of [property key, Item instance] for faster access. */
-    private final Map<String,Item> itemIndex;
-
+    private State state;
     private final boolean alphabetize;
-    
-    private static final String keyValueSeparators = "=: \t\r\n\f";
-
-    private static final String strictKeyValueSeparators = "=:";
-
-    private static final String whiteSpaceChars = " \t\r\n\f";
-
-    private static final String commentChars = "#!";
     
     private static final String INDENT = "    ";
 
@@ -112,8 +123,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      */
     public EditableProperties(boolean alphabetize) {
         this.alphabetize = alphabetize;
-        items = new LinkedList<Item>();
-        itemIndex = new HashMap<String,Item>();
+        state = new State();
     }
     
     /**
@@ -123,12 +133,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     private EditableProperties(EditableProperties ep) {
         // #64174: use a simple deep copy for speed
         alphabetize = ep.alphabetize;
-        items = new LinkedList<Item>();
-        itemIndex = new HashMap<String,Item>(ep.items.size() * 4 / 3 + 1);
-        for (Item _i : ep.items) {
-            Item i = (Item) _i.clone();
-            items.add(i);
-            itemIndex.put(i.getKey(), i);
+        state = ep.state;
+        state.shared = true;
+    }
+
+    private void writeOperation() {
+        if (state.shared) {
+            state = new State(state);
         }
     }
     
@@ -139,7 +150,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      * @return set with Map.Entry instances.
      */
     public Set<Map.Entry<String,String>> entrySet() {
-        return new SetImpl(this);
+        return new SetImpl();
     }
     
     /**
@@ -148,7 +159,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      * @throws IOException if the contents are malformed or the stream could not be read
      */
     public void load(InputStream stream) throws IOException {
-        int state = WAITING_FOR_KEY_VALUE;
+        int parseState = WAITING_FOR_KEY_VALUE;
         BufferedReader input = new BufferedReader(new InputStreamReader(stream, "ISO-8859-1"));
         List<String> tempList = new LinkedList<String>();
         String line;
@@ -159,7 +170,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             tempList.add(line);
             boolean empty = isEmpty(line);
             boolean comment = isComment(line);
-            if (state == WAITING_FOR_KEY_VALUE) {
+            if (parseState == WAITING_FOR_KEY_VALUE) {
                 if (empty) {
                     // empty line: create Item without any key
                     createNonKeyItem(tempList);
@@ -168,19 +179,19 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                     if (comment) {
                         commentLinesCount++;
                     } else {
-                        state = READING_KEY_VALUE;
+                        parseState = READING_KEY_VALUE;
                     }
                 }
             }
-            if (state == READING_KEY_VALUE && !isContinue(line)) {
+            if (parseState == READING_KEY_VALUE && !isContinue(line)) {
                 // valid end of property declaration: create Item for it
                 createKeyItem(tempList, commentLinesCount);
-                state = WAITING_FOR_KEY_VALUE;
+                parseState = WAITING_FOR_KEY_VALUE;
                 commentLinesCount = 0;
             }
         }
         if (tempList.size() > 0) {
-            if (state == READING_KEY_VALUE) {
+            if (parseState == READING_KEY_VALUE) {
                 // value was not ended correctly? ignore.
                 createKeyItem(tempList, commentLinesCount);
             } else {
@@ -197,7 +208,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     public void store(OutputStream stream) throws IOException {
         boolean previousLineWasEmpty = true;
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(stream, "ISO-8859-1"));
-        for (Item item : items) {
+        for (Item item : state.items) {
             if (item.isSeparate() && !previousLineWasEmpty) {
                 output.newLine();
             }
@@ -220,7 +231,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         if (!(key instanceof String)) {
             return null;
         }
-        Item item = itemIndex.get((String) key);
+        Item item = state.itemIndex.get((String) key);
         return item != null ? item.getValue() : null;
     }
 
@@ -228,7 +239,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     public String put(String key, String value) {
         Parameters.notNull("key", key);
         Parameters.notNull(key, value);
-        Item item = itemIndex.get(key);
+        writeOperation();
+        Item item = state.itemIndex.get(key);
         String result = null;
         if (item != null) {
             result = item.getValue();
@@ -278,7 +290,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             throw new NullPointerException();
         }
         List<String> valueList = Arrays.asList(value);
-        Item item = itemIndex.get(key);
+        writeOperation();
+        Item item = state.itemIndex.get(key);
         if (item != null) {
             item.setValue(valueList);
         } else {
@@ -298,7 +311,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      *    delimiter character is included
      */
     public String[] getComment(String key) {
-        Item item = itemIndex.get(key);
+        Item item = state.itemIndex.get(key);
         if (item == null) {
             return new String[0];
         }
@@ -319,7 +332,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      */
     public void setComment(String key, String[] comment, boolean separate) {
         // XXX: check validity of comment parameter
-        Item item = itemIndex.get(key);
+        writeOperation();
+        Item item = state.itemIndex.get(key);
         if (item == null) {
             throw new IllegalArgumentException("Cannot set comment for non-existing property "+key);
         }
@@ -341,9 +355,10 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
     // non-key item is block of empty lines/comment not associated with any property
     private void createNonKeyItem(List<String> lines) {
+        writeOperation();
         // First check that previous item is not non-key item.
-        if (!items.isEmpty()) {
-            Item item = items.getLast();
+        if (!state.items.isEmpty()) {
+            Item item = state.items.getLast();
             if (item.getKey() == null) {
                 // it is non-key item:  merge them
                 item.addCommentLines(lines);
@@ -366,23 +381,24 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     }
     
     private void addItem(Item item, boolean sort) {
+        writeOperation();
         String key = item.getKey();
         if (sort) {
             assert key != null;
-            ListIterator<Item> it = items.listIterator();
+            ListIterator<Item> it = state.items.listIterator();
             while (it.hasNext()) {
                 String k = it.next().getKey();
                 if (k != null && k.compareToIgnoreCase(key) > 0) {
                     it.previous();
                     it.add(item);
-                    itemIndex.put(key, item);
+                    state.itemIndex.put(key, item);
                     return;
                 }
             }
         }
-        items.add(item);
+        state.items.add(item);
         if (key != null) {
-            itemIndex.put(key, item);
+            state.itemIndex.put(key, item);
         }
     }
     
@@ -402,11 +418,14 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     // does line start with comment delimiter? (whitespaces are ignored)
     private static boolean isComment(String line) {
         line = trimLeft(line);
-        if (line.length() != 0 && commentChars.indexOf(line.charAt(0)) != -1) {
-            return true;
-        } else {
-            return false;
+        if (line.length() > 0) {
+            switch (line.charAt(0)) {
+            case '#':
+            case '!':
+                return true;
+            }
         }
+        return false;
     }
 
     // is line empty? (whitespaces are ignored)
@@ -417,11 +436,19 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     // remove all whitespaces from left
     private static String trimLeft(String line) {
         int start = 0;
-        while (start < line.length()) {
-            if (whiteSpaceChars.indexOf(line.charAt(start)) == -1) {
+        int len = line.length();
+        NONWS: while (start < len) {
+            switch (line.charAt(start)) {
+            case ' ':
+            case '\t':
+            case '\r':
+            case '\n':
+            case '\f':
+                start++;
                 break;
+            default:
+                break NONWS;
             }
-            start++;
         }
         return line.substring(start);
     }
@@ -575,7 +602,10 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
             splitKeyValue(line);
         }
         
-        private String mergeLines(List<String> lines) {
+        private static String mergeLines(List<String> lines) {
+            if (lines.size() == 1) {
+                return trimLeft(lines.get(0));
+            }
             StringBuilder line = new StringBuilder();
             Iterator<String> it = lines.iterator();
             while (it.hasNext()) {
@@ -592,14 +622,22 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         
         private void splitKeyValue(String line) {
             int separatorIndex = 0;
-            while (separatorIndex < line.length()) {
+            int len = line.length();
+            POS: while (separatorIndex < len) {
                 char ch = line.charAt(separatorIndex);
                 if (ch == '\\') {
                     // ignore next one character
                     separatorIndex++;
                 } else {
-                    if (keyValueSeparators.indexOf(ch) != -1) {
-                        break;
+                    switch (ch) {
+                    case '=':
+                    case ':':
+                    case ' ':
+                    case '\t':
+                    case '\r':
+                    case '\n':
+                    case '\f':
+                        break POS;
                     }
                 }
                 separatorIndex++;
@@ -610,13 +648,18 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 value = "";
                 return;
             }
-            if (strictKeyValueSeparators.indexOf(line.charAt(0)) != -1) {
+            switch (line.charAt(0)) {
+            case '=':
+            case ':':
                 line = trimLeft(line.substring(1));
             }
             value = decode(line);
         }
         
         private static String decode(String input) {
+            if (input.indexOf('\\') == -1) {
+                return input; // shortcut
+            }
             char ch;
             int len = input.length();
             StringBuilder output = new StringBuilder(len);
@@ -784,32 +827,26 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     
     }
     
-    private static class SetImpl extends AbstractSet<Map.Entry<String,String>> {
+    private class SetImpl extends AbstractSet<Map.Entry<String,String>> {
 
-        private EditableProperties props;
-        
-        public SetImpl(EditableProperties props) {
-            this.props = props;
-        }
+        public SetImpl() {}
         
         public Iterator<Map.Entry<String,String>> iterator() {
-            return new IteratorImpl(props);
+            return new IteratorImpl();
         }
         
         public int size() {
-            return props.items.size();
+            return state.items.size();
         }
         
     }
     
-    private static class IteratorImpl implements Iterator<Map.Entry<String,String>> {
+    private class IteratorImpl implements Iterator<Map.Entry<String,String>> {
 
-        private final EditableProperties props;
         private ListIterator<Item> delegate;
         
-        public IteratorImpl(EditableProperties props) {
-            this.props = props;
-            delegate = props.items.listIterator();
+        public IteratorImpl() {
+            delegate = state.items.listIterator();
         }
         
         public boolean hasNext() {
@@ -832,9 +869,11 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 throw new IllegalStateException();
             }
             int index = delegate.nextIndex();
-            props.items.remove(item);
-            props.itemIndex.remove(item.getKey());
-            delegate = props.items.listIterator(index);
+            writeOperation();
+            Item removed = state.items.remove(index);
+            assert removed.getKey().equals(item.getKey());
+            state.itemIndex.remove(item.getKey());
+            delegate = state.items.listIterator(index);
         }
         
         private Item findNext() {
@@ -851,7 +890,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         
     }
     
-    private static class MapEntryImpl implements Map.Entry<String,String> {
+    private class MapEntryImpl implements Map.Entry<String,String> {
         
         private Item item;
         
@@ -868,6 +907,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
         
         public String setValue(String value) {
+            writeOperation();
+            item = state.itemIndex.get(item.getKey());
             String result = item.getValue();
             item.setValue(value);
             return result;

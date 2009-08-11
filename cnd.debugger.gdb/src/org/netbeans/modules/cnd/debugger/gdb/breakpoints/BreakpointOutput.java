@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -58,8 +62,8 @@ import org.netbeans.modules.cnd.debugger.gdb.DebuggerOutput;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.models.BreakpointsNodeModel;
 import org.netbeans.modules.cnd.debugger.gdb.IOManager;
 
@@ -70,7 +74,7 @@ import org.netbeans.modules.cnd.debugger.gdb.IOManager;
  * @author Maros Sandor
  */
 public class BreakpointOutput extends LazyActionsManagerListener
-                implements DebuggerManagerListener, GdbBreakpointListener, PropertyChangeListener {
+                implements DebuggerManagerListener, CndBreakpointListener, PropertyChangeListener {
 
     private static final Pattern fileNamePattern = Pattern.compile("\\{fileName\\}"); // NOI18N
     private static final Pattern functionNamePattern = Pattern.compile("\\{functionName\\}"); // NOI18N
@@ -110,17 +114,17 @@ public class BreakpointOutput extends LazyActionsManagerListener
     
     // GdbBreakpointListener ..................................................
 
-    public void breakpointReached(GdbBreakpointEvent event) {
+    public void breakpointReached(CndBreakpointEvent event) {
         synchronized (lock) {
             if (event.getDebugger() != debugger) {
                 return;
             }
         }
-        if (event.getConditionResult() == GdbBreakpointEvent.CONDITION_FALSE) {
+        if (event.getConditionResult() == CndBreakpointEvent.CONDITION_FALSE) {
             return;
         }
-        GdbBreakpoint breakpoint = (GdbBreakpoint) event.getSource();
-        if (breakpoint.getSuspend() != GdbBreakpoint.SUSPEND_NONE) {
+        CndBreakpoint breakpoint = (CndBreakpoint) event.getSource();
+        if (breakpoint.getSuspend() != CndBreakpoint.SUSPEND_NONE) {
             getBreakpointsNodeModel().setCurrentBreakpoint(breakpoint);
             debugger.setCurrentBreakpoint(breakpoint);
         }
@@ -190,7 +194,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
      * @param printText
      * @return
      */
-    private String substitute(String printText, GdbBreakpointEvent event) {
+    private String substitute(String printText, CndBreakpointEvent event) {
         Object o = event.getSource();
         if (o instanceof LineBreakpoint) {
             // replace $ by \$
@@ -242,26 +246,26 @@ public class BreakpointOutput extends LazyActionsManagerListener
     }
 
     private void hookBreakpoint(Breakpoint breakpoint) {
-        if (breakpoint instanceof GdbBreakpoint) {
-            GdbBreakpoint gdbBreakpoint = (GdbBreakpoint) breakpoint;
-            gdbBreakpoint.addGdbBreakpointListener(this);
+        if (breakpoint instanceof CndBreakpoint) {
+            CndBreakpoint gdbBreakpoint = (CndBreakpoint) breakpoint;
+            gdbBreakpoint.addCndBreakpointListener(this);
         }
     }
 
     private void unhookBreakpoint(Breakpoint breakpoint) {
-        if (breakpoint instanceof GdbBreakpoint) {
-            GdbBreakpoint jpdaBreakpoint = (GdbBreakpoint) breakpoint;
-            jpdaBreakpoint.removeGdbBreakpointListener(this);
+        if (breakpoint instanceof CndBreakpoint) {
+            CndBreakpoint jpdaBreakpoint = (CndBreakpoint) breakpoint;
+            jpdaBreakpoint.removeCndBreakpointListener(this);
         }
     }
     
-    private BreakpointsNodeModel breakpointsNodeModel;
-    private BreakpointsNodeModel getBreakpointsNodeModel() {
+    private org.netbeans.modules.cnd.debugger.common.models.BreakpointsNodeModel breakpointsNodeModel;
+    private org.netbeans.modules.cnd.debugger.common.models.BreakpointsNodeModel getBreakpointsNodeModel() {
         if (breakpointsNodeModel == null) {
             List<? extends NodeModel> l = DebuggerManager.getDebuggerManager().lookup("BreakpointsView", NodeModel.class); // NOI18N
             for (NodeModel nm : l) {
-                if (nm instanceof BreakpointsNodeModel) {
-                    breakpointsNodeModel = (BreakpointsNodeModel) nm;
+                if (nm instanceof org.netbeans.modules.cnd.debugger.common.models.BreakpointsNodeModel) {
+                    breakpointsNodeModel = (org.netbeans.modules.cnd.debugger.common.models.BreakpointsNodeModel) nm;
                     break;
                 }
             }

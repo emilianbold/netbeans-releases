@@ -104,7 +104,7 @@ public class JiraQuery extends Query {
         this.name = name;
         this.jiraFilter = jiraFilter;
         this.setLastRefresh(lastRefresh);
-        controller = createControler(repository, this, jiraFilter);
+        createControler(repository, this, jiraFilter);
     }
 
     @Override

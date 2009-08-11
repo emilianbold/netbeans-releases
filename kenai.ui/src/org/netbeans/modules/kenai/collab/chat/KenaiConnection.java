@@ -46,6 +46,7 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -248,6 +249,24 @@ public class KenaiConnection implements PropertyChangeListener {
         }
     }
 
+    /**
+     * temporary method do not use it
+     * @return
+     */
+    public Collection<String> getMembers(String id) {
+        MultiUserChat muc=getChat(id);
+        if (muc!=null) {
+            Iterator<String> i = muc.getOccupants();
+            ArrayList<String> result = new ArrayList<String>();
+            while (i.hasNext()) {
+                result.add(StringUtils.parseResource(i.next()));
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     private class PacketL implements PacketListener {
 
         public void processPacket(Packet packet) {
@@ -427,27 +446,32 @@ public class KenaiConnection implements PropertyChangeListener {
 
     public class PresenceListener implements PacketListener {
 
+        public void processPacket(final Packet packet) {
+             xmppProcessor.post(new Runnable() {
 
-        public void processPacket(Packet packet) {
-            synchronized (onlineUsers) {
-                onlineUsers.clear();
-                for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
-                    Iterator<String> i = muc.getOccupants();
-                    while (i.hasNext()) {
-                        String uname = StringUtils.parseResource(i.next());
-                        onlineUsers.add(uname);
-                    }
-                }
-            }
-            Presence presence = (Presence) packet;
-            SPIAccessor.DEFAULT.firePropertyChange(
-                    KenaiUser.forName(StringUtils.parseResource(packet.getFrom())),
-                    presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
-            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ChatTopComponent.findInstance().refreshContactList();
+                    synchronized (onlineUsers) {
+                        onlineUsers.clear();
+                        for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+                            Iterator<String> i = muc.getOccupants();
+                            while (i.hasNext()) {
+                                String uname = StringUtils.parseResource(i.next());
+                                onlineUsers.add(uname);
+                            }
+                        }
+                    }
+                    Presence presence = (Presence) packet;
+                    SPIAccessor.DEFAULT.firePropertyChange(
+                            KenaiUser.forName(StringUtils.parseResource(packet.getFrom())),
+                            presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            ChatTopComponent.findInstance().refreshContactList();
+                        }
+                    });
                 }
-            });
+            }, 100);
         }
     }
 }

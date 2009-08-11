@@ -41,14 +41,10 @@ package org.netbeans.modules.cnd.tha.ui;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -71,12 +67,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.support.DefaultIndicatorComponentEmptyContentProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -194,24 +189,23 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
-            IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
-            if (emptyContent != null) {
-                indicators = emptyContent.getEmptyContent();
-            }
+            indicators = DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("THA"); // NOI18N
 
         }
-        Collections.sort(indicators, new Comparator<Indicator>() {
+        if (indicators != null){
+            Collections.sort(indicators, new Comparator<Indicator>() {
 
-            public int compare(Indicator o1, Indicator o2) {
-                if (o1.getPosition() < o2.getPosition()) {
-                    return -1;
-                } else if (o2.getPosition() < o1.getPosition()) {
-                    return 1;
-                } else {
-                    return 0;
+                public int compare(Indicator o1, Indicator o2) {
+                    if (o1.getPosition() < o2.getPosition()) {
+                        return -1;
+                    } else if (o2.getPosition() < o1.getPosition()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        });
+            });
+        }
         setContent(indicators);
     }
 
@@ -324,7 +318,7 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
     @Override
     public int getPersistenceType() {
         if (!dock) {
-            return TopComponent.PERSISTENCE_ALWAYS;
+            return TopComponent.PERSISTENCE_NEVER;
         }
         return TopComponent.PERSISTENCE_NEVER;
     }
