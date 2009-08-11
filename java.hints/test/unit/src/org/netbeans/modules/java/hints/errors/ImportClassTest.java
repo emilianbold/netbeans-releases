@@ -54,19 +54,11 @@ public class ImportClassTest extends HintsTestBase {
     }
     
     public void testImportHint() throws Exception {
-        if (org.openide.util.Utilities.isMac()) {
-            performTest("ImportTest", "java.util.List", 22, 13);
-        } else {
-            performTest("ImportTestNonMac", "java.util.List", 22, 13);
-        }
+        performTest("ImportTest", "java.util.List", 22, 13);
     }
 
     public void testImportHint2() throws Exception {
-        if (org.openide.util.Utilities.isMac()) {
-            performTest("ImportTest2", "java.util.List", 18, 13);
-        } else {
-            performTest("ImportTest2NonMac", "java.util.List", 18, 13);
-        }
+        performTest("ImportTest2", "java.util.List", 18, 13);
     }
     
     public void testImportHint3() throws Exception {
