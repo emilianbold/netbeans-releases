@@ -73,7 +73,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     public ToolsManagerPanel() {
         initComponents();
 
-        allDLightTools = DLightConfiguration.getDefault().getToolsSet();
+        allDLightTools = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolsSet();
 
         ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
         for (DLightConfiguration dLightConfiguration : DLightConfigurationManager.getInstance().getDLightConfigurations()) {
@@ -359,7 +359,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         }
 
         public DLightConfigurationWrapper(String name) {
-            this.dLightConfiguration = DLightConfiguration.getDefault();
+            this.dLightConfiguration = DLightConfigurationManager.getInstance().getDefaultConfiguration();
             this.name = name;
             this.custom = true;
         }
