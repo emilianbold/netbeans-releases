@@ -95,7 +95,9 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
@@ -427,6 +429,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             parentHeaderPanel.setVisible(true);
+                            parentHeaderPanel.removeAll();
                             headerLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/subtask.png", true)); // NOI18N
                             GroupLayout layout = new GroupLayout(parentHeaderPanel);
                             JLabel parentLabel = new JLabel();
@@ -565,7 +568,9 @@ public class IssuePanel extends javax.swing.JPanel {
                         final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                subTaskTable.setModel(tableModel);
+                                TableSorter sorter = new TableSorter(tableModel);
+                                subTaskTable.setModel(sorter);
+                                sorter.setTableHeader(subTaskTable.getTableHeader());
 
                                 // Table height tweaks
                                 int height = 0;
@@ -580,6 +585,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                 if (subTaskScrollPane.getParent() == null) {
                                     ((GroupLayout)getLayout()).replace(dummySubtaskPanel, subTaskScrollPane);
                                 }
+                                revalidate();
                             }
                         });
                     }
@@ -1605,6 +1611,20 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                IssueCache cache = issue.getRepository().getIssueCache();
+                String parentKey = issue.getParentKey();
+                if ((parentKey != null) && (parentKey.trim().length()>0)) {
+                    Issue parentIssue = cache.getIssue(parentKey);
+                    if (parentIssue != null) {
+                        parentIssue.refresh();
+                    }
+                }
+                for (String subTaskKey : issue.getSubtaskKeys()) {
+                    Issue subTask = cache.getIssue(subTaskKey);
+                    if (subTask != null) {
+                        subTask.refresh();
+                    }
+                }
                 issue.refresh();
                 handle.finish();
                 reloadFormInAWT(true);

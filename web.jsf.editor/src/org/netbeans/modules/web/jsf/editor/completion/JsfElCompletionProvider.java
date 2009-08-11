@@ -128,6 +128,12 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
+                    case JsfElExpression.EL_JSF_BEAN_REFERENCE:
+                        List<CompletionItem> ref_items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                        complItems.addAll(ref_items);
+                        ref_items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass(), anchor);
+                        complItems.addAll(ref_items);
+                        break;
                 }
 //                for (int i = 0; i < complItems.size(); i++)
 //                    ((JspCompletionItem.JspResultItem)complItems.get(i)).setSubstituteOffset(offset - elExpr.getReplace().length());

@@ -87,9 +87,9 @@ public class ParallelAdviserAdviceUtils {
         URL bm = ParallelAdviserAdviceUtils.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/box_bottom_middle.png");
 
         String html = "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
-                "        <tr bgcolor=\"#c7e3e8\">" + // NOI18N
+                "        <tr>" + // NOI18N
                 "            <td><img src=\"" + tl + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
-                "            <td colspan=\"2\" width=\"" + (width - 14) + "\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
+                "            <td bgcolor=\"#c7e3e8\" colspan=\"2\" width=\"" + (width - 14) + "\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>" + title + "</b></td>" + // NOI18N
                 "            <td><img src=\"" + tr + "\" height=\"21\" width=\"7\"></td>" + // NOI18N
                 "        </tr>" + // NOI18N
                 "    </table>" + // NOI18N
