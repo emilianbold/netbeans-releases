@@ -81,7 +81,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         profileConfigurationComboBox.addItem(manageConfigurations);
         profileConfigurationComboBox.setSelectedIndex(0);
 
-        setPreferredSize(new Dimension(600, 400));
+        setPreferredSize(new Dimension(700, 400));
     }
 
     private static boolean inList(DLightTool dlightTool, List<DLightTool> list) {
@@ -252,7 +252,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 75);
         toolsPanel.add(buttonPanel, gridBagConstraints);
 
         toolPropertyPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -334,6 +334,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             lastSelectedConfigurationName = configurationName;
         }
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JComboBox defaultDataProviderComboBox;
