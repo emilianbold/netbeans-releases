@@ -61,7 +61,6 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
@@ -461,13 +460,14 @@ public class KenaiConnection implements PropertyChangeListener {
                         }
                     }
                     Presence presence = (Presence) packet;
+                    KenaiUser user = KenaiUser.forName(StringUtils.parseResource(packet.getFrom()));
                     SPIAccessor.DEFAULT.firePropertyChange(
-                            KenaiUser.forName(StringUtils.parseResource(packet.getFrom())),
+                            user,
                             presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            ChatTopComponent.findInstance().refreshContactList();
+                            ChatTopComponent.refreshContactList();
                         }
                     });
                 }
