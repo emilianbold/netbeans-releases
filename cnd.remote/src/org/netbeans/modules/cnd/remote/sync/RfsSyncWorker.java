@@ -91,7 +91,8 @@ class RfsSyncWorker extends ZipSyncWorker {
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-        pb.setExecutable("/tmp/rfs_controller"); // NOI18N
+        //TODO: replace as soon as setup is written
+        pb.setExecutable(System.getProperty("cnd.remote.fs.controller")); //I18N
         NativeProcess remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
@@ -102,7 +103,7 @@ class RfsSyncWorker extends ZipSyncWorker {
         // read port
         String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
         String port;
-        if (line.startsWith("PORT ")) { // NOI18N
+        if (line != null && line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
         } else {
             String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
