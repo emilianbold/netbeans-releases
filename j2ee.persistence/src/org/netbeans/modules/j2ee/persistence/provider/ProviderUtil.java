@@ -539,7 +539,8 @@ public class ProviderUtil {
      *
      */
     public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException{
-        PUDataObject pud = getPUDataObject(project);
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        PUDataObject pud = getPUDataObject(project, version);
         pud.addPersistenceUnit(persistenceUnit);
         pud.save();
     }
@@ -578,6 +579,7 @@ public class ProviderUtil {
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
      * 
      *@param project the project whose PUDataObject is to be get. Must not be null.
+     *@param  version if version is specified corresponding persistence.xml will be created, otherwise version will be determined from project classpath
      * 
      *@return <code>PUDataObject</code> associated with the given project or null 
      * if there is no such <code>PUDataObject</code>.
@@ -585,13 +587,13 @@ public class ProviderUtil {
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
      */
-    public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+    public static synchronized PUDataObject getPUDataObject(Project project, String version) throws InvalidPersistenceXmlException{
         Parameters.notNull("project", project); //NOI18N
         
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
             try {
-                puFileObject = createPersistenceDDFile(project);
+                puFileObject = createPersistenceDDFile(project, version);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -603,18 +605,37 @@ public class ProviderUtil {
     }
     
     /**
+     * Gets the PUDataObject associated with the given <code>project</code>. If there
+     * was no PUDataObject (i.e. no persistence.xml) in the project, a new one
+     * will be created and version will be determined based on project classpath. Use
+     * {@link #getDDFile} for testing whether a project has a persistence.xml file.
+     *
+     *@param project the project whose PUDataObject is to be get. Must not be null.
+     *
+     *@return <code>PUDataObject</code> associated with the given project or null
+     * if there is no such <code>PUDataObject</code>.
+     *
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
+     * invalid persitence.xml file.
+     */
+    public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+        return getPUDataObject(project, null);
+    }
+
+    /**
      * Creates a new FileObject representing file that defines
      * persistence units (<tt>persistence.xml</tt>). <i>Todo: move somewhere else?</i>
+     * @vers persistence version, if null will be determined from project classpath, if fails default will be 1.0
      * @return FileObject representing <tt>persistence.xml</tt>.
      */
-    private static FileObject createPersistenceDDFile(Project project) throws IOException {
+    private static FileObject createPersistenceDDFile(Project project, String vers) throws IOException {
         final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
         if (persistenceLocation == null) {
             return null;
         }
         final FileObject[] dd = new FileObject[1];
         //get max supported version
-        String ret=PersistenceUtils.getJPAVersion(project);
+        String ret=vers == null ? PersistenceUtils.getJPAVersion(project) : vers;
         final String version=ret!=null ? ret : Persistence.VERSION_1_0;
         // must create the file using AtomicAction, see #72058
         persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
