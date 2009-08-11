@@ -308,7 +308,7 @@ public final class VCSContext {
                     }
                 } catch (IllegalArgumentException ex) {
                     // #161904
-                    Logger logger = Logger.getLogger(VCSContext.class.getName());
+                    Logger logger = LOG;
                     logger.log(Level.WARNING, "addProjectFiles: IAE");
                     logger.log(Level.WARNING, "rootFO: " + srcRootFo);
                     if (srcRootFo != sourceGroup.getRootFolder()) {
