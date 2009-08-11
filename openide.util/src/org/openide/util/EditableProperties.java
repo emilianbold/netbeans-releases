@@ -709,8 +709,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 char ch = input.charAt(x);
                 switch(ch) {
                     case ' ':
-                    case '#':
                         if (x == 0 || forKey)  {
+                            output.append('\\');
+                        }
+                        output.append(ch);
+                        break;
+                    case '#':
+                        if (x == 0) {
                             output.append('\\');
                         }
                         output.append(ch);
