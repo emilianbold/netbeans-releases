@@ -326,7 +326,7 @@ public class HtmlBrowser extends JPanel {
 //        bReload.setBorder(BorderFactory.createEmptyBorder());
 //        bReload.setBorderPainted(false);
         bReload.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
-        bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
+        bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh_hover.png", true)); //NOI18N
         bReload.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
         bReload.setSelectedIcon(bReload.getIcon());
         bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload")); //NOI18N
@@ -335,7 +335,7 @@ public class HtmlBrowser extends JPanel {
 //        bStop.setBorder(BorderFactory.createEmptyBorder());
 //        bStop.setBorderPainted(false);
         bStop.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
-        bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
+        bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop_hover.png", true)); //NOI18N
         bStop.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
         bStop.setSelectedIcon(bStop.getIcon());
         bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop")); //NOI18N
