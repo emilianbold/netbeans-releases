@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -157,7 +158,11 @@ public abstract class WebRestSupport extends RestSupport {
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping");
                 sm.setServletName(adaptorServlet.getServletName());
-                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                if (sm instanceof ServletMapping25) {
+                    ((ServletMapping25)sm).addUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                } else {
+                    sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                }
                 webApp.addServletMapping(sm);
                 needsSave = true;
             }
