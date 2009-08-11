@@ -125,9 +125,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             toolNameTextField.setText(tool.getName());
             onByDefaultCheckBox.setSelected(true);
             detailsLabel.setText(tool.getDetailedName());
-
-            newButton.setEnabled(true);
-            removeButton.setEnabled(false);
         }
     }
 
@@ -154,14 +151,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
         toolsLabel = new javax.swing.JLabel();
-        buttonPanel = new javax.swing.JPanel();
-        newButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
         toolPropertyPanel = new javax.swing.JPanel();
         toolNameLabel = new javax.swing.JLabel();
         toolNameTextField = new javax.swing.JTextField();
         onByDefaultCheckBox = new javax.swing.JCheckBox();
         detailsLabel = new javax.swing.JLabel();
+        updateButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -229,32 +224,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         toolsPanel.add(toolsLabel, gridBagConstraints);
 
-        buttonPanel.setLayout(new java.awt.GridBagLayout());
-
-        newButton.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.newButton.text")); // NOI18N
-        newButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        buttonPanel.add(newButton, gridBagConstraints);
-
-        removeButton.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.removeButton.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        buttonPanel.add(removeButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 75);
-        toolsPanel.add(buttonPanel, gridBagConstraints);
-
         toolPropertyPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         toolPropertyPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -301,6 +270,19 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 12);
         toolsPanel.add(toolPropertyPanel, gridBagConstraints);
 
+        updateButton.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.updateButton.text")); // NOI18N
+        updateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 110);
+        toolsPanel.add(updateButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -316,9 +298,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         
     }//GEN-LAST:event_profileOnRunCheckBoxActionPerformed
 
-    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+    private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-    }//GEN-LAST:event_newButtonActionPerformed
+    }//GEN-LAST:event_updateButtonActionPerformed
 
     private void onByDefaultCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onByDefaultCheckBoxActionPerformed
         
@@ -336,22 +318,20 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel buttonPanel;
     private javax.swing.JComboBox defaultDataProviderComboBox;
     private javax.swing.JLabel defaultDataProviderLabel;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JList jList1;
-    private javax.swing.JButton newButton;
     private javax.swing.JCheckBox onByDefaultCheckBox;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
     private javax.swing.JCheckBox profileOnRunCheckBox;
-    private javax.swing.JButton removeButton;
     private javax.swing.JLabel toolNameLabel;
     private javax.swing.JTextField toolNameTextField;
     private javax.swing.JPanel toolPropertyPanel;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
     private javax.swing.JPanel toolsPanel;
+    private javax.swing.JButton updateButton;
     // End of variables declaration//GEN-END:variables
     }
