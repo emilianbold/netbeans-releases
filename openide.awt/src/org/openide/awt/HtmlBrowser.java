@@ -323,22 +323,24 @@ public class HtmlBrowser extends JPanel {
         bForward.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Forward")); //NOI18N
 
         bReload = new JButton();
-//        bReload.setBorder(BorderFactory.createEmptyBorder());
-//        bReload.setBorderPainted(false);
+        bReload.setBorder(BorderFactory.createEmptyBorder());
+        bReload.setBorderPainted(false);
         bReload.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
-        bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
+        bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh_hover.png", true)); //NOI18N
         bReload.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
         bReload.setSelectedIcon(bReload.getIcon());
         bReload.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Reload")); //NOI18N
+        bReload.setFocusPainted(false);
 
         bStop = new JButton();
-//        bStop.setBorder(BorderFactory.createEmptyBorder());
-//        bStop.setBorderPainted(false);
+        bStop.setBorder(BorderFactory.createEmptyBorder());
+        bStop.setBorderPainted(false);
         bStop.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
-        bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
+        bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop_hover.png", true)); //NOI18N
         bStop.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
         bStop.setSelectedIcon(bStop.getIcon());
         bStop.setToolTipText(NbBundle.getMessage(HtmlBrowser.class, "CTL_Stop")); //NOI18N
+        bStop.setFocusPainted(false);
 
         txtLocation = new JTextField();
         txtLocation.setEditable(true);
@@ -360,7 +362,7 @@ public class HtmlBrowser extends JPanel {
         head.add(bBack, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,1), 0, 0));
         head.add(bForward, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
         head.add(txtLocation, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,4), 0, 0));
-        head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,1), 0, 0));
+        head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
         head.add(bStop, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
 
         head.setBorder( BorderFactory.createEmptyBorder(8, 10, 8, 10));

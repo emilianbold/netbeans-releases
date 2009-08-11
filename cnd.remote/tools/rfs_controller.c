@@ -12,6 +12,7 @@
 
 #include "rfs_controller.h"
 #include "rfs_util.h"
+#include "rfs_filedata.h"
 
 #if TRACE
 static int emulate = false;
@@ -41,24 +42,38 @@ static void new_connection_start_function(void* data) {
         if (size == 0) {
             break; // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
         }
+
+        file_data *fd = find_file_data(request);
         
-        /* TODO: this is a very primitive sync!  */
-        pthread_mutex_lock(&mutex);
+        if (fd->state == file_state_pending) {
 
-        trace("Request: %s (size=%d)\n", request, size);
-        fprintf(stdout, "%s\n", request);
-        fflush(stdout);
+            /* TODO: this is a very primitive sync!  */
+            pthread_mutex_lock(&mutex);
 
-        #if TRACE
-        if (emulate) {
-            response[0] = response_ok;
-            response[1] = 0;
+            trace("Request: %s (size=%d)\n", request, size);
+            fprintf(stdout, "%s\n", request);
+            fflush(stdout);
+
+            #if TRACE
+            if (emulate) {
+                response[0] = response_ok;
+                response[1] = 0;
+            } else {
+                memset(response, 0, sizeof (response));
+                gets(response);
+            }
+            #endif
+            //strcpy(response, "ok");
+            fd->state = (response[1] == response_ok) ? file_state_ok : file_state_error;
+            pthread_mutex_unlock(&mutex);
         } else {
-            memset(response, 0, sizeof (response));
-            gets(response);
+            if (fd->state == file_state_ok) {
+                response[0] = response_ok;
+            } else {
+                response[0] = response_failure;
+            }
+            response[1] = 0;
         }
-        #endif
-        //strcpy(response, "ok");
 
         trace("Reply: %s\n", response);
         if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
@@ -66,7 +81,7 @@ static void new_connection_start_function(void* data) {
         } else {
             trace("%d bytes sent\n", size);
         }
-        pthread_mutex_unlock(&mutex);
+        
     }
     if (errno == ECONNRESET) {
         trace("Connection reset by peer => normal termination\n");

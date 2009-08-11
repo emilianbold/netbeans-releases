@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,10 +21,21 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +49,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.jarloader;
+package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-import java.io.IOException;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.FileSystemAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.RenameAction;
-import org.openide.actions.ToolsAction;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
+import java.net.URL;
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
 
 /**
- * Recognizes JAR files and shows their contents.
- * @author Jesse Glick
+ * Loop parallelization advice.
+ *
+ * @author Nick Krasilnikov
  */
-public final class JarDataLoader extends UniFileLoader {
-    
-    static final String JAR_MIME_TYPE = "application/x-java-archive";   //NOI18N
-    
-    private static final long serialVersionUID = 1L;
-    
-    public JarDataLoader() {
-        super("org.netbeans.modules.java.jarloader.JarDataObject"); // NOI18N
-    }
-    
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(JarDataLoader.class, "LBL_loaderName");
-    }
-    
-    protected void initialize() {
-        super.initialize();
-        ExtensionList extensions = new ExtensionList();
-        extensions.addMimeType(JAR_MIME_TYPE);        
-        setExtensions(extensions);
+public class UnnecessaryThreadsAdvice implements Advice {
+
+    public UnnecessaryThreadsAdvice() {
     }
 
-    @Override
-    protected String actionsContext() {
-       return "Loaders/application/x-java-archive/Actions/"; // NOI18N
+
+    public JComponent getComponent() {
+        return ParallelAdviserAdviceUtils.createAdviceComponent(
+                getHtml(),
+                null);
     }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new JarDataObject(primaryFile, this);
+
+    public String getHtml() {
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
+        String html = "It seems that program uses too many threads."; // NOI18N
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Too many threads", // NOI18N
+                html, 800); // NOI18N
     }
-    
 }
