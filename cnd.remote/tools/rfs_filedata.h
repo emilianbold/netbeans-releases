@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 typedef enum file_state {
-    pending = 0,
-    ok = 1,
-    error = -1
+    file_state_pending = 0,
+    file_state_ok = 1,
+    file_state_error = -1
 } file_state;
 
 typedef struct file_data {

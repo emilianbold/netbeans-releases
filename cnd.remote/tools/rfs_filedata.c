@@ -74,13 +74,13 @@ file_data *find_file_data(const char* filename) {
                     } else if(cmp < 0) {
                         curr = curr->left;
                     } else { // cmp > 0
-                        result = new_file_data(filename, pending);
+                        result = new_file_data(filename, file_state_pending);
                         result->left = curr->left; // right is nulled by new_file_data
                         curr->left = result;
                         break;
                     }
                 } else {
-                    curr->left = result = new_file_data(filename, pending);
+                    curr->left = result = new_file_data(filename, file_state_pending);
                     break;
                 }
             } else { // cmp > 0
@@ -90,7 +90,7 @@ file_data *find_file_data(const char* filename) {
                         result = curr->right;
                         break;
                     } else if(cmp < 0) {
-                        result = new_file_data(filename, pending);
+                        result = new_file_data(filename, file_state_pending);
                         result->right = curr->right;
                         curr->right = result;
                         break;
@@ -98,13 +98,13 @@ file_data *find_file_data(const char* filename) {
                         curr = curr->right;
                     }
                 } else {
-                    curr->right = result = new_file_data(filename, pending);
+                    curr->right = result = new_file_data(filename, file_state_pending);
                     break;
                 }
             }
         }
     } else {
-        result = root = new_file_data(filename, pending);
+        result = root = new_file_data(filename, file_state_pending);
     }
     pthread_mutex_unlock(&file_data_tree_mutex);
     return result;

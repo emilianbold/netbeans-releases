@@ -24,7 +24,7 @@
     <conf name="Default" type="0">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>SunStudio|SunStudio</compilerSet>
         <platform>1</platform>
       </toolsSet>
       <makefileType>
