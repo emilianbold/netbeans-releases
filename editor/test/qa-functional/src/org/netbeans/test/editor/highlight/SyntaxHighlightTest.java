@@ -78,7 +78,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Jiri Prox
  */
 public class SyntaxHighlightTest extends EditorTestCase{
-    
+
     /** Creates a new instance of SyntaxHighlightTest */
     public SyntaxHighlightTest(String name) {
 	super(name);
@@ -150,20 +150,34 @@ public class SyntaxHighlightTest extends EditorTestCase{
      * http://www.netbeans.org/issues/show_bug.cgi?id=93969
      */ 
     public void testCommentColor() throws IOException {
-	OptionsOperator odop = OptionsOperator.invoke();
+	changeSetting(2, 2);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+	checkCurrentColorSettings();
+    }
+
+    public void testOtherColors() throws IOException {
+        changeSetting(1, 5);   // "Character", "Green"
+        changeSetting(6, 12); //"Identifier", "Yellow"
+        changeSetting(7, 7); // "Keyword", "Magenta"
+        changeSetting(15, 10); // "String", "Red"
+        changeSetting(14, 4); // "Separarator", "Gray"
+        changeSetting(16, 0); // "Whitespace", "Black"
+	new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+        checkCurrentColorSettings();
+    }
+
+    public void changeSetting(int category,int color) {
+        OptionsOperator odop = OptionsOperator.invoke();
 	odop.selectFontAndColors();
 	JTabbedPaneOperator jtpo = new JTabbedPaneOperator(odop, "Syntax");
 	jtpo.selectPage(0);
 	JListOperator jlo = new JListOperator(jtpo, 0);
-	jlo.selectItem(2); //select 'Comment'
+	jlo.selectItem(category);
 	JComboBoxOperator jcbo = new JComboBoxOperator(jtpo, 1); //change FG
-	jcbo.selectItem(2); //select 'cyan'
+	jcbo.selectItem(color); //select fg color
 	JButtonOperator okOperator = new JButtonOperator(odop, "OK");
 	okOperator.push(); //confirm OD
-	new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
-	checkCurrentColorSettings();
     }
-    
     /**
      * Creates/compares goldenfile with all current highlighting settings
      * The name of the testedfile & goldenfile depends on test method
