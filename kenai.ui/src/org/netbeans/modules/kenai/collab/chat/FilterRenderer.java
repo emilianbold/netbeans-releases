@@ -47,6 +47,7 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.Component;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -88,11 +89,11 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
             groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
             groupLabel.setIcon(item.getIcon());
             if (isSelected) {
-                groupLabel.setBackground(list.getSelectionBackground());
-                groupLabel.setForeground(list.getSelectionForeground());
+                groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
+                groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
             } else {
-                groupLabel.setBackground(list.getBackground());
-                groupLabel.setForeground(list.getForeground());
+                groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
+                groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
             }
         return this;
     }
