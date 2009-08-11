@@ -397,7 +397,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public boolean isFinishPanel() {
-        return areOtherStepsValid();
+        switch (wizardType) {
+            case REMOTE:
+                return false;
+            default:
+                return areOtherStepsValid();
+        }
     }
 
     final void fireChangeEvent() {

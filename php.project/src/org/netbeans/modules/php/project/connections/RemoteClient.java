@@ -46,12 +46,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
@@ -450,21 +452,40 @@ public final class RemoteClient implements Cancellable {
 
     public Set<TransferFile> prepareDownload(FileObject baseLocalDirectory, FileObject... filesToDownload) throws RemoteException {
         assert baseLocalDirectory != null;
-        assert filesToDownload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
+        assert filesToDownload != null;
+        assert filesToDownload.length > 0 : "At least one file to download must be specified";
+
+        List<File> files = new ArrayList<File>(filesToDownload.length);
+        for (FileObject fo : filesToDownload) {
+            files.add(FileUtil.toFile(fo));
+        }
+        return prepareDownload(FileUtil.toFile(baseLocalDirectory), files.toArray(new File[files.size()]));
+    }
+
+    public Set<TransferFile> prepareDownload(File baseLocalDir, File... filesToDownload) throws RemoteException {
+        assert baseLocalDir != null;
+        assert filesToDownload != null;
         assert filesToDownload.length > 0 : "At least one file to download must be specified";
 
         ensureConnected();
 
-        File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
-        for (FileObject fo : filesToDownload) {
-            if (isVisible(FileUtil.toFile(fo))) {
-                LOGGER.fine("File " + fo + " added to download queue");
-                queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+        for (File f : filesToDownload) {
+            if (isVisible(f)) {
+                LOGGER.fine("File " + f + " added to download queue");
+
+                TransferFile tf = null;
+                if (f.exists()) {
+                    tf = TransferFile.fromFile(f, baseLocalAbsolutePath);
+                } else {
+                    // assume folder for non-existing file => recursive fetch
+                    tf = TransferFile.fromFile(f, baseLocalAbsolutePath, true);
+                }
+                queue.offer(tf);
             } else {
-                LOGGER.fine("File " + fo + " NOT added to download queue [invisible]");
+                LOGGER.fine("File " + f + " NOT added to download queue [invisible]");
             }
         }
 
