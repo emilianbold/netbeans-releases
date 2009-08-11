@@ -57,6 +57,7 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2DeploymentStatus;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ui.DebugPortQuery;
@@ -225,12 +226,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public ServerDebugInfo getDebugInfo(Target target) {
-        String debugPort = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
+        GlassfishModule commonSupport = getCommonServerSupport();
+        String debugPort = commonSupport.getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
         ServerDebugInfo retVal = null;
-        if(debugPort == null || debugPort.length() == 0) {
+        if(Utils.strEmpty(debugPort) && commonSupport.isRemote()) {
             debugPort = queryDebugPort();
         }
-        if (null != debugPort && !"".equals(debugPort)) {
+        if(Utils.notEmpty(debugPort)) {
             retVal = new ServerDebugInfo(ip.getProperty(GlassfishModule.HOSTNAME_ATTR), 
                 Integer.parseInt(debugPort));
         }
