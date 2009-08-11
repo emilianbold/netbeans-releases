@@ -1,1 +1,23 @@
-- optimize: if the file is open for writing, do not ask
+TODO:
+
+- don't ask NB site twice about the same file:
+implement logic that tracks files in remote controller
+
+- when storing file information, paths are duplicated
+(absolute paths! this consumes lots of memory)
+
+- optimize file copying (ssh + scp? own agent?)
+
+- remote controller: make sending reqs/receiving responses concurrent
+
+- fix: call realpath on directories, not files (fie inexistent?)
+
+- replace realpath w/ tracking chdir
+
+- write tests
+
+- don't wait for file forever; make kindof "alive" confirmations
+
+DONE:
+
+- optimize: if the file is open for writing, do not ask controller

@@ -726,6 +726,10 @@ packages at all) you will need to specify it explicitly.
 nbm.distribution - optional URL to location where your NBM can be downloaded
 from.
 
+nbm.executable.files [since 6.8] - comma- or space- separated list of patterns of 
+files relative to cluster directory for which executable permissions should be set 
+on Unix system when building the module and on NBM installation/update in runtime.
+
 nbm.homepage - optional URL to HTML homepage for background about the module.
 
 nbm.is.global - set to "true" if NBM cannot be installed in user directory.
