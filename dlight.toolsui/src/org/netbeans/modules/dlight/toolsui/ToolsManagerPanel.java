@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ToolsManagerPanel extends javax.swing.JPanel {
-    private List<DLightConfigurationWrapper> dlightConfigurations = null;
+    private List<DLightConfigurationWrapper> dLightConfigurations = null;
     private List<DLightTool> allDLightTools = null;
     private static String manageConfigurations = getString("ManageConfiurations");
     private int lastSelectedIndex = 0;
@@ -73,14 +73,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     public ToolsManagerPanel() {
         initComponents();
 
-        DLightConfiguration allDlightConfiguration = DLightConfiguration.getDefault();
-        allDLightTools = allDlightConfiguration.getToolsSet();
+        allDLightTools = DLightConfiguration.getDefault().getToolsSet();
 
         ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
         for (DLightConfiguration dLightConfiguration : DLightConfigurationManager.getInstance().getDLightConfigurations()) {
             list.add(new DLightConfigurationWrapper(dLightConfiguration));
         }
-
         initDialog(list);
         setPreferredSize(new Dimension(700, 400));
     }
@@ -88,8 +86,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private void initDialog(List<DLightConfigurationWrapper> list) {
         // profile configuration combobox
         profileConfigurationComboBox.removeAllItems();
-        dlightConfigurations = list;
-        for (DLightConfigurationWrapper dlightConfigurationWrapper : dlightConfigurations) {
+        dLightConfigurations = list;
+        for (DLightConfigurationWrapper dlightConfigurationWrapper : dLightConfigurations) {
             profileConfigurationComboBox.addItem(dlightConfigurationWrapper);
         }
         profileConfigurationComboBox.addItem(manageConfigurations);
@@ -109,6 +107,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfiguration gizmoConfiguration = dlightConfigurationWrapper.getdLightConfiguration();
         assert gizmoConfiguration != null;
         profileOnRunCheckBox.setSelected(true);
+        defaultDataProviderComboBox.removeAllItems();
         defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
         defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
         List<DLightTool> confDlightTools = gizmoConfiguration.getToolsSet();
@@ -320,18 +319,10 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
         Object item = profileConfigurationComboBox.getSelectedItem();
-        if (item instanceof String) {
-//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-//            profileConfigurationComboBox.setSelectedItem(lastSelectedConfigurationName);
-//            List<DLightConfiguration> dlightConfigurations = DLightConfigurationManager.getInstance().getDLightConfigurations();
-//            ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
-//            for (DLightConfiguration dLightConfiguration : dlightConfigurations) {
-//                list.add(new DLightConfigurationWrapper(dLightConfiguration));
-//            }
-            MyListEditorPanel listEditorPanel = new MyListEditorPanel(dlightConfigurations);
+        if (item instanceof String && ((String)item).equals(manageConfigurations)) {
+            MyListEditorPanel listEditorPanel = new MyListEditorPanel(dLightConfigurations);
 
-            DialogDescriptor descriptor = new DialogDescriptor (listEditorPanel,
-                    NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
+            DialogDescriptor descriptor = new DialogDescriptor (listEditorPanel, getString("TXT_ToolsCustomizer"));
             Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             try {
                 dlg.setVisible(true);
@@ -346,10 +337,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 dlg.dispose();
             }
 
-        } else {
+        } else if (item instanceof DLightConfigurationWrapper) {
             DLightConfigurationWrapper dlightConfigurationWrapper = (DLightConfigurationWrapper)item;
             initConfigurationPanel(dlightConfigurationWrapper);
-            //lastSelectedConfigurationName = configurationName;
+        }
+        else {
+            assert false;
         }
         lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
