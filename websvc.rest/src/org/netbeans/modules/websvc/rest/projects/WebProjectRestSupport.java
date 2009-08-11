@@ -44,7 +44,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,9 +73,6 @@ import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.libraries.LibraryFactory;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -301,15 +300,9 @@ public class WebProjectRestSupport extends WebRestSupport {
             URL url = FileUtil.getArchiveRoot(lib);
             urls.add(url);
         }
-        // create new library and regist in the Library Manager.
-        LibraryManager libraryManager = LibraryManager.getDefault();       
-        LibraryImplementation libImpl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary(); //NOI18N
-        libImpl.setName(libraryName);  //NOI18N
-        libImpl.setDescription(libraryName);
-        //libImpl.setLocalizingBundle("org/netbeans/modules/websvc/rest/projects/Bundle");
-        libImpl.setContent("classpath", urls);  //NOI18N
-        Library lib = LibraryFactory.createLibrary(libImpl);
-        libraryManager.addLibrary(lib);
+        // create new library and register in the Library Manager.
+        Map<String, List<URL>> content = Collections.<String, List<URL>>singletonMap ("classpath",urls); //NOI18N
+        Library lib = LibraryManager.getDefault().createLibrary("j2se", libraryName, content); //NOI18N
         return lib;
     }
 
