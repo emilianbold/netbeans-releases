@@ -41,6 +41,7 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -202,6 +203,14 @@ public class BugtrackingOwnerSupport {
         }
 
         return getRepositoryForContext(context, issueId, askIfUnknown);
+    }
+
+    /**
+     * Returns all repository urls that appear in a <strong>firm</strong> association.
+     * @return
+     */
+    public Collection<String> getAllAssociatedUrls() {
+        return FileToRepoMappingStorage.getInstance().getAllFirmlyAssociatedUrls();
     }
 
     private Repository getRepositoryForContext(File context,
