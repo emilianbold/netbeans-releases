@@ -200,6 +200,7 @@ public class ChatTopComponent extends TopComponent {
                 removeAll();
                 add(chatsPanel, BorderLayout.CENTER);
                 putChats();
+                contactList.updateFilter();
                 validate();
                 repaint();
             }
@@ -688,11 +689,12 @@ public class ChatTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
-    void refreshContactList() {
+    static void refreshContactList() {
+        if (instance!=null && instance.contactList!=null)
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                contactList.updateFilter();
+                instance.contactList.updateContacts();
             }
         });
     }

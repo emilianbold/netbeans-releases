@@ -47,6 +47,7 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.Component;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -83,17 +84,17 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
-        groupLabel.setText(value.toString());
-        FilterItem item = (FilterItem) value;
-        groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
-        groupLabel.setIcon(item.getIcon());
-        if (isSelected) {
-            groupLabel.setBackground(list.getSelectionBackground());
-            groupLabel.setForeground(list.getSelectionForeground());
-        } else {
-            groupLabel.setBackground(list.getBackground());
-            groupLabel.setForeground(list.getForeground());
-        }
+            groupLabel.setText(value.toString());
+            FilterItem item = (FilterItem) value;
+            groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
+            groupLabel.setIcon(item.getIcon());
+            if (isSelected) {
+                groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground"));
+                groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground"));
+            } else {
+                groupLabel.setBackground(UIManager.getColor("ComboBox.background"));
+                groupLabel.setForeground(UIManager.getColor("ComboBox.foreground"));
+            }
         return this;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
