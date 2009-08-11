@@ -73,8 +73,11 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
@@ -126,7 +129,46 @@ import org.openide.util.NbBundle;
                 if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < highLoadFinder.ticks / 2) {
                     break;
                 }
-                CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionCall.getFunction().getQuilifiedName());
+                String functionName = functionCall.getFunction().getQuilifiedName();
+                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionName);
+                for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
+                    if (CodeModelUtils.canParallelize(loop)) {
+                        LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
+                        panel.notifyUser();
+
+                        Runnable updateView = new Runnable() {
+
+                            public void run() {
+                                ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                                view.updateTips();
+                            }
+                        };
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            updateView.run();
+                        } else {
+                            SwingUtilities.invokeLater(updateView);
+                        }
+                    }
+                }
+            }
+        
+            DTraceDataCollector collector2 = new DTraceDataCollector();
+
+            for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
+                final Column c_iUser = new Column(
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
+                if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos()/1000000000 < highLoadFinder.ticks / 2) {
+                    break;
+                }
+                String functionName = functionCall.getFunction().getQuilifiedName();
+                functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
+                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                CsmFunction function = CodeModelUtils.getFunction(collector2.getProject(), functionName);
                 for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
                     if (CodeModelUtils.canParallelize(loop)) {
                         LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
@@ -178,6 +220,9 @@ import org.openide.util.NbBundle;
         private DataTableMetadata metadata;
 
         public SunStudioDataCollector() {
+            dataStorage = null;
+            dataProvider = null;
+
             List<DataStorage> storages = DLightManager.getDefault().getActiveSession().getStorages();
 
             metadata =
@@ -217,15 +262,19 @@ import org.openide.util.NbBundle;
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
-            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
-            List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
-            Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
+            if (dataStorage != null && dataProvider != null) {
+                FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(  SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
+                List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
+                Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
-                public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
-                    return (int) ((Double) o2.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) - (Double) o1.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()));
-                }
-            });
-            return functions;
+                    public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
+                        return (int) ((Double) o2.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) - (Double) o1.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()));
+                    }
+                });
+                return functions;
+            } else {
+                return Collections.<FunctionCallWithMetric>emptyList();
+            }
         }
 
         public CsmProject getProject() {
@@ -247,6 +296,103 @@ import org.openide.util.NbBundle;
         }
     }
 
+
+    private static class DTraceDataCollector {
+
+        public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
+        private DataStorage dataStorage;
+        private DataProvider dataProvider;
+        private DataTableMetadata metadata;
+
+        public DTraceDataCollector() {
+            dataStorage = null;
+            dataProvider = null;
+
+            List<DataStorage> storages = DLightManager.getDefault().getActiveSession().getStorages();
+
+            Column timestamp = new Column("time_stamp", Long.class); // NOI18N
+            Column cpuId = new Column("cpu_id", Integer.class); // NOI18N
+            Column threadId = new Column("thread_id", Integer.class); // NOI18N
+            Column mstate = new Column("mstate", Integer.class); // NOI18N
+            Column duration = new Column("duration", Integer.class); // NOI18N
+            Column stackId = new Column("leaf_id", Integer.class); // NOI18N
+            metadata = new DataTableMetadata("CallStack", // NOI18N
+                    Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
+
+            DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:functions"); //NOI18N
+
+            Collection<? extends DataProviderFactory> factories = Lookup.getDefault().lookupAll(DataProviderFactory.class);
+
+            for (DataStorage storage : storages) {
+                if (!storage.hasData(metadata)) {
+                    continue;
+                }
+                Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
+                for (DataStorageType dss : dataStorageTypes) {
+                    // As DataStorage is already specialized, there is always only one
+                    // returned DataSchema
+                    for (DataProviderFactory providerFactory : factories) {
+                        if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dss)) {
+                            dataProvider = providerFactory.create();
+                            break;
+                        }
+                    }
+                    if (dataProvider != null) {
+                        dataStorage = storage;
+                        dataProvider.attachTo(dataStorage);
+                        break;
+                    }
+                }
+                if (dataProvider != null) {
+                    break;
+                }
+            }
+        }
+
+        public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
+            if (dataStorage != null && dataProvider != null) {
+                FunctionDatatableDescription funcDescription = new FunctionDatatableDescription("name", null, "name"); // NOI18N
+                final Column c_eUser = new Column(
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricValueClass(),
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricDisplayedName(), null);
+                final  Column c_iUser = new Column(
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
+                List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(c_eUser, c_iUser));
+                Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
+
+                    public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
+                        return (int) (((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos() - ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos());
+                    }
+                });
+                return functions;
+            } else {
+                return Collections.<FunctionCallWithMetric>emptyList();
+            }
+        }
+
+        public CsmProject getProject() {
+            Map<String, String> serviceInfo = ((ServiceInfoDataStorage) dataStorage).getInfo();
+            String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
+            if (projectFolderName == null) {
+                return null;
+            }
+            CsmProject csmProject = null;
+            try {
+                Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
+                csmProject = CsmModelAccessor.getModel().getProject(prj);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return csmProject;
+        }
+    }
+
+
     private class CpuHighLoadIntervalFinder {
 
         private static final int INTERVAL_OF_HIGH_LOAD_BOUND = 10;
@@ -263,7 +409,10 @@ import org.openide.util.NbBundle;
         }
 
         public boolean isHighLoadInterval() {
-            return (intervalOfHighLoad > 0) && (intervalOfHighLoad % INTERVAL_OF_HIGH_LOAD_BOUND == 0);
+            boolean result = (intervalOfHighLoad > 0) && (intervalOfHighLoad % INTERVAL_OF_HIGH_LOAD_BOUND == 0);
+            System.out.println("isHighLoadInterval: " + result); // NOI18N
+            System.out.println("intervalOfHighLoad: " + intervalOfHighLoad); // NOI18N
+            return result;
         }
 
         public double getProcessorUtilization() {
@@ -288,6 +437,7 @@ import org.openide.util.NbBundle;
                     }
                 }
             }
+            System.out.println("Processors number: " + processorsNumber); // NOI18N
             return processorsNumber;
         }
 
