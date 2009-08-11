@@ -135,6 +135,30 @@ public class EditablePropertiesTest extends NbTestCase {
         assertFile("Saved cloned properties must be the same as original one", filenameOfTestProperties(), dest, (String)null);
     }
 
+    public void testCopyOnWriteClonability() throws Exception {
+        EditableProperties ep1 = new EditableProperties(true);
+        ep1.setProperty("k1", "v1");
+        EditableProperties ep2 = ep1.cloneProperties();
+        ep2.setProperty("k2", "v2");
+        EditableProperties ep3 = ep2.cloneProperties();
+        ep1.setProperty("k4", "v4");
+        ep2.setProperty("k2", "v2a");
+        Iterator<Map.Entry<String,String>> it = ep3.entrySet().iterator();
+        it.next().setValue("v1b");
+        it.next();
+        it.remove();
+        ep3.setProperty("k3", "v3");
+        assertEquals("{k1=v1, k4=v4}", ep1.toString());
+        assertEquals("{k1=v1, k2=v2a}", ep2.toString());
+        assertEquals("{k1=v1b, k3=v3}", ep3.toString());
+        ep1 = new EditableProperties(true);
+        ep1.setProperty("k", "v1");
+        ep2 = ep1.cloneProperties();
+        ep2.entrySet().iterator().next().setValue("v2");
+        assertEquals("{k=v1}", ep1.toString());
+        assertEquals("{k=v2}", ep2.toString());
+    }
+
     // test that array values are stored correctly
     public void testArrayValues() throws Exception {
         EditableProperties ep = new EditableProperties(false);
