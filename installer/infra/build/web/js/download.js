@@ -564,9 +564,7 @@ function update() {
 	error_message = NOTE_MACOSX;
     } else if(platform.indexOf("solaris")!=-1) {
 	error_message = NOTE_SOLARIS;
-    } else {
-        error_message = NOTE_OTHER;
-    }
+    } 
 
 
     document.getElementById("error_message").innerHTML = error_message;
