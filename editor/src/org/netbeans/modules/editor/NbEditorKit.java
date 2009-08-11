@@ -103,6 +103,7 @@ import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
+import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
@@ -925,6 +926,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
         //#159661: Pre-initialize annotationTypesFolder here
         AnnotationTypesFolder.getAnnotationTypesFolder();
+        ColoringMap.get(getContentType());
 
         return null;
     }
