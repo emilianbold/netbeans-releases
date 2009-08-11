@@ -48,7 +48,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.collab.chat.ChatPanel;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.SPIAccessor;
@@ -67,19 +66,16 @@ public final class KenaiUser {
     public static final String PROP_PRESENCE = "Presence";
 
     private String user;
-    private String fullName;
 
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
     private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.png"));
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
     private Icon icon;
 
     private static HashMap<String, KenaiUser> users = new HashMap();
 
     private KenaiUser(String user) {
         this.user=user;
-        this.fullName = user+"@"+XMPP_SERVER;
     }
     
     public static synchronized KenaiUser forName(final String user) {
@@ -174,7 +170,7 @@ public final class KenaiUser {
             public void run() {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
-                tc.addChat(new ChatPanel(fullName));
+                tc.setActivePrivate(user);
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
