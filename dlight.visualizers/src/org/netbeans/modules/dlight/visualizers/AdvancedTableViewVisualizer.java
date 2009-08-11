@@ -42,6 +42,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
@@ -103,6 +105,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
 
+    private final boolean dualPaneMode;
+    private final DualPaneSupport dualPaneSupport;
+
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
@@ -139,6 +144,27 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
+        this.dualPaneMode = accessor.isDualPaneMode(configuration);
+        if (dualPaneMode) {
+            this.dualPaneSupport = new DualPaneSupport(this, accessor.getDetailsRenderer(configuration));
+            this.explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                        Node[] selectedNodes = (Node[]) evt.getNewValue();
+                        if (selectedNodes != null && 0 < selectedNodes.length) {
+                            Node selectedNode = selectedNodes[0];
+                            if (selectedNode instanceof DataRowNode) {
+                                dualPaneSupport.showDetailsFor(((DataRowNode)selectedNode).getDataRow());
+                            }
+                        } else {
+                            dualPaneSupport.showDetailsFor(null);
+                        }
+                    }
+                }
+            });
+        } else {
+            this.dualPaneSupport = null;
+        }
     }
 
     public ExplorerManager getExplorerManager() {
@@ -324,7 +350,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     public JComponent getComponent() {
-        return this;
+        return dualPaneMode? dualPaneSupport : this;
     }
 
     public void timerStopped() {
