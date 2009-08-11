@@ -40,16 +40,21 @@ package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
@@ -59,6 +64,7 @@ import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.DetailsRenderer;
 import org.openide.util.NbBundle;
 
 /**
@@ -154,6 +160,8 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         tableConfiguration.setHiddenColumnNames(Arrays.asList("open_stack_id", "close_stack_id")); // NOI18N
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
+        tableConfiguration.setDualPaneMode(true);
+        tableConfiguration.setDataRowRenderer(new StacksRenderer("open_stack_id", "close_stack_id")); // NOI18N
         indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -210,5 +218,61 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
             writes = 0;
             reads = 0;
         }
+    }
+
+    private static class StacksRenderer implements DetailsRenderer<DataRow> {
+
+        private final String openStackColumn;
+        private final String closeStackColumn;
+
+        public StacksRenderer(String openStackColumn, String closeStackColumn) {
+            this.openStackColumn = openStackColumn;
+            this.closeStackColumn = closeStackColumn;
+        }
+
+        public JComponent render(DataRow data) {
+            int openStackId = DataUtil.toInt(data.getData(openStackColumn));
+            int closeStackId = DataUtil.toInt(data.getData(closeStackColumn));
+            if (openStackId == 0 && closeStackId == 0) {
+                return null;
+            }
+            MultipleCallStackPanel panel = MultipleCallStackPanel.createInstance();
+            if (0 < openStackId) {
+                panel.add(getMessage("Details.OpenStack"), true, getStack(openStackId));
+            }
+            if (0 < closeStackId) {
+                panel.add(getMessage("Details.CloseStack"), true, getStack(closeStackId));
+            }
+            return panel;
+        }
+    }
+
+    // TODO implement
+    private static List<FunctionCall> getStack(final int id) {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+        final Function f = new Function() {
+            public String getName() {
+                return "stack #" + id; // NOI18N
+            }
+            public String getQuilifiedName() {
+                return "stack #" + id; // NOI18N
+            }
+        };
+        final FunctionCall c = new FunctionCall() {
+            public String getDisplayedName() {
+                return f.getQuilifiedName();
+            }
+            public Function getFunction() {
+                return f;
+            }
+            public boolean hasOffset() {
+                return false;
+            }
+            public long getOffset() {
+                return 0;
+            }
+        };
+        result.add(c);
+        return result;
     }
 }
