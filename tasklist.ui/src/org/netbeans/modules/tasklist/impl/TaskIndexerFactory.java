@@ -40,6 +40,7 @@
 package org.netbeans.modules.tasklist.impl;
 
 import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -86,6 +87,11 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
         }
         TaskManagerImpl tm = TaskManagerImpl.getInstance();
         tm.getTasks().clearDeletedFiles();
+    }
+
+    @Override
+    public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+
     }
 
     @Override
