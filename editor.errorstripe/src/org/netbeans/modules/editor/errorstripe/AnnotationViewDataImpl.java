@@ -137,6 +137,10 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         // Legacy mime path (text/base)
         MimePath legacyMimePath = MimePath.parse("text/base");
         legacyCrap = MimeLookup.getLookup(legacyMimePath).lookup(LegacyCrapProvider.class);
+        lookupProviders(mimeType);
+    }
+
+    private static void lookupProviders(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
         // Mark providers
         mime2Creators.put(mimeType, MimeLookup.getLookup(mimePath).lookupAll(MarkProviderCreator.class));
@@ -157,6 +161,12 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         String mimeType = pane.getUI().getEditorKit(pane).getContentType();
         Collection<? extends MarkProviderCreator> creators = 
             mime2Creators.get(mimeType);
+
+        if (creators == null) { //nothing for current mimeType, probably wrong init
+            lookupProviders(mimeType);
+            creators = mime2Creators.get(mimeType);
+        }
+
         createMarkProviders(creators, newMarkProviders, pane);
 
         this.markProviders = newMarkProviders;
