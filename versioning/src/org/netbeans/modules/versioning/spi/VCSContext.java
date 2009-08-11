@@ -78,6 +78,7 @@ public final class VCSContext {
      * VCSContext that contains no files.
      */
     public static final VCSContext EMPTY = new VCSContext((Node[]) null, emptySet(), emptySet() );
+    private static final Logger LOG = Logger.getLogger(VCSContext.class.getName());
 
     /**
      * Caching of current context for performance reasons, also see #72006.
@@ -147,6 +148,9 @@ public final class VCSContext {
             addFileObjects(node, rootFiles);
         }
 
+        if (rootFiles.isEmpty()) {
+            LOG.warning("forNodes: context contains no root files");    //NOI18N
+        }
         List<File> unversionedFiles = new ArrayList<File>(rootFiles.size());
         Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);
         for (File root : rootFiles) {
@@ -284,6 +288,10 @@ public final class VCSContext {
             FileObject srcRootFo = sourceGroup.getRootFolder();
             File rootFile = FileUtil.toFile(srcRootFo);
             if (rootFile == null) continue;
+            if (!srcRootFo.isValid()) {
+                LOG.log(Level.WARNING, "addProjectFiles: invalid source root {0}", srcRootFo); //NOI18N
+                continue;
+            }
             rootFiles.add(rootFile);
             FileObject [] rootChildren = srcRootFo.getChildren();
             for (int i = 0; i < rootChildren.length; i++) {
@@ -291,6 +299,10 @@ public final class VCSContext {
                 File child = FileUtil.toFile(rootChildFo);
                 // TODO: #60516 deep scan is required here but not performed due to performace reasons
                 try {
+                    if (!srcRootFo.isValid()) {
+                        LOG.log(Level.WARNING, "addProjectFiles: source root {0} changed from valid to invalid", srcRootFo); //NOI18N
+                        break;
+                    }
                     if (child != null && rootChildFo.isValid() && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
                         rootFilesExclusions.add(child);
                     }
