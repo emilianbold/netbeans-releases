@@ -130,13 +130,21 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
                     return Profile.J2EE_14;
                 }
+                if (WebApp.VERSION_2_5.equals(waVersion)) {
+                    return Profile.JAVA_EE_5;
+                }
+                if (WebApp.VERSION_3_0.equals(waVersion)) {
+                    return Profile.JAVA_EE_6_WEB;
+                }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
+            //make 15 the default..
+            //TODO how to differentiate with 1.6??
+            return Profile.JAVA_EE_5;
+        } else {
+            return Profile.JAVA_EE_6_WEB;
         }
-        //make 15 the default..
-        //TODO how to differentiate with 1.6??
-        return Profile.JAVA_EE_5;
     }
     
     public FileObject getDocumentBase() {
