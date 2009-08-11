@@ -95,6 +95,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -565,7 +566,9 @@ public class IssuePanel extends javax.swing.JPanel {
                         final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                subTaskTable.setModel(tableModel);
+                                TableSorter sorter = new TableSorter(tableModel);
+                                subTaskTable.setModel(sorter);
+                                sorter.setTableHeader(subTaskTable.getTableHeader());
 
                                 // Table height tweaks
                                 int height = 0;
