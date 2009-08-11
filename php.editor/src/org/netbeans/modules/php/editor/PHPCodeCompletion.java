@@ -211,8 +211,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        String prefix = completionContext.getPrefix();
-        prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
+        String prefix = completionContext.getPrefix();        
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
