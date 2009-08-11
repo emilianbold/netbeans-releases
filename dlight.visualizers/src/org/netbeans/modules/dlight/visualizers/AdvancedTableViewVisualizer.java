@@ -42,8 +42,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
@@ -146,22 +144,18 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         this.dualPaneMode = accessor.isDualPaneMode(configuration);
         if (dualPaneMode) {
-            this.dualPaneSupport = new DualPaneSupport(this, accessor.getDetailsRenderer(configuration));
-            this.explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                        Node[] selectedNodes = (Node[]) evt.getNewValue();
-                        if (selectedNodes != null && 0 < selectedNodes.length) {
-                            Node selectedNode = selectedNodes[0];
-                            if (selectedNode instanceof DataRowNode) {
-                                dualPaneSupport.showDetailsFor(((DataRowNode)selectedNode).getDataRow());
+            this.dualPaneSupport = DualPaneSupport.forExplorerManager(
+                    this, this.explorerManager,
+                    accessor.getDetailsRenderer(configuration),
+                    new DualPaneSupport.DataAdapter<Node, DataRow>() {
+                        public DataRow convert(Node obj) {
+                            if (obj instanceof DataRowNode) {
+                                return ((DataRowNode)obj).getDataRow();
+                            } else {
+                                return null;
                             }
-                        } else {
-                            dualPaneSupport.showDetailsFor(null);
                         }
-                    }
-                }
-            });
+                    });
         } else {
             this.dualPaneSupport = null;
         }
