@@ -46,15 +46,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Authenticator;
-import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.netbeans.modules.kenai.api.Kenai;
 
 /**
@@ -69,7 +73,7 @@ public class RestConnection {
         System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
     }
     public static final int TIMEOUT = 30 * 1000;
-    private HttpURLConnection conn;
+    private HttpsURLConnection conn;
     private String date;
 
     /** Creates a new instance of RestConnection */
@@ -94,7 +98,30 @@ public class RestConnection {
                     urlStr = replaceTemplateParameters(baseUrl, pathParams);
                 }
                 URL url = new URL(encodeUrl(urlStr, params));
-                conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpsURLConnection) url.openConnection();
+
+                TrustManager[] tm = new TrustManager[]{
+                    new X509TrustManager() {
+
+                        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                            return;
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                            return;
+                        }
+
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+                    }
+                };
+
+                SSLContext context = null;
+                context = SSLContext.getInstance("SSL");
+                context.init(null, tm, null);
+                conn.setSSLSocketFactory(context.getSocketFactory());
+
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
                 conn.setUseCaches(false);
@@ -243,7 +270,7 @@ public class RestConnection {
             }
             return response;
         } catch (Exception e) {
-            String errMsg = "Cannot connect to : " + conn.getURL().getHost() + ", " + e.getMessage();
+            String errMsg = "Cannot connect to : " + conn.getURL().getHost();
             try {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 String line;
@@ -254,7 +281,7 @@ public class RestConnection {
                 }
                 errMsg = buf.toString();
             } finally {
-                throw new IOException(errMsg);
+                throw new IOException(errMsg, e);
             }
         }
     }
