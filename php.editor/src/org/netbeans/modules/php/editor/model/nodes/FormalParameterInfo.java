@@ -37,20 +37,65 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 
 /**
  *
  * @author Radek Matous
  */
-public interface Parameter {
-    String getName();
-    String getDefaultValue();
-    boolean isMandatory();
-    /** mixed types can be documented in php doc*/
-    List<QualifiedName> getTypes();
-    OffsetRange getOffsetRange();
+public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
+    private ParameterImpl parameter;
+    private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
+        super(node);
+        FormalParameter formalParameter = getOriginalNode();
+        String name = getName();
+        String defVal = CodeUtils.getParamDefaultValue(formalParameter);
+        Expression parameterType = formalParameter.getParameterType();
+        List<QualifiedName> types = parameterType != null ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
+        if (types == null) {
+            types = Collections.emptyList();
+        }
+        parameter = new ParameterImpl(name, defVal, types,getRange());
+    }
+
+    public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
+        return new FormalParameterInfo(node, paramDocTypes);
+    }
+
+
+    @Override
+    public Kind getKind() {
+        return Kind.PARAMETER;
+    }
+
+    @Override
+    public String getName() {
+        FormalParameter formalParameter = getOriginalNode();
+        return ASTNodeInfo.toName(formalParameter.getParameterName());
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getName());
+    }
+
+    @Override
+    public OffsetRange getRange() {
+        FormalParameter formalParameter = getOriginalNode();
+        return ASTNodeInfo.toOffsetRange(formalParameter.getParameterName());
+    }
+
+    public Parameter toParameter() {
+        return parameter;
+    }
 }

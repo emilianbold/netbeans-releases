@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -355,19 +357,23 @@ public class PhpStructureScanner implements StructureScanner {
                 for (Parameter formalParameter : parameters) {
                     String name = formalParameter.getName();
 
-                    String type = null;
-                    if (formalParameter.getType() != null) {
-                        type = formalParameter.getType().getName();
-                    }
+                    List<QualifiedName> types = formalParameter.getTypes();
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
 
                         }
 
-                        if (type != null) {
+                        if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            formatter.appendText(type);
+                            for (Iterator<QualifiedName> it = types.iterator(); it.hasNext();) {
+                                QualifiedName qualifiedName = it.next();
+                                formatter.appendText(qualifiedName.toName().toString());
+                                if (it.hasNext()) {
+                                    formatter.appendText("|");//NOI18N
+                                }
+                                
+                            }
                             formatter.appendText(" ");   //NOI18N
 
                             formatter.appendHtml(CLOSE_FONT);

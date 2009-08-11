@@ -148,8 +148,8 @@ public class VariousUtils {
     }
 
 
-    public static Map<String,String> getParamTypesFromPHPDoc(Program root, ASTNode node) {
-        Map<String,String> retval = new HashMap<String, String>();
+    public static Map<String,List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
+        Map<String,List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
         Comment comment = Utils.getCommentForNode(root, node);
 
         if (comment instanceof PHPDocBlock) {
@@ -160,12 +160,14 @@ public class VariousUtils {
                     String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
 
                     if (parts.length > 1) {
-                        String type = parts[0].split("\\;", 2)[0];
-                        String name = parts[1].split("\\;", 2)[0];
-                        retval.put(name, type);
+                        String[] typeNames = parts[0].split("\\|", 2);
+                        List<QualifiedName> types = new ArrayList<QualifiedName>();
+                        for (String tName : typeNames) {
+                            types.add(QualifiedName.create(tName));
+                        }
+                        String name = parts[1].split("\\s+", 2)[0];
+                        retval.put(name, types);
                     }
-
-                    break;
                 }
             }
         }
