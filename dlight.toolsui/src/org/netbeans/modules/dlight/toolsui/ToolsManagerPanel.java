@@ -44,13 +44,16 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -60,10 +63,10 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ToolsManagerPanel extends javax.swing.JPanel {
-
+    private List<DLightConfigurationWrapper> dlightConfigurations = null;
     private List<DLightTool> allDLightTools = null;
     private static String manageConfigurations = getString("ManageConfiurations");
-    private String lastSelectedConfigurationName = null;
+    private int lastSelectedIndex = 0;
     private ToolsTable toolsTable = null;
 
     /** Creates new form ToolsManagerPanel */
@@ -73,15 +76,24 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfiguration allDlightConfiguration = DLightConfiguration.getDefault();
         allDLightTools = allDlightConfiguration.getToolsSet();
 
+        ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
+        for (DLightConfiguration dLightConfiguration : DLightConfigurationManager.getInstance().getDLightConfigurations()) {
+            list.add(new DLightConfigurationWrapper(dLightConfiguration));
+        }
+
+        initDialog(list);
+        setPreferredSize(new Dimension(700, 400));
+    }
+
+    private void initDialog(List<DLightConfigurationWrapper> list) {
         // profile configuration combobox
-        List<DLightConfiguration> dlightConfigurations = DLightConfigurationManager.getInstance().getDLightConfigurations();
-        for (DLightConfiguration dlightConfiguration : dlightConfigurations) {
-            profileConfigurationComboBox.addItem(dlightConfiguration.getConfigurationName());
+        profileConfigurationComboBox.removeAllItems();
+        dlightConfigurations = list;
+        for (DLightConfigurationWrapper dlightConfigurationWrapper : dlightConfigurations) {
+            profileConfigurationComboBox.addItem(dlightConfigurationWrapper);
         }
         profileConfigurationComboBox.addItem(manageConfigurations);
         profileConfigurationComboBox.setSelectedIndex(0);
-
-        setPreferredSize(new Dimension(700, 400));
     }
 
     private static boolean inList(DLightTool dlightTool, List<DLightTool> list) {
@@ -93,8 +105,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         return false;
     }
 
-    private void initConfigurationPanel(String configurationName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName(configurationName);
+    private void initConfigurationPanel(DLightConfigurationWrapper dlightConfigurationWrapper) {
+        DLightConfiguration gizmoConfiguration = dlightConfigurationWrapper.getdLightConfiguration();
         assert gizmoConfiguration != null;
         profileOnRunCheckBox.setSelected(true);
         defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
@@ -307,15 +319,153 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_onByDefaultCheckBoxActionPerformed
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
-        String configurationName = (String) profileConfigurationComboBox.getSelectedItem();
-        if (configurationName == manageConfigurations) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-            profileConfigurationComboBox.setSelectedItem(lastSelectedConfigurationName);
+        Object item = profileConfigurationComboBox.getSelectedItem();
+        if (item instanceof String) {
+//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+//            profileConfigurationComboBox.setSelectedItem(lastSelectedConfigurationName);
+//            List<DLightConfiguration> dlightConfigurations = DLightConfigurationManager.getInstance().getDLightConfigurations();
+//            ArrayList<DLightConfigurationWrapper> list = new ArrayList<DLightConfigurationWrapper>();
+//            for (DLightConfiguration dLightConfiguration : dlightConfigurations) {
+//                list.add(new DLightConfigurationWrapper(dLightConfiguration));
+//            }
+            MyListEditorPanel listEditorPanel = new MyListEditorPanel(dlightConfigurations);
+
+            DialogDescriptor descriptor = new DialogDescriptor (listEditorPanel,
+                    NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            try {
+                dlg.setVisible(true);
+                if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                    List<DLightConfigurationWrapper> newList = listEditorPanel.getListData();
+                    initDialog(newList);
+                }
+                else {
+                    profileConfigurationComboBox.setSelectedIndex(lastSelectedIndex);
+                }
+            } finally {
+                dlg.dispose();
+            }
+
         } else {
-            initConfigurationPanel(configurationName);
-            lastSelectedConfigurationName = configurationName;
+            DLightConfigurationWrapper dlightConfigurationWrapper = (DLightConfigurationWrapper)item;
+            initConfigurationPanel(dlightConfigurationWrapper);
+            //lastSelectedConfigurationName = configurationName;
         }
+        lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
+
+    class DLightConfigurationWrapper {
+        private DLightConfiguration dLightConfiguration;
+        private boolean custom;
+        private String name;
+
+        public DLightConfigurationWrapper(DLightConfiguration dLightConfiguration) {
+            this.dLightConfiguration = dLightConfiguration;
+            this.name = dLightConfiguration.getConfigurationName();
+            this.custom = false;
+        }
+
+        public DLightConfigurationWrapper(String name) {
+            this.dLightConfiguration = DLightConfiguration.getDefault();
+            this.name = name;
+            this.custom = true;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+
+        /**
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @param name the name to set
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * @return the custom
+         */
+        public boolean isCustom() {
+            return custom;
+        }
+
+        /**
+         * @param custom the custom to set
+         */
+        public void setCustom(boolean custom) {
+            this.custom = custom;
+        }
+
+        /**
+         * @return the dLightConfiguration
+         */
+        public DLightConfiguration getdLightConfiguration() {
+            return dLightConfiguration;
+        }
+
+        /**
+         * @param dLightConfiguration the dLightConfiguration to set
+         */
+        public void setdLightConfiguration(DLightConfiguration dLightConfiguration) {
+            this.dLightConfiguration = dLightConfiguration;
+        }
+    }
+
+    class MyListEditorPanel extends ListEditorPanel<DLightConfigurationWrapper> {
+        public MyListEditorPanel(List<DLightConfigurationWrapper> list) {
+            super(list, null);
+            setPreferredSize(new Dimension(400, 300));
+        }
+
+        @Override
+        public DLightConfigurationWrapper addAction() {
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
+            notifyDescriptor.setInputText(getString("NewConfigurationName"));
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return null;
+            }
+            String newS = notifyDescriptor.getInputText();
+            return new DLightConfigurationWrapper(newS);
+        }
+
+        @Override
+        public DLightConfigurationWrapper copyAction(DLightConfigurationWrapper o) {
+            DLightConfigurationWrapper copy = new DLightConfigurationWrapper(getString("CopyOf", o.getName()));
+            return copy;
+        }
+
+        @Override
+        public void editAction(DLightConfigurationWrapper o) {
+            String s = o.getName();
+
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
+            notifyDescriptor.setInputText(s);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+            String newS = notifyDescriptor.getInputText();
+            o.setName(newS);
+        }
+
+        @Override
+        protected void checkSelection(int i) {
+            super.checkSelection(i);
+            DLightConfigurationWrapper dLightConfigurationWrapper = getListData().elementAt(i);
+            getEditButton().setEnabled(dLightConfigurationWrapper.isCustom());
+            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom());
+        }
+
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox defaultDataProviderComboBox;
