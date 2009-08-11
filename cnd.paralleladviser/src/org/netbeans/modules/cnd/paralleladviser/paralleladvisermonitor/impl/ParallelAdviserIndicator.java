@@ -78,6 +78,7 @@ import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
@@ -105,16 +106,18 @@ import org.openide.util.NbBundle;
 
     private final ParallelAdviserIndicatorPanel panel;
     private final CpuHighLoadIntervalFinder highLoadFinder;
+    private final UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
 
     ParallelAdviserIndicator(ParallelAdviserIndicatorConfiguration configuration) {
         super(configuration);
         panel = new ParallelAdviserIndicatorPanel();
         highLoadFinder = new CpuHighLoadIntervalFinder();
+        unnecessaryThreadsFinder = new UnnecessaryThreadsIntervalFinder();
     }
 
     @Override
     public void updated(List<DataRow> data) {
-        if (highLoadFinder.getProcessorsNumber() <= 1) {
+        if (getProcessorsNumber() <= 1) {
             // no need to parallelize application on machine with single core processor.
             return;
         }
@@ -153,7 +156,7 @@ import org.openide.util.NbBundle;
                     }
                 }
             }
-        
+
             DTraceDataCollector collector2 = new DTraceDataCollector();
 
             for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
@@ -161,7 +164,7 @@ import org.openide.util.NbBundle;
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
-                if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos()/1000000000 < highLoadFinder.ticks / 2) {
+                if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < highLoadFinder.ticks / 2) {
                     break;
                 }
                 String functionName = functionCall.getFunction().getQuilifiedName();
@@ -173,7 +176,6 @@ import org.openide.util.NbBundle;
                     if (CodeModelUtils.canParallelize(loop)) {
                         LoopParallelizationTipsProvider.addTip(new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization()));
                         panel.notifyUser();
-
                         Runnable updateView = new Runnable() {
 
                             public void run() {
@@ -188,6 +190,25 @@ import org.openide.util.NbBundle;
                         }
                     }
                 }
+            }
+        }
+
+        unnecessaryThreadsFinder.update(data);
+        if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
+            UnnecessaryThreadsTipsProvider.clearTips();
+            UnnecessaryThreadsTipsProvider.addTip(new UnnecessaryThreadsAdvice());
+            panel.notifyUser();
+            Runnable updateView = new Runnable() {
+
+                public void run() {
+                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                    view.updateTips();
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                updateView.run();
+            } else {
+                SwingUtilities.invokeLater(updateView);
             }
         }
     }
@@ -263,7 +284,7 @@ import org.openide.util.NbBundle;
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
             if (dataStorage != null && dataProvider != null) {
-                FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(  SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
+                FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
                 List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
                 Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
@@ -295,7 +316,28 @@ import org.openide.util.NbBundle;
             return csmProject;
         }
     }
+    private int processorsNumber = 0;
 
+    private int getProcessorsNumber() {
+        if (processorsNumber == 0) {
+            processorsNumber = 1;
+            DLightTarget target = getTarget();
+            if (target != null) {
+                HostInfo hostInfo = null;
+                try {
+                    hostInfo = HostInfoUtils.getHostInfo(target.getExecEnv());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (hostInfo != null) {
+                    processorsNumber = hostInfo.getCpuNum();
+                }
+            }
+        }
+        return processorsNumber;
+    }
 
     private static class DTraceDataCollector {
 
@@ -356,7 +398,7 @@ import org.openide.util.NbBundle;
                         FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
                         FunctionMetric.CpuTimeExclusiveMetric.getMetricValueClass(),
                         FunctionMetric.CpuTimeExclusiveMetric.getMetricDisplayedName(), null);
-                final  Column c_iUser = new Column(
+                final Column c_iUser = new Column(
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
                         FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
@@ -392,26 +434,63 @@ import org.openide.util.NbBundle;
         }
     }
 
+    private class UnnecessaryThreadsIntervalFinder {
+
+        private static final int INTERVAL_BOUND = 10;
+        private int interval;
+
+        public UnnecessaryThreadsIntervalFinder() {
+            interval = 0;
+            processorsNumber = 0;
+        }
+
+        public boolean isUnnecessaryThreadsInterval() {
+            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
+            return result;
+        }
+
+        public void update(List<DataRow> data) {
+            Column threadsCol = new Column("threads", Integer.class); // NOI18N
+            Column latTimeCol = new Column(MSAState.WaitingCPU.toString(), Integer.class);
+            Column runTimeCol = new Column(MSAState.Running.toString(), Integer.class);
+            for (DataRow dataRow : data) {
+                Object threadsObj = dataRow.getData(threadsCol.getColumnName());
+                Object latTimeObj = dataRow.getData(latTimeCol.getColumnName());
+                Object runTimeObj = dataRow.getData(runTimeCol.getColumnName());
+                if (latTimeObj != null && runTimeObj != null && threadsObj != null) {
+                    if (areUnnecessaryThreadsUsed((Integer) threadsObj, (Integer) latTimeObj, (Integer) runTimeObj)) {
+                        interval++;
+                    } else {
+                        interval = 0;
+                    }
+                }
+            }
+        }
+
+        private boolean areUnnecessaryThreadsUsed(int threads, int latTime, int runTime) {
+            if (((double) runTime / (double) threads) > 0.9 && ((double) latTime / (double) threads) > 1) {
+                return true;
+            }
+            return false;
+        }
+    }
 
     private class CpuHighLoadIntervalFinder {
 
-        private static final int INTERVAL_OF_HIGH_LOAD_BOUND = 10;
-        private int intervalOfHighLoad;
+        private static final int INTERVAL_BOUND = 10;
+        private int interval;
         private int ticks;
         private double processorUtilizationSum;
-        private int processorsNumber;
 
         public CpuHighLoadIntervalFinder() {
-            intervalOfHighLoad = 0;
+            interval = 0;
             ticks = 0;
             processorUtilizationSum = 0;
             processorsNumber = 0;
         }
 
         public boolean isHighLoadInterval() {
-            boolean result = (intervalOfHighLoad > 0) && (intervalOfHighLoad % INTERVAL_OF_HIGH_LOAD_BOUND == 0);
-            System.out.println("isHighLoadInterval: " + result); // NOI18N
-            System.out.println("intervalOfHighLoad: " + intervalOfHighLoad); // NOI18N
+            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
             return result;
         }
 
@@ -419,45 +498,28 @@ import org.openide.util.NbBundle;
             return processorUtilizationSum / ticks;
         }
 
-        public int getProcessorsNumber() {
-            if (processorsNumber == 0) {
-                processorsNumber = 1;
-                DLightTarget target = getTarget();
-                if (target != null) {
-                    HostInfo hostInfo = null;
-                    try {
-                        hostInfo = HostInfoUtils.getHostInfo(target.getExecEnv());
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (hostInfo != null) {
-                        processorsNumber = hostInfo.getCpuNum();
+        public void update(List<DataRow> data) {
+            for (DataRow dataRow : data) {
+                Object usrTime = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+                if (usrTime != null) {
+                    ticks++;
+                    processorUtilizationSum += (Float) usrTime;
+
+                    if (isSingleThreadOnOneProcessorHighLoaded(dataRow)) {
+                        interval++;
+                    } else {
+                        interval = 0;
                     }
                 }
             }
-            System.out.println("Processors number: " + processorsNumber); // NOI18N
-            return processorsNumber;
         }
 
-        public void update(List<DataRow> data) {
-            for (DataRow dataRow : data) {
-                ticks++;
-                processorUtilizationSum += (Float) dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
-            }
-
-            if (isSingleThreadOnOneProcessorHighLoaded(data)) {
-                intervalOfHighLoad++;
-            } else {
-                intervalOfHighLoad = 0;
-            }
-        }
-
-        private boolean isSingleThreadOnOneProcessorHighLoaded(List<DataRow> data) {
-            for (DataRow dataRow : data) {
-                double utime = (Float) dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
-                int threads = (Integer) dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
+        private boolean isSingleThreadOnOneProcessorHighLoaded(DataRow dataRow) {
+            Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+            Object threadsObj = dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
+            if (usrTimeObj != null && threadsObj != null) {
+                double utime = (Float) usrTimeObj;
+                int threads = (Integer) threadsObj;
                 if (threads == 1 && 90 < utime * getProcessorsNumber()) {
                     return true;
                 }

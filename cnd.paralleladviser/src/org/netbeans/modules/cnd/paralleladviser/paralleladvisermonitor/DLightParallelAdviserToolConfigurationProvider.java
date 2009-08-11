@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl.ParallelAdviserIndicatorConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
@@ -110,10 +111,32 @@ public final class DLightParallelAdviserToolConfigurationProvider
         toolConfiguration.addDataCollectorConfiguration(
                 new MultipleDTDCConfiguration(
                 dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+        // D-Trace 2
+        String scriptFile2 = Util.copyResource(getClass(),
+                Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
+        Column threads = new Column("threads", Integer.class); // NOI18N
+        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
+        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
+        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
+        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
+        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
+        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
+        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
+        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
+        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
+        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
+        DTDCConfiguration dtraceDataCollectorConfiguration2 = new DTDCConfiguration(scriptFile2, Arrays.asList(new DataTableMetadata("MSA", // NOI18N
+                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null)));
+//        dtraceDataCollectorConfiguration2.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
+//        dtraceDataCollectorConfiguration2.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration2, "msa"); // NOI18N
+        toolConfiguration.addDataCollectorConfiguration(collector);
+
 
         // Indicator
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
+        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
