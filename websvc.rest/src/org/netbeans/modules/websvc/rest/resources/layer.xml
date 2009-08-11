@@ -43,6 +43,26 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
+        <folder name="Persistence">
+            <file name="RestServicesFromEntities">
+                <attr name="position" intvalue="510"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/EntityResources.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/>
+            </file>
+            <file name="RestServicesFromDatabase">
+                <attr name="position" intvalue="520"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.fromdb.DatabaseResourceWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/DatabaseResource.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/>
+            </file>
+        </folder>
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
             <attr name="position" intvalue="1500"/>
@@ -54,7 +74,7 @@
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/EntityResources.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/>
             </file>
             <file name="RestServicesFromPatterns">
                 <attr name="position" intvalue="400"/>

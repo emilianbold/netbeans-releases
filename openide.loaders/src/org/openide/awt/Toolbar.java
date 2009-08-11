@@ -451,7 +451,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                         org.openide.awt.Actions.connect(b, a);
                         b.putClientProperty("file", file);
                         org.openide.awt.Toolbar.this.add(b);
-                        setAccelerator(a, file.getPrimaryFile());
+                        if (file != null) {
+                            setAccelerator(a, file.getPrimaryFile());
+                        }
                         continue;
                     }
                 }
