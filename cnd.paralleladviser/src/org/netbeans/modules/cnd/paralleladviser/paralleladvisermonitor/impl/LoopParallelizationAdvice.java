@@ -69,9 +69,9 @@ import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils
 public class LoopParallelizationAdvice implements Advice {
 
     private final static int REPRESENTATION_TYPE_FULL = 0;
-    private final static int REPRESENTATION_TYPE_REDUSED = 1;
+    private final static int REPRESENTATION_TYPE_REDUCED = 1;
     private final static int REPRESENTATION_TYPE_FOLDING = 2;
-    private final static int representationType = REPRESENTATION_TYPE_FULL;
+    private final static int representationType = REPRESENTATION_TYPE_REDUCED;
     private final CsmFunction function;
     private final CsmLoopStatement loop;
     private final double processorUtilization;
