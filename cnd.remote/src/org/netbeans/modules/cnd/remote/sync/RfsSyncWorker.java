@@ -201,7 +201,7 @@ class RfsSyncWorker extends ZipSyncWorker {
                                 if (rc == 0) {
                                     respond_ok();
                                 } else {
-                                    respond_err("1");
+                                    respond_err("1"); // NOI18N
                                 }
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
