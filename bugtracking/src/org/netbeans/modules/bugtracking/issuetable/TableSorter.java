@@ -120,7 +120,7 @@ import org.openide.util.ImageUtilities;
  */
 
 // XXX ujetaken from versioning util
-final class TableSorter extends AbstractTableModel {
+public final class TableSorter extends AbstractTableModel {
     protected TableModel tableModel;
 
     public static final int DESCENDING = -1;
