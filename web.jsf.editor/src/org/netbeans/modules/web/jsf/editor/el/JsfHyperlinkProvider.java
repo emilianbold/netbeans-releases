@@ -143,7 +143,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                         res = exp.parse(endOfEL + 1);
                     }
                     
-                    return res == JsfElExpression.EL_JSF_BEAN;
+                    return (res == JsfElExpression.EL_JSF_BEAN) ||(res == JsfElExpression.EL_JSF_BEAN_REFERENCE);
                 }
             }
         } finally {
@@ -204,7 +204,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
-                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START )
+                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START || res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                     return new int[] {elTokenSequence.offset(), elEnd};
             }
         }
@@ -255,10 +255,11 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 
                 int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
                 if (res == JsfElExpression.EL_START ){
+                    //TODO XXX Add code to point references to beans in JSF file
                     (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
                     return;
                 }
-                if (res == JsfElExpression.EL_JSF_BEAN){
+                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_JSF_BEAN_REFERENCE){
                     if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
                         String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).getString("MSG_source_not_found");
                         StatusDisplayer.getDefault().setStatusText(msg);
