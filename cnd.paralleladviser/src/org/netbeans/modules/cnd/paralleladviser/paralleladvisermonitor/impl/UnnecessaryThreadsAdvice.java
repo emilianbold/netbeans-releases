@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,57 +51,32 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
-import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
+import java.net.URL;
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
 
 /**
- * Service that provides tips for Parallel Adviser.
+ * Loop parallelization advice.
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
-public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
+public class UnnecessaryThreadsAdvice implements Advice {
 
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
-    private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
-    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
-
-    private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
-
-    public static void addTip(LoopParallelizationAdvice tip) {
-        for (LoopParallelizationAdvice advice : tips) {
-            if(advice.getLoop().equals(tip.getLoop())) {
-                tips.remove(advice);
-                break;
-            }
-        }
-        tips.add(tip);
+    public UnnecessaryThreadsAdvice() {
     }
 
-    public static void clearTips() {
-        tips.clear();
+
+    public JComponent getComponent() {
+        return ParallelAdviserAdviceUtils.createAdviceComponent(
+                getHtml(),
+                null);
     }
 
-    public Collection<Advice> getTips() {
-        if(representationType == REPRESENTATION_TYPE_SEPARATE_TIPS) {
-            return new ArrayList<Advice>(tips);
-        } else if (representationType == REPRESENTATION_TYPE_ALL_TIPS_IN_ONE) {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>();
-            if(!tips.isEmpty()) {
-                arrayList.add(new LoopsParallelizationAdvice(tips));
-            }
-            return arrayList;
-        } else {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
-            if(!arrayList.isEmpty()) {
-                arrayList.add(new LoopParallelizationCommonAdvice());
-            }
-            return arrayList;
-        }
+    public String getHtml() {
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
+        String html = "It seems that program uses too many threads."; // NOI18N
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Too many threads", // NOI18N
+                html, 800); // NOI18N
     }
-
 }
