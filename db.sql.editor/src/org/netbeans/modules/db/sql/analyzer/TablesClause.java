@@ -39,14 +39,34 @@
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
+ * Holds table names with possible aliases which can be defined in FROM or UPDATE
+ * clause.
  *
  * @author Andrei Badea
  */
-public enum SQLStatementKind {
+public class TablesClause {
 
-    DROP,
-    INSERT,
-    SELECT,
-    UPDATE
+    private final Set<QualIdent> unaliasedTableNames;
+    private final Map<String, QualIdent> aliasedTableNames;
+
+    public TablesClause(Set<QualIdent> unaliasedTableNames, Map<String, QualIdent> aliasedTableNames) {
+        this.unaliasedTableNames = unaliasedTableNames;
+        this.aliasedTableNames = aliasedTableNames;
+    }
+
+    public Set<QualIdent> getUnaliasedTableNames() {
+        return unaliasedTableNames;
+    }
+
+    public Map<String, QualIdent> getAliasedTableNames() {
+        return aliasedTableNames;
+    }
+
+    public QualIdent getTableNameByAlias(String alias) {
+        return aliasedTableNames.get(alias);
+    }
 }
