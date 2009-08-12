@@ -141,13 +141,30 @@ public final class TransferFilter extends JPanel {
         return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1);
     }
 
+    public static TransferFilter getEmbeddableDownloadDialog(Set<TransferFile> transferFiles) {
+        TransferFileTableModel model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles));
+        return TransferFilter.create(new TransferFilterTable(model));
+    }
+
+    public static Set<TransferFile> getSelectedFiles(TransferFilter transferFilter) {
+        return unwrapFileUnits(transferFilter.getModel().getMarkedUnits());
+    }
+
+    public static boolean hasAnyTransferableFiles(Set<TransferFile> transferFiles) {
+        if (transferFiles == null) {
+            return false;
+        }
+        TransferFilter transferFilter = getEmbeddableDownloadDialog(transferFiles);
+        return !unwrapFileUnits(transferFilter.getModel().getMarkedUnits()).isEmpty();
+    }
+
     // folders are not filtered although not showed to user
     private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp) {
         TransferFileTableModel model = null;
         String title = null;
         switch (type) {
             case DOWNLOAD:
-                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles, model));
+                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles));
                 title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
                 break;
             case UPLOAD:
@@ -170,12 +187,12 @@ public final class TransferFilter extends JPanel {
                 null,
                 null);
         if (DialogDisplayer.getDefault().notify(descriptor) == okButton) {
-            return unwrapFileUnits(model.getMarkedUnits());
+            return getSelectedFiles(transferFilter);
         }
         return Collections.<TransferFile>emptySet();
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(toTransfer.size());
         for (TransferFile transferFile : toTransfer) {
             retval.add(new TransferFileUnit(transferFile, TransferFileTableModel.isMarkedAsDefault()));
@@ -697,6 +714,7 @@ public final class TransferFilter extends JPanel {
 
         public final void performerImpl() {
             performerImpl(unit);
+            model.fireUpdataUnitChange();
         }
 
         protected boolean isVisible(TransferFileUnit unit) {

@@ -370,7 +370,7 @@ FileChooserBuilder uses the following boolean system properties:
     is provided for applications where a history of recently used directories is a
     security concern.
     </li>
-    </ul>
+</ul>
 </answer>
 
 
@@ -908,6 +908,16 @@ public class LoginFileSystem extends <a href="@TOP@/org/openide/filesystems/Mult
           you can use for example
           <a href="@TOP@/org/openide/filesystems/FileUtil.html#createMemoryFileSystem()">memory file system</a>,
           or any other you write yourself.
+      </p>
+
+      <p>
+          Since version 7.23 you can use <api name="SystemFileSystem.fallback" group="property"
+          type="export" category="stable">
+              By returning <code>Boolean.TRUE</code> from call
+                    to <code>fs.getRoot().getAttribute("fallback")</code>
+                    you can place your filesystem behind all layers provided
+                    by standard modules and form a kind of <q>fallback</q>
+         </api>
       </p>
   </usecase>
  </answer>
