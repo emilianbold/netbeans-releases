@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassMemberElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -141,8 +142,8 @@ public class PhpStructureScanner implements StructureScanner {
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
                     Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
-                    for (FieldElement filed : declaredFields) {
-                        children.add(new PHPSimpleStructureItem(filed, "field"));//NOI18N
+                    for (FieldElement field : declaredFields) {
+                        children.add(new PHPFieldStructureItem(field));//NOI18N
                     }
                 }
             }
@@ -402,6 +403,38 @@ public class PhpStructureScanner implements StructureScanner {
         }
     }
 
+    private class PHPFieldStructureItem extends PHPSimpleStructureItem {
+        public PHPFieldStructureItem(ModelElement elementHandle) {
+            super(elementHandle, "field");//NOI18N
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            ElementHandle elementHandle = getElementHandle();
+            formatter.appendText(elementHandle.getName());
+            if (elementHandle instanceof FieldElement) {
+                final FieldElement fieldElement = (FieldElement) elementHandle;
+                Collection<? extends TypeScope> types = fieldElement.getTypes(fieldElement.getOffset());
+                StringBuilder sb = null;
+                if (!types.isEmpty()) {
+                    formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                    for (TypeScope type : types) {
+                        if (sb == null) {
+                            sb = new StringBuilder();
+                        } else {
+                            sb.append(", ");//NOI18N
+                        }
+                        sb.append(type.getName());
+
+                    }
+                    formatter.appendText(sb.toString());
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+            }
+            return formatter.getText();
+        }
+
+    }
     private class PHPSimpleStructureItem extends PHPStructureItem {
 
         private String simpleText;
