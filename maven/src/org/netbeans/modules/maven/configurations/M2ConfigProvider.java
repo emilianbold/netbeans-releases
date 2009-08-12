@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -168,7 +169,16 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         toRet.addAll(shared);
         toRet.addAll(nonshared);
         if (!skipProfiles) {
-            toRet.addAll(profiles);
+            //prevent duplicates in the list
+            Iterator<M2Configuration> it = profiles.iterator();
+            while (it.hasNext()) {
+                M2Configuration c = it.next();
+                if (!toRet.contains(c)) {
+                    toRet.add(c);
+                } else {
+                    it.remove();
+                }
+            }
         }
         return toRet;
         
@@ -262,7 +272,6 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
     private synchronized void doSetActiveConfiguration(M2Configuration newone, M2Configuration old) throws IllegalArgumentException, IOException {
-        System.out.println("set new one..");
         active = newone;
         writeAuxiliaryData(
                 aux,
