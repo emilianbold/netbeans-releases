@@ -34,37 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.analyzer;
+package org.netbeans.modules.db.sql.editor.completion;
 
-import java.util.Map;
-import java.util.Set;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Skrivanek
  */
-public class FromClause {
+public class UpdateCompletionQueryTest extends SelectCompletionQueryTest {
 
-    private final Set<QualIdent> unaliasedTableNames;
-    private final Map<String, QualIdent> aliasedTableNames;
-
-    public FromClause(Set<QualIdent> unaliasedTableNames, Map<String, QualIdent> aliasedTableNames) {
-        this.unaliasedTableNames = unaliasedTableNames;
-        this.aliasedTableNames = aliasedTableNames;
+    public UpdateCompletionQueryTest(String testName) {
+        this(testName, false);
     }
 
-    public Set<QualIdent> getUnaliasedTableNames() {
-        return unaliasedTableNames;
+    /**
+     * @param testName golden file name
+     * @param stdout true to print completion results to stdout
+     */
+    public UpdateCompletionQueryTest(String testName, boolean stdout) {
+        super(testName, stdout);
     }
 
-    public Map<String, QualIdent> getAliasedTableNames() {
-        return aliasedTableNames;
-    }
-
-    public QualIdent getTableNameByAlias(String alias) {
-        return aliasedTableNames.get(alias);
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new UpdateCompletionQueryTest("updateAll"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSubquery"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSimple"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSet"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSetValue"));
+        suite.addTest(new UpdateCompletionQueryTest("updateWhere"));
+        return suite;
     }
 }

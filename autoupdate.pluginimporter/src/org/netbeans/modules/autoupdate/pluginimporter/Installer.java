@@ -68,7 +68,7 @@ public class Installer extends ModuleInstall {
     private static Logger LOG = Logger.getLogger (Installer.class.getName ());
     // XXX: copy from o.n.upgrader
     private static final List<String> VERSION_TO_CHECK =
-            Arrays.asList (".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5"); //NOI18N
+            Arrays.asList (".netbeans/6.7", ".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5"); //NOI18N
     private static final String IMPORTED = "imported"; // NOI18N
 
     @Override
