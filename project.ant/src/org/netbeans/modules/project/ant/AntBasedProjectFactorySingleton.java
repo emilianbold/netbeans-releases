@@ -64,6 +64,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
@@ -275,14 +278,26 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         InputSource src = new InputSource(new ByteArrayInputStream(data));
         src.setSystemId(projectDiskFile.toURI().toString());
         try {
-            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
+//            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
+            // Try to use our own DBF, in case synchronization is the problem:
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder;
+            try {
+//                factory.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException x) {
+                throw new SAXException(x);
+            }
+            builder.setErrorHandler(Util.defaultErrorHandler());
+            Document projectXml = builder.parse(src);
             Element projectEl = projectXml.getDocumentElement();
             if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
                         new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
                 if (LOG.isLoggable(Level.FINE)) {
                     // XXX sometimes on deadlock get a bogus DeferredElementNSImpl;
-                    // all fields null except fNodeIndex=1, ownerDocument/ownerNode, previousSibling=this
+                    // all fields null except fNodeIndex=1, ownerDocument/ownerNode, previousSibling=this, flags=28
                     try {
                         for (Class c = projectEl.getClass(); c != null; c = c.getSuperclass()) {
                             for (Field f : c.getDeclaredFields()) {

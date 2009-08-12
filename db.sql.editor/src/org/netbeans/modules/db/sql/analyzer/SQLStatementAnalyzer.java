@@ -39,8 +39,13 @@
 package org.netbeans.modules.db.sql.analyzer;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
@@ -78,6 +83,8 @@ public class SQLStatementAnalyzer {
                 return InsertStatementAnalyzer.analyze(seq, quoter);
             case DROP:
                 return DropStatementAnalyzer.analyze(seq, quoter);
+            case UPDATE:
+                return UpdateStatementAnalyzer.analyze(seq, quoter);
         }
         return null;
     }
@@ -96,6 +103,8 @@ public class SQLStatementAnalyzer {
             return SQLStatementKind.INSERT;
         } else if (isKeyword("DROP", seq)) {  //NOI18N
             return SQLStatementKind.DROP;
+        } else if (isKeyword("UPDATE", seq)) {  //NOI18N
+            return SQLStatementKind.UPDATE;
         }
         return null;
     }
@@ -171,8 +180,61 @@ public class SQLStatementAnalyzer {
         offset2Context.put(seq.offset() + seq.token().length(), context);
     }
 
+    /** Parse table name and its alias in TableIdent instance or null. */
+    TableIdent parseTableIdent() {
+        QualIdent tableName = parseIdentifier();
+        if (tableName == null) {
+            return null;
+        }
+        String alias = parseAlias();
+        return new TableIdent(tableName, alias);
+    }
+
+    /** Parse and returns alias of table or null (e.g. returns c1 if statement
+     * is like "select * from customer as c1" or "select * from customer c1". */
+    private String parseAlias() {
+        String alias = null;
+        main:
+        while (nextToken()) {
+            switch (seq.token().id()) {
+                case IDENTIFIER:
+                    alias = getUnquotedIdentifier();
+                    break;
+                case KEYWORD:
+                    if (!SQLStatementAnalyzer.isKeyword("AS", seq)) { // NOI18N
+                        seq.movePrevious();
+                        break main;
+                    }
+                    break;
+                default:
+                    seq.movePrevious();
+                    break main;
+            }
+        }
+        if (alias != null && alias.length() == 0) {
+            alias = null;
+        }
+        return alias;
+    }
+
+    /** Returns TablesClause instance which ease work with aliased tables. */
+    protected TablesClause createTablesClause(List<TableIdent> tables) {
+        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
+        Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
+        for (TableIdent table : tables) {
+            if (table.getAlias() == null) {
+                unaliasedTableNames.add(table.getTableName());
+            } else {
+                if (!aliasedTableNames.containsKey(table.getAlias())) {
+                    aliasedTableNames.put(table.getAlias(), table.getTableName());
+                }
+            }
+        }
+        return new TablesClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
+    }
+
     /** Table name identifier and its alias if any. */
-    static class TableIdent {
+    public static class TableIdent implements Comparable<TableIdent> {
 
         private final QualIdent tableName;
         private final String alias;
@@ -188,6 +250,21 @@ public class SQLStatementAnalyzer {
 
         public String getAlias() {
             return alias;
+        }
+
+        /** Compares aliases if both exist, table names otherwise. */
+        public int compareTo(TableIdent that) {
+            if (this.getAlias() != null && that.getAlias() != null) {
+                return this.getAlias().compareToIgnoreCase(that.getAlias());
+            } else {
+                return this.getTableName().compareTo(that.getTableName());
+            }
+        }
+
+        @Override
+        public String toString() {
+            String aliasText = getAlias() == null ? "" : getAlias() + " alias to ";  //NOI18N
+            return aliasText + getTableName().toString();
         }
     }
 }

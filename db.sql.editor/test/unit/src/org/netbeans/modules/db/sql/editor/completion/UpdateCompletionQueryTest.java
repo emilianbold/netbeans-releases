@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,38 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.db.sql.editor.completion;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
-import org.netbeans.modules.db.sql.editor.StringUtils;
-import org.netbeans.modules.db.sql.lexer.SQLTokenId;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Skrivanek
  */
-public class SQLStatementAnalyzer {
+public class UpdateCompletionQueryTest extends SelectCompletionQueryTest {
 
-    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
-        seq.moveStart ();
-        if ( ! seq.moveNext ()) {
-            return null;
-        }
-        if (seq.token () != null && SQLTokenId.WHITESPACE.equals (seq.token ().id ())) {
-            seq.moveNext ();
-        }
-        if (isKeyword ("SELECT", seq)) { // NOI18N
-            return SQLStatementKind.SELECT;
-        } else if (isKeyword ("INSERT", seq)) {  //NOI18N
-            return SQLStatementKind.INSERT;
-        } else if (isKeyword("DROP", seq)) {  //NOI18N
-            return SQLStatementKind.DROP;
-        }
-        return null;
+    public UpdateCompletionQueryTest(String testName) {
+        this(testName, false);
     }
 
-    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
-        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
+    /**
+     * @param testName golden file name
+     * @param stdout true to print completion results to stdout
+     */
+    public UpdateCompletionQueryTest(String testName, boolean stdout) {
+        super(testName, stdout);
+    }
+
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new UpdateCompletionQueryTest("updateAll"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSubquery"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSimple"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSet"));
+        suite.addTest(new UpdateCompletionQueryTest("updateSetValue"));
+        suite.addTest(new UpdateCompletionQueryTest("updateWhere"));
+        return suite;
     }
 }

@@ -47,7 +47,7 @@ import org.openide.nodes.Node;
  *
  * @author mt154047
  */
-public class FunctionCallChildren extends Children.Keys<FunctionCall> {
+final class FunctionCallChildren extends Children.Keys<FunctionCall> {
     private final CallStackTreeModel stackModel;
     private final FunctionCall call;
 

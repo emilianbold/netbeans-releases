@@ -48,10 +48,14 @@ public class DLightToolWrapper {
 
     private DLightTool dLightTool;
     private boolean enabled;
+    private boolean onByDefault;
+    private boolean visible;
 
     public DLightToolWrapper(DLightTool dLightTool, boolean enabled) {
         this.dLightTool = dLightTool;
         this.enabled = enabled;
+        this.onByDefault = true;
+        this.visible = dLightTool.isVisible();
     }
 
     /**
@@ -80,5 +84,33 @@ public class DLightToolWrapper {
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * @return the onByDefault
+     */
+    public boolean isOnByDefault() {
+        return onByDefault;
+    }
+
+    /**
+     * @param onByDefault the onByDefault to set
+     */
+    public void setOnByDefault(boolean onByDefault) {
+        this.onByDefault = onByDefault;
+    }
+
+    /**
+     * @return the visible
+     */
+    public boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * @param visible the visible to set
+     */
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

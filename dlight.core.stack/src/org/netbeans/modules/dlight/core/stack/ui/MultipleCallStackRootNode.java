@@ -59,35 +59,38 @@ final class MultipleCallStackRootNode extends AbstractNode{
 
     MultipleCallStackRootNode() {
         super(Children.LEAF);
+        setDisplayName("Root");//NOI18N
     }
 
 
 
     void add(StackRootNode node){
         children.add(node);
+        setChildren(Children.LEAF);
         setChildren(new MultipleCallStackRootChildren(children));
     }
 
     void removeAll(){
+        children.clear();
         setChildren(Children.LEAF);
     }
 
-    @Override
-    public Image getIcon(int type) {
-        return icon;
-    }
+//    @Override
+//    public Image getIcon(int type) {
+//        return icon;
+//    }
+//
+//    @Override
+//    public Image getOpenedIcon(int type) {
+//        return getIcon(type);
+//    }
 
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
-    }
 
 
-
-    @Override
-    public String getHtmlDisplayName() {
-        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-    }
+//    @Override
+//    public String getHtmlDisplayName() {
+//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
+//    }
 
     
 
@@ -98,11 +101,11 @@ final class MultipleCallStackRootNode extends AbstractNode{
         }
 
         public int getIconWidth() {
-            return 1;
+            return 10;
         }
 
         public int getIconHeight() {
-            return 1;
+            return 10;
         }
         
     }

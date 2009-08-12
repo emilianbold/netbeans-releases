@@ -39,16 +39,12 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.Component;
-import java.awt.GridLayout;
 import java.util.List;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -64,7 +60,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
-    private MasterSlaveView<Deadlock> msview;
+    private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;
     private Task refreshTask;
 
     public DeadlockVisualizer(DeadlockVisualizerConfiguration configuration, ThreadAnalyzerDataProvider dataProvider) {
@@ -76,9 +72,9 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         return configuration;
     }
 
-    public synchronized MasterSlaveView<Deadlock> getComponent() {
+    public synchronized JComponent getComponent() {
         if (msview == null) {
-            msview = new MasterSlaveView<Deadlock>();
+            msview = new MasterSlaveView<Deadlock, DeadlockTHANodeFactory>(new DeadlockTHANodeFactory());
             msview.setSlaveRenderer(new DeadlockRenderer());
         }
         return msview;
@@ -90,7 +86,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     public synchronized void refresh() {
         if (refreshTask == null) {
-            final MasterSlaveView<Deadlock> view = getComponent();
+            final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view = (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>)getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     final List<? extends Deadlock> deadlocks = dataProvider.getDeadlocks();
@@ -130,8 +126,33 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
                 stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()) , true, dts.getHeldLockCallStack());//NOI18N
                 stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()) , true, dts.getRequestedLockCallStack());//NOI18N
             }
+            stackPanel.expandAll();
             return stackPanel;
 //            return StackPanelFactory.newStackPanel(stack);
         }
+    }
+
+private final class DeadlockNode extends THANode<Deadlock>{
+        private final Deadlock deadlock;
+        DeadlockNode(Deadlock deadlock){
+            super(deadlock);
+            this.deadlock = deadlock;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return deadlock.isActual() ? "Actual deadlock" : "Potential deadlock";//NOI18N
+        }
+
+
+
+    }
+
+    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock>{
+
+        public THANode create(Deadlock object) {
+            return new DeadlockNode(object);
+        }
+
     }
 }
