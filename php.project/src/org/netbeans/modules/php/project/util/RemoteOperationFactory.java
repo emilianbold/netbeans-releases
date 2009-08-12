@@ -107,6 +107,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
         return (isEnabled()) ? new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
+                boolean success = false;
+
                 RemoteClient client = getRemoteClient(project);
                 Set<TransferFile> transferFiles = Collections.emptySet();
                 FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
@@ -116,16 +118,21 @@ final class RemoteOperationFactory extends FileOperationFactory {
                     transferFiles = client.prepareDelete(sourceRoot, source);
                 }
                 if (client != null) {
+                    success = true;
                     try {
-                        if (transferFiles.size() > 0) {
-                            TransferInfo transferInfo = client.delete(transferFiles);
-                            return !transferInfo.hasAnyFailed();
+                        for (TransferFile file : transferFiles) {
+                            if (client.exists(file)) {
+                                TransferInfo transferInfo = client.delete(file);
+                                if (!transferInfo.hasAnyTransfered()) {
+                                    success = false;
+                                }
+                            }
                         }
                     } finally {
                         client.disconnect();
                     }
                 }
-                return false;
+                return success;
             }
         } : null;
     }
@@ -155,7 +162,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (client != null) {
                     try {
                         if (fromTransferFile != null && toTransferFile != null) {
-                            return client.rename(fromTransferFile, toTransferFile);
+                            if (client.exists(fromTransferFile)) {
+                                return client.rename(fromTransferFile, toTransferFile);
+                            } else {
+                                // file not exists remotely => not error
+                                return true;
+                            }
                         }
                     } finally {
                         client.disconnect();

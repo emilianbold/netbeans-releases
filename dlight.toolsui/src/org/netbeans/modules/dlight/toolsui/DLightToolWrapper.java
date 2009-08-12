@@ -36,34 +36,49 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.toolsui;
 
-package org.netbeans.modules.php.symfony.ui.actions;
-
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author thp
  */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -22735302227232842L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public class DLightToolWrapper {
 
-    private RunCommandAction() {
+    private DLightTool dLightTool;
+    private boolean enabled;
+
+    public DLightToolWrapper(DLightTool dLightTool, boolean enabled) {
+        this.dLightTool = dLightTool;
+        this.enabled = enabled;
     }
 
-    public static RunCommandAction getInstance() {
-        return INSTANCE;
+    /**
+     * @return the dLightTool
+     */
+    public DLightTool getdLightTool() {
+        return dLightTool;
     }
 
-    @Override
-    public void actionPerformed(PhpModule phpModule) {
-        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+    /**
+     * @param dLightTool the dLightTool to set
+     */
+    public void setdLightTool(DLightTool dLightTool) {
+        this.dLightTool = dLightTool;
     }
 
-    @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    /**
+     * @return the enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled the enabled to set
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

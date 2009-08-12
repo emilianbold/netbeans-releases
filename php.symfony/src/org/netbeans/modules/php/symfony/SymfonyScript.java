@@ -158,7 +158,7 @@ public class SymfonyScript extends PhpProgram {
 
     public boolean initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
-        SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
+        SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -171,7 +171,7 @@ public class SymfonyScript extends PhpProgram {
         assert params != null;
 
         String[] cmdParams = mergeArrays(params, new String[]{app});
-        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -182,7 +182,7 @@ public class SymfonyScript extends PhpProgram {
         assert phpModule != null;
         assert command != null;
 
-        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand());
         assert processBuilder != null;
 
