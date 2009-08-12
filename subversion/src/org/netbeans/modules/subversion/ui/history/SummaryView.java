@@ -41,6 +41,7 @@
 package org.netbeans.modules.subversion.ui.history;
 
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -73,6 +74,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.plaf.TextUI;
 import org.netbeans.modules.subversion.FileStatusCache;
+import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
@@ -173,7 +175,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (diffBounds != null && diffBounds.contains(p)) {
             revertModifications(new int [] { idx });
         }
-        Linker l = (Linker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + idx);// NOI18N
+        IssueLinker l = (IssueLinker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + idx);// NOI18N
         if(l != null) {
             for (int i = 0; i < l.start.length; i++) {
                 if (l.bounds != null && l.bounds[i] != null && l.bounds[i].contains(p)) {
@@ -224,7 +226,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
         }
-        Linker l = (Linker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + idx);
+        IssueLinker l = (IssueLinker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + idx);
         if(l != null) {
             for (int i = 0; i < l.start.length; i++) {
                 if (l.bounds != null && l.bounds[i] != null && l.bounds[i].contains(p)) {
@@ -567,16 +569,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
-    private class Linker {
-        HyperlinkProvider hp;
-        Rectangle bounds[];
-        int docstart[];
-        int docend[];
-        int start[];
-        int end[];
-        String text[];
-    }
-
     private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
@@ -704,55 +696,20 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
                 sd.insertString(sd.getLength(), commitMessage, null);
 
-                int len = commitMessage.length();
-                int doclen = sd.getLength();
                 for (HyperlinkProvider hp : hpInstances) {
-                    int[] spans = hp.getSpans(commitMessage);
-                    if (spans == null) {
-                        break;
-                    }
-                    if(spans.length % 2 != 0) {
-                        // XXX more info and log only _ONCE_
-                        Subversion.LOG.warning("Hyperlink provider " + hp.getClass().getName() + " returns wrong spans");
-                        break;
-                    }
-                    if(spans.length > 0) {
-                        Linker l = new Linker();
-
-                        l.docstart = new int[spans.length / 2];
-                        l.docend = new int[spans.length / 2];
-                        l.start = new int[spans.length / 2];
-                        l.end = new int[spans.length / 2];
-                        l.text = new String[spans.length / 2];
-                        for (int i = 0; i < spans.length;) {
-                            int linkeridx = i / 2;
-                            int start = spans[i++];
-                            int end = spans[i++];
-                            if(end < start) {
-                                Subversion.LOG.warning("Hyperlink provider " + hp.getClass().getName() + " returns wrong spans [" + start + "," + end + "]");
-                                continue;
-                            }
-                            sd.setCharacterAttributes(doclen - len + start, end - start, hyperlinkStyle, false);
-                            int docstart = doclen - len + start;
-                            int docend = docstart + end - start;
-
-
-                            l.hp = hp;
-                            l.start[linkeridx] = start;
-                            l.end[linkeridx] = end;
-                            l.docstart[linkeridx] = docstart;
-                            l.docend[linkeridx] = docend;
-                            l.text[linkeridx] = commitMessage;
-
-                        }
+                    IssueLinker l = IssueLinker.create(hp, sd, hyperlinkStyle, commitMessage);
+                    if(l != null) {
                         resultsList.putClientProperty(HLINK_ISSUE_PROPERTY + index, l); // NOI18N
+                        break; // get the first one
                     }
                 }
 
+                int msglen = commitMessage.length();
+                int doclen = sd.getLength();
                 if (message != null && !isSelected) {
                     int idx = commitMessage.indexOf(message);
                     if (idx != -1) {
-                        sd.setCharacterAttributes(doclen - len + idx, message.length(), hiliteStyle, true);
+                        sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
                     }
                 }
 
@@ -822,34 +779,21 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             if (index == -1) return;
             Rectangle apb = actionsPane.getBounds();
 
-            {
-                Rectangle bounds = diffLink.getBounds();
-                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
-            }
+            Rectangle bounds = diffLink.getBounds();
+            bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+            resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
 
-            Rectangle bounds = revertLink.getBounds();
+            bounds = revertLink.getBounds();
             bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
             resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
-
-            Rectangle tpBounds = textPane.getBounds();
-            try {
-                Linker l = (Linker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + index); // NOI18N
-                if(l != null) {
-                    TextUI tui = textPane.getUI();
-                    l.bounds = new Rectangle[l.docstart.length];
-                    for (int i = 0; i < l.docstart.length; i++) {
-                        Rectangle startr = tui.modelToView(textPane, l.docstart[i], Position.Bias.Forward).getBounds();
-                        Rectangle endr = tui.modelToView(textPane, l.docend[i], Position.Bias.Backward).getBounds();
-                        bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
-                        l.bounds[i] = bounds;
-                    }
-                    resultsList.putClientProperty(HLINK_ISSUE_PROPERTY + index, l); // NOI18N
-                }
-            } catch (BadLocationException ex) {
-
+            
+            IssueLinker l = (IssueLinker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + index); // NOI18N
+            if(l != null) {
+                l.paint(textPane, bounds);
             }
-        }
+            
+        }        
+
     }
 
     private static class HyperlinkLabel extends JLabel {
@@ -881,4 +825,83 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             setBackground(background);
         }
     }
+
+    private static class IssueLinker {
+
+        Rectangle bounds[];
+        final int docstart[];
+        final int docend[];
+        final int start[];
+        final int end[];
+        final String text[];
+        final HyperlinkProvider hp;
+        private final int length;
+
+        IssueLinker(HyperlinkProvider hp, StyledDocument sd, Style hyperlinkStyle, String text, int[] spans) {
+            int doclen = sd.getLength();
+            int textlen = text.length();
+            this.length = spans.length / 2;
+            this.docstart = new int[length];
+            this.docend = new int[length];
+            this.start = new int[length];
+            this.end = new int[length];
+            this.text = new String[length];
+            this.hp = hp;
+            
+            for (int i = 0; i < spans.length;) {
+                int linkeridx = i / 2;
+                int start = spans[i++];
+                int end = spans[i++];
+                if(end < start) {
+                    Subversion.LOG.warning("Hyperlink provider " + hp.getClass().getName() + " returns wrong spans [" + start + "," + end + "]");
+                    continue;
+                }
+
+                int docstart = doclen - textlen + start;
+                int docend = docstart + end - start;
+
+                this.start[linkeridx] = start;
+                this.end[linkeridx] = end;
+                this.docstart[linkeridx] = docstart;
+                this.docend[linkeridx] = docend;
+                this.text[linkeridx] = text;
+
+                sd.setCharacterAttributes(doclen - textlen + start, end - start, hyperlinkStyle, false);
+            }
+        }
+
+        static IssueLinker create(HyperlinkProvider hp, StyledDocument sd, Style hyperlinkStyle, String text) {
+            int[] spans = hp.getSpans(text);
+            if (spans == null) {
+                return null;
+            }
+            if(spans.length % 2 != 0) {
+                // XXX more info and log only _ONCE_
+                Subversion.LOG.warning("Hyperlink provider " + hp.getClass().getName() + " returns wrong spans");
+                return null;
+            }
+            if(spans.length > 0) {
+                IssueLinker l = new IssueLinker(hp, sd, hyperlinkStyle, text, spans);
+                return l;
+            }
+            return null;
+        }
+
+        void paint(JTextPane textPane, Rectangle bounds) {
+            Rectangle tpBounds = textPane.getBounds();
+            TextUI tui = textPane.getUI();
+            this.bounds = new Rectangle[length];
+            for (int i = 0; i < length; i++) {
+                try {
+                    Rectangle startr = tui.modelToView(textPane, docstart[i], Position.Bias.Forward).getBounds();
+                    Rectangle endr = tui.modelToView(textPane, docend[i], Position.Bias.Backward).getBounds();
+                    bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                    this.bounds[i] = bounds;
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
 }
