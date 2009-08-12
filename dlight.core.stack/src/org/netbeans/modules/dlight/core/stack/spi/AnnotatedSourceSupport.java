@@ -40,6 +40,7 @@
 package org.netbeans.modules.dlight.core.stack.spi;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
@@ -54,9 +55,10 @@ public interface AnnotatedSourceSupport {
     /**
      * This method is invoked in non UI thread
      * @param sourceFileInfoProvider source file info provider which can be used to get the source file info for the function call
+     * @param metrics metrics list which were displayed
      * @param functionCallsthe list of function calls with the metrics
      */
-    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<FunctionCallWithMetric> functionCalls);
+    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
 
 
 }
