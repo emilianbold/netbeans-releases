@@ -54,15 +54,13 @@ static void new_connection_start_function(void* data) {
             fprintf(stdout, "%s\n", request);
             fflush(stdout);
 
+            memset(response, 0, sizeof (response));
             #if TRACE
-            if (emulate) {
+            if (emulate)
                 response[0] = response_ok;
-                response[1] = 0;
-            } else {
-                memset(response, 0, sizeof (response));
-                gets(response);
-            }
+            else
             #endif
+            gets(response);
             fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
             pthread_mutex_unlock(&mutex);
             trace("Got reply: %s set %X->state to %d\n", response, fd, fd->state);
