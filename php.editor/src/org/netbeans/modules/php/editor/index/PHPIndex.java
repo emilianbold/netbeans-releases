@@ -96,7 +96,7 @@ public class PHPIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE ,PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
 
     private final QuerySupport index;
 
@@ -137,8 +137,7 @@ public class PHPIndex {
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
         findClasses(result, nameKind, prefix, classes);
-        //TODO: for some reason doesn't work - check
-        //findInterfaces(result, nameKind, prefix, interfaces);
+        findInterfaces(result, nameKind, prefix, interfaces);
         findTopVariables(result, nameKind, prefix, vars);
         elements.addAll(functions);
         elements.addAll(constants);
