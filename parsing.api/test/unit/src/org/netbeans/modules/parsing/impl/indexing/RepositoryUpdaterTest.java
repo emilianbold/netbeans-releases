@@ -268,6 +268,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
 
     /* package */ static void waitForRepositoryUpdaterInit() throws Exception {
+        RepositoryUpdater.getDefault().ignoreIndexerCacheEvents(true);
         RepositoryUpdater.getDefault().start(true);
         RepositoryUpdater.State state;
         long time = System.currentTimeMillis();
