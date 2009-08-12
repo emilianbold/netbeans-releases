@@ -6,7 +6,7 @@ enum {
 };
 
 #if TRACE
-#define trace(args...) { fprintf(stderr, "!RFS> "); fprintf(stderr, ## args); }
+#define trace(args...) { fprintf(stderr, "!RFS> "); fprintf(stderr, ## args); fflush(stderr); }
 #else
 #define trace(...) 
 #endif

@@ -63,9 +63,9 @@ static void new_connection_start_function(void* data) {
                 gets(response);
             }
             #endif
-            //strcpy(response, "ok");
-            fd->state = (response[1] == response_ok) ? file_state_ok : file_state_error;
+            fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
             pthread_mutex_unlock(&mutex);
+            trace("Got reply: %s set %X->state to %d\n", response, fd, fd->state);
         } else {
             if (fd->state == file_state_ok) {
                 response[0] = response_ok;
@@ -73,9 +73,9 @@ static void new_connection_start_function(void* data) {
                 response[0] = response_failure;
             }
             response[1] = 0;
+            trace("Filled reply: %s\n", response);
         }
-
-        trace("Reply: %s\n", response);
+        
         if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
             perror("send");
         } else {
