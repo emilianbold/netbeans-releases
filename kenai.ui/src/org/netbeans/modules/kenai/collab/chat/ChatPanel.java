@@ -194,6 +194,32 @@ public class ChatPanel extends javax.swing.JPanel {
     private static final Pattern RESOURCES =
             Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
 
+    private void insertLinkToEditor() {
+        JTextComponent component = EditorRegistry.lastFocusedComponent();
+        if (component != null) {
+            Document document = component.getDocument();
+            FileObject fo = NbEditorUtilities.getFileObject(document);
+            int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition()) + 1;
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            String outText = ""; //NOI18N
+            if (cp != null) {
+                outText = cp.getResourceName(fo);
+            } else {
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    outText = "{$" + ProjectUtils.getInformation(p).getName() + "}/" + FileUtil.getRelativePath(p.getProjectDirectory(), fo); //NOI18N
+                } else {
+                    outText = fo.getPath();
+                }
+            }
+            outText += ":" + line; //NOI18N
+            try {
+                outbox.getDocument().insertString(outbox.getCaretPosition(), outText, null);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
     private void selectIssueReport(Matcher m) {
         final String issueNumber = m.group(3);
         final KenaiProject proj;
@@ -574,6 +600,8 @@ public class ChatPanel extends javax.swing.JPanel {
         outboxPanel = new javax.swing.JPanel();
         buttons = new javax.swing.JPanel();
         sendButton = new javax.swing.JButton();
+        toolbar = new javax.swing.JToolBar();
+        sendLinkButton = new javax.swing.JButton();
         outboxScrollPane = new javax.swing.JScrollPane();
         outbox = new javax.swing.JTextPane();
         inboxPanel = new javax.swing.JPanel();
@@ -601,17 +629,35 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         });
 
+        toolbar.setBorder(null);
+        toolbar.setFloatable(false);
+        toolbar.setRollover(true);
+
+        sendLinkButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/insertlink.png"))); // NOI18N
+        sendLinkButton.setFocusable(false);
+        sendLinkButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        sendLinkButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        sendLinkButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendLinkButtonActionPerformed(evt);
+            }
+        });
+        toolbar.add(sendLinkButton);
+
         org.jdesktop.layout.GroupLayout buttonsLayout = new org.jdesktop.layout.GroupLayout(buttons);
         buttons.setLayout(buttonsLayout);
         buttonsLayout.setHorizontalGroup(
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
-                .addContainerGap(223, Short.MAX_VALUE)
+                .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 225, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(sendButton)
+            .add(buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                .add(sendButton)
+                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
@@ -771,30 +817,7 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         }
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_P) {
-            JTextComponent component = EditorRegistry.lastFocusedComponent();
-            if (component!=null) {
-                Document document = component.getDocument();
-                FileObject fo = NbEditorUtilities.getFileObject(document);
-                int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition())+1;
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                String outText="";//NOI18N
-                if (cp!=null) {
-                    outText=cp.getResourceName(fo);
-                } else {
-                    Project p = FileOwnerQuery.getOwner(fo);
-                    if (p!=null) {
-                        outText = "{$" + ProjectUtils.getInformation(p).getName() +"}/"+ FileUtil.getRelativePath(p.getProjectDirectory(), fo);//NOI18N
-                    } else {
-                        outText = fo.getPath();
-                    }
-                }
-                outText+= ":" + line;//NOI18N
-                try {
-                    outbox.getDocument().insertString(outbox.getCaretPosition(), outText, null);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            insertLinkToEditor();
         }
     }//GEN-LAST:event_outboxKeyPressed
 
@@ -803,6 +826,11 @@ public class ChatPanel extends javax.swing.JPanel {
         keyTyped(e);
         outbox.requestFocus();
     }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void sendLinkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendLinkButtonActionPerformed
+        insertLinkToEditor();
+        outbox.requestFocus();
+    }//GEN-LAST:event_sendLinkButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttons;
@@ -814,8 +842,10 @@ public class ChatPanel extends javax.swing.JPanel {
     private javax.swing.JPanel outboxPanel;
     private javax.swing.JScrollPane outboxScrollPane;
     private javax.swing.JButton sendButton;
+    private javax.swing.JButton sendLinkButton;
     private javax.swing.JSplitPane splitter;
     private javax.swing.JLabel statusLine;
+    private javax.swing.JToolBar toolbar;
     private javax.swing.JPanel topPanel;
     // End of variables declaration//GEN-END:variables
 
