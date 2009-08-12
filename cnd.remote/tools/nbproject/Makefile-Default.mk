@@ -12,14 +12,14 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=cc
-CCC=CC
-CXX=CC
-FC=f95
-AS=as
+CC=gcc
+CCC=g++
+CXX=g++
+FC=
+AS=gas
 
 # Macros
-CND_PLATFORM=SunStudio-Solaris-x86
+CND_PLATFORM=GNU-Solaris-x86
 CND_CONF=Default
 CND_DISTDIR=dist
 
