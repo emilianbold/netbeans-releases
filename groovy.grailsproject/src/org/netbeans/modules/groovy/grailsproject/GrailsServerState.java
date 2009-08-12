@@ -43,6 +43,9 @@ public class GrailsServerState {
     private Process process;
 
     /** <i>GuardedBy("this")</i> */
+    private boolean debug;
+
+    /** <i>GuardedBy("this")</i> */
     private URL url;
 
     public GrailsServerState(Project prj) {
@@ -70,6 +73,14 @@ public class GrailsServerState {
 
     public synchronized void setRunningUrl(URL url) {
         this.url = url;
+    }
+
+    public synchronized boolean isDebug() {
+        return debug;
+    }
+
+    public synchronized void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
 }

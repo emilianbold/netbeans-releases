@@ -110,7 +110,7 @@ public class GrailsCommandAction extends CallableSystemAction {
             callable = new Callable<Process>() {
                 public Process call() throws Exception {
                     Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(
-                            GrailsProjectConfig.forProject(project), params);
+                            GrailsProjectConfig.forProject(project), false, params);
                     Process process = inner.call();
                     final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
                     if (serverState != null) {
