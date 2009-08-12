@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
 
 public class EditablePropertiesTest extends NbTestCase {
@@ -251,12 +252,12 @@ public class EditablePropertiesTest extends NbTestCase {
         String output = getAsString(ep);
         String expected = "a\\ a=a space a"+System.getProperty("line.separator")+
                 "b\\u4567=val\\u1234"+System.getProperty("line.separator")+
-                "@!\\#$%^\\\\=!@#$%^&*(){}\\\\"+System.getProperty("line.separator")+
+                "@!#$%^\\\\=!@#$%^&*(){}\\\\"+System.getProperty("line.separator")+
                 "d\\nd=d\\nnewline\\nd"+System.getProperty("line.separator")+
                 "umlaut=\\u00fc"+System.getProperty("line.separator")+
                 "_a\\ a=\\"+System.getProperty("line.separator")+"    a space a"+System.getProperty("line.separator")+
                 "_b\\u4567=\\"+System.getProperty("line.separator")+"    val\\u1234"+System.getProperty("line.separator")+
-                "_@!\\#$%^\\\\=\\"+System.getProperty("line.separator")+"    !@#$%^&*\\\\\\"+System.getProperty("line.separator")+
+                "_@!#$%^\\\\=\\"+System.getProperty("line.separator")+"    !@#$%^&*\\\\\\"+System.getProperty("line.separator")+
                     "    (){}\\\\"+System.getProperty("line.separator")+
                 "_d\\nd=\\"+System.getProperty("line.separator")+"    d\\nnew\\"+System.getProperty("line.separator")+
                     "    line\\nd\\"+System.getProperty("line.separator")+
@@ -278,10 +279,17 @@ public class EditablePropertiesTest extends NbTestCase {
     }
 
     public void testMetaCharacters() throws Exception {
-        testRoundTrip("foo=bar", "v1");
-        testRoundTrip("foo:bar", "v2");
-        testRoundTrip("#foobar", "v3");
-        testRoundTrip(" foo bar ", "v4");
+        testRoundTrip("foo=bar", "v");
+        testRoundTrip("foo:bar", "v");
+        testRoundTrip("#foobar", "v");
+        testRoundTrip("foo#bar", "v");
+        testRoundTrip("foobar#", "v");
+        testRoundTrip("foobar", "#v");
+        testRoundTrip("foobar", "v#");
+        testRoundTrip(" #foo", " #bar");
+        testRoundTrip(" foo bar ", "v");
+        testRoundTrip("foobar", " v ");
+        testRoundTrip("= : # \\\n", "= : # \\\n");
     }
     private void testRoundTrip(String key, String value) throws Exception {
         EditableProperties ep = new EditableProperties(false);
@@ -291,6 +299,9 @@ public class EditablePropertiesTest extends NbTestCase {
         ep = new EditableProperties(false);
         ep.load(new ByteArrayInputStream(baos.toByteArray()));
         assertEquals(baos.toString(), Collections.singletonMap(key, value), ep);
+        Properties p = new Properties();
+        p.load(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals(baos.toString(), Collections.singletonMap(key, value), p);
     }
     
     // test that iterator implementation is OK
