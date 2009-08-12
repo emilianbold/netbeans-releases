@@ -18,6 +18,8 @@ implement logic that tracks files in remote controller
 
 - don't wait for file forever; make kindof "alive" confirmations
 
+- copy files in background upon user saves them
+
 DONE:
 
 - optimize: if the file is open for writing, do not ask controller
