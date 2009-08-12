@@ -66,7 +66,6 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
@@ -135,17 +134,8 @@ public final class GrailsCommandSupport {
 
     public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory, final boolean debug) {
         if (GrailsPlatform.IDE_RUN_COMMAND.equals(command)) {
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
-                    if (serverState != null) {
-                        serverState.setProcess(null);
-                        serverState.setRunningUrl(null);
-                    }
-                }
-            };
 
-            ExecutionDescriptor descriptor = RUN_DESCRIPTOR.postExecution(runnable);
+            ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
             InputProcessorFactory urlFactory = new InputProcessorFactory() {
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     return InputProcessors.proxy(defaultProcessor,

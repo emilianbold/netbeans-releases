@@ -63,6 +63,7 @@ public final class THAActionsProvider {
 
     private final static THAActionsProvider instance = new THAActionsProvider();
     private Action startThreadAnalyzer;
+    private Action startThreadAnalyzerConfiguration;
     private RemoveInstrumentationAction removeInstrumentation;
 
     private THAActionsProvider() {
@@ -71,6 +72,10 @@ public final class THAActionsProvider {
 
     public static THAActionsProvider getDefault() {
         return instance;
+    }
+
+    public Action getStartTHAConfigurationAction(){
+        return startThreadAnalyzerConfiguration;
     }
 
     public Action getStartThreadAnalysisAction() {
@@ -134,6 +139,56 @@ public final class THAActionsProvider {
         startThreadAnalyzer.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
 
         removeInstrumentation = new RemoveInstrumentationAction();
+        startThreadAnalyzerConfiguration = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
+
+            public synchronized boolean enable(final Project project) {
+                boolean result = THAProjectSupport.getSupportFor(project) != null;
+
+                if (result) {
+                    removeInstrumentation.setProject(project);
+                }
+
+                return result;
+            }
+
+            public void perform(final Project project) {
+                if (project == null) {
+                    return;
+                }
+
+                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
+
+                if (support == null) {
+                    return;
+                }
+
+                if (!support.isConfiguredForInstrumentation()) {
+                    boolean instrResult = support.doInstrumentation();
+                    if (!instrResult) {
+                        return;
+                    }
+                }
+
+
+
+                // Initiate RUN ...
+                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+                if (ap != null) {
+                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
+                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.getDefault())); // NOI18N
+                    }
+                }
+
+
+                // Disable ???
+            }
+        }, loc("LBL_THAMainProjectAction"), null); // NOI18N
+
+        startThreadAnalyzerConfiguration.putValue("command", "THAProfile"); // NOI18N
+        startThreadAnalyzerConfiguration.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        startThreadAnalyzerConfiguration.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
+        startThreadAnalyzerConfiguration.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
     }
 
     private static String loc(String key, String... params) {

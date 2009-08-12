@@ -8,7 +8,7 @@ import java.util.Collection;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
-import org.netbeans.modules.dlight.visualizers.SourceSupportProvider;
+import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import org.openide.util.Lookup;
 
 /**

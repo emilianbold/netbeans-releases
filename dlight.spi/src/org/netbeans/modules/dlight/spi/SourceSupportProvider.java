@@ -37,34 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.analyzer;
+package org.netbeans.modules.dlight.spi;
 
-import java.util.Map;
-import java.util.Set;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
-/**
- *
- * @author Andrei Badea
- */
-public class FromClause {
 
-    private final Set<QualIdent> unaliasedTableNames;
-    private final Map<String, QualIdent> aliasedTableNames;
 
-    public FromClause(Set<QualIdent> unaliasedTableNames, Map<String, QualIdent> aliasedTableNames) {
-        this.unaliasedTableNames = unaliasedTableNames;
-        this.aliasedTableNames = aliasedTableNames;
-    }
 
-    public Set<QualIdent> getUnaliasedTableNames() {
-        return unaliasedTableNames;
-    }
+public interface SourceSupportProvider {
+    void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
+    void showSource(SourceFileInfo lineInfo);
 
-    public Map<String, QualIdent> getAliasedTableNames() {
-        return aliasedTableNames;
-    }
-
-    public QualIdent getTableNameByAlias(String alias) {
-        return aliasedTableNames.get(alias);
-    }
 }

@@ -53,7 +53,15 @@ public class GrailsServerState {
     }
 
     public synchronized boolean isRunning() {
-        return process != null;
+        if (process == null) {
+            return false;
+        }
+        try {
+            int exitVal = process.exitValue();
+            return false;
+        } catch (IllegalThreadStateException ex) {
+            return true;
+        }
     }
 
     public synchronized Process getProcess() {

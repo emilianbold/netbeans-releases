@@ -65,7 +65,10 @@ public class SQLCompletion {
         }
         SQLCompletionEnv env = SQLCompletionEnv.forStatement(statement, 0, null);
         SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind(env.getTokenSequence());
-        return kind == SQLStatementKind.SELECT || kind == SQLStatementKind.INSERT || kind == SQLStatementKind.DROP;
+        return kind == SQLStatementKind.SELECT
+                || kind == SQLStatementKind.INSERT
+                || kind == SQLStatementKind.DROP
+                || kind == SQLStatementKind.UPDATE;
     }
 
     private SQLCompletion(SQLCompletionContext initContext) {

@@ -50,7 +50,6 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
@@ -132,11 +131,18 @@ public class GrailsActionProvider implements ActionProvider {
     private void executeRunAction(final boolean debug) {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
-            URL url = serverState.getRunningUrl();
-            if (url != null) {
-                GrailsCommandSupport.showURL(url, debug, project);
+            if (!debug || debug == serverState.isDebug()) {
+                URL url = serverState.getRunningUrl();
+                if (url != null) {
+                    GrailsCommandSupport.showURL(url, debug, project);
+                }
+                return;
+            } else {
+                Process process = serverState.getProcess();
+                if (process != null) {
+                    process.destroy();
+                }
             }
-            return;
         }
 
         Callable<Process> callable = new Callable<Process>() {
@@ -148,6 +154,7 @@ public class GrailsActionProvider implements ActionProvider {
                 final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
                 if (serverState != null) {
                     serverState.setProcess(process);
+                    serverState.setDebug(debug);
                 }
                 return process;
             }

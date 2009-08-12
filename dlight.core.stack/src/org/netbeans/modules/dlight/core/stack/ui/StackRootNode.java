@@ -74,7 +74,7 @@ final class StackRootNode extends AbstractNode{
 
     @Override
     public Image getIcon(int type) {
-      return icon;
+      return icon == null ? super.getIcon(type) : icon;
     }
 
     @Override

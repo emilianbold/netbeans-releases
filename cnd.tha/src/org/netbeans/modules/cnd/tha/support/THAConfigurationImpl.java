@@ -63,7 +63,7 @@ public class THAConfigurationImpl implements THAConfiguration {
             }
         };
 
-        raceDetectionSwitch.setBooleanState(false);
+        raceDetectionSwitch.setBooleanState(true);
 
         onStartDetectionSwitch = new BooleanStateAction() {
 
