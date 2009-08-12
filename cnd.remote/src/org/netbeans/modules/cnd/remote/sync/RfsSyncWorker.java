@@ -90,9 +90,20 @@ class RfsSyncWorker extends ZipSyncWorker {
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
+        final String remoteControllerPath = System.getProperty("cnd.remote.fs.controller");
+        //FIXUP: until the project system infrastructure is ready...
+        {
+            int pos = remoteControllerPath.lastIndexOf('/');
+            String name = (pos > 0) ? remoteControllerPath.substring(pos+1) : remoteControllerPath;
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            pb.setExecutable("pkill");
+            pb.setArguments(name);
+            pb.call().waitFor();
+        }
+
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
         //TODO: replace as soon as setup is written
-        pb.setExecutable(System.getProperty("cnd.remote.fs.controller")); //I18N
+        pb.setExecutable(remoteControllerPath); //I18N
         NativeProcess remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
