@@ -98,7 +98,7 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
         PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
         assert phpModule != null : "php module must be found for " + project.getProjectDirectory();
         for (PhpFrameworkProvider framework : ProjectPropertiesSupport.getFrameworks(project)) {
-            PhpModuleVisibilityExtender visibilityExtender = framework.createVisibilityExtender(phpModule);
+            PhpModuleVisibilityExtender visibilityExtender = framework.getVisibilityExtender(phpModule);
             if (visibilityExtender != null) {
                 if (!visibilityExtender.isVisible(file)) {
                     return true;

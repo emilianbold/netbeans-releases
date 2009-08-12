@@ -111,17 +111,17 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public PhpModuleActionsExtender createActionsExtender(PhpModule phpModule) {
+    public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
         return new SymfonyPhpModuleActionsExtender();
     }
 
     @Override
-    public PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule) {
+    public PhpModuleVisibilityExtender getVisibilityExtender(PhpModule phpModule) {
         return new SymfonyPhpModuleVisibilityExtender(phpModule);
     }
 
     @Override
-    public SymfonyCommandSupport createFrameworkCommandSupport(PhpModule phpModule) {
+    public SymfonyCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return new SymfonyCommandSupport(phpModule);
     }
 }

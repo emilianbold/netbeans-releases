@@ -67,6 +67,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -334,7 +335,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnectionHintLabel.setText(" "); // NOI18N
             return;
         }
-        remoteConnectionHintLabel.setText(configuration.getUrl(uploadDirectoryTextField.getText()));
+        remoteConnectionHintLabel.setText(configuration.getUrl(RunAsValidator.sanitizeUploadDirectory(uploadDirectoryTextField.getText(), true)));
     }
 
     /** This method is called from within the constructor to
@@ -546,6 +547,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         public FieldUpdater(String propName, JLabel label, JTextField field) {
             super(propName, label, field);
+        }
+
+        @Override
+        protected String getPropValue() {
+            String value = super.getPropValue();
+            if (getPropName().equals(RunConfigurationPanel.REMOTE_DIRECTORY)) {
+                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+            }
+            return value;
         }
 
         protected final String getDefaultValue() {
