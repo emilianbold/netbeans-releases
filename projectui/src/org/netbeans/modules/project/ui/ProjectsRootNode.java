@@ -548,10 +548,10 @@ public class ProjectsRootNode extends AbstractNode {
                 OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
                 BadgingLookup bl = (BadgingLookup) getLookup();
                 if (bl.isSearchInfo()) {
-                    OpenProjectList.log(Level.FINER, "is search info {0}", bl);
+                    OpenProjectList.log(Level.FINER, "is search info {0}", newProj);
                     bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
                 } else {
-                    OpenProjectList.log(Level.FINER, "no search info {0}", bl);
+                    OpenProjectList.log(Level.FINER, "no search info {0}", newProj);
                     bl.setMyLookups(n.getLookup());
                 }
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
