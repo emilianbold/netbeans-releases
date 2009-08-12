@@ -665,6 +665,7 @@ public class JavacParser extends Parser {
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
+            options.add("-XD-Xprefer=source");     //NOI18N
             options.add("-target");                     //NOI18N
             options.add(validatedSourceLevel.requiredTarget().name);
         }
