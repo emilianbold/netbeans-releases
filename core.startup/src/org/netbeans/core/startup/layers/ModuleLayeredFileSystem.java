@@ -88,7 +88,7 @@ implements LookupListener {
     /** other layers */
     private final FileSystem[] otherLayers;
     /** addLookup */
-    private final boolean addLookup;
+    private final boolean addLookupBefore;
 
     /** Create layered filesystem based on a supplied writable layer.
      * @param userDir is this layer for modules from userdir or not?
@@ -116,7 +116,7 @@ implements LookupListener {
         this.writableLayer = writableLayer;
         this.otherLayers = otherLayers;
         this.cacheLayer = cacheLayer;
-        this.addLookup = addLookup;
+        this.addLookupBefore = addLookup;
         
         // Wish to permit e.g. a user-installed module to mask files from a
         // root-installed module, so propagate masks up this high.
@@ -126,19 +126,20 @@ implements LookupListener {
         
         urls = null;
 
-        if (addLookup) {
-            result.addLookupListener(this);
-            result.allItems();
-        }
-        
+        result.addLookupListener(this);
+        result.allItems();
     }
     
-    private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
+    private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookupBefore, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
         List<FileSystem> l = new ArrayList<FileSystem>(fs2s.length + 2);
         l.add(fs1);
-        if (addLookup) {
-            Collection<? extends FileSystem> fromLookup = result.allInstances();
-            l.addAll(fromLookup);
+        if (addLookupBefore) {
+            for (FileSystem f : result.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    continue;
+                }
+                l.add(f);
+            }
         }
         l.addAll(Arrays.asList(fs2s));
         l.add(fs3);
@@ -173,6 +174,13 @@ implements LookupListener {
                 err.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {
                 err.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
+            }
+        }
+        if (!addLookupBefore) {
+            for (FileSystem f : result.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    l.add(f);
+                }
             }
         }
         return l.toArray(new FileSystem[l.size()]);
@@ -246,7 +254,7 @@ implements LookupListener {
             }
             cacheLayer = manager.store(cacheLayer, urls);
             err.log(Level.FINEST, "changing delegates");
-            setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
+            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
             err.log(Level.FINEST, "delegates changed");
         }
         
@@ -278,7 +286,7 @@ implements LookupListener {
     
     /** Refresh layers */
     public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
+        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
     }
     
     private static void setStatusText (String msg) {

@@ -133,13 +133,19 @@ public class JsfElExpression extends ELExpression {
             }
             //This part look for variables defined in JSP/JSF code
             if (!beans.isEmpty() && value == EL_UNKNOWN) {
-                JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(getFileObject()).getCachedParseResult(getFileObject(), false, true);
-                Node.Nodes nodes = result.getNodes();
-                Node node = findValue(nodes, first);
-                if (node != null) {
-                    String ref_val = node.getAttributeValue(VALUE_NAME);
-                    bundleName = ref_val;
-                    value = EL_JSF_BEAN_REFERENCE;
+                FileObject fileObject = getFileObject();
+                JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
+                if (contextInfo !=null) {
+                    JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
+                    if (result !=null) {
+                        Node.Nodes nodes = result.getNodes();
+                        Node node = findValue(nodes, first);
+                        if (node != null) {
+                            String ref_val = node.getAttributeValue(VALUE_NAME);
+                            bundleName = ref_val;
+                            value = EL_JSF_BEAN_REFERENCE;
+                        }
+                    }
                 }
 
             }

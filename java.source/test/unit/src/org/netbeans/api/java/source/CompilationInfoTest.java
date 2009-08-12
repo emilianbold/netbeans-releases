@@ -36,34 +36,70 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.api.java.source;
 
-package org.netbeans.modules.php.symfony.ui.actions;
-
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+import javax.lang.model.SourceVersion;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author Dusan Balek
  */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -22735302227232842L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public class CompilationInfoTest extends NbTestCase {
 
-    private RunCommandAction() {
-    }
+    private static final String TEST_FILE_CONTENT =
+            "public class {0} '{\n" + "   public static void main (String[] args) {\n" + "   }\n" + "}'\n";
 
-    public static RunCommandAction getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public void actionPerformed(PhpModule phpModule) {
-        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+    public CompilationInfoTest(String name) {
+        super(name);
     }
 
     @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    public void setUp() throws Exception {
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+    }
+
+    /**
+     * Test of getSourceVersion method, of class CompilationInfo.
+     */
+    @Test
+    public void testGetSourceVersion() throws Exception {
+        FileObject test = createTestFile("Test1");
+        JavaSource js = JavaSource.forFileObject(test);
+        js.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController parameter) throws Exception {
+
+                SourceVersion version = parameter.getSourceVersion();
+                assertNotNull(version);
+            }
+        }, true);
+    }
+
+    private FileObject createTestFile(String className) {
+        try {
+            File workdir = this.getWorkDir();
+            File root = new File(workdir, "src");
+            root.mkdir();
+            File data = new File(root, className + ".java");
+
+            PrintWriter out = new PrintWriter(new FileWriter(data));
+            try {
+                out.println(MessageFormat.format(TEST_FILE_CONTENT, new Object[]{className}));
+            } finally {
+                out.close();
+            }
+            return FileUtil.toFileObject(data);
+        } catch (IOException ioe) {
+            return null;
+        }
     }
 }

@@ -61,11 +61,17 @@ public final class RuntimeHelper {
 
     public static final String WIN_EXECUTABLE = "\\bin\\" + WIN_EXECUTABLE_FILE; // NOI18N
 
+    public static final String WIN_DEBUG_EXECUTABLE = "\\bin\\grails-debug.bat"; // NOI18N
+
     public static final String NIX_EXECUTABLE_FILE = "grails"; // NOI18N
 
     public static final String NIX_EXECUTABLE = "/bin/" + NIX_EXECUTABLE_FILE; // NOI18N
 
+    public static final String NIX_DEBUG_EXECUTABLE = "/bin/grails-debug"; // NOI18N
+
     public static final String DEB_EXECUTABLE = "/usr/bin/" + NIX_EXECUTABLE_FILE; // NOI18N
+
+    public static final String DEB_DEBUG_EXECUTABLE = "/usr/bin/grails-debug"; // NOI18N
 
     public static final String DEB_START_FILE = "/bin/startGrails"; // NOI18N
 
@@ -90,6 +96,37 @@ public final class RuntimeHelper {
         return new File(grailsBase, DEB_START_FILE).isFile()
                 && new File(DEB_EXECUTABLE).isFile()
                 && FileUtil.normalizeFile(grailsBase).equals(new File(DEB_LOCATION));
+    }
+
+    public static File getGrailsExecutable(File grailsBase, boolean debug) {
+        assert grailsBase != null;
+        if (grailsBase == null) {
+            return null;
+        }
+
+        File grailsExecutable = null;
+        if (debug) {
+            if (Utilities.isWindows()) {
+              grailsExecutable = new File(grailsBase, RuntimeHelper.WIN_DEBUG_EXECUTABLE);
+            } else {
+                if (RuntimeHelper.isDebian(grailsBase)) {
+                    grailsExecutable = new File(RuntimeHelper.DEB_DEBUG_EXECUTABLE);
+                } else {
+                    grailsExecutable = new File(grailsBase, RuntimeHelper.NIX_DEBUG_EXECUTABLE);
+                }
+            }
+        } else {
+            if (Utilities.isWindows()) {
+              grailsExecutable = new File(grailsBase, RuntimeHelper.WIN_EXECUTABLE);
+            } else {
+                if (RuntimeHelper.isDebian(grailsBase)) {
+                    grailsExecutable = new File(RuntimeHelper.DEB_EXECUTABLE);
+                } else {
+                    grailsExecutable = new File(grailsBase, RuntimeHelper.NIX_EXECUTABLE);
+                }
+            }
+        }
+        return grailsExecutable;
     }
 
     public static String getRuntimeVersion(File grailsBase) {

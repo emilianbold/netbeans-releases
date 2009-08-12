@@ -317,9 +317,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (!isCoverageEnabled()
-                    || !allTests(info)) {
-                // XXX not enabled or just one test case (could be handled later)
+            if (!isCoverageEnabled()) {
                 return;
             }
 
@@ -334,7 +332,11 @@ class ConfigActionTest extends ConfigAction {
             if (!PhpUnit.KEEP_LOGS) {
                 PhpUnit.COVERAGE_LOG.delete();
             }
-            coverageProvider.setCoverage(coverage);
+            if (allTests(info)) {
+                coverageProvider.setCoverage(coverage);
+            } else {
+                coverageProvider.updateCoverage(coverage);
+            }
         }
     }
 
