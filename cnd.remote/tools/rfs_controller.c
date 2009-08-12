@@ -93,6 +93,7 @@ static void new_connection_start_function(void* data) {
 }
 
 int main(int argc, char* argv[]) {
+    trace_startup("RFS_CONTROLLER_LOG");
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);
@@ -152,4 +153,5 @@ int main(int argc, char* argv[]) {
     }
 
     close(sd);
+    trace_shutdown();
 }
