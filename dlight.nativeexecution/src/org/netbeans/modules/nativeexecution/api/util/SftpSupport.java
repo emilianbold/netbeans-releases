@@ -102,7 +102,7 @@ class SftpSupport {
     private SftpSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
         // we've got some sftp issues => only 1 task at a moment
-        requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1);
+        requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); //NOI18N
     }
 
 
@@ -119,7 +119,7 @@ class SftpSupport {
                 Session session =
                     ConnectionManagerAccessor.getDefault().getConnectionSession(
                     ConnectionManager.getInstance(), execEnv, true);
-                channel = (ChannelSftp) session.openChannel("sftp");
+                channel = (ChannelSftp) session.openChannel("sftp"); //NOI18N
                 channel.connect();
             }
         }
@@ -175,7 +175,7 @@ class SftpSupport {
             final int mask, final Writer error) {
 
             Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error);
-            FutureTask<Integer> ftask = new FutureTask(uploader);
+            FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
             requestProcessor.post(ftask);
             LOG.fine("Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName + " schedulled");
             return ftask;
