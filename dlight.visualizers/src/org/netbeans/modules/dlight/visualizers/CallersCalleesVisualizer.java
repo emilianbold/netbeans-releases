@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;

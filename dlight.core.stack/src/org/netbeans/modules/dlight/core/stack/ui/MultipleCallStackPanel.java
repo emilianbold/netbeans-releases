@@ -40,41 +40,36 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author mt154047
  */
-public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider{
+public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider{
     private final ExplorerManager manager = new ExplorerManager();
     private final MultipleCallStackRootNode rootNode = new MultipleCallStackRootNode();
     private final BeanTreeView treeView;
+    private Lookup lookup;
 
-//    public MultipleCallStackPanel(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
-//        BeanTreeView treeView = new BeanTreeView();
-//        treeView.setRootVisible(isRootVisible);
-//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//        add(treeView);
-//        manager.setRootContext(new StackRootNode(null, rootName, stack));//NOI18N
-//    }
-//
-//
-//    public MultipleCallStackPanel(List<FunctionCall> stack) {
-//        this(null, false, stack);
-//    }
+
 
     private MultipleCallStackPanel(){
-        treeView = new BeanTreeView();
-        treeView.setRootVisible(true);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(treeView);
         manager.setRootContext(rootNode);//NOI18N
+        lookup = ExplorerUtils.createLookup(manager, new ActionMap());
+        treeView = new BeanTreeView();
+        treeView.setRootVisible(false);
+        add(treeView);
+
     }
 
     public static final  MultipleCallStackPanel createInstance(){
@@ -83,7 +78,20 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
     public void clean(){
         rootNode.removeAll();
-        treeView.setRootVisible(true);
+        treeView.setRootVisible(false);
+    }
+
+    @Override
+    public void addNotify() {
+      //  rootNode.update();
+        super.addNotify();
+        treeView.expandAll();
+        
+    }
+
+
+    public void expandAll(){
+        treeView.expandAll();
     }
 
     public void setRootVisible(String rootName){
@@ -100,9 +108,17 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         rootNode.add(new StackRootNode(null, rootName, stack));
     }
 
+    public void update(){
+
+    }
     public ExplorerManager getExplorerManager() {
         return manager;
     }
 
+    public Lookup getLookup() {
+        return lookup;
+    }
 
+
+ 
 }

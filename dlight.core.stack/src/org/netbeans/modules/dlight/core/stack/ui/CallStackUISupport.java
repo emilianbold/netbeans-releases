@@ -36,78 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Icon;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-final class MultipleCallStackRootNode extends AbstractNode{
-    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
-    private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
-
-    MultipleCallStackRootNode() {
-        super(Children.LEAF);
-        setDisplayName("Root");//NOI18N
-    }
-
-
-
-    void add(StackRootNode node){
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
-    }
-
-    void removeAll(){
-        children.clear();
-        setChildren(Children.LEAF);
-    }
-
-//    @Override
-//    public Image getIcon(int type) {
-//        return icon;
-//    }
-//
-//    @Override
-//    public Image getOpenedIcon(int type) {
-//        return getIcon(type);
-//    }
-
-
-
-//    @Override
-//    public String getHtmlDisplayName() {
-//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-//    }
-
-    
-
-    class MyIcon implements Icon{
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            
-        }
-
-        public int getIconWidth() {
-            return 10;
-        }
-
-        public int getIconHeight() {
-            return 10;
-        }
-        
-    }
-
+public interface CallStackUISupport {
+    public static  final Image downBadge = ImageUtilities.loadImage("org/netbeans/modules/dlight/core/stack/resources/down_20.png"); // NOI18N
+    public static final Image upBadge = ImageUtilities.loadImage("org/netbeans/modules/dlight/core/stack/resources/up_8.png"); // NOI18N
+    public static final Image functionIcon = ImageUtilities.loadImage("org/netbeans/modules/dlight/core/stack/resources/global_function.png"); // NOI18N
 }
