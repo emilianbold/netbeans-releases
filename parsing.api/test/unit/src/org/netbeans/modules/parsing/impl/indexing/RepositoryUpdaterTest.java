@@ -1103,6 +1103,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
+        public void rootsRemoved(final Iterable<? extends URL> rr) {
+            
+        }
+
+        @Override
         public String getIndexerName() {
             return "jar";
         }
@@ -1172,6 +1177,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
                     indexer.deletedFilesLatch.countDown();
                 }
             }
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> rr) {
+            
         }
 
         @Override
@@ -1282,6 +1292,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
                     indexer.deletedFilesLatch.countDown();
                 }
             }
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+            
         }
 
         @Override

@@ -1886,6 +1886,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             scannedBinaries.addAll(depCtx.scannedBinaries);
             scannedBinaries.removeAll(depCtx.oldBinaries);
 
+            notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
+
             final Level logLevel = Level.FINE;
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
@@ -2212,6 +2214,29 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     return true;
                 }
             }
+        }
+
+        private void notifyRootsRemoved (final Set<URL> binaries, final Set<URL> sources) {
+            if (!binaries.isEmpty()) {
+                final Collection<? extends BinaryIndexerFactory> binFactories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
+                final Iterable<? extends URL> roots = Collections.unmodifiableSet(binaries);
+                for (BinaryIndexerFactory binFactory : binFactories) {
+                    binFactory.rootsRemoved(roots);
+                }
+            }
+
+            if (!sources.isEmpty()) {
+                final Iterable<? extends URL> roots = Collections.unmodifiableSet(sources);
+                final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> customIndexers = IndexerCache.getCifCache().getIndexers();
+                for (IndexerCache.IndexerInfo<CustomIndexerFactory> customIndexer : customIndexers) {
+                    customIndexer.getIndexerFactory().rootsRemoved(roots);
+                }
+
+                final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> embeddingIndexers = IndexerCache.getEifCache().getIndexers();
+                for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> embeddingIndexer : embeddingIndexers) {
+                    embeddingIndexer.getIndexerFactory().rootsRemoved(roots);
+                }
+            }            
         }
 
         private static void reportRootScan(URL root, long duration) {
