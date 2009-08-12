@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.debugger.common.disassembly;
 
+import org.openide.text.Annotation;
+
 /**
  *
  * @author Egor Ushakov
@@ -57,7 +59,7 @@ public interface DisassemblyService {
      * @param annotationType
      * @return
      */
-    Object annotateAddress(String address, String annotationType);
+    Annotation annotateAddress(String address, String annotationType);
 
     /**
      * Returns line number of the instruction with the address specified, -1 if not found

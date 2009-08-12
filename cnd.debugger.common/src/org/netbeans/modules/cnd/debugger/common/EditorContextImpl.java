@@ -146,11 +146,11 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    public Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
+    public Annotation annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
         return annotate(getDataObject(url), lineNumber, annotationType, timeStamp);
     }
     
-    public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+    public Annotation annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
         CndBreakpoint b = null;
         if (timeStamp instanceof CndBreakpoint) {
             b = (CndBreakpoint) timeStamp;
@@ -175,7 +175,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return true if annotation has been successfully removed
      */
-    public void removeAnnotation(Object a) {
+    public void removeAnnotation(Annotation a) {
         DebuggerAnnotation annotation = (DebuggerAnnotation) a;
         annotation.detach();
     }
