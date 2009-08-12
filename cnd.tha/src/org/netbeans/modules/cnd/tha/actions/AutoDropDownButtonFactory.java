@@ -69,7 +69,7 @@ public final class AutoDropDownButtonFactory {
                 if (!action.isEnabled()) {
                     return;
                 }
-                
+
                 for (MouseListener l : listeners) {
                     l.mousePressed(e);
                 }
@@ -84,33 +84,33 @@ public final class AutoDropDownButtonFactory {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseExited(e);
-                }
+//                for (MouseListener l : listeners) {
+//                    l.mouseExited(e);
+//                }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                for (MouseListener l : listeners) {
-                    l.mouseReleased(e);
-                }
+//                for (MouseListener l : listeners) {
+//                    l.mouseReleased(e);
+//                }
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                if (!action.isEnabled()) {
-                    return;
-                }
-
-                if (e.getSource() != button) {
-                    return;
-                }
-
-                int dx = button.getWidth() - e.getX() - 1;
-                e.translatePoint(dx, 0);
-                for (MouseListener l : listeners) {
-                    l.mousePressed(e);
-                }
+//                if (!action.isEnabled()) {
+//                    return;
+//                }
+//
+//                if (e.getSource() != button) {
+//                    return;
+//                }
+//
+//                int dx = button.getWidth() - e.getX() - 1;
+//                e.translatePoint(dx, 0);
+//                for (MouseListener l : listeners) {
+//                    l.mousePressed(e);
+//                }
             }
         });
 

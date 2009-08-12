@@ -37,77 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
+package org.netbeans.modules.dlight.core.stack.spi;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
- *
- * @author mt154047
+ * Provides the following service:
+ * in case UI visualizer shows list of function calls with the metrics list
+ * one the list is updated showSource method will be invoked,
+ * it is also will be invoked on Go To Source action from the View 
+ * @author Maria Tishkova
  */
-final class MultipleCallStackRootNode extends AbstractNode{
-    private final List<StackRootNode> children = new ArrayList<StackRootNode>();
-    private final Image  icon = ImageUtilities.icon2Image(new MyIcon());
+public interface AnnotatedSourceSupport {
+    /**
+     * This method is invoked in non UI thread
+     * @param sourceFileInfoProvider source file info provider which can be used to get the source file info for the function call
+     * @param metrics metrics list which were displayed
+     * @param functionCallsthe list of function calls with the metrics
+     */
+    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
 
-    MultipleCallStackRootNode() {
-        super(Children.LEAF);
-        setDisplayName("Root");//NOI18N
-    }
-
-
-
-    void add(StackRootNode node){
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
-    }
-
-    void removeAll(){
-        children.clear();
-        setChildren(Children.LEAF);
-    }
-
-//    @Override
-//    public Image getIcon(int type) {
-//        return icon;
-//    }
-//
-//    @Override
-//    public Image getOpenedIcon(int type) {
-//        return getIcon(type);
-//    }
-
-
-
-//    @Override
-//    public String getHtmlDisplayName() {
-//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-//    }
-
-    
-
-    class MyIcon implements Icon{
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            
-        }
-
-        public int getIconWidth() {
-            return 10;
-        }
-
-        public int getIconHeight() {
-            return 10;
-        }
-        
-    }
 
 }

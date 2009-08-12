@@ -38,63 +38,89 @@
  */
 package org.netbeans.modules.dlight.tha;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
 import javax.swing.Renderer;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import org.netbeans.module.dlight.threads.api.Datarace;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.ui.CallStackUISupport;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  * @author Alexey Vladykin
  */
-public final class MasterSlaveView<T> extends JSplitPane implements ListSelectionListener {
+public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSplitPane implements ExplorerManager.Provider {
 
-    private final JList master;
+    private final BeanTreeView master;
+    private final JPanel rightPanel = new JPanel();
     private Component slave;
     private Renderer slaveRenderer;
+    private final ExplorerManager manager = new ExplorerManager();
+    private final RootNode rootNode = new RootNode();
+    private final F nodeFactory;
 
-    public MasterSlaveView() {
-        this(Collections.<T>emptyList(), null);
+    public MasterSlaveView(F factory) {
+        this(factory, Collections.<T>emptyList(), null);
     }
 
-    public MasterSlaveView(List<? extends T> data, Renderer slaveRenderer) {
+    public MasterSlaveView(F factory, List<? extends T> data, Renderer slaveRenderer) {
         super(HORIZONTAL_SPLIT);
-        this.master = new JList(data.toArray());
-        this.master.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.master.addListSelectionListener(this);
+        this.master = new BeanTreeView();
+        master.setRootVisible(false);
         this.slaveRenderer = slaveRenderer;
+        this.nodeFactory = factory;
         setResizeWeight(0.5);
-        setLeftComponent(new JScrollPane(master));
-        showDetails(master.getSelectedValue(), false);
+        setLeftComponent(master);
+        setRightComponent(rightPanel);
+        manager.setRootContext(rootNode);
+        manager.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    valueChanged();
+                }
+            }
+        });
+        //showDetails(master.getSelectedValue(), false);
     }
 
     public void setMasterData(List<? extends T> data) {
-        master.setListData(data.toArray());
-    }
-
-    public void setMasterRenderer(ListCellRenderer renderer) {
-        master.setCellRenderer(renderer);
+        //master.setListData(data.toArray());
+//        master.setRootVisible(true);
+        if (data.isEmpty()) {
+            master.setRootVisible(true);
+        } else {
+            master.setRootVisible(false);
+            rootNode.setKeys(new ChildrenList(nodeFactory, data));
+        }
+        master.expandAll();
     }
 
     public void setSlaveRenderer(Renderer renderer) {
         slaveRenderer = renderer;
-        showDetails(master.getSelectedValue(), true);
+        showDetails(manager.getSelectedNodes().length > 0 ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
     }
 
-    public void valueChanged(ListSelectionEvent e) {
-        if (!e.getValueIsAdjusting()) {
-            showDetails(master.getSelectedValue(), true);
-        }
+    private void valueChanged() {
+        showDetails(manager.getSelectedNodes().length > 0 ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
+
     }
 
-    private void showDetails(Object masterItem, boolean keepDividerPos) {
+    private void showDetails(T masterItem, boolean keepDividerPos) {
         slave = null;
         if (masterItem != null && slaveRenderer != null) {
             slaveRenderer.setValue(masterItem, true);
@@ -103,10 +129,54 @@ public final class MasterSlaveView<T> extends JSplitPane implements ListSelectio
         if (slave == null) {
             slave = new JLabel("<No details>"); // NOI18N
         }
-        int oldDividerPos = keepDividerPos? getDividerLocation() : 0;
-        setRightComponent(new JScrollPane(slave));
+        int oldDividerPos = keepDividerPos ? getDividerLocation() : 0;
+        rightPanel.removeAll();
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.add(slave, BorderLayout.CENTER);
+        rightPanel.repaint();
         if (keepDividerPos) {
             setDividerLocation(oldDividerPos);
+        }
+        revalidate();
+    }
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+    private class ChildrenList extends Children.Keys<T> {
+
+        private final List<? extends T> children;
+        private final F factory;
+
+        ChildrenList(F factory, List<? extends T> children) {
+            this.children = children;
+            this.factory = factory;
+        }
+
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(children);
+
+        }
+
+        @Override
+        protected Node[] createNodes(T key) {
+            return new Node[]{factory.create(key)};
+        }
+    }
+
+    private final class RootNode extends AbstractNode {
+
+        RootNode() {
+            super(Children.LEAF);
+            setDisplayName("Loading...");//NOI18N
+        }
+
+        void setKeys(ChildrenList children) {
+            setChildren(Children.LEAF);
+            setChildren(children);
         }
     }
 }
