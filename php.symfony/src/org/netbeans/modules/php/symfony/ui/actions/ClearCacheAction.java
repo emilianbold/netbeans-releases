@@ -64,7 +64,7 @@ public final class ClearCacheAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         Callable<Process> callable = commandSupport.createCommand(SymfonyScript.CMD_CLEAR_CACHE);
         ExecutionDescriptor descriptor = commandSupport.getDescriptor();
         String displayName = commandSupport.getOutputTitle(SymfonyScript.CMD_CLEAR_CACHE);

@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
@@ -60,8 +59,7 @@ public final class RunCommandAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        final FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule);
-        commandSupport.runCommand();
+        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override

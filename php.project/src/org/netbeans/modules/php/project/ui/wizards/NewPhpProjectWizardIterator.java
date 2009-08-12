@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
@@ -148,7 +149,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
                 getProjectDirectory(),
-                getSources(),
+                getSources(descriptor),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
                 wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
@@ -189,7 +190,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
                 break;
             case REMOTE:
-                downloadRemoteFiles(createProperties, monitor);
+
+                downloadRemoteFiles(getRemoteFiles(), createProperties, monitor);
                 break;
         }
 
@@ -282,6 +284,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             case REMOTE:
                 step2 = "LBL_RemoteConfiguration"; // NOI18N
+                step3 = "LBL_RemoteConfirmation"; // NOI18N
                 break;
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
@@ -300,14 +303,16 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 panel3 = new PhpFrameworksPanel(stepsArray);
                 break;
             case EXISTING:
+                break;
             case REMOTE:
+                panel3 = new RemoteConfirmationPanel(stepsArray);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
         ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(stepsArray, wizardType);
 
-        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<Panel<WizardDescriptor>>(3);
+        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<Panel<WizardDescriptor>>(steps.size());
         pnls.add(configureProjectPanel);
         pnls.add(new RunConfigurationPanel(stepsArray, configureProjectPanel, wizardType));
         if (panel3 != null) {
@@ -338,6 +343,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
         settings.putProperty(PhpFrameworksPanel.VALID, null);
         settings.putProperty(PhpFrameworksPanel.EXTENDERS, null);
+        settings.putProperty(RemoteConfirmationPanel.REMOTE_FILES, null);
     }
 
     private File getProjectDirectory() {
@@ -347,7 +353,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
-    private File getSources() {
+    static File getSources(WizardDescriptor descriptor) {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         return new File(localServer.getSrcRoot());
     }
@@ -443,9 +449,16 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
-    private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
+    @SuppressWarnings("unchecked")
+    private Set<TransferFile> getRemoteFiles() {
+        return (Set<TransferFile>) descriptor.getProperty(RemoteConfirmationPanel.REMOTE_FILES);
+    }
+
+    private void downloadRemoteFiles(Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
         assert monitor instanceof RemoteProgressMonitor;
+        assert forDownload != null;
+        assert !forDownload.isEmpty();
 
         RemoteProgressMonitor remoteMonitor = (RemoteProgressMonitor) monitor;
         remoteMonitor.startingDownload();
@@ -459,7 +472,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     .setOperationMonitor(downloadOperationMonitor)
                     .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
                     .setPreservePermissions(false));
-        DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), false, sources, sources);
+        DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();
     }
