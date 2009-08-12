@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,6 +118,27 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public int getIndexVersion() {
             return JavaIndex.VERSION;
+        }
+
+        @Override
+        public void rootsRemoved (final Iterable<? extends URL> removedRoots) {
+            assert removedRoots != null;
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            try {
+                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {
+                        //todo:
+                        for (URL removedRoot : removedRoots) {
+                            cim.removeRoot(removedRoot);
+                        }
+                        return null;
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            } catch (InterruptedException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 }

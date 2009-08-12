@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -322,6 +323,11 @@ public class RubyIndexer extends EmbeddingIndexer {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+
         }
         
         @Override

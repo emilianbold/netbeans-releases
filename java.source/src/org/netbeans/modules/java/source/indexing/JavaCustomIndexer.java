@@ -573,6 +573,27 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
 
         @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+            assert removedRoots != null;
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            try {
+                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {
+                        for (URL removedRoot : removedRoots) {
+                            cim.removeRoot(removedRoot);
+                        }
+                        return null;
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+
+            } catch (InterruptedException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+
+        @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDirty({0})", dirty); //NOI18N
             markDirtyFiles(context, dirty);

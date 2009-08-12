@@ -1043,6 +1043,11 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+            
+        }
+
+        @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
