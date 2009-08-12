@@ -237,11 +237,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     env2.add("RFS_CONTROLLER_DIR=" + dir); // NOI18N
                     String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
                     if (preloadLog != null) {
-                        env2.add("RFS_PRELOAD_LOG=" + preloadLog);
+                        env2.add("RFS_PRELOAD_LOG=" + preloadLog); // NOI18N
                     }
                     String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
                     if (controllerLog != null) {
-                        env2.add("RFS_CONTROLLER_LOG=" + controllerLog);
+                        env2.add("RFS_CONTROLLER_LOG=" + controllerLog); // NOI18N
                     }
                     env = env2.toArray(new String[env2.size()]);
                 }
