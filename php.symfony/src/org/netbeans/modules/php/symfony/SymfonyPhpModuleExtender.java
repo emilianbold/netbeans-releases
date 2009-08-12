@@ -86,7 +86,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
 
         // prefetch commands
-        SymfonyPhpFrameworkProvider.getInstance().createFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
+        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
