@@ -228,13 +228,22 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 String preload = System.getProperty("cnd.remote.fs.preload");
                 String dir =  System.getProperty("cnd.remote.fs.dir");
                 if (preload != null && dir != null) {
-                    String[] env2 = new String[env.length+2];
+                    List<String> env2 = new ArrayList<String>();
                     for (int i = 0; i < env.length; i++) {
-                        env2[i] = env[i];
+                        env2.add(env[i]);
+
                     }
-                    env2[env2.length-1] = "LD_PRELOAD=" + preload; // NOI18N
-                    env2[env2.length-2] = "RFS_CONTROLLER_DIR=" + dir; // NOI18N
-                    env = env2;
+                    env2.add("LD_PRELOAD=" + preload); // NOI18N
+                    env2.add("RFS_CONTROLLER_DIR=" + dir); // NOI18N
+                    String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
+                    if (preloadLog != null) {
+                        env2.add("RFS_PRELOAD_LOG=" + preloadLog);
+                    }
+                    String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
+                    if (controllerLog != null) {
+                        env2.add("RFS_CONTROLLER_LOG=" + controllerLog);
+                    }
+                    env = env2.toArray(new String[env2.size()]);
                 }
             }
             NativeExecutor projectExecutor = new NativeExecutor(
