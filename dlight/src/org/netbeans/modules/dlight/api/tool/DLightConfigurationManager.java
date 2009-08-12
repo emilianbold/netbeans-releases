@@ -115,6 +115,13 @@ public final class DLightConfigurationManager {
   }
 
   /**
+   * This method returns the default configuration (all tools)
+   */
+  public final DLightConfiguration getDefaultConfiguration() {
+      return DLightConfiguration.createDefault();
+  }
+
+  /**
    * 
    * @return
    */
