@@ -126,6 +126,12 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         InputSource is = m.resolveEntity(pubid, sysid);
         assertNotNull("DTD Filesystem 1.2 not resolved.", is);
     }
+    public void testJustAttributes() throws SAXException, IOException {
+        BinaryCacheManager m = new BinaryCacheManager();
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/attribsonly.xml")));
+        FileSystem fs = store(m, urls);
+        assertEquals(Boolean.TRUE, fs.getRoot().getAttribute("myAttr"));
+    }
     
     public void testFastReplacement() throws Exception {
         clearWorkDir();
