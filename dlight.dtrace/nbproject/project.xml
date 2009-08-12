@@ -92,6 +92,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>

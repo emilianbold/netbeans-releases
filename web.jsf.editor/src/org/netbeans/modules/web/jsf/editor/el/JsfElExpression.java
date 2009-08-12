@@ -68,10 +68,13 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -86,6 +89,10 @@ public class JsfElExpression extends ELExpression {
     
     public static final int EL_JSF_BEAN = 100;
     public static final int EL_JSF_RESOURCE_BUNDLE = 101;
+    public static final int EL_JSF_BEAN_REFERENCE = 102;
+
+    private static final String VARIABLE_NAME="var";  //NOI18N
+    private static final String VALUE_NAME="value";  //NOI18N
     
     private static final Logger logger = Logger.getLogger(JsfElExpression.class.getName());
     
@@ -124,15 +131,51 @@ public class JsfElExpression extends ELExpression {
                     break;
                 }
             }
+            //This part look for variables defined in JSP/JSF code
+            if (!beans.isEmpty() && value == EL_UNKNOWN) {
+                JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(getFileObject()).getCachedParseResult(getFileObject(), false, true);
+                Node.Nodes nodes = result.getNodes();
+                Node node = findValue(nodes, first);
+                if (node != null) {
+                    String ref_val = node.getAttributeValue(VALUE_NAME);
+                    bundleName = ref_val;
+                    value = EL_JSF_BEAN_REFERENCE;
+                }
+
+            }
         } else if (dotIndex == -1) {
             value = EL_START;
         }
         return value;
     }
     
+    /**
+     * Recursively search for given variable name
+     * @param nodes result of the parsing of the Jsp page
+     * @param variableName name of the variable to search in the nodes
+     * @return found node or null if nothing found
+     */
+    private Node findValue(Node.Nodes nodes, String variableName) {
+        if (nodes == null)
+            return null;
+        for (int i=0;i<nodes.size();i++) {
+            Node node = nodes.getNode(i);
+            if (variableName.equals(node.getAttributeValue(VARIABLE_NAME)))
+                return node;
+            else {
+                node = findValue(nodes.getNode(i).getBody(), variableName);
+                if (node != null)
+                    return node;
+            }
+        }
+        return null;
+    }
+    
     @Override 
     public String getObjectClass(){
         String beanName = extractBeanName();
+        if (bundleName !=null && bundleName.startsWith("#{")) //NOI18N
+            beanName = bundleName.substring(2,bundleName.length()-1);
   
         List <ManagedBean>beans = JSFBeanCache.getBeans(webModule);
         

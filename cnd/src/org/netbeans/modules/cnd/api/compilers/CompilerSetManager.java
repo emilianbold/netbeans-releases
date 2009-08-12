@@ -665,7 +665,7 @@ public class CompilerSetManager {
                     p = name.substring(name.indexOf('=') + 1);
                 } else if (name.equals("dmake")) { // NOI18N
                     kind = Tool.MakeTool;
-                } else if (name.startsWith("gdb=")) { // NOI18N
+                } else if (name.startsWith("gdb=") || name.startsWith("dbx=")) { // NOI18N
                     kind = Tool.DebuggerTool;
                     p = name.substring(name.indexOf('=') + 1);
                 }
