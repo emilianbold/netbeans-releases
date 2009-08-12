@@ -113,7 +113,13 @@ public class PhpStructureScanner implements StructureScanner {
             } 
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
-                namespaceChildren.add(new PHPFunctionStructureItem(fnc));
+                List<StructureItem> variables = new ArrayList<StructureItem>();
+                namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
+                //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
+                /*Collection<? extends VariableName> declaredVariables = fnc.getDeclaredVariables();
+                for (VariableName variableName : declaredVariables) {
+                    variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                }*/
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
             for (ConstantElement constant : declaredConstants) {
@@ -129,11 +135,19 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
                 for (MethodScope method : declaredMethods) {
+                    List<StructureItem> variables = new ArrayList<StructureItem>();
                     if (method.isConstructor()) {
-                        children.add(new PHPConstructorStructureItem(method));
+                        children.add(new PHPConstructorStructureItem(method, variables));
                     } else {
-                        children.add(new PHPMethodStructureItem(method));
+                        children.add(new PHPMethodStructureItem(method, variables));
                     }
+                    //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
+                    /*Collection<? extends VariableName> declaredVariables = method.getDeclaredVariables();
+                    for (VariableName variableName : declaredVariables) {
+                        if (!variableName.representsThis()) {
+                            variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                        }
+                    }*/
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {
@@ -500,8 +514,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPFunctionStructureItem extends PHPStructureItem {
 
-        public PHPFunctionStructureItem(FunctionScope elementHandle) {
-            super(elementHandle, null, "fn"); //NOI18N
+        public PHPFunctionStructureItem(FunctionScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "fn"); //NOI18N
         }
 
         public FunctionScope getFunctionScope() {
@@ -518,8 +532,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPMethodStructureItem extends PHPStructureItem {
 
-        public PHPMethodStructureItem(MethodScope elementHandle) {
-            super(elementHandle, null, "fn"); //NOI18N
+        public PHPMethodStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "fn"); //NOI18N
         }
 
         public MethodScope getMethodScope() {
@@ -531,6 +545,7 @@ public class PhpStructureScanner implements StructureScanner {
                 appendFunctionDescription(getMethodScope(), formatter);
                 return formatter.getText();
         }
+
 
     }
 
@@ -569,8 +584,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
-        public PHPConstructorStructureItem(MethodScope elementHandle) {
-            super(elementHandle, null, "con");
+        public PHPConstructorStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "con");
         }
 
         @Override
