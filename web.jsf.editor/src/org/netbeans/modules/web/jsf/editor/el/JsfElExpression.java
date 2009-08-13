@@ -364,7 +364,7 @@ public class JsfElExpression extends ELExpression {
             TypeElement bean = getTypePreceedingCaret(parameter);
 
             if (bean != null){
-                String suffix = getPropertyBeingTypedName();
+                String suffix = removeQuotes(getPropertyBeingTypedName());
 
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.
                         getEnclosedElements()))
@@ -372,7 +372,8 @@ public class JsfElExpression extends ELExpression {
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.equals(suffix)){
-                        ElementHandle el = ElementHandle.create(method);
+                        ElementHandle<ExecutableElement> el = 
+                            ElementHandle.create(method);
                         FileObject fo = SourceUtils.getFile(el, 
                                 parameter.getClasspathInfo());
 
