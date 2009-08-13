@@ -73,6 +73,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
+import org.netbeans.modules.kenai.ui.spi.KenaiUser;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -169,6 +171,11 @@ public class CommentsPanel extends JPanel {
         String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
         rightLabel.setText(rightTxt);
         rightLabel.setLabelFor(textPane);
+        JLabel stateLabel = null;
+        if (issue.getRepository() instanceof KenaiRepository) {
+            stateLabel = KenaiUser.forName(author).createUserWidget();
+            stateLabel.setText(null);
+        }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
@@ -176,20 +183,29 @@ public class CommentsPanel extends JPanel {
         setupTextPane(textPane, text);
 
         // Layout
-        horizontalGroup.add(layout.createSequentialGroup()
+        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
             .add(leftLabel, 0, 0, Short.MAX_VALUE)
             .addPreferredGap(LayoutStyle.RELATED)
             .add(replyButton)
             .addPreferredGap(LayoutStyle.RELATED)
-            .add(rightLabel))
+            .add(rightLabel);
+        if (stateLabel != null) {
+            hGroup.addPreferredGap(LayoutStyle.RELATED);
+            hGroup.add(stateLabel);
+        }
+        horizontalGroup.add(hGroup)
         .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.UNRELATED);
         }
-        verticalGroup.add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
             .add(leftLabel)
             .add(replyButton)
-            .add(rightLabel))
+            .add(rightLabel);
+        if (stateLabel != null) {
+            vGroup.add(stateLabel);
+        }
+        verticalGroup.add(vGroup)
             .addPreferredGap(LayoutStyle.RELATED)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }

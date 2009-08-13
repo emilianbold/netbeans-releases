@@ -72,6 +72,9 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -175,6 +178,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private File repositoryRoot;
 
     /**
+     * Holdes kenai users
+     */
+    private Map<String, KenaiUser> kenaiUsersMap = null;
+
+    /**
      * Creates new instance initializing final fields.
      */
     public AnnotationBar(JTextComponent target) {
@@ -186,7 +194,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
 
+
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    public File getRepositoryRoot() {
+        return repositoryRoot;
+    }
+
 
     /**
      * Makes the bar visible and sensitive to
@@ -284,6 +298,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         doc.runAtomic(new Runnable() {
             public void run() {
+                String url = HgUtils.getRemoteRepository(repositoryRoot);
+                boolean isKenaiRepository = url != null && HgKenaiSupport.getInstance().isKenai(url);
+                if(isKenaiRepository) {
+                    kenaiUsersMap = new HashMap<String, KenaiUser>();
+                }
+
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
@@ -293,6 +313,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
                         Element element = sd.getParagraphElement(lineOffset);
+                        if(isKenaiRepository) {
+                            String author = line.getAuthor();
+                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                                KenaiUser ku = HgKenaiSupport.getInstance().forName(author);
+                                if(ku != null) {
+                                    kenaiUsersMap.put(author, ku);
+                                }
+                            }
+                        }
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -439,6 +468,22 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+
+        if(isKenai() && al != null) {
+            String author = al.getAuthor();
+            final KenaiUser ku = kenaiUsersMap.get(author);
+            if(ku != null) {
+                popupMenu.addSeparator();
+                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
+                chatMenu.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        ku.startChat();
+                    }
+                });
+                chatMenu.setEnabled(ku.isOnline());
+                popupMenu.add(chatMenu);
+            }
+        }
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
@@ -676,7 +721,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         char[] data = longestString.toCharArray();
         int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
-        return w + 4;
+        return w + 4 + (isKenai() ? 18 : 0);
     }
 
     private String getDisplayName(AnnotateLine line) {
@@ -736,7 +781,33 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         } else {
             g.setColor(foregroundColor());
         }
-        g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
+        int texty = yBase + editorUI.getLineAscent();
+        int textx = 2;
+        g.drawString(annotation, textx, texty);
+        if(isKenai() && al != null) {
+            KenaiUser ku = kenaiUsersMap.get(al.getAuthor());
+            if(ku != null) {
+                Icon icon = ku.getIcon();
+                g.drawImage(
+                        ImageUtilities.icon2Image(icon),
+                        textx + g.getFontMetrics(g.getFont()).stringWidth(annotation) + 2,
+                        texty - g.getFont().getSize(),
+                        icon.getIconWidth(),
+                        icon.getIconHeight(),
+                        component);
+            }
+        }
+    }
+
+    boolean isKenai() {
+        return kenaiUsersMap != null && kenaiUsersMap.size() > 0;
+    }
+
+    KenaiUser getKenaiUser(String author) {
+        if(kenaiUsersMap == null) {
+            return null;
+        }
+        return kenaiUsersMap.get(author);
     }
 
     /**

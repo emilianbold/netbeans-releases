@@ -1164,6 +1164,34 @@ itor tabs #66700).
     }
 
     /**
+     * Returns the remote repository url for the given file.</br>
+     * It will be the pull url in the first case, otherwise push url or null
+     * in case there is nothig set in .hg
+     *
+     * @param file
+     * @return
+     */
+    public static String getRemoteRepository(File file) {
+        if(file == null) return null;
+        String remotePath = HgRepositoryContextCache.getInstance().getPullDefault(file);
+        if(remotePath == null || remotePath.trim().equals("")) {
+            Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
+            remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
+
+            Mercurial.LOG.log(Level.WARNING, "No defalt pull or push available for managed file : [" + file + "]");
+        }
+        if(remotePath != null) {
+            remotePath = remotePath.trim();
+            remotePath = HgUtils.removeHttpCredentials(remotePath);
+            if(remotePath.equals("")) {
+                // return null if empty
+                remotePath = null;
+            }
+        }
+        return remotePath;
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
