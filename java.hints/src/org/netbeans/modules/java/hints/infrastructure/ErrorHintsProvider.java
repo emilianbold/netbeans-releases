@@ -73,6 +73,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
@@ -112,7 +113,16 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     }
     
     private static final Map<Diagnostic.Kind, Severity> errorKind2Severity;
-    
+    private static final Set<String> diagnostics_15_sourcelevel = new HashSet<String>(
+            Arrays.asList(
+            "compiler.warn.raw.class.use", // NOI18N
+            "compiler.warn.prob.found.req")); // NOI18N
+    private static final Set<SourceVersion> sub15sourceVersions = new HashSet<SourceVersion>(
+            Arrays.asList(
+            SourceVersion.RELEASE_2,
+            SourceVersion.RELEASE_3,
+            SourceVersion.RELEASE_4));
+
     static {
         errorKind2Severity = new EnumMap<Diagnostic.Kind, Severity>(Diagnostic.Kind.class);
         errorKind2Severity.put(Diagnostic.Kind.ERROR, Severity.ERROR);
@@ -143,6 +153,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         
         Map<Class, Data> data = new HashMap<Class, Data>();
 
+        final boolean sub15sourceLevel = sub15sourceVersions.contains(info.getSourceVersion());
+
         for (Diagnostic d : errors) {
             if (isCanceled())
                 return null;
@@ -151,14 +163,19 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 ERR.log(ErrorManager.INFORMATIONAL, "d = " + d );
             
             Map<String, List<ErrorRule>> code2Rules = RulesManager.getInstance().getErrors();
+            String code = d.getCode();
             
-            List<ErrorRule> rules = code2Rules.get(d.getCode());
+            List<ErrorRule> rules = code2Rules.get(code);
             
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "code= " + d.getCode());
+                ERR.log(ErrorManager.INFORMATIONAL, "code= " + code);
                 ERR.log(ErrorManager.INFORMATIONAL, "rules = " + rules);
             }
-            
+            // do not report generics errors on < 1.5 source level
+            if (sub15sourceLevel && diagnostics_15_sourcelevel.contains(code)) {
+                continue;
+            }
+
             LazyFixList ehm;
             
             if (rules != null) {
@@ -166,7 +183,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 
                 pos = info.getPositionConverter().getOriginalPosition(pos);
                 
-                ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
+                ehm = new CreatorBasedLazyFixList(info.getFileObject(), code, pos, rules, data);
             } else {
                 ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
             }
