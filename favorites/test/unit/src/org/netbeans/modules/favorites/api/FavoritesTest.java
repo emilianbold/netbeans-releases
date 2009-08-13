@@ -190,6 +190,7 @@ public class FavoritesTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #3081
     public void testSelectWithAdditionNew() throws Exception {
         RootsTest.clearBareFavoritesTabInstance();
         final TopComponent win = RootsTest.getBareFavoritesTabInstance();
@@ -206,7 +207,7 @@ public class FavoritesTest extends NbTestCase {
                 ExplorerManager man = ((ExplorerManager.Provider) win).getExplorerManager();
                 assertNotNull(man);
                 Node[] nodes = man.getSelectedNodes();
-                assertTrue(nodes.length == 1);
+                assertEquals(1, nodes.length);
                 assertEquals(nodes[0].getName(), TEST_TXT);
             }
         });
