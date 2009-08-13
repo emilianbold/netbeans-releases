@@ -94,7 +94,7 @@ public class JiraExecutor {
             try {
 
                 cmd.setFailed(true);
-                
+
                 if (ensureConfiguration) {
                     repository.getConfiguration(); // XXX hack
                 }
@@ -115,6 +115,14 @@ public class JiraExecutor {
             } catch (CoreException ce) {
                 Jira.LOG.log(Level.FINE, null, ce);
                 throw new WrapperException(ce.getMessage(), ce);
+            } catch(IllegalStateException ise) {
+                String msg = ise.getMessage();
+                if(msg != null && msg.equals("Connection is not open")) {       // NOI18N
+                    Jira.LOG.log(Level.FINE, null, ise);
+                    throw new WrapperException(msg, ise);
+                } else {
+                    throw ise;
+                }
             }
         } catch (WrapperException we) {
             ExceptionHandler handler = ExceptionHandler.createHandler(we, this, repository);
