@@ -82,6 +82,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
+import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
@@ -244,8 +245,6 @@ import org.openide.util.NbBundle;
             dataStorage = null;
             dataProvider = null;
 
-            List<DataStorage> storages = DLightManager.getDefault().getActiveSession().getStorages();
-
             metadata =
                     SunStudioDCConfiguration.getCPUTableMetadata(
                     SunStudioDCConfiguration.c_name,
@@ -254,32 +253,8 @@ import org.openide.util.NbBundle;
 
             DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:functions"); //NOI18N
 
-            Collection<? extends DataProviderFactory> factories = Lookup.getDefault().lookupAll(DataProviderFactory.class);
-
-            for (DataStorage storage : storages) {
-                if (!storage.hasData(metadata)) {
-                    continue;
-                }
-                Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
-                for (DataStorageType dss : dataStorageTypes) {
-                    // As DataStorage is already specialized, there is always only one
-                    // returned DataSchema
-                    for (DataProviderFactory providerFactory : factories) {
-                        if (providerFactory.provides(dataModel) && providerFactory.getSupportedDataStorageTypes().contains(dss)) {
-                            dataProvider = providerFactory.create();
-                            break;
-                        }
-                    }
-                    if (dataProvider != null) {
-                        dataStorage = storage;
-                        dataProvider.attachTo(dataStorage);
-                        break;
-                    }
-                }
-                if (dataProvider != null) {
-                    break;
-                }
-            }
+            DLightSession session = DLightManager.getDefault().getActiveSession();
+            dataProvider = session.createDataProvider(dataModel, metadata);
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
@@ -299,6 +274,9 @@ import org.openide.util.NbBundle;
         }
 
         public CsmProject getProject() {
+            if (dataStorage == null) {
+                return null;
+            }
             Map<String, String> serviceInfo = ((ServiceInfoDataStorage) dataStorage).getInfo();
             String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
             if (projectFolderName == null) {

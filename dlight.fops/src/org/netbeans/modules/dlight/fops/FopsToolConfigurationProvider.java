@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -51,9 +50,9 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
@@ -61,6 +60,8 @@ import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.management.api.DLightManager;
+import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
@@ -224,6 +225,8 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         private final String openStackColumn;
         private final String closeStackColumn;
+        private boolean stackDataProviderSearched;
+        private StackDataProvider stackDataProvider;
 
         public StacksRenderer(String openStackColumn, String closeStackColumn) {
             this.openStackColumn = openStackColumn;
@@ -233,46 +236,28 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         public JComponent render(DataRow data) {
             int openStackId = DataUtil.toInt(data.getData(openStackColumn));
             int closeStackId = DataUtil.toInt(data.getData(closeStackColumn));
-            if (openStackId == 0 && closeStackId == 0) {
+            StackDataProvider stackProvider = findStackDataProvider();
+            if (stackProvider == null || openStackId == 0 && closeStackId == 0) {
                 return null;
             }
             MultipleCallStackPanel panel = MultipleCallStackPanel.createInstance();
             if (0 < openStackId) {
-                panel.add(getMessage("Details.OpenStack"), true, getStack(openStackId));
+                panel.add(getMessage("Details.OpenStack"), true, stackDataProvider.getCallStack(openStackId));
             }
             if (0 < closeStackId) {
-                panel.add(getMessage("Details.CloseStack"), true, getStack(closeStackId));
+                panel.add(getMessage("Details.CloseStack"), true, stackDataProvider.getCallStack(closeStackId));
             }
             return panel;
         }
-    }
 
-    // TODO implement
-    private static List<FunctionCall> getStack(final int id) {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
-        final Function f = new Function() {
-            public String getName() {
-                return "stack #" + id; // NOI18N
+        private synchronized StackDataProvider findStackDataProvider() {
+            if (stackDataProvider == null && !stackDataProviderSearched) {
+                DLightSession session = DLightManager.getDefault().getActiveSession();
+                stackDataProvider = (StackDataProvider)session.createDataProvider(
+                        DataModelSchemeProvider.getInstance().getScheme("model:stack"), null); // NOI18N
+                stackDataProviderSearched = true;
             }
-            public String getQuilifiedName() {
-                return "stack #" + id; // NOI18N
-            }
-        };
-        final FunctionCall c = new FunctionCall() {
-            public String getDisplayedName() {
-                return f.getQuilifiedName();
-            }
-            public Function getFunction() {
-                return f;
-            }
-            public boolean hasOffset() {
-                return false;
-            }
-            public long getOffset() {
-                return 0;
-            }
-        };
-        result.add(c);
-        return result;
+            return stackDataProvider;
+        }
     }
 }

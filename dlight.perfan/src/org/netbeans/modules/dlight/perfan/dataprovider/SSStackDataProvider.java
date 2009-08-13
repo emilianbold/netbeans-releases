@@ -74,6 +74,7 @@ import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -101,7 +102,7 @@ import org.openide.util.Lookup;
  *      request.
  *
  */
-class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider {
+class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
     private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
@@ -148,6 +149,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
     public synchronized List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLEES, path, aggregate);
+    }
+
+    public List<FunctionCall> getCallStack(int stackId) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.emptyList();
     }
 
     public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {

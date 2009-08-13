@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
@@ -59,7 +60,7 @@ import org.openide.util.Lookup;
 /**
  * @author Alexey Vladykin
  */
-final class StackDataProviderImpl implements StackDataProvider {
+final class StackDataProviderImpl implements StackDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 
   private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
           FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
@@ -88,6 +89,10 @@ final class StackDataProviderImpl implements StackDataProvider {
 
   public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
     return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
+  }
+
+  public List<FunctionCall> getCallStack(int stackId) {
+    return storage.getCallStack(stackId);
   }
 
   public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
