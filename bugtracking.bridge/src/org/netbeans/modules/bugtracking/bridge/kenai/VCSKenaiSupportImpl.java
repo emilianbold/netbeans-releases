@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.bugtracking.bridge.kenai;
 
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
@@ -73,5 +76,65 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     @Override
     public boolean isLogged () {
         return KenaiUtil.isLoggedIn();
+    }
+
+    @Override
+    public KenaiUser forName(String user) {
+        org.netbeans.modules.kenai.ui.spi.KenaiUser kenaiUser =
+                org.netbeans.modules.kenai.ui.spi.KenaiUser.forName(user);
+        if(kenaiUser == null) {
+            return null;
+        } else {
+            return new KenaiUserImpl(kenaiUser);
+}
+    }
+
+    @Override
+    public boolean isUserOnline(String user) {
+        return org.netbeans.modules.kenai.ui.spi.KenaiUser.isOnline(user);
+    }
+
+    private class KenaiUserImpl extends KenaiUser {
+        org.netbeans.modules.kenai.ui.spi.KenaiUser delegate;
+
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUser delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void startChat() {
+            delegate.startChat();
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public boolean isOnline() {
+            return delegate.isOnline();
+        }
+
+        @Override
+        public String getUser() {
+            return delegate.getUser();
+        }
+
+        @Override
+        public Icon getIcon() {
+            return delegate.getIcon();
+        }
+
+        @Override
+        public JLabel createUserWidget() {
+            return delegate.createUserWidget();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
     }
 }
