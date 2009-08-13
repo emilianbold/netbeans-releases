@@ -68,7 +68,8 @@ public class JsfElCompletionProvider implements CompletionProvider{
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
-            return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()), component);
+            return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()), 
+                    component);
         }
         return null;
     }
@@ -92,7 +93,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                 wm = WebModule.getWebModule(fObject);
             if (wm != null){
                 JsfElExpression elExpr = new JsfElExpression (wm, doc);
-                ArrayList complItems = new ArrayList();
+                ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
 
                 int elParseType = elExpr.parse(offset);
                 int anchor = offset - elExpr.getReplace().length();
@@ -102,36 +103,46 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         String replace = elExpr.getReplace();
 
                         // check managed beans
-                        List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
+                        List<ManagedBean> beans = JSFBeanCache.getBeans(wm);
                         for (ManagedBean bean : beans) {
                             String beanName = bean.getManagedBeanName();
                             if ((beanName != null) && beanName.startsWith(replace)){
-                                complItems.add(new JsfElCompletionItem.JsfBean(beanName, anchor, bean.getManagedBeanClass()));
+                                complItems.add(new JsfElCompletionItem.JsfBean(
+                                        beanName, anchor, bean.getManagedBeanClass()));
                             }
                         }
                         // check bundles properties
-                        List <ResourceBundle> bundles = elExpr.getJSFResourceBundles(wm);
+                        List <ResourceBundle> bundles = elExpr.
+                            getJSFResourceBundles(wm);
                         for (ResourceBundle bundle : bundles) {
                             String var = bundle.getVar();
                             if ((var != null) && var.startsWith(replace)) {
-                                complItems.add(new JsfElCompletionItem.JsfResourceBundle(var, anchor, bundle.getBaseName()));
+                                complItems.add(new JsfElCompletionItem.
+                                        JsfResourceBundle(var, anchor, 
+                                                bundle.getBaseName()));
                             }
                         }
                         break;
                     case JsfElExpression.EL_JSF_BEAN:
-                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(
+                                elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
-                        items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass(), anchor);
+                        items = elExpr.getListenerMethodCompletionItems(
+                                elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
                         break;
                     case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.getBundleName(), anchor, elExpr.getReplace());
+                        List<CompletionItem> bitems = elExpr.getPropertyKeys(
+                                elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
                     case JsfElExpression.EL_JSF_BEAN_REFERENCE:
-                        List<CompletionItem> ref_items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                        List<CompletionItem> ref_items = elExpr.
+                            getPropertyCompletionItems(elExpr.getObjectClass(), 
+                                    anchor);
                         complItems.addAll(ref_items);
-                        ref_items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass(), anchor);
+                        ref_items = elExpr.getListenerMethodCompletionItems(
+                                elExpr.getObjectClass(), anchor);
                         complItems.addAll(ref_items);
                         break;
                 }
@@ -149,7 +160,9 @@ public class JsfElCompletionProvider implements CompletionProvider{
    
     
     static class DocQuery extends AsyncCompletionQuery {
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void query(CompletionResultSet resultSet, Document doc, 
+                int caretOffset) 
+        {
         }
     }
 }
