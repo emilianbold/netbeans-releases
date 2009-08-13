@@ -87,13 +87,13 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 String metricId = column.getColumnName();
                 Object metricVal = functionCall.getMetricValue(metricId);
                 String metricUName = column.getColumnUName();
-                sb.append(metricUName + "=" + metricVal + " ");
+                sb.append(metricUName + "=" + metricVal + " "); // NOI18N
             }
 
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
-                    sb.append(sourceFileInfo.getFileName() + ":");
+                    sb.append(sourceFileInfo.getFileName() + ":"); // NOI18N
                 }
                 sb.append(sourceFileInfo.getLine());
             }

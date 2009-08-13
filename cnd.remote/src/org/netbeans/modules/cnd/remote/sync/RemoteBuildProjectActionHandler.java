@@ -56,7 +56,7 @@ import org.openide.windows.InputOutput;
 /* package-local */
 class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
-    private static final Logger logger = Logger.getLogger("cnd.remote.logger");
+    private static final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
@@ -92,19 +92,19 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         final Env env = pae.getProfile().getEnvironment();
         String preload = RfsSetupProvider.getPreload(execEnv);
         if (preload != null) {
-            env.putenv("LD_PRELOAD", preload);
+            env.putenv("LD_PRELOAD", preload); // NOI18N
         }
         String dir =  System.getProperty("cnd.remote.fs.dir");
         if (dir != null) {
-            env.putenv("RFS_CONTROLLER_DIR", dir);
+            env.putenv("RFS_CONTROLLER_DIR", dir); // NOI18N
         }
         String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
         if (preloadLog != null) {
-            env.putenv("RFS_PRELOAD_LOG", preloadLog);
+            env.putenv("RFS_PRELOAD_LOG", preloadLog); // NOI18N
         }
         String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
         if (controllerLog != null) {
-            env.putenv("RFS_CONTROLLER_LOG", controllerLog);
+            env.putenv("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
         }
         delegate.addExecutionListener(new ExecutionListener() {
             public void executionStarted(int pid) {

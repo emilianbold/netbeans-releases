@@ -252,11 +252,11 @@ public class RemoteServerSetup {
         // while Solaris says
         // .netbeans/6.7/cnd2/lib/rfs_preload-SunOS-x86.so: No such file or directory
 
-        StringBuilder sb = new StringBuilder("sh -c \"");
+        StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
         for (String path : binarySetupMap.keySet()) {
-            sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path));
+            sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path)); // NOI18N
         }
-        sb.append("\"");
+        sb.append("\""); // NOI18N
 
         RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, sb.toString());
         support.run();

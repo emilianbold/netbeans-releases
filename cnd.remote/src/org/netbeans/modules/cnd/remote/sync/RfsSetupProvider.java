@@ -54,14 +54,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
 
-    private static final Logger logger = Logger.getLogger("cnd.remote.logger");
+    private static final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    private static final String CONTROLLER_LINUX_X86 = "rfs_controller-Linux-x86";
-    private static final String CONTROLLER_SUNOS_X86 = "rfs_controller-SunOS-x86";
-    private static final String CONTROLLER_SUNOS_SPARC = "rfs_controller-SunOS-sparc";
-    private static final String PRELOAD_LINUX_X86 = "rfs_preload-Linux-x86.so";
-    private static final String PRELOAD_SUNOS_X86 = "rfs_preload-SunOS-x86.so";
-    private static final String PRELOAD_SUNOS_SPARC = "rfs_preload-SunOS-sparc.so";
+    private static final String CONTROLLER_LINUX_X86 = "rfs_controller-Linux-x86"; // NOI18N
+    private static final String CONTROLLER_SUNOS_X86 = "rfs_controller-SunOS-x86"; // NOI18N
+    private static final String CONTROLLER_SUNOS_SPARC = "rfs_controller-SunOS-sparc"; // NOI18N
+    private static final String PRELOAD_LINUX_X86 = "rfs_preload-Linux-x86.so"; // NOI18N
+    private static final String PRELOAD_SUNOS_X86 = "rfs_preload-SunOS-x86.so"; // NOI18N
+    private static final String PRELOAD_SUNOS_SPARC = "rfs_preload-SunOS-sparc.so"; // NOI18N
 
     private Map<String, String> binarySetupMap;
 
