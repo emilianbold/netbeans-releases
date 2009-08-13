@@ -47,8 +47,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -88,6 +90,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     static String ACTIVATED = "activated"; //NOI18N
     static String CONFIGURATIONS = "configurations"; //NOI18N
     static String CONFIG = "configuration"; //NOI18N
+    static String PROPERTY = "property"; //NOI18N
+    static String PROPERTY_NAME_ATTR = "name"; //NOI18N
     static String CONFIG_PROFILES_ATTR = "profiles"; //NOI18N
     static String CONFIG_ID_ATTR = "id"; //NOI18N
 
@@ -333,6 +337,15 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                         }
                         c.setActivatedProfiles(prf);
                     }
+                    NodeList ps = enEl.getElementsByTagName(PROPERTY);
+                    for (int y = 0; y < ps.getLength(); y++) {
+                        Element propEl = (Element) ps.item(y);
+                        String key = propEl.getAttribute(PROPERTY_NAME_ATTR);
+                        String value = propEl.getTextContent();
+                        if (key != null && value != null) {
+                            c.getProperties().setProperty(key, value);
+                        }
+                    }
                     toRet.add(c);
                 }
                 return toRet;
@@ -380,6 +393,17 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             Element child  = enEl.getOwnerDocument().createElementNS(NAMESPACE, CONFIG);
             child.setAttribute(CONFIG_ID_ATTR, config.getId());
             child.setAttribute(CONFIG_PROFILES_ATTR, StringUtils.join(config.getActivatedProfiles().iterator(), " "));
+            Enumeration en = config.getProperties().propertyNames();
+            while (en.hasMoreElements()) {
+                String key = (String)en.nextElement();
+                String value = config.getProperties().getProperty(key);
+                if (key != null && value != null) {
+                    Element prop  = enEl.getOwnerDocument().createElementNS(NAMESPACE, PROPERTY);
+                    prop.setAttribute(PROPERTY_NAME_ATTR, key);
+                    prop.setTextContent(value);
+                    child.appendChild(prop);
+                }
+            }
             enEl.appendChild(child);
         }
         conf.putConfigurationFragment(el, shared);
