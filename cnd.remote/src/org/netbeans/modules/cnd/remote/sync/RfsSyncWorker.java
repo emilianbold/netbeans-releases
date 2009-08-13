@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -90,9 +91,20 @@ class RfsSyncWorker extends ZipSyncWorker {
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
+        final String remoteControllerPath = System.getProperty("cnd.remote.fs.controller");
+        //FIXUP: until the project system infrastructure is ready...
+        {
+            int pos = remoteControllerPath.lastIndexOf('/');
+            String name = (pos > 0) ? remoteControllerPath.substring(pos+1) : remoteControllerPath;
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            pb.setExecutable("pkill"); // NOI18N
+            pb.setArguments(name);
+            pb.call().waitFor();
+        }
+
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
         //TODO: replace as soon as setup is written
-        pb.setExecutable(System.getProperty("cnd.remote.fs.controller")); //I18N
+        pb.setExecutable(remoteControllerPath); //I18N
         NativeProcess remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
@@ -191,7 +203,7 @@ class RfsSyncWorker extends ZipSyncWorker {
                     }
                     if (remoteFile.startsWith(remoteDir)) {
                         File localFile =  new File(localDir, remoteFile.substring(remoteDir.length()));
-                        if (localFile.exists() && !allAtOnce) {
+                        if (localFile.exists() && !localFile.isDirectory() && !allAtOnce) {
                             logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
                                     executionEnvironment, remoteFile, 0777, err);

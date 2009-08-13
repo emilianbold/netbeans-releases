@@ -670,7 +670,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 move2 = true;
             } else {
                 if (l1.indentThisLine) {
-                    //marek: needs to be fixed by David!
 //                    assert !l2.indentThisLine :
 //                        "two lines which claim to be indentable: l1="+l1+" l2="+l2;
                     merged.add(l1);
