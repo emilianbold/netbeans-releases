@@ -268,10 +268,12 @@ public class RemoteServerSetup {
                 String val = support.getOutput();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
-                    if (count++ == 0) {
-                        list.add(REMOTE_LIB_DIR);
+                    if (line.length() > 0) {
+                        if (count++ == 0) {
+                            list.add(REMOTE_LIB_DIR);
+                        }
+                        list.add(line);
                     }
-                    list.add(line);
                 }
             }
         } else {
