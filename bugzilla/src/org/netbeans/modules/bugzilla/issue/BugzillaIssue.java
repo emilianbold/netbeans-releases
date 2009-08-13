@@ -874,7 +874,8 @@ public class BugzillaIssue extends Issue {
 
     class Comment {
         private final Date when;
-        private final String who;
+        private final String author;
+        private final String authorName;
         private final Long number;
         private final String text;
 
@@ -890,15 +891,13 @@ public class BugzillaIssue extends Issue {
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
-            String author = null;
-            if(authorAttr != null) {
-                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
-                author = nameAttr != null ? nameAttr.getValue() : null;
-            }
-            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { // NOI18N
+            if (authorAttr != null) {
                 author = authorAttr.getValue();
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                author = authorName = null;
             }
-            who = author;
             String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
             number = n != null ? Long.parseLong(n) : null;
             text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
@@ -916,8 +915,12 @@ public class BugzillaIssue extends Issue {
             return when;
         }
 
-        public String getWho() {
-            return who;
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getAuthorName() {
+            return authorName;
         }
     }
 

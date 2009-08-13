@@ -314,7 +314,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 } catch (ParseException pex) {
                     Bugzilla.LOG.log(Level.INFO, null, pex);
                 }
-                String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME));
+                String reporterName = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME);
+                String reporter = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER);
+                String reporterTxt = ((reporterName == null) || (reporterName.trim().length() == 0)) ? reporter : reporterName;
+                String reportedTxt = MessageFormat.format(format, creationTxt, reporterTxt);
                 reportedField.setText(reportedTxt);
                 fixPrefSize(reportedField);
 
