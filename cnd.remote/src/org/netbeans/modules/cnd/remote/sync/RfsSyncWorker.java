@@ -97,7 +97,7 @@ class RfsSyncWorker extends ZipSyncWorker {
             int pos = remoteControllerPath.lastIndexOf('/');
             String name = (pos > 0) ? remoteControllerPath.substring(pos+1) : remoteControllerPath;
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setExecutable("pkill");
+            pb.setExecutable("pkill"); // NOI18N
             pb.setArguments(name);
             pb.call().waitFor();
         }

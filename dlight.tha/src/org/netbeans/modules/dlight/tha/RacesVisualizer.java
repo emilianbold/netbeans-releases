@@ -180,7 +180,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             displayName = "";
             for (ThreadSnapshot s : snapshots) {
                 List<FunctionCall> stack = s.getStack();
-                displayName += stack.get(stack.size() - 1).getFunction().getName() + " / ";
+                displayName += stack.get(stack.size() - 1).getFunction().getName() + " / "; // NOI18N
             }
         }
 
