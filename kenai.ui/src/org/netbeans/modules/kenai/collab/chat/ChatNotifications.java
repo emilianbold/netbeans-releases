@@ -133,7 +133,7 @@ public class ChatNotifications {
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-        ChatTopComponent.findInstance().repaint();
+        ChatTopComponent.refreshContactList();
     }
 
     synchronized void addPrivateMessage(final Message msg) {
@@ -153,7 +153,7 @@ public class ChatNotifications {
             }
         }, Priority.NORMAL);
         privateNotifications.put(name, n);
-        ChatTopComponent.findInstance().repaint();
+        ChatTopComponent.refreshContactList();
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
