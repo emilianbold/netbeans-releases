@@ -39,49 +39,46 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * ProjectActionHandlerFactory for remote builds using RFS
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
-public class SharedSyncFactory extends RemoteSyncFactory {
-
-    /*package*/ static final String ID = "shared"; //NOI18N
+@ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
+public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
+    public boolean canHandle(Type type, Configuration configuration) {
+        switch (type) {
+            case BUILD:
+            case CLEAN:
+                return RfsSyncFactory.ENABLE_RFS;
+            default:
+                return false;
+        }
     }
 
     @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "SHARED_Factory_Name");
+    public ProjectActionHandler createHandler() {
+        return new RemoteBuildProjectActionHandler();
     }
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(getClass(), "SHARED_Factory_Description");
+    /* package-local */
+    static ProjectActionHandler createDelegateHandler(ProjectActionEvent pae) {
+        for (ProjectActionHandlerFactory factory : Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class)) {
+            if (!(factory instanceof RemoteBuildProjectActionHandlerFactory)) {
+                if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
+                    return factory.createHandler();
+                }
+            }
+        }
+        return null;
     }
-
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ! RemoteUtil.isForeign(execEnv);
-    }
-
-
 }

@@ -44,6 +44,7 @@ import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -53,6 +54,9 @@ import org.openide.util.NbBundle;
  */
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
 class RfsSyncFactory extends RemoteSyncFactory {
+
+    public static final boolean ENABLE_RFS = CndUtils.getBoolean("cnd.remote.fs", false);
+    /*package*/ static final String ID = "rfs"; //NOI18N
 
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
@@ -74,11 +78,11 @@ class RfsSyncFactory extends RemoteSyncFactory {
 
     @Override
     public String getID() {
-        return "rfs"; //NOI18N
+        return ID;
     }
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return Boolean.getBoolean("cnd.remote.fs") && ! RemoteUtil.isForeign(execEnv);
+        return ENABLE_RFS && ! RemoteUtil.isForeign(execEnv);
     }
 }
