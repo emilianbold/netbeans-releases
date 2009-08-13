@@ -311,7 +311,6 @@ public final class NbMavenProjectImpl implements Project {
         EmbedderFactory.fillEnvVars(props);
         props.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
         props.putAll(configProvider.getActiveConfiguration().getProperties());
-        configProvider.getActiveConfiguration().getProperties().list(System.out);
         //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
         // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
         return props;
