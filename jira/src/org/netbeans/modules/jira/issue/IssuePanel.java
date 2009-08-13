@@ -101,6 +101,7 @@ import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
@@ -108,6 +109,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
+import org.netbeans.modules.kenai.ui.spi.KenaiUser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -151,6 +153,7 @@ public class IssuePanel extends javax.swing.JPanel {
         summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         attachFieldStatusListeners();
+        attachHideStatusListener();
     }
 
     @Override
@@ -329,6 +332,24 @@ public class IssuePanel extends javax.swing.JPanel {
         fixVersionList.addListSelectionListener(new CancelHighlightListener(fixVersionLabel));
     }
 
+    private void attachHideStatusListener() {
+        assigneeField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                if (!reloading) {
+                    assigneeStatusLabel.setVisible(false);
+                }
+            }
+        });
+    }
+
     private void reloadForm(boolean force) {
         if (skipReload) {
             return;
@@ -492,6 +513,13 @@ public class IssuePanel extends javax.swing.JPanel {
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
             fixPrefSize(createdField);
+            boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
+            if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
+                JLabel label = KenaiUser.forName(reporter).createUserWidget();
+                label.setText(null);
+                ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
+                reporterStatusLabel = label;
+            }
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             Project project = config.getProjectById(projectId);
             reloadField(projectCombo, project, NbJiraIssue.IssueField.PROJECT);
@@ -510,7 +538,17 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
             fixPrefSize(resolutionField);
             reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
-            reloadField(assigneeField, issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE), NbJiraIssue.IssueField.ASSIGNEE);
+            String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
+            if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !assigneeField.getText().equals(assignee))) {
+                JLabel label = KenaiUser.forName(assignee).createUserWidget();
+                label.setText(null);
+                ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
+                assigneeStatusLabel = label;
+            }
+            if (force) {
+                assigneeStatusLabel.setVisible(assignee.trim().length() > 0);
+            }
+            reloadField(assigneeField, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
             reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
             fixPrefSize(updatedField);
@@ -1031,6 +1069,8 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateLabelNew = new javax.swing.JLabel();
         originalEstimateHint = new javax.swing.JLabel();
         logWorkButton2 = new org.netbeans.modules.bugtracking.util.LinkButton();
+        reporterStatusLabel = new javax.swing.JLabel();
+        assigneeStatusLabel = new javax.swing.JLabel();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1370,10 +1410,16 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .add(assigneeLabel))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(layout.createSequentialGroup()
+                                                .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(assigneeStatusLabel))
                                             .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                                            .add(layout.createSequentialGroup()
+                                                .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(reporterStatusLabel))))))
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(componentLabel)
@@ -1417,7 +1463,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(projectLabel)
                             .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(createdLabel)
-                            .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(reporterStatusLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(issueTypeLabel)
@@ -1435,7 +1482,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(resolutionLabel)
                             .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(assigneeLabel)
-                            .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(assigneeStatusLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(priorityLabel)
@@ -1828,6 +1876,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane affectsVersionScrollPane;
     private javax.swing.JTextField assigneeField;
     private javax.swing.JLabel assigneeLabel;
+    private javax.swing.JLabel assigneeStatusLabel;
     private javax.swing.JLabel attachmentLabel;
     private javax.swing.JButton cancelButton;
     private org.netbeans.modules.bugtracking.util.LinkButton closeIssueButton;
@@ -1873,6 +1922,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel remainingEstimateLabel;
     private javax.swing.JPanel remainingEstimatePanel;
     private org.netbeans.modules.bugtracking.util.LinkButton reopenIssueButton;
+    private javax.swing.JLabel reporterStatusLabel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
