@@ -40,6 +40,8 @@
 package org.netbeans.modules.dlight.annotationsupport;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
@@ -52,9 +54,39 @@ import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport.class)
 public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
+    private final static Logger log = Logger.getLogger("dlight.annotationsupport"); // NOI18N
+    private static boolean checkedLogging = checkLogging();
 
     public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        int i = 0;//
+        log.fine("AnnotatedSourceSupportImpl.updateSource");
+        log.finest("metrics:");
+        for (Column column : metrics) {
+            log.finest("  getColumnLongUName " + column.getColumnLongUName());
+            log.finest("  getColumnName " + column.getColumnName());
+            log.finest("  getColumnUName " + column.getColumnUName());
+            log.finest("  getExpression = " + column.getExpression());
+            log.finest("");
+        }
+        log.finest("functionCalls:");
+        for (FunctionCallWithMetric functionCall : functionCalls) {
+            log.finest("  getDisplayedName " + functionCall.getDisplayedName());
+        }
     }
 
+    private static boolean checkLogging() {
+        if (checkedLogging) {
+            return true;
+        }
+        String logProp = System.getProperty("dlight.annotationsupport"); // NOI18N
+        if (logProp != null) {
+            if (logProp.equals("FINE")) { // NOI18N
+                log.setLevel(Level.FINE);
+            } else if (logProp.equals("FINER")) { // NOI18N
+                log.setLevel(Level.FINER);
+            } else if (logProp.equals("FINEST")) { // NOI18N
+                log.setLevel(Level.FINEST);
+            }
+        }
+        return true;
+    }
 }
