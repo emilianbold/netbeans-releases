@@ -108,10 +108,11 @@ public class JsfElExpression extends ELExpression {
     @Override
     protected int findContext(String expr) {
         int dotIndex = expr.indexOf('.');
+        int bracketIndex = expr.indexOf('[');
         int value = EL_UNKNOWN;
         
-        if (dotIndex > -1){
-            String first = expr.substring(0, dotIndex);
+        if (dotIndex > -1 || bracketIndex > -1 ){
+            String first = expr.substring(0, getPositiveMin(dotIndex, bracketIndex));
             
             // look through all registered managed beans
             List <ManagedBean> beans = JSFBeanCache.getBeans(webModule);
@@ -136,7 +137,8 @@ public class JsfElExpression extends ELExpression {
                 FileObject fileObject = getFileObject();
                 JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
                 if (contextInfo !=null) {
-                    JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
+                    JspParserAPI.ParseResult result = contextInfo.
+                        getCachedParseResult(fileObject, false, true);
                     if (result !=null) {
                         Node.Nodes nodes = result.getNodes();
                         Node node = findValue(nodes, first);
@@ -149,7 +151,7 @@ public class JsfElExpression extends ELExpression {
                 }
 
             }
-        } else if (dotIndex == -1) {
+        } else if (dotIndex == -1 && bracketIndex == -1) {
             value = EL_START;
         }
         return value;
@@ -180,8 +182,9 @@ public class JsfElExpression extends ELExpression {
     @Override 
     public String getObjectClass(){
         String beanName = extractBeanName();
-        if (bundleName !=null && bundleName.startsWith("#{")) //NOI18N
+        if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
             beanName = bundleName.substring(2,bundleName.length()-1);
+        }
   
         List <ManagedBean>beans = JSFBeanCache.getBeans(webModule);
         
@@ -209,10 +212,14 @@ public class JsfElExpression extends ELExpression {
         ArrayList <ResourceBundle> bundles = new ArrayList<ResourceBundle>();
         
         for (int i = 0; i < files.length; i++) {
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], true).getRootComponent();
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], 
+                    true).getRootComponent();
             for (int j = 0; j < facesConfig.getApplications().size(); j++) {
-                Collection<ResourceBundle> resourceBundles = facesConfig.getApplications().get(j).getResourceBundles();
-                for (Iterator<ResourceBundle> it = resourceBundles.iterator(); it.hasNext();) {
+                Collection<ResourceBundle> resourceBundles = facesConfig.
+                getApplications().get(j).getResourceBundles();
+                for (Iterator<ResourceBundle> it = resourceBundles.iterator(); 
+                    it.hasNext();) 
+                {
                     bundles.add(it.next());   
                 }
             }
@@ -220,7 +227,9 @@ public class JsfElExpression extends ELExpression {
         return bundles;
     }
     
-    public  List<CompletionItem> getPropertyKeys(String propertyFile, int anchorOffset, String prefix) {
+    public  List<CompletionItem> getPropertyKeys(String propertyFile, 
+            int anchorOffset, String prefix) 
+    {
         ArrayList<CompletionItem> items = new ArrayList<CompletionItem>();
         java.util.ResourceBundle labels = null;
         ClassPath classPath;
@@ -229,12 +238,16 @@ public class JsfElExpression extends ELExpression {
         try { // try to find on the source classpath
             classPath = ClassPath.getClassPath(getFileObject(), ClassPath.SOURCE);
             classLoader = classPath.getClassLoader(false);
-            labels = java.util.ResourceBundle.getBundle(propertyFile, Locale.getDefault(), classLoader);
-        }  catch (MissingResourceException exception) {
+            labels = java.util.ResourceBundle.getBundle(propertyFile, 
+                    Locale.getDefault(), classLoader);
+        }  
+        catch (MissingResourceException exception) {
             // There is not the property on source classpath - try compile
             try {
-                classLoader = ClassPath.getClassPath(getFileObject(), ClassPath.COMPILE).getClassLoader(false);
-                labels = java.util.ResourceBundle.getBundle(propertyFile, Locale.getDefault(), classLoader);
+                classLoader = ClassPath.getClassPath(getFileObject(), 
+                        ClassPath.COMPILE).getClassLoader(false);
+                labels = java.util.ResourceBundle.getBundle(propertyFile, 
+                        Locale.getDefault(), classLoader);
             } catch (MissingResourceException exception2) {
                 // the propertyr file wasn't find on the compile classpath as well
             }
@@ -250,7 +263,8 @@ public class JsfElExpression extends ELExpression {
                     StringBuffer helpText = new StringBuffer();
                     helpText.append(key).append("=<font color='#ce7b00'>"); //NOI18N
                     helpText.append(labels.getString(key)).append("</font>"); //NOI18N
-                    items.add(new JsfElCompletionItem.JsfResourceItem(key, anchorOffset, helpText.toString()));
+                    items.add(new JsfElCompletionItem.JsfResourceItem(key, 
+                            anchorOffset, helpText.toString()));
                 }
             }
         }
@@ -258,13 +272,17 @@ public class JsfElExpression extends ELExpression {
         return items;
     }
     
-    public List<CompletionItem> getListenerMethodCompletionItems(String beanType, int anchor){
+    public List<CompletionItem> getListenerMethodCompletionItems(String beanType, 
+            int anchor)
+    {
         JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType, anchor);
         runTask(task);
         return task.getCompletionItems();
     }
     
-    public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass implements CancellableTask<CompilationController> {
+    public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass 
+        implements CancellableTask<CompilationController> 
+    {
         
         private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
         private int anchor;
@@ -285,7 +303,9 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
                 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.
+                        getEnclosedElements()))
+                {
                     if (isActionListenerMethod(method)) {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
@@ -330,7 +350,9 @@ public class JsfElExpression extends ELExpression {
      * Go to the java source code of expression
      * - a getter in case of
      */
-    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+    private class GoToSourceTask extends BaseELTaskClass implements 
+        CancellableTask<CompilationController>
+    {
         private boolean success = false;
 
         GoToSourceTask(String beanType){
@@ -344,16 +366,20 @@ public class JsfElExpression extends ELExpression {
             if (bean != null){
                 String suffix = getPropertyBeingTypedName();
 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.
+                        getEnclosedElements()))
+                {
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.equals(suffix)){
                         ElementHandle el = ElementHandle.create(method);
-                        FileObject fo = SourceUtils.getFile(el, parameter.getClasspathInfo());
+                        FileObject fo = SourceUtils.getFile(el, 
+                                parameter.getClasspathInfo());
 
                         // Not a regular Java data object (may be a multi-view data object), open it first
                         DataObject od = DataObject.find(fo);
-                        if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
+                        if (!"org.netbeans.modules.java.JavaDataObject".equals(
+                                od.getClass().getName())) { // NOI18N
                             EditorCookie oc = od.getCookie(EditorCookie.class);
                             oc.open();
                         }
@@ -379,11 +405,13 @@ public class JsfElExpression extends ELExpression {
                 String methodName = method.getSimpleName().toString();
 
                 if (methodName.startsWith("get")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+                    return Character.toLowerCase(methodName.charAt(3)) + 
+                        methodName.substring(4);
                 }
 
                 if (methodName.startsWith("is")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+                    return Character.toLowerCase(methodName.charAt(2)) + 
+                        methodName.substring(3);
                 }
 
                 if (isDefferedExecution()){

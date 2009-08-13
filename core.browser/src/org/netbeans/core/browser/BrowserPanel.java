@@ -2,7 +2,6 @@ package org.netbeans.core.browser;
 
 import java.awt.AWTEvent;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -148,14 +147,8 @@ public class BrowserPanel extends MozillaPanel {
             if( null != tc ) {
                 tc.requestActive();
             }
-        } else if( e.getID() == MouseEvent.MOUSE_MOVED ) {
-            Window w = SwingUtilities.getWindowAncestor(this);
-            if( null != w ) {
-                //send this event to the parent frame to hide sliding (if any)
-                SwingUtilities.convertPoint(this, e.getPoint(), w);
-                w.dispatchEvent(e);
-            }
         }
+        //todo hide sliding windows (if any)
     }
 
     public void dispose() {
