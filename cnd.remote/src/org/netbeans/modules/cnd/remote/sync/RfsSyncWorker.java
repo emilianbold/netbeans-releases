@@ -72,7 +72,7 @@ class RfsSyncWorker extends ZipSyncWorker {
 
     public RfsSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         super(localDir, executionEnvironment, out, err, privProjectStorageDir);
-        remoteControllerPath = System.getProperty("cnd.remote.fs.controller");
+        remoteControllerPath = RfsSetupProvider.getController(executionEnvironment);
     }
 
     @Override
