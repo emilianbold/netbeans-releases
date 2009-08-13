@@ -108,8 +108,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return 1000 * 60 * 10;
     }
     
-    
-    
     public @Override void setUp() throws Exception {
         clearWorkDir();
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
@@ -266,7 +264,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                DataShadow ds = obj.getCookie(DataShadow.class);
+                DataShadow ds = obj.getLookup().lookup(DataShadow.class);
                 if (ds != null) {
                     Object o = ds.getOriginal();
                     if (o == null) {
@@ -349,7 +347,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
                     String iof = (String) fo.getAttribute("instanceOf");
                     if (iof != null) {
@@ -394,7 +392,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
             try {
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic == null) {
                     continue;
                 }
