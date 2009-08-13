@@ -42,12 +42,14 @@
 package org.netbeans.spi.tasklist;
 
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.openide.filesystems.FileObject;
@@ -60,16 +62,56 @@ import org.openide.util.NbBundle;
  */
 public final class Task {
     
-    private FileObject resource;
-    private TaskGroup group;
-    private String description;
-    private int line;
-    private ActionListener al;
+    private final URL url;
+    private final FileObject file;
+    private final TaskGroup group;
+    private final String description;
+    private final int line;
+    private final ActionListener defaultAction;
+    private final Action[] actions;
     
     static {
         Accessor.DEFAULT = new AccessorImpl();
     }
     
+
+    /**
+     * Create a new Task
+     *
+     * @param resource Resource which the Task applies to, cannot be null.
+     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param description A brief summary of the task (one line if possible), cannot be null.
+     *
+     * @return New task.
+     * @since 1.6
+     */
+    public static Task create( URL resource, String groupName, String description ) {
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, null, null );
+    }
+
+    /**
+     * Create a new Task
+     * <p>Since version 1.4 the Task List implementation uses Indexing API to persist
+     * tasks created by FileTaskScanners. If a file hasn't changed since the last scan
+     * then the tasks associated with that file are loaded from cache to improve
+     * Task List performance. Therefore task's ActionListener and popup Actions
+     * aren't available when the task is restored from cache. Task providers must
+     * switch to PushTaskScanner if ActionListener and popup actions are required
+     * to be available at all times.</p>
+     *
+     * @param resource Resource which the Task applies to, cannot be null.
+     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param description A brief summary of the task (one line if possible), cannot be null.
+     * @param defaultAction Task's default action, e.g. double-click or Enter key in the Task List window.
+     * @param popupActions Actions to show in task's popup menu.
+     *
+     * @return New task.
+     * @since 1.6
+     */
+    public static Task create( URL resource, String groupName, String description, ActionListener defaultAction, Action[] popupActions ) {
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, defaultAction, popupActions );
+    }
+
     /**
      * Create a new Task
      * 
@@ -81,7 +123,8 @@ public final class Task {
      * @return New task.
      */
     public static Task create( FileObject resource, String groupName, String description, int line ) {
-        return new Task( resource, getTaskGroup( groupName ), description, line, null );
+        assert null != resource;
+        return new Task(resource, null, getTaskGroup(groupName), description, line, null, null);
     }
     
     /**
@@ -101,28 +144,39 @@ public final class Task {
      * @return New task.
      */
     public static Task create( FileObject resource, String groupName, String description, ActionListener al ) {
-        return new Task( resource, getTaskGroup( groupName ), description, -1, al );
+        assert null != resource;
+        return new Task(resource, null, getTaskGroup(groupName), description, -1, al, null);
     }
     
     /** Creates a new instance of Task */
-    private Task( FileObject resource, TaskGroup group, String description, int line, ActionListener al ) {
+    private Task( FileObject file, URL url, TaskGroup group, String description, int line, ActionListener defaultAction, Action[] actions ) {
         assert null != group;
         assert null != description;
-        assert null != resource;
+        assert null == file || null == url;
         
-        this.resource = resource;
+        this.file = file;
+        this.url = url;
         this.group = group;
         this.description = description;
         this.line = line;
-        this.al = al;
+        this.defaultAction = defaultAction;
+        this.actions = actions;
     }
-    
+
     /**
-     * Resource (file or folder) this taks applies to.
-     * @return Resource (file or folder) this taks applies to.
+     * Resource this taks applies to.
+     * @return Resource this taks applies to.
      */
-    FileObject getResource() {
-        return resource;
+    URL getURL() {
+        return url;
+    }
+
+    /**
+     * Resource this taks applies to.
+     * @return Resource this taks applies to.
+     */
+    FileObject getFile() {
+        return file;
     }
     
     /**
@@ -153,8 +207,12 @@ public final class Task {
      * Action to be invoked when user double-clicks the task in the Task List window.
      * @return Task's default action or null if not available.
      */
-    ActionListener getActionListener() {
-        return al;
+    ActionListener getDefaultAction() {
+        return defaultAction;
+    }
+
+    Action[] getActions() {
+        return actions;
     }
     
     /**
@@ -199,8 +257,11 @@ public final class Task {
         if (this.group != test.group && this.group != null &&
             !this.group.equals(test.group))
             return false;
-        if (this.resource != test.resource && this.resource != null &&
-            !this.resource.equals(test.resource))
+        if (this.url != test.url && this.url != null &&
+            !this.url.equals(test.url))
+            return false;
+        if (this.file != test.file && this.file != null &&
+            !this.file.equals(test.file))
             return false;
         return true;
     }
@@ -212,7 +273,8 @@ public final class Task {
         hash = 17 * hash + this.line;
         hash = 17 * hash + (this.description != null ? this.description.hashCode() : 0);
         hash = 17 * hash + (this.group != null ? this.group.hashCode() : 0);
-        hash = 17 * hash + (this.resource != null ? this.resource.hashCode() : 0);
+        hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 17 * hash + (this.url != null ? this.url.hashCode() : 0);
         return hash;
     }
     
@@ -220,7 +282,7 @@ public final class Task {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append( "[" ); 
-        buffer.append( getResource() );
+        buffer.append( null == url ? getFile() : getURL() );
         buffer.append( ", " ); 
         buffer.append( getLine() );
         buffer.append( ", " ); 

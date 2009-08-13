@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 public class TaskIndexerFactory extends CustomIndexerFactory {
 
     static final String INDEXER_NAME = "TaskListIndexer"; //NOI18N
-    static final int INDEXER_VERSION = 1;
+    static final int INDEXER_VERSION = 2;
 
     public TaskIndexerFactory() {
     }
