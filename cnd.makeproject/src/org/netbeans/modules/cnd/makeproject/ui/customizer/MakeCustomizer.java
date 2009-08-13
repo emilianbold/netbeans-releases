@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -58,9 +58,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -85,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
@@ -628,7 +631,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
         }
 
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         CustomizerNode node = createGeneralDescription(project);
         if (node != null) {
             descriptions.add(node);
@@ -645,17 +648,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
             descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Profile")); // NOI18N
 
-            List<CustomizerNode> l = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
-            if (l.size() > 1) {
-                CustomizerNode[] cn = {l.get(0)};
-                descriptions.add(new DebugCustomizerNode("Debuggers", getString("LBL_Config_Debugger"), l.toArray(cn))); // NOI18N
-            } else if (l.size() == 1) {
-                descriptions.addAll(l);
-            } else {
-                descriptions.add(createNotFoundNode("Debug")); // NOI18N
-            }
+            List<CustomizerNode> debugCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
+            descriptions.addAll(getVisibleDebuggerNodes(debugCustomizers));
 
-            CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
+            // No need to show debuggers any more
+            List<CustomizerNode> descAll = new ArrayList<CustomizerNode>(descriptions);
+            descAll.addAll(debugCustomizers);
+
+            CustomizerNode advanced = getAdvancedCutomizerNode(descAll);
             if (advanced != null) {
                 descriptions.add(advanced);
             }
@@ -666,6 +666,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         //add all which are not included yet
         List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
+        // No need to show debuggers any more
+        nodes.removeAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug")); // NOI18N
+
         for (CustomizerNode cN : nodes) {
             if (!descriptions.contains(cN)) {
                 descriptions.add(cN);
@@ -675,6 +678,40 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
 
         return new PropertyNode(rootDescription);
+    }
+
+    private List<CustomizerNode> getVisibleDebuggerNodes(List<CustomizerNode> debuggerNodes) {
+        List<CustomizerNode> res = new ArrayList<CustomizerNode>();
+        if (debuggerNodes.size() > 1) {
+            // Figure out toolchain families
+            Set<String> families = new HashSet<String>();
+            for (Configuration conf : selectedConfigurations) {
+                MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
+                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+                if (compilerSet == null) {
+                    continue;
+                }
+                for (String family : compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily()) {
+                    families.add(family);
+                }
+            }
+
+            // Find correct debugger customizer
+            for (CustomizerNode dNode : debuggerNodes) {
+                if (dNode instanceof DebuggerCustomizerNode) {
+                    if (families.contains(((DebuggerCustomizerNode)dNode).getFamily())) {
+                        res.add(dNode);
+                    }
+                } else {
+                    res.add(dNode);
+                }
+            }
+        } else if (debuggerNodes.size() == 1) {
+            res.addAll(debuggerNodes);
+        } else {
+            res.add(createNotFoundNode("Debug")); // NOI18N
+        }
+        return res;
     }
 
     // Code Assistant Node
@@ -692,9 +729,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return rootDescription;
     }
 
-    CustomizerNode getAdvancedCutomizerNode(ArrayList descriptions) {
+    CustomizerNode getAdvancedCutomizerNode(List<CustomizerNode> descriptions) {
 //      Vector advancedNodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(true);
-        ArrayList<CustomizerNode> advancedNodes = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> advancedNodes = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
         for (CustomizerNode node : nodes) {
             if (node != null && !descriptions.contains(node)) {
