@@ -142,10 +142,14 @@ public class CommentsPanel extends JPanel {
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
-        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME), creationTxt, horizontalGroup, verticalGroup, true);
+        addSection(layout,
+            issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION),
+            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER),
+            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME),
+            creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
-            addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
+            addSection(layout, comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -155,7 +159,7 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, String text, String author, String dateTimeString,
+    private void addSection(GroupLayout layout, String text, String author, String authorName, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
         JLabel leftLabel = new JLabel();
@@ -170,7 +174,8 @@ public class CommentsPanel extends JPanel {
         leftLabel.setText(leftTxt);
         JLabel rightLabel = new JLabel();
         String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
-        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
+        String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
+        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, authorTxt);
         rightLabel.setText(rightTxt);
         rightLabel.setLabelFor(textPane);
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
