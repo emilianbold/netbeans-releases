@@ -297,8 +297,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
 
         Object o = fo.getAttribute ("instantiatingIterator");
-        if (o == null) {
-            o = fo.getAttribute ("templateWizardIterator");
+        if (o == null || (o instanceof FeatureOnDemanWizardIterator)) {
+            Object twi = fo.getAttribute ("templateWizardIterator");
+            if (twi != null) {
+                o = twi;
+            }
         }
         if (o instanceof WizardDescriptor.InstantiatingIterator) {
             // OK
