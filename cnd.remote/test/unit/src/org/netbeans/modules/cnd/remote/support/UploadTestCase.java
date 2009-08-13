@@ -43,13 +43,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
 import junit.framework.Test;
-import org.junit.Ignore;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
@@ -87,9 +88,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     }
 
     private void initRfs() {
-        // FIXUP until remote host setup is done
+        // FIXUP still fixup though it is better
         final Env env = pae.getProfile().getEnvironment();
-        String preload = System.getProperty("cnd.remote.fs.preload");
+        String preload = RfsSetupProvider.getPreload(execEnv);
         if (preload != null) {
             env.putenv("LD_PRELOAD", preload);
         }
