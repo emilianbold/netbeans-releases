@@ -51,6 +51,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -203,6 +204,10 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
         return stackStorage.putStack(stack, sampleDuration);
+    }
+
+    public List<FunctionCall> getCallStack(int stackId) {
+        return stackStorage.getStack(stackId);
     }
 
     public void flush() {

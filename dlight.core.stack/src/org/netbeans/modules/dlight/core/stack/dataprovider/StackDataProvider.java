@@ -41,14 +41,16 @@ package org.netbeans.modules.dlight.core.stack.dataprovider;
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 
 
-public interface StackDataProvider extends TreeTableDataProvider<FunctionCallTreeTableNode>, SourceFileInfoDataProvider{
+public interface StackDataProvider extends SourceFileInfoDataProvider{
   public List<FunctionMetric> getMetricsList();
   public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
   public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate);
   public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit);
+
+  public List<FunctionCall> getCallStack(int stackId);
 }
