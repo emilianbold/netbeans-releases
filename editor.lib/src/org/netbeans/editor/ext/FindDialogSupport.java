@@ -69,6 +69,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -548,8 +549,8 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             findButtons[0].setEnabled(!wrongFindPattern);//find button
             findButtons[1].setEnabled(!wrongReplacePattern && !wrongFindPattern);//replace button
             findButtons[2].setEnabled(!wrongReplacePattern && !wrongFindPattern);//replace all button
-            findWhat.getEditor().getEditorComponent().setForeground(wrongFindPattern ? Color.RED : Color.BLACK);
-            replaceWith.getEditor().getEditorComponent().setForeground(wrongReplacePattern ? Color.RED : Color.BLACK);
+            findWhat.getEditor().getEditorComponent().setForeground(wrongFindPattern ? Color.RED : UIManager.getColor("textText")); //NOI18N
+            replaceWith.getEditor().getEditorComponent().setForeground(wrongReplacePattern ? Color.RED : UIManager.getColor("textText")); //NOI18N
         }
 
         public void resetBlockSearch(){

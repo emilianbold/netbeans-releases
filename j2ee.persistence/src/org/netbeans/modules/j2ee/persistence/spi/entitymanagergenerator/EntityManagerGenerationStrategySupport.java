@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions.*;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.openide.util.Parameters;
 
@@ -246,7 +247,8 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
      * @param emName the name of the entity manager
      */
     protected String generateCallLines(String emName) {
-        return MessageFormat.format(getGenerationOptions().getOperation().getBody(), new Object[] {
+        String version=this.persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;
+        return MessageFormat.format(getGenerationOptions().getOperation().getBody(version), new Object[] {
             emName,
             getGenerationOptions().getParameterName(),
             getGenerationOptions().getParameterType(),

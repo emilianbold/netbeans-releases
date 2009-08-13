@@ -43,10 +43,11 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.Token;
+
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -65,9 +66,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -105,8 +106,8 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             if (target == null || target.getDocument() != bdoc)
                 return false;
         
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
+            TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
             if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
                 return false; //no token found
             }
@@ -115,8 +116,9 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 return false; //no token
             }
         
-            Token token = tokenSequence.token();
-            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+            //Token<?> token = tokenSequence.token();
+            TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                    ELTokenId.language());
             
             if (elTokenSequence != null) {
                 FileObject fObject = NbEditorUtilities.getFileObject(doc);
@@ -136,14 +138,16 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                         return false;
                     }
                     
-                    int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
+                    int endOfEL = elTokenSequence.offset() + 
+                        elTokenSequence.token().length();
                     int res = exp.parse(endOfEL);
                     
                     if (res == JsfElExpression.EL_START) {
                         res = exp.parse(endOfEL + 1);
                     }
                     
-                    return (res == JsfElExpression.EL_JSF_BEAN) ||(res == JsfElExpression.EL_JSF_BEAN_REFERENCE);
+                    return (res == JsfElExpression.EL_JSF_BEAN) ||
+                        (res == JsfElExpression.EL_JSF_BEAN_REFERENCE);
                 }
             }
         } finally {
@@ -177,8 +181,8 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
         if (target == null || target.getDocument() != bdoc)
             return null;
         
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return null; //no token found
         }
@@ -186,10 +190,11 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             return null; //no token
         }
         
-        Token token = tokenSequence.token();
+        //Token<?> token = tokenSequence.token();
         
         // is it a bean in EL ?
-        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                ELTokenId.language());
         
         if (elTokenSequence != null){
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
@@ -204,7 +209,8 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
-                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START || res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
+                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START 
+                        || res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                     return new int[] {elTokenSequence.offset(), elEnd};
             }
         }
@@ -230,8 +236,8 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
         if (target == null || target.getDocument() != bdoc)
             return;
               
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return; //no token found
         }
@@ -239,10 +245,11 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             return ; //no token
         }
         
-        Token token = tokenSequence.token();
+        //Token<?> token = tokenSequence.token();
         
         // is it a bean in EL
-        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                ELTokenId.language());
         if (elTokenSequence != null){
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
@@ -253,15 +260,19 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                     return; //no token
                 }
                 
-                int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
+                int res = exp.parse(elTokenSequence.offset() + 
+                            elTokenSequence.token().length());
                 if (res == JsfElExpression.EL_START ){
                     //TODO XXX Add code to point references to beans in JSF file
                     (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
                     return;
                 }
-                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_JSF_BEAN_REFERENCE){
+                if (res == JsfElExpression.EL_JSF_BEAN || 
+                        res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
+                {
                     if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
-                        String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).getString("MSG_source_not_found");
+                        String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).
+                            getString("MSG_source_not_found");
                         StatusDisplayer.getDefault().setStatusText(msg);
                         Toolkit.getDefaultToolkit().beep();
                     }
@@ -294,19 +305,25 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                         EditCookie editCookie = dobj.getCookie(EditCookie.class);
                         if (editorCookie != null) {
                             StyledDocument document = editorCookie.openDocument();
-                            int[] definition = JSFEditorUtilities.getManagedBeanDefinition((BaseDocument)document, "managed-bean-name", beanName); //NOI18N
+                            int[] definition = JSFEditorUtilities.
+                                getManagedBeanDefinition((BaseDocument)document, 
+                                        "managed-bean-name", beanName); //NOI18N
                             // line number in the document
-                            int lineNumber = NbDocument.findLineNumber(document, definition[0]);
-                            int lineOffset = NbDocument.findLineOffset(document, lineNumber);
+                            int lineNumber = NbDocument.findLineNumber(document, 
+                                    definition[0]);
+                            int lineOffset = NbDocument.findLineOffset(document, 
+                                    lineNumber);
                             // column at the line
                             int column = lineOffset - definition[0];
 
                             if (lineNumber != -1) {
-                                Line line = lineCookie.getLineSet().getCurrent(lineNumber);
+                                Line line = lineCookie.getLineSet().getCurrent(
+                                        lineNumber);
 
                                 if(line != null) {
                                     // show the line
-                                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FRONT, column);
+                                    line.show(ShowOpenType.OPEN, 
+                                            ShowVisibilityType.FRONT, column);
                                 }
                             }
 
