@@ -64,13 +64,19 @@ import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
@@ -586,6 +592,46 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     public List<ServiceInfoDataStorage> getServiceInfoDataStorages() {
         //plus
         return serviceInfoDataStorages == null ? Collections.<ServiceInfoDataStorage>emptyList() : serviceInfoDataStorages;
+    }
+
+    /**
+     * Creates data provider for data model scheme if matching data storage exists.
+     *
+     * @param dataModelScheme
+     * @param metadata
+     * @return
+     */
+    public DataProvider createDataProvider(DataModelScheme dataModelScheme, DataTableMetadata metadata) {
+        for (DataStorage storage : getStorages()) {
+            if (metadata != null && !storage.hasData(metadata)) {
+                continue;
+            }
+            for (DataStorageType dss : storage.getStorageTypes()) {
+                DataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dss, dataModelScheme);
+                if (dataProvider != null) {
+                    dataProvider.attachTo(storage);
+                    addDataFilterListener(dataProvider);
+                    return dataProvider;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates visualizer data provider for data model scheme.
+     *
+     * @param dataModelScheme
+     * @param metadata
+     * @return
+     */
+    public VisualizerDataProvider createVisualizerDataProvider(DataModelScheme dataModelScheme) {
+        VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModelScheme);
+        if (dataProvider != null && !(dataProvider instanceof DataProvider)) {
+            return dataProvider;
+        } else {
+            return null;
+        }
     }
 
     void close() {
