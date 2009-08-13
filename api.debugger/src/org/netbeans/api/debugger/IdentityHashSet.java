@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.breakpoints;
+package org.netbeans.api.debugger;
 
-import javax.swing.JComponent;
-
-import org.netbeans.spi.debugger.ui.BreakpointType;
-
-import org.openide.util.NbBundle;
-
+import java.util.AbstractSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
-* Implementation of breakpoint on method.
-*
-* @author   Jan Jancura
-*/
-public class ThreadBreakpointType extends BreakpointType {
+ * Delete when someone decides to fix http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4479578
+ *
+ * @author Martin Entlicher
+ */
+class IdentityHashSet<T> extends AbstractSet<T> {
 
-    public String getCategoryDisplayName () {
-        return NbBundle.getMessage (
-            ThreadBreakpointType.class,
-            "CTL_Java_breakpoint_events_cathegory_name"
-        );
+    final Map<T, Object> map;
+
+    IdentityHashSet() {
+        map = new IdentityHashMap<T, Object>();
     }
-    
-    public JComponent getCustomizer () {
-        return new ThreadBreakpointPanel ();
+
+    IdentityHashSet(int size) {
+        map = new IdentityHashMap<T, Object>(size);
     }
-    
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (
-            ThreadBreakpointType.class, 
-            "CTL_Thread_event_type_name"
-        );
+
+    public int size() {
+        return map.size();
     }
-    
-    public boolean isDefault () {
-        return false;
+
+    @Override
+    public boolean contains(Object o) {
+        return map.containsKey(o);
     }
+
+    public Iterator<T> iterator() {
+        return map.keySet().iterator();
+    }
+
+    @Override
+    public Object[] toArray() {
+        return map.keySet().toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return map.keySet().toArray(a);
+    }
+
+    @Override
+    public boolean add(T o) {
+        return map.put(o, map) == null;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return map.remove(o) == map;
+    }
+
+    @Override
+    public void clear() {
+        map.clear();
+    }
+
 }

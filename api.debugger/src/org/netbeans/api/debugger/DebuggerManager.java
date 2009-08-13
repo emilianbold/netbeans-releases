@@ -43,9 +43,15 @@ package org.netbeans.api.debugger;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import org.openide.util.Cancellable;
 import org.openide.util.Task;
 
@@ -531,7 +537,7 @@ public final class DebuggerManager implements ContextProvider {
         synchronized (breakpointsByClassLoaders) {
             Set<Breakpoint> lb = breakpointsByClassLoaders.get(cl);
             if (lb == null) {
-                lb = new HashSet<Breakpoint>();
+                lb = new IdentityHashSet<Breakpoint>();
                 breakpointsByClassLoaders.put(cl, lb);
                 //moduleUnloadListeners.listenOn(cl);
             }
