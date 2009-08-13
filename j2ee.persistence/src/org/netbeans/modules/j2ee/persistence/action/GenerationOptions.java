@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+
 /**
  * This class represents code generation options for invoking
  * <code>javax.persistence.EntityManager</code> .
@@ -60,18 +62,45 @@ public final class GenerationOptions {
         REMOVE("{0}.remove({0}.merge({1}));"),
         FIND("return {0}.find({3}.class, {1});"),
         // here the query attribute represents the name of the entity class
-        FIND_ALL("return {0}.createQuery(\"select object(o) from {4} as o\").getResultList();"),
+        FIND_ALL(
+                "return {0}.createQuery(\"select object(o) from {4} as o\").getResultList();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getQueryBuilder().createQuery();cq.select(cq.from({4}.class));return {0}.createQuery(cq).getResultList();"
+                ),
         //querry to get only items starting from {1}[0] up to {1}[1]-1
-        FIND_SUBSET("javax.persistence.Query q = em.createQuery(\"select object(o) from {4} as o\");\nq.setMaxResults({1}[1]-{1}[0]);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();");
-    
+        FIND_SUBSET(
+                "javax.persistence.Query q = {0}.createQuery(\"select object(o) from {4} as o\");\nq.setMaxResults({1}[1]-{1}[0]);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getQueryBuilder().createQuery();cq.select(cq.from({4}.class));javax.persistence.Query q = {0}.createQuery(cq);q.setMaxResults({1}[1]-{1}[0]);q.setFirstResult({1}[0]);return q.getResultList();"),
+        //qurrry to get count(*) on a table
+        COUNT("return ((Long) {0}.createQuery(\"select count(o) from DiscountCode as o\").getSingleResult()).intValue();");
+
         private String body;
+        private String body2_0;
         
         private Operation(String body){
+            this(body, body);
+        }
+
+        private Operation(String body, String body2_0){
+            this.body2_0=body2_0;
             this.body = body;
         }
-        
+
+        /*
+         * @return default body (for jpa 1.0)
+         */
         public String getBody(){
-            return body;
+            return getBody(Persistence.VERSION_1_0);
+        }
+
+        /*
+         * @return body for corresponding jpa version, default is 1.0
+         */
+        public String getBody(String version){
+            if(Persistence.VERSION_2_0.equals(version))
+            {
+                return body2_0;
+            }
+            else return body;
         }
     }
     
