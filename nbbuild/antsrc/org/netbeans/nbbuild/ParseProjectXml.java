@@ -958,7 +958,7 @@ public final class ParseProjectXml extends Task {
         if (!jar.isFile()) {
             File srcdir = module.getSourceLocation();
             if (Project.toBoolean(getProject().getProperty(DO_NOT_RECURSE))) {
-                log(jar + " missing for " + moduleProject + " but will not first try to build " + srcdir, Project.MSG_INFO);
+                log(jar + " missing for " + moduleProject + " but will not first try to build " + srcdir, Project.MSG_VERBOSE);
                 return jar;
             }
             if (srcdir != null && srcdir.isDirectory()) {
