@@ -38,11 +38,18 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import junit.framework.Test;
+import org.junit.Ignore;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -51,41 +58,48 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Sergey Grinev
  */
-public class TransportTestCase extends RemoteTestBase {
+public class UploadTestCase extends RemoteTestBase {
 
     static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public TransportTestCase(String testName, ExecutionEnvironment execEnv) {
+    public UploadTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    public void testRun() throws Exception {
-        final String randomString = "i am just a random string, it does not matter that I mean";
-        RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
-        rcs.run();
-        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
-        assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
+    public void testCopyTo() throws Exception {
+        File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
+        FileWriter fstream = new FileWriter(localFile);
+        StringBuilder sb = new StringBuilder("File from "); //NOI18N
+        try {
+            InetAddress addr = InetAddress.getLocalHost();
+            sb.append( addr.getHostName() );
+        } catch (UnknownHostException e) {
+        }
+        sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
+        BufferedWriter out = new BufferedWriter(fstream);
+        out.write(sb.toString());
+        out.close();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
+        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
+        String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+        rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+        assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
+        String catCommand = "cat " + remoteFile;
+        RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
+//            assert rcs2.run() == 0; // add more output
+        int rc = rcs2.run();
+        if (rc != 0) {
+            assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
+        }
+        assert rcs2.getOutput().equals(sb.toString());
+        assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
     }
-
-    @ForAllEnvironments
-    public void testFileExistst() throws Exception {
-        assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
-        assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
-    }
-
-    @ForAllEnvironments
-    public void testGetEnv() throws Exception {
-        Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
-        System.err.println("Environment: " + env);
-        assert env != null && env.size() > 0;
-        assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
-    }
-
+    
     public static Test suite() {
-        return new RemoteDevelopmentTest(TransportTestCase.class);
+        return new RemoteDevelopmentTest(UploadTestCase.class);
     }
 }
