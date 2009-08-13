@@ -40,27 +40,37 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  * @author Radek Matous
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
-    MethodDeclarationInfo(MethodDeclaration methodDeclaration) {
+    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+    MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration) {
         super(methodDeclaration);
+        if (program != null) {
+            paramDocTypes = VariousUtils.getParamTypesFromPHPDoc(program, methodDeclaration);
+        }
     }
 
+    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration) {
+        return new MethodDeclarationInfo(program, methodDeclaration);
+    }
     public static MethodDeclarationInfo create(MethodDeclaration classDeclaration) {
-        return new MethodDeclarationInfo(classDeclaration);
+        return new MethodDeclarationInfo(null, classDeclaration);
     }
 
     @Override
@@ -88,14 +98,11 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     }
 
     public List<? extends Parameter> getParameters() {
-        List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
         List<Parameter> retval = new ArrayList<Parameter>();
+        List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
-            String name = CodeUtils.getParamDisplayName(formalParameter);
-            String defVal = CodeUtils.getParamDefaultValue(formalParameter);
-            if (name != null) {
-                retval.add(new ParameterImpl(name, defVal));
-            }
+            FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
+            retval.add(parameterInfo.toParameter());
         }
         return retval;
     }
@@ -104,8 +111,4 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         return new PhpModifiers(getOriginalNode().getModifier());
     }
 
-
-    public FunctionDeclarationInfo getFunctionDeclarationInfo() {
-        return FunctionDeclarationInfo.create(getOriginalNode().getFunction());
-    }
 }
