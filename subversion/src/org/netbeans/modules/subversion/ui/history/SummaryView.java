@@ -75,10 +75,10 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.versioning.util.HistoryHyperlinkSupport;
-import org.netbeans.modules.versioning.util.HistoryHyperlinkSupport.AuthorLinker;
-import org.netbeans.modules.versioning.util.HistoryHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.HistoryHyperlinkSupport.Linker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 import org.openide.cookies.EditorCookie;
@@ -110,7 +110,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private List<RepositoryRevision> results;
 
     private Map<String, KenaiUser> kenaiUsersMap = null;
-    private HistoryHyperlinkSupport linkerSupport = new HistoryHyperlinkSupport();
+    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
 
     public SummaryView(SearchHistoryPanel master, List<RepositoryRevision> results) {
         this.master = master;

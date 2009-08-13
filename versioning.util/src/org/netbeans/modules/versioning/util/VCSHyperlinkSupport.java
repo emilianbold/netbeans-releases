@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.JList;
+import javax.swing.JComponent;
 import javax.swing.JTextPane;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
@@ -64,8 +64,8 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class HistoryHyperlinkSupport {
-    private static Logger LOG = Logger.getLogger(HistoryHyperlinkSupport.class.getName());
+public class VCSHyperlinkSupport {
+    private static Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());
     private Map<Integer, List<Linker>> linkers = new HashMap<Integer, List<Linker>>();
 
     public <T extends Linker> T getLinker(Class<T> t, int idx) {
@@ -87,20 +87,26 @@ public class HistoryHyperlinkSupport {
         linkers.put(idx, list);
     }
 
-    public void mouseMoved(Point p, JList resultsList, int idx) {
+    public boolean mouseMoved(Point p, JComponent component, int idx) {
         List<Linker> list = linkers.get(idx);
-        if(list == null) return ;
+        if(list == null) return false;
         for (Linker linker : list) {
-            linker.mouseMoved(p, resultsList);
+            if(linker.mouseMoved(p, component)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    public void mouseClicked(Point p, int idx) {
+    public boolean mouseClicked(Point p, int idx) {
         List<Linker> list = linkers.get(idx);
-        if(list == null) return ;
+        if(list == null) return false;
         for (Linker linker : list) {
-            linker.mouseClicked(p);
+            if(linker.mouseClicked(p)) {
+                return true;
+            }
         }
+        return false;
     }
 
     public void computeBounds(JTextPane textPane, int idx) {
@@ -112,8 +118,8 @@ public class HistoryHyperlinkSupport {
     }
 
     public static abstract class Linker {
-        public abstract void mouseMoved(Point p, JList resultsList);
-        public abstract void mouseClicked(Point p);
+        public abstract boolean mouseMoved(Point p, JComponent component);
+        public abstract boolean mouseClicked(Point p);
         public abstract void computeBounds(JTextPane textPane);
         public abstract void insertString(StyledDocument sd, Style style) throws BadLocationException;
     }
@@ -176,6 +182,7 @@ public class HistoryHyperlinkSupport {
             return null;
         }
 
+        @Override
         public void computeBounds(JTextPane textPane) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
@@ -190,23 +197,25 @@ public class HistoryHyperlinkSupport {
         }
 
         @Override
-        public void mouseMoved(Point p, JList resultsList) {
+        public boolean mouseMoved(Point p, JComponent component) {
             for (int i = 0; i < start.length; i++) {
                 if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
-                    resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    return;
+                    component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    return true;
                 }
             }
+            return false;
         }
 
         @Override
-        public void mouseClicked(Point p) {
+        public boolean mouseClicked(Point p) {
             for (int i = 0; i < start.length; i++) {
                 if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
                     hp.onClick(root, text, start[i], end[i]);
-                    break;
+                    return true;
                 }
             }
+            return false;
         }
 
         @Override
@@ -240,6 +249,7 @@ public class HistoryHyperlinkSupport {
             docend = doclen + textlen;
         }
 
+        @Override
         public void computeBounds(JTextPane textPane) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
@@ -255,19 +265,22 @@ public class HistoryHyperlinkSupport {
         }
 
         @Override
-        public void mouseClicked(Point p) {
+        public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
                 kenaiUser.startChat();
+                return true;
             }
+            return false;
         }
 
         @Override
-        public void mouseMoved(Point p, JList resultsList) {
+        public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
-                resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                resultsList.setToolTipText(NbBundle.getMessage(HistoryHyperlinkSupport.class, "LBL_StartChat", author));
-                return;
+                component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                component.setToolTipText(NbBundle.getMessage(VCSHyperlinkSupport.class, "LBL_StartChat", author));
+                return true;
             }
+            return false;
         }
 
         @Override
