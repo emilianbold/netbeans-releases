@@ -1,7 +1,14 @@
 TODO:
 
-- don't ask NB site twice about the same file:
-implement logic that tracks files in remote controller
+- host setup: copying binaries to the remote host
+
+- track filestamps on local host
+
+- pass directory structure to the remote controller
+
+- check Sun Studio tool chain
+
+- check Linux
 
 - when storing file information, paths are duplicated
 (absolute paths! this consumes lots of memory)
@@ -23,3 +30,6 @@ implement logic that tracks files in remote controller
 DONE:
 
 - optimize: if the file is open for writing, do not ask controller
+
+- don't ask NB site twice about the same file:
+implement logic that tracks files in remote controller
