@@ -553,12 +553,12 @@ public class EditorContextBridge {
 
         @Override
         public String getAnnotationType() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         @Override
         public String getShortDescription() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 }
