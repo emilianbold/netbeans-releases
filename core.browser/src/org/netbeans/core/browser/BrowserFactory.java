@@ -38,8 +38,13 @@
  */
 package org.netbeans.core.browser;
 
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.netbeans.core.IDESettings;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
+import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  * Creates internal browser which uses embedded native browser.
@@ -47,8 +52,14 @@ import org.openide.awt.HtmlBrowser.Impl;
  * @author S. Aubrecht
  */
 public class BrowserFactory implements HtmlBrowser.Factory {
+    
+    static String PROP_EXTRA_BROWSER = "ExtraBrowser"; //NOI18N
 
     public Impl createHtmlBrowserImpl() {
+        HtmlBrowser.Factory extraFactory = _getExtraBrowser();
+        if( null != extraFactory ) {
+            return extraFactory.createHtmlBrowserImpl();
+        }
         return new HtmlBrowserImpl();
     }
 
@@ -56,5 +67,44 @@ public class BrowserFactory implements HtmlBrowser.Factory {
         if( !BrowserManager.isSupportedPlatform() )
             return Boolean.TRUE;
         return Boolean.FALSE;
+    }
+
+    public HtmlBrowser.Factory getExtraBrowser() {
+        return _getExtraBrowser();
+    }
+
+    public void setExtraBrowser( HtmlBrowser.Factory browser ) {
+        _setExtraBrowser(browser);
+    }
+
+    static HtmlBrowser.Factory _getExtraBrowser() {
+        String id = NbPreferences.forModule(BrowserFactory.class).get("extraBrowser", null); //NOI18N
+        if( null == id || "".equals(id) ) {
+            return null;
+        }
+        Lookup.Item<HtmlBrowser.Factory> item = Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, id, null));
+        return item == null ? null : item.getInstance ();
+    }
+
+    static void _setExtraBrowser(HtmlBrowser.Factory browser) {
+        String browserId = null;
+        if( null != browser ) {
+            Lookup.Item<HtmlBrowser.Factory> item = Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, browser));
+            if (item != null) {
+                browserId = item.getId ();
+            } else {
+                // strange
+                Logger.getLogger (IDESettings.class.getName ()).warning ("Cannot find browser in lookup " + browser);// NOI18N
+            }
+        }
+        if( null == browserId )
+            browserId = ""; //NOI18N
+        NbPreferences.forModule(BrowserFactory.class).put("extraBrowser", browserId); //NOI18N
+
+        //force reset of URLDisplayer implementation in NbTopManager
+        Preferences idePrefs = NbPreferences.forModule(IDESettings.class);
+        String wwwBrowser = idePrefs.get(IDESettings.PROP_WWWBROWSER, null);
+        idePrefs.put(IDESettings.PROP_WWWBROWSER, "");
+        idePrefs.put(IDESettings.PROP_WWWBROWSER, wwwBrowser);
     }
 }
