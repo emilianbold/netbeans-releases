@@ -60,8 +60,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileLock;
@@ -990,12 +990,12 @@ public final class RemoteClient implements Cancellable {
         return sb.toString();
     }
 
-    private static boolean isVisible(File file) {
+    private boolean isVisible(File file) {
         assert file != null;
         if (IGNORED_DIRS.contains(file.getName())) {
             return false;
         }
-        return VisibilityQuery.getDefault().isVisible(file);
+        return properties.getPhpVisibilityQuery().isVisible(file);
     }
 
     private static boolean mkLocalDirs(File folder) {
@@ -1145,6 +1145,7 @@ public final class RemoteClient implements Cancellable {
         private final boolean preservePermissions;
         private final boolean uploadDirectly;
         private final OperationMonitor operationMonitor;
+        private final PhpVisibilityQuery phpVisibilityQuery;
 
         /**
          * Create advanced properties for a {@link RemoteClient}.
@@ -1159,6 +1160,7 @@ public final class RemoteClient implements Cancellable {
             preservePermissions = builder.preservePermissions;
             uploadDirectly = builder.uploadDirectly;
             operationMonitor = builder.operationMonitor;
+            phpVisibilityQuery = builder.phpVisibilityQuery;
         }
 
         /**
@@ -1278,6 +1280,32 @@ public final class RemoteClient implements Cancellable {
             return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setUploadDirectly(uploadDirectly));
         }
 
+        /**
+         * Get {@link PhpVisibilityQuery PHP project specific visibility query}, fallback is
+         * the {@link org.netbeans.api.queries.VisibilityQuery#getDefault() default visibility query}.
+         * @return {@link PhpVisibilityQuery PHP project specific visibility query}, cannot be <code>null</code>.
+         */
+        public PhpVisibilityQuery getPhpVisibilityQuery() {
+            if (phpVisibilityQuery != null) {
+                return phpVisibilityQuery;
+            }
+            return PhpVisibilityQuery.getDefault();
+        }
+
+        /**
+         * Return properties with configured {@link PhpVisibilityQuery PHP project specific visibility query}.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
+         * @param phpVisibilityQuery {@link PhpVisibilityQuery PHP project specific visibility query}.
+         * @return new properties with configured {@link PhpVisibilityQuery PHP project specific visibility query}
+         */
+        public AdvancedProperties setPhpVisibilityQuery(PhpVisibilityQuery phpVisibilityQuery) {
+            Parameters.notNull("phpVisibilityQuery", phpVisibilityQuery);
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setPhpVisibilityQuery(phpVisibilityQuery));
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(200);
@@ -1291,6 +1319,8 @@ public final class RemoteClient implements Cancellable {
             sb.append(uploadDirectly);
             sb.append(", operationMonitor: ");
             sb.append(operationMonitor);
+            sb.append(", phpVisibilityQuery: ");
+            sb.append(phpVisibilityQuery);
             sb.append(" ]");
             return sb.toString();
         }
@@ -1302,6 +1332,7 @@ public final class RemoteClient implements Cancellable {
         boolean preservePermissions = false;
         boolean uploadDirectly = false;
         OperationMonitor operationMonitor;
+        PhpVisibilityQuery phpVisibilityQuery;
 
         AdvancedPropertiesBuilder() {
         }
@@ -1312,6 +1343,7 @@ public final class RemoteClient implements Cancellable {
             preservePermissions = properties.isPreservePermissions();
             uploadDirectly = properties.isUploadDirectly();
             operationMonitor = properties.getOperationMonitor();
+            phpVisibilityQuery = properties.getPhpVisibilityQuery();
         }
 
         public AdvancedPropertiesBuilder setAdditionalInitialSubdirectory(String additionalInitialSubdirectory) {
@@ -1336,6 +1368,11 @@ public final class RemoteClient implements Cancellable {
 
         public AdvancedPropertiesBuilder setUploadDirectly(boolean uploadDirectly) {
             this.uploadDirectly = uploadDirectly;
+            return this;
+        }
+
+        public AdvancedPropertiesBuilder setPhpVisibilityQuery(PhpVisibilityQuery phpVisibilityQuery) {
+            this.phpVisibilityQuery = phpVisibilityQuery;
             return this;
         }
     }

@@ -58,6 +58,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -179,6 +181,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         resultSet.add(helper.getProjectDirectory());
 
         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        assert project instanceof PhpProject;
         PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
         assert phpModule != null : "PHP module must exist!";
         FileObject sources = FileUtil.toFileObject(createProperties.getSourcesDirectory());
@@ -191,7 +194,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             case REMOTE:
 
-                downloadRemoteFiles(getRemoteFiles(), createProperties, monitor);
+                downloadRemoteFiles((PhpProject) project, getRemoteFiles(), createProperties, monitor);
                 break;
         }
 
@@ -454,7 +457,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (Set<TransferFile>) descriptor.getProperty(RemoteConfirmationPanel.REMOTE_FILES);
     }
 
-    private void downloadRemoteFiles(Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
+    private void downloadRemoteFiles(PhpProject project, Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
         assert monitor instanceof RemoteProgressMonitor;
         assert forDownload != null;
@@ -471,7 +474,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     .setInputOutput(remoteLog)
                     .setOperationMonitor(downloadOperationMonitor)
                     .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
-                    .setPreservePermissions(false));
+                    .setPreservePermissions(false)
+                    .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();

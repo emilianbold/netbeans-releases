@@ -47,13 +47,13 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
@@ -70,6 +70,8 @@ public final class PhpCoverageProvider implements CoverageProvider {
 
     private final Object lock = new Object();
     private final PhpProject project;
+    private final PhpVisibilityQuery phpVisibilityQuery;
+
     // GuardedBy(this)
     private Boolean enabled = null;
     // GuardedBy(lock)
@@ -79,6 +81,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         assert project != null;
 
         this.project = project;
+        phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
     }
 
     public void setCoverage(CoverageVO coverage) {
@@ -232,6 +235,6 @@ public final class PhpCoverageProvider implements CoverageProvider {
                 && CommandUtils.isUnderSources(project, fo)
                 && !CommandUtils.isUnderTests(project, fo, false)
                 && !CommandUtils.isUnderSelenium(project, fo, false)
-                && VisibilityQuery.getDefault().isVisible(fo);
+                && phpVisibilityQuery.isVisible(fo);
     }
 }
