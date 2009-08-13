@@ -58,8 +58,8 @@ import org.openide.filesystems.FileObject;
  */
 public class JSFBeanCache {
     
-    public static List /*<ManagedBean>*/ getBeans(WebModule webModule) {
-        ArrayList beans = new ArrayList();
+    public static List<ManagedBean> getBeans(WebModule webModule) {
+        ArrayList<ManagedBean> beans = new ArrayList<ManagedBean>();
         FileObject[] files = null; 
         
         if (webModule != null) {
