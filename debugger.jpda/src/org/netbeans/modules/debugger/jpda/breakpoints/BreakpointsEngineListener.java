@@ -43,8 +43,9 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -225,7 +226,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     // helper methods ..........................................................
     
-    private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
+    private Map<Breakpoint, BreakpointImpl> breakpointToImpl = new IdentityHashMap<Breakpoint, BreakpointImpl>();
     
     private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();

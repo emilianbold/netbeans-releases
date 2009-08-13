@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -56,6 +58,7 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -86,6 +89,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     static String ACTIVATED = "activated"; //NOI18N
     static String CONFIGURATIONS = "configurations"; //NOI18N
     static String CONFIG = "configuration"; //NOI18N
+    static String PROPERTY = "property"; //NOI18N
+    static String PROPERTY_NAME_ATTR = "name"; //NOI18N
     static String CONFIG_PROFILES_ATTR = "profiles"; //NOI18N
     static String CONFIG_ID_ATTR = "id"; //NOI18N
 
@@ -114,6 +119,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     }
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
+                            checkActiveAgainstAll(getConfigurations(), false);
                             firePropertyChange();
                         }
 
@@ -121,8 +127,32 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 }
             }
         };
-        //trigger the active configuration check..
-        getActiveConfiguration();
+    }
+
+    private void checkActiveAgainstAll(Collection<M2Configuration> confs, boolean async) {
+        boolean found = false;
+        for (M2Configuration conf : confs) {
+            if (conf.getId().equals(active.getId())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            Runnable dothis = new Runnable() {
+                    public void run() {
+                        try {
+                            doSetActiveConfiguration(DEFAULT, active);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                };
+            if (async) {
+                RequestProcessor.getDefault().post(dothis);
+            } else {
+                dothis.run();
+            }
+        }
     }
     
     private synchronized Collection<M2Configuration> getConfigurations(boolean skipProfiles) {
@@ -142,10 +172,16 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         toRet.addAll(shared);
         toRet.addAll(nonshared);
         if (!skipProfiles) {
-            toRet.addAll(profiles);
-        }
-        if (active != null && !toRet.contains(active)) {
-            toRet.add(active);
+            //prevent duplicates in the list
+            Iterator<M2Configuration> it = profiles.iterator();
+            while (it.hasNext()) {
+                M2Configuration c = it.next();
+                if (!toRet.contains(c)) {
+                    toRet.add(c);
+                } else {
+                    it.remove();
+                }
+            }
         }
         return toRet;
         
@@ -190,6 +226,74 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         return true;
     }
 
+
+    public synchronized M2Configuration getActiveConfiguration() {
+        Collection<M2Configuration> confs = getConfigurations(false);
+        if (initialActive != null) {
+            for (M2Configuration conf : confs) {
+                if (initialActive.equals(conf.getId())) {
+                    active = conf;
+                    initialActive = null;
+                    break;
+                }
+            }
+            if (initialActive != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            doSetActiveConfiguration(DEFAULT, null);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                initialActive = null;
+            }
+        }
+        checkActiveAgainstAll(confs, true);
+        return active;
+    }
+
+
+
+    
+    public synchronized void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
+        writeAuxiliaryData(aux, true, shared);
+        writeAuxiliaryData(aux, false, nonshared);
+        this.shared = shared;
+        this.nonshared = nonshared;
+        this.profiles = null;
+        firePropertyChange();
+    }
+
+    public synchronized void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
+        if (active == configuration || (active != null && active.equals(configuration))) {
+            return;
+        }
+        doSetActiveConfiguration(configuration, active);
+        NbMavenProject.fireMavenProjectReload(project);
+    }
+
+    private synchronized void doSetActiveConfiguration(M2Configuration newone, M2Configuration old) throws IllegalArgumentException, IOException {
+        active = newone;
+        writeAuxiliaryData(
+                aux,
+                ACTIVATED, active.getId());
+        support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
+    }
+
+    private List<M2Configuration> createProfilesList() {
+        List<String> profs = profileHandler.getAllProfiles();
+        List<M2Configuration> config = new ArrayList<M2Configuration>();
+//        config.add(DEFAULT);
+        for (String prof : profs) {
+            M2Configuration c = new M2Configuration(prof, project);
+            c.setActivatedProfiles(Collections.singletonList(prof));
+            config.add(c);
+        }
+        return config;
+    }
+
     public synchronized void addPropertyChangeListener(PropertyChangeListener lst) {
         if (support.getPropertyChangeListeners().length == 0) {
             project.getProjectWatcher().addPropertyChangeListener(propertyChange);
@@ -201,27 +305,52 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     public synchronized void removePropertyChangeListener(PropertyChangeListener lst) {
         support.removePropertyChangeListener(lst);
         if (support.getPropertyChangeListeners().length == 0) {
-            project.getProjectWatcher().addPropertyChangeListener(propertyChange);
+            project.getProjectWatcher().removePropertyChangeListener(propertyChange);
         }
     }
 
-    public synchronized M2Configuration getActiveConfiguration() {
-        if (initialActive != null) {
-            for (M2Configuration conf : getConfigurations(true)) {
-                if (initialActive.equals(conf.getId())) {
-                    active = conf;
-                    initialActive = null;
-                    break;
+
+    private void firePropertyChange() {
+        support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
+    }
+    
+    private List<M2Configuration> readConfiguration(boolean shared) {
+        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
+        if (el != null) {
+            NodeList list = el.getElementsByTagNameNS(NAMESPACE, CONFIG);
+            if (list.getLength() > 0) {
+                List<M2Configuration> toRet = new ArrayList<M2Configuration>();
+                int len = list.getLength();
+                for (int i = 0; i < len; i++) {
+                    Element enEl = (Element)list.item(i);
+                    
+                    M2Configuration c = new M2Configuration(enEl.getAttribute(CONFIG_ID_ATTR), project);
+                    String profs = enEl.getAttribute(CONFIG_PROFILES_ATTR);
+                    if (profs != null) {
+                        String[] s = profs.split(" ");
+                        List<String> prf = new ArrayList<String>();
+                        for (String s2 : s) {
+                            if (s2.trim().length() > 0) {
+                                prf.add(s2.trim());
+                            }
+                        }
+                        c.setActivatedProfiles(prf);
+                    }
+                    NodeList ps = enEl.getElementsByTagName(PROPERTY);
+                    for (int y = 0; y < ps.getLength(); y++) {
+                        Element propEl = (Element) ps.item(y);
+                        String key = propEl.getAttribute(PROPERTY_NAME_ATTR);
+                        String value = propEl.getTextContent();
+                        if (key != null && value != null) {
+                            c.getProperties().setProperty(key, value);
+                        }
+                    }
+                    toRet.add(c);
                 }
-            }
-            if (initialActive != null) {
-                //asume it's profile based.
-                active = new M2Configuration(initialActive, project);
-                active.setActivatedProfiles(Collections.singletonList(initialActive));
-                initialActive = null;
+                return toRet;
             }
         }
-        return active;
+        return new ArrayList<M2Configuration>();
     }
 
     public static void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value) {
@@ -263,78 +392,20 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             Element child  = enEl.getOwnerDocument().createElementNS(NAMESPACE, CONFIG);
             child.setAttribute(CONFIG_ID_ATTR, config.getId());
             child.setAttribute(CONFIG_PROFILES_ATTR, StringUtils.join(config.getActivatedProfiles().iterator(), " "));
+            Enumeration en = config.getProperties().propertyNames();
+            while (en.hasMoreElements()) {
+                String key = (String)en.nextElement();
+                String value = config.getProperties().getProperty(key);
+                if (key != null && value != null) {
+                    Element prop  = enEl.getOwnerDocument().createElementNS(NAMESPACE, PROPERTY);
+                    prop.setAttribute(PROPERTY_NAME_ATTR, key);
+                    prop.setTextContent(value);
+                    child.appendChild(prop);
+                }
+            }
             enEl.appendChild(child);
         }
         conf.putConfigurationFragment(el, shared);
     }
 
-
-    
-    public synchronized void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
-        writeAuxiliaryData(aux, true, shared);
-        writeAuxiliaryData(aux, false, nonshared);
-        this.shared = shared;
-        this.nonshared = nonshared;
-        this.profiles = null;
-        firePropertyChange();
-    }
-
-    public synchronized void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
-        if (active == configuration || (active != null && active.equals(configuration))) {
-            return;
-        }
-        M2Configuration old = active;
-        active = configuration;
-        writeAuxiliaryData(
-                aux, 
-                ACTIVATED, active.getId());
-        support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
-        NbMavenProject.fireMavenProjectReload(project);
-    }
-
-    private List<M2Configuration> createProfilesList() {
-        List<String> profs = profileHandler.getAllProfiles();
-        List<M2Configuration> config = new ArrayList<M2Configuration>();
-//        config.add(DEFAULT);
-        for (String prof : profs) {
-            M2Configuration c = new M2Configuration(prof, project);
-            c.setActivatedProfiles(Collections.singletonList(prof));
-            config.add(c);
-        }
-        return config;
-    }
-
-    private void firePropertyChange() {
-        support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
-    }
-    
-    private List<M2Configuration> readConfiguration(boolean shared) {
-        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
-        if (el != null) {
-            NodeList list = el.getElementsByTagNameNS(NAMESPACE, CONFIG);
-            if (list.getLength() > 0) {
-                List<M2Configuration> toRet = new ArrayList<M2Configuration>();
-                int len = list.getLength();
-                for (int i = 0; i < len; i++) {
-                    Element enEl = (Element)list.item(i);
-                    
-                    M2Configuration c = new M2Configuration(enEl.getAttribute(CONFIG_ID_ATTR), project);
-                    String profs = enEl.getAttribute(CONFIG_PROFILES_ATTR);
-                    if (profs != null) {
-                        String[] s = profs.split(" ");
-                        List<String> prf = new ArrayList<String>();
-                        for (String s2 : s) {
-                            if (s2.trim().length() > 0) {
-                                prf.add(s2.trim());
-                            }
-                        }
-                        c.setActivatedProfiles(prf);
-                    }
-                    toRet.add(c);
-                }
-                return toRet;
-            }
-        }
-        return new ArrayList<M2Configuration>();
-    }
 }

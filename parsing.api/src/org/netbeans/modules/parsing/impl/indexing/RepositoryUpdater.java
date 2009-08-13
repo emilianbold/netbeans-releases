@@ -91,6 +91,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
@@ -332,10 +333,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         boolean existingPathsChanged = false;
         boolean containsRelevantChanges = false;
-        for(PathRegistryEvent.Change c : event.getChanges()) {
-            if (c.getPathKind() == PathKind.UNKNOWN_SOURCE) {
-                continue;
-            }
+        for(PathRegistryEvent.Change c : event.getChanges()) {            
 
             containsRelevantChanges = true;
             if (c.getEventKind() == EventKind.PATHS_CHANGED || c.getEventKind() == EventKind.INCLUDES_CHANGED) {
@@ -1548,6 +1546,21 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                 + "[followUpJob=" + followUpJob + ", checkEditor=" + checkEditor; //NOI18N
         }
+
+        protected final void refreshActiveDocument() {
+            final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
+            if (jtc == null) {
+                return;
+            }
+            Document doc = jtc.getDocument();
+            assert doc != null;
+            final Source source = Source.create(doc);
+            if (source != null) {
+                LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
+                SourceAccessor.getINSTANCE().invalidate(source, true);
+            }
+        }
+
     } // End of Work class
 
     /* test */ static final class FileListWork extends Work {
@@ -2076,7 +2089,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 printCollection(scannedBinaries, logLevel);
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
-
+            refreshActiveDocument();
             return finished;
         }
 
