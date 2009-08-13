@@ -930,6 +930,19 @@ public class HtmlBrowser extends JPanel {
          * @param u the URL to show
          */
         public abstract void showURL(URL u);
+
+        /**
+         * Attempts to display given URL in preferred external browser.
+         * The default implementation just delegates to showURL(URL).
+         * The URL may be still rendered using an internal browser implementation
+         * if no external browser is available.
+         *
+         * @param u the URL to show
+         * @since 7.14
+         */
+        public void showURLExternal(URL u) {
+            showURL(u);
+        }
     }
 
     private static final class TrivialURLDisplayer extends URLDisplayer {
