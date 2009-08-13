@@ -61,8 +61,4 @@ public class ServiceInfoDataStorageImpl implements ServiceInfoDataStorage {
     public final String put( String name, String value) {
         return serviceInfoMap.put(name, value);
     }
-
-    public boolean shutdown() {
-        return true;
-    }
 }

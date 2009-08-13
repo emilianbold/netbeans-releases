@@ -237,7 +237,7 @@ import org.openide.util.NbBundle;
     private static class SunStudioDataCollector {
 
         public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
-        private DataStorage dataStorage;
+        private ServiceInfoDataStorage dataStorage;
         private DataProvider dataProvider;
         private DataTableMetadata metadata;
 
@@ -255,6 +255,7 @@ import org.openide.util.NbBundle;
 
             DLightSession session = DLightManager.getDefault().getActiveSession();
             dataProvider = session.createDataProvider(dataModel, metadata);
+            dataStorage = session.getServiceInfoDataStorage();
         }
 
         public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
