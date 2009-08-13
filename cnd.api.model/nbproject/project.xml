@@ -25,6 +25,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>

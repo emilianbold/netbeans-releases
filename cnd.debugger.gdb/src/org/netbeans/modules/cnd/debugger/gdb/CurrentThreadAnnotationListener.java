@@ -45,8 +45,10 @@ import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.*;
 
+import org.openide.text.Annotation;
 import org.openide.util.RequestProcessor;
 
 
@@ -128,7 +130,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
 
     // do not need synchronization, called in a 1-way RP
-    private final Collection<Object> stackAnnotations = new LinkedList<Object>();
+    private final Collection<Annotation> stackAnnotations = new LinkedList<Annotation>();
     
     // this set is used to avoid duplicated annotations (of the same line)
     private final Set<String> annotatedAddresses = new HashSet<String>();
@@ -155,7 +157,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
     
     private void clearAnnotations() {
-        for (Object ann : stackAnnotations) {
+        for (Annotation ann : stackAnnotations) {
             EditorContextBridge.removeAnnotation(ann);
         }
         stackAnnotations.clear();
@@ -193,19 +195,24 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             }
                             
                             // 2) annotate line
-                            Object da = EditorContextBridge.annotate(csf, annotationType);
+                            final Annotation da = EditorContextBridge.annotate(csf, annotationType);
 
-                            // 3) add new frame to set
+                            // 3) add new frame to set and bring to front
                             if (da != null) {
                                 stackAnnotations.add(da);
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        da.moveToFront();
+                                    }
+                                });
                             }
                             
                             // 4) annotate dis
-                            da = EditorContextBridge.annotateDis(csf, annotationType);
+                            final Annotation disa = EditorContextBridge.annotateDis(csf, annotationType);
                             
                             // 5) add new dis line to hashMap
-                            if (da != null) {
-                                stackAnnotations.add(da);
+                            if (disa != null) {
+                                stackAnnotations.add(disa);
                             }
                             
                             annotationType = EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE;

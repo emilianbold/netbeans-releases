@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Annotation;
 
 /**
  *
@@ -83,7 +84,7 @@ public class GdbDisassemblyService implements DisassemblyService {
         return false;
     }
 
-    public Object annotateAddress(String address, String annotationType) {
+    public Annotation annotateAddress(String address, String annotationType) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return null;
