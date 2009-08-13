@@ -95,7 +95,7 @@ public class JiraRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
-    private IssueCache cache;
+    private IssueCache<TaskData> cache;
     private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
@@ -327,7 +327,7 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    public IssueCache getIssueCache() {
+    public IssueCache<TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
