@@ -101,10 +101,7 @@ class CompletionContextFinder {
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
         new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
         new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        //TODO: doesn't work properly
-        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
-        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
     );
 
     private static final List<Object[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
@@ -230,6 +227,7 @@ class CompletionContextFinder {
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
         int tokenIdOffset = tokenSequence.token().offset(th);
+        int offset = tokenSequence.token().offset(null);
 
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,(caretOffset-tokenIdOffset), tokenSequence);
         if (clsIfaceDeclContext != null) {
@@ -257,12 +255,12 @@ class CompletionContextFinder {
             if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
             } else {
-                CompletionContext paramContext = getParamaterContext(token, (caretOffset - tokenIdOffset), tokenSequence);
-                if (paramContext != null) {
-                    return paramContext;
-                }
                 if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)) {
                     return CompletionContext.METHOD_NAME;
+                }
+                CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
+                if (paramContext != null) {
+                    return paramContext;
                 }
             }
             return CompletionContext.NONE;
@@ -291,6 +289,11 @@ class CompletionContextFinder {
         if (isEachOfTokens(getLeftPreceedingTokens(tokenSequence),
                 new PHPTokenId[] {PHPTokenId.PHP_GLOBAL, PHPTokenId.WHITESPACE})) {
             return CompletionContext.GLOBAL;
+        }
+
+       CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
+        if (paramContext != null) {
+            return paramContext;
         }
 
         return CompletionContext.EXPRESSION;
@@ -530,66 +533,89 @@ class CompletionContextFinder {
     }
 
     @CheckForNull
-    private static CompletionContext getParamaterContext(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence) {
-        boolean isFunction = false;
-        boolean isComma = false;
-        boolean isLeftBracket = false;
-        boolean isString = false;
-        boolean isWhitespace = false;
-        List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-        for (Token<PHPTokenId> cToken : preceedingLineTokens) {
+    private static CompletionContext getParamaterContext(Token<PHPTokenId> token, int carretOffset, TokenSequence<PHPTokenId> tokenSequence) {
+        boolean isFunctionDeclaration = false;
+        boolean isParamSeparator = false;
+        boolean isNamespaceSeparator = false;
+        boolean testParamSeparator = true;
+        int orgOffset = tokenSequence.offset();
+
+        int leftPosition = -1;
+        tokenSequence.moveNext();
+        while (tokenSequence.movePrevious()) {
+            leftPosition++;
+            Token<PHPTokenId> cToken = tokenSequence.token();
             PHPTokenId id = cToken.id();
-           if (id.equals(PHPTokenId.PHP_FUNCTION)) {
-                isFunction = true;
+            if (CTX_DELIMITERS.contains(id)) {
                 break;
-            } else if (!isFunction && isComma(cToken)) {
-                isComma = true;
-                isString = false;
-                isWhitespace = false;
-            } else if (!isFunction && isLeftBracket(cToken)) {
-                isLeftBracket = true;
-                isString = false;
-                isWhitespace = false;
-            } else if (!isFunction && !isComma && !isLeftBracket && isWhiteSpace(cToken)) {                
-                if (!isWhitespace) {
-                    isWhitespace = true;
-                } else {
+            }
+            if (!isFunctionDeclaration) {
+                if (!isParamSeparator && testParamSeparator) {
+                    if (isParamSeparator(cToken)) {
+                        isParamSeparator = true;
+                    } else if (isAcceptedPrefix(cToken)) {
+                        if (isNamespaceSeparator(cToken)) {
+                            isNamespaceSeparator = true;
+                            continue;
+                        } else if (!isNamespaceSeparator && isString(cToken)) {
+                            int offset = cToken.offset(null) + cToken.text().length();
+                            if (carretOffset > offset) {
+                                testParamSeparator = false;
+                            }
+                        } else if (isReference(cToken) || isRightBracket(cToken) || isVariable(cToken)) {
+                            int offset = cToken.offset(null) + cToken.text().length();
+                            if (carretOffset >= offset) {
+                                testParamSeparator = false;
+                            }
+                        }
+                        isNamespaceSeparator = false;
+                        continue;
+                    } else {
+                        testParamSeparator = false;
+                    }
+                } else if (isFunctionDeclaration(cToken)) {
+                    isFunctionDeclaration = true;
                     break;
                 }
-            } else if (isNamespaceSeparator(cToken)) {
-                isString = false;
-                continue;
-            } else if (!isFunction && !isComma && !isLeftBracket && isString(cToken)) {
-                if (!isString && !isWhitespace) {
-                    isString = true;
-                } else {
-                    break;
-                }
-            } else if (CTX_DELIMITERS.contains(id)) {
-                break;
-            } else if (!isComma && !isLeftBracket) {
-                return null;
             }
         }
-        return (isFunction && (isComma || isLeftBracket)) ? CompletionContext.TYPE_NAME : isFunction ? CompletionContext.NONE : null;
+        tokenSequence.move(orgOffset);
+        tokenSequence.moveNext();
+        return (isFunctionDeclaration && isParamSeparator) ? CompletionContext.TYPE_NAME :
+            isFunctionDeclaration ? CompletionContext.NONE : null;
     }
 
     private static boolean isNamespaceSeparator(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_NS_SEPARATOR);
     }
-
+    private static boolean isFunctionDeclaration(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_FUNCTION);//NOI18N
+    }
+    private static boolean isVariable(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_VARIABLE);//NOI18N
+    }
+    private static boolean isReference(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "&".contentEquals(token.text());//NOI18N
+    }
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text());//NOI18N
     }
-
+    private static boolean isRightBracket(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text());//NOI18N
+    }
+    private static boolean isParamSeparator(Token<PHPTokenId> token) {
+        return isComma(token) || isLeftBracket(token);//NOI18N
+    }
+    private static boolean isAcceptedPrefix(Token<PHPTokenId> token) {
+        return isVariable(token) || isReference(token) ||
+                isRightBracket(token) || isString(token) || isWhiteSpace(token) || isNamespaceSeparator(token);//NOI18N
+    }
     private static boolean isComma(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text());//NOI18N
     }
-
     private static boolean isWhiteSpace(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.WHITESPACE);
     }
-
     private static boolean isString(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_STRING);
     }
