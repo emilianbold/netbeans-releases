@@ -76,20 +76,22 @@ public class ServletMetadataReader implements MetadataModelAction<WebAppMetadata
      */
     private static Map<String, Object> genProperties(WebApp webApp) {
         Map<String, Object> data = new HashMap<String, Object>();
-        Servlet [] servlets = webApp.getServlet();
-        if(servlets != null) {
-            for(Servlet servlet: servlets) {
-                String servletName = servlet.getServletName();
-                if(Utils.notEmpty(servletName)) {
-                    Map<String, Object> servletMap = new HashMap<String, Object>();
-                    data.put(servletName, servletMap);
-                    servletMap.put(DDBinding.PROP_NAME, servletName);
+        if(webApp != null) {
+            Servlet [] servlets = webApp.getServlet();
+            if(servlets != null) {
+                for(Servlet servlet: servlets) {
+                    String servletName = servlet.getServletName();
+                    if(Utils.notEmpty(servletName)) {
+                        Map<String, Object> servletMap = new HashMap<String, Object>();
+                        data.put(servletName, servletMap);
+                        servletMap.put(DDBinding.PROP_NAME, servletName);
 
-                    RunAs runAs = servlet.getRunAs();
-                    if(runAs != null) {
-                        String roleName = runAs.getRoleName();
-                        if(Utils.notEmpty(roleName)) {
-                            servletMap.put(DDBinding.PROP_RUNAS_ROLE, roleName);
+                        RunAs runAs = servlet.getRunAs();
+                        if(runAs != null) {
+                            String roleName = runAs.getRoleName();
+                            if(Utils.notEmpty(roleName)) {
+                                servletMap.put(DDBinding.PROP_RUNAS_ROLE, roleName);
+                            }
                         }
                     }
                 }
