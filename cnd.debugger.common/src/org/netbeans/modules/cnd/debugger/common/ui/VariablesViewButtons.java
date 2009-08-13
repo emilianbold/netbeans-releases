@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.ui;
+package org.netbeans.modules.cnd.debugger.common.ui;
 
 import java.awt.Dimension;
 import java.awt.Insets;
