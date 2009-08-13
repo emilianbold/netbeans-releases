@@ -56,7 +56,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.ui.VariablesViewButtons;
 import org.openide.util.Exceptions;
@@ -228,7 +228,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     private AbstractVariable[] getLocalVariables() {
         synchronized (debugger.LOCK) {
-            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
+            GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
                 return new AbstractVariable[0];
             }
@@ -238,7 +238,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
     private AbstractVariable[] getAutos() {
         synchronized (debugger.LOCK) {
-            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
+            GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
                 return new AbstractVariable[0];
             }
