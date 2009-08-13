@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.common;
 import java.beans.PropertyChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.Annotation;
 
 /** 
  * Defines bridge to editor and src hierarchy. It allows use of different 
@@ -112,9 +113,9 @@ public abstract class EditorContext {
      * @return annotation or <code>null</code>, when the annotation can not be
      *         created at the given URL or line number.
      */
-    public abstract Object annotate(String url, int lineNumber, String annotationType, Object timeStamp);
+    public abstract Annotation annotate(String url, int lineNumber, String annotationType, Object timeStamp);
     
-    public abstract Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp);
+    public abstract Annotation annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp);
 
     /**
      * Returns line number given annotation is associated with.
@@ -132,7 +133,7 @@ public abstract class EditorContext {
     /**
      * Removes given annotation.
      */
-    public abstract void  removeAnnotation(Object annotation );
+    public abstract void  removeAnnotation(Annotation annotation );
 
     /**
      * Returns number of line currently selected in editor or <code>-1</code>.
