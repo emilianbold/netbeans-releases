@@ -138,8 +138,12 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
      * @param message Informational message about latest state change
      */
     public void operationStateChanged(OperationState newState, String message) {
-        fireHandleProgressEvent(new Hk2DeploymentStatus(commandType, 
-                translateState(newState), ActionType.EXECUTE, message));
+        Logger.getLogger("glassfish-javaee").log(Level.FINE, message);
+        // Suppress message except in cases of failure.  Returning an empty
+        // string prevents status from being displayed in build output window.
+        String relayedMessage = newState == OperationState.FAILED ? message : "";
+        fireHandleProgressEvent(new Hk2DeploymentStatus(commandType,
+                translateState(newState), ActionType.EXECUTE, relayedMessage));
     }
 
     private TargetModuleID[] computeResultTMID() {

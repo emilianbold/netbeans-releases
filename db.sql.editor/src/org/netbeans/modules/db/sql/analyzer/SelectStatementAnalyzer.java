@@ -41,11 +41,7 @@ package org.netbeans.modules.db.sql.analyzer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
@@ -58,7 +54,7 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 class SelectStatementAnalyzer extends SQLStatementAnalyzer {
 
     private final List<List<String>> selectValues = new ArrayList<List<String>>();
-    private final List<FromTable> fromTables = new ArrayList<FromTable>();
+    private final List<TableIdent> fromTables = new ArrayList<TableIdent>();
     private final List<SelectStatement> subqueries = new ArrayList<SelectStatement>();
 
     public static SelectStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
@@ -68,28 +64,13 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
         }
         SelectStatementAnalyzer sa = new SelectStatementAnalyzer(seq, quoter);
         sa.parse();
-        // Return a non-null FromClause if there was a FROM clause in the statement.
-        FromClause fromClause = sa.context.isAfter(Context.FROM) ? sa.createFromClause() : null;
+        // Return a non-null TablesClause if there was a FROM clause in the statement.
+        TablesClause fromClause = sa.context.isAfter(Context.FROM) ? sa.createTablesClause(sa.fromTables) : null;
         return new SelectStatement(sa.startOffset, seq.offset() + seq.token().length(), Collections.unmodifiableList(sa.selectValues), fromClause, Collections.unmodifiableList(sa.subqueries), sa.offset2Context);
     }
 
     private SelectStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         super(seq, quoter);
-    }
-
-    private FromClause createFromClause() {
-        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
-        Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
-        for (FromTable table : fromTables) {
-            if (table.alias == null) {
-                unaliasedTableNames.add(table.tableName);
-            } else {
-                if (!aliasedTableNames.containsKey(table.alias)) {
-                    aliasedTableNames.put(table.alias, table.tableName);
-                }
-            }
-        }
-        return new FromClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
     }
 
     private void parse() {
@@ -122,7 +103,7 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
                     switch (seq.token().id()) {
                         case IDENTIFIER:
                             if (afterFromTableKeyword) {
-                                FromTable fromTable = parseFromTable();
+                                TableIdent fromTable = parseTableIdent();
                                 if (fromTable != null) {
                                     fromTables.add(fromTable);
                                 }
@@ -225,42 +206,6 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
         return parts;
     }
 
-    /** Returns table name and its alias. */
-    private FromTable parseFromTable() {
-        QualIdent table = parseIdentifier();
-        if (table == null) {
-            return null;
-        }
-        String alias = parseAlias();
-        return new FromTable(table, alias);
-    }
-
-    /** Returns alias of table or null (e.g. returns c if statement is as
-     * follows "select * from customer as c". */
-    private String parseAlias() {
-        String alias = null;
-        main: while (nextToken()) {
-            switch (seq.token().id()) {
-                case IDENTIFIER:
-                    alias = getUnquotedIdentifier();
-                    break;
-                case KEYWORD:
-                    if (!SQLStatementAnalyzer.isKeyword("AS", seq)) { // NOI18N
-                        seq.movePrevious();
-                        break main;
-                    }
-                    break;
-                default:
-                    seq.movePrevious();
-                    break main;
-            }
-        }
-        if (alias != null && alias.length() == 0) {
-            alias = null;
-        }
-        return alias;
-    }
-
     @Override
     protected boolean nextToken() {
         boolean move = super.nextToken();
@@ -306,16 +251,5 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
             return Context.ORDER;
         }
         return null;
-    }
-
-    private static class FromTable {
-
-        private final QualIdent tableName;
-        private final String alias;
-
-        public FromTable(QualIdent tableName, String alias) {
-            this.tableName = tableName;
-            this.alias = alias;
-        }
     }
 }

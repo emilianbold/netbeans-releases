@@ -46,16 +46,14 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 
+
 /**
  *
  * @author mt154047
  */
-public class FunctionCallNode extends AbstractNode {
+final class FunctionCallNode extends AbstractNode {
     private final FunctionCall functionCall;
-    /*package-local*/ static Image downBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/down_20.png" ); // NOI18N
-    private static Image upBadge = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/up_8.png" ); // NOI18N
-    private static Image functionIcon = ImageUtilities.loadImage( "org/netbeans/modules/dlight/core/stack/resources/global_function.png" ); // NOI18N
-
+  
 
      FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
          super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
@@ -69,7 +67,7 @@ public class FunctionCallNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.mergeImages(functionIcon, upBadge, 0, 0);
+        return ImageUtilities.mergeImages(CallStackUISupport.functionIcon, CallStackUISupport.upBadge, 0, 0);
     }
 
     @Override

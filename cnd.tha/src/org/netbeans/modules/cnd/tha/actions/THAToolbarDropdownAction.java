@@ -47,8 +47,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
+import org.openide.awt.Actions;
 import org.openide.awt.Actions.CheckboxMenuItem;
 import org.openide.awt.Actions.MenuItem;
+import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.actions.Presenter;
 
 public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar {
@@ -105,16 +107,20 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
                 }
             };
 
-            dropdownPopup.add(enableRaceDetection);
-            dropdownPopup.add(startDataCollectionOnRun);
-            dropdownPopup.addSeparator();
-            dropdownPopup.add(removeInstrumentation);
+            dropdownPopup.add(defaultAction);
+//            dropdownPopup.add(enableRaceDetection);
+  //          dropdownPopup.add(startDataCollectionOnRun);
+    //        dropdownPopup.addSeparator();
+      //      dropdownPopup.add(removeInstrumentation);
 
-            final JButton button = AutoDropDownButtonFactory.createDropDownButton(
-                    new ImageIcon(new BufferedImage(24, 24,
-                    BufferedImage.TYPE_INT_ARGB)),
-                    dropdownPopup, defaultAction);
+//            final JButton button = AutoDropDownButtonFactory.createDropDownButton(
+//                    new ImageIcon(new BufferedImage(24, 24,
+//                    BufferedImage.TYPE_INT_ARGB)),
+//                    dropdownPopup, defaultAction);
 
+            //toolbarPresenter = button;
+            JButton button =   DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);
+            Actions.connect(button, defaultAction);
             toolbarPresenter = button;
         }
 

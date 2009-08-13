@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
+@SuppressWarnings("serial")
 public class ConfigurationsPanel extends javax.swing.JPanel {
     private NbMavenProjectImpl project;
     private ModelHandle handle;
@@ -71,11 +72,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         this();
         this.handle = handle;
         this.project = project;
-        cbEnable.setSelected(handle.isConfigurationsEnabled());
         
-        //temporary
-        cbProfiles.setSelected(true);
-        cbProfiles.setEnabled(false);
 //        btnAdd.setVisible(false);
 //        btnEdit.setVisible(false);
 //        btnRemove.setVisible(false);
@@ -127,9 +124,6 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         }
         lstConfigurations.setModel(model);
         lstConfigurations.setSelectedValue(handle.getActiveConfiguration(), true);
-//        if (isProfile) {
-            cbProfiles.setSelected(true);
-//        }
     }
 
 
@@ -142,8 +136,6 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cbEnable = new javax.swing.JCheckBox();
-        cbProfiles = new javax.swing.JCheckBox();
         lblConfigurations = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstConfigurations = new javax.swing.JList();
@@ -151,20 +143,6 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         btnEdit = new javax.swing.JButton();
         btnRemove = new javax.swing.JButton();
         btnActivate = new javax.swing.JButton();
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbEnable, org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.cbEnable.text")); // NOI18N
-        cbEnable.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbEnableActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbProfiles, org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.cbProfiles.text")); // NOI18N
-        cbProfiles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbProfilesActionPerformed(evt);
-            }
-        });
 
         lblConfigurations.setLabelFor(lstConfigurations);
         org.openide.awt.Mnemonics.setLocalizedText(lblConfigurations, org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.lblConfigurations.text")); // NOI18N
@@ -212,15 +190,9 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbEnable)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, cbProfiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(lblConfigurations))
-                        .add(6, 6, 6))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                    .add(lblConfigurations)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(btnAdd)
@@ -235,10 +207,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(cbEnable)
-                .add(8, 8, 8)
-                .add(cbProfiles)
-                .add(18, 18, 18)
+                .addContainerGap()
                 .add(lblConfigurations)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -251,33 +220,14 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnRemove)
                         .addContainerGap(81, Short.MAX_VALUE))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)))
         );
 
-        cbEnable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.cbEnable.AccessibleContext.accessibleDescription")); // NOI18N
-        cbProfiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.cbProfiles.AccessibleContext.accessibleDescription")); // NOI18N
         btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnAdd.AccessibleContext.accessibleDescription")); // NOI18N
         btnEdit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnEdit.AccessibleContext.accessibleDescription")); // NOI18N
         btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnRemove.AccessibleContext.accessibleDescription")); // NOI18N
         btnActivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnActivate.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void cbEnableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbEnableActionPerformed
-    initUI(cbEnable.isSelected());
-    handle.setConfigurationsEnabled(cbEnable.isSelected());
-    
-}//GEN-LAST:event_cbEnableActionPerformed
-
-private void cbProfilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProfilesActionPerformed
-// TODO add your handling code here:
-    initListUI(cbProfiles.isSelected());
-//    if (cbProfiles.isSelected()) {
-//        addProfileConfigurations();
-//    } else {
-//        removeProfileConfigurations();
-//    }
-    
-}//GEN-LAST:event_cbProfilesActionPerformed
 
 private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
     NewConfigurationPanel pnl = new NewConfigurationPanel();
@@ -339,8 +289,6 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnRemove;
-    private javax.swing.JCheckBox cbEnable;
-    private javax.swing.JCheckBox cbProfiles;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblConfigurations;
     private javax.swing.JList lstConfigurations;

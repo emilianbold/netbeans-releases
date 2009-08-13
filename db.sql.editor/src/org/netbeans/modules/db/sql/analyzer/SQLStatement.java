@@ -51,11 +51,19 @@ public class SQLStatement {
     SQLStatementKind kind;
     int startOffset, endOffset;
     SortedMap<Integer, Context> offset2Context;
+    TablesClause tablesClause;
 
     SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context) {
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.offset2Context = offset2Context;
+    }
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.offset2Context = offset2Context;
+        this.tablesClause = tablesClause;
     }
 
     public SQLStatementKind getKind() {
@@ -72,6 +80,10 @@ public class SQLStatement {
             }
         }
         return result;
+    }
+
+    TablesClause getTablesClause() {
+        return tablesClause;
     }
 
     public enum Context {
@@ -92,7 +104,10 @@ public class SQLStatement {
         GROUP_BY(550),
         HAVING(560),
         ORDER(570),
-        ORDER_BY(580);
+        ORDER_BY(580),
+        // UPDATE
+        UPDATE(600),
+        SET(610);
 
         private final int order;
 
