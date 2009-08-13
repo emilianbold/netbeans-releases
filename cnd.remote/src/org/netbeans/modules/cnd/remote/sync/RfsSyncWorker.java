@@ -154,6 +154,9 @@ class RfsSyncWorker extends ZipSyncWorker {
             try {
                 String line;
                 while ((line = err.readLine()) != null) {
+                    if (RfsSyncWorker.this.err != null) {
+                         RfsSyncWorker.this.err.println(line);
+                    }
                     logger.fine(line);
                 }
             } catch (IOException ex) {
@@ -186,6 +189,7 @@ class RfsSyncWorker extends ZipSyncWorker {
         }
 
         public void run() {
+            long totalCopyingTime = 0;
             while (true) {
                 try {
                     String request = requestReader.readLine();
@@ -205,11 +209,15 @@ class RfsSyncWorker extends ZipSyncWorker {
                         File localFile =  new File(localDir, remoteFile.substring(remoteDir.length()));
                         if (localFile.exists() && !localFile.isDirectory() && !allAtOnce) {
                             logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
                                     executionEnvironment, remoteFile, 0777, err);
                             try {
                                 int rc = task.get();
-                                logger.finest("LC: uploading " + localFile + " to " + remoteFile + " finished; rc=" + rc);
+                                fileTime = System.currentTimeMillis() - fileTime;
+                                totalCopyingTime += fileTime;
+                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n",
+                                        localFile, remoteFile, rc, fileTime, totalCopyingTime);
                                 if (rc == 0) {
                                     respond_ok();
                                 } else {
