@@ -57,8 +57,10 @@ public class ElCompletionItem {
         return new ELBean(name, substitutionOffset, type);
     }
 
-    public static JspCompletionItem createELProperty(String name, int substitutionOffset, String type) {
-        return new ELProperty(name, substitutionOffset, type);
+    public static JspCompletionItem createELProperty(String name, String insertText, 
+            int substitutionOffset, String type) 
+    {
+        return new ELProperty(name, insertText, substitutionOffset, type);
     }
 
     public static JspCompletionItem createELFunction(String name, int substitutionOffset, String type, String prefix, String parameters) {
@@ -178,10 +180,23 @@ public class ElCompletionItem {
         private static final String PROPERTY_NAME_COLOR = hexColorCode(Color.blue.darker().darker());
         private static final String PROPERTY_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/property_16.png"; //NOI18N
 
-        public ELProperty(String text, int substitutionOffset, String type) {
+        public ELProperty(String text, int substitutionOffset, 
+                String type) 
+        {
+            this(text, text , substitutionOffset, type);
+        }
+        
+        public ELProperty(String text, String insertText , int substitutionOffset, 
+                String type) 
+        {
             super(text, substitutionOffset, type);
+            myInsertText = insertText;
         }
 
+        protected String getSubstituteText() {
+            return myInsertText;
+        }
+        
         @Override
         protected String getLeftHtmlText() {
             return "<font color=#" + PROPERTY_NAME_COLOR + ">" + getItemText() + "</font>";
@@ -191,6 +206,8 @@ public class ElCompletionItem {
         protected ImageIcon getIcon() {
             return ImageUtilities.loadImageIcon(PROPERTY_PATH, false);
         }
+        
+        private String myInsertText;
     }
 
     public static class ELFunction extends ELBean {
