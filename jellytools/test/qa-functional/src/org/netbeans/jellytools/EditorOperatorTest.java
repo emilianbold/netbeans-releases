@@ -177,7 +177,7 @@ public class EditorOperatorTest extends JellyTestCase {
 
     /** Test of lblRowColumn method. */
     public void testLblRowColumn() {
-        assertEquals("1:1", eo.lblRowColumn().getText());
+        assertEquals("1 | 1", eo.lblRowColumn().getText());
     }
      
     /** Test of lblInputMode method. */
@@ -342,7 +342,7 @@ public class EditorOperatorTest extends JellyTestCase {
     
     /** Test of getToolbarButton method. Uses "Toggle bookmark button". */
     public void testGetToolbarButton() {
-        String tooltip = Bundle.getString("org.netbeans.lib.editor.bookmarks.actions.Bundle", "bookmark-toggle");
+        String tooltip = Bundle.getStringTrimmed("org.netbeans.lib.editor.bookmarks.actions.Bundle", "bookmark-toggle");
         AbstractButtonOperator button1 = eo.getToolbarButton(tooltip);
         button1.push();
         AbstractButtonOperator button2 = eo.getToolbarButton(9);

@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -216,7 +217,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
     }
 
     String getMessage() {
-        return getCreateCopyPanel().messageTextArea.getText();
+        return SvnUtils.fixLineEndings(getCreateCopyPanel().messageTextArea.getText());
     }
 
     boolean isLocal() {

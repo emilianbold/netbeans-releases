@@ -121,25 +121,27 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-            lbl = new TreeLabel("("); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            if (data.size() > 0) {
+                lbl = new TreeLabel("("); //NOI18N
+                labels.add(lbl);
+                panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
-            for( int i=0; i<data.size(); i++ ) {
-                QueryResultHandle qrh = data.get(i);
-                LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
-                buttons.add( btn );
-                panel.add( btn, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-                if( i < data.size()-1 ) {
-                    lbl = new TreeLabel("|"); //NOI18N
-                    labels.add(lbl);
-                    panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0,0));
+                for (int i = 0; i < data.size(); i++) {
+                    QueryResultHandle qrh = data.get(i);
+                    LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
+                    buttons.add(btn);
+                    panel.add(btn, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                    if (i < data.size() - 1) {
+                        lbl = new TreeLabel("|"); //NOI18N
+                        labels.add(lbl);
+                        panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                    }
                 }
-            }
 
-            lbl = new TreeLabel(")"); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(col++,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                lbl = new TreeLabel(")"); //NOI18N
+                labels.add(lbl);
+                panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            }
         }
         return panel;
     }

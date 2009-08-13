@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.breakpoints;
+package org.netbeans.jellytools;
 
-import javax.swing.JComponent;
-
-import org.netbeans.spi.debugger.ui.BreakpointType;
-
-import org.openide.util.NbBundle;
-
+import java.awt.Component;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.swing.outline.Outline;
 
 /**
-* Implementation of breakpoint on method.
-*
-* @author   Jan Jancura
-*/
-public class ThreadBreakpointType extends BreakpointType {
+ *  An operator to handle org.netbeans.swing.outline.Outline component used
+ * e.g. in debugger views.
+ *
+ * @author Vojtech.Sigler@sun.com
+ */
+public class OutlineOperator extends JTableOperator {
 
-    public String getCategoryDisplayName () {
-        return NbBundle.getMessage (
-            ThreadBreakpointType.class,
-            "CTL_Java_breakpoint_events_cathegory_name"
-        );
+    public OutlineOperator(ContainerOperator cont) {
+        this(cont, 0);
     }
-    
-    public JComponent getCustomizer () {
-        return new ThreadBreakpointPanel ();
+
+    public OutlineOperator(ContainerOperator cont, int index) {
+        super((Outline)cont.waitSubComponent(
+                new OutlineFinder(ComponentSearcher.
+                           getTrueChooser("Any Outline")),
+			   index));
+	copyEnvironment(cont);
     }
-    
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (
-            ThreadBreakpointType.class, 
-            "CTL_Thread_event_type_name"
-        );
+
+    public OutlineOperator(Outline outline) {
+        super(outline);
     }
-    
-    public boolean isDefault () {
-        return false;
+
+    static class OutlineFinder implements ComponentChooser
+    {
+        ComponentChooser subFinder;
+
+        public OutlineFinder(ComponentChooser finder)
+        {
+            subFinder = finder;
+        }
+
+        public boolean checkComponent(Component comp) {
+            Class cls = comp.getClass();
+            do {
+                if(cls.getName().equals("org.netbeans.swing.outline.Outline;")) {
+                    return(subFinder.checkComponent(comp));
+                }
+            } while((cls = cls.getSuperclass()) != null);
+	    return(false);
+        }
+
+        public String getDescription() {
+            return subFinder.getDescription();
+        }
+        
     }
+
 }

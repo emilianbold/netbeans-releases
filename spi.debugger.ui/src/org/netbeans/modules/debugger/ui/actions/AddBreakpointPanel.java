@@ -42,22 +42,20 @@
 package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.Window;
-import java.util.*;
-import java.beans.*;
-import javax.swing.*;
-import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.Breakpoint.*;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.util.Exceptions;
 
 
 /**
