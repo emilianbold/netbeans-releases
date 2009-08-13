@@ -321,6 +321,33 @@ public class ELExpression {
         }
         return null;
     }
+    
+    protected String removeQuotes( String propertyName ) {
+        if ( propertyName.length() >0 ){
+            char first = propertyName.charAt(0);
+            if ( (first == '"' || first == '\'' )&& propertyName.length() >1 
+                    && propertyName.charAt( propertyName.length()-1) == first)
+            {
+                return propertyName.substring( 1 , propertyName.length() -1 );
+            }
+            else if ( first == '\\'){
+                if ( propertyName.length() >=4 ){
+                    char second = propertyName.charAt(1);
+                    if ( (second == '"' || second =='\'') && 
+                            propertyName.charAt( propertyName.length()-1)==second)
+                    {
+                        if ( propertyName.charAt( propertyName.length() -2 ) 
+                                == '\\')
+                        {
+                            propertyName = propertyName.substring( 2 , 
+                                    propertyName.length() -2);
+                        }
+                    }
+                }
+            }
+        }
+        return propertyName;
+    }
 
     static String getPropertyName(String methodName, int prefixLength) {
         String propertyName = methodName.substring(prefixLength);
@@ -434,7 +461,9 @@ public class ELExpression {
      * Go to the java source code of expression
      * - a getter in case of
      */
-    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController> {
+    private class GoToSourceTask extends BaseELTaskClass implements 
+        CancellableTask<CompilationController> 
+    {
 
         private boolean success = false;
 
@@ -442,18 +471,20 @@ public class ELExpression {
             super(beanType);
         }
 
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement bean = getTypePreceedingCaret(parameter);
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement bean = getTypePreceedingCaret(controller);
 
             if (bean != null) {
-                String suffix = getPropertyBeingTypedName();
+                String suffix = removeQuotes(getPropertyBeingTypedName());
 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())) {
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        bean.getEnclosedElements())) 
+                {
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.equals(suffix)) {
-                        success = UiUtils.open(parameter.getClasspathInfo(), method);
+                        success = UiUtils.open(controller.getClasspathInfo(), method);
                         break;
                     }
                 }
