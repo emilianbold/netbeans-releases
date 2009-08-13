@@ -695,6 +695,7 @@ public class ChatTopComponent extends TopComponent {
 
             public void run() {
                 instance.contactList.updateContacts();
+                instance.repaint();
             }
         });
     }

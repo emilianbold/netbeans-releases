@@ -677,36 +677,38 @@ public class MakeNBM extends Task {
         }
 
 
-        DirectoryScanner eds = executablesSet.getDirectoryScanner();
-        eds.scan();
-        String  [] executables = eds.getIncludedFiles();
+        if (executablesSet != null) {
+            DirectoryScanner eds = executablesSet.getDirectoryScanner();
+            eds.scan();
+            String  [] executables = eds.getIncludedFiles();
 
-        if(executables.length > 0) {
-            ZipFileSet executablesList = new ZipFileSet();
-            File executablesFile;
-            StringBuilder sb = new StringBuilder("");
-                String ls = System.getProperty("line.separator");
-                for(int i=0;i < executables.length;i++) {
-                    if(i!=0) {
-                        sb.append(ls);
+            if(executables.length > 0) {
+                ZipFileSet executablesList = new ZipFileSet();
+                File executablesFile;
+                StringBuilder sb = new StringBuilder("");
+                    String ls = System.getProperty("line.separator");
+                    for(int i=0;i < executables.length;i++) {
+                        if(i!=0) {
+                            sb.append(ls);
+                        }
+                        sb.append(executables[i].replace("\\","/"));
                     }
-                    sb.append(executables[i].replace("\\","/"));
-                }
-            try {
-                executablesFile = File.createTempFile("executables",".list");
-                OutputStream infoStream = new FileOutputStream (executablesFile);
                 try {
-                    infoStream.write(sb.toString().getBytes("UTF-8"));
-                } finally {
-                    infoStream.close ();
+                    executablesFile = File.createTempFile("executables",".list");
+                    OutputStream infoStream = new FileOutputStream (executablesFile);
+                    try {
+                        infoStream.write(sb.toString().getBytes("UTF-8"));
+                    } finally {
+                        infoStream.close ();
+                    }
+                } catch (IOException e) {
+                    throw new BuildException("exception when creating Info/executables.list", e, getLocation());
                 }
-            } catch (IOException e) {
-                throw new BuildException("exception when creating Info/executables.list", e, getLocation());
+                executablesFile.deleteOnExit();
+                executablesList.setFile(executablesFile);
+                executablesList.setFullpath("Info/executables.list");
+                jar.addZipfileset(executablesList);
             }
-            executablesFile.deleteOnExit();
-            executablesList.setFile(executablesFile);
-            executablesList.setFullpath("Info/executables.list");
-            jar.addZipfileset(executablesList);
         }
 
         jar.setCompress(true);

@@ -46,11 +46,13 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -384,7 +386,16 @@ public class CompilationInfo {
         return typeUtilities;
     }
     
-    
+    /**
+     * Returns the {@link SourceVersion} used by the javac represented by this {@link CompilationInfo}.
+     * @return SourceVersion
+     * @since 0.47
+     */
+    public @NonNull SourceVersion getSourceVersion() {
+        checkConfinement();
+        return Source.toSourceVersion(Source.instance(impl.getJavacTask().getContext()));
+    }
+
     /**
      * Marks this {@link CompilationInfo} as invalid, may be used to
      * verify confinement.

@@ -36,38 +36,81 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.dlight.toolsui;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
-import org.netbeans.modules.db.sql.editor.StringUtils;
-import org.netbeans.modules.db.sql.lexer.SQLTokenId;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author thp
  */
-public class SQLStatementAnalyzer {
+public class DLightToolWrapper {
 
-    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
-        seq.moveStart ();
-        if ( ! seq.moveNext ()) {
-            return null;
-        }
-        if (seq.token () != null && SQLTokenId.WHITESPACE.equals (seq.token ().id ())) {
-            seq.moveNext ();
-        }
-        if (isKeyword ("SELECT", seq)) { // NOI18N
-            return SQLStatementKind.SELECT;
-        } else if (isKeyword ("INSERT", seq)) {  //NOI18N
-            return SQLStatementKind.INSERT;
-        } else if (isKeyword("DROP", seq)) {  //NOI18N
-            return SQLStatementKind.DROP;
-        }
-        return null;
+    private DLightTool dLightTool;
+    private boolean enabled;
+    private boolean onByDefault;
+    private boolean visible;
+
+    public DLightToolWrapper(DLightTool dLightTool, boolean enabled) {
+        this.dLightTool = dLightTool;
+        this.enabled = enabled;
+        this.onByDefault = true;
+        this.visible = dLightTool.isVisible();
     }
 
-    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
-        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
+    /**
+     * @return the dLightTool
+     */
+    public DLightTool getdLightTool() {
+        return dLightTool;
+    }
+
+    /**
+     * @param dLightTool the dLightTool to set
+     */
+    public void setdLightTool(DLightTool dLightTool) {
+        this.dLightTool = dLightTool;
+    }
+
+    /**
+     * @return the enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled the enabled to set
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * @return the onByDefault
+     */
+    public boolean isOnByDefault() {
+        return onByDefault;
+    }
+
+    /**
+     * @param onByDefault the onByDefault to set
+     */
+    public void setOnByDefault(boolean onByDefault) {
+        this.onByDefault = onByDefault;
+    }
+
+    /**
+     * @return the visible
+     */
+    public boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * @param visible the visible to set
+     */
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

@@ -49,6 +49,9 @@ import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import javax.swing.JComponent;
 import javax.swing.text.View;
 
 /** Draw graphics functions as abstraction over various kinds of drawing. It's used
@@ -415,6 +418,8 @@ interface DrawGraphics {
 
         private int bufferStartOffset;
 
+        private JComponent component;
+
         GraphicsDG(Graphics graphics) {
             this.graphics = graphics;
             // #33165 - set invalid y initially
@@ -534,6 +539,7 @@ interface DrawGraphics {
             textLimitLineColor = ctx.getEditorUI().getTextLimitLineColor();
             absoluteX = ctx.getEditorUI().getTextMargin().left;
             maxWidth = ctx.getEditorUI().getExtentBounds().width;
+            component = ctx.getEditorUI().getComponent();
         }
 
         public @Override void finish() {
@@ -659,8 +665,13 @@ interface DrawGraphics {
                 );
             }
 
-            graphics.drawChars(buffer, startOffset, endOffset - startOffset,
-                               startX, startY + lineAscent);
+            // Use TextLayout drawing
+            drawStringTextLayout(component, graphics,
+                    new String(buffer, startOffset, endOffset - startOffset),
+                    startX, startY + lineAscent);
+
+//            graphics.drawChars(buffer, startOffset, endOffset - startOffset,
+//                               startX, startY + lineAscent);
 
             if (strikeThroughColor != null) { // draw strike-through
                 FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(font);
@@ -783,6 +794,17 @@ interface DrawGraphics {
                 }
             }
             flush(true);
+        }
+
+        private static void drawStringTextLayout(JComponent c, Graphics g, String text, int x, int y) {
+            if (!(g instanceof Graphics2D)) {
+                g.drawString(text, x, y);
+            } else { // Graphics2D available
+                Graphics2D g2d = (Graphics2D)g;
+                FontRenderContext frc = g2d.getFontRenderContext();
+                TextLayout layout = new TextLayout(text, g2d.getFont(), frc);
+                layout.draw(g2d, x, y);
+            }
         }
 
     } // End of GraphicsDG class

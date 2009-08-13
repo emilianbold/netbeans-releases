@@ -86,9 +86,7 @@ import org.apache.maven.reactor.MissingModuleException;
 import org.apache.maven.workspace.MavenWorkspaceStore;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.maven.configurations.ConfigurationProviderEnabler;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
@@ -103,6 +101,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -116,6 +115,7 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
@@ -168,7 +168,9 @@ public final class NbMavenProjectImpl implements Project {
     private final SubprojectProviderImpl subs;
     private final NbMavenProject watcher;
     private final ProjectState state;
-    private ConfigurationProviderEnabler configEnabler;
+    private final M2ConfigProvider configProvider;
+
+//    private ConfigurationProviderEnabler configEnabler;
     private final M2AuxilaryConfigImpl auxiliary;
     private final MavenProjectPropsImpl auxprops;
     private ProjectProfileHandler profileHandler;
@@ -213,7 +215,8 @@ public final class NbMavenProjectImpl implements Project {
         auxiliary = new M2AuxilaryConfigImpl(this);
         auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
-        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
+        configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
+//        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
 //        if (!SwingUtilities.isEventDispatchThread()) {
 //            //#155766 sor of ugly, as not all (but the majority for sure) projects need
 //            // a loaded maven project. But will protect from accidental loading in AWT
@@ -297,12 +300,7 @@ public final class NbMavenProjectImpl implements Project {
 
     public List<String> getCurrentActiveProfiles() {
         List<String> toRet = new ArrayList<String>();
-        if (configEnabler.isConfigurationEnabled()) {
-            toRet.addAll(configEnabler.getConfigProvider().getActiveConfiguration().getActivatedProfiles());
-        } else {
-            List<String> activeProfiles = profileHandler.getActiveProfiles( false);
-            toRet.addAll(activeProfiles);
-        }
+        toRet.addAll(configProvider.getActiveConfiguration().getActivatedProfiles());
         return toRet;
     }
 
@@ -312,6 +310,7 @@ public final class NbMavenProjectImpl implements Project {
         props.setProperty("netbeans.execution", "true"); //NOI18N
         EmbedderFactory.fillEnvVars(props);
         props.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
+        props.putAll(configProvider.getActiveConfiguration().getProperties());
         //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
         // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
         return props;
@@ -888,6 +887,7 @@ public final class NbMavenProjectImpl implements Project {
                     auxprops,
                     new MavenProjectPropsImpl.Merger(auxprops),
                     profileHandler,
+                    configProvider,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
                     new ClassPathProviderImpl(this),
@@ -905,7 +905,7 @@ public final class NbMavenProjectImpl implements Project {
                     new TemplateAttrProvider(this),
                     //operations
                     new OperationsImpl(this, state),
-                    configEnabler,
+//                    configEnabler,
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
@@ -1279,6 +1279,7 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
+    @SuppressWarnings("serial")
     private static class RefreshAction extends AbstractAction implements ContextAwareAction {
 
         private Lookup context;
@@ -1333,6 +1334,7 @@ public final class NbMavenProjectImpl implements Project {
         return null;
     }
 
+    @SuppressWarnings("serial")
     private static class OpenWikiPage extends AbstractAction {
         private URL url;
         public OpenWikiPage(URL url) {

@@ -307,6 +307,7 @@ public class HtmlBrowser extends JPanel {
         bBack = new JButton();
         bBack.setBorder(BorderFactory.createEmptyBorder());
         bBack.setBorderPainted(false);
+        bBack.setContentAreaFilled(false);
         bBack.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_normal.png", true)); //NOI18N
         bBack.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_hover.png", true)); //NOI18N
         bBack.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/back_disabled.png", true)); //NOI18N
@@ -316,6 +317,7 @@ public class HtmlBrowser extends JPanel {
         bForward = new JButton();
         bForward.setBorder(BorderFactory.createEmptyBorder());
         bForward.setBorderPainted(false);
+        bForward.setContentAreaFilled(false);
         bForward.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_normal.png", true)); //NOI18N
         bForward.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_hover.png", true)); //NOI18N
         bForward.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/forward_disabled.png", true)); //NOI18N
@@ -325,6 +327,7 @@ public class HtmlBrowser extends JPanel {
         bReload = new JButton();
         bReload.setBorder(BorderFactory.createEmptyBorder());
         bReload.setBorderPainted(false);
+        bReload.setContentAreaFilled(false);
         bReload.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
         bReload.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh_hover.png", true)); //NOI18N
         bReload.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/refresh.png", true)); //NOI18N
@@ -333,8 +336,9 @@ public class HtmlBrowser extends JPanel {
         bReload.setFocusPainted(false);
 
         bStop = new JButton();
-        bStop.setBorder(BorderFactory.createEmptyBorder());
         bStop.setBorderPainted(false);
+        bStop.setBorder(BorderFactory.createEmptyBorder());
+        bStop.setContentAreaFilled(false);
         bStop.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
         bStop.setRolloverIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop_hover.png", true)); //NOI18N
         bStop.setDisabledIcon(ImageUtilities.loadImageIcon("org/openide/resources/html/stop.png", true)); //NOI18N
@@ -926,6 +930,19 @@ public class HtmlBrowser extends JPanel {
          * @param u the URL to show
          */
         public abstract void showURL(URL u);
+
+        /**
+         * Attempts to display given URL in preferred external browser.
+         * The default implementation just delegates to showURL(URL).
+         * The URL may be still rendered using an internal browser implementation
+         * if no external browser is available.
+         *
+         * @param u the URL to show
+         * @since 7.14
+         */
+        public void showURLExternal(URL u) {
+            showURL(u);
+        }
     }
 
     private static final class TrivialURLDisplayer extends URLDisplayer {

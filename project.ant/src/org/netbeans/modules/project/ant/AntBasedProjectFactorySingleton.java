@@ -64,6 +64,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
@@ -72,6 +75,7 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -80,6 +84,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -262,7 +267,59 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         
         return project;
     }
-    
+
+    private void print(StringBuilder b, Object o) {
+        if (o == null) {
+            b.append("null");
+        } else {
+            Class t = o.getClass();
+            if (t.isArray()) {
+                Object[] arr = o instanceof Object[] ? (Object[]) o : Utilities.toObjectArray(o);
+                b.append('[');
+                for (int i = 0; i < arr.length; i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                        if (i == 25) {
+                            b.append("...").append(arr.length - 25).append(" more");
+                            break;
+                        }
+                    }
+                    print(b, arr[i]);
+                }
+                b.append(']');
+            } else if (t.getName().contains("xerces")) {
+                b.append(t.getName()).append('@').append(System.identityHashCode(o));
+            } else if (o instanceof String) {
+                b.append('"').append(((String) o).replace("\n", "\\n")).append('"');
+            } else {
+                b.append(o);
+            }
+        }
+    }
+    private void dumpFields(Object o) {
+        if (!System.getProperty("java.class.path").contains("junit")) {
+            return;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            Class implClass = o.getClass();
+            StringBuilder b = new StringBuilder("Fields of a(n) ").append(implClass.getName());
+            try {
+                for (Class c = implClass; c != null; c = c.getSuperclass()) {
+                    for (Field f : c.getDeclaredFields()) {
+                        if ((f.getModifiers() & Modifier.STATIC) > 0) {
+                            continue;
+                        }
+                        f.setAccessible(true);
+                        b.append('\n').append(c.getName()).append('.').append(f.getName()).append('=');
+                        print(b, f.get(o));
+                    }
+                }
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+            LOG.fine(b.toString());
+        }
+    }
     private Document loadProjectXml(File projectDiskFile) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         InputStream is = new FileInputStream(projectDiskFile);
@@ -275,28 +332,30 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         InputSource src = new InputSource(new ByteArrayInputStream(data));
         src.setSystemId(projectDiskFile.toURI().toString());
         try {
-            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
+//            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder;
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException x) {
+                throw new SAXException(x);
+            }
+            builder.setErrorHandler(Util.defaultErrorHandler());
+            Document projectXml = builder.parse(src);
+            LOG.fine("parsed document");
+            dumpFields(projectXml);
             Element projectEl = projectXml.getDocumentElement();
-            if (!PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
+            LOG.fine("got document element");
+            dumpFields(projectXml);
+            dumpFields(projectEl);
+            String namespace = projectEl.getNamespaceURI();
+            LOG.log(Level.FINE, "got namespace {0}", namespace);
+            if (!PROJECT_NS.equals(namespace)) {
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
-                        new Object[] {projectDiskFile, projectEl.getNamespaceURI(), baos});
-                if (LOG.isLoggable(Level.FINE)) {
-                    // XXX sometimes on deadlock get a bogus DeferredElementNSImpl;
-                    // all fields null except fNodeIndex=1, ownerDocument/ownerNode, previousSibling=this
-                    try {
-                        for (Class c = projectEl.getClass(); c != null; c = c.getSuperclass()) {
-                            for (Field f : c.getDeclaredFields()) {
-                                if ((f.getModifiers() & Modifier.STATIC) > 0) {
-                                    continue;
-                                }
-                                f.setAccessible(true);
-                                LOG.fine(c.getName() + "." + f.getName() + "=" + f.get(projectEl));
-                            }
-                        }
-                    } catch (Exception x) {
-                        x.printStackTrace();
-                    }
-                }
+                        new Object[] {projectDiskFile, namespace, baos});
+                dumpFields(projectXml);
+                dumpFields(projectEl);
                 return null;
             }
             if (!"project".equals(projectEl.getLocalName())) { // NOI18N

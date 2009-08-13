@@ -109,13 +109,6 @@ public final class DLightConfiguration {
     }
 
     /**
-     * This method returns the default configuration (all tools)
-     */
-    static public DLightConfiguration getDefault() {
-        return createDefault();
-    }
-
-    /**
      * This method returns the list of tools for the current configuration
      * @return list of tools used in the current configuration
      */

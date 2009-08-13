@@ -47,5 +47,6 @@ public enum SQLStatementKind {
 
     DROP,
     INSERT,
-    SELECT
+    SELECT,
+    UPDATE
 }

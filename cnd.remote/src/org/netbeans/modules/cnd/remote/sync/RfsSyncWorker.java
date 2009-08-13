@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -90,9 +91,20 @@ class RfsSyncWorker extends ZipSyncWorker {
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
+        final String remoteControllerPath = System.getProperty("cnd.remote.fs.controller");
+        //FIXUP: until the project system infrastructure is ready...
+        {
+            int pos = remoteControllerPath.lastIndexOf('/');
+            String name = (pos > 0) ? remoteControllerPath.substring(pos+1) : remoteControllerPath;
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            pb.setExecutable("pkill"); // NOI18N
+            pb.setArguments(name);
+            pb.call().waitFor();
+        }
+
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
         //TODO: replace as soon as setup is written
-        pb.setExecutable(System.getProperty("cnd.remote.fs.controller")); //I18N
+        pb.setExecutable(remoteControllerPath); //I18N
         NativeProcess remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
@@ -142,6 +154,9 @@ class RfsSyncWorker extends ZipSyncWorker {
             try {
                 String line;
                 while ((line = err.readLine()) != null) {
+                    if (RfsSyncWorker.this.err != null) {
+                         RfsSyncWorker.this.err.println(line);
+                    }
                     logger.fine(line);
                 }
             } catch (IOException ex) {
@@ -174,6 +189,7 @@ class RfsSyncWorker extends ZipSyncWorker {
         }
 
         public void run() {
+            long totalCopyingTime = 0;
             while (true) {
                 try {
                     String request = requestReader.readLine();
@@ -191,17 +207,21 @@ class RfsSyncWorker extends ZipSyncWorker {
                     }
                     if (remoteFile.startsWith(remoteDir)) {
                         File localFile =  new File(localDir, remoteFile.substring(remoteDir.length()));
-                        if (localFile.exists() && !allAtOnce) {
+                        if (localFile.exists() && !localFile.isDirectory() && !allAtOnce) {
                             logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
                                     executionEnvironment, remoteFile, 0777, err);
                             try {
                                 int rc = task.get();
-                                logger.finest("LC: uploading " + localFile + " to " + remoteFile + " finished; rc=" + rc);
+                                fileTime = System.currentTimeMillis() - fileTime;
+                                totalCopyingTime += fileTime;
+                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n",
+                                        localFile, remoteFile, rc, fileTime, totalCopyingTime);
                                 if (rc == 0) {
                                     respond_ok();
                                 } else {
-                                    respond_err("1");
+                                    respond_err("1"); // NOI18N
                                 }
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);

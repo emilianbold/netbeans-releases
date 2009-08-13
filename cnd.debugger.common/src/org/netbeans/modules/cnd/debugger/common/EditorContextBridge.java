@@ -59,6 +59,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Annotation;
 import org.openide.util.Utilities;
 
 /*
@@ -175,7 +176,7 @@ public class EditorContextBridge {
      * @param csf The current CallStackFrame
      * @return annotation
      */    
-    public static Object annotate(CallStackFrame csf, String annotationType) {
+    public static Annotation annotate(CallStackFrame csf, String annotationType) {
         String fullname = csf.getFullname();
         if (fullname != null) {
             File file = new File(fullname);
@@ -193,7 +194,7 @@ public class EditorContextBridge {
 	return null;
     }
     
-    public static Object annotateDis(CallStackFrame csf, String annotationType) {
+    public static Annotation annotateDis(CallStackFrame csf, String annotationType) {
         DisassemblyService disService = getCurrentDisassemblyService();
         if (disService != null) {
             return disService.annotateAddress(csf.getAddr(), annotationType);
@@ -204,7 +205,7 @@ public class EditorContextBridge {
     /**
      * Removes given annotation.
      */
-    public static void removeAnnotation(Object annotation) {
+    public static void removeAnnotation(Annotation annotation) {
         getContext().removeAnnotation(annotation);
     }
     
@@ -471,20 +472,20 @@ public class EditorContextBridge {
             return s;
         }
         
-        public void removeAnnotation(Object annotation) {
+        public void removeAnnotation(Annotation annotation) {
             CompoundAnnotation ca = (CompoundAnnotation) annotation;
             cp1.removeAnnotation(ca.annotation1);
             cp2.removeAnnotation(ca.annotation2);
         }
 
-        public Object annotate(String sourceName, int lineNumber, String annotationType, Object timeStamp) {
+        public Annotation annotate(String sourceName, int lineNumber, String annotationType, Object timeStamp) {
             CompoundAnnotation ca = new CompoundAnnotation();
             ca.annotation1 = cp1.annotate(sourceName, lineNumber, annotationType, timeStamp);
             ca.annotation2 = cp2.annotate(sourceName, lineNumber, annotationType, timeStamp);
             return ca;
         }
         
-        public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        public Annotation annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
             CompoundAnnotation ca = new CompoundAnnotation();
             ca.annotation1 = cp1.annotate(dobj, lineNumber, annotationType, timeStamp);
             ca.annotation2 = cp2.annotate(dobj, lineNumber, annotationType, timeStamp);
@@ -546,8 +547,18 @@ public class EditorContextBridge {
         
     }
     
-    private static class CompoundAnnotation {
-        Object annotation1;
-        Object annotation2;
+    private static class CompoundAnnotation extends Annotation {
+        Annotation annotation1;
+        Annotation annotation2;
+
+        @Override
+        public String getAnnotationType() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getShortDescription() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

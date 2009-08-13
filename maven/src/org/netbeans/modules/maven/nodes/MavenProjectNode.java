@@ -56,7 +56,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.configurations.ConfigurationProviderEnabler;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.problems.ProblemsPanel;
@@ -175,11 +174,11 @@ public class MavenProjectNode extends AbstractNode {
         lst.add(null);
 
         lst.add(provider.createCustomPopupAction()); 
-        if (project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled()) {
+//        if (project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled()) {
             lst.add(CommonProjectActions.setProjectConfigurationAction());
-        } else {
-            lst.add(provider.createProfilesPopupAction());
-        }
+//        } else {
+//            lst.add(provider.createProfilesPopupAction());
+//        }
 
         lst.add(null);
         lst.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N

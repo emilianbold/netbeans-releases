@@ -140,35 +140,35 @@ public abstract class PhpFrameworkProvider {
     public abstract PhpModuleProperties getPhpModuleProperties(PhpModule phpModule);
 
     /**
-     * Creates a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
+     * Get a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
      * and the given PHP module.
      *
      * @param  phpModule the PHP module which actions are going to be extended
      * @return a new PHP module actions extender, can be <code>null</code> if the framework doesn't support
      *         extending of actions
-     * @since 1.4
+     * @since 1.11
      */
-    public abstract PhpModuleActionsExtender createActionsExtender(PhpModule phpModule);
+    public abstract PhpModuleActionsExtender getActionsExtender(PhpModule phpModule);
 
     /**
-     * Creates a {@link PhpModuleVisibilityExtender PHP module visibility extender} for this framework
+     * Get a {@link PhpModuleVisibilityExtender PHP module visibility extender} for this framework
      * and the given PHP module.
      *
      * @param  phpModule the PHP module which visibility is going to be extended
      * @return PHP module visibility extender, can be <code>null</code> if the framework doesn't need
      *         to recommend to hide any files or folders
-     * @since 1.4
+     * @since 1.11
      */
-    public abstract PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule);
+    public abstract PhpModuleVisibilityExtender getVisibilityExtender(PhpModule phpModule);
 
     /**
-     * Creates a {@link FrameworkCommandSupport framework command support} for this framework
+     * Get a {@link FrameworkCommandSupport framework command support} for this framework
      * and the given PHP module.
      *
-     * @param  phpModule the PHP module for which framework command support is to be created
+     * @param  phpModule the PHP module for which framework command support is to be gotten
      * @return framework command support, can be <code>null</code> if the framework doesn't support
      *         running external commands
-     * @since 1.8
+     * @since 1.11
      */
-    public abstract FrameworkCommandSupport createFrameworkCommandSupport(PhpModule phpModule);
+    public abstract FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule);
 }

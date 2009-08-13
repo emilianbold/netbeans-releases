@@ -90,6 +90,34 @@ public final class PhpCoverageProvider implements CoverageProvider {
         CoverageManager.INSTANCE.resultsUpdated(project, this);
     }
 
+    public void updateCoverage(CoverageVO partialCoverage) {
+        assert partialCoverage != null;
+        assert isEnabled() : "Coverage provider must be enabled";
+
+        CoverageVO newCoverage = getCoverage();
+        if (newCoverage == null) {
+            setCoverage(partialCoverage);
+            return;
+        }
+
+        List<FileVO> originalFiles = newCoverage.getFiles();
+        for (FileVO file : partialCoverage.getFiles()) {
+            boolean newFile = true;
+            for (int i = 0; i < originalFiles.size(); ++i) {
+                if (file.getPath().equals(originalFiles.get(i).getPath())) {
+                    originalFiles.set(i, file);
+                    newFile = false;
+                    break;
+                }
+            }
+            if (newFile) {
+                originalFiles.add(file);
+            }
+        }
+
+        setCoverage(newCoverage);
+    }
+
     public static void notifyProjectOpened(Project project) {
         CoverageManager.INSTANCE.setEnabled(project, true);
     }
@@ -200,6 +228,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
 
     private boolean isUnderneathSourcesOnlyAndVisible(FileObject fo) {
         return fo != null
+                && fo.isValid()
                 && CommandUtils.isUnderSources(project, fo)
                 && !CommandUtils.isUnderTests(project, fo, false)
                 && !CommandUtils.isUnderSelenium(project, fo, false)
