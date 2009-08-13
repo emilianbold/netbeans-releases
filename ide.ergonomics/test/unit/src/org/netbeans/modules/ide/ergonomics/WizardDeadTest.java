@@ -39,57 +39,72 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JComponent;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.newproject.DescriptionStep;
 import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterator;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class ServerWizardProviderProxy implements ServerWizardProvider {
-    
-    private FileObject fob;
-    private String displayName;
+public class WizardDeadTest extends NbTestCase {
 
-    public static ServerWizardProvider create(FileObject fob) {
-        return new ServerWizardProviderProxy(fob);
+    public WizardDeadTest(String name) {
+        super(name);
     }
 
-    private ServerWizardProviderProxy(FileObject fob) {
-        this.fob = fob;
+    @Override
+    protected boolean runInEQ() {
+        return true;
     }
-    
-    public String getDisplayName() {
-        if (originalActive()) {
-            return null;
+
+    public void testDescriptionStep() throws InterruptedException, InvocationTargetException, IOException {
+        final WizardDescriptor wd = new WizardDescriptor(new Panel[0]);
+        FileObject fob = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        wd.putProperty(FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE, fob);
+
+        DescriptionStep step = new DescriptionStep(true);
+        step.readSettings(wd);
+        JComponent panel = (JComponent) step.getComponent();
+        assertFalse("Module not yet found", isModuleEnabled());
+        panel.firePropertyChange("finding-modules", 0, 1);
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(500);
         }
-        if (displayName == null) {
-            displayName = (String) fob.getAttribute("displayName"); // NOI18N
-            if (displayName == null) { // attribute not available
-                displayName = fob.getName();
+        assertTrue("Module found", isModuleEnabled());
+    }
+
+    private boolean isModuleEnabled() {
+        for (ModuleInfo inf : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if ("org.netbeans.modules.java.kit".equals(inf.getCodeNameBase())) {
+                return inf.isEnabled();
             }
         }
-        return displayName;
-    }
-
-    public InstantiatingIterator getInstantiatingIterator() {
-        if (originalActive()) {
-            return null;
-        }
-        return new FeatureOnDemanWizardIterator(fob);
-    }
-
-    private boolean originalActive() {
-        Object orig = fob.getAttribute("originalDefinition"); // NOI18N
-        if (orig instanceof String) {
-            if (FileUtil.getConfigFile((String) orig) != null) {
-                return true;
-            }
-        }
+        fail("Java Kit not found!");
         return false;
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            addTest(WizardDeadTest.class).
+            gui(false).
+            clusters("ergonomics.*").
+            clusters(".*").
+            enableModules("ide[0-9]*", ".*").
+            honorAutoloadEager(true)
+        );
     }
 
 }

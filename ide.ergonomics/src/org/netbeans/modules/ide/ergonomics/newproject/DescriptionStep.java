@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ide.ergonomics.newproject;
 
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.ide.ergonomics.fod.FindComponentModules;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import java.awt.Component;
@@ -59,7 +58,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -92,10 +90,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private static FindComponentModules finder = null;
     private FeatureInfo info;
     private WizardDescriptor wd;
-    private boolean autoEnable;
+    private final ConfigurationPanel configPanel;
 
     public DescriptionStep(boolean autoEnable) {
-        this.autoEnable = autoEnable;
+        configPanel = new ConfigurationPanel(new Callable<JComponent>() {
+
+            public JComponent call() throws Exception {
+                FoDFileSystem.getInstance().refresh();
+                waitForDelegateWizard ();
+                return new JLabel(" ");
+            }
+        }, autoEnable);
     }
 
     public Component getComponent () {
@@ -158,31 +163,13 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             panel.replaceComponents ();
             handle = null;
         }
-        Collection<UpdateElement> elems = getFinder ().getModulesForEnable ();
+        final  Collection<UpdateElement> elems = getFinder ().getModulesForEnable ();
         if (elems != null && !elems.isEmpty ()) {
             Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
-            final String names = ModulesInstaller.presentUpdateElements (visible);
-            final JPanel[] pan = new JPanel[1];
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    public void run() {
-                        pan[0] = new ConfigurationPanel(names, new Callable<JComponent>() {
-
-                            public JComponent call() throws Exception {
-                                FoDFileSystem.getInstance().refresh();
-                                waitForDelegateWizard ();
-                                return new JLabel(" ");
-                            }
-                        }, info, autoEnable);
-                    }
-                });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            panel.replaceComponents(pan[0]);
+            final String name = ModulesInstaller.presentUpdateElements (visible);
+            configPanel.setInfo(info);
+            configPanel.setPanelName(name);
+            panel.replaceComponents(configPanel);
             forEnable = elems;
         } else {
             FoDFileSystem.getInstance().refresh();
