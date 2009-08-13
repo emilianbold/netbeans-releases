@@ -59,11 +59,4 @@ public interface ServiceInfoDataStorage {
     Map<String, String> getInfo();
     String getValue(String name);
     String put(String name, String value);
-    
-    /**
-     * Close storage
-     * @return <code>true</code> if succeeded, <code>false</code> otherwise
-     */
-    boolean shutdown();
-
 }

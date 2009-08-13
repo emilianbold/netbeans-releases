@@ -120,10 +120,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
+    private ServiceInfoDataStorage serviceInfoStorage;
     private volatile HotSpotFunctionsFilter filter;
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoStorage = serviceInfoStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
@@ -270,7 +271,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 if (functionCallImpl.hasSourceFileDefined()) {
                     PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
                     if (provider != null) {
-                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(serviceInfoStorage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
                         if (pathMapper != null) {
                             return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
                         }
@@ -283,7 +284,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.storage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

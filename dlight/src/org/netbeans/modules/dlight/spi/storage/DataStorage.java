@@ -55,7 +55,7 @@ import java.util.List;
  * The same is for {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider},
  * that wants to read data from the DataStorage.
  */
-public abstract class DataStorage implements ServiceInfoDataStorage {
+public abstract class DataStorage {
 
     private final List<DataTableMetadata> tablesMetadata;
 
@@ -143,4 +143,11 @@ public abstract class DataStorage implements ServiceInfoDataStorage {
             tablesMetadata.addAll(tableMetadatas);
         }
     }
+
+    /**
+     * Close storage
+     * @return <code>true</code> if succeeded, <code>false</code> otherwise
+     */
+    public abstract boolean shutdown();
+
 }
