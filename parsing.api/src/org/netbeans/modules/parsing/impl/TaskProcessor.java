@@ -540,7 +540,7 @@ public class TaskProcessor {
      * Dispatches scheduled tasks from {@link TaskProcessor#requests} and performs
      * them.
      */
-     private static class CompilationJob implements Runnable {        
+     private static class CompilationJob implements Runnable {
         
         @SuppressWarnings ("unchecked") //NOI18N
         public void run () {
