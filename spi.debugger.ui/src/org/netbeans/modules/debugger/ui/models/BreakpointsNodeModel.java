@@ -43,14 +43,13 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -65,7 +64,7 @@ public class BreakpointsNodeModel implements CheckNodeModel  {
     public static final String BREAKPOINT_GROUP =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
 
-    private final Map<Breakpoint, Boolean> breakpointsBeingEnabled = new HashMap<Breakpoint, Boolean>();
+    private final Map<Breakpoint, Boolean> breakpointsBeingEnabled = new IdentityHashMap<Breakpoint, Boolean>();
     private RequestProcessor rp;
     private final Collection modelListeners = new ArrayList();
 
