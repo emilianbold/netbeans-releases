@@ -96,8 +96,9 @@ public class JspELExpression extends ELExpression {
         int bracketIndex = expr.indexOf('[');
         int value = EL_UNKNOWN;
 
-        if (bracketIndex == -1 && dotIndex > -1) {
-            String first = expr.substring(0, dotIndex);
+        //if (bracketIndex == -1 && dotIndex > -1) {
+        if ( bracketIndex >-1 || dotIndex > -1 ){
+            String first = expr.substring(0, getPositiveMin( bracketIndex, dotIndex));
             BeanData[] beans = sup.getBeanData();
             if (beans != null) {
                 for (int i = 0; i <
@@ -109,7 +110,9 @@ public class JspELExpression extends ELExpression {
                     }
                 }
             }
-            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size() > 0) {
+            if (bracketIndex == -1 && value == EL_UNKNOWN && 
+                    ELImplicitObjects.getELImplicitObjects(first).size() > 0) 
+            {
                 value = EL_IMPLICIT;
             }
 
