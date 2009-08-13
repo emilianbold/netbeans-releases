@@ -855,21 +855,7 @@ public class LayerUtils {
         for (int i = 1; it.hasNext(); i++) {
             layers[i] = it.next();
         }
-        class BadgingMergedFileSystem extends MultiFileSystem {
-            private final BadgingSupport status;
-            public BadgingMergedFileSystem() {
-                super(layers);
-                status = new BadgingSupport(this);
-                status.setClasspath(cp);
-                status.setSuffix("_" + Locale.getDefault());
-                // XXX listening?
-            }
-            @Override
-            public FileSystem.Status getStatus() {
-                return status;
-            }
-        }
-        return new BadgingMergedFileSystem();
+        return new LayerFileSystem(layers, cp);
     }
     
 }

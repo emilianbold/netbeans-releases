@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.debugger.gdb.models.WatchPanel;
+import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,10 +55,10 @@ import org.openide.util.NbBundle;
  */
 public class ConditionsPanel extends JPanel {
     
-    private GdbBreakpoint  breakpoint;
+    private CndBreakpoint  breakpoint;
     
     /** Creates new form ConditionsPanel */
-    public ConditionsPanel(final GdbBreakpoint breakpoint) {
+    public ConditionsPanel(final CndBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         initComponents();
 
@@ -87,7 +88,7 @@ public class ConditionsPanel extends JPanel {
                 tfCondition.setText(breakpoint.getCondition());
             }
         };
-        WatchPanel.setupContext(tfCondition, editorPaneUpdated);
+        ContextBindingSupport.getDefault().setupContext(tfCondition, editorPaneUpdated);
     }
     
     public void ok() {
@@ -212,7 +213,7 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbCondition, gridBagConstraints);
 
-        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
+        spCondition = ContextBindingSupport.createScrollableLineEditor(tfCondition);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
 
         tfCondition.setContentType(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.contentType")); // NOI18N

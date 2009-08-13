@@ -95,11 +95,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private FileObject instanceFO;
 
     private volatile boolean startedByIde = false;
+    private transient boolean isRemote = false;
     private GlassfishInstanceProvider instanceProvider;
     
     CommonServerSupport(Lookup lookup, Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
         this.lookup = lookup;
         this.instanceProvider = instanceProvider;
+        this.isRemote = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
         String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
         String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, ""); // NOI18N
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
@@ -107,16 +109,15 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
-        updateString(ip,GlassfishModule.START_DERBY_FLAG,
-                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? "false" : "true");  // NOI18N
-        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");  // NOI18N
+        updateString(ip,GlassfishModule.START_DERBY_FLAG, isRemote ? "false" : "true"); // NOI18N
+        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG, "true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
             String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
-        ip.put(JVM_MODE, ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? DEBUG_MODE : NORMAL_MODE);
+        ip.put(JVM_MODE, isRemote ? DEBUG_MODE : NORMAL_MODE);
         properties.putAll(ip);
         
         // XXX username/password handling at some point.
@@ -263,6 +264,14 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return Collections.unmodifiableMap(properties);
     }
     
+    public GlassfishInstanceProvider getInstanceProvider() {
+        return instanceProvider;
+    }
+
+    public boolean isRemote() {
+        return isRemote;
+    }
+
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
@@ -596,11 +605,6 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             });
         }
     }
-
-    public GlassfishInstanceProvider getInstanceProvider() {
-        return instanceProvider;
-    }
-
 
     class StartOperationStateListener implements OperationStateListener {
         private ServerState endState;

@@ -5,6 +5,8 @@ OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Recommends: org.netbeans.modules.profiler,
  org.netbeans.modules.debugger.jpda.ui,
  org.netbeans.modules.websvc.saas.kit,
- org.netbeans.modules.websvc.saas.codegen.java
+ org.netbeans.modules.websvc.saas.codegen.java,
+ org.netbeans.modules.wag.kit,
+ org.netbeans.modules.wag.codegen.java
 OpenIDE-Module-Layer: org/netbeans/modules/java/kit/layer.xml
 

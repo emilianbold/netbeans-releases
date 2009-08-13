@@ -54,15 +54,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.api.stack.Datarace;
-import org.netbeans.modules.dlight.api.stack.Deadlock;
+import org.netbeans.module.dlight.threads.api.Datarace;
+import org.netbeans.module.dlight.threads.api.Deadlock;
+import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
 import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.HotSpotFunctionsFilter;
@@ -248,7 +249,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {

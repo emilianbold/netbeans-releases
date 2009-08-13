@@ -120,11 +120,11 @@ public class FastDeploy extends IncrementalDeployment {
         }
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
-                public void handleProgressEvent(ProgressEvent arg0) {
-                    if (arg0.getDeploymentStatus().isCompleted()) {
+                public void handleProgressEvent(ProgressEvent event) {
+                    if (event.getDeploymentStatus().isCompleted()) {
                         commonSupport.deploy(progressObject, dir, moduleName);
                     } else {
-                        progressObject.fireHandleProgressEvent(arg0.getDeploymentStatus());
+                        progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
                 }
             });
@@ -173,15 +173,15 @@ public class FastDeploy extends IncrementalDeployment {
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
-                public void handleProgressEvent(ProgressEvent arg0) {
-                    if (arg0.getDeploymentStatus().isCompleted()) {
+                public void handleProgressEvent(ProgressEvent event) {
+                    if (event.getDeploymentStatus().isCompleted()) {
                         if (hasChanges) {
                             commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
                         } else {
-                            progressObject.fireHandleProgressEvent(arg0.getDeploymentStatus());
+                            progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                         }
                     } else {
-                        progressObject.fireHandleProgressEvent(arg0.getDeploymentStatus());
+                        progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
                 }
             });

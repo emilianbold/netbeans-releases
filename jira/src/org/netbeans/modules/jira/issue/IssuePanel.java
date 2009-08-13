@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -69,6 +70,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
@@ -92,8 +95,11 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -102,6 +108,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -133,6 +140,7 @@ public class IssuePanel extends javax.swing.JPanel {
         statusField.setBackground(getBackground());
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
+        parentHeaderPanel.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -140,6 +148,7 @@ public class IssuePanel extends javax.swing.JPanel {
         BugtrackingUtil.issue163946Hack(fixVersionScrollPane);
         BugtrackingUtil.issue163946Hack(environmentScrollPane);
         BugtrackingUtil.issue163946Hack(addCommentScrollPane);
+        summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         attachFieldStatusListeners();
     }
@@ -354,7 +363,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         createSubtaskButton.setVisible(false);
         convertToSubtaskButton.setVisible(false);
-        subtaskLabel.setVisible(false);
         dummySubtaskPanel.setVisible(false);
 
         if (force) {
@@ -408,6 +416,51 @@ public class IssuePanel extends javax.swing.JPanel {
 
         reloadCustomFields();
 
+        final String parentKey = issue.getParentKey();
+        boolean hasParent = (parentKey != null) && (parentKey.trim().length() > 0);
+        if  (hasParent) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
+                    if (parentIssue == null) {
+                        parentIssue = issue.getRepository().getIssue(parentKey);
+                    }
+                    final Issue parent = parentIssue;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            parentHeaderPanel.setVisible(true);
+                            parentHeaderPanel.removeAll();
+                            headerLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/subtask.png", true)); // NOI18N
+                            GroupLayout layout = new GroupLayout(parentHeaderPanel);
+                            JLabel parentLabel = new JLabel();
+                            parentLabel.setText(parent.getSummary());
+                            LinkButton parentButton = new LinkButton(new AbstractAction() {
+                                public void actionPerformed(ActionEvent e) {
+                                    parent.open();
+                                }
+                            });
+                            parentButton.setText(parentKey+':');
+                            layout.setHorizontalGroup(
+                                layout.createSequentialGroup()
+                                    .add(parentButton)
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(parentLabel)
+                            );
+                            layout.setVerticalGroup(
+                                layout.createParallelGroup(GroupLayout.BASELINE)
+                                    .add(parentButton)
+                                    .add(parentLabel)
+                            );
+                            parentHeaderPanel.setLayout(layout);
+                        }
+                    });
+                }
+            });
+        } else {
+            parentHeaderPanel.setVisible(false);
+            headerLabel.setIcon(null);
+        }
+
         JiraConfiguration config = issue.getRepository().getConfiguration();
         if (isNew) {
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -429,6 +482,9 @@ public class IssuePanel extends javax.swing.JPanel {
             String headerFormat = bundle.getString("IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(headerFormat, issue.getKey(), issue.getSummary());
             headerLabel.setText(headerTxt);
+            Dimension dim = headerLabel.getPreferredSize();
+            headerLabel.setMinimumSize(new Dimension(0, dim.height));
+            headerLabel.setPreferredSize(new Dimension(0, dim.height));
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
             String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
@@ -493,12 +549,56 @@ public class IssuePanel extends javax.swing.JPanel {
             // Attachments
             attachmentsPanel.setIssue(issue);
             BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+
+            // Sub-tasks
+            boolean hasSubtasks = issue.hasSubtasks();
+            subtaskLabel.setVisible(hasSubtasks);
+            if (subTaskScrollPane != null) {
+                subTaskScrollPane.setVisible(hasSubtasks);
+            }
+            if (hasSubtasks) {
+                if (subTaskTable == null) {
+                    subTaskTable = new JTable();
+                    subTaskTable.setDefaultRenderer(JiraStatus.class, new StatusRenderer());
+                    subTaskTable.setDefaultRenderer(Priority.class, new PriorityRenderer());
+                    subTaskScrollPane = new JScrollPane(subTaskTable);
+                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                TableSorter sorter = new TableSorter(tableModel);
+                                subTaskTable.setModel(sorter);
+                                sorter.setTableHeader(subTaskTable.getTableHeader());
+
+                                // Table height tweaks
+                                int height = 0;
+                                for(int row=0; row<tableModel.getRowCount(); row++) {
+                                    height += subTaskTable.getRowHeight(row);
+                                }
+                                subTaskTable.setPreferredScrollableViewportSize(new Dimension(
+                                        subTaskTable.getPreferredScrollableViewportSize().width,
+                                        height
+                                ));
+
+                                if (subTaskScrollPane.getParent() == null) {
+                                    ((GroupLayout)getLayout()).replace(dummySubtaskPanel, subTaskScrollPane);
+                                }
+                                revalidate();
+                            }
+                        });
+                    }
+                });
+            }
         }
         updateFieldStatuses();
         reloading = false;
     }
     private JComponent dummyCancelButton = new JLabel();
     private JComponent dummyActionPanel = new JLabel();
+    private JTable subTaskTable;
+    private JScrollPane subTaskScrollPane;
 
     private void reloadCustomFields() {
         for (NbJiraIssue.CustomField cField : getSupportedCustomFields()) {
@@ -731,9 +831,12 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
-    private void attachIssueListener(NbJiraIssue issue) {
+    private void attachIssueListener(final NbJiraIssue issue) {
         issue.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getSource() != issue) {
+                    return;
+                }
                 if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                     reloadFormInAWT(false);
                 } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
@@ -857,6 +960,7 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField = new javax.swing.JTextField();
         projectField = new javax.swing.JTextField();
         statusField = new javax.swing.JTextField();
+        parentHeaderPanel = new javax.swing.JPanel();
         customFieldPanelLeft = new javax.swing.JPanel();
         customFieldPanelRight = new javax.swing.JPanel();
         headerLabel = new javax.swing.JLabel();
@@ -1189,53 +1293,15 @@ public class IssuePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(separator)
+            .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(475, Short.MAX_VALUE)
+                .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(projectLabel)
-                            .add(issueTypeLabel)
-                            .add(statusLabel)
-                            .add(resolutionLabel)
-                            .add(priorityLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(18, 18, 18)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(createdLabel)
-                                    .add(updatedLabel)
-                                    .add(dueLabel)
-                                    .add(assigneeLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 160, Short.MAX_VALUE)
-                                        .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(componentLabel)
-                            .add(componentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(affectsVersionLabel)
-                            .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fixVersionLabel)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(remainingEstimateLabel)
@@ -1255,7 +1321,6 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(originalEstimatePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .add(headerLabel)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(customFieldPanelLeft, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1278,13 +1343,53 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
-            .add(separator)
-            .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(475, Short.MAX_VALUE)
-                .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(projectLabel)
+                                    .add(issueTypeLabel)
+                                    .add(statusLabel)
+                                    .add(resolutionLabel)
+                                    .add(priorityLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(18, 18, 18)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(createdLabel)
+                                            .add(updatedLabel)
+                                            .add(dueLabel)
+                                            .add(assigneeLabel))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(componentLabel)
+                                    .add(componentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(18, 18, 18)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(affectsVersionLabel)
+                                    .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(18, 18, 18)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(fixVersionLabel)))
+                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(parentHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -1304,8 +1409,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(parentHeaderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(0, 0, 0)
                         .add(headerLabel)
-                        .add(16, 16, 16)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(projectLabel)
                             .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1344,7 +1451,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(originalEstimateLabel)
@@ -1445,7 +1552,15 @@ public class IssuePanel extends javax.swing.JPanel {
 
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
-                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
+                        boolean subtask = issue.isSubtask();
+                        IssueType[] issueTypes = config.getIssueTypes(project);
+                        List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
+                        for (IssueType issueType : issueTypes) {
+                            if (issueType.isSubTaskType() == subtask) {
+                                types.add(issueType);
+                            }
+                        }
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(types.toArray(new IssueType[types.size()])));
                         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
 
                         // Reload components
@@ -1496,6 +1611,20 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                IssueCache cache = issue.getRepository().getIssueCache();
+                String parentKey = issue.getParentKey();
+                if ((parentKey != null) && (parentKey.trim().length()>0)) {
+                    Issue parentIssue = cache.getIssue(parentKey);
+                    if (parentIssue != null) {
+                        parentIssue.refresh();
+                    }
+                }
+                for (String subTaskKey : issue.getSubtaskKeys()) {
+                    Issue subTask = cache.getIssue(subTaskKey);
+                    if (subTask != null) {
+                        subTask.refresh();
+                    }
+                }
                 issue.refresh();
                 handle.finish();
                 reloadFormInAWT(true);
@@ -1733,6 +1862,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel originalEstimateLabel;
     private javax.swing.JLabel originalEstimateLabelNew;
     private javax.swing.JPanel originalEstimatePanel;
+    private javax.swing.JPanel parentHeaderPanel;
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;

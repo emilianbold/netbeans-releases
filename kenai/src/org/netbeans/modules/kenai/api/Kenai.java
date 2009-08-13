@@ -113,6 +113,19 @@ public final class Kenai {
         return instance;
     }
 
+    /**
+    * Helper method that fixed slash on the Kenai.com url
+    * @param urlStr String with URL as it was passed
+    * @return Fixed URL string
+    */
+    public static String normalizeUrl(String urlStr) {
+        if (urlStr.endsWith("/")) {
+            return urlStr.substring(0, urlStr.length() - 1);
+        } else {
+            return urlStr;
+        }
+    }
+
     private final KenaiImpl     impl;
     private XMPPConnection xmppConnection;
 
@@ -185,7 +198,7 @@ public final class Kenai {
      * Adds listener to Kenai instance
      * @param l
      */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
     }
 
@@ -194,7 +207,7 @@ public final class Kenai {
      * @param name 
      * @param l
      */
-    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+    public void addPropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(name,l);
     }
 
@@ -202,7 +215,7 @@ public final class Kenai {
      * Removes listener from Kenai instance
      * @param l
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+    public void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
@@ -211,7 +224,7 @@ public final class Kenai {
      * @param name
      * @param l
      */
-    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+    public void removePropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(name, l);
     }
 

@@ -106,6 +106,8 @@ public class METACustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_Dialog"));
         dialog.setVisible(true);
         
         return dialogOK;

@@ -166,8 +166,6 @@ final class DtraceDataAndStackParser extends DtraceParser {
             case IN_STACK:
                 if (line.length() > 0) {
                     //TODO:error-processing
-                    DLightLogger.assertTrue(Character.isWhitespace(line.charAt(0)),
-                            "Stack row should start with ' '"); // NOI18N
                     line = line.trim();
                     if (isProfiler || !line.startsWith("libc.so.")) { //NOI18N
                         currStack.add(line);

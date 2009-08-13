@@ -69,6 +69,8 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
 
     public static final String VOLUME_CLASSPATH = "classpath";
 
+    public static final String VOLUME_EMBEDDABLE_EJB_CLASSPATH = "embedabbleejb";
+
     public static final String VOLUME_WS_COMPILE_CLASSPATH = "wscompile";
 
     public static final String VOLUME_WS_GENERATE_CLASSPATH = "wsgenerate";
@@ -90,6 +92,7 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
 
     private static final String[] VOLUME_TYPES = new String[] {
             VOLUME_CLASSPATH,
+            VOLUME_EMBEDDABLE_EJB_CLASSPATH,
             VOLUME_WS_COMPILE_CLASSPATH,
             VOLUME_WS_GENERATE_CLASSPATH,
             VOLUME_WS_IMPORT_CLASSPATH,

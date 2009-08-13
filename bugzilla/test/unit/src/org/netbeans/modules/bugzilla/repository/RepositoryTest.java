@@ -41,6 +41,8 @@ package org.netbeans.modules.bugzilla.repository;
 
 import org.netbeans.modules.bugzilla.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,13 +88,16 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         }
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        BugzillaConfig.getInstance().removeRepository(REPO_NAME);
+    }
+
     public void testController() throws Throwable {
         BugzillaConnector bc = getConnector();
         BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
-        assertNotNull(repo);
-        BugtrackingController c = repo.getController();
-        assertNotNull(c);
-        assertFalse(c.isValid());
+        RepositoryController c = getController(repo);
 
         // populate
         // only name
@@ -129,6 +134,46 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
             Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(repo.getTaskRepository(), NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
         } catch (Exception ex) {
             TestUtil.handleException(ex);
+        }
+    }
+
+    public void testControllerOnValidate() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
+        BugzillaConnector bc = getConnector();
+        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
+        RepositoryController c = getController(repo);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, null, REPO_PASSWD, true);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, "", REPO_PASSWD, true);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, "xxx", REPO_PASSWD, false);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, REPO_USER, null, true);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, REPO_USER, "", true);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, REPO_USER, "xxx", true);
+
+        checkOnValidate(c, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, true);
+    }
+
+    private void checkOnValidate(RepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
+
+        populate(c, repoName, repoUrl, user, psswd); //
+        assertTrue(c.isValid());
+
+        LogHandler lh = new LogHandler("validate for", LogHandler.Compare.STARTS_WITH);
+        LogHandler lhAutoupdate = new LogHandler("BugzillaAutoupdate.checkAndNotify start", LogHandler.Compare.STARTS_WITH);
+        onValidate(c);
+        lh.waitUntilDone();
+        assertFalse(lhAutoupdate.isDone());
+        lhAutoupdate.reset();
+        String msg = lh.getInterceptedMessage();
+        boolean worked = msg.indexOf("worked") > -1;
+        if(assertWorked) {
+            assertTrue(worked);
+        } else {
+            assertFalse(worked);
         }
     }
 
@@ -219,6 +264,14 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         return bc;
     }
 
+    private RepositoryController getController(BugzillaRepository repo) {
+        assertNotNull(repo);
+        BugtrackingController c = repo.getController();
+        assertNotNull(c);
+        assertFalse(c.isValid());
+        return (RepositoryController) c;
+    }
+
     private RepositoryPanel getRepositoryPanel(BugtrackingController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Field f = c.getClass().getDeclaredField("panel");
         f.setAccessible(true);
@@ -239,5 +292,11 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         panel.urlField.setText("");
         panel.userField.setText("");
         panel.psswdField.setText("");
+    }
+
+    private void onValidate(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("onValidate");
+        m.setAccessible(true);
+        m.invoke(c);
     }
 }

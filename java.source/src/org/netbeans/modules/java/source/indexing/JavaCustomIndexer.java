@@ -171,6 +171,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
+                            for (CompileTuple tuple : virtualSourceTuples) {
+                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                            }
                             toCompile.addAll(virtualSourceTuples);
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
@@ -567,6 +570,27 @@ public class JavaCustomIndexer extends CustomIndexer {
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
             clearFiles(context, deleted);
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+            assert removedRoots != null;
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            try {
+                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {
+                        for (URL removedRoot : removedRoots) {
+                            cim.removeRoot(removedRoot);
+                        }
+                        return null;
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+
+            } catch (InterruptedException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
 
         @Override

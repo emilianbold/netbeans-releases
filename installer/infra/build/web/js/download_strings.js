@@ -64,10 +64,9 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 var ZIP_FILES_LIST_NAME             = "Zip Files";
 var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
-var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
-var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
-var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
-var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
+var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";

@@ -53,6 +53,7 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -62,7 +63,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.modules.php.project.util.PhpUnit.Files;
+import org.netbeans.modules.php.project.util.PhpUnit.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -228,11 +229,11 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
-            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+            ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
                     .optionsPath(UiUtils.OPTIONS_PATH)
                     .frontWindow(!phpUnit.supportedVersionFound())
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
-                    .showProgress(true);
+                    .inputVisible(false);
             if (phpUnit.supportedVersionFound()) {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
@@ -256,29 +257,24 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
-            ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                    .workingDirectory(phpUnit.getWorkingDirectory());
-            for (String param : phpUnit.getParameters()) {
-                externalProcessBuilder = externalProcessBuilder.addArgument(param);
-            }
-            externalProcessBuilder = externalProcessBuilder
+            ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
             File startFile = FileUtil.toFile(info.startFile);
-            Files files = phpUnit.getFiles(project, allTests(info));
-            if (files.bootstrap != null) {
+            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
+            if (configFiles.bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                        .addArgument(files.bootstrap.getAbsolutePath());
+                        .addArgument(configFiles.bootstrap.getAbsolutePath());
             }
-            if (files.configuration != null) {
+            if (configFiles.configuration != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                        .addArgument(files.configuration.getAbsolutePath());
+                        .addArgument(configFiles.configuration.getAbsolutePath());
             }
-            if (files.suite != null) {
-                startFile = files.suite;
+            if (configFiles.suite != null) {
+                startFile = configFiles.suite;
             }
 
             if (isCoverageEnabled()) {
@@ -296,7 +292,7 @@ class ConfigActionTest extends ConfigAction {
         public String getOutputTabTitle() {
             String title = null;
             if (allTests(info)) {
-                File suite = phpUnit.getCustomSuite(project);
+                File suite = PhpUnit.getCustomSuite(project);
                 if (suite == null) {
                     title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
                 } else {
@@ -321,9 +317,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (!isCoverageEnabled()
-                    || !allTests(info)) {
-                // XXX not enabled or just one test case (could be handled later)
+            if (!isCoverageEnabled()) {
                 return;
             }
 
@@ -338,7 +332,11 @@ class ConfigActionTest extends ConfigAction {
             if (!PhpUnit.KEEP_LOGS) {
                 PhpUnit.COVERAGE_LOG.delete();
             }
-            coverageProvider.setCoverage(coverage);
+            if (allTests(info)) {
+                coverageProvider.setCoverage(coverage);
+            } else {
+                coverageProvider.updateCoverage(coverage);
+            }
         }
     }
 

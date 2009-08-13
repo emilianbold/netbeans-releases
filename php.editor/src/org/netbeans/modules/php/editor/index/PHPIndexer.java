@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.index;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -354,6 +355,11 @@ public final class PHPIndexer extends EmbeddingIndexer {
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
             }
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+
         }
 
         @Override

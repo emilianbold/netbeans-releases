@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractListModel;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -66,6 +65,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -75,6 +75,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,7 +96,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
-    private JButton testConnectionButton = null;
+    private NotificationLineSupport notificationLineSupport = null;
     private RequestProcessor.Task testConnectionTask = null;
 
     public RemoteConnectionsPanel(RemoteConnections remoteConnections, ConfigManager configManager) {
@@ -103,7 +104,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         this.configManager = configManager;
 
         initComponents();
-        errorLabel.setText(" "); // NOI18N
 
         // init
         configList.setModel(configListModel);
@@ -120,7 +120,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     public boolean open(final RemoteConfiguration remoteConfiguration) {
-        testConnectionButton = new JButton(NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_TestConnection"));
         testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
             public void run() {
                 testConnection();
@@ -130,17 +129,10 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 this,
                 NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections"),
                 true,
-                new Object[] {testConnectionButton, NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
                 null);
-        descriptor.setClosingOptions(new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION});
-        testConnectionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                testConnectionTask.schedule(0);
-            }
-        });
+        notificationLineSupport = descriptor.createNotificationLineSupport();
         testConnectionTask.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
                 enableTestConnection();
@@ -245,7 +237,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     void enableTestConnection() {
-        assert testConnectionButton != null;
         assert testConnectionTask != null;
 
         Configuration cfg = getSelectedConfiguration();
@@ -310,8 +301,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             assert name != null : "Name must be found for config " + configuration.getDisplayName();
             assert type != null : "Type must be found for config " + configuration.getDisplayName();
 
-            nameTextField.setText(name);
-            typeTextField.setText(type);
+            nameTextField.setText(NbBundle.getMessage(RemoteConnectionsPanel.class, "TXT_NameType", name, type));
         }
         configurationPanelHolder.add(configurationPanel.getComponent(), BorderLayout.NORTH);
         configurationPanelHolder.validate();
@@ -345,13 +335,13 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     private void resetFields() {
-        nameTextField.setText(null);
-        typeTextField.setText(null);
+        nameTextField.setText(" "); // NOI18N
 
         configurationPanelHolder.removeAll();
         configurationPanelHolder.validate();
         configurationPanelHolder.repaint();
         setError(null);
+        setWarning(null);
     }
 
     private boolean isValidConfiguration() {
@@ -362,14 +352,32 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         return configurationPanel.getError();
     }
 
-    private void setError(String msg) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-        errorLabel.setText(msg);
+    private String getWarning() {
+        return configurationPanel.getWarning();
+    }
 
+    private void setError(String msg) {
         assert descriptor != null;
-        descriptor.setValid(msg == null);
+        assert notificationLineSupport != null;
+
+        if (StringUtils.hasText(msg)) {
+            notificationLineSupport.setErrorMessage(msg);
+            descriptor.setValid(false);
+        } else {
+            notificationLineSupport.clearMessages();
+            descriptor.setValid(true);
+        }
+
         enableTestConnection();
+    }
+
+    private void setWarning(String msg) {
+        assert descriptor != null;
+        assert notificationLineSupport != null;
+
+        if (StringUtils.hasText(msg)) {
+            notificationLineSupport.setWarningMessage(msg);
+        }
     }
 
     private void refreshConfigList() {
@@ -394,6 +402,8 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         if (!valid) {
             return;
         }
+
+        setWarning(getWarning());
 
         // check whether all the configs are errorless
         checkAllConfigs();
@@ -462,14 +472,10 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         configurationPanelHolder = new javax.swing.JPanel();
-        errorLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
-        typeLabel = new javax.swing.JLabel();
-        typeTextField = new javax.swing.JTextField();
         separator = new javax.swing.JSeparator();
-
-        setFocusTraversalPolicy(null);
+        testConnectionButton = new javax.swing.JButton();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
@@ -482,17 +488,17 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         configurationPanelHolder.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
-
         nameLabel.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Name")); // NOI18N
 
-        nameTextField.setEnabled(false);
+        nameTextField.setEditable(false);
 
-        typeLabel.setLabelFor(typeTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
-
-        typeTextField.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(testConnectionButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_TestConnection")); // NOI18N
+        testConnectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testConnectionButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -505,20 +511,16 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton))
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(nameLabel)
-                            .add(typeLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(nameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(typeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))))
+                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
+                    .add(testConnectionButton))
                 .addContainerGap())
         );
 
@@ -529,24 +531,20 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(nameLabel)
                             .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(typeLabel)
-                            .add(typeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)))
+                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
                     .add(removeButton)
-                    .add(errorLabel))
+                    .add(testConnectionButton))
                 .addContainerGap())
         );
 
@@ -558,12 +556,14 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
         configurationPanelHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleName")); // NOI18N
         configurationPanelHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleDescription")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
+        testConnectionTask.schedule(0);
+    }//GEN-LAST:event_testConnectionButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -571,13 +571,11 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private javax.swing.JList configList;
     private javax.swing.JScrollPane configScrollPane;
     private javax.swing.JPanel configurationPanelHolder;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;
     private javax.swing.JSeparator separator;
-    private javax.swing.JLabel typeLabel;
-    private javax.swing.JTextField typeTextField;
+    private javax.swing.JButton testConnectionButton;
     // End of variables declaration//GEN-END:variables
 
     public void stateChanged(ChangeEvent e) {
@@ -708,6 +706,10 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         }
 
         public String getError() {
+            return null;
+        }
+
+        public String getWarning() {
             return null;
         }
 

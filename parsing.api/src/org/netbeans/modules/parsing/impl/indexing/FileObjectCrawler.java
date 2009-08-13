@@ -82,15 +82,15 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     @Override
-    protected boolean collectResources(Collection<IndexableImpl> result) {
+    protected boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources) {
         final boolean finished;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
 
         if (files != null) {
-            finished = collect(files, root, result, stats, entry);
+            finished = collect(files, root, resources, allResources, stats, entry);
         } else {
-            finished = collect(root.getChildren(), root, result, stats, entry);
+            finished = collect(root.getChildren(), root, resources, allResources, stats, entry);
         }
 
         final long tm2 = System.currentTimeMillis();
@@ -121,7 +121,8 @@ public final class FileObjectCrawler extends Crawler {
     }
 
     private boolean collect (FileObject[] fos, FileObject root,
-            final Collection<IndexableImpl> cache,
+            final Collection<IndexableImpl> resources,
+            final Collection<IndexableImpl> allResources,
             final Stats stats, final ClassPath.Entry entry) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
@@ -135,7 +136,7 @@ public final class FileObjectCrawler extends Crawler {
                 continue;
             }
             if (fo.isFolder()) {
-                if (!collect(fo.getChildren(), root, cache, stats, entry)) {
+                if (!collect(fo.getChildren(), root, resources, allResources, stats, entry)) {
                     return false;
                 }
             } else {
@@ -144,9 +145,11 @@ public final class FileObjectCrawler extends Crawler {
                     Stats.inc(stats.extensions, fo.getExt());
                 }
 
-                if (!isUpToDate(fo)) {
-                    String relativePath = FileUtil.getRelativePath(root, fo);
-                    cache.add(new FileObjectIndexable(root, relativePath));
+                String relativePath = FileUtil.getRelativePath(root, fo);
+                FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
+                allResources.add(indexable);
+                if (!isUpToDate(fo) && resources != null) {
+                    resources.add(indexable);
                 }
             }
         }

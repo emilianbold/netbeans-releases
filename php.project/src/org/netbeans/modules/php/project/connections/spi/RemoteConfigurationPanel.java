@@ -93,10 +93,18 @@ public interface RemoteConfigurationPanel {
 
     /**
      * Get the error messsage if this {@link RemoteConfiguration remote configuration} is not valid.
-     * Optionally it can return a message as a e.g. warning; it is completely up to an implementor
-     * what to return if this {@link RemoteConfiguration remote configuration} is not valid.
      * @return error messsage if this {@link RemoteConfiguration remote configuration} is not valid.
-     * @see #isValid()
+     * @see #isValidConfiguration()
+     * @see #getWarning()
      */
     String getError();
+
+    /**
+     * Get the warning messsage. Please notice that this warning message is not related
+     * to panel {@link #isValidConfiguration() validity}.
+     * @return warning messsage.
+     * @see #isValidConfiguration()
+     * @see #getError()
+     */
+    String getWarning();
 }

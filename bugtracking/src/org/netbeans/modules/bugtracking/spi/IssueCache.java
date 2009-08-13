@@ -199,7 +199,8 @@ public abstract class IssueCache<T> {
 
     public Issue getIssue(String id) {
         synchronized(CACHE_LOCK) {
-            return getCache().get(id).issue;
+            IssueEntry entry = getCache().get(id);
+            return (entry == null) ? null : entry.issue;
         }
     }
 

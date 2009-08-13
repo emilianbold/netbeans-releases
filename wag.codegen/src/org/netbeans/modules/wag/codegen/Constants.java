@@ -197,7 +197,8 @@ public class Constants {
         RESOURCE("resource", "System.out"),
         SERVLET("servlet", "out"),
         JSP("jsp", "out"),
-        PHP("php", "out");
+        PHP("php", "out"),
+        JAVAFX("javafx", "out");
         
         private String prefix; 
         private String printWriterType;

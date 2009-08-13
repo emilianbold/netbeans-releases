@@ -57,15 +57,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.impl.ThreadDumpImpl;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
@@ -110,7 +109,7 @@ public final class SQLStackStorage {
     }
 
     private void initTables() throws SQLException, IOException {
-        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql"); //NOI18N
+        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             sqlStorage.execute(reader);
@@ -205,71 +204,34 @@ public final class SQLStackStorage {
         return result;
     }
 
-    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
-        ThreadDumpImpl result = null;
-
+    public List<FunctionCall> getStack(final int stackID) {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
-            // First, we need ts of the thread threadID when it was in required state.
-            PreparedStatement statement = sqlStorage.prepareStatement(
-                    "select max(time_stamp) from CallStack where " + // NOI18N
-                    "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
+            int nodeID = stackID;
+            while (0 < nodeID) {
+                PreparedStatement ps = sqlStorage.prepareStatement(
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name " + // NOI18N
+                        "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id " + // NOI18N
+                        "WHERE node_id = ?"); // NOI18N
+                ps.setInt(1, nodeID);
 
-            statement.setInt(1, threadID);
-            statement.setLong(2, timestamp);
-            statement.setInt(3, threadState);
-
-            ResultSet rs = statement.executeQuery();
-            long ts = -1;
-
-            if (rs.next()) {
-                ts = rs.getLong(1);
+                ResultSet rs = ps.executeQuery();
+                try {
+                    while (rs.next()) {
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), rs.getString(5), rs.getString(5));
+                        result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
+                        nodeID = rs.getInt(2);
+                        break;
+                    }
+                } finally {
+                    rs.close();
+                }
             }
-
-            rs.close();
-
-            if (ts < 0) {
-                // Means that no callstack found for this thread in this state
-                //System.out.println("No callstack found!!!");
-                return null;
-            }
-
-            //System.out.println("Nearest callstack found at " + ts);
-
-            result = new ThreadDumpImpl(ts);
-
-            // Next, get all times for all threads for alligned stacks (time <= ts)
-            // select threadid, max(ts) from test where ts <= 6 group by threadid;
-
-            statement = sqlStorage.prepareStatement(
-                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
-                    "time_stamp <= ? group by thread_id"); // NOI18N
-
-            statement.setLong(1, ts);
-            
-            rs = statement.executeQuery();
-
-            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
-
-            while (rs.next()) {
-                int callStackThreadId = rs.getInt(1);
-                long callStackTimeStamp = rs.getLong(2);
-                idToTime.put(callStackThreadId, callStackTimeStamp);
-            }
-
-
-            // Next, get stacks from database having tstamps and thread ids..
-
         } catch (SQLException ex) {
-            System.err.println("ex: " + ex.getSQLState());
         }
-
+        Collections.reverse(result);
         return result;
     }
-
-    public FunctionCall getFunctionCall(int stackID) {
-        return null;
-    }
-
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
@@ -474,6 +436,97 @@ public final class SQLStackStorage {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
         }
         return select;
+    }
+
+    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
+        ThreadDumpImpl result = null;
+
+        try {
+
+//          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack"); // NOI18N
+//          ResultSet rs1 = st.executeQuery();
+//          ResultSetMetaData rsm= rs1.getMetaData();
+//          int columnsCount = rsm.getColumnCount();
+//          System.out.print("\nColumns   :"); // NOI18N
+//          for ( int i = 0 ; i < columnsCount; i++){
+//              System.out.print(" " + rsm.getColumnName(i + 1)); // NOI18N
+//          }
+//          while (rs1.next()){
+//              System.out.print("\nNew record :"); // NOI18N
+//            for (int i=0; i < columnsCount; i++){
+//                System.out.print(" " + rs1.getObject(i + 1)); // NOI18N
+//            }
+//          }
+
+            // First, we need ts of the thread threadID when it was in required state.
+            PreparedStatement statement = sqlStorage.prepareStatement(
+                    "select max(time_stamp) from CallStack where " + // NOI18N
+     //               "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
+                                   "thread_id = ? and time_stamp <= ? "); // NOI18N
+
+            statement.setLong(1, threadID);
+            statement.setLong(2, timestamp);
+            //statement.setInt(3, threadState);
+
+            ResultSet rs = statement.executeQuery();
+            long ts = -1;
+
+            if (rs.next()) {
+                ts = rs.getLong(1);
+            }
+
+            rs.close();
+
+            if (ts < 0) {
+                // Means that no callstack found for this thread in this state
+                //System.out.println("No callstack found!!!");
+                return null;
+            }
+
+            //System.out.println("Nearest callstack found at " + ts);
+
+            result = new ThreadDumpImpl(ts);
+
+            // Next, get all times for all threads for alligned stacks (time <= ts)
+            // select threadid, max(ts) from test where ts <= 6 group by threadid;
+
+            statement = sqlStorage.prepareStatement(
+                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
+                    "time_stamp <= ? group by thread_id"); // NOI18N
+
+            statement.setLong(1, ts);
+
+            rs = statement.executeQuery();
+
+            HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
+
+            while (rs.next()) {
+                int callStackThreadId = rs.getInt(1);
+                long callStackTimeStamp = rs.getLong(2);
+                idToTime.put(callStackThreadId, callStackTimeStamp);
+            }
+            rs.close();
+
+            //get leaf_id's
+            for (Map.Entry<Integer, Long> entry : idToTime.entrySet()){
+                int thread_id = entry.getKey();
+                long t = entry.getValue();
+                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id= ? AND time_stamp = ?"); // NOI18N
+                statement.setInt(1, thread_id);
+                statement.setLong(2, t);
+                ResultSet set = statement.executeQuery();
+                if (set.next()) {
+                    int stackID  = set.getInt(1);
+                    result.addStack(new SnapshotImpl(this, thread_id, stackID));
+                }
+                set.close();
+            }
+
+        } catch (SQLException ex) {
+            System.err.println("ex: " + ex.getSQLState());  // NOI18N
+        }
+
+        return result;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -777,4 +830,5 @@ public final class SQLStackStorage {
             }
         }
     }
+
 }

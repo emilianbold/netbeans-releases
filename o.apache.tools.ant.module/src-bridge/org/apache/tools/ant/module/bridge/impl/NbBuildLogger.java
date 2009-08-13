@@ -72,6 +72,7 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.run.Hyperlink;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
+import org.apache.tools.ant.module.run.StandardLogger;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -105,7 +106,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         ErrorManager.WARNING : ErrorManager.INFORMATIONAL;
     private static final boolean LOGGABLE = ERR.isLoggable(EM_LEVEL);
     
-    private final AntSession thisSession;
+    final AntSession thisSession;
     
     private final File origScript;
     private String[] targets = null;
@@ -685,10 +686,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         OutputWriter ow = error ? err : out;
         try {
             if (listener != null) {
-                // XXX factor out into AntLogger API!
-                boolean important = (message.indexOf("[deprecation]") == -1 && 
-                                     message.indexOf("warning") == -1 && 
-                                     message.indexOf("stopped") == -1);
+                // Loggers wishing for more control can use getIO and do it themselves.
+                boolean important = StandardLogger.isImportant(message);
                 ow.println(message, listener, important);
                 interestingOutputCallback.run();
             } else {
@@ -766,6 +765,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
 
     public InputOutput getIO() {
+        interestingOutputCallback.run();
         return io;
     }
     
