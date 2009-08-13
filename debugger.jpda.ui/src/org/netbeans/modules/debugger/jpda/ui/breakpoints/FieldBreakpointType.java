@@ -43,9 +43,7 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JComponent;
 
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointType;
-import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 
 import org.openide.util.NbBundle;

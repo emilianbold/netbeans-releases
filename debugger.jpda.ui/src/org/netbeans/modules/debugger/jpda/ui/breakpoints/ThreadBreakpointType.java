@@ -43,8 +43,6 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JComponent;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 
 import org.openide.util.NbBundle;
