@@ -44,6 +44,7 @@ package org.netbeans.modules.web.project;
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -344,6 +345,24 @@ public class Utils {
         StringBuffer classpath = new StringBuffer();
         for (int i = 0; i < classpathEntries.length; i++) {
             classpath.append(classpathEntries[i].getAbsolutePath());
+            if (i + 1 < classpathEntries.length) {
+                classpath.append(':'); // NOI18N
+            }
+        }
+        return classpath.toString();
+    }
+
+    public static String toClasspathString(URL[] classpathEntries) {
+        if (classpathEntries == null) {
+            return "";
+        }
+        StringBuffer classpath = new StringBuffer();
+        for (int i = 0; i < classpathEntries.length; i++) {
+            try {
+                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath());
+            } catch (URISyntaxException ex) {
+
+            }
             if (i + 1 < classpathEntries.length) {
                 classpath.append(':'); // NOI18N
             }
