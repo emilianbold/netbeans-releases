@@ -223,6 +223,7 @@ static int on_open(const char *path, int flags) {
 void
 __attribute__((constructor))
 on_startup(void) {
+    trace_startup("RFS_PRELOAD_LOG");    
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -252,6 +253,7 @@ void
 __attribute__((destructor))
 on_shutdown(void) {
     trace("RFS shutdown\n");
+    trace_shutdown();
     int sd = get_socket_descriptor(0);
     if (sd != -1) {
         close(sd);

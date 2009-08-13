@@ -67,7 +67,18 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
+    private static final boolean USE_SFTP = getBoolean("cnd.sftp", true);
+
     private CommonTasksSupport() {
+    }
+
+    /** TODO: move it to some common place within nativeexecution */
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
     }
 
     /**
@@ -94,6 +105,10 @@ public final class CommonTasksSupport {
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
             final int mask, final Writer error) {
+
+        if  (USE_SFTP) {
+            return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
+        }
 
         Callable<Integer> uploadTask = new Callable<Integer>() {
 

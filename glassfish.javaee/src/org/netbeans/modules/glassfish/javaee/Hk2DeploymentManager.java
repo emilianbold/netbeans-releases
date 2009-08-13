@@ -430,7 +430,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         InstanceProperties ip = getInstanceProperties();
         String serverUri = constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
                 ip.getProperty(GlassfishModule.HTTPPORT_ATTR), null);
-        Hk2Target target = new Hk2Target(serverUri);
+        String name = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
+        Hk2Target target = new Hk2Target(name, serverUri);
         Hk2Target targets[] = {target};
         return targets;
     }
