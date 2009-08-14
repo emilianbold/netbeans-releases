@@ -1335,44 +1335,50 @@ public final class OpenProjectList {
             return false;
         }
         
-        public synchronized void refresh() {
-            assert recentProjects.size() == recentProjectsInfos.size();
-            boolean refresh = false;
-            Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
-            Iterator<UnloadedProjectInformation> recentProjectsInfosIter = recentProjectsInfos.iterator();
-            while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
-                ProjectReference prjRef = recentProjectsIter.next();
-                recentProjectsInfosIter.next();
-                URL url = prjRef.getURL();
-                FileObject prjDir = null;
-                try {
-                    File file = FileUtil.normalizeFile(new File(url.toURI()));
-                    prjDir = FileUtil.toFileObject(file);
-                } catch (URISyntaxException use) {
-                    // invalid projectdir URL saved?
-                }
-                Project prj = null;
-                if (prjDir != null && prjDir.isFolder()) {
-                    try {
-                        prj = ProjectManager.getDefault().findProject(prjDir);
-                    } catch ( IOException ioEx ) {
-                        // Ignore invalid folders
+        public void refresh() {
+            ProjectManager.mutex().readAccess(new Runnable() {
+                public void run () {
+                    synchronized (RecentProjectList.this) {
+                        assert recentProjects.size() == recentProjectsInfos.size();
+                        boolean refresh = false;
+                        Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
+                        Iterator<UnloadedProjectInformation> recentProjectsInfosIter = recentProjectsInfos.iterator();
+                        while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
+                            ProjectReference prjRef = recentProjectsIter.next();
+                            recentProjectsInfosIter.next();
+                            URL url = prjRef.getURL();
+                            FileObject prjDir = null;
+                            try {
+                                File file = FileUtil.normalizeFile(new File(url.toURI()));
+                                prjDir = FileUtil.toFileObject(file);
+                            } catch (URISyntaxException use) {
+                                // invalid projectdir URL saved?
+                            }
+                            Project prj = null;
+                            if (prjDir != null && prjDir.isFolder()) {
+                                try {
+                                    prj = ProjectManager.getDefault().findProject(prjDir);
+                                } catch ( IOException ioEx ) {
+                                    // Ignore invalid folders
+                                }
+                            }
+
+                            if (prj == null) { // externally deleted project probably
+                                refresh = true;
+                                if (prjDir != null && prjDir.isFolder()) {
+                                    prjDir.removeFileChangeListener(nbprojectDeleteListener);
+                                }
+                                recentProjectsIter.remove();
+                                recentProjectsInfosIter.remove();
+                            }
+                        }
+                        if (refresh) {
+                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
+                            save();
+                        }
                     }
                 }
-                
-                if (prj == null) { // externally deleted project probably
-                    refresh = true;
-                    if (prjDir != null && prjDir.isFolder()) {
-                        prjDir.removeFileChangeListener(nbprojectDeleteListener);
-                    }
-                    recentProjectsIter.remove();
-                    recentProjectsInfosIter.remove();
-                }
-            }
-            if (refresh) {
-                pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
-                save();
-            }
+            });
         }
         
         public List<Project> getProjects() {
