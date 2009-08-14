@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
@@ -60,7 +61,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.openide.DialogDescriptor;
@@ -130,8 +131,8 @@ public final class EntityClassCustomizer extends javax.swing.JPanel {
         }
 
         WebModule webModule = WebModule.getWebModule(targetFileObject);
-        ArrayList<ManagedBean> items = (ArrayList<ManagedBean>) JSFBeanCache.getBeans(webModule);
-        for (ManagedBean item : items) {
+        List<FacesManagedBean> items = JSFBeanCache.getBeans(webModule);
+        for (FacesManagedBean item : items) {
             beans.add(item.getManagedBeanName());
         }
 
