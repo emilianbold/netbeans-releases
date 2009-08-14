@@ -501,7 +501,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         ku.startChat();
                     }
                 });
-                chatMenu.setEnabled(ku.isOnline());
                 popupMenu.add(chatMenu);
             }
         }
