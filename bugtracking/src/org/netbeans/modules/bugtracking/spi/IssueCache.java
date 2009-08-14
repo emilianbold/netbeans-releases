@@ -230,6 +230,10 @@ public abstract class IssueCache<T> {
         }
     }
 
+    public long getQueryTimestamp(String name) {
+        return IssueStorage.getInstance().getQueryTimestamp(nameSpace, name);
+    }
+
     public List<String> readQueryIssues(String name) {
         synchronized(CACHE_LOCK) {
             try {

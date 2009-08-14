@@ -170,9 +170,9 @@ public class GdbDebugger implements PropertyChangeListener {
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
-    private final List<CallStackFrame> callstack = Collections.synchronizedList(new ArrayList<CallStackFrame>());
+    private final List<GdbCallStackFrame> callstack = Collections.synchronizedList(new ArrayList<GdbCallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
-    private CallStackFrame currentCallStackFrame;
+    private GdbCallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
@@ -622,7 +622,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public void showCurrentSource(boolean dis) {
-        final CallStackFrame csf = getCurrentCallStackFrame();
+        final GdbCallStackFrame csf = getCurrentCallStackFrame();
         if (csf == null) {
             return;
         }
@@ -1284,7 +1284,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void addArgsToLocalVariables(String info) {
         List<String> frames = GdbUtils.createListFromString(info);
-        CallStackFrame curFrame = getCurrentCallStackFrame();
+        GdbCallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
             int level;
@@ -2168,7 +2168,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 //fullname = checkCygwinLibs(fullname);
 
-                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i, from));
+                callstack.add(i, new GdbCallStackFrame(this, func, file, fullname, lnum, addr, i, from));
             }
         }
 
@@ -2392,7 +2392,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return call stack
      */
-    public List<CallStackFrame> getCallStack() {
+    public List<GdbCallStackFrame> getCallStack() {
         return callstack;
     }
 
@@ -2405,7 +2405,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return current stack frame or null
      */
-    public CallStackFrame getCurrentCallStackFrame() {
+    public GdbCallStackFrame getCurrentCallStackFrame() {
         synchronized (callstack) {
             if (currentCallStackFrame != null) {
                 return currentCallStackFrame;
@@ -2421,9 +2421,9 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @param Frame to make current (or null)
      */
-    public void setCurrentCallStackFrame(CallStackFrame callStackFrame) {
+    public void setCurrentCallStackFrame(GdbCallStackFrame callStackFrame) {
         if (callStackFrame.isValid()) {
-            CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
+            GdbCallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
             updateLocalVariables(callStackFrame.getFrameNumber());
             if (old == callStackFrame) {
                 return;
@@ -2436,8 +2436,8 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
-        CallStackFrame old;
+    private GdbCallStackFrame setCurrentCallStackFrameNoFire(GdbCallStackFrame callStackFrame) {
+        GdbCallStackFrame old;
 
         synchronized (callstack) {
             old = getCurrentCallStackFrame();

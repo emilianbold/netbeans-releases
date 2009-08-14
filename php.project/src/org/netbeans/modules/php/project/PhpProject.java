@@ -59,6 +59,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -71,6 +73,8 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -166,8 +170,11 @@ public class PhpProject implements Project {
         eval.addPropertyChangeListener(WeakListeners.propertyChange(listener, eval));
     }
 
-    void addWeakIgnoredFoldersListener(ChangeListener listener) {
+    void addWeakIgnoredFilesListener(ChangeListener listener) {
         ignoredFoldersChangeSupport.addChangeListener(WeakListeners.change(listener, ignoredFoldersChangeSupport));
+
+        VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
+        visibilityQuery.addChangeListener(WeakListeners.change(listener, visibilityQuery));
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -342,7 +349,31 @@ public class PhpProject implements Project {
                 NotifyDescriptor.OK_OPTION));
     }
 
-    Set<FileObject> getIgnoredFolders() {
+    public PhpModule getPhpModule() {
+        PhpModule phpModule = getLookup().lookup(PhpModule.class);
+        assert phpModule != null;
+        return phpModule;
+    }
+
+    boolean isVisible(File file) {
+        if (getIgnoredFiles().contains(file)) {
+            return false;
+        }
+        return VisibilityQuery.getDefault().isVisible(file);
+    }
+
+    boolean isVisible(FileObject file) {
+        return isVisible(FileUtil.toFile(file));
+    }
+
+    public Set<File> getIgnoredFiles() {
+        Set<File> ignored = new HashSet<File>();
+        putIgnoredProjectFiles(ignored);
+        putIgnoredFrameworkFiles(ignored);
+        return ignored;
+    }
+
+    private void putIgnoredProjectFiles(Set<File> ignored) {
         if (ignoredFolders == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
                 public Void run() {
@@ -356,11 +387,7 @@ public class PhpProject implements Project {
             });
         }
         assert ignoredFolders != null : "Ignored folders cannot be null";
-        if (ignoredFolders.isEmpty()) {
-            return Collections.emptySet();
-        }
 
-        Set<FileObject> ignored = new HashSet<FileObject>();
         File projectDir = FileUtil.toFile(getProjectDirectory());
         for (BasePathSupport.Item item : ignoredFolders) {
             if (item.isBroken()) {
@@ -370,14 +397,26 @@ public class PhpProject implements Project {
             if (!file.isAbsolute()) {
                 file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
             }
-            if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
-                if (fo != null && fo.isValid()) {
-                    ignored.add(fo);
-                }
+            ignored.add(file);
+        }
+    }
+
+    // XXX should somehow listen on newly added frameworks to project
+    // add set of _classes_ of framework providers and check them every time while calling ProjectPropertiesSupport.getFrameworks()
+    private void putIgnoredFrameworkFiles(Set<File> ignored) {
+        PhpModule phpModule = getPhpModule();
+        for (PhpFrameworkProvider provider : ProjectPropertiesSupport.getFrameworks(this)) {
+            PhpModuleIgnoredFilesExtender ignoredFilesExtender = provider.getIgnoredFilesExtender(phpModule);
+            if (ignoredFilesExtender == null) {
+                continue;
+            }
+            for (File file : ignoredFilesExtender.getIgnoredFiles()) {
+                assert file != null : "Ignored file = null found in " + provider.getName();
+                assert file.isAbsolute() : "Not absolute file found in " + provider.getName();
+
+                ignored.add(file);
             }
         }
-        return ignored;
     }
 
     private Set<BasePathSupport.Item> resolveIgnoredFolders() {
@@ -473,7 +512,7 @@ public class PhpProject implements Project {
                 new PhpModuleImpl(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
-                new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
+                new ClassPathProviderImpl(this, getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
@@ -536,7 +575,7 @@ public class PhpProject implements Project {
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
             // do it in a background thread
-            getIgnoredFolders();
+            getIgnoredFiles();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);

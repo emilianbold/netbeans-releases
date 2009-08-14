@@ -37,65 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.execution;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
+package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
 /**
- * This class represents DLight Session context
- * The following keys are supported:
- * <ul>
- * <li>executable</li>
- *  <li>line</li>
- *  <li>os</li>
- *  <li>offset</li>
- *  <li>useCollectors</li>
- *  <li>collectors</li>
- * </ul>
  *
+ * @author Egor Ushakov
  */
-public final class DLightSessionContext {
-    private final Map<String, String> map;
-
-    static{
-        DLightSessionContextAccessor.setDefault(new DLightSessionContextAccessorImpl());
-    }
-
-    private DLightSessionContext(){
-        map = new ConcurrentHashMap<String, String>();
-    }
-
-    public String get(String key){
-        return map.get(key);
-    }
-
-    String put(String key, String value){
-        return map.put(key, value);
-    }
-
-    void clear(){
-        map.clear();
-    }
-
-    private static class DLightSessionContextAccessorImpl extends DLightSessionContextAccessor{
-
-        @Override
-        public void clear(DLightSessionContext context) {
-            context.clear();
-        }
-
-        @Override
-        public String put(DLightSessionContext context, String key, String value) {
-            return context.put(key, value);
-        }
-
-        @Override
-        public DLightSessionContext newContext() {
-            return new DLightSessionContext();
-        }
-
-    }
+public interface DebuggerCustomizerNode {
+    String getFamily();
 }

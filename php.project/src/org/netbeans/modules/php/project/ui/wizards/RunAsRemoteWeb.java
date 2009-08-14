@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -521,7 +522,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+        Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

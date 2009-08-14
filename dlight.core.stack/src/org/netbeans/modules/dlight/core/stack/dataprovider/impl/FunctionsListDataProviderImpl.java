@@ -71,7 +71,10 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
     public void attachTo(DataStorage storage) {
         this.storage = (StackDataStorage) storage;
-        attachTo((ServiceInfoDataStorage) storage);
+    }
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        this.serviceInfoStorage = serviceInfoDataStorage;
     }
 
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
@@ -100,10 +103,6 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
             }
         }
         return null;
-    }
-
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-        this.serviceInfoStorage = serviceInfoDataStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {

@@ -257,7 +257,7 @@ public class JiraRepository extends Repository {
             NamedFilter[] filters = cmd.getNamedFilters();
             if(filters != null) {
                 for (NamedFilter nf : filters) {
-                    JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
+                    JiraQuery q = new JiraQuery(nf.getName(), this, nf);
                     ret.add(q);
                 }
             }
