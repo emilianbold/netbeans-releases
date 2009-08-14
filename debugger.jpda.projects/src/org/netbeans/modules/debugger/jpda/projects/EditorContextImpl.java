@@ -836,7 +836,11 @@ public class EditorContextImpl extends EditorContext {
                                 if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = ci.getTrees().getTree(elm);
-                                    
+                                    if (tree == null) {
+                                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                                "Null tree for element "+elm+" in "+className);
+                                        continue;
+                                    }
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
                                     { // Find the method name
                                         if (tree.getKind() == Tree.Kind.METHOD) {
