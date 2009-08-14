@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,6 +90,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 
 /** Checks consistency of System File System contents.
  */
@@ -107,8 +109,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         // sometimes can deadlock and then we need to see the thread dump
         return 1000 * 60 * 10;
     }
-    
-    
     
     public @Override void setUp() throws Exception {
         clearWorkDir();
@@ -266,7 +266,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                DataShadow ds = obj.getCookie(DataShadow.class);
+                DataShadow ds = obj.getLookup().lookup(DataShadow.class);
                 if (ds != null) {
                     Object o = ds.getOriginal();
                     if (o == null) {
@@ -349,7 +349,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
                     String iof = (String) fo.getAttribute("instanceOf");
                     if (iof != null) {
@@ -394,7 +394,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
             try {
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
                 if (ic == null) {
                     continue;
                 }
@@ -558,18 +558,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
                 Map<String,Object> attributes = getAttributes(fo, base);
 
-                /* XXX too many failures to enable yet:
-                // Check for misplaced localizing bundle attributes.
-                // Might be more natural to check in testAreAttributesFine
-                // but easier here because of the way we load one layer at a time.
-                for (Map.Entry<String,Object> entry : attributes.entrySet()) {
-                    if (entry.getKey().equals(SFS_LB) && entry.getValue() instanceof Exception) {
-                        sb.append("Module " + module + " defines an incorrect " + SFS_LB + " on " + path +
-                                ": " + fo.getAttribute(SFS_LB) + "\n");
-                    }
-                }
-                 */
-
                 if (fo.isFolder()) {
                     for (Map.Entry<String,Object> attr : attributes.entrySet()) {
                         Map<String,Map<String,Object>> m1 = folderAttributes.get(path);
@@ -702,6 +690,38 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
+    public void testLocalizingBundles() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (URL u : NbCollections.iterable(Lookup.getDefault().lookup(ClassLoader.class).getResources("META-INF/MANIFEST.MF"))) {
+            String layer;
+            InputStream is = u.openStream();
+            try {
+                layer = new Manifest(is).getMainAttributes().getValue("OpenIDE-Module-Layer");
+                if (layer == null) {
+                    continue;
+                }
+            } finally {
+                is.close();
+            }
+            URL base = new URL(u, "../");
+            URL layerURL = new URL(base, layer);
+            URLConnection connect = layerURL.openConnection();
+            connect.setDefaultUseCaches(false);
+            for (FileObject fo : NbCollections.iterable(new XMLFileSystem(layerURL).getRoot().getChildren(true))) {
+                Object v = getAttributes(fo, base).get(SFS_LB);
+                if (v instanceof Exception) {
+                    sb.append(layerURL + ": " + v + "\n");
+                }
+            }
+        }
+        if (sb.length() > 0) {
+            /* Too many failures to solve right now.
+            fail("Some localizing bundle declarations are wrong\n" + sb);
+             */
+            System.err.print(sb);
+        }
+    }
+
     public void testNoWarningsFromLayerParsing() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
