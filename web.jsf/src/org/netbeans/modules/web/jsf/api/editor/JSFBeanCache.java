@@ -50,16 +50,18 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
+ * @author ads
  */
 public class JSFBeanCache {
     
-    public static List<ManagedBean> getBeans(WebModule webModule) {
-        ArrayList<ManagedBean> beans = new ArrayList<ManagedBean>();
+    public static List<FacesManagedBean> getBeans(WebModule webModule) {
+        ArrayList<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
         FileObject[] files = null; 
         
         if (webModule != null) {
