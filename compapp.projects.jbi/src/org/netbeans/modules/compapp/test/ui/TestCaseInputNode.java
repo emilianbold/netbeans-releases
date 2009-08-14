@@ -58,7 +58,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -72,7 +71,7 @@ public class TestCaseInputNode extends FilterNode {
     private static final java.util.logging.Logger mLogger =
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.TestCaseInputNode"); // NOI18N
         
-    private static final Image INPUT_ICON = ImageUtilities.loadImage(
+    private static final Image INPUT_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/input.png"); // NOI18N
     
     private JbiProject mProject;    

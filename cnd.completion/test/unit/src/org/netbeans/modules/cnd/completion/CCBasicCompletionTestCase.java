@@ -331,4 +331,8 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         performTest("check_macro.cpp", 13, 18, ".v");
     }
 
+    public void testIZ166620() throws Exception {
+        // IZ#166620 : Code comlpetion does not show local variable inside for operator
+        performTest("iz166620.cc", 6, 24);
+    }
 }

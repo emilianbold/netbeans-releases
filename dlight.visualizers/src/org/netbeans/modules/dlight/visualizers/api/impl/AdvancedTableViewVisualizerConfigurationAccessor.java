@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.visualizers.api.impl;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.DetailsRenderer;
+import org.netbeans.modules.dlight.util.ui.Renderer;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 
@@ -93,5 +93,5 @@ public abstract class AdvancedTableViewVisualizerConfigurationAccessor {
 
     public abstract boolean isDualPaneMode(AdvancedTableViewVisualizerConfiguration configuration);
 
-    public abstract DetailsRenderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration);
+    public abstract Renderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration);
 }

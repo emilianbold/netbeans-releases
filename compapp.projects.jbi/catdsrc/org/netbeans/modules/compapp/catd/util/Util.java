@@ -47,12 +47,21 @@
 
 package org.netbeans.modules.compapp.catd.util;
 
+import org.netbeans.modules.compapp.projects.jbi.util.EditableProperties;
 import com.sun.esb.management.api.configuration.ConfigurationService;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPConnection;
@@ -128,6 +137,54 @@ public class Util {
         return ret;
     }
 
+    public static List<Set<String>> getFileContentWithoutCRNL(File f, int linesPerElement, int[] setSizes) {
+        List<Set<String>> setList = new ArrayList<Set<String>>();
+        List<String> lineList = new ArrayList<String>();
+        List<String> elementList = new ArrayList<String>();
+        // read lines
+        BufferedReader input = null;
+        try {
+            input = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            String s = null;
+            while ((s = input.readLine()) != null) {
+                s = s.replaceAll("\n","").replaceAll("\r","");
+                lineList.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (input != null) {
+                    input.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // calculate elements
+        int elementCount = lineList.size() / linesPerElement;
+        for (int i = 0; i < elementCount; i++) {
+            StringBuffer sb = new StringBuffer();
+            for (int j = 0; j < linesPerElement; j++) {
+               sb.append(lineList.get(i*linesPerElement + j));
+            }
+            elementList.add(sb.toString());
+        }
+
+        // calculate sets
+        for (int i = 0; i < setSizes.length; i++) {
+            HashSet<String> set = new HashSet<String>();
+            setList.add(set);
+            for (int j = 0; j < setSizes[i]; j++) {
+                if (elementList.isEmpty()) {
+                    break;
+                }
+                set.add(elementList.remove(0));
+            }
+        }
+        return setList;
+    }
 
     public static String replaceAll(String s, String match, String replacement) {
         StringBuffer sb = new StringBuffer();
@@ -285,7 +342,8 @@ public class Util {
 
             if (serverInstance == null) {
                 throw new RuntimeException("Unknown server instance.");
-            } else {
+            }
+            
             // Translate ${HttpDefaultPort} first
             String httpDefaultPort = "HttpDefaultPort";
             if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
@@ -356,7 +414,6 @@ public class Util {
                     }
                     throw ex;
                 }
-            }
             }
         }
 

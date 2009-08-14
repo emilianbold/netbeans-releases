@@ -43,12 +43,12 @@ import java.awt.Color;
 public final class GraphDescriptor {
 
     private final Color color;
-    private final String description;
+    private final String displayName;
     private final Kind kind;
 
-    public GraphDescriptor(Color color, String description, Kind kind) {
+    public GraphDescriptor(Color color, String displayName, Kind kind) {
         this.color = color;
-        this.description = description;
+        this.displayName = displayName;
         this.kind = kind;
     }
 
@@ -56,8 +56,8 @@ public final class GraphDescriptor {
         return color;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDisplayName() {
+        return displayName;
     }
 
     public Kind getKind() {

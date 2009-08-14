@@ -42,7 +42,6 @@ package org.netbeans.modules.compapp.catd;
 
 import org.netbeans.modules.compapp.catd.n2m.Output;
 import org.netbeans.modules.compapp.catd.n2m.Input;
-import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -71,7 +70,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -90,7 +88,6 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.MimeHeaders;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
@@ -111,15 +108,16 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.catd.n2m.Send;
 import org.netbeans.modules.compapp.catd.n2m.Wait;
 
 import org.netbeans.modules.compapp.catd.n2m.WaitTillNextTick;
 import org.netbeans.modules.compapp.catd.util.Util;
-import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
-import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeDiff;
 import org.netbeans.modules.xml.xdm.diff.NodeInfo;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Test the HTTP SOAP processing
@@ -133,6 +131,8 @@ public class ConfiguredTest extends TestCase {
     public final static String COMPARISON_TYPE_BINARY = "binary"; // NOI18N
 
     public final static String COMPARISON_TYPE_EQUALS = "equals"; // NOI18N
+
+    public final static String COMPARISON_TYPE_SET = "set"; //NOI18N
 
     private static final String TEST_IN_PROGRESS_VAL = "progress"; // NOI18N
 
@@ -212,6 +212,54 @@ public class ConfiguredTest extends TestCase {
         mConnection = null;
     // TEST close of socket
     // Thread.sleep(10000);
+    }
+
+    private static String set2str(Set<String> set) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("{");
+        for (String e : set) {
+            sb.append(e.toString() + ",");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+	 * Asserts that two Strings are equal.
+	 */
+	static public void assertEquals(String message, List<Set<String>> expected, List<Set<String>> actual) {
+        String formatted= "";
+		if (message != null) {
+			formatted= message+" ";
+        }
+		if (expected == null && actual == null) {
+			return;
+        }
+		if (expected != null && actual == null) {
+            if (expected.size() == 0 && actual == null) {
+                return;
+            }
+    		fail(formatted + "expected " + expected.size() + " sets instead of : null");
+        }
+		if (expected != null && actual != null) {
+            if (expected.size() != actual.size()) {
+                fail(formatted + "expected " + expected.size() + " sets instead of: " + actual.size());
+            }
+            for (int i = 0; i < expected.size(); i++) {
+                Set<String> eSet = expected.get(i);
+                Set<String> aSet = actual.get(i);
+                if (eSet.size() != aSet.size()) {
+                    fail(formatted + "expected set " + i + " has " + eSet.size() + " elements instead of: " + aSet.size());
+                }
+                for (String e : eSet) {
+                    if (!aSet.contains(e)) {
+                        fail(formatted + "expected element " + e + " is not found in actual set " + i + ": " + set2str(aSet));
+                    }
+                }
+            }
+        }
+        return;
     }
 
     public static junit.framework.Test suite() throws Exception {
@@ -2238,6 +2286,7 @@ public class ConfiguredTest extends TestCase {
         }
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         if (reply != null) {
             SOAPPart replySOAPPart = reply.getSOAPPart();
@@ -2249,20 +2298,49 @@ public class ConfiguredTest extends TestCase {
 //                System.out.println(prefix + "-> " + uri);
 //            }
 
+            // #170297: Should not excape xml tags embedded within CDATA section.
+            List<QName> cdataContainerElementQNames = new ArrayList<QName>();
+            findCDataContainerElementQNames(replySOAPPart.getDocumentElement(), cdataContainerElementQNames);
+            if (cdataContainerElementQNames.size() > 0) {
+                String cdataSectionElements = "";
+                for (QName qname : cdataContainerElementQNames) {
+                    cdataSectionElements += qname + " ";
+                }
+                transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, cdataSectionElements);
+            }
+
             Source sourceContent = replySOAPPart.getContent();
             try {
-                StreamResult result = new StreamResult(new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8")));
+                StreamResult result =
+                        new StreamResult(
+                        new BufferedWriter(
+                        new OutputStreamWriter(outputStream, "UTF-8")));
                 transformer.transform(sourceContent, result);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         if (logDetails) {
-
-
             System.out.println("\n" + logPrefix + " RESPONSE:\n" + outputStream.toString());
         }
         return outputStream;
+    }
+
+    static void findCDataContainerElementQNames(Node node, List<QName> cdataContainerElementQNames) {
+        if (node instanceof Text) {
+            String text = node.getTextContent();
+            if (text.startsWith("<![CDATA[") && text.endsWith("]]>")) {
+                Element p = (Element) node.getParentNode();
+                QName qname = new QName(p.getNamespaceURI(), p.getLocalName());
+                cdataContainerElementQNames.add(qname);
+            }
+        } else if (node.hasChildNodes()) {
+            NodeList childNodes = node.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node childNode = childNodes.item(i);
+                findCDataContainerElementQNames(childNode, cdataContainerElementQNames);
+            }
+        }
     }
 
     /**
@@ -2504,6 +2582,10 @@ public class ConfiguredTest extends TestCase {
     public void testN2MInboundSOAPRequest() throws Exception {
         String description = mProperties.getProperty("description");
         String destination = mProperties.getProperty("destination");
+        String comparisonType = mProperties.getProperty("comparisontype");
+        if (comparisonType == null) {
+            comparisonType = COMPARISON_TYPE_IDENTICAL;
+        }
         String testPropertiesFileName = mProperties.getProperty("testpropertiesfilename");
         String inputDir = mProperties.getProperty("absoluteinputdir");
         String inputDirName = mProperties.getProperty("inputdirname");
@@ -2529,10 +2611,18 @@ public class ConfiguredTest extends TestCase {
             int outputCount = Integer.parseInt(mProperties.getProperty("output.count"));
             Map outputTable = new HashMap();
             for (int i = 0; i < outputCount; i++) {
+                Output output = null;
                 String name = "output." + i;
                 File actual = new File(inputDir, mProperties.getProperty(name + ".actualResultFile"));
                 File expected = new File(inputDir, mProperties.getProperty(name + ".expectedResultFile"));
-                Output output = new Output(name, actual, expected);
+                String contentType = mProperties.getProperty(name + ".contentType");
+                if (contentType != null && contentType.equals("set")) {
+                    String linesPerElement = mProperties.getProperty(name + ".linesPerElement");
+                    String setSizes = mProperties.getProperty(name + ".setSizes");
+                    output = new Output(name, actual, expected, linesPerElement, setSizes);
+                } else {
+                    output = new Output(name, actual, expected);
+                }
                 output.removeActual();
                 outputTable.put(name, output);
             }
@@ -2546,8 +2636,8 @@ public class ConfiguredTest extends TestCase {
             for (int i = 0; i < outputCount; i++) {
                 String name = "output." + i;
                 Output output = (Output) outputTable.get(name);
-                String exp = output.getExpectedWithoutCRNL();
-                String act = output.getActualWithoutCRNL();
+                List<Set<String>> exp = output.getExpected();
+                List<Set<String>> act = output.getActual();
                 assertEquals(name, exp, act);
                 output.removeActual();
             }
