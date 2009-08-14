@@ -41,26 +41,45 @@
 
 package org.netbeans.modules.web.jsf.api.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
+ * @author ads
  */
 public class JSFBeanCache {
     
-    public static List<ManagedBean> getBeans(WebModule webModule) {
-        ArrayList<ManagedBean> beans = new ArrayList<ManagedBean>();
-        FileObject[] files = null; 
+    public static List<FacesManagedBean> getBeans(WebModule webModule) {
+        final List<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
+        /* Old implementation based on several models over faces-config.xml files.
+         * 
+         * FileObject[] files = null; 
+        
         
         if (webModule != null) {
             files = ConfigurationUtils.getFacesConfigFiles(webModule);
@@ -79,9 +98,107 @@ public class JSFBeanCache {
                         }
                     }
             }
+        }*/
+        MetadataModel<JsfModel> model = getModel( webModule );
+        if ( model == null){
+            return beans;
+        }
+        try {
+            model.runReadAction( new MetadataModelAction<JsfModel, Void>() {
+
+                public Void run( JsfModel model ) throws Exception {
+                    List<FacesManagedBean> managedBeans = model.getElements( 
+                            FacesManagedBean.class);
+                    beans.addAll( managedBeans );
+                    return null;
+                }
+            });
+        }
+        catch (MetadataModelException e) {
+            LOG.log( Level.WARNING , e.getMessage(), e );
+        }
+        catch (IOException e) {
+            LOG.log( Level.WARNING , e.getMessage(), e );
         }
         return beans;
     }
     
+    private static synchronized MetadataModel<JsfModel> getModel( WebModule module ){
+        MetadataModel<JsfModel> model = MODELS.get( module );
+        if ( model == null ){
+            ModelUnit unit = getUnit( module );
+            if ( unit == null ){
+                return null;
+            }
+            model = JsfModelFactory.createMetaModel( unit );
+            MODELS.put(module, model);
+        }
+        return model;
+    }
     
+    private static ModelUnit getUnit( WebModule module ) {
+        if ( module == null ){
+            return null;
+        }
+        FileObject fileObject = getFileObject( module );
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            return null;
+        }
+        ClassPath boot = getClassPath( project , ClassPath.BOOT);
+        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
+        ClassPath src = getClassPath(project , ClassPath.SOURCE);
+        return ModelUnit.create(boot, compile, src, module);
+    }
+    
+    private static FileObject getFileObject( WebModule module ) {
+        FileObject fileObject = module.getDocumentBase();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        fileObject = module.getDeploymentDescriptor();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        fileObject = module.getWebInf();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        FileObject[] fileObjects = module.getJavaSources();
+        if ( fileObjects!= null){
+            for (FileObject source : fileObjects) {
+                if ( source != null ){
+                    return source;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ClassPath getClassPath( Project project, String type ) {
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
+    }
+
+    private static final Map<WebModule, MetadataModel<JsfModel>> MODELS = 
+        new WeakHashMap<WebModule, MetadataModel<JsfModel>>();
+    
+    private static final Logger LOG = Logger.getLogger( 
+            JSFBeanCache.class.getCanonicalName() );
 }
