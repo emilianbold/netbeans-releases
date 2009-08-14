@@ -203,20 +203,20 @@ public class VisualClassPathItem {
         }
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param artifact DOCUMENT ME!
-     * @param pathInWar DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
-        return new VisualClassPathItem(
-                artifact, VisualClassPathItem.TYPE_ARTIFACT,
-                artifact.getArtifactLocations()[0].toString(), pathInWar, false
-                );
-    }
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param artifact DOCUMENT ME!
+//     * @param pathInWar DOCUMENT ME!
+//     *
+//     * @return DOCUMENT ME!
+//     */
+//    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
+//        return new VisualClassPathItem(
+//                artifact, VisualClassPathItem.TYPE_ARTIFACT,
+//                artifact.getArtifactLocations()[0].toString(), pathInWar, false
+//                );
+//    }
     
     public static boolean isJavaEEProjectAntArtifact(AntArtifact aa){
         Project project = aa.getProject();

@@ -47,9 +47,14 @@
 
 package org.netbeans.modules.compapp.catd.util;
 
+import org.netbeans.modules.compapp.projects.jbi.util.EditableProperties;
 import com.sun.esb.management.api.configuration.ConfigurationService;
-import java.io.*;
-import java.lang.String;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;

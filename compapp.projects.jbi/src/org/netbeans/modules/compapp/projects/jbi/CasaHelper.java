@@ -277,7 +277,7 @@ public class CasaHelper {
      * @param properties    project properties (may not been persisted yet)
      */   
     public static void updateCasaWithJBIModules(JbiProject project, 
-            JbiProjectProperties properties) { 
+            JbiProjectProperties properties) {
          
         FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
         if (casaFO == null) {
@@ -297,16 +297,7 @@ public class CasaHelper {
                     CasaConstants.CASA_SERVICE_UNITS_ELEM_NAME).item(0);
             NodeList seSUs = sus.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-            
-            List<Element> internalSESUs = new ArrayList<Element>();
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
-                String isInternal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
-                if (isInternal == null || "true".equalsIgnoreCase(isInternal)) {
-                    internalSESUs.add(seSU);
-                }
-            }
-            
+                        
             @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newContentList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
@@ -319,14 +310,24 @@ public class CasaHelper {
                 newProjectNameList.add(newContent.getProjectName());
             }
             
-            List<String> sesuUnitNameList = new ArrayList<String>();
-            for (Element seSU : internalSESUs) {
+            List<String> sesuNames = new ArrayList<String>();
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
                 String unitName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
-                sesuUnitNameList.add(unitName);
+                sesuNames.add(unitName);
             }
 
             // Remove deleted service units from casa
-            for (Element seSU : internalSESUs) {
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
+
+                // skip external unknown SUs
+                String internal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
+                String unknown = seSU.getAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME);
+                if ("false".equalsIgnoreCase(internal) && "true".equals(unknown)) { // NOI18N
+                    continue;
+                }
+
                 String projName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 if (!newProjectNameList.contains(projName)) {
                     sus.removeChild(seSU);
@@ -336,11 +337,12 @@ public class CasaHelper {
             }
 
             // Add new service units to casa
+            List<String> externalSuNames = project.getExternalServiceUnitNames();
             for (VisualClassPathItem artifact: newContentList) {
                 String projName = artifact.getProjectName();
                 String artifactName = artifact.toString();
                 
-                if (!sesuUnitNameList.contains(projName)) {
+                if (!sesuNames.contains(projName)) {
                     String targetCompID = "unknown"; // NOI18N
                     for (int j = 0; j < newContentList.size(); j++) {
                         if (newContentList.get(j).toString().equals(artifactName)) {
@@ -352,7 +354,8 @@ public class CasaHelper {
                             CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
                     seSU.setAttribute(CasaConstants.CASA_X_ATTR_NAME, "-1"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_Y_ATTR_NAME, "-1"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, "true"); // NOI18N
+                    seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, 
+                            externalSuNames.contains(projName) ? "false" : "true"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_DEFINED_ATTR_NAME, "false"); // NOI18N 
                     seSU.setAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME, "false"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_NAME_ATTR_NAME, projName); // NOI18N  // FIXME

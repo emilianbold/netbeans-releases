@@ -88,11 +88,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.netbeans.spi.project.support.ant.ReferenceHelper.RawReference;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
@@ -220,6 +219,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public String toString() {
         return "JbiProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -372,7 +372,12 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      */
     public void propertiesChanged(AntProjectEvent ev) {
         if (lvp != null) {
-            lvp.refreshRootNode();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    lvp.refreshRootNode();
+                }
+            });
         }
     }
     
@@ -494,6 +499,39 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 return null;
             }
         });
+    }
+
+    /**
+     * Gets a list of external service unit names in this project.
+     *
+     * @return  external service units' names
+     */
+    public List<String> getExternalServiceUnitNames() {
+
+        List<String> ret = new ArrayList<String>();
+
+        // 1. get all reference projects names
+        for (RawReference rawReference : refHelper.getRawReferences()) {
+            String foreignProjName = rawReference.getForeignProjectName();
+            ret.add(foreignProjName);
+        }
+
+        // 2. remove internal su project names
+        Element data = helper.getPrimaryConfigurationData(true);
+        NodeList libs = data.getElementsByTagNameNS(
+                JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+                );
+
+        for (int i = 0; i < libs.getLength(); i++) {
+            Element lib = (Element) libs.item(i);
+            String cpItem = lib.getTextContent();
+            // cpItem's format: reference.Synchronous3.dist_se
+            String projName = cpItem.substring(cpItem.indexOf(".") + 1,
+                    cpItem.lastIndexOf("."));
+            ret.remove(projName);
+        }
+
+        return ret;
     }
     
     /**

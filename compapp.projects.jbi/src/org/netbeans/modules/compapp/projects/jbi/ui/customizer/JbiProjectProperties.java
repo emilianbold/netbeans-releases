@@ -69,7 +69,6 @@ import org.openide.filesystems.FileUtil;
 
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 
 import org.w3c.dom.*;
 
@@ -102,6 +101,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformatio
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -111,15 +111,15 @@ import org.openide.filesystems.FileObject;
  * @author Petr Hrebejk, Chris Webster
  */
 public class JbiProjectProperties {
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String J2EE_1_4 = "1.4"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String J2EE_1_3 = "1.3"; // NOI18N
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String J2EE_1_4 = "1.4"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String J2EE_1_3 = "1.3"; // NOI18N
     
     // Special properties of the project
     
@@ -128,16 +128,16 @@ public class JbiProjectProperties {
      */
     public static final String EJB_PROJECT_NAME = "j2ee.jbi.name"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
-    
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
+//
     // Properties stored in the PROJECT.PROPERTIES
     
     /**
@@ -161,25 +161,25 @@ public class JbiProjectProperties {
      */
     public static final String DIST_JAR = "dist.jar"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
     
     /**
      * DOCUMENT ME!
      */
     //public static final String JAR_NAME = "jar.name"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
     
     /**
      * DOCUMENT ME!
@@ -190,31 +190,31 @@ public class JbiProjectProperties {
      * DOCUMENT ME!
      */
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVAC_ARGS = "javac.compilerargs"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVAC_ARGS = "javac.compilerargs"; // NOI18N
     
     /**
      * DOCUMENT ME!
@@ -230,81 +230,81 @@ public class JbiProjectProperties {
      * DOCUMENT ME!
      */
     public static final String BUILD_DIR = "build.dir"; // NOI18N
-    
+
     /**
      * DOCUMENT ME!
      */
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; // NOI18N
-    
+
     /**
      * DOCUMENT ME!
      */
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_USE = "javadoc.use"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_NO_NAVBAR = "javadoc.nonavbar"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_NO_INDEX = "javadoc.noindex"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_SPLIT_INDEX = "javadoc.splitindex"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_AUTHOR = "javadoc.author"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_VERSION = "javadoc.version"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_WINDOW_TITLE = "javadoc.windowtitle"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_ENCODING = "javadoc.encoding"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String JAVADOC_PREVIEW = "javadoc.preview"; // NOI18N
+
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_USE = "javadoc.use"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_NO_NAVBAR = "javadoc.nonavbar"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_NO_INDEX = "javadoc.noindex"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_SPLIT_INDEX = "javadoc.splitindex"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_AUTHOR = "javadoc.author"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_VERSION = "javadoc.version"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_WINDOW_TITLE = "javadoc.windowtitle"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_ENCODING = "javadoc.encoding"; // NOI18N
+//
+//    /**
+//     * DOCUMENT ME!
+//     */
+//    public static final String JAVADOC_PREVIEW = "javadoc.preview"; // NOI18N
     
     /**
      * DOCUMENT ME!
@@ -480,27 +480,28 @@ public class JbiProjectProperties {
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     private static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
-    private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();    
+//    private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final CharsetParser CHARSET_PARSER = new CharsetParser();
     private static final PathParser PATH_PARSER = new PathParser();
     private static final PathParser SEMICOLON_PATH_PARSER = new SemiColonPathParser();
-    private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
+    private static final PathParser SEMICOLON_CLASSPATH_PARSER = new SemiColonClassPathParser();
+//    private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
     private static final StringListParser STRING_LIST_PARSER = new StringListParser();
     
     // XXX Define in the LibraryManager
     private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
     
-    // Contains well known paths in the J2SEProject
-    private static final String[][] WELL_KNOWN_PATHS = new String[][] {
-        {
-            JAVAC_CLASSPATH,
-                    NbBundle.getMessage(JbiProjectProperties.class, "LBL_JavacClasspath_DisplayName") // NOI18N
-        },
-        {
-            BUILD_CLASSES_DIR,
-                    NbBundle.getMessage(JbiProjectProperties.class, "LBL_BuildClassesDir_DisplayName") // NOI18N
-        }
-    };
+//    // Contains well known paths in the J2SEProject
+//    private static final String[][] WELL_KNOWN_PATHS = new String[][] {
+//        {
+//            JAVAC_CLASSPATH,
+//                    NbBundle.getMessage(JbiProjectProperties.class, "LBL_JavacClasspath_DisplayName") // NOI18N
+//        },
+//        {
+//            BUILD_CLASSES_DIR,
+//                    NbBundle.getMessage(JbiProjectProperties.class, "LBL_BuildClassesDir_DisplayName") // NOI18N
+//        }
+//    };
     
     /*
        private static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
@@ -513,52 +514,52 @@ public class JbiProjectProperties {
     // XXX refactor this list
     private PropertyDescriptor[] PROPERTY_DESCRIPTORS = {
         new PropertyDescriptor(EJB_PROJECT_NAME, null, STRING_PARSER),
-        new PropertyDescriptor(J2EE_PLATFORM, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(J2EE_PLATFORM, PROJECT, STRING_PARSER),
         
         new PropertyDescriptor(SOURCE_ROOT, PROJECT, STRING_PARSER),
         new PropertyDescriptor(BUILD_FILE, PROJECT, STRING_PARSER),
         new PropertyDescriptor(DIST_DIR, PROJECT, STRING_PARSER),
         new PropertyDescriptor(DIST_JAR, PROJECT, PATH_PARSER),
-        new PropertyDescriptor(JAVAC_CLASSPATH, PROJECT, PATH_PARSER),
-        new PropertyDescriptor(DEBUG_CLASSPATH, PROJECT, PATH_PARSER),
+//        new PropertyDescriptor(JAVAC_CLASSPATH, PROJECT, PATH_PARSER),
+//        new PropertyDescriptor(DEBUG_CLASSPATH, PROJECT, PATH_PARSER),
         
         //new PropertyDescriptor(JAR_NAME, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAR_COMPRESS, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAR_COMPRESS, PROJECT, BOOLEAN_PARSER),
         
         new PropertyDescriptor(J2EE_SERVER_TYPE, PROJECT, STRING_PARSER),
         new PropertyDescriptor(J2EE_SERVER_INSTANCE, PRIVATE, STRING_PARSER),
-        new PropertyDescriptor(JAVAC_SOURCE, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVAC_TARGET, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAVAC_ARGS, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVAC_SOURCE, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVAC_TARGET, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVAC_ARGS, PROJECT, STRING_PARSER),
         new PropertyDescriptor(SRC_DIR, PROJECT, STRING_PARSER),
         new PropertyDescriptor(META_INF, PROJECT, PATH_PARSER),
         new PropertyDescriptor(BUILD_DIR, PROJECT, STRING_PARSER),
         new PropertyDescriptor(BUILD_CLASSES_DIR, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(DIST_JAVADOC_DIR, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAVA_PLATFORM, PROJECT, PLATFORM_PARSER),
-        
-        new PropertyDescriptor(JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_USE, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_NO_NAVBAR, PROJECT, INVERSE_BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_NO_INDEX, PROJECT, INVERSE_BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_SPLIT_INDEX, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_AUTHOR, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_VERSION, PROJECT, BOOLEAN_PARSER),
-        new PropertyDescriptor(JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAVADOC_ENCODING, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JAVADOC_PREVIEW, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(DIST_JAVADOC_DIR, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVA_PLATFORM, PROJECT, PLATFORM_PARSER),
+//
+//        new PropertyDescriptor(JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_USE, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_NO_NAVBAR, PROJECT, INVERSE_BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_NO_INDEX, PROJECT, INVERSE_BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_SPLIT_INDEX, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_AUTHOR, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_VERSION, PROJECT, BOOLEAN_PARSER),
+//        new PropertyDescriptor(JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVADOC_ENCODING, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JAVADOC_PREVIEW, PROJECT, BOOLEAN_PARSER),
         new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
         new PropertyDescriptor(OSGI_SUPPORT, PROJECT, BOOLEAN_PARSER),
         new PropertyDescriptor(OSGI_CONTAINER_DIR, PROJECT, STRING_PARSER),
         new PropertyDescriptor(SKIP_BUILD_WHEN_DEPLOY, PROJECT, BOOLEAN_PARSER),
 
         // This should be OS-agnostic
-        new PropertyDescriptor(JBI_CONTENT_ADDITIONAL, PROJECT, SEMICOLON_PATH_PARSER),
-        new PropertyDescriptor(JBI_JAVAEE_JARS, PROJECT, SEMICOLON_PATH_PARSER),
+        new PropertyDescriptor(JBI_CONTENT_ADDITIONAL, PROJECT, SEMICOLON_CLASSPATH_PARSER),
+//        new PropertyDescriptor(JBI_JAVAEE_JARS, PROJECT, SEMICOLON_PATH_PARSER),
         new PropertyDescriptor(JBI_JAVAEE_RESOURCE_DIRS, PROJECT, STRING_LIST_PARSER),
         new PropertyDescriptor(JBI_CONTENT_COMPONENT, PROJECT, STRING_LIST_PARSER),
         
@@ -855,16 +856,20 @@ public class JbiProjectProperties {
                             }
                         }
                         
-                        if (JAVA_PLATFORM.equals(pd.name) && (newValueEncoded != null)) {
-                            setPlatform(
-                                    pi.getNewValueEncoded().equals(
-                                    JavaPlatformManager.getDefault().getDefaultPlatform()
-                                    .getProperties().get(
-                                    "platform.ant.name" // NOI18N
-                                    )
-                                    )
-                                    );
-                        }
+//                        if (JAVA_PLATFORM.equals(pd.name) && (newValueEncoded != null)) {
+//                            setPlatform(
+//                                    pi.getNewValueEncoded().equals(
+//                                    JavaPlatformManager.getDefault().getDefaultPlatform()
+//                                    .getProperties().get(
+//                                    "platform.ant.name" // NOI18N
+//                                    )
+//                                    )
+//                                    );
+//                        }
+                    }
+
+                    {
+
                     }
                     
                     try {
@@ -1126,7 +1131,7 @@ public class JbiProjectProperties {
                         compNames.add(compName);
                         
                         // update the target combo model..
-                        if (component.getType().compareToIgnoreCase("Binding") == 0) { // NOI18N
+                        if (component.getType().equalsIgnoreCase("Binding")) { // NOI18N
                             VisualClassPathItem vi = new VisualClassPathItem(
                                     bcjar, VisualClassPathItem.TYPE_ARTIFACT, "BCDeployment.jar", null, // NOI18N
                                     true
@@ -1149,14 +1154,14 @@ public class JbiProjectProperties {
      * DOCUMENT ME!
      */
     public void saveAssemblyInfo() {
-        List os = (List) this.get(JbiProjectProperties.META_INF);
+        List metaInfDir = (List) this.get(JbiProjectProperties.META_INF);
         String compFileDst = null;
         String jbiFileLoc = null;
         
-        if ((os != null) && (os.size() > 0)) {
+        if (metaInfDir != null && metaInfDir.size() > 0) {
             String path = FileUtil.toFile(
                     project.getProjectDirectory()).getPath() + 
-                    File.separator + os.get(0).toString(); // NOI18N
+                    File.separator + metaInfDir.get(0).toString();
             /*
             if ((path.indexOf(':') < 0) && (!path.startsWith("/"))) {
                 path = "/" + path; // In unix, it returns an incorrect path..
@@ -1327,12 +1332,12 @@ public class JbiProjectProperties {
         return null;
     }
     
-    private static List librariesInDeployment(AntProjectHelper helper) {
+    private static List<String> librariesInDeployment(AntProjectHelper helper) {
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList libs = data.getElementsByTagNameNS(
                 JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
                 );
-        List cpItems = new ArrayList(libs.getLength());
+        List<String> cpItems = new ArrayList<String>(libs.getLength());
         
         for (int i = 0; i < libs.getLength(); i++) {
             Element library = (Element) libs.item(i);
@@ -1750,24 +1755,24 @@ public class JbiProjectProperties {
                 boolean inDeployment = manifestItems.contains(propertyName);
                 VisualClassPathItem cpItem = null;
                 
-                // First try to find out whether the item is well known classpath
-                // in the J2SE project type
-                int wellKnownPathIndex = -1;
-                
-                for (int j = 0; j < WELL_KNOWN_PATHS.length; j++) {
-                    if (WELL_KNOWN_PATHS[j][0].equals(propertyName)) {
-                        wellKnownPathIndex = j;
-                        
-                        break;
-                    }
-                }
-                
-                if (wellKnownPathIndex != -1) {
-                    cpItem = new VisualClassPathItem(
-                            file, VisualClassPathItem.TYPE_CLASSPATH, file,
-                            WELL_KNOWN_PATHS[wellKnownPathIndex][1], inDeployment
-                            );
-                } else if (file.startsWith(LIBRARY_PREFIX)) {
+//                // First try to find out whether the item is well known classpath
+//                // in the J2SE project type
+//                int wellKnownPathIndex = -1;
+//
+//                for (int j = 0; j < WELL_KNOWN_PATHS.length; j++) {
+//                    if (WELL_KNOWN_PATHS[j][0].equals(propertyName)) {
+//                        wellKnownPathIndex = j;//
+//                        break;
+//                    }
+//                }
+//
+//                if (wellKnownPathIndex != -1) {
+//                    cpItem = new VisualClassPathItem(
+//                            file, VisualClassPathItem.TYPE_CLASSPATH, file,
+//                            WELL_KNOWN_PATHS[wellKnownPathIndex][1], inDeployment
+//                            );
+//                } else
+                if (file.startsWith(LIBRARY_PREFIX)) {
                     // Library from library manager
                     String eval = file.substring(LIBRARY_PREFIX.length(), file.lastIndexOf('.')); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary(eval);
@@ -1794,10 +1799,10 @@ public class JbiProjectProperties {
                             FileObject fo = antProjectHelper.getProjectDirectory();
                             FileObject pObj = fo.getFileObject(eval);
                             Project proj = null;
-                            if (pObj != null){
+                            if (pObj != null) {
                                 proj = FileOwnerQuery.getOwner(pObj);
                             }
-                            if ((proj!= null &&  JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME.equals(proj.getClass().getName()))){
+                            if ((proj!= null && JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME.equals(proj.getClass().getName()))){
                                 AntArtifactProvider prov = proj.getLookup().lookup(AntArtifactProvider.class);
                                 AntArtifact[] projArtifacts = prov.getBuildArtifacts();
                                 AntArtifact actualArtifact = null;
@@ -1811,7 +1816,7 @@ public class JbiProjectProperties {
                                         );      
                             }
                         }
-                        if ( artifact == null) {
+                        if (artifact == null) {
                             artifact = (AntArtifact) os[0];
                             // Sub project artifact
                             String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(
@@ -1849,8 +1854,7 @@ public class JbiProjectProperties {
          * @param refHelper DOCUMENT ME!
          *
          * @return DOCUMENT ME!
-         */
-        
+         */        
         public String encode(
                 Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
                 ) {
@@ -1858,23 +1862,24 @@ public class JbiProjectProperties {
         }
         
         @SuppressWarnings("unchecked")
+        @Override
         public String encode(
                 Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper, Object oldValue
                 ) {
             StringBuffer sb = new StringBuffer();
-            Element data = antProjectHelper.getPrimaryConfigurationData(true);
-            org.w3c.dom.Document doc = data.getOwnerDocument();
-            NodeList libs = data.getElementsByTagNameNS(
-                    JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
-                    ); //NOI18N
+//            Element data = antProjectHelper.getPrimaryConfigurationData(true);
+//            org.w3c.dom.Document doc = data.getOwnerDocument();
+//            NodeList libs = data.getElementsByTagNameNS(
+//                    JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+//                    ); //NOI18N
             
-            // 03/24/05, fixed a bug in removing libray entries
-            int ns = libs.getLength();
-            
-            for (int i = ns; i > 0; i--) {
-                Node n = libs.item(i - 1);
-                n.getParentNode().removeChild(n);
-            }
+//            // 03/24/05, fixed a bug in removing libray entries
+//            int ns = libs.getLength();
+//
+//            for (int i = ns; i > 0; i--) {
+//                Node n = libs.item(i - 1);
+//                n.getParentNode().removeChild(n);
+//            }
             
             if (value != null) {
                 List<VisualClassPathItem> removedItemsList = new ArrayList<VisualClassPathItem>();
@@ -1897,13 +1902,39 @@ public class JbiProjectProperties {
             
             for (VisualClassPathItem vcpi : (List<VisualClassPathItem>) value) {
                 
-                String library_tag_value = ""; // NOI18N
+                String library_tag_value = getLibraryTagValue(vcpi, refHelper);
+                                
+                sb.append(library_tag_value);
+                sb.append(pathSeparator);
                 
-                switch (vcpi.getType()) {
-                                        case VisualClassPathItem.TYPE_JAR:
-                        
+//                if (vcpi.isInDeployment()) {
+//                    Element library = doc.createElementNS(
+//                            JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+//                            );
+//                    library.appendChild(doc.createTextNode(getAntPropertyName(library_tag_value)));
+//                    data.appendChild(library);
+//                }
+            }
+            
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            
+//            antProjectHelper.putPrimaryConfigurationData(data, true);
+            
+            return sb.toString();
+        }
+
+        protected String getLibraryTagValue(VisualClassPathItem vcpi,
+                ReferenceHelper refHelper) {
+
+            String library_tag_value = ""; // NOI18N
+
+             switch (vcpi.getType()) {
+                    case VisualClassPathItem.TYPE_JAR:
+
                         String raw = vcpi.getRaw();
-                        
+
                         if (raw == null) {
                             // New file
                             File file = (File) vcpi.getObject();
@@ -1915,55 +1946,37 @@ public class JbiProjectProperties {
                             // Existing property
                             library_tag_value = raw;
                         }
-                        
+
                         break;
-                        
+
                     case VisualClassPathItem.TYPE_LIBRARY:
                         library_tag_value = vcpi.getRaw();
-                        
+
                         break;
-                        
+
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         AntArtifact aa = (AntArtifact) vcpi.getObject();
-                        //POJOSE: if this is J2SE project create POJOAntArtifact and use it instead of the 
+                        //POJOSE: if this is J2SE project create POJOAntArtifact and use it instead of the
                         // default AntArtifact by J2SEProject. Reason for a POJOAntArtifact:The ant artifact type for J2SE project
-                        // is Jar which is 
-                        // treated by comp. app as JavaEE project. 
+                        // is Jar which is
+                        // treated by comp. app as JavaEE project.
                         if (aa != null &&  isPOJOProject(aa)) {
                            aa = new POJOAntArtifact(aa.getProject(), aa);
-                        } 
+                        }
                         // String reference = refHelper.addReference( aa, null );
                         String reference = aa == null ? vcpi.getRaw() : // prevent NPE thrown from older projects
                             refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                         library_tag_value = reference;
-                        
+
                         break;
-                        
+
                     case VisualClassPathItem.TYPE_CLASSPATH:
                         library_tag_value = vcpi.getRaw();
-                        
+
                         break;
                 }
-                
-                sb.append(library_tag_value);
-                sb.append(pathSeparator);
-                
-                if (vcpi.isInDeployment()) {
-                    Element library = doc.createElementNS(
-                            JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
-                            );
-                    library.appendChild(doc.createTextNode(getAntPropertyName(library_tag_value)));
-                    data.appendChild(library);
-                }
-            }
-            
-            if (sb.length() > 0) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            
-            antProjectHelper.putPrimaryConfigurationData(data, true);
-            
-            return sb.toString();
+
+             return library_tag_value;
         }
         
         private boolean isPOJOProject(AntArtifact aa) {
@@ -1972,8 +1985,76 @@ public class JbiProjectProperties {
     }
     
     private static class SemiColonPathParser extends PathParser {
+        @Override
         protected String getPathSeparator() {
             return ";";
+        }
+    }
+
+    private static class SemiColonClassPathParser extends SemiColonPathParser {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public String encode(Object value, AntProjectHelper antProjectHelper,
+                ReferenceHelper refHelper, Object oldValue
+                ) {
+            StringBuffer sb = new StringBuffer();
+            Element data = antProjectHelper.getPrimaryConfigurationData(true);
+            org.w3c.dom.Document doc = data.getOwnerDocument();
+            NodeList libs = data.getElementsByTagNameNS(
+                    JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+                    ); //NOI18N
+
+            // 03/24/05, fixed a bug in removing libray entries
+            int ns = libs.getLength();
+
+            for (int i = ns; i > 0; i--) {
+                Node n = libs.item(i - 1);
+                n.getParentNode().removeChild(n);
+            }
+
+            if (value != null) {
+                List<VisualClassPathItem> removedItemsList = new ArrayList<VisualClassPathItem>();
+                for (VisualClassPathItem vcpi : (List<VisualClassPathItem>) oldValue) {
+                    if (((List) value).indexOf(vcpi) == -1) {  // If the newValue doesn't contain any oldValue element, then
+                        removedItemsList.add(vcpi);           // that element got removed
+                    }
+                }
+
+                for (VisualClassPathItem vcpi : removedItemsList) {   //Remove the references
+                    switch (vcpi.getType()) {
+                    case VisualClassPathItem.TYPE_ARTIFACT:
+                        refHelper.destroyReference(vcpi.getRaw());
+                        break;
+                    }
+                }
+            }
+
+            String pathSeparator = getPathSeparator();
+
+            for (VisualClassPathItem vcpi : (List<VisualClassPathItem>) value) {
+
+                String library_tag_value = getLibraryTagValue(vcpi, refHelper);
+
+                sb.append(library_tag_value);
+                sb.append(pathSeparator);
+
+                if (vcpi.isInDeployment()) {
+                    Element library = doc.createElementNS(
+                            JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+                            );
+                    library.appendChild(doc.createTextNode(getAntPropertyName(library_tag_value)));
+                    data.appendChild(library);
+                }
+            }
+
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+
+            antProjectHelper.putPrimaryConfigurationData(data, true);
+
+            return sb.toString();
         }
     }
     

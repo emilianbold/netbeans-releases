@@ -96,11 +96,26 @@ public class AddProjectAction implements ProjectActionPerformer {
     private static final String WEB_PROJ_DESC = "descWebProject" ; // No I18N
     private static final String EAR_PROJ_DESC = "descEarProject" ; // No I18N
     
+    // whether the SU project to be added is internal or external
+    private boolean internal;
       
     /**
-     * Creates a new instance of ProjectLevelAddAction
+     * Creates a new instance of AddProjectAction for adding an internal
+     * SU project.
      */
     public AddProjectAction() {
+        this(true);
+    }
+
+    /**
+     * Creates a new instance of AddProjectAction for adding an internal or
+     * external SU project.
+     *
+     * @param internal  whether the SU project to be added is internal
+     *                  or external
+     */
+    public AddProjectAction(boolean internal) {
+        this.internal = internal;
         init();
     }
     
@@ -180,7 +195,8 @@ public class AddProjectAction implements ProjectActionPerformer {
                 
         VisualClassPathItem vi = new VisualClassPathItem(
                 artifact, VisualClassPathItem.TYPE_ARTIFACT, null,
-                artifact.getArtifactLocations()[0].toString(), true
+                artifact.getArtifactLocations()[0].toString(), 
+                internal
                 );
         String projName = vi.getProjectName();
         for (VisualClassPathItem oldVi : oldList) {
@@ -221,7 +237,6 @@ public class AddProjectAction implements ProjectActionPerformer {
         newTargetIDs.addAll(oldTargetIDs);
         
         projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newList);
-        storeJavaEEJarList(projProperties, newList);
         
         projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, newTargetIDs);
         projProperties.store();
@@ -234,26 +249,7 @@ public class AddProjectAction implements ProjectActionPerformer {
         
         return true;
     }
-    
-    private void storeJavaEEJarList(JbiProjectProperties projProp, List<VisualClassPathItem> subprojJars){
-        if (subprojJars != null){
-            List<VisualClassPathItem> javaeeList = new ArrayList<VisualClassPathItem>();
-            VisualClassPathItem vcpi = null;
-            Iterator <VisualClassPathItem> itr = subprojJars.iterator();
-            while (itr.hasNext()){
-                vcpi = itr.next();
-                if ((vcpi.getObject() instanceof AntArtifact)
-                && (VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact) vcpi.getObject()))){
-                    javaeeList.add(vcpi);
-                }
-            }
             
-            if (javaeeList.size() > 0){
-                projProp.put(JbiProjectProperties.JBI_JAVAEE_JARS, javaeeList);
-            }
-        }
-    }
-        
     public class EJBArtifactsFilter extends FileFilter {
         public EJBArtifactsFilter(){
         }
