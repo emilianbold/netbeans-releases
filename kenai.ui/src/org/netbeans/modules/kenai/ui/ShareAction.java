@@ -38,25 +38,39 @@
  */
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.Presenter;
 
 public final class ShareAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
-        assert activatedNodes.length==1;
+        assert activatedNodes.length == 1;
         actionPerformed(activatedNodes[0]);
     }
 
@@ -90,7 +104,7 @@ public final class ShareAction extends CookieAction {
 
     static boolean isSupported(FileObject fo) {
         String remoteLocation = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
-        return remoteLocation==null;
+        return remoteLocation == null;
     }
 
     public static void actionPerformed(Node e) {
@@ -120,5 +134,75 @@ public final class ShareAction extends CookieAction {
 
     }
 
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new ShareActionPresenter(actionContext);
+    }
+
+    private final class ShareActionPresenter extends AbstractAction implements Presenter.Popup {
+
+        private final Project proj;
+
+        private ShareActionPresenter(Lookup actionContext) {
+            proj = actionContext.lookup(Project.class);
+        }
+
+        private synchronized boolean isKenaiProject(Project proj) {
+            assert proj != null;
+            ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
+            for (int i = 0; i < openProjects.length; i++) {
+                ProjectHandle projectHandle = openProjects[i];
+                if (projectHandle == null) {
+                    continue;
+                }
+                List<SourceHandle> sources = SourceAccessorImpl.getDefault().getSources(projectHandle);
+                for (SourceHandle sourceHandle : sources) {
+                    if (sourceHandle == null) {
+                        continue;
+                    }
+                    for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
+                        if (((NbProjectHandleImpl) nbProjectHandle).getProject().equals(proj)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenuItem item = new JMenuItem(NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
+            if (proj == null || isKenaiProject(proj) || getActivatedNodes().length > 1) {
+                item.setVisible(false);
+            } else {
+                item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        performAction(getActivatedNodes());
+                    }
+                });
+            }
+            return item;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (Subversion.isClientAvailable(true)) {
+
+                try {
+                    WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(DataObject.find(proj.getProjectDirectory()).getNodeDelegate()));
+                    wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
+                    wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class, "ShareAction.dialogTitle"));
+                    DialogDisplayer.getDefault().notify(wizardDescriptor);
+                    boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+                    if (!cancelled) {
+                        Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
+                        showDashboard(createdProjects);
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
 }
 
