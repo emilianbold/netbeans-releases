@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -112,6 +113,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -2021,7 +2023,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public static void debugCore(String corePath, ProjectInformation pinfo) throws DebuggerStartException {
-        attach2Target(corePath, pinfo);
+        attach2Target(corePath, pinfo, ExecutionEnvironmentFactory.getLocal());
     }
 
     /**
@@ -2030,17 +2032,22 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param pid The process ID
      * @param pinfo Miscelaneous project information
      */
-    public static void attach(Long pid, ProjectInformation pinfo) throws DebuggerStartException {
-        attach2Target(pid, pinfo);
+    public static void attach(Long pid, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
+        attach2Target(pid, pinfo, exEnv);
     }
 
-    private static void attach2Target(Object target, ProjectInformation pinfo) throws DebuggerStartException {
+    private static void attach2Target(Object target, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         
         if (mcd != null) {
             MakeConfiguration conf = mcd.getActiveConfiguration();
+
+            // copy dev host
+            conf = (MakeConfiguration)conf.cloneConf();
+            conf.setDevelopmentHost(new DevelopmentHostConfiguration(exEnv));
+
             String path = getExecutableOrSharedLibrary(pinfo, conf);
 
             if (path != null) {
@@ -2083,6 +2090,10 @@ public class GdbDebugger implements PropertyChangeListener {
     private static String getBuildResult(ProjectInformation pinfo, MakeConfiguration conf) {
         String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
 
+        final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+        path = mapper.getRemotePath(path, true);
+
         if (path.length() == 0) {
             ProjectActionEvent pae = new ProjectActionEvent(pinfo.getProject(),
                     ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
@@ -2113,6 +2124,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @return true iff the input parameters get an executable
      */
     private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
+        final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
@@ -2122,16 +2134,23 @@ public class GdbDebugger implements PropertyChangeListener {
                 } else if (!path.endsWith(".exe")) { // NOI18N
                     path = path + ".exe"; // NOI18N
                 }
-                File file = new File(path);
-                if (file.exists()) {
-                    return true;
+                try {
+                    if (HostInfoUtils.fileExists(execEnv, path)) {
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
-            File file = new File(path);
-            if (file.exists()) {
-                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
-                if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
-                    return true;
+            
+            // MIME type is checked only localy for now
+            if (execEnv.isLocal()) {
+                File file = new File(path);
+                if (file.exists()) {
+                    String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
+                    if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
+                        return true;
+                    }
                 }
             }
             return false;

@@ -44,28 +44,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
-import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
+import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
-import org.netbeans.modules.dlight.management.api.DLightManager;
-import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.DetailsRenderer;
 import org.openide.util.NbBundle;
 
 /**
@@ -124,13 +118,16 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         toolConfiguration.addDataCollectorConfiguration(multiDtraceCollectorConfig);
         toolConfiguration.addIndicatorDataProviderConfiguration(multiDtraceCollectorConfig);
 
+        Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
+        Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N
+
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
                         fileColumn,
                         new Column("bytes_read", Long.class, getMessage("Column.BytesRead"), null), // NOI18N
                         new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
-                        new Column("open_stack_id", Long.class), // NOI18N
-                        new Column("close_stack_id", Long.class), // NOI18N
+                        openStackColumn,
+                        closeStackColumn,
                         new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
                 "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
@@ -158,11 +155,11 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
-        tableConfiguration.setHiddenColumnNames(Arrays.asList("open_stack_id", "close_stack_id")); // NOI18N
+        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName()));
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
         tableConfiguration.setDualPaneMode(true);
-        tableConfiguration.setDataRowRenderer(new StacksRenderer("open_stack_id", "close_stack_id")); // NOI18N
+        tableConfiguration.setDataRowRenderer(new StackRenderer(Arrays.asList(openStackColumn, closeStackColumn)));
         indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -218,46 +215,6 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
             data[1] = reads;
             writes = 0;
             reads = 0;
-        }
-    }
-
-    private static class StacksRenderer implements DetailsRenderer<DataRow> {
-
-        private final String openStackColumn;
-        private final String closeStackColumn;
-        private boolean stackDataProviderSearched;
-        private StackDataProvider stackDataProvider;
-
-        public StacksRenderer(String openStackColumn, String closeStackColumn) {
-            this.openStackColumn = openStackColumn;
-            this.closeStackColumn = closeStackColumn;
-        }
-
-        public JComponent render(DataRow data) {
-            int openStackId = DataUtil.toInt(data.getData(openStackColumn));
-            int closeStackId = DataUtil.toInt(data.getData(closeStackColumn));
-            StackDataProvider stackProvider = findStackDataProvider();
-            if (stackProvider == null || openStackId == 0 && closeStackId == 0) {
-                return null;
-            }
-            MultipleCallStackPanel panel = MultipleCallStackPanel.createInstance();
-            if (0 < openStackId) {
-                panel.add(getMessage("Details.OpenStack"), true, stackDataProvider.getCallStack(openStackId));
-            }
-            if (0 < closeStackId) {
-                panel.add(getMessage("Details.CloseStack"), true, stackDataProvider.getCallStack(closeStackId));
-            }
-            return panel;
-        }
-
-        private synchronized StackDataProvider findStackDataProvider() {
-            if (stackDataProvider == null && !stackDataProviderSearched) {
-                DLightSession session = DLightManager.getDefault().getActiveSession();
-                stackDataProvider = (StackDataProvider)session.createDataProvider(
-                        DataModelSchemeProvider.getInstance().getScheme("model:stack"), null); // NOI18N
-                stackDataProviderSearched = true;
-            }
-            return stackDataProvider;
         }
     }
 }

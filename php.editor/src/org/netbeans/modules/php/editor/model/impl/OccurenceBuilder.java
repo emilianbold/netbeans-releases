@@ -862,30 +862,41 @@ class OccurenceBuilder {
     }
 
     private static Collection<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
+        ClassScope csi = null;
         if (inScope instanceof MethodScope) {
             MethodScope msi = (MethodScope) inScope;
-            ClassScope csi = (ClassScope) msi.getInScope();
+            csi = (ClassScope) msi.getInScope();
+        }
+        if (inScope instanceof ClassScope) {
+            csi = (ClassScope)inScope;
+        }
+        if (csi != null) {
             if ("self".equals(staticClzName)) {
                 return Collections.singletonList(csi);
             } else if ("parent".equals(staticClzName)) {
                 return csi.getSuperClasses();
             }
-
         }
+
         return CachingSupport.getClasses(staticClzName, inScope);
     }
-    private static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticClzName) {
+    private static Collection<? extends TypeScope> getStaticTypeName(Scope inScope, String staticTypeName) {
+        TypeScope csi = null;
         if (inScope instanceof MethodScope) {
             MethodScope msi = (MethodScope) inScope;
-            ClassScope csi = (ClassScope) msi.getInScope();
-            if ("self".equals(staticClzName)) {
-                return Collections.singletonList(csi);
-            } else if ("parent".equals(staticClzName)) {
-                return csi.getSuperClasses();
-            }
-
+            csi = (ClassScope) msi.getInScope();
         }
-        return CachingSupport.getTypes(staticClzName, inScope);
+        if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
+            csi = (TypeScope)inScope;
+        } 
+        if (csi != null) {
+            if ("self".equals(staticTypeName)) {
+                return Collections.singletonList(csi);
+            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
+                return ((ClassScope)csi).getSuperClasses();
+            }
+        }
+        return CachingSupport.getTypes(staticTypeName, inScope);
     }
 
     @SuppressWarnings("unchecked")

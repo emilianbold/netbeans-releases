@@ -95,7 +95,15 @@ public class JPDAUtils {
             try {
                 for (ReferenceType referenceType : referenceTypes) {
                     ClassLoaderReference clr = ReferenceTypeWrapper.classLoader(referenceType);
-                    //clr.invokeMethod(null, null, referenceTypes, lineNumber)
+                    if (clr == null) { // Preffered without the class loader.
+                        if (preferredType != null) {
+                            preferredType = null; // More preferred class loaders => no preferred
+                            break;
+                        } else {
+                            preferredType = referenceType;
+                            continue;
+                        }
+                    }
                     Field parentField;
                     try {
                         parentField = ReferenceTypeWrapper.fieldByName(ObjectReferenceWrapper.referenceType(clr), "parent");

@@ -52,7 +52,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -83,7 +82,7 @@ import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
  */
 public class JbiModuleViewNode extends AbstractNode {
 
-    private static Image JBI_MODULES_BADGE = ImageUtilities.loadImage(
+    private static Image JBI_MODULES_BADGE = Utilities.loadImage(
             "org/netbeans/modules/compapp/projects/jbi/ui/resources/compositeApplicationBadge.png", true); // NOI18N
 
     private final DataFolder aFolder;
@@ -181,7 +180,7 @@ public class JbiModuleViewNode extends AbstractNode {
             Node folderNode = aFolder.getNodeDelegate();
             Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
 
-            return ImageUtilities.mergeImages(image, JBI_MODULES_BADGE, 7, 7);
+            return Utilities.mergeImages(image, JBI_MODULES_BADGE, 7, 7);
         } else {
             return JBI_MODULES_BADGE;
         }
