@@ -1,44 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common
+  Development and Distribution License("CDDL") (collectively, the
+  "License"). You may not use this file except in compliance with the
+  License. You can obtain a copy of the License at
+  http://www.netbeans.org/cddl-gplv2.html
+  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+  specific language governing permissions and limitations under the
+  License. When distributing the software, include this License Header
+  Notice in each file and include the License file at
+  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Sun in the GPL Version 2 section of the License file that
+  accompanied this code. If applicable, add the following below the
+  License Header, with the fields enclosed by brackets [] replaced by
+  your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
 
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
+  Contributor(s):
 
-Contributor(s):
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
 
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
+  If you wish your version of this file to be governed by only the CDDL
+  or only the GPL Version 2, indicate your decision by adding
+  "[Contributor] elects to include this software in this distribution
+  under the [CDDL or GPL Version 2] license." If you do not indicate a
+  single choice of license, a recipient has the option to distribute
+  your version of this file under either the CDDL, the GPL Version 2 or
+  to extend the choice of license to its licensees as provided above.
+  However, if you add GPL Version 2 code and therefore, elected the GPL
+  Version 2 license, then the option applies only if the new code is
+  made subject to such option by the copyright holder.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -50,43 +49,23 @@ made subject to such option by the copyright holder.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
         
-        <xsl:comment><![CDATA[
-        *** GENERATED FROM project.xml - DO NOT EDIT  ***
-        ***         EDIT ../build.xml INSTEAD         ***
-
-        For the purpose of easier reading the script
-        is divided into following sections:
-
-        - initialization
-        - compilation
-        - dist
-        - execution
-        - debugging
-        - cleanup
-
-        ]]></xsl:comment>
+<xsl:comment>
+    *** GENERATED FROM project.xml - DO NOT EDIT ***
+    ***           EDIT ../build.xml INSTEAD      ***
+</xsl:comment>
         
         <xsl:variable name="name" select="/p:project/p:configuration/ejb:data/ejb:name"/>
         <project name="{$name}-jbi-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             
-            <fail message="Please build using Ant 1.7.1 or higher.">
-                <condition>
-                    <not>
-                        <antversion atleast="1.7.1"/>
-                    </not>
-                </condition>
-            </fail>
-
             <target name="default">
                 <xsl:attribute name="depends">dist</xsl:attribute>
-                <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
             
             <xsl:comment> 
-                INITIALIZATION SECTION 
-            </xsl:comment>
+        INITIALIZATION SECTION 
+    </xsl:comment>
             
             <target name="pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
@@ -135,22 +114,23 @@ made subject to such option by the copyright holder.
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
+        
+                <property name="esb.netbeans.platform" value="${{netbeans.home}}"/>
+
                 <!-- Start Test Framework-->
                 <condition property="have.tests">
                     <or>
                         <available file="${{test.dir}}"/>
                     </or>
                 </condition>
-                <condition property="netbeans.home+have.tests">
+                <condition property="esb.netbeans.platform+have.tests">
                     <and>
-                        <isset property="netbeans.home"/>
+                        <isset property="esb.netbeans.platform"/>
                         <isset property="have.tests"/>
                     </and>
                 </condition>
@@ -184,14 +164,14 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{soa.module.install.dir}}/org-netbeans-soa-libs-xmlbeans.jar"/>
                     <pathelement location="${{soa.module.install.dir}}/ext/jbi/jbi-admin-common.jar"/>
                     <pathelement location="${{soa.module.install.dir}}/../ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/lib/org-openide-modules.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-options.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-text.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-dialogs.jar"/>
-                    <pathelement location="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/lib/org-openide-util.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/lib/org-openide-modules.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-options.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-text.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-dialogs.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/xerces-2.8.0.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-retriever.jar"/>
@@ -239,8 +219,8 @@ made subject to such option by the copyright holder.
             </target>
             
             <xsl:comment>
-                COMPILATION SECTION
-            </xsl:comment>
+        COMPILATION SECTION
+    </xsl:comment>
             
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
@@ -391,7 +371,6 @@ made subject to such option by the copyright holder.
             
             <target name="compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
-                <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
             
             <target name="pre-compile-single">
@@ -421,12 +400,11 @@ made subject to such option by the copyright holder.
             </target>            
             
             <xsl:comment>
-                DIST BUILDING SECTION
-            </xsl:comment>
+        DIST BUILDING SECTION
+    </xsl:comment>
             
             <target name="jbi-build">
-                <xsl:attribute name="depends">init,init-deploy,deps-jar, deps-javaee-jar</xsl:attribute>
-                <xsl:attribute name="description">Build Service Assembly.</xsl:attribute>
+                <xsl:attribute name="depends">init,init-deploy,deps-jar,deps-javaee-jar</xsl:attribute>
                 <mkdir dir="${{src.dir}}"/>
                 <copy todir="${{src.dir}}/../jbiServiceUnits" overwrite="true">
                     <fileset dir="${{src.dir}}"/>
@@ -449,20 +427,17 @@ made subject to such option by the copyright holder.
             
             <target name="jbi-clean-build">
                 <xsl:attribute name="depends">init,init-deploy,clean,jbi-build</xsl:attribute>
-                <xsl:attribute name="description">Clean and Build Service Assembly.</xsl:attribute>
             </target>
          
             <target name="dist">
                 <xsl:attribute name="depends">jbi-build</xsl:attribute>
-                <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
             
             <xsl:comment>
-                EXECUTION SECTION
-            </xsl:comment>
+        EXECUTION SECTION
+    </xsl:comment>
             <target name="run">
                 <xsl:attribute name="depends">jbi-build,run-jbi-deploy</xsl:attribute>
-                <xsl:attribute name="description">Deploy to server.</xsl:attribute>
             </target>
             
             <target name="init-deploy">
@@ -470,19 +445,7 @@ made subject to such option by the copyright holder.
             </target>
             
             <target name="run-jbi-deploy">
-                <xsl:attribute name="depends">jbi-build</xsl:attribute>   
-                <!--
-                <echo>JBI Location is: ${com.sun.aas.installRoot}/platform/bin/jbi_admin.xml</echo>
-                <echo>JBI JMX Port is: ${com.sun.jbi.management.JmxPort}</echo>
-                <echo>Server Instance Location is: ${com.sun.appserver.instance.location}</echo>
-                -->
-                <!--
-                <echo>JBI host name is: ${com.sun.appserver.instance.hostName}</echo>
-                <echo>JBI admin port is: ${com.sun.appserver.instance.administrationPort}</echo>                
-                <echo>User name is: ${com.sun.appserver.instance.userName}</echo>
-                <echo>Password is: ${com.sun.appserver.instance.password}</echo>
-                <echo>Service assembly ID is: ${jbi.service-assembly.id}</echo>
-                -->
+                <xsl:attribute name="depends">jbi-build</xsl:attribute>
                 <property name="j2ee.server.instance" value=""/>
                 <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
                 
@@ -494,6 +457,19 @@ made subject to such option by the copyright holder.
                 
             </target>
             
+            <target name="run-jbi-deploy-without-build">
+                <xsl:attribute name="depends">init,init-deploy</xsl:attribute>
+                <property name="j2ee.server.instance" value=""/>
+                <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
+
+                <jbi-deploy-service-assembly
+                    serviceAssemblyID="${{jbi.service-assembly.id}}"
+                    serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
+                    netBeansUserDir="${{netbeans.user}}"
+                    j2eeServerInstance="${{j2ee.server.instance}}"/>
+
+            </target>
+
             <target name="undeploy">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 
@@ -524,28 +500,12 @@ made subject to such option by the copyright holder.
             </target>
             
             <xsl:comment>
-                DEBUGGING SECTION
-            </xsl:comment>
+        DEBUGGING SECTION
+    </xsl:comment>
+
             <target name="debug">
-                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
                 <xsl:attribute name ="depends">run,-pre-debug</xsl:attribute>
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <!--
-                <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
-                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                    <classpath>
-                        <path path="${{debug.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <path path="${{web.docbase.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                </nbjpdaconnect>
-                -->
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
             </target>
             
             <target name="pre-debug-fix">
@@ -555,19 +515,19 @@ made subject to such option by the copyright holder.
             </target>
             
             <target name="do-debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
                 <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
             </target>
             
             <target name="debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
             </target>
             
             <xsl:comment>
-                CLEANUP SECTION
-            </xsl:comment>
+        CLEANUP SECTION
+    </xsl:comment>
             
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'"/>
@@ -587,10 +547,9 @@ made subject to such option by the copyright holder.
             
             <target name="clean">
                 <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
-                <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             
-            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean service assembly."/>
+            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build"/>
             <target name="clear-casa">
                 <delete file="${{source.root}}/conf/${{jbi.service-assembly.id}}.casa"/>
                 <delete file="${{src.dir}}/${{jbi.service-assembly.id}}.wsdl"/>
@@ -598,9 +557,8 @@ made subject to such option by the copyright holder.
 
             <!-- Start Test Framework -->
             <xsl:comment>
-                JUNIT EXECUTION SECTION
-                ======================= 
-            </xsl:comment>
+        JUNIT EXECUTION SECTION
+    </xsl:comment>
             <target name="-pre-test-run" if="have.tests" depends="init">
                 <mkdir dir="${{test.results.dir}}"/>
                 <path id="unit.test.classpath">
@@ -628,18 +586,18 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>   
-                    <pathelement path="${{netbeans.home}}/lib/org-openide-modules.jar"/>
-                    <pathelement path="${{netbeans.home}}/lib/org-openide-util.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-options.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-text.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
-                    <pathelement path="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/lib/org-openide-modules.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/lib/org-openide-util.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-options.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-text.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-loaders.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-nodes.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/core/org-openide-filesystems.jar"/>
                 </path>
             </target>
-            <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
+            <target name="-do-test-run" if="esb.netbeans.platform+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
@@ -663,7 +621,7 @@ made subject to such option by the copyright holder.
                     <formatter type="xml"/>
                 </junit>
             </target>
-            <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
+            <target name="-do-single-test-run" if="esb.netbeans.platform+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
@@ -695,16 +653,16 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
             <target name="test-report" if="have.tests" depends="init"/>
-            <target name="-test-browse" if="netbeans.home+have.tests" depends="init"/>
-            <target name="test" depends="init,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse" description="Run unit tests."/>
-            <target name="test-single" depends="init,-pre-test-run,-do-single-test-run,test-report,-post-single-test-run,-test-browse" description="Run unit tests."/>
-            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,-post-debug,test-report,-post-single-test-run,-test-browse" description="Debug unit tests."/>
+            <target name="-test-browse" if="esb.netbeans.platform+have.tests" depends="init"/>
+            <target name="test" depends="init,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse" />
+            <target name="test-single" depends="init,-pre-test-run,-do-single-test-run,test-report,-post-single-test-run,-test-browse"/>
+            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,-post-debug,test-report,-post-single-test-run,-test-browse"/>
             
             <target name="-post-unit-test-run" if="have.tests+tests.failed" depends="init,-pre-test-run,-do-test-run">
                 <echo>Some tests failed; see details above.</echo>
             </target>
-            <target name="unit-test" depends="init,-pre-test-run,-do-test-run,test-report,-post-unit-test-run,-test-browse" description="Run unit tests in a batch."/>
-            <target name="jbi-unit-test" depends="run,unit-test,undeploy" description="build, deploy, test, and undeploy."/>
+            <target name="unit-test" depends="init,-pre-test-run,-do-test-run,test-report,-post-unit-test-run,-test-browse"/>
+            <target name="jbi-unit-test" depends="run,unit-test,undeploy"/>
             <!-- End Test Framework -->
         </project>
         

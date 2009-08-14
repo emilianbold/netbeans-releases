@@ -69,7 +69,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -320,7 +321,8 @@ public class JbiManager {
 
         Properties properties = new Properties();
 
-        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers");  // NOI18N
+        FileSystem defaultFileSystem = Repository.getDefault().getDefaultFileSystem();
+        FileObject dir = defaultFileSystem.findResource("/J2EE/InstalledServers");  // NOI18N
         FileObject[] ch = dir.getChildren();
         String plugin = Deployment.getDefault().getServerID(serverInstance);
         for (int i = 0; i < ch.length; i++) {
@@ -349,8 +351,9 @@ public class JbiManager {
     private static StartServer getStartServer(String plugin,
             String url, String userName, String password) {
         try {
-            FileObject file = FileUtil.getConfigFile(
-                    "J2EE/DeploymentPlugins/" + plugin + "/Factory.instance"); // NOI18N
+            FileSystem defaultFileSystem = Repository.getDefault().getDefaultFileSystem();
+            FileObject file = defaultFileSystem.findResource(
+                    "/J2EE/DeploymentPlugins/" + plugin + "/Factory.instance"); // NOI18N
 
             DataObject dob = DataObject.find(file);
 
@@ -362,7 +365,7 @@ public class JbiManager {
                     deploymentFactory.getDeploymentManager(url, userName, password);
 
 
-            file = FileUtil.getConfigFile(
+            file = defaultFileSystem.findResource(
                     "J2EE/DeploymentPlugins/" + plugin + "/OptionalFactory.instance");  // NOI18N
 
             dob = DataObject.find(file);

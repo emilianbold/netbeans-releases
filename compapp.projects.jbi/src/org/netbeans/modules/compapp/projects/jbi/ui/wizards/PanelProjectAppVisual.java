@@ -143,7 +143,7 @@ public class PanelProjectAppVisual extends SettingsPanel implements DocumentList
 
     boolean valid(WizardDescriptor wizardDescriptor) {
 ///        if (projectNameTextField.getText().length() == 0) {
-///            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); // NOI18N
+///            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); // NOI18N
 ///            return false; // Display name not specified
 ///        }
 
@@ -151,11 +151,11 @@ public class PanelProjectAppVisual extends SettingsPanel implements DocumentList
 ///        File[] children = destFolder.listFiles();
 ///        if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
-///            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists")); // NOI18N
+///            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists")); // NOI18N
 ///            return false;
 ///        }
 
-///        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+///        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
         return true;
     }
 

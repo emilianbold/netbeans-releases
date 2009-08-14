@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.wizards;
 
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -51,7 +50,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
 
     private PanelConfigureProject panel;
-    private String j2eeLevel = JbiProjectProperties.J2EE_1_4;
+//    private String j2eeLevel = JbiProjectProperties.J2EE_1_4;
 
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
@@ -100,7 +99,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
-        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
+//        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
     }
     
     void read(WizardDescriptor d) {

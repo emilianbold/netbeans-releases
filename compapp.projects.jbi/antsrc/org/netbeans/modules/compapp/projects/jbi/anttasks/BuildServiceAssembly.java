@@ -60,12 +60,13 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.netbeans.modules.compapp.javaee.codegen.model.AbstractProject;
+import org.netbeans.modules.compapp.projects.jbi.anttasks.utils.BuildHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
-import org.netbeans.modules.compapp.javaee.codegen.model.AbstractProject;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Component;
@@ -148,6 +149,13 @@ public class BuildServiceAssembly extends Task {
     public static final String XML_CATALOG_SYSTEM = "system"; // NOI18N
     public static final String XML_CATALOG_NEXTCATALOG = "nextCatalog"; // NOI18N
 
+    static final boolean SKIP_EXTERNAL_CONSUMES_ENDPOINTS = true;
+
+    // a list of external SU names
+    private List<String> externalSuNames = new ArrayList<String>();
+
+    // mapping binding component namespace to binding component name,
+    private Map<String, String> bcNS2NameMap;
     
     /**
      * Getter for the show log option
@@ -174,19 +182,23 @@ public class BuildServiceAssembly extends Task {
      */
     @Override
     public void execute() throws BuildException {
+
+        Project p = this.getProject();
+        BuildHelper.fixBrokenLibraryReferences(p, this);
+
         showLog = showLogOption.equalsIgnoreCase("true");
         JarFile genericBCJar = null;
 
-        Project p = this.getProject();
         String confDir = p.getProperty((JbiProjectProperties.META_INF));
         if ((confDir == null) || (confDir.length() < 1)) {
             return;
         }
 
-        wsitCallbackProjects = p.getProperty("WsitCallbackProjects"); // NOI18N
+        externalSuNames = BuildHelper.getExternalServiceUnitNames(p);
 
-        String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
-        String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
+        bcNS2NameMap = BuildHelper.getBCNamespaceToNameMap(p);
+
+        wsitCallbackProjects = p.getProperty("WsitCallbackProjects"); // NOI18N
 
         projDirLoc = p.getProperty("basedir") + File.separator;
         String srcDirLoc = projDirLoc + "src" + File.separator;
@@ -195,17 +207,9 @@ public class BuildServiceAssembly extends Task {
         serviceUnitsDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBISERVICEUNITS;            
         jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;               
 
-        // Command-line support
-//        MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
-
-        // Command-line support
-//        MigrationHelper.migrateCompAppProperties(projDirLoc, null);
-
-
         String catalogDirLoc = serviceUnitsDirLoc
                 + File.separator + "META-INF"; // NOI18N
 
-        String connectionsFileLoc = confDirLoc + "connections.xml";
         String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
 
         // create confDir if needed..
@@ -232,7 +236,7 @@ public class BuildServiceAssembly extends Task {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        mRepo = new wsdlRepository(p, this);
+        mRepo = new wsdlRepository(p, this, externalSuNames, bcNS2NameMap);
 
         log("Validating CompApp project...");
         validateCompAppProject();
@@ -250,65 +254,29 @@ public class BuildServiceAssembly extends Task {
             // Use ComponentInformation.xml instead of BindingComponentInformatino.xml
             // to get all the binding component names!
             String ciFileLoc = confDirLoc + JbiProject.COMPONENT_INFO_FILE_NAME;
-            bcNames = loadBindingComponentNames(ciFileLoc);
+            bcNames = BuildHelper.loadBindingComponentNames(ciFileLoc);
             
             String asiFileLoc = confDirLoc + JbiProject.ASSEMBLY_INFO_FILE_NAME;
             loadAssemblyInfo(asiFileLoc);
                       
-            CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this);
+            CasaBuilder casaBuilder = 
+                    new CasaBuilder(p, mRepo, this, externalSuNames, bcNS2NameMap);
             final Document oldCasaDocument = casaBuilder.getOldCasaDocument();
             
-            // Generate the SE jar file list
-            // Loop thru SE suprojects and copying/updating SE deployment jars            
+            // Generate the SE jar file list           
             log("Generating Service Engine Service Units...");
-            List<String> srcJarPaths = getJarList(jars);
-            List<String> javaEEJarPaths = getJarList(javaeeJars);
-            List<String> saEEJarPaths = new ArrayList<String>();
-
-            for (String srcJarPath : srcJarPaths) {
-                if ((javaEEJarPaths != null) && (javaEEJarPaths.contains(srcJarPath))){
-                    srcJarPath = getLocalJavaEEJarPath(buildDir, srcJarPath);
-                    saEEJarPaths.add(srcJarPath);
-                    createEndpointsFrom(srcJarPath);
-                    continue;
-                }
-                
-                if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path
-                    srcJarPath = projDirLoc + srcJarPath;
-                }                
-                File srcJarFile = new File(srcJarPath);
-                
-                String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
-                if (!srcJarFile.exists()) {
-                    log(" Error: Missing project Sub-Assembly: " + srcJarPath);
-                } else if (! suJarNames.contains(jarName)) {
-                    log(" Error: Cannot locate service unit for " + jarName);
-                } else {
-                    String destJarPath = buildDir + File.separator + jarName;
-                    //log("  copying Sub-Assembly: " + destJarPath);
-                    copyJarFileWithEndpointDecoration(srcJarPath, destJarPath,
-                            oldCasaDocument);
-                }
-            }
+            generateSEJars(buildDir, oldCasaDocument);
             
             // Resolve connections
             log("Resolving connections...");
             ConnectionResolver connectionResolver = 
                     new ConnectionResolver(this, showLog, saInternalRouting);
             connectionResolver.resolveConnections(mRepo, !bcAutoConnect, oldCasaDocument);
-            
-            // Write connections to connections.xml
-            log("Writing connections out to connections.xml...");
-            SAConnectionsBuilder dd = new SAConnectionsBuilder();
-            String saName = AntProjectHelper.getServiceAssemblyID(p);
-            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
-            dd.buildDOMTree(connectionResolver, saName, saDescription, oldCasaDocument);
-            dd.writeToFile(connectionsFileLoc);
-            
-            // Generate SA jbi.xml,
+                        
+            // Generate SA jbi.xml (not persisting it until later)
             log("Generating Service Assembly jbi.xml...");
-            generateServiceAssemblyDescriptor(
-                    connectionResolver, connectionsFileLoc, jbiFileLoc, oldCasaDocument);
+            prepareServiceAssemblyDescriptor(
+                    connectionResolver, /*jbiFileLoc,*/ oldCasaDocument);
             
             // Todo: 08/22/06 merge catalogs
             log("Merging component projects' catalogs...");
@@ -334,11 +302,9 @@ public class BuildServiceAssembly extends Task {
                         break;
                     }
                 }
-                if (bcJarName != null) {
-                    
+                if (bcJarName != null) {                    
                     // Create standalone BC jbi.xml file under src/jbiServiceUnits/<bcName>/.
                     BCSUDescriptorBuilder bcsuDescriptorBuilder = createBCSUDescriptor(
-                            //bcJarName, 
                             bcName, connectionResolver);
                     bcsuDescriptorBuilderMap.put(bcName, bcsuDescriptorBuilder);
                     bcJarMap.put(bcName, bcJarName);
@@ -352,6 +318,10 @@ public class BuildServiceAssembly extends Task {
             Document newCasaDocument = casaBuilder.createCasaDocument(jbiDocument);
             //String s = new String(XmlUtil.writeToBytes(newCasaDocument));
             //System.out.println("---------------\n"+s+"------------------\n");
+
+            // Remove external SE SUs' presence (after creating CASA document!).
+            // Also persist SA jbi.xml.
+            clearExternalSESUs(buildDir, jbiFileLoc);
             
             // Decorate BC SU jbi.xml and generate BC jar.
             for (String bcName : bcsuDescriptorBuilderMap.keySet()) {
@@ -419,7 +389,9 @@ public class BuildServiceAssembly extends Task {
             // 01/25/08, disabled, see IZ#115609 and 113026
             // filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
-            log("ERROR: " + e.toString(), Project.MSG_ERR);
+            log("ERROR: " + e.getMessage(), Project.MSG_ERR);
+            //e.printStackTrace();
+            throw new BuildException("Build Failure.");
         } finally {
             try {
                 if (genericBCJar != null) {
@@ -428,6 +400,102 @@ public class BuildServiceAssembly extends Task {
                 // jar.close();
             } catch (IOException ignored) {
                 // ignore this..
+            }
+        }
+    }
+    
+    // Clear the presence of external SE SUs in SA jbi.xml and in the build dir
+    private void clearExternalSESUs(String buildDir, String jbiFileLoc) {
+        // 1. remove external SE SU from SA's jbi.xml
+        try {
+            NodeList jbiSAs = jbiDocument.getElementsByTagName(JBI_SERVICE_ASSEMBLY_ELEM_NAME);
+            if ((jbiSAs != null) && (jbiSAs.getLength() > 0)) {
+                Element jbiSA = (Element) jbiSAs.item(0);
+
+                // loop through SUs and remove external SE SUs
+                NodeList jbiSUs = jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
+                for (int i = jbiSUs.getLength() - 1; i >= 0; i--) {
+                    Element jbiSU = (Element) jbiSUs.item(i);
+
+                    NodeList cns = jbiSU.getElementsByTagName(JBI_COMPONENT_NAME_ELEM_NAME);
+                    if (cns != null && cns.getLength() > 0) {
+                        Element cn = (Element) cns.item(0);
+                        String compName = cn.getFirstChild().getNodeValue();
+                        if (!bcNames.contains(compName)) { // is SE
+                            String suName = BuildHelper.getJBIServiceUnitShortName(jbiSU);
+                            if (isExternalServiceUnit(suName)) {
+                                jbiSA.removeChild(jbiSU);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ... and persist it
+            XmlUtil.writeToFile(jbiFileLoc, jbiDocument);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log(" Build SA Descriptor Failed: " + e.toString());
+        }
+
+        // 2. remove external SE SU's jar files from the build directory
+        File buildDirFile = new File(buildDir);
+        for (File file : buildDirFile.listFiles()) {
+            if (isExternalServiceUnitJarFile(file)) {
+                file.delete();
+            }
+        }
+    }
+
+    private static List<String> getSemicolonSeparatedStringList(String semicolonSeparatedList) {
+        List<String> ret;
+        
+        if (semicolonSeparatedList == null) {
+            ret = new ArrayList<String>();
+        } else {
+            ret = Arrays.asList(semicolonSeparatedList.split(";"));
+        }
+        return ret;
+    }
+
+    // Loop thru SE suprojects and copying/updating SE deployment jars
+    private void generateSEJars(String buildDir, Document oldCasaDocument)
+            throws Exception {
+
+        Project p = getProject();
+
+        String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
+        String components = p.getProperty((JbiProjectProperties.JBI_CONTENT_COMPONENT));
+
+        List<String> jarList = getSemicolonSeparatedStringList(jars);
+        List<String> componentList = getSemicolonSeparatedStringList(components);
+        assert jarList.size() == componentList.size();
+
+        for (int i = 0; i < jarList.size(); i++) {
+            String srcJarPath = jarList.get(i);
+            String component = componentList.get(i);
+
+            if (component.equals("sun-javaee-engine")) {
+                srcJarPath = getLocalJavaEEJarPath(buildDir, srcJarPath);
+                createEndpointsFrom(srcJarPath);
+                continue;
+            }
+
+            if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path
+                srcJarPath = projDirLoc + srcJarPath;
+            }
+            File srcJarFile = new File(srcJarPath);
+
+            String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
+            if (!srcJarFile.exists()) {
+                log(" Error: Missing project Sub-Assembly: " + srcJarPath);
+            } else if (!suJarNames.contains(jarName)) {
+                log(" Error: Cannot locate service unit for " + jarName);
+            } else {
+                String destJarPath = buildDir + File.separator + jarName;
+                //log("  copying Sub-Assembly: " + destJarPath);
+                copyJarFileWithEndpointDecoration(srcJarPath, destJarPath,
+                        oldCasaDocument);
             }
         }
     }
@@ -458,32 +526,15 @@ public class BuildServiceAssembly extends Task {
         } catch (IOException ex) {
             log("Exception: A processing error occurred; " + ex);     // NOI18N
         }
-
-
-    }
-
-    private List<String> getJarList(String commaSeparatedList){
-        List<String>  ret = new ArrayList<String>();
-        if (commaSeparatedList != null) {
-            StringTokenizer st = new StringTokenizer(commaSeparatedList, ";");
-            String tkn = null;
-            while (st.hasMoreTokens()){
-                tkn = st.nextToken();
-                ret.add(tkn);
-            }
-        }
-        return ret;
     }
     
-    private boolean getBooleanProperty(String str, boolean def) {
-        boolean bFlag = def; // the default value
-        if (str == null) {
-            bFlag = def;
-        } else {
-            bFlag = str.equalsIgnoreCase("true");
+    private boolean getBooleanProperty(String str, boolean defaultValue) {
+        boolean ret = defaultValue;
+        if (str != null) {
+            ret = str.equalsIgnoreCase("true");
         }
         
-        return bFlag;
+        return ret;
     }
 
     /**
@@ -621,6 +672,12 @@ public class BuildServiceAssembly extends Task {
         }
         
         for (File child : children) {
+
+            // Skip external JBI modules' catalog
+            if (isExternalServiceUnit(child.getName())) {
+                continue;
+            }
+
             File catalogFile = new File(child, "catalog.xml"); //SU_CATALOGXML_PATH);
             if (catalogFile.exists()) {
                 // check for valid catalog format...
@@ -734,124 +791,73 @@ public class BuildServiceAssembly extends Task {
             log("Exception: A processing error occurred; " + ex);
         }
     }
-    
+
     /**
-     * Generates service assembly jbi.xml (based on the ASI.xml document).
+     * Prepares service assembly jbi.xml (based on the ASI.xml document).
      * 
-     * @param cc
-     * @param outputBCNames   a set of BC names which exist in the SA jbi.xml
-     * @param conFileLoc
-     * @param jbiFileLoc
+     * @param connectionResolver
+     * @param casaDocument
      */
-    private void generateServiceAssemblyDescriptor(ConnectionResolver connectionResolver,
-            String conFileLoc,
-            String jbiFileLoc,
+    private void prepareServiceAssemblyDescriptor(ConnectionResolver connectionResolver,
             Document casaDocument) {  
         
+        if (jbiDocument == null) {
+            return;
+        }
+
         Set<String> outputBCNames = connectionResolver.getBCNames();
-        
-        try {
-            
-            SAConnectionsBuilder dd = new SAConnectionsBuilder();
-            Project p = getProject();
-            String saName = AntProjectHelper.getServiceAssemblyID(p);
-            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
-            dd.buildDOMTree(connectionResolver, saName, saDescription, casaDocument);
-            dd.writeToFile(conFileLoc);
-            
-            if (jbiDocument == null) {
-              return;
-            }
-            NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
-            if ((sas != null) && (sas.getLength() > 0)) {
-                Element sa = (Element) sas.item(0);
-                
-                // 1. loop through sus and remove unused bc components
-                NodeList suList = jbiDocument.getElementsByTagName("service-unit");
-                for (int i = suList.getLength() - 1; i >= 0; i--) {
-                    Element su = (Element) suList.item(i);
-                    NodeList cns = su.getElementsByTagName("component-name");
-                    if (cns != null && cns.getLength() > 0) {
-                        Element cn = (Element) cns.item(0);
-                        String compName = cn.getFirstChild().getNodeValue();
-                        if (bcNames.contains(compName) &&  // is bc
-                                !outputBCNames.contains(compName)) { // not being used
-                            sa.removeChild(su);
-                        }
+
+        SAConnectionsBuilder dd = new SAConnectionsBuilder();
+        NodeList sas = jbiDocument.getElementsByTagName(JBI_SERVICE_ASSEMBLY_ELEM_NAME);
+        if ((sas != null) && (sas.getLength() > 0)) {
+            Element sa = (Element) sas.item(0);
+
+            // 1. loop through SUs and remove unused BC SUs
+            NodeList suList = jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
+            for (int i = suList.getLength() - 1; i >= 0; i--) {
+                Element su = (Element) suList.item(i);
+                NodeList cns = su.getElementsByTagName(JBI_COMPONENT_NAME_ELEM_NAME);
+                if (cns != null && cns.getLength() > 0) {
+                    Element cn = (Element) cns.item(0);
+                    String compName = cn.getFirstChild().getNodeValue();
+                    if (bcNames.contains(compName) && // is bc
+                            !outputBCNames.contains(compName)) { // not being used
+                        sa.removeChild(su);
                     }
                 }
-                
-                // 2. add connections (and qos:connections)
-                List<Element> connectionsElements = 
+            }
+
+            // 2. add connections (and qos:connections)
+            List<Element> connectionsElements =
                     dd.createConnections(connectionResolver, jbiDocument, casaDocument);
-                for (Element connections : connectionsElements) {
-                    sa.appendChild(connections);
-                }               
-                
-                // normalize the document
-                sa.normalize();
-                NodeList children = sa.getChildNodes();
-                for (int i = children.getLength() - 1; i >= 0; i--) {
-                    Node child = children.item(i);
-                    String nodeValue = child.getNodeValue();
-                    if (nodeValue != null && nodeValue.trim().length() == 0) {
-                        sa.removeChild(child);
-                    }
+            for (Element connections : connectionsElements) {
+                sa.appendChild(connections);
+            }
+
+            // normalize the document
+            sa.normalize();
+            NodeList children = sa.getChildNodes();
+            for (int i = children.getLength() - 1; i >= 0; i--) {
+                Node child = children.item(i);
+                String nodeValue = child.getNodeValue();
+                if (nodeValue != null && nodeValue.trim().length() == 0) {
+                    sa.removeChild(child);
                 }
             }
-            
-            // 3. update namespaces
-            NodeList rs = jbiDocument.getElementsByTagName("jbi");
-            if ((rs != null) && (rs.getLength() > 0)) {
-                Element root = (Element) rs.item(0);
-                Map<String, String> map = connectionResolver.getNamespaceMap();
-                for (String key : map.keySet()) {
-                    if (key != null) {
-                        String value = map.get(key);
-                        root.setAttribute("xmlns:" + key, value);
-                    }
+        }
+
+        // 3. update namespaces
+        NodeList rs = jbiDocument.getElementsByTagName("jbi");
+        if ((rs != null) && (rs.getLength() > 0)) {
+            Element root = (Element) rs.item(0);
+            Map<String, String> map = connectionResolver.getNamespaceMap();
+            for (String key : map.keySet()) {
+                if (key != null) {
+                    String value = map.get(key);
+                    root.setAttribute("xmlns:" + key, value);
                 }
             }
-                        
-            XmlUtil.writeToFile(jbiFileLoc, jbiDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log(" Build SA Descriptor Failed: " + e.toString());
         }
-    }
-        
-    /**
-     * Loads all the binding component names from ComponentInformation.xml.
-     *
-     * @param ciFileLoc    file location for ComponentInformation.xml
-     */
-    private List<String> loadBindingComponentNames(String ciFileLoc) throws Exception {
-        List<String> ret = new ArrayList<String>();
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-
-        File ciFile = new File(ciFileLoc);
-        if (!ciFile.exists()) {
-            throw new FileNotFoundException(ciFileLoc + " is missing.");
-        }
-
-        Document document =
-                factory.newDocumentBuilder().parse(ciFile);
-        NodeList compInfoNodeList = document.getElementsByTagName("component-info");
-
-        for (int i = 0, isize = compInfoNodeList.getLength(); i < isize; i++) {
-            Element compInfo = (Element) compInfoNodeList.item(i);
-            Element typeElement = (Element) compInfo.getElementsByTagName("type").item(0);
-            String compType = typeElement.getFirstChild().getNodeValue();
-            if (compType.equalsIgnoreCase("binding")) {
-                Element nameElement = (Element) compInfo.getElementsByTagName("name").item(0);
-                String compName = nameElement.getFirstChild().getNodeValue();
-                ret.add(compName);
-            }
-        }
-        
-        return ret;
     }
     
     private void loadAssemblyInfo(String asiFileLoc) throws Exception {
@@ -868,7 +874,7 @@ public class BuildServiceAssembly extends Task {
 
         // Load service unit jar names
         suJarNames = new ArrayList<String>();
-        NodeList jarNodeList = jbiDocument.getElementsByTagName("artifacts-zip");
+        NodeList jarNodeList = jbiDocument.getElementsByTagName(JBI_ARTIFACTS_ZIP_ELEM_NAME);
         for (int i = 0, isize = jarNodeList.getLength(); i < isize; i++) {
             Node jarNode = jarNodeList.item(i);
             String jarName = jarNode.getFirstChild().getNodeValue();
@@ -986,8 +992,14 @@ public class BuildServiceAssembly extends Task {
                     is = null;
                     
                     Document jbiDoc = XmlUtil.createDocumentFromXML(true, jbiXml.toString());
-                    createEndpoints(jbiDoc.getElementsByTagName("provides"), true);
-                    createEndpoints(jbiDoc.getElementsByTagName("consumes"), false);
+                    createEndpoints(jbiDoc.getElementsByTagName(JBI_PROVIDES_ELEM_NAME), true);
+
+                    // Skip consume endpoints in the external SE SUs so that
+                    // no connection is auto generated involving them.
+                    if (!SKIP_EXTERNAL_CONSUMES_ENDPOINTS ||
+                            !isExternalServiceUnitJarFile(new File(jarFile))) {
+                        createEndpoints(jbiDoc.getElementsByTagName(JBI_CONSUMES_ELEM_NAME), false);
+                    }
                     break;
                 }
             }
@@ -999,8 +1011,7 @@ public class BuildServiceAssembly extends Task {
             } catch (IOException ignored) {
                 // ignore this..
             }
-        }
-        
+        }        
     }
     
     private void copyJarFileWithEndpointDecoration(String inFile, String outFile,
@@ -1059,8 +1070,14 @@ public class BuildServiceAssembly extends Task {
                 // todo: load into PtConnections...
                 // log("JBI.XML:\n"+jbiXml);
                 Document jbiDoc = XmlUtil.createDocumentFromXML(true, jbiXml);
-                createEndpoints(jbiDoc.getElementsByTagName("provides"), true);
-                createEndpoints(jbiDoc.getElementsByTagName("consumes"), false);
+                createEndpoints(jbiDoc.getElementsByTagName(JBI_PROVIDES_ELEM_NAME), true);
+                
+                // Skip consume endpoints in the external SE SUs so that
+                // no connection is auto generated involving them.
+                if (!SKIP_EXTERNAL_CONSUMES_ENDPOINTS ||
+                        !isExternalServiceUnitJarFile(new File(inFile))) {
+                    createEndpoints(jbiDoc.getElementsByTagName(JBI_CONSUMES_ELEM_NAME), false);
+                }
             }
             
         } catch (IOException ex) {
@@ -1079,9 +1096,9 @@ public class BuildServiceAssembly extends Task {
         if (nodeList != null) {
             for (int i = 0, node = nodeList.getLength(); i < node; i++) {
                 Element pe = (Element) nodeList.item(i);
-                String endpointName = pe.getAttribute("endpoint-name");
-                QName serviceQName = getNSName(pe, pe.getAttribute("service-name"));
-                QName interfaceQName = getNSName(pe, pe.getAttribute("interface-name"));
+                String endpointName = pe.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
+                QName serviceQName = getNSName(pe, pe.getAttribute(JBI_SERVICE_NAME_ATTR_NAME));
+                QName interfaceQName = getNSName(pe, pe.getAttribute(JBI_INTERFACE_NAME_ATTR_NAME));
                 Endpoint p = new Endpoint(//"either",
                         endpointName, serviceQName, interfaceQName);
                 if (p != null) {
@@ -1142,11 +1159,9 @@ public class BuildServiceAssembly extends Task {
         return "";
     }
         
-    private BCSUDescriptorBuilder createBCSUDescriptor(//String outFile, 
+    private BCSUDescriptorBuilder createBCSUDescriptor(
             String bcName, ConnectionResolver connectionResolver) {
         
-//        String suName = outFile.substring(outFile.lastIndexOf(File.separator) + 1); //TMP
-//        suName = suName.substring(0, suName.length() - 4);
         String bcSUDirLoc = serviceUnitsDirLoc + File.separator + bcName;
         File bcSUDir = new File(bcSUDirLoc);
         if (!bcSUDir.exists()) {
@@ -1166,16 +1181,7 @@ public class BuildServiceAssembly extends Task {
         
         return dd;
     }
-    
-    private String getProjectName() {
-        Project proj = getProject();
-        return AntProjectHelper.getServiceAssemblyID(proj);
-    }
-    
-    private String getCompAppWSDLFileName() {
-        return getProjectName() + ".wsdl";
-    }
-        
+            
     private void createBCJar(String outFile,
             JarFile genericBCJar,
             /*boolean isCompAppWSDLNeeded,*/ 
@@ -1184,8 +1190,6 @@ public class BuildServiceAssembly extends Task {
             throws Exception {
         byte[] buffer = new byte[1024];
         int bytesRead;
-        
-        //String compAppWSDLFileName = getCompAppWSDLFileName();
         
         JarOutputStream newJar = new JarOutputStream(new FileOutputStream(outFile));
         
@@ -1199,13 +1203,7 @@ public class BuildServiceAssembly extends Task {
                 String jarEntryName = jarEntry.getName();
                 
                 // TODO: update casa wsdl entry in generic bc jar file.
-                //if (jarEntryName.equals(compAppWSDLFileName)) {
                 if (jarEntryName.toLowerCase().endsWith(".wsdl")) {
-//                    // Quick fix for J1: If the casa wsdl file doesn't contain 
-//                    // active endpoints, then we skip packaging the casa wsdl entry.
-//                    // (Future improvement: This rule should apply to all the 
-//                    // wsdl files.)
-//                    if (isCompAppWSDLNeeded) {
                     
                     newJar.putNextEntry(new JarEntry(jarEntryName));
                     
@@ -1226,7 +1224,6 @@ public class BuildServiceAssembly extends Task {
                         newJar.write(System.getProperty("line.separator").getBytes("UTF-8"));
                     }
                     reader.close();
-//                    }
                 } else if (bcNames.contains(jarEntryName.substring(0, jarEntryName.length() - 1))) {
                     // Skip (empty) BC SU directory, (for example, "sun-http-binding/")
                     // which shouldn't go into the generic bc jar file in the 
@@ -1314,7 +1311,6 @@ public class BuildServiceAssembly extends Task {
                 log("Copying " + fname + " failed due to :\n" + ex); // NOI18N
             }
         }
-
     }
     
     // TODO: Move me to a separate ant task when some mandatory change is 
@@ -1327,8 +1323,6 @@ public class BuildServiceAssembly extends Task {
         
         for (WSDLModel wsdlModel : mRepo.getWsdlCollection()) {   
             String wsdlPath = wsdlRepository.getWsdlFilePath(wsdlModel);
-//            System.out.println("wsdlPath: " + wsdlPath);
-//            System.out.println("serviceUnitsDirLoc: " + serviceUnitsDirLoc);
          
             // skip validation of WSDLs defined in the SU projects
             if (wsdlPath.startsWith(serviceUnitsDirLoc)) {
@@ -1409,125 +1403,6 @@ public class BuildServiceAssembly extends Task {
         
         log(msg.toString());
     }
-
-    /*
-    private Document decorateSuJbiDocument(Document suJbiDocument, 
-            Document casaDocument, String bcName) {
-        
-        Document ret = suJbiDocument; //(Document) suJbiDocument.cloneNode(true);
-        
-        NodeList consumesNodeList = casaDocument.getElementsByTagName(
-                JBI_CONSUMES_ELEM_NAME);
-        for (int i = 0; i < consumesNodeList.getLength(); i++) {
-            Element consumes = (Element) consumesNodeList.item(i);
-            
-        }
-        
-        
-        
-        NodeList bcsuNodeList = casaDocument.getElementsByTagName(
-                CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
-        for (int i = 0; i < bcsuNodeList.getLength(); i++) {
-            Element bcsu = (Element) bcsuNodeList.item(i);
-            if (!bcsu.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME).equals(bcName)) {
-                continue;
-            }
-            
-            NodeList consumesNodeList = casaDocument.getElementsByTagName(
-                CASA_CONSUMES_ELEM_NAME);
-            for (int j = 0; j < bcsuNodeList.getLength(); j++) {
-                Element consumes = (Element) bcsuNodeList.item(j);
-                NodeList consumesChildren = consumes.getChildNodes();
-                for (int k = 0; k < consumesChildren.getLength(); k++) {
-                    Node consumesChild = consumesChildren.item(k);
-                    if (consumesChild instanceof Element) {
-                        Element 
-                    }
-                }
-            }
-        }
-        
-        return ret;
-    }
-    */
-    
-    /*
-    private WSDLModel getCompAppWsdlModel() {
-        String compappWSDLFileName = getCompAppWSDLFileName();
-        for (WSDLModel wsdlModel : mRepo.getWsdlCollection()) {
-            String wsdlPath = wsdlRepository.getWsdlFilePath(wsdlModel);
-            if (wsdlPath.endsWith(compappWSDLFileName)) { // FIXME
-                return wsdlModel;
-            }
-        }
-        return null;
-    }    
-    
-    private List<Endpoint> getEndpointsInWsdlModel(WSDLModel wsdlModel) {
-        List<Endpoint> ret = new ArrayList<Endpoint>();
-        
-        if (wsdlModel != null) {
-            Definitions defs = wsdlModel.getDefinitions();
-            String tns = defs.getTargetNamespace();
-            for (Service service : defs.getServices()) {
-                String serviceName = service.getName();
-                for (Port port : service.getPorts()) {
-                    String portName = port.getName();
-                    Endpoint endpoint = new Endpoint(
-                            portName, new QName(tns, serviceName), null); // don't care about interface name for now
-                    ret.add(endpoint);
-                }
-            }
-        }
-        
-        return ret;
-    }
-    
-    private List<String> getBindingComponentsUsingCompAppWsdl(
-            Map<String, List<Connection>[]> bcConnections) {
-        
-        List<String> ret = new ArrayList<String>();
-        
-        WSDLModel compAppWsdlModel = getCompAppWsdlModel();           
-        List<Endpoint> endpoints = getEndpointsInWsdlModel(compAppWsdlModel);
-            
-        if (endpoints.size() > 0) {
-            for (String bcName : bcConnections.keySet()) {
-                List<Endpoint> bcEndpoints = new ArrayList<Endpoint>();
-                
-                List<Connection>[] clist = bcConnections.get(bcName);
-                for (Connection connection : clist[0]) {
-                    Endpoint e = connection.getConsume();
-                    bcEndpoints.add(e);
-                }
-                
-                for (Connection connection : clist[1]) {
-                    Endpoint e = connection.getProvide();
-                    bcEndpoints.add(e);
-                }
-                
-                for (Endpoint e : endpoints) {
-                    String endpointName = e.getEndpointName();
-                    QName serviceQName = e.getServiceQName();
-                    for (Endpoint bce : bcEndpoints) {
-                        // we don't need to check interface name.
-                        if (bce.getEndpointName().equals(endpointName) &&
-                                bce.getServiceQName().equals(serviceQName)) {
-                            ret.add(bcName);
-                            break;
-                        }
-                    }
-                    
-                    if (ret.contains(bcName)) {
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return ret;
-    }
-    */
     
     //--------------------------------------------------------------------
     // 09/12/07, T.Li, code add to support JavaEE endpoint filtering
@@ -1636,7 +1511,7 @@ public class BuildServiceAssembly extends Task {
         }
     }
 
-    private String getJavaEEProjName(String subProjectJar){
+    private static String getJavaEEProjName(String subProjectJar){
         File sJar = null;
         String ret = null;
         if (subProjectJar != null){
@@ -1666,4 +1541,22 @@ public class BuildServiceAssembly extends Task {
         }
     }
 
+    private boolean isExternalServiceUnit(String suName) {
+        return externalSuNames.contains(suName);
+    }
+
+    private boolean isExternalServiceUnitJarFile(File file) {
+        String fileName = file.getName();
+        if (fileName.endsWith(".jar")) {
+            String name = fileName.substring(0, fileName.length() - 4);
+            if (name.equals("SEDeployment")) {
+                String projDirName = file.getParentFile().getParentFile().getName();
+                return isExternalServiceUnit(projDirName); // FIXME: projDirName might not match project name
+            } else {
+                return isExternalServiceUnit(name);
+            }
+        } else {
+            return false;
+        }
+    }    
 }
