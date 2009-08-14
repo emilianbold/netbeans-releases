@@ -73,7 +73,6 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ResourceCollection;
@@ -239,7 +238,9 @@ public class LayerIndex extends Task {
                     try {
                         ZipEntry entry = jf.getEntry(bundlepath);
                         if (entry == null) {
+                            /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
                             log(bundlepath + " not found in reference from " + prefix + " in " + cnb, Project.MSG_WARN);
+                             */
                             return;
                         }
                         props.load(jf.getInputStream(entry));
@@ -249,7 +250,9 @@ public class LayerIndex extends Task {
                     String key = prefix.replaceAll("/$", "");
                     String label = props.getProperty(key);
                     if (label == null) {
+                        /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
                         log("Key " + key + " not found in " + bundlepath + " from " + cnb, Project.MSG_WARN);
+                         */
                         return;
                     }
                     SortedMap<String,String> cnb2label = labels.get(prefix);

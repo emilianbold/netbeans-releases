@@ -60,7 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
@@ -142,7 +142,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         Dialog dialog = null;
 
-        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
@@ -392,7 +392,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (!opened) {
             return;
         }
-        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }

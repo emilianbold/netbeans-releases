@@ -97,7 +97,7 @@ public class IssueTableTest extends IssuetableTestFactory {
         JiraRepository repo = JiraTestUtil.getRepository();
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter("glb", true, true, true, true));
-        final JiraQuery jq = new JiraQuery( queryName, repo, fd, false); // false = not saved
+        final JiraQuery jq = new JiraQuery( queryName, repo, fd, false, true); // false = not saved
         assertEquals(0,jq.getIssues().length);
         return jq;
     }

@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -72,10 +71,10 @@ public class TestCaseResultNode extends FilterNode {
     private static final java.util.logging.Logger mLogger =
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.TestCaseResultNode"); // NOI18N
     
-    private static final Image RESULT_SUCCESS_ICON = ImageUtilities.loadImage(
+    private static final Image RESULT_SUCCESS_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/result_success.png", true); // NOI18N
     
-    private static final Image RESULT_FAILURE_ICON = ImageUtilities.loadImage(
+    private static final Image RESULT_FAILURE_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/result_failure.png", true); // NOI18N
     
     

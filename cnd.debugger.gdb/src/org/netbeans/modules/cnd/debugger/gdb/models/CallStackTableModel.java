@@ -45,7 +45,7 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 
 /**
  *
@@ -54,9 +54,9 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 public class CallStackTableModel implements TableModel, Constants {
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof CallStackFrame) {
+        if (row instanceof GdbCallStackFrame) {
             if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                CallStackFrame csf = (CallStackFrame) row;
+                GdbCallStackFrame csf = (GdbCallStackFrame) row;
                 if (csf.getFullname() != null) {
                     return csf.getFullname() + ":" + csf.getLineNumber(); // NOI18N
                 } else if (csf.getFrom() != null) {
@@ -71,7 +71,7 @@ public class CallStackTableModel implements TableModel, Constants {
     
     public boolean isReadOnly(Object row, String columnID) throws 
     UnknownTypeException {
-        if (row instanceof CallStackFrame) {
+        if (row instanceof GdbCallStackFrame) {
             if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
 		return true;
 	    }

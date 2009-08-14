@@ -68,9 +68,11 @@ import org.openide.util.io.NullInputStream;
 class RfsSyncWorker extends ZipSyncWorker {
 
     private static final boolean allAtOnce = false;
+    private final String remoteControllerPath;
 
     public RfsSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         super(localDir, executionEnvironment, out, err, privProjectStorageDir);
+        remoteControllerPath = RfsSetupProvider.getController(executionEnvironment);
     }
 
     @Override
@@ -91,7 +93,9 @@ class RfsSyncWorker extends ZipSyncWorker {
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         super.synchronizeImpl(remoteDir);
-        final String remoteControllerPath = System.getProperty("cnd.remote.fs.controller");
+        if (remoteControllerPath == null) {
+            return;
+        }
         //FIXUP: until the project system infrastructure is ready...
         {
             int pos = remoteControllerPath.lastIndexOf('/');
@@ -141,7 +145,11 @@ class RfsSyncWorker extends ZipSyncWorker {
 
         @Override
         public boolean acceptImpl(File file) {
-            return true; // super.acceptImpl(file);
+            if (remoteControllerPath == null) {
+                return super.acceptImpl(file);
+            } else {
+                return true;
+            }
         }
     }
 

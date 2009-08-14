@@ -50,6 +50,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -103,8 +104,8 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         String replace = elExpr.getReplace();
 
                         // check managed beans
-                        List<ManagedBean> beans = JSFBeanCache.getBeans(wm);
-                        for (ManagedBean bean : beans) {
+                        List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
+                        for (FacesManagedBean bean : beans) {
                             String beanName = bean.getManagedBeanName();
                             if ((beanName != null) && beanName.startsWith(replace)){
                                 complItems.add(new JsfElCompletionItem.JsfBean(

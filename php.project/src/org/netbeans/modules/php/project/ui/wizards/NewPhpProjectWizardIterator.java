@@ -58,6 +58,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -82,6 +84,9 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -143,11 +148,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
+        final Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
+        final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
-        PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
+        final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
                 getProjectDirectory(),
                 getSources(descriptor),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
@@ -175,11 +180,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
 
-        AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
+        final AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
         resultSet.add(helper.getProjectDirectory());
 
-        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        final Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        assert project instanceof PhpProject;
+        final PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
         assert phpModule != null : "PHP module must exist!";
         FileObject sources = FileUtil.toFileObject(createProperties.getSourcesDirectory());
         resultSet.add(sources);
@@ -190,27 +196,43 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
                 break;
             case REMOTE:
-
-                downloadRemoteFiles(getRemoteFiles(), createProperties, monitor);
+                downloadRemoteFiles((PhpProject) project, getRemoteFiles(), createProperties, monitor);
                 break;
         }
 
-        // update project properties
-        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        List<PhpModuleProperties> phpModuleProperties = getPhpModuleProperties(phpModule, frameworkExtenders);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws MutexException {
+                    try {
+                        // update project properties
+                        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                        List<PhpModuleProperties> phpModuleProperties = getPhpModuleProperties(phpModule, frameworkExtenders);
 
-        FileObject indexFile = setIndexFile(createProperties, projectProperties, privateProperties, phpModuleProperties);
-        if (indexFile != null && indexFile.isValid()) {
-            resultSet.add(indexFile);
+                        FileObject indexFile = setIndexFile(createProperties, projectProperties, privateProperties, phpModuleProperties);
+                        if (indexFile != null && indexFile.isValid()) {
+                            resultSet.add(indexFile);
+                        }
+                        setWebRoot(createProperties, projectProperties, privateProperties, phpModuleProperties);
+                        setTests(createProperties, projectProperties, privateProperties, phpModuleProperties);
+
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+                        ProjectManager.getDefault().saveProject(project);
+
+                    } catch (IOException ioe) {
+                        throw new MutexException(ioe);
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            Exception ie = e.getException();
+            if (ie instanceof IOException) {
+                throw (IOException) ie;
+            }
+            Exceptions.printStackTrace(e);
         }
-        setWebRoot(createProperties, projectProperties, privateProperties, phpModuleProperties);
-        setTests(createProperties, projectProperties, privateProperties, phpModuleProperties);
-
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-        ProjectManager.getDefault().saveProject(project);
-
         return resultSet;
     }
 
@@ -454,7 +476,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (Set<TransferFile>) descriptor.getProperty(RemoteConfirmationPanel.REMOTE_FILES);
     }
 
-    private void downloadRemoteFiles(Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
+    private void downloadRemoteFiles(PhpProject project, Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
         assert monitor instanceof RemoteProgressMonitor;
         assert forDownload != null;
@@ -471,7 +493,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     .setInputOutput(remoteLog)
                     .setOperationMonitor(downloadOperationMonitor)
                     .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
-                    .setPreservePermissions(false));
+                    .setPreservePermissions(false)
+                    .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();

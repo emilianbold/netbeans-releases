@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.php.spi.phpmodule;
 
-import org.openide.filesystems.FileObject;
+import java.io.File;
+import java.util.Set;
 
 /**
  * Provides support for extending a PHP module's visibility, that is,
@@ -50,16 +51,17 @@ import org.openide.filesystems.FileObject;
  * in different user views but are likely not e.g. scanned and indexed too.
  *
  * @author Tomas Mysik
- * @since 1.4
- * @see org.netbeans.api.queries.VisibilityQuery
- * @see org.netbeans.spi.queries.VisibilityQueryImplementation
+ * @since 1.12
  */
-public abstract class PhpModuleVisibilityExtender {
+public abstract class PhpModuleIgnoredFilesExtender {
 
     /**
-     * Check whether a file is recommended to be visible.
-     * @param fileObject a file which should be checked
-     * @return <code>true</code> if it is recommended to show this file
+     * Get collection of ignored files. These files do not need to exist but cannot be <code>null</code>.
+     * This method is frequently called so it should be very fast (or consider using any kind of cache).
+     * <p>
+     * <b>Warning:</b> These files must represent <b>absolute</b> path in order to prevent
+     * unexpected and unwanted results.
+     * @return collection of ignored files
      */
-    public abstract boolean isVisible(FileObject fileObject);
+    public abstract Set<File> getIgnoredFiles();
 }

@@ -43,7 +43,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSplitPane;
-import org.netbeans.modules.dlight.visualizers.api.DetailsRenderer;
+import org.netbeans.modules.dlight.util.ui.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 public final class DualPaneSupport<T> extends JSplitPane {
 
     private JComponent detailsComponent;
-    private DetailsRenderer<T> detailsRenderer;
+    private Renderer<T> detailsRenderer;
 
     /**
      * Creates new <code>DualPaneSupport</code> for given master component.
@@ -66,7 +66,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
      * @param masterComponent
      * @param detailsRenderer
      */
-    public DualPaneSupport(JComponent masterComponent, DetailsRenderer<T> detailsRenderer) {
+    public DualPaneSupport(JComponent masterComponent, Renderer<T> detailsRenderer) {
         super(HORIZONTAL_SPLIT);
         this.detailsRenderer = detailsRenderer;
         this.detailsComponent = null;
@@ -95,9 +95,9 @@ public final class DualPaneSupport<T> extends JSplitPane {
         V convert(U obj);
     }
 
-    public static<U, V> DualPaneSupport forExplorerManager(
+    public static<V> DualPaneSupport forExplorerManager(
             final JComponent component, final ExplorerManager explorerManager,
-            final DetailsRenderer<V> detailsRenderer,
+            final Renderer<V> detailsRenderer,
             final DataAdapter<Node, V> dataAdapter) {
         final DualPaneSupport dualPaneSupport = new DualPaneSupport(component, detailsRenderer);
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {

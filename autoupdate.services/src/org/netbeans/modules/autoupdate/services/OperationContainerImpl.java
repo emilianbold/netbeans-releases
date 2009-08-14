@@ -196,6 +196,7 @@ public final class OperationContainerImpl<Support> {
             Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
             for (OperationInfo<?> i : operations) {
                 all.add (i.getUpdateElement ());
+                all.addAll (i.getRequiredElements());
                 UpdateElementImpl elImpl = Trampoline.API.impl (i.getUpdateElement ());
                 if (elImpl instanceof ModuleUpdateElementImpl) {
                     allModuleInfos.add (((ModuleUpdateElementImpl) elImpl).getModuleInfo ());
@@ -218,7 +219,7 @@ public final class OperationContainerImpl<Support> {
                 for(ModuleInfo mi: infos) {
                     Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
                     for (Dependency dep : mi.getDependencies ()) {
-                        UpdateElement req = Utilities.handleDependency (dep, Collections.singleton (mi), new HashSet<Dependency> ());
+                        UpdateElement req = Utilities.handleDependency (dep, Collections.singleton (mi), new HashSet<Dependency> (), false);
                         if (req != null) {
                             reqs.add (req);
                         }

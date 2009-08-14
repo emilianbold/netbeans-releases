@@ -53,8 +53,6 @@ import java.util.Map;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
@@ -113,7 +111,7 @@ public class SAConnectionsBuilder implements Serializable {
      * @param repo DOCUMENT ME!     *
      * @param p
      * @throws javax.xml.parsers.ParserConfigurationException DOCUMENT ME!
-     */
+     *
     public void buildDOMTree(ConnectionResolver container, 
             String saName, String saDescription, Document casaDocument)
             throws ParserConfigurationException {
@@ -153,7 +151,7 @@ public class SAConnectionsBuilder implements Serializable {
         for (Element connections : connectionsElements) {
             sroot.appendChild(connections);
         }
-    }
+    }*/
     
     public List<Element> createConnections(ConnectionResolver container, 
             Document document, Document casaDocument) {
@@ -210,6 +208,9 @@ public class SAConnectionsBuilder implements Serializable {
                             qosConnections.appendChild(qosConnection);
                             CasaBuilder.deepCloneChildren(
                                     casaConnection, qosConnection);
+
+                            // Performance Enhancement
+                            casaConnectionElementsWithExtension.remove(casaConnection);
                         }
                     }
                 }
@@ -255,14 +256,16 @@ public class SAConnectionsBuilder implements Serializable {
         assert casaConnectionElements != null && c != null && p != null;
         
         for (Element casaConnection : casaConnectionElements) {
+            
             String consumerEndpointID = casaConnection.getAttribute(CASA_CONSUMER_ATTR_NAME);
-            String providerEndpointID = casaConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
-            
             Endpoint consumer = CasaBuilder.getEndpoint(casaDocument, consumerEndpointID);
-            Endpoint provider = CasaBuilder.getEndpoint(casaDocument, providerEndpointID);
-            
-            if (c.equals(consumer) && p.equals(provider)) {
-                return casaConnection;
+            if (c.equals(consumer)) {
+
+                String providerEndpointID = casaConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
+                Endpoint provider = CasaBuilder.getEndpoint(casaDocument, providerEndpointID);
+                if (p.equals(provider)) {
+                    return casaConnection;
+                }
             }
         }
         

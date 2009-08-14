@@ -25,6 +25,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
+                <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.core.stack</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
