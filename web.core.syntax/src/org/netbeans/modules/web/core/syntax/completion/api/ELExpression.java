@@ -44,6 +44,7 @@ import org.netbeans.modules.web.core.syntax.completion.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -175,7 +176,8 @@ public class ELExpression {
             Token<?> token = ts.token();
             while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
                     || ts.token().id() == ELTokenId.DOT || 
-                        ts.token().id() == ELTokenId.LBRACKET) &&
+                        ts.token().id() == ELTokenId.LBRACKET
+                        || ts.token().id() == ELTokenId.RBRACKET) &&
                     ts.token().id() != ELTokenId.WHITESPACE &&
                     (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
                     ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) 
@@ -210,7 +212,7 @@ public class ELExpression {
                 }
             }
 
-            if (ELTokenCategories.OPERATORS.hasCategory(token.id()) 
+            if (ELTokenCategories.OPERATORS.hasCategory(token.id() )
                     || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) 
             {
                 return EL_START;
@@ -363,6 +365,61 @@ public class ELExpression {
 
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
+    
+    private String[] getParts() {
+        if ( getExpression().indexOf('[') == -1 ){
+            return getExpression().split("\\.");            // NOI18N
+        }
+        List<String> result = new LinkedList<String>();
+        boolean previousDot = false;
+        boolean previousLeftBracket = false;
+        String expression = getExpression();
+        int i=0;
+        while( expression.length() > 0 ){
+            char ch = expression.charAt( i );
+            if ( ch == '.'){
+                if ( previousLeftBracket ){
+                    addPart(result, expression.substring(i+1));
+                    break;
+                }
+                previousDot = true;
+                addPart(result,  expression.substring( 0 , i ));
+                expression = expression.substring( i+1);
+                i=0;
+                continue;
+            }
+            if ( ch == '['){
+                if ( previousLeftBracket ){
+                    addPart(result,  expression.substring(i+1) );
+                    break;
+                }
+                if ( previousDot ){
+                    previousDot = false;
+                }
+                previousLeftBracket = true;
+                addPart(result,  expression.substring( 0 , i ));
+                int index = expression.indexOf(']');
+                if ( index == -1 ){
+                    addPart(result,  expression.substring(i+1) );
+                    break;
+                }
+                else {
+                    addPart(result, removeQuotes( expression.substring(i+1, index )));
+                    expression = expression.substring( index +1);
+                    i=0;
+                    continue;
+                }
+            }
+            i++;
+        }
+        return result.toArray(new String[result.size()] );
+    }
+    
+    private void addPart(List<String> parts, String part ){
+        if ( part != null && part.length() != 0 ){
+            parts.add(part);
+        }
+    }
 
     protected abstract class BaseELTaskClass {
 
@@ -382,7 +439,7 @@ public class ELExpression {
 
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
 
-            String parts[] = getExpression().split("\\.");
+            String parts[] = getParts();
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
 
