@@ -365,6 +365,10 @@ public final class Source {
             // Diagnostics and workaround for issues such as #170290
             LOG.log(Level.INFO, null, oome);
 
+            // Use empty snapshot
+            text[0] = ""; //NOI18N
+
+            // Help JVM to reclaim the memory occupied by the partially loaded snapshot
             for (int i = 0; i < 3; i++) {
                 System.gc(); System.runFinalization();
                 try {
@@ -379,9 +383,6 @@ public final class Source {
             } else {
                 LOG.warning("Can't create snapshot of " + fileObject + ", size=" + fileObject.getSize() + ", mimeType=" + mimeType); //NOI18N
             }
-
-            // Use empty snapshot
-            text[0] = ""; //NOI18N
         }
 
         return new Snapshot (
