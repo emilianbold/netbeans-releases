@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
@@ -60,10 +61,9 @@ import org.openide.filesystems.FileUtil;
 final class RemoteOperationFactory extends FileOperationFactory {
 
     private RemoteClient remoteClient;
-    private final PhpProject project;
 
     RemoteOperationFactory(PhpProject project) {
-        this.project = project;
+        super(project);
     }
 
     private boolean isEnabled() {
@@ -222,7 +222,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
             remoteClient = new RemoteClient(getRemoteConfiguration(project), new RemoteClient.AdvancedProperties()
                     .setAdditionalInitialSubdirectory(getRemoteDirectory(project))
                     .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
-                    .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
+                    .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project))
+                    .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         }
         return remoteClient;
     }

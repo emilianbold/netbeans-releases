@@ -291,6 +291,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         boolean remoteFactoryError;
 
         ProxyOperationFactory(PhpProject project) {
+            super(project);
             this.localFactory = new LocalOperationFactory(project);
             this.remoteFactory = new RemoteOperationFactory(project);
         }

@@ -231,8 +231,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // frameworks
-            PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
-            assert phpModule != null;
+            PhpModule phpModule = project.getPhpModule();
             for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {

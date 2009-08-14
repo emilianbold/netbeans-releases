@@ -42,8 +42,8 @@ package org.netbeans.modules.php.project.ui.logicalview;
 import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -51,17 +51,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Radek Matous
  */
 public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
-        private static final long serialVersionUID = -74397897465486955L;
+        private static final long serialVersionUID = -743974567467955L;
 
         private final PhpProject project;
         private final FileObject rootFolder;
+        private final PhpVisibilityQuery phpVisibilityQuery;
         private final File nbProject;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -74,21 +74,21 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
             this.project = project;
             this.rootFolder = rootFolder;
 
+            phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
             nbProject = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH).getParentFile();
             assert nbProject != null : "NB metadata folder was not found for project: " + project;
 
-            VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
-            visibilityQuery.addChangeListener(WeakListeners.change(this, visibilityQuery));
+            ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
         public boolean acceptDataObject(DataObject object) {
-            return !isProjectFile(object)
+            return !isNbProject(object)
                     && !isTestDirectory(object)
                     && !isSeleniumDirectory(object)
-                    && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
+                    && phpVisibilityQuery.isVisible(object.getPrimaryFile());
         }
 
-        private boolean isProjectFile(DataObject object) {
+        private boolean isNbProject(DataObject object) {
             File f = FileUtil.toFile(object.getPrimaryFile());
             return nbProject.equals(f);
         }

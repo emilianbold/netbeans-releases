@@ -64,6 +64,7 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -467,8 +468,8 @@ public final class Utils {
      * @param folder folder to browse files from.
      * @param textField textfield to update.
      */
-    public static void browseFolderFile(FileObject folder, JTextField textField) {
-        String selected = browseFolderFile(folder, textField.getText());
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, JTextField textField) {
+        String selected = browseFolderFile(phpVisibilityQuery, folder, textField.getText());
         if (selected != null) {
             textField.setText(selected);
         }
@@ -477,8 +478,8 @@ public final class Utils {
     /**
      * @see #browseFolderFile(org.openide.filesystems.FileObject, javax.swing.JTextField)
      */
-    public static void browseFolderFile(File folder, JTextField textField) {
-        browseFolderFile(FileUtil.toFileObject(folder), textField);
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, File folder, JTextField textField) {
+        browseFolderFile(phpVisibilityQuery, FileUtil.toFileObject(folder), textField);
     }
 
     /**
@@ -487,8 +488,8 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseFolderFile(FileObject folder, String preselected) {
-        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
+    public static String browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, String preselected) {
+        FileObject selected = BrowseFolders.showDialog(phpVisibilityQuery, new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
         }
@@ -541,7 +542,7 @@ public final class Utils {
 
     private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
         FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject selected = BrowseFolders.showDialog(new FileObject[] {rootFolder},
+        FileObject selected = BrowseFolders.showDialog(PhpVisibilityQuery.forProject(project), new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(rootFolder), FileUtil.toFile(selected));

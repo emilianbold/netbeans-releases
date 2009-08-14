@@ -39,85 +39,47 @@
 
 package org.netbeans.modules.php.project;
 
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import java.io.File;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
-import org.openide.util.WeakSet;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Tomas Mysik
  */
-@ServiceProvider(service = VisibilityQueryImplementation.class)
-public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
-
-    // @GuardedBy(this)
-    private final Set<PhpProject> watchedProjects = new WeakSet<PhpProject>();
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final ChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
-
-    public boolean isVisible(FileObject file) {
-        PhpProject phpProject = PhpProjectUtils.getPhpProject(file);
-        if (phpProject == null) {
-            return true;
+public abstract class PhpVisibilityQuery {
+    private static final PhpVisibilityQuery DEFAULT = new PhpVisibilityQuery() {
+        @Override
+        public boolean isVisible(FileObject file) {
+            return VisibilityQuery.getDefault().isVisible(file);
         }
 
-        if (isIgnoredByProject(phpProject, file)) {
-            return false;
-        } else if (isIgnoredByFramework(phpProject, file)) {
-            return false;
+        @Override
+        public boolean isVisible(File file) {
+            return VisibilityQuery.getDefault().isVisible(file);
         }
-        return true;
+    };
+
+    private PhpVisibilityQuery() {
     }
 
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
+    public abstract boolean isVisible(FileObject file);
+    public abstract boolean isVisible(File file);
 
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    void fireChange() {
-        changeSupport.fireChange();
-    }
-
-    private boolean isIgnoredByProject(PhpProject project, FileObject file) {
-        checkIgnoredFoldersListener(project);
-        return ProjectPropertiesSupport.getIgnoredFolders(project).contains(file);
-    }
-
-    private boolean isIgnoredByFramework(PhpProject project, FileObject file) {
-        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
-        assert phpModule != null : "php module must be found for " + project.getProjectDirectory();
-        for (PhpFrameworkProvider framework : ProjectPropertiesSupport.getFrameworks(project)) {
-            PhpModuleVisibilityExtender visibilityExtender = framework.getVisibilityExtender(phpModule);
-            if (visibilityExtender != null) {
-                if (!visibilityExtender.isVisible(file)) {
-                    return true;
-                }
+    public static PhpVisibilityQuery forProject(final PhpProject project) {
+        return new PhpVisibilityQuery() {
+            @Override
+            public boolean isVisible(FileObject file) {
+                return project.isVisible(file);
             }
-        }
-        return false;
+
+            @Override
+            public boolean isVisible(File file) {
+                return project.isVisible(file);
+            }
+        };
     }
 
-    private synchronized void checkIgnoredFoldersListener(PhpProject project) {
-        if (!watchedProjects.contains(project)) {
-            ProjectPropertiesSupport.addWeakIgnoredFoldersListener(project, ignoredFoldersListener);
-            watchedProjects.add(project);
-        }
-    }
-
-    private final class IgnoredFoldersListener implements ChangeListener {
-        public void stateChanged(ChangeEvent e) {
-            fireChange();
-        }
+    public static PhpVisibilityQuery getDefault() {
+        return DEFAULT;
     }
 }
