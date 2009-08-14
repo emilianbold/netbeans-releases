@@ -38,35 +38,48 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.Color;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 
-public final class GraphDescriptor {
+/**
+ * Default {@link DataRowToPlot} implementation, suitable for simple cases.
+ *
+ * @author Alexey Vladykin
+ */
+public final class DefaultDataRowToPlot implements DataRowToPlot {
 
-    private final Color color;
-    private final String displayName;
-    private final Kind kind;
+    private final float[] data;
+    private final Map<String, Integer> columnToIndex;
 
-    public GraphDescriptor(Color color, String displayName, Kind kind) {
-        this.color = color;
-        this.displayName = displayName;
-        this.kind = kind;
+    public DefaultDataRowToPlot(Column[][] columns) {
+        this.data = new float[columns.length];
+        this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
     }
 
-    public Color getColor() {
-        return color;
+    public synchronized void addDataRow(DataRow row) {
+        for (String columnName : row.getColumnNames()) {
+            Integer index = columnToIndex.get(columnName);
+            if (index != null) {
+                data[index] = DataUtil.toFloat(row.getData(columnName));
+            }
+        }
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public synchronized void tick(float[] data, Map<String, String> details) {
+        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
     }
 
-    public Kind getKind() {
-        return kind;
-    }
-
-    public static enum Kind {
-        LINE,
-        ABS_SURFACE,
-        REL_SURFACE
+    private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
+        for (int i = 0; i < columns.length; ++i) {
+            for (Column column : columns[i]) {
+                result.put(column.getColumnName(), Integer.valueOf(i));
+            }
+        }
+        return result;
     }
 }
