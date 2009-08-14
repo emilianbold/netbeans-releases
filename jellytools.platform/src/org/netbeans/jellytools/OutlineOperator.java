@@ -40,8 +40,14 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Point;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.swing.outline.Outline;
@@ -70,6 +76,80 @@ public class OutlineOperator extends JTableOperator {
         super(outline);
     }
 
+    protected Outline getOutline()
+    {
+        return (Outline)getSource();
+    }
+
+    public int getTreeColumnIndex()
+    {
+        int lnNumColumns = this.getColumnCount();
+
+        for (int i = 0; i < lnNumColumns; i++)
+        {
+            if (convertColumnIndexToModel(i) == 0)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public OutlineNode getRootNode(String isName)
+    {
+        return getRootNode(isName, 0);
+    }
+
+    public OutlineNode getRootNode(final String isName, final int inIndex)
+    {
+        final Outline lrOutline = getOutline();
+
+
+        final Point lrCellPoint = this.findCell(isName, getTreeColumnIndex());
+        if (lrCellPoint.equals(new Point(-1,-1)))
+        {
+            try
+            {
+                (new Waiter(new Waitable() {
+                    public Object actionProduced(Object anObject) {
+                        Point lrFindPoint = findCell(isName, null, new int[]{getTreeColumnIndex()}, inIndex);
+
+                        //no cell found
+                        if (lrFindPoint.equals(new Point(-1,-1)))
+                            return null;
+
+                        //cell found, but it is not a root node
+                        if (lrOutline.getClosestPathForLocation(lrFindPoint.x, lrFindPoint.y).getPathCount() <= 2)
+                            return null;
+
+                        lrCellPoint.setLocation(lrFindPoint);
+                        return Boolean.TRUE;
+                    }
+                    public String getDescription() {
+                        return("Root tree node cell with name '" + isName + "' not present.");
+                    }
+                })).waitAction(null);
+            }
+            catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+            }
+        }
+
+        //TODO: pass this from the waiter directly
+        TreePath lrTreePath = lrOutline.getClosestPathForLocation(lrCellPoint.x, lrCellPoint.y);
+
+        return new OutlineNode(this, lrTreePath);
+    }
+
+    public void expandPath(TreePath irTP)
+    {
+        getOutline().expandPath(irTP);
+    }
+/*
+    public Point getLocationForPath(TreePath irTreePath)
+    {
+        getOutline().get
+    }
+*/
     static class OutlineFinder implements ComponentChooser
     {
         ComponentChooser subFinder;
@@ -82,7 +162,7 @@ public class OutlineOperator extends JTableOperator {
         public boolean checkComponent(Component comp) {
             Class cls = comp.getClass();
             do {
-                if(cls.getName().equals("org.netbeans.swing.outline.Outline;")) {
+                if(cls.getName().equals("org.netbeans.swing.outline.Outline")) {
                     return(subFinder.checkComponent(comp));
                 }
             } while((cls = cls.getSuperclass()) != null);
