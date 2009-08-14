@@ -332,7 +332,7 @@ public class BugzillaQuery extends Query {
             String id = BugzillaIssue.getID(taskData);
             BugzillaIssue issue;
             try {
-                IssueCache cache = repository.getIssueCache();
+                IssueCache<TaskData> cache = repository.getIssueCache();
                 issue = (BugzillaIssue) cache.setIssueData(id, taskData);
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
