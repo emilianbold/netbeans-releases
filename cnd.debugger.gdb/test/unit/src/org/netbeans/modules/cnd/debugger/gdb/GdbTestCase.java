@@ -208,7 +208,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         synchronized (BP_WAIT_LOCK) {
             for (;;) {
                 timeout = timeout - (System.currentTimeMillis() - start);
-                CallStackFrame csf = debugger.getCurrentCallStackFrame();
+                GdbCallStackFrame csf = debugger.getCurrentCallStackFrame();
                 if (csf != null && breakpoint.getPath().equals(csf.getFullname()) && breakpoint.getLineNumber() == csf.getLineNumber()) {
                     System.out.println("    waitForBreakpoint: Got expected stop position, wait time is :" + (WAIT_TIMEOUT - timeout));
                     return;

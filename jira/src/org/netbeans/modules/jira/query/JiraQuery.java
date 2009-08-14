@@ -323,7 +323,7 @@ public class JiraQuery extends Query {
             String id = NbJiraIssue.getID(taskData);
             NbJiraIssue issue;
             try {
-                IssueCache cache = repository.getIssueCache();
+                IssueCache<TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
                 

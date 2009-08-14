@@ -36,42 +36,49 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
+package org.netbeans.modules.cnd.remote.sync;
+
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author mt154047
+ * ProjectActionHandlerFactory for remote builds using RFS
+ * @author Vladimir Kvashin
  */
-public abstract class DLightSessionContextAccessor {
+@ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
+public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {
 
-    private static volatile DLightSessionContextAccessor DEFAULT;
-
-    public static DLightSessionContextAccessor getDefault() {
-        DLightSessionContextAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
+    @Override
+    public boolean canHandle(Type type, Configuration configuration) {
+        switch (type) {
+            case BUILD:
+            case CLEAN:
+                return RfsSyncFactory.ENABLE_RFS;
+            default:
+                return false;
         }
-
-        try {
-            Class.forName(DLightSessionContext.class.getName(), true, DLightSessionContext.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
     }
 
-    public static void setDefault(DLightSessionContextAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
+    @Override
+    public ProjectActionHandler createHandler() {
+        return new RemoteBuildProjectActionHandler();
+    }
+
+    /* package-local */
+    static ProjectActionHandler createDelegateHandler(ProjectActionEvent pae) {
+        for (ProjectActionHandlerFactory factory : Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class)) {
+            if (!(factory instanceof RemoteBuildProjectActionHandlerFactory)) {
+                if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
+                    return factory.createHandler();
+                }
+            }
         }
-        DEFAULT = accessor;
+        return null;
     }
-
-    public DLightSessionContextAccessor() {
-    }
-
-    public abstract DLightSessionContext newContext();
-    public abstract void clear(DLightSessionContext context);
-    public abstract String put(DLightSessionContext context, String key, String value);
 }

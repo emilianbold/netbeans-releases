@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.annotationsupport;
 
 import java.util.List;
@@ -46,18 +45,27 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
  *
  * @author thp
  */
-
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport.class)
 public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
+
     private final static Logger log = Logger.getLogger("dlight.annotationsupport"); // NOI18N
     private static boolean checkedLogging = checkLogging();
+    private static boolean logginIsOn;
 
     public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+        log(sourceFileInfoProvider, metrics, functionCalls);
+    }
+
+    private void log(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+        if (!logginIsOn) {
+            return;
+        }
         log.fine("AnnotatedSourceSupportImpl.updateSource");
         log.finest("metrics:");
         for (Column column : metrics) {
@@ -70,6 +78,28 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         log.finest("functionCalls:");
         for (FunctionCallWithMetric functionCall : functionCalls) {
             log.finest("  getDisplayedName " + functionCall.getDisplayedName());
+            log.finest("  getDisplayedName " + functionCall.getFunction());
+            log.finest("  getDisplayedName " + functionCall.getFunction().getName());
+            log.finest("  getDisplayedName " + functionCall.getFunction().getQuilifiedName());
+            StringBuilder sb = new StringBuilder(functionCall.getFunction().toString());
+            sb.append(" ["); // NOI18N
+            for (Column column : metrics) {
+                String metricId = column.getColumnName();
+                Object metricVal = functionCall.getMetricValue(metricId);
+                String metricUName = column.getColumnUName();
+                sb.append(metricUName + "=" + metricVal + " "); // NOI18N
+            }
+
+            SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
+            if (sourceFileInfo != null) {
+                if (sourceFileInfo.isSourceKnown()) {
+                    sb.append(sourceFileInfo.getFileName() + ":"); // NOI18N
+                }
+                sb.append(sourceFileInfo.getLine());
+            }
+            sb.append("]"); // NOI18N
+            log.finest("  " + sb.toString());
+            log.finest("  " + functionCall);
         }
     }
 
@@ -77,8 +107,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         if (checkedLogging) {
             return true;
         }
+        logginIsOn = false;
         String logProp = System.getProperty("dlight.annotationsupport"); // NOI18N
         if (logProp != null) {
+            logginIsOn = true;
             if (logProp.equals("FINE")) { // NOI18N
                 log.setLevel(Level.FINE);
             } else if (logProp.equals("FINER")) { // NOI18N

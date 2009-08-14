@@ -45,6 +45,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -80,6 +81,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -180,6 +182,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private final Map renderingHints;
 
     /**
+     * Holdes kenai users
+     */
+    private Map<String, KenaiUser> kenaiUsersMap = null;
+
+    private File file;
+
+    /**
      * Creates new instance initializing final fields.
      */
     public AnnotationBar(JTextComponent target) {
@@ -196,6 +205,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             renderingHints = null;
         }
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    }
+
+    public File getFile() {
+        return file;
     }
 
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -225,7 +238,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Result computed show it...
      * Takes AnnotateLines and shows them.
      */
-    public void annotationLines(File file, List<AnnotateLine> annotateLines) {
+    public void annotationLines(final File file, List<AnnotateLine> annotateLines) {
+        this.file = file;
         final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
@@ -294,6 +308,17 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         doc.runAtomic(new Runnable() {
             public void run() {
+                boolean isKenaiRepository = false;
+                try {
+                    SVNUrl url = SvnUtils.getRepositoryUrl(file);
+                    isKenaiRepository = url != null && SvnKenaiSupport.getInstance().isKenai(url.toString());
+                    if(isKenaiRepository) {
+                        kenaiUsersMap = new HashMap<String, KenaiUser>();
+                    }
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.WARNING, null, ex);
+                }
+
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
@@ -303,6 +328,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
                         Element element = sd.getParagraphElement(lineOffset);
+                        if(isKenaiRepository) {
+                            String author = line.getAuthor();
+                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                                KenaiUser ku = SvnKenaiSupport.getInstance().forName(author);
+                                if(ku != null) {
+                                    kenaiUsersMap.put(author, ku);
+                                }
+                            }
+                        }
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -455,6 +489,22 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+        
+        if(isKenai() && al != null) {
+            String author = al.getAuthor();
+            final KenaiUser ku = kenaiUsersMap.get(author);
+            if(ku != null) {
+                popupMenu.addSeparator();
+                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
+                chatMenu.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        ku.startChat();
+                    }
+                });
+                chatMenu.setEnabled(ku.isOnline());
+                popupMenu.add(chatMenu);
+            }
+        }
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
@@ -678,7 +728,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         Graphics g = getGraphics();
         if( g != null) {
             int w = g.getFontMetrics().charsWidth(data, 0,  data.length);
-            return w + 4;    
+            return w + 4 + (isKenai() ? 18 : 0);
         } else {
             return 0;
         }
@@ -745,7 +795,33 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         } else {
             g.setColor(foregroundColor());
         }
-        g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
+        int texty = yBase + editorUI.getLineAscent();
+        int textx = 2;
+        g.drawString(annotation, textx, texty);
+        if(isKenai() && al != null) {
+            KenaiUser ku = kenaiUsersMap.get(al.getAuthor());
+            if(ku != null) {
+                Icon icon = ku.getIcon();
+                g.drawImage(
+                        ImageUtilities.icon2Image(icon),
+                        textx + g.getFontMetrics(g.getFont()).stringWidth(annotation) + 2,
+                        texty - g.getFont().getSize(),
+                        icon.getIconWidth(),
+                        icon.getIconHeight(),
+                        component);
+            }
+        }
+    }
+
+    boolean isKenai() {
+        return kenaiUsersMap != null && kenaiUsersMap.size() > 0;
+    }
+
+    KenaiUser getKenaiUser(String author) {
+        if(kenaiUsersMap == null) {
+            return null;
+        }
+        return kenaiUsersMap.get(author);
     }
 
     /**

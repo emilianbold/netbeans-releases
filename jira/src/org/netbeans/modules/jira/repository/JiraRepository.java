@@ -95,7 +95,7 @@ public class JiraRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
-    private IssueCache cache;
+    private IssueCache<TaskData> cache;
     private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
@@ -255,9 +255,11 @@ public class JiraRepository extends Repository {
         getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
             NamedFilter[] filters = cmd.getNamedFilters();
-            for (NamedFilter nf : filters) {
-                JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
-                ret.add(q);
+            if(filters != null) {
+                for (NamedFilter nf : filters) {
+                    JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
+                    ret.add(q);
+                }
             }
         }
         return ret;
@@ -325,7 +327,7 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    public IssueCache getIssueCache() {
+    public IssueCache<TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }

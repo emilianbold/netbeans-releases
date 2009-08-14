@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -55,7 +56,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class CacheFolder {
+public final class CacheFolder {
 
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"index";    //NOI18N
@@ -68,9 +69,8 @@ public class CacheFolder {
     private static int index = 0;
 
 
-    private static void loadSegments () throws IOException {
+    private static void loadSegments(FileObject folder) throws IOException {
         if (segments == null) {
-            final FileObject folder = getCacheFolder();
             assert folder != null;
             segments = new Properties ();
             invertedSegments = new HashMap<String,String> ();
@@ -97,8 +97,7 @@ public class CacheFolder {
     }
 
 
-    private static void storeSegments () throws IOException {
-        final FileObject folder = getCacheFolder();
+    private static void storeSegments(FileObject folder) throws IOException {
         assert folder != null;
         final FileObject segmentsFile = FileUtil.createData(folder, SEGMENTS_FILE);
         final OutputStream out = segmentsFile.getOutputStream();
@@ -125,32 +124,43 @@ public class CacheFolder {
         return null;
     }
 
-    public static synchronized FileObject getDataFolder (final URL root) throws IOException {
+    public static FileObject getDataFolder (final URL root) throws IOException {
         return getDataFolder(root, false);
     }
 
-    public static synchronized FileObject getDataFolder (final URL root, boolean onlyIfAlreadyExists) throws IOException {
-        loadSegments ();
-        final String rootName = root.toExternalForm();
-        String slice = invertedSegments.get (rootName);
-        if ( slice == null) {
-            if (onlyIfAlreadyExists)
-                return null;
-            slice = SLICE_PREFIX + (++index);
-            while (segments.getProperty(slice) != null) {
-                slice = SLICE_PREFIX + (++index);
+    public static FileObject getDataFolder (final URL root, final boolean onlyIfAlreadyExists) throws IOException {
+        final FileObject _cacheFolder = getCacheFolder();
+        final FileObject [] dataFolder = new FileObject[] { null };
+
+        // #170182 - preventing filesystem events being fired from under the CacheFolder.class lock
+        _cacheFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                synchronized (CacheFolder.class) {
+                    loadSegments(_cacheFolder);
+                    final String rootName = root.toExternalForm();
+                    String slice = invertedSegments.get (rootName);
+                    if ( slice == null) {
+                        if (onlyIfAlreadyExists) {
+                            return;
+                        }
+                        slice = SLICE_PREFIX + (++index);
+                        while (segments.getProperty(slice) != null) {
+                            slice = SLICE_PREFIX + (++index);
+                        }
+                        segments.put (slice,rootName);
+                        invertedSegments.put(rootName, slice);
+                        storeSegments(_cacheFolder);
+                    }
+                    if (onlyIfAlreadyExists) {
+                        dataFolder[0] = _cacheFolder.getFileObject(slice);
+                    } else {
+                        dataFolder[0] = FileUtil.createFolder(_cacheFolder, slice);
+                    }
+                }
             }
-            segments.put (slice,rootName);
-            invertedSegments.put(rootName, slice);
-            storeSegments ();
-        }
-        final FileObject folder = getCacheFolder();
-        if (onlyIfAlreadyExists) {
-            return folder.getFileObject(slice);
-        }
-        else {
-            return FileUtil.createFolder(folder, slice);
-        }
+        });
+
+        return dataFolder[0];
     }
 
     private static String getNbUserDir () {
@@ -189,5 +199,9 @@ public class CacheFolder {
         segments = null;
         invertedSegments = null;
         index = 0;
+    }
+
+    private CacheFolder() {
+        // no-op
     }
 }

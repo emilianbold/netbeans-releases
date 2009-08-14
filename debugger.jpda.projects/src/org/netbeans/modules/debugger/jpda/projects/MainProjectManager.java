@@ -220,6 +220,9 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
                 pcs.firePropertyChange (PROP_MAIN_PROJECT, old, theMainProject);
             }
         } else if (evt.getSource() == a && "enabled".equals(evt.getPropertyName()) && !a.isEnabled() ||
+                   // If the action is enabled, enable(Project) method is called.
+                   // Here we unset the main project if action gets disabled and
+                   // there do not remain any opened projects.
                    OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             // Test if the current project is still opened:
             Project[] openProjects = OpenProjects.getDefault().getOpenProjects();

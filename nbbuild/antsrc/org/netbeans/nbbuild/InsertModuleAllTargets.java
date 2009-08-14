@@ -189,6 +189,9 @@ public final class InsertModuleAllTargets extends Task {
                 Ant ant = (Ant) prj.createTask("ant");
                 ant.setDir(prj.resolveFile("../" + path));
                 ant.setTarget("netbeans");
+                Property property = ant.createProperty();
+                property.setName(ParseProjectXml.DO_NOT_RECURSE);
+                property.setValue("true");
                 t.addTask(ant);
             }
         } catch (IOException e) {

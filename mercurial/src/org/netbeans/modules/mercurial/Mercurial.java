@@ -141,7 +141,7 @@ public class Mercurial {
 
     private void init() {
         setDefaultPath();
-        fileStatusCache = "true".equals(System.getProperty("mercurial.newGenerationCache", "false")) ? new FileStatusCacheNewGeneration() : new FileStatusCache(); //NOI18N
+        fileStatusCache = "false".equals(System.getProperty("mercurial.newGenerationCache", "true")) ? new FileStatusCache() : new FileStatusCacheNewGeneration(); //NOI18N
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         fileStatusCache.addPropertyChangeListener(mvcs);

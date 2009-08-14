@@ -46,8 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,7 +91,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                                                      DebuggerManagerListener {
 
     private final Map<JPDABreakpoint, Set<Annotation>> breakpointToAnnotations =
-            new HashMap<JPDABreakpoint, Set<Annotation>>();
+            new IdentityHashMap<JPDABreakpoint, Set<Annotation>>();
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
