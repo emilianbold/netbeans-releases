@@ -249,15 +249,24 @@ made subject to such option by the copyright holder.
                         <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
+                <!--dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxws21api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                     <build-prerequisite/>
@@ -292,7 +301,7 @@ made subject to such option by the copyright holder.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
+                <dependency>
                     <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -300,7 +309,7 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.10</specification-version>
                     </run-dependency>
-                </dependency-->
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
                     <build-prerequisite/>
@@ -507,6 +516,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.bpel.samples</friend>
                 <friend>org.netbeans.modules.soa.samples</friend>
+                <friend>org.netbeans.modules.xslt.samples</friend>
                 <friend>org.netbeans.modules.iep.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>

@@ -40,20 +40,24 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.helper.ProjectHelperImpl;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
@@ -177,64 +181,78 @@ public class CasaBuilder {
      * 
      * @return the new CASA document
      */
-    public Document createCasaDocument(Document jbiDocument) {
-        try {
-            DocumentBuilderFactory factory =
-                    DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
+    public Document createCasaDocument(Document jbiDocument) throws Exception {
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
 
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            newCasaDocument = builder.newDocument();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        newCasaDocument = builder.newDocument();
 
-            Element casaRoot = newCasaDocument.createElement(CASA_ELEM_NAME);
-            newCasaDocument.appendChild(casaRoot);
-            casaRoot.setAttribute("xmlns", CASA_NAMESPACE_URI);
-            casaRoot.setAttribute("xmlns:" + XLINK_NAMESPACE_PREFIX, XLINK_NAMESPACE_URI);
+        Element casaRoot = newCasaDocument.createElement(CASA_ELEM_NAME);
+        newCasaDocument.appendChild(casaRoot);
+        casaRoot.setAttribute("xmlns", CASA_NAMESPACE_URI);
+        casaRoot.setAttribute("xmlns:" + XLINK_NAMESPACE_PREFIX, XLINK_NAMESPACE_URI);
 
-            // build binding component namespace to ID map
-            bcNamespace2NameMap = wsdlRepository.buildBindingComponentMap(project);
+        // build binding component namespace to ID map
+        bcNamespace2NameMap = wsdlRepository.buildBindingComponentMap(project);
 
-            // Prepare various endpoint lists
-            deletedBCEndpointsMap = getDeletedBCEndpointsMap();
-            oldUnconnectedBCEndpointsMap = getUnconnectedBCEndpointsMap();
+        // Prepare various endpoint lists
+        deletedBCEndpointsMap = getDeletedBCEndpointsMap();
+        oldUnconnectedBCEndpointsMap = getUnconnectedBCEndpointsMap();
 
-            // endpoints
-            Element casaEndpoints = createEndpoints(jbiDocument);
-            casaRoot.appendChild(casaEndpoints);
+        // endpoints
+        Element casaEndpoints = createEndpoints(jbiDocument);
+        casaRoot.appendChild(casaEndpoints);
 
-            // service units
-            Element casaServiceUnits = createSUs(jbiDocument);
-            casaRoot.appendChild(casaServiceUnits);
+        // service units
+        Element casaServiceUnits = createSUs(jbiDocument);
+        casaRoot.appendChild(casaServiceUnits);
 
-            // connections
-            Element casaConnections = createConnections(jbiDocument);
-            casaRoot.appendChild(casaConnections);
+        // connections
+        Element casaConnections = createConnections(jbiDocument);
+        casaRoot.appendChild(casaConnections);
 
-            // porttypes, bindings, services
-            List<Element> casaWSDLReferences = createWSDLReferenceElements();
-            for (Element casaElement : casaWSDLReferences) {
-                casaRoot.appendChild(casaElement);
-            }
+        // porttypes, bindings, services
+        List<Element> casaWSDLReferences = createWSDLReferenceElements();
+        for (Element casaElement : casaWSDLReferences) {
+            casaRoot.appendChild(casaElement);
+        }
 
-            // regions
-            Element casaRegions = createRegions();
-            casaRoot.appendChild(casaRegions);
+        // regions
+        Element casaRegions = createRegions();
+        casaRoot.appendChild(casaRegions);
 
-            //        preserveCasaWSDLEndpointsAndPorts();
+        //        preserveCasaWSDLEndpointsAndPorts();
 
-            mergeLocations();
+        mergeLocations();
 
-            // Merge endpoint extension elements from old casa
-            mergeEndpointExtensions(true);
-            mergeEndpointExtensions(false);
+        // Merge endpoint extension elements from old casa
+        mergeEndpointExtensions(true);
+        mergeEndpointExtensions(false);
 
-            // Merge connection extension elements from old casa
-            mergeConnectionExtensions();
+        // Merge connection extension elements from old casa
+        mergeConnectionExtensions();
 
+        File oldCasaFile = new File(casaFileLoc);
+        if (!oldCasaFile.exists()) {
             XmlUtil.writeToFile(casaFileLoc, newCasaDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log(e.getMessage());
+        } else {
+            File tmpNewCasaFile = File.createTempFile(project.getBaseDir().getName() /*project.getName()*/, "casa");
+            tmpNewCasaFile.deleteOnExit();
+            XmlUtil.writeToFile(tmpNewCasaFile.getCanonicalPath(), newCasaDocument);
+
+            long oldChecksum = MyFileUtil.getFileChecksum(oldCasaFile);
+            long newChecksum = MyFileUtil.getFileChecksum(tmpNewCasaFile);
+            if (oldChecksum != newChecksum) {
+                if (oldCasaFile.canWrite()) {
+                    XmlUtil.writeToFile(casaFileLoc, newCasaDocument);
+                } else {
+                    throw new IOException("Can not update src/conf/" + oldCasaFile.getName() + " during build. "
+                            + "You might need to check out this file if it is under version control. "
+                            + "See http://www.netbeans.org/issues/show_bug.cgi?id=161537 for more info.");
+                }
+            }
         }
 
         return newCasaDocument;

@@ -66,9 +66,9 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Element;
@@ -85,10 +85,13 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -99,14 +102,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Chris Webster
  */
-@AntBasedProjectRegistration(
-    type=JbiProjectType.TYPE,
-    iconResource="org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png",
-    sharedNamespace=JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=JbiProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
 public final class JbiProject implements Project, AntProjectListener, ProjectPropertyProvider {
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png", false); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(
+            Utilities.loadImage(
+            "org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png" // NOI18N
+            )
+            ); // NOI18N
     
     /**
      * DOCUMENT ME!
@@ -161,6 +162,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    private AntBasedProjectType abpt;
     private JbiLogicalViewProvider lvp;    
     private FileChangeListener casaFileListener;
     
@@ -175,9 +177,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      *
      * @throws IOException DOCUMENT ME!
      */
-    public JbiProject(final AntProjectHelper helper)
+    public JbiProject(final AntProjectHelper helper, AntBasedProjectType abpt)
     throws IOException {
         this.helper = helper;
+        this.abpt = abpt;
         eval = createEvaluator();
         
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
@@ -192,6 +195,15 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
 //                CasaHelper.registerCasaFileListener(JbiProject.this);
 //            }
 //        });
+    }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AntBasedProjectType getAntBasedProjectType() {
+        return abpt;
     }
     
     /**
@@ -249,7 +261,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 helper.getStandardPropertyEvaluator(), new String[] {"${src.dir}/*.java"}, // NOI18N
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(
                 JbiCustomizerProvider.class, "LBL_Node_EJBModule" // NOI18N
                 );
@@ -275,9 +287,15 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 srcJavaLabel, /*XXX*/
                 null, null
                 );
-        sourcesHelper.registerExternalRoots(
-                FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
-                );
+        ProjectManager.mutex().postWriteRequest(
+                new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(
+                        FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
+                        );
+            }
+        }
+        );
         
         casaFileListener = new FileChangeAdapter() {
             @Override

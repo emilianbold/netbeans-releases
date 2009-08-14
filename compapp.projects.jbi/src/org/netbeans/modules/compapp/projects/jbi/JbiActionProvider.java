@@ -70,7 +70,6 @@ import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
@@ -107,16 +106,25 @@ public class JbiActionProvider implements ActionProvider {
         COMMAND_REBUILD,
         COMMAND_DEBUG
     };
-    /**
-     * DOCUMENT ME!
-     */
-    JbiProject project;
+
+    private JbiProject project;
 
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
+
     /** Map from commands to ant targets */
-    Map<String, String[]> commands;
+    private Map<String, String[]> commands;
+
+    private static final String TARGET_NAME_RUN = "run"; // NOI18N
+    private static final String TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD = "run-jbi-deploy-without-build"; // NOI18N
+    private static final String TARGET_NAME_UNDEPLOY = "undeploy"; // NOI18N
+    private static final String TARGET_NAME_JBI_BUILD = "jbi-build"; // NOI18N
+    private static final String TARGET_NAME_JBI_CLEAN_BUILD = "jbi-clean-build"; // NOI18N
+    private static final String TARGET_NAME_JBI_CLEAN_CONFIG = "jbi-clean-config"; // NOI18N
+    private static final String TARGET_NAME_TEST = "test"; // NOI18N
+    private static final String TARGET_NAME_DEBUG = "debug"; // NOI18N
+    private static final String TARGET_NAME_CLEAN = "clean"; // NOI18N
 
     /**
      * Creates a new JbiActionProvider object.
@@ -127,22 +135,21 @@ public class JbiActionProvider implements ActionProvider {
      */
     public JbiActionProvider(JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap<String, String[]>();
-        commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[]{"undeploy"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[]{"jbi-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[]{"jbi-clean-config"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[]{"jbi-clean-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[]{"validate-portmaps"}); // NOI18N
-        // Start Test Framework
-        commands.put(JbiProjectConstants.COMMAND_TEST, new String[]{"test"}); // NOI18N
-        // End Test Framework
+        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN});
+        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN});
+        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[]{TARGET_NAME_UNDEPLOY});
+        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[]{TARGET_NAME_JBI_BUILD});
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[]{TARGET_NAME_JBI_CLEAN_CONFIG});
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[]{TARGET_NAME_JBI_CLEAN_BUILD});
+        commands.put(JbiProjectConstants.COMMAND_TEST, new String[]{TARGET_NAME_TEST});
+        //commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[]{"validate-portmaps"});
+
         // map common project action to jbi ones
-        commands.put(COMMAND_BUILD, new String[]{"jbi-build"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[]{"jbi-clean-build"}); // NOI18N
-        commands.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
-        // end map common project action to jbi ones
+        commands.put(COMMAND_CLEAN, new String[]{TARGET_NAME_CLEAN});
+        commands.put(COMMAND_BUILD, new String[]{TARGET_NAME_JBI_BUILD});
+        commands.put(COMMAND_REBUILD, new String[]{TARGET_NAME_JBI_CLEAN_BUILD});
+        commands.put(COMMAND_DEBUG, new String[]{TARGET_NAME_DEBUG});
+
         this.antProjectHelper = antProjectHelper;
         this.project = project;
         this.refHelper = refHelper;
@@ -181,6 +188,18 @@ public class JbiActionProvider implements ActionProvider {
      */
     public void invokeAction(final String command, Lookup context)
             throws IllegalArgumentException {
+
+        // #160224
+        JbiProjectProperties props = project.getProjectProperties();
+        Boolean skipBuildWhenDeploy = (Boolean) props.get(JbiProjectProperties.SKIP_BUILD_WHEN_DEPLOY);
+
+        if (skipBuildWhenDeploy) { // skip "jbi-build" ant task
+            commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD});
+            commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD});
+        } else {
+            commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN});
+            commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN});
+        }
 
         // starting server could be time consuming
         new Thread(new Runnable() {

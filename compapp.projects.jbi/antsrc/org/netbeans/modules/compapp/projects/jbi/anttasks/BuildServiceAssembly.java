@@ -205,7 +205,6 @@ public class BuildServiceAssembly extends Task {
         String catalogDirLoc = serviceUnitsDirLoc
                 + File.separator + "META-INF"; // NOI18N
 
-        String connectionsFileLoc = confDirLoc + "connections.xml";
         String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
 
         // create confDir if needed..
@@ -296,19 +295,11 @@ public class BuildServiceAssembly extends Task {
             ConnectionResolver connectionResolver = 
                     new ConnectionResolver(this, showLog, saInternalRouting);
             connectionResolver.resolveConnections(mRepo, !bcAutoConnect, oldCasaDocument);
-            
-            // Write connections to connections.xml
-            log("Writing connections out to connections.xml...");
-            SAConnectionsBuilder dd = new SAConnectionsBuilder();
-            String saName = AntProjectHelper.getServiceAssemblyID(p);
-            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
-            dd.buildDOMTree(connectionResolver, saName, saDescription, oldCasaDocument);
-            dd.writeToFile(connectionsFileLoc);
-            
+                        
             // Generate SA jbi.xml,
             log("Generating Service Assembly jbi.xml...");
             generateServiceAssemblyDescriptor(
-                    connectionResolver, connectionsFileLoc, jbiFileLoc, oldCasaDocument);
+                    connectionResolver, jbiFileLoc, oldCasaDocument);
             
             // Todo: 08/22/06 merge catalogs
             log("Merging component projects' catalogs...");
@@ -419,7 +410,9 @@ public class BuildServiceAssembly extends Task {
             // 01/25/08, disabled, see IZ#115609 and 113026
             // filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
-            log("ERROR: " + e.toString(), Project.MSG_ERR);
+            log("ERROR: " + e.getMessage(), Project.MSG_ERR);
+            //e.printStackTrace();
+            throw new BuildException("Build Failure.");
         } finally {
             try {
                 if (genericBCJar != null) {
@@ -744,24 +737,17 @@ public class BuildServiceAssembly extends Task {
      * @param jbiFileLoc
      */
     private void generateServiceAssemblyDescriptor(ConnectionResolver connectionResolver,
-            String conFileLoc,
             String jbiFileLoc,
             Document casaDocument) {  
         
+        if (jbiDocument == null) {
+            return;
+        }
+
         Set<String> outputBCNames = connectionResolver.getBCNames();
         
         try {
-            
             SAConnectionsBuilder dd = new SAConnectionsBuilder();
-            Project p = getProject();
-            String saName = AntProjectHelper.getServiceAssemblyID(p);
-            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
-            dd.buildDOMTree(connectionResolver, saName, saDescription, casaDocument);
-            dd.writeToFile(conFileLoc);
-            
-            if (jbiDocument == null) {
-              return;
-            }
             NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
             if ((sas != null) && (sas.getLength() > 0)) {
                 Element sa = (Element) sas.item(0);

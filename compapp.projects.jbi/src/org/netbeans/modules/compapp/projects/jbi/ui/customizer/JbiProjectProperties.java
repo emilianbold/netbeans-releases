@@ -74,6 +74,7 @@ import org.openide.util.NbBundle;
 import org.w3c.dom.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -96,6 +97,7 @@ import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
+import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -344,6 +346,9 @@ public class JbiProjectProperties {
     
     public static final String OSGI_SUPPORT = "osgi.support"; // NOI18N
     public static final String OSGI_CONTAINER_DIR = "osgi.container.dir"; // NOI18N
+
+    public static final String SKIP_BUILD_WHEN_DEPLOY = "skip.build.when.deploy"; // NOI18N
+
     
     //================== Start of JBI  =====================================//
     
@@ -549,6 +554,7 @@ public class JbiProjectProperties {
         new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
         new PropertyDescriptor(OSGI_SUPPORT, PROJECT, BOOLEAN_PARSER),
         new PropertyDescriptor(OSGI_CONTAINER_DIR, PROJECT, STRING_PARSER),
+        new PropertyDescriptor(SKIP_BUILD_WHEN_DEPLOY, PROJECT, BOOLEAN_PARSER),
 
         // This should be OS-agnostic
         new PropertyDescriptor(JBI_CONTENT_ADDITIONAL, PROJECT, SEMICOLON_PATH_PARSER),
@@ -593,6 +599,7 @@ public class JbiProjectProperties {
     private HashMap<String, PropertyInfo> properties;
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
+    private AntBasedProjectType abpt;
     private List<VisualClassPathItem> bindingList = new Vector();
     private List<AntArtifact> sunresourceProjs;
     javax.swing.text.Document DIST_JAR_MODEL;
@@ -611,6 +618,7 @@ public class JbiProjectProperties {
         this.properties = new HashMap<String, PropertyInfo>();
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
+        this.abpt = project.getAntBasedProjectType();
         read();
         
         PropertyEvaluator evaluator = antProjectHelper.getStandardPropertyEvaluator();
@@ -1157,8 +1165,11 @@ public class JbiProjectProperties {
             compFileDst = path + File.separator + JbiProject.COMPONENT_INFO_FILE_NAME; 
             jbiFileLoc = path + File.separator + JbiProject.ASSEMBLY_INFO_FILE_NAME; 
         }
-        
+
         try {
+            File tmpNewJbiFile = File.createTempFile(project.getName(), "asi"); // NOI18N
+            tmpNewJbiFile.deleteOnExit();
+        
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = builder.newDocument();
             Element root = document.createElement("jbi"); // NOI18N
@@ -1213,9 +1224,7 @@ public class JbiProjectProperties {
             
             TransformerFactory tFactory = TransformerFactory.newInstance();
             Transformer transformer = tFactory.newTransformer();
-            DOMSource source = new DOMSource(document);
-            StreamResult result = new StreamResult(new File(jbiFileLoc));
-            
+
             //tFactory.setAttribute("indent-number", new Integer(4));
             // indent the output to make it more legible...
             transformer.setOutputProperty(OutputKeys.METHOD, "xml"); // NOI18N
@@ -1224,15 +1233,40 @@ public class JbiProjectProperties {
             transformer.setOutputProperty(OutputKeys.STANDALONE, "yes"); // NOI18N
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); // NOI18N
             transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
-            
-            transformer.transform(source, result);
+
+            DOMSource source = new DOMSource(document);
+
+            // #160977 The patch here avoids the particular code path
+            // in javax.xml.transform.stream.StreamResult(File) that fails
+            // by making the OutputStream ourselves.
+            FileOutputStream jbiFileOS = null;
+            try {
+                jbiFileOS = new FileOutputStream(tmpNewJbiFile);
+                StreamResult result = new StreamResult(jbiFileOS);
+                transformer.transform(source, result);
+            } finally {
+                if (jbiFileOS != null) {
+                    jbiFileOS.close();
+                }
+            }
+
+            File jbiFile = new File(jbiFileLoc);
+            if (jbiFile.exists()) {
+                long oldChecksum = MyFileUtil.getFileChecksum(jbiFile);
+                long newChecksum = MyFileUtil.getFileChecksum(tmpNewJbiFile);
+                if (oldChecksum != newChecksum) {
+                    MyFileUtil.copy(tmpNewJbiFile, jbiFile);
+                }
+            } else {
+                MyFileUtil.copy(tmpNewJbiFile, jbiFile);
+            }
             
         } catch (Exception e) {
             //ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
             e.printStackTrace();
         }
     }
-    
+
     public void fixComponentTargetList() {
         
         List<VisualClassPathItem> items =

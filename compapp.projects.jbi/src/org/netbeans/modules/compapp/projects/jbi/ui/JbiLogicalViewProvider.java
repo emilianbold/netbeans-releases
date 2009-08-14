@@ -149,7 +149,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         this.resolver = resolver;
         
         if (mEmpty != null) {
-            mEmptyIcon = ImageUtilities.mergeImages(mIcon, mEmpty, 8, 0);
+            mEmptyIcon = Utilities.mergeImages(mIcon, mEmpty, 8, 0);
         }
         
 //        isEmpty = isProjectEmpty();
