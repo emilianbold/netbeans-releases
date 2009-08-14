@@ -78,27 +78,25 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         log.finest("functionCalls:");
         for (FunctionCallWithMetric functionCall : functionCalls) {
             log.finest("  getDisplayedName " + functionCall.getDisplayedName());
-            log.finest("  getDisplayedName " + functionCall.getFunction());
-            log.finest("  getDisplayedName " + functionCall.getFunction().getName());
-            log.finest("  getDisplayedName " + functionCall.getFunction().getQuilifiedName());
-            StringBuilder sb = new StringBuilder(functionCall.getFunction().toString());
-            sb.append(" ["); // NOI18N
-            for (Column column : metrics) {
-                String metricId = column.getColumnName();
-                Object metricVal = functionCall.getMetricValue(metricId);
-                String metricUName = column.getColumnUName();
-                sb.append(metricUName + "=" + metricVal + " "); // NOI18N
-            }
+            log.finest("  getFunction " + functionCall.getFunction());
+            log.finest("  getFunction().getName() " + functionCall.getFunction().getName());
+            log.finest("  getFunction().getQuilifiedName() " + functionCall.getFunction().getQuilifiedName());
 
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
-                    sb.append(sourceFileInfo.getFileName() + ":"); // NOI18N
+                    log.finer(sourceFileInfo.getFileName() + "\n"); // NOI18N
                 }
-                sb.append(sourceFileInfo.getLine());
+                log.finer("  line=" + sourceFileInfo.getLine() + "\n"); // NOI18N);
+                log.finer("  column=" + sourceFileInfo.getColumn() + "\n"); // NOI18N););
+                log.finer("  offset=" + sourceFileInfo.getOffset() + "\n"); // NOI18N););
+                for (Column column : metrics) {
+                    String metricId = column.getColumnName();
+                    Object metricVal = functionCall.getMetricValue(metricId);
+                    String metricUName = column.getColumnUName();
+                    log.finer("  " + metricUName + "=" + metricVal + "\n"); // NOI18N
+                }
             }
-            sb.append("]"); // NOI18N
-            log.finest("  " + sb.toString());
             log.finest("  " + functionCall);
         }
     }
