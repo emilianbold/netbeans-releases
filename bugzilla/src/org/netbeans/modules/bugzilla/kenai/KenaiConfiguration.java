@@ -87,8 +87,8 @@ public class KenaiConfiguration extends BugzillaConfiguration {
         List<String> knownProducts = super.getProducts();
         for (String knownProduct : products) {
             if(!knownProducts.contains(knownProduct)) {
-                rc = null;
                 initialize(repository, true);
+                rc = null;
                 break;
             }
         }

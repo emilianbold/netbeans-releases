@@ -303,7 +303,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
         public void closeQueries() {
             for (QueryHandle qh : queries) {
-                QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+                if(qh instanceof QueryHandleImpl) {
+                    QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+                }
             }
             synchronized (projectListeners) {
                 ph.removePropertyChangeListener(this);
