@@ -112,6 +112,7 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         transferFilter = TransferFilter.getEmbeddableDownloadDialog(remoteFiles);
         transferFilter.addUpdateUnitListener(transferFilterListener);
 
+        filesPanel.removeAll();
         filesPanel.add(transferFilter);
 
         statusLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "LBL_Confirmation")); // NOI18N

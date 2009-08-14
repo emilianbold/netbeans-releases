@@ -163,6 +163,14 @@ public final class PhpUnit extends PhpProgram {
                 .workingDirectory(new File(getProgram()).getParentFile());
     }
 
+    // #170120
+    public File getWorkingDirectory(ConfigFiles configFiles, File defaultWorkingDirectory) {
+        if (configFiles.configuration != null) {
+            return configFiles.configuration.getParentFile();
+        }
+        return defaultWorkingDirectory;
+    }
+
     // XXX see 2nd paragraph
     /**
      * The minimum version of PHPUnit is <b>3.3.0</b> because:

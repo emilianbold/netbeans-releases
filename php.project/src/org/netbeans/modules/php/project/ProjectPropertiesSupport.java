@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
@@ -96,8 +95,8 @@ public final class ProjectPropertiesSupport {
         project.addWeakPropertyEvaluatorListener(listener);
     }
 
-    public static void addWeakIgnoredFoldersListener(PhpProject project, ChangeListener listener) {
-        project.addWeakIgnoredFoldersListener(listener);
+    public static void addWeakIgnoredFilesListener(PhpProject project, ChangeListener listener) {
+        project.addWeakIgnoredFilesListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -204,10 +203,6 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
-    }
-
-    public static Set<FileObject> getIgnoredFolders(PhpProject project) {
-        return project.getIgnoredFolders();
     }
 
     /**
@@ -365,8 +360,7 @@ public final class ProjectPropertiesSupport {
     public static List<PhpFrameworkProvider> getFrameworks(PhpProject project) {
         // XXX: improve performance
         List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
-        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
-        assert phpModule != null;
+        PhpModule phpModule = project.getPhpModule();
         for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             if (frameworkProvider.isInPhpModule(phpModule)) {
                 frameworks.add(frameworkProvider);
