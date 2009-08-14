@@ -206,10 +206,16 @@ public abstract class Issue {
         final ProgressHandle[] handle = new ProgressHandle[1];
         handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
         handle[0].start();
+        IssueTopComponent _tc = null;
+        try {
+        _tc = IssueTopComponent.find(issueId);
+        } catch (NullPointerException e) {
+            handle[0].finish();
+            throw e;
+        }
+        final IssueTopComponent tc = _tc;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    final IssueTopComponent tc = IssueTopComponent.find(issueId);
                     final Issue issue = tc.getIssue();
                     if (issue == null) {
                         tc.initNoIssue();
@@ -258,10 +264,6 @@ public abstract class Issue {
                             }
                         }
                     });
-                } catch (NullPointerException e) { // tc.find(...) on not initialized TC
-                    handle[0].finish();
-                    throw e;
-                }
             }
         });
     }
