@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
+import org.netbeans.modules.dlight.util.ui.Renderer;
 import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
     private String emptyAnalyzeMessage;
     private List<String> hiddenColumns;
     private boolean dualPaneMode;
-    private DetailsRenderer<DataRow> dataRowRenderer;
+    private Renderer<DataRow> dataRowRenderer;
 
     static{
         AdvancedTableViewVisualizerConfigurationAccessor.setDefault(new AdvancedTableViewVisualizerConfigurationAccessorImpl());
@@ -136,7 +137,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         this.dualPaneMode = dualPaneMode;
     }
 
-    public void setDataRowRenderer(DetailsRenderer<DataRow> dataRowRenderer) {
+    public void setDataRowRenderer(Renderer<DataRow> dataRowRenderer) {
         this.dataRowRenderer = dataRowRenderer;
     }
 
@@ -172,7 +173,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         return VisualizerConfigurationIDsProvider.ADVANCED_TABLE_VISUALIZER;
     }
 
-    private DetailsRenderer<DataRow> getDataRowRenderer() {
+    private Renderer<DataRow> getDataRowRenderer() {
         return dataRowRenderer;
     }
 
@@ -274,7 +275,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         }
 
         @Override
-        public DetailsRenderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration) {
+        public Renderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration) {
             return configuration.getDataRowRenderer();
         }
     }

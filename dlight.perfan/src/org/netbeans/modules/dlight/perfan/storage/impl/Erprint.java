@@ -209,7 +209,7 @@ final class Erprint {
         ArrayList<String> result = new ArrayList<String>();
 
         for (String str : stat) {
-            if (str.matches("^ *[0-9]+.*")) { // NOI18N
+            if (str.matches("^ *[0-9]+.*") && !str.contains("<Total>")) { // NOI18N
                 result.add(str.trim());
                 if (--limit == 0) {
                     break;
