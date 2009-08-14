@@ -41,10 +41,14 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -73,6 +77,8 @@ import org.openide.util.actions.Presenter;
  * @author tester
  */
 public class KenaiPopupMenu extends CookieAction {
+
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -124,13 +130,23 @@ public class KenaiPopupMenu extends CookieAction {
                 kenaiPopup.setVisible(true);
                 KenaiFeature[] issueTrackers = null;
                 try {
-                    issueTrackers = Kenai.getDefault().getProject(kenaiProj.getId()).getFeatures(Type.ISSUES);
+                    if (kenaiProj != null) {
+                        issueTrackers = Kenai.getDefault().getProject(kenaiProj.getId()).getFeatures(Type.ISSUES);
+                        if (issueTrackers != null && issueTrackers.length > 0) {
+                            kenaiPopup.add(new LazyFindIssuesAction(kenaiProj));
+                            kenaiPopup.add(new LazyNewIssuesAction(kenaiProj));
+                            kenaiPopup.add(new JSeparator());
+                        }
+                    }
+                    String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                    final Matcher m = repositoryPattern.matcher(projRepo);
+                    if (m.matches()) {
+                        kenaiPopup.add(new LazyOpenKenaiProjectAction(m.group(4)));
+                    } else {
+                        kenaiPopup.setVisible(false);
+                    }
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
-                }
-                if (issueTrackers.length > 0) {
-                    kenaiPopup.add(new LazyFindIssuesAction(kenaiProj));
-                    kenaiPopup.add(new LazyNewIssuesAction(kenaiProj));
                 }
             }
             return kenaiPopup;
@@ -138,6 +154,7 @@ public class KenaiPopupMenu extends CookieAction {
 
         private synchronized boolean isKenaiProject(Project proj) {
             assert proj != null;
+
             ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
             for (int i = 0; i < openProjects.length; i++) {
                 ProjectHandle projectHandle = openProjects[i];
@@ -157,6 +174,14 @@ public class KenaiPopupMenu extends CookieAction {
                     }
                 }
             }
+
+            String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+            if (projRepo != null) {
+                final Matcher m = repositoryPattern.matcher(projRepo);
+                if (m.matches()) {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -169,7 +194,7 @@ class LazyFindIssuesAction extends JMenuItem {
 
     final ProjectHandle kph;
 
-    public LazyFindIssuesAction(final ProjectHandle kenaiProj) {
+    public LazyFindIssuesAction(ProjectHandle kenaiProj) {
         super(NbBundle.getMessage(KenaiPopupMenu.class, "FIND_ISSUE")); //NOI18N
         kph = kenaiProj;
         this.addActionListener(new ActionListener() {
@@ -193,7 +218,7 @@ class LazyNewIssuesAction extends JMenuItem {
 
     final ProjectHandle kph;
 
-    public LazyNewIssuesAction(final ProjectHandle kenaiProj) {
+    public LazyNewIssuesAction(ProjectHandle kenaiProj) {
         super(NbBundle.getMessage(KenaiPopupMenu.class, "NEW_ISSUE")); //NOI18N
         kph = kenaiProj;
         this.addActionListener(new ActionListener() {
@@ -206,6 +231,48 @@ class LazyNewIssuesAction extends JMenuItem {
                         handle.start();
                         QueryAccessor.getDefault().getCreateIssueAction(kph).actionPerformed(e);
                         handle.finish();
+                    }
+                });
+            }
+        });
+    }
+}
+
+class LazyOpenKenaiProjectAction extends JMenuItem {
+
+    public LazyOpenKenaiProjectAction(final String kenaiProjectUniqueName) {
+        super(NbBundle.getMessage(KenaiPopupMenu.class, "OPEN_CORRESPONDING_KENAI_PROJ")); //NOI18N
+        this.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        KenaiTopComponent.findInstance().open();
+                        KenaiTopComponent.findInstance().requestActive();
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
+                                ProgressHandle handle = null;
+                                try {
+                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
+                                    handle.start();
+                                    KenaiProject kp = null;
+                                    kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                    if (kp != null) {
+                                        final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                        DashboardImpl.getInstance().addProject(pHandle, false);
+                                        DashboardImpl.getInstance().selectAndExpand(kp);
+                                    }
+                                } catch (KenaiException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } finally {
+                                    if (handle != null) {
+                                        handle.finish();
+                                    }
+                                }
+                            }
+                        });
                     }
                 });
             }

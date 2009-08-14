@@ -43,6 +43,8 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -68,6 +70,8 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.Presenter;
 
 public final class ShareAction extends CookieAction {
+
+    private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     protected void performAction(Node[] activatedNodes) {
         assert activatedNodes.length == 1;
@@ -167,6 +171,13 @@ public final class ShareAction extends CookieAction {
                     }
                 }
             }
+            String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
+            if (projRepo != null) {
+                final Matcher m = repositoryPattern.matcher(projRepo);
+                if (m.matches()) {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -186,21 +197,10 @@ public final class ShareAction extends CookieAction {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (Subversion.isClientAvailable(true)) {
-
-                try {
-                    WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(DataObject.find(proj.getProjectDirectory()).getNodeDelegate()));
-                    wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-                    wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class, "ShareAction.dialogTitle"));
-                    DialogDisplayer.getDefault().notify(wizardDescriptor);
-                    boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-                    if (!cancelled) {
-                        Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
-                        showDashboard(createdProjects);
-                    }
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            try {
+                ShareAction.actionPerformed(DataObject.find(proj.getProjectDirectory()).getNodeDelegate());
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
