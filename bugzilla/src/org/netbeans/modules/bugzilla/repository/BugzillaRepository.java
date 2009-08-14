@@ -88,7 +88,7 @@ public class BugzillaRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
-    private IssueCache cache;
+    private IssueCache<TaskData> cache;
     private BugzillaExecutor executor;
     private Image icon;
     private BugzillaConfiguration bc;
@@ -309,7 +309,7 @@ public class BugzillaRepository extends Repository {
         return l.toArray(new Query[l.size()]);
     }
 
-    public IssueCache getIssueCache() {
+    public IssueCache<TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
