@@ -73,6 +73,9 @@
                 <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
                 <attr name="position" intvalue="150"/>
             </file>
+            <file name="org-netbeans-modules-kenai-ui-KenaiPopupMenu.instance">
+                <attr name="position" intvalue="151"/>
+            </file>
         </folder>
     </folder>
 <!--    <folder name="Loaders">
