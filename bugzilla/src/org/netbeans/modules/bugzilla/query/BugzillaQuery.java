@@ -213,11 +213,6 @@ public class BugzillaQuery extends Query {
             }
         });
 
-        if(isSaved()) {
-            // persist last refresh etc.
-            BugzillaConfig.getInstance().putQuery(repository, BugzillaQuery.this);
-        }
-
         return ret[0];
     }
 
