@@ -43,7 +43,7 @@
 // This is added temporarily to avoid another round of ATS project mass upgrage
 // for now.
 
-package org.netbeans.modules.compapp.catd.util;
+package org.netbeans.modules.compapp.projects.jbi.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
