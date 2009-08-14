@@ -81,31 +81,33 @@ public class BugzillaQuery extends Query {
     private ColumnDescriptor[] columnDescriptors;
 
     public BugzillaQuery(BugzillaRepository repository) {
-        this(null, repository, null, false, -1, false);
+        this(null, repository, null, false, false, true);
     }
 
-    protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
-        super();
-        this.name = name;
-        this.repository = repository;
-        this.urlParameters = urlParameters;
-        this.initialUrlDef = false;
-        this.saved = saved;
-        // let the subclass create the controller
-    }
+//    protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
+//        super();
+//        this.name = name;
+//        this.repository = repository;
+//        this.urlParameters = urlParameters;
+//        this.initialUrlDef = false;
+//        this.saved = saved;
+//        // let the subclass create the controller
+//    }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh, boolean urlDef) {
-        this(name, repository, urlParameters, true, lastRefresh, urlDef);
-    }
+//    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean urlDef, boolean saved, boolean initControler) {
+//        this(name, repository, urlParameters, saved, urlDef, initControler);
+//    }
 
-    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh, boolean urlDef) {
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, boolean urlDef, boolean initControler) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.setLastRefresh(lastRefresh);
-        controller = createControler(repository, this, urlParameters);
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(name));
+        if(initControler) {
+            controller = createControler(repository, this, urlParameters);
+        }
     }
 
     @Override
