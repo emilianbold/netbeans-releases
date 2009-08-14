@@ -49,12 +49,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.xml.namespace.QName;
 import org.apache.tools.ant.BuildException;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
@@ -63,11 +64,8 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
-import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -85,7 +83,15 @@ public class wsdlRepository {
     private Task task;
     
     private List<WSDLModel> wsdlModels = null;
-    private List<WSDLModel> suModels = null;
+    private List<WSDLModel> suWsdlModels = null;
+
+    /**
+     * A list of WSDL models defined in external SE SU projects.
+     * WSDL Ports defined in these models are completely ignored from the
+     * CompApp project build process point of view.
+     * Only PortTypes defined in these models are useful.
+     */
+    private List<WSDLModel> externalSuWsdlModels = null;
 
     // mapping PortType QName to PortType
     private Map<String, PortType> portTypes = new HashMap<String, PortType>();
@@ -109,8 +115,11 @@ public class wsdlRepository {
     private Map<String, PtConnection> connections = new HashMap<String, PtConnection>();
     
     // mapping bc namespace to bc name
-    private Map<String, String> bcNsMap = new HashMap<String, String>();    
-  
+    private Map<String, String> bcNS2NameMap;
+
+    // a list of external SU names
+    private List<String> externalSuNames;
+
     private static final String WSDL_FILE_EXTENSION = "wsdl";
     //private static final WSDLFileFilter WSDL_FILE_FILTER = new WSDLFileFilter();
     
@@ -118,53 +127,29 @@ public class wsdlRepository {
             new QName("http://schemas.xmlsoap.org/wsdl/soap/", "address");
     
     private String DUMMY_SOAP_LOCATION = "REPLACE_WITH_ACTUAL_URL";
-    
-    public wsdlRepository(Project project, Task task) {
+
+
+    /**
+     *
+     * @param project           the compapp project as an Ant project
+     * @param task              the Ant task
+     * @param externalSUNames   a non-null list of names for external SU
+     * @param bcNS2NameMap      a map mapping BC namespace to name
+     */
+    public wsdlRepository(Project project, Task task, 
+            List<String> externalSuNames, Map<String, String> bcNS2NameMap) {
         
         this.project = project;
         this.task = task;
+        this.externalSuNames = externalSuNames;
+        this.bcNS2NameMap = bcNS2NameMap;
         
-        wsdlModels = getAllWsdlModels(project);
-        
-        bcNsMap = buildBindingComponentMap(project);
+        wsdlModels = getAllWsdlModels(project);        
         
         initLists();
 
         //also look into all SE.jars
-    }
-    
-    // move me to some utility class
-    /**
-     * @param project 
-     * @return a map mapping binding component namespace to binding component name.
-     */
-    public static Map<String, String> buildBindingComponentMap(Project project) {
-        
-        Map<String, String> bcMap = new HashMap<String, String>();
-        
-        String projPath = project.getProperty("basedir") + File.separator;
-        String cnfDir = project.getProperty((JbiProjectProperties.META_INF));
-        String bcInfo = projPath + cnfDir + File.separator +
-                JbiProject.BINDING_COMPONENT_INFO_FILE_NAME;
-        File bcFile = new File(bcInfo);
-        if (bcFile.exists()) {
-            try {
-                List<JBIComponentStatus> compList = 
-                        ComponentInformationParser.parse(bcFile);
-                for (JBIComponentStatus comp : compList) {
-                    String compName = comp.getName();
-                    List<String> nsList = comp.getNamespaces();
-                    for (String ns : nsList) {
-                        bcMap.put(ns, compName);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        return bcMap;
-    }
+    }    
         
     public List<WSDLModel> getWsdlCollection() {
         return wsdlModels;
@@ -231,21 +216,23 @@ public class wsdlRepository {
     
     private List<WSDLModel> getAllWsdlModels(Project project) {        
         List<WSDLModel> ret = new ArrayList<WSDLModel>();
-        suModels = new ArrayList<WSDLModel>();
+        suWsdlModels = new ArrayList<WSDLModel>();
+        externalSuWsdlModels = new ArrayList<WSDLModel>();
 
         WSDLModelFactory wsdlModelFactory = WSDLModelFactory.getDefault();
         
-        for (File file : getAllWsdlFiles(project)) {
+        for (File wsdlFile : getAllWsdlFiles(project)) {
+
             try {
                 ModelSource ms = null;                
                 try {
-                    FileObject fo = FileUtil.toFileObject(file);
+                    FileObject fo = FileUtil.toFileObject(wsdlFile);
                     fo.refresh();
                     ms = Utilities.createModelSource(fo, false);
                 } catch (Exception e) {      // from command line
                     Lookup lookup = Lookups.fixed(new Object[]{
-                        file,
-                        getDocument(file),
+                        wsdlFile,
+                        getDocument(wsdlFile),
                         WSDLCatalogModel.getDefault()
                     });
                     ms = new ModelSource(lookup, false);
@@ -254,8 +241,13 @@ public class wsdlRepository {
                 WSDLModel wm = wsdlModelFactory.createFreshModel(ms); 
                 ret.add(wm);
 
-                if (file.getAbsolutePath().contains("jbiServiceUnits")) { // NOI18N
-                    suModels.add(wm);
+                if (isWSDLDefinedInSUProject(wsdlFile)) { // NOI18N
+                    suWsdlModels.add(wm);
+
+                    // keep track of WSDLs from external SE SUs
+                    if (isWSDLDefinedInExternalSUProject(wsdlFile)) {
+                        externalSuWsdlModels.add(wm);
+                    }
                 }
             } catch (CatalogModelException ex) {
                 ex.printStackTrace();
@@ -328,7 +320,7 @@ public class wsdlRepository {
                 task.log("ERROR: Malformed WSDL file: " + wsdlFilePath);
             }
             String tns = def.getTargetNamespace();
-            
+
             // Collect portTypes... (PortType QName -> PortType)
             for (PortType pt : def.getPortTypes()) {
                 String key = getQName(tns, pt.getName());
@@ -339,6 +331,13 @@ public class wsdlRepository {
                     PtConnection con = new PtConnection(key);
                     connections.put(key, con);
                 }
+            }
+
+            // For external SE SUs, we only collect PortTypes (for connection
+            // generation purpose). Skip Bindings and PartnerLinkTypes are
+            // skipped on purpose.
+            if (externalSuWsdlModels.contains(wsdlModel)) {
+                continue;
             }
             
             // Collect bindings... (Binding QName -> Binding)
@@ -380,6 +379,12 @@ public class wsdlRepository {
         for (WSDLModel wsdlModel : wsdlModels) {
             // todo: 03/26/07, skip J2EE project concrete wsdls..
             if (true) {  // (!isJavaEEWsdl(doc)) {
+
+                // Skip WSDL Ports defined in external SE SUs
+                if (externalSuWsdlModels.contains(wsdlModel)) {
+                    continue;
+                }
+                
                 Definitions def = wsdlModel.getDefinitions();
                 String tns = def.getTargetNamespace();
                 
@@ -418,7 +423,7 @@ public class wsdlRepository {
                                 
                                 String bcNs = ee.getQName().getNamespaceURI();
                                 if (bcNs != null) {
-                                    String bcName = bcNsMap.get(bcNs);
+                                    String bcName = bcNS2NameMap.get(bcNs);
                                     if (bcName != null) {
                                         port2BC.put(p, bcName);
                                     } else {
@@ -448,8 +453,15 @@ public class wsdlRepository {
         }
     }
 
+    /**
+     * Checks whether the given WSDL Port is defined in a SU project.
+     */
     private boolean isPortFromSU(Port p) {
-        return suModels.contains(p.getModel());
+        return suWsdlModels.contains(p.getModel());
+    }
+
+    public boolean isDefinedInExternalSU(WSDLModel model) {
+        return externalSuWsdlModels.contains(model);
     }
     
     public String getBindingComponentName(Port p) {
@@ -560,5 +572,43 @@ public class wsdlRepository {
             
             return result;
         }
-    }    
+    }
+
+    /**
+     * Checks whether the given WSDL file is defined in an external SU project.
+     *
+     * @param wsdlFile  a WSDL file
+     *
+     * @return  <code>true</code> if the given WSDL file is defined in an
+     *          external SU project; <code>false</code> if defined in the
+     *          CompApp project or an internal SU project.
+     */
+    private boolean isWSDLDefinedInExternalSUProject(File wsdlFile) {
+        String wsdlFilePath = wsdlFile.getAbsolutePath().replaceAll("\\\\", "/");
+
+        String suProjectName = null;
+
+        Pattern pattern = Pattern.compile("/src/jbiServiceUnits/(.*?)/");
+        Matcher matcher = pattern.matcher(wsdlFilePath);
+
+        if (matcher.find()) {
+            suProjectName = matcher.group(1);
+            return externalSuNames.contains(suProjectName);
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether the given WSDL file is defined in a SU project.
+     *
+     * @param wsdlFile  a WSDL file
+     *
+     * @return  <code>true</code> if the given WSDL file is defined in a SU
+     *          project; <code>false</code> if defined in the CompApp project.
+     */
+    private static boolean isWSDLDefinedInSUProject(File wsdlFile) {
+        String wsdlFilePath = wsdlFile.getAbsolutePath().replaceAll("\\\\", "/");
+        return wsdlFilePath.contains("/src/jbiServiceUnits/");
+    }
 }
