@@ -59,7 +59,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -75,7 +74,7 @@ public class TestNode extends FilterNode {
     private static final java.util.logging.Logger mLogger =
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.TestNode"); // NOI18N
     
-    private static Image JBI_TEST_BADGE = ImageUtilities.loadImage(
+    private static Image JBI_TEST_BADGE = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/testCases_badge.png", true); // NOI18N
     
     private JbiProject mProject;
@@ -190,7 +189,7 @@ public class TestNode extends FilterNode {
         Node folderNode = projectFolder.getNodeDelegate();
         Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
 
-        return ImageUtilities.mergeImages(image, JBI_TEST_BADGE, 7, 7);
+        return Utilities.mergeImages(image, JBI_TEST_BADGE, 7, 7);
     }
     
     // Create the popup menu:

@@ -380,10 +380,18 @@ public final class GrailsPlatform {
 
         private final Properties props;
 
+        private final boolean debug;
+
         public static CommandDescriptor forProject(String name, File directory,
                 GrailsProjectConfig config, String[] arguments, Properties props) {
 
-            return new CommandDescriptor(name, directory, config, arguments, props);
+            return new CommandDescriptor(name, directory, config, arguments, props, false);
+        }
+
+        public static CommandDescriptor forProject(String name, File directory,
+                GrailsProjectConfig config, String[] arguments, Properties props, boolean debug) {
+
+            return new CommandDescriptor(name, directory, config, arguments, props, debug);
         }
 
         /**
@@ -396,12 +404,13 @@ public final class GrailsPlatform {
          * @param props environment properties
          */
         private CommandDescriptor(String name, File directory, GrailsProjectConfig config,
-                String[] arguments, Properties props) {
+                String[] arguments, Properties props, boolean debug) {
             this.name = name;
             this.directory = directory;
             this.config = config;
             this.arguments = arguments.clone();
             this.props = props != null ? new Properties(props) : new Properties();
+            this.debug = debug;
         }
 
         /**
@@ -442,6 +451,15 @@ public final class GrailsPlatform {
          */
         public Properties getProps() {
             return new Properties(props);
+        }
+
+        /**
+         * Returns debugging flag.
+         * 
+         * @return debugging flag
+         */
+        public boolean isDebug() {
+            return debug;
         }
 
         @Override
@@ -660,15 +678,10 @@ public final class GrailsPlatform {
         }
 
         public Process call() throws Exception {
-            String executable =  Utilities.isWindows() ? RuntimeHelper.WIN_EXECUTABLE : RuntimeHelper.NIX_EXECUTABLE;
-            File grailsExecutable = null;
-            if (RuntimeHelper.isDebian(new File(GrailsSettings.getInstance().getGrailsBase()))) {
-                grailsExecutable = new File(RuntimeHelper.DEB_EXECUTABLE);
-            } else {
-                grailsExecutable = new File(GrailsSettings.getInstance().getGrailsBase(), executable);
-            }
+            File grailsExecutable = RuntimeHelper.getGrailsExecutable(
+                    new File(GrailsSettings.getInstance().getGrailsBase()), descriptor.isDebug());
 
-            if (!grailsExecutable.exists()) {
+            if (grailsExecutable == null || !grailsExecutable.exists()) {
                 LOGGER.log(Level.WARNING, "Executable doesn't exist: "
                         + grailsExecutable.getAbsolutePath());
 
@@ -728,9 +741,12 @@ public final class GrailsPlatform {
                 }
             }
 
-            String vmOptions = descriptor.getProjectConfig().getVmOptions();
-            if (vmOptions != null && "".equals(vmOptions.trim())) {
-                vmOptions = null;
+            String vmOptions = null;
+            if (descriptor.getProjectConfig() != null) {
+                vmOptions = descriptor.getProjectConfig().getVmOptions();
+                if (vmOptions != null && "".equals(vmOptions.trim())) {
+                    vmOptions = null;
+                }
             }
             String[] envp = new String[] {
                 "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N

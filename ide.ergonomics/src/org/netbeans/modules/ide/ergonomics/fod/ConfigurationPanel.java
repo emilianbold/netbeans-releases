@@ -59,7 +59,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
 
@@ -70,7 +69,7 @@ import org.openide.util.TaskListener;
  * @author Tomas Mysik
  * @author Pavel Flaska
  */
-public class ConfigurationPanel extends JPanel {
+public class ConfigurationPanel extends JPanel implements Runnable {
     private static final long serialVersionUID = 27938464212508L;
     
     final DownloadProgressMonitor progressMonitor = new DownloadProgressMonitor();
@@ -79,16 +78,39 @@ public class ConfigurationPanel extends JPanel {
     private final Boolean autoActivate;
 
     public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info, Boolean auto) {
-        if (displayName == null) {
-
-        }
-        FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
+        this(callable, auto);
+        setInfo(info);
+        setPanelName(displayName);
+    }
+    
+    public ConfigurationPanel(final Callable<JComponent> callable, Boolean auto) {
         initComponents();
+        this.featureInfo = null;
         this.callable = callable;
+        autoActivate = auto;
+
+        setError(" "); // NOI18N
+    }
+
+    public void setInfo(FeatureInfo info) {
+        this.featureInfo = info;
+        boolean activateNow;
+        if (autoActivate != null) {
+            activateNow = Boolean.TRUE.equals(autoActivate);
+        } else {
+            activateNow = Boolean.getBoolean("noActivateButton"); // NOI18N
+        }
+        if (activateNow) {
+            infoLabel.setVisible(false);
+            downloadButton.setVisible(false);
+            downloadButtonActionPerformed(null);
+        }
+    }
+    
+    public void setPanelName(String displayName) {
+        FeatureManager.logUI("ERGO_QUESTION", featureInfo.clusterName, displayName);
         String lblMsg = null;
         String btnMsg = null;
-        featureInfo = info;
-        autoActivate = auto;
         if (featureInfo != null && featureInfo.isPresent()) {
             lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_EnableInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Enable");
@@ -96,24 +118,11 @@ public class ConfigurationPanel extends JPanel {
             lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_DownloadInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Download");
         }
-        boolean activateNow;
-        if (autoActivate != null) {
-            activateNow = Boolean.TRUE.equals(autoActivate);
-        } else {
-            activateNow = Boolean.getBoolean("noActivateButton"); // NOI18N
-        }
-
-        if (activateNow) {
-            infoLabel.setVisible(false);
-            downloadButton.setVisible(false);
-            downloadButtonActionPerformed(null);
-        } else {
-            org.openide.awt.Mnemonics.setLocalizedText(infoLabel, lblMsg);
-            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, btnMsg);
-        }
-        setError(" "); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, lblMsg);
+        org.openide.awt.Mnemonics.setLocalizedText(downloadButton, btnMsg);
+        
     }
-
+    
     @Override
     public void removeNotify() {
         super.removeNotify();
@@ -176,16 +185,14 @@ public class ConfigurationPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public void run() {
+        ModulesInstaller.installModules(progressMonitor, featureInfo);
+    }
+
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
-        final FeatureInfo info = featureInfo;
-        Task task = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
-                ModulesInstaller.installModules(progressMonitor, info);
-            }
-        });
+        Task task = FeatureManager.getInstance().create(this);
         task.addTaskListener(new TaskListener() {
 
             public void taskFinished(org.openide.util.Task task) {

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.api.debugger.Breakpoint;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -58,9 +59,9 @@ import org.openide.ErrorManager;
  */
 public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     private String      type;
-    private GdbBreakpoint breakpoint;
+    private CndBreakpoint breakpoint;
     
-    public DebuggerBreakpointAnnotation(String type, Line line, GdbBreakpoint b) {
+    public DebuggerBreakpointAnnotation(String type, Line line, CndBreakpoint b) {
         this.type = type;
         this.breakpoint = b;
         attach(line);

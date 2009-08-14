@@ -68,7 +68,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     FunctionScopeImpl createElement(Program program, FunctionDeclaration node) {
-        FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(node),
+        FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(program, node),
                 VariousUtils.getReturnTypeFromPHPDoc(program, node));
         return retval;
     }

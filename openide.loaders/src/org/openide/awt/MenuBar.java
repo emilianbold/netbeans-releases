@@ -51,8 +51,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -627,6 +629,14 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 super.waitFinished();
             }
             
+        private Map<Object,FileObject> cookiesToFiles = new HashMap<Object,FileObject>();
+
+        @Override
+        protected Object instanceForCookie(DataObject obj, InstanceCookie cookie) throws IOException, ClassNotFoundException {
+            Object result = super.instanceForCookie(obj, cookie);
+            cookiesToFiles.put(result, obj.getPrimaryFile());
+            return result;
+        }
 
     	    /**
              * Accepts only cookies that can provide <code>Menu</code>.
@@ -685,7 +695,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                     m.add(item);
                 }
 
-                m.dynaModel.loadSubmenu(cInstances, m);
+                m.dynaModel.loadSubmenu(cInstances, m, cookiesToFiles);
 
                 return m;
             }

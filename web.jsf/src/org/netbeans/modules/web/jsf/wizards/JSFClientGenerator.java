@@ -1290,7 +1290,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, methodInfo);
                     
                     bodyText = "if pagingInfo.getItemCount() == -1) {\n" +
-                            "pagingInfo.setItemCount(jpaController."+ (useSessionBean ? "findAll().size()" :  "get" + simpleEntityName + "Count()")+");\n" +
+                            "pagingInfo.setItemCount(jpaController."+ (useSessionBean ? "count()" :  "get" + simpleEntityName + "Count()")+");\n" +
                             "}\n" +
                             "return pagingInfo;";
                     methodInfo = new MethodInfo("getPagingInfo", publicModifier, utilPackage + ".PagingInfo", null, null, null, bodyText, null, null);

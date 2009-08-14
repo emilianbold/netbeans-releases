@@ -52,6 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
@@ -64,38 +65,44 @@ abstract class CompileWorker {
     abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files);
     
 
-    public void computeFQNs(final Map<URI, List<String>> file2FQNs, CompilationUnitTree cut, JavaFileObject file) {
+    public void computeFQNs(final Map<JavaFileObject, List<String>> file2FQNs, CompilationUnitTree cut, CompileTuple tuple) {
         String pack;
-
         if (cut.getPackageName() != null) {
             pack = cut.getPackageName().toString() + "."; //XXX
         } else {
             pack = "";
         }
-
+        String path = tuple.indexable.getRelativePath();
+        int i = path.lastIndexOf('.');
+        if (i >= 0)
+            path = path.substring(0, i);
+        path = FileObjects.convertFolder2Package(path);
+        List<String> fqns = new LinkedList<String>();
         for (Tree t : cut.getTypeDecls()) {
             if (t.getKind() == Tree.Kind.CLASS) {
-                URI uri = file.toUri();
-                List<String> fqns = file2FQNs.get(uri);
-
-                if (fqns == null) {
-                    file2FQNs.put(uri, fqns = new LinkedList<String>());
+                String fqn = pack + ((ClassTree) t).getSimpleName().toString();
+                fqns.add(fqn);
+                if (!path.equals(fqn)) {
+                    List<String> l = file2FQNs.get(tuple.jfo);
+                    if (l == null) {
+                        file2FQNs.put(tuple.jfo, fqns);
+                    } else {
+                        l.addAll(fqns);
+                    }
                 }
-
-                fqns.add(pack + ((ClassTree) t).getSimpleName().toString());
             }
         }
     }
 
     static class ParsingOutput {
         final boolean success;
-        final Map<URI, List<String>> file2FQNs;
+        final Map<JavaFileObject, List<String>> file2FQNs;
         final Set<ElementHandle<TypeElement>> addedTypes;
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Set<ElementHandle<TypeElement>> modifiedTypes;
 
-        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes) {
+        public ParsingOutput(boolean success, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes) {
             this.success = success;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;

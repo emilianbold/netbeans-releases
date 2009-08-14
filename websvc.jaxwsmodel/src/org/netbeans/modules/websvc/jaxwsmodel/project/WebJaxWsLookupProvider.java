@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
@@ -143,7 +144,10 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                                 buildScriptGenerated = true;
                             } else {
                                 // remove compile dependencies, and re-generate build-script if needed
-                                removeCompileDependencies(prj, jaxws_build, ext);
+                                FileObject project_xml = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+                                if (project_xml != null) {
+                                    removeCompileDependencies(prj, project_xml, ext);
+                                }
                             }
                         } catch (IOException ex) {
                             ex.printStackTrace();
@@ -363,10 +367,10 @@ public class WebJaxWsLookupProvider implements LookupProvider {
      */
     private void removeCompileDependencies (
                         Project prj,
-                        FileObject jaxws_build,
+                        FileObject project_xml,
                         final AntBuildExtender ext) throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(FileUtil.toFile(jaxws_build)));
+        BufferedReader br = new BufferedReader(new FileReader(FileUtil.toFile(project_xml)));
         String line = null;
         boolean isOldVersion = false;
         while ((line = br.readLine()) != null) {

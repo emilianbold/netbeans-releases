@@ -63,7 +63,6 @@ import org.openide.windows.OutputWriter;
 
 import java.util.List;
 import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -170,6 +169,8 @@ public class DeleteModuleAction extends SystemAction {
      * @param artifactName  the artifact name of a JBI module
      */
     public boolean removeProject(final Project jbiProject, String artifactName) {
+
+        removeDeadProjects(jbiProject);
         
         JbiProjectProperties projProperties = 
                 ((ProjectPropertyProvider) jbiProject).getProjectProperties();
@@ -188,12 +189,11 @@ public class DeleteModuleAction extends SystemAction {
         
         for (int i = 0; i < oldCompProjList.size(); i++) {
             VisualClassPathItem cp = oldCompProjList.get(i);
-            
             if (artifactName.equalsIgnoreCase(cp.getShortName())) {
                 itemRemovedIndex = i;
                 deleteModuleProperties(jbiProject, cp, artifactName);
-                subProjName = cp.getProjectName();  
-                subproject = cp.getAntArtifact().getProject();  
+                subProjName = cp.getProjectName();
+                subproject = cp.getAntArtifact().getProject();
                 deletedProjsList.add(oldCompProjList.get(i));
             } else {
                 newCompProjList.add(oldCompProjList.get(i));
@@ -213,11 +213,53 @@ public class DeleteModuleAction extends SystemAction {
             projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, targetComps);                
             
             projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newCompProjList);
-            
+
             updateModuleProperties(jbiProject, projProperties, newCompProjList, subProjName);
             projProperties.store();   
-            
+
             jbiProject.getLookup().lookup(JbiSubprojectProvider.class).subprojectRemoved(subproject);
+            deleteEmbeddedProjects(jbiProject, deletedProjsList);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean removeDeadProjects(final Project jbiProject) {
+
+        JbiProjectProperties projProperties =
+                ((ProjectPropertyProvider) jbiProject).getProjectProperties();
+
+        @SuppressWarnings("unchecked")
+        List<VisualClassPathItem> oldCompProjList =
+                (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+
+        @SuppressWarnings("unchecked")
+        List<String> targetComps = new ArrayList<String>(
+                (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_COMPONENT));
+        assert targetComps.size() == oldCompProjList.size() :
+            "Properties jbi.content.additional and jbi.content.component are not in sync."; // NOI18N
+
+        List<VisualClassPathItem> newCompProjList =
+                new ArrayList<VisualClassPathItem>();
+        List<VisualClassPathItem> deletedProjsList =
+                new ArrayList<VisualClassPathItem>();
+
+        for (int i = oldCompProjList.size() - 1; i >= 0; i--) {
+            VisualClassPathItem cp = oldCompProjList.get(i);
+            if (cp.getAntArtifact() == null) { // encounter a project that no longer exists
+                targetComps.remove(i);
+                deletedProjsList.add(oldCompProjList.get(i));
+            } else {
+                newCompProjList.add(oldCompProjList.get(i));
+            }
+        }
+
+        if (deletedProjsList.size() > 0) {
+            projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, targetComps);
+            projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newCompProjList);
+            projProperties.store();
+
             deleteEmbeddedProjects(jbiProject, deletedProjsList);
             return true;
         } else {

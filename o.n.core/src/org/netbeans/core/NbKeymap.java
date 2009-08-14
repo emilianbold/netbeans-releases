@@ -41,20 +41,18 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Set;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -62,39 +60,184 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Mutex;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 
-/** Implementation of standard key - action mappings.
-*
-* @author Dafe Simonek
-*/
 @ServiceProvider(service=Keymap.class)
-public final class NbKeymap extends Observable implements Keymap, Comparator<KeyStroke> {
-    /** Name of this keymap */
-    String name;
-    /** Parent keymap */
-    Keymap parent;
-    /** Hashtable holding KeyStroke > Action mappings */
-    Map<KeyStroke,Action> bindings;
-    /** Default action */
-    Action defaultAction;
-    /** hash table to map (Action -> ArrayList of KeyStrokes) */
-    Map<Action,List<KeyStroke>> actions;
+public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
+
+    private static final Action BROKEN = new AbstractAction("<broken>") { // NOI18N
+        public void actionPerformed(ActionEvent e) {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    };
+
+    /** Represents a binding of a keystroke. */
+    private static class Binding {
+        /** file defining an action; null if nested is not null */
+        final FileObject actionDefinition;
+        /** lazily instantiated actual action, in case actionDefinition is not null */
+        private Action action;
+        /** nested bindings; null if actionDefinition is not null */
+        final Map<KeyStroke,Binding> nested;
+        Binding(FileObject def) {
+            actionDefinition = def;
+            nested = null;
+        }
+        Binding() {
+            actionDefinition = null;
+            nested = new HashMap<KeyStroke,Binding>();
+        }
+        synchronized Action loadAction() {
+            assert actionDefinition != null;
+            if (action == null) {
+                try {
+                    DataObject d = DataObject.find(actionDefinition);
+                    InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
+                    if (ic == null) {
+                        return null;
+                    }
+                    action = (Action) ic.instanceCreate();
+                } catch (/*ClassNotFoundException,IOException,ClassCastException*/Exception x) {
+                    LOG.log(Level.INFO, "could not load action for " + actionDefinition.getPath(), x);
+                }
+            }
+            if (action == null) {
+                action = BROKEN;
+            }
+            return action;
+        }
+    }
+
+    private Map<KeyStroke,Binding> bindings;
+    private Map<String,KeyStroke> id2Stroke;
+    private final Map<Action,String> action2Id = new WeakHashMap<Action,String>();
+    private FileChangeListener keymapListener;
+    private FileChangeListener bindingsListener = new FileChangeAdapter() {
+        public @Override void fileDataCreated(FileEvent fe) {
+            refreshBindings();
+        }
+        public @Override void fileAttributeChanged(FileAttributeEvent fe) {
+            refreshBindings();
+        }
+        public @Override void fileChanged(FileEvent fe) {
+            refreshBindings();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            refreshBindings();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            refreshBindings();
+        }
+    };
+
+    private synchronized void refreshBindings() {
+        bindings = null;
+        bindings();
+    }
+
+    private synchronized Map<KeyStroke,Binding> bindings() {
+        if (bindings == null) {
+            bindings = new HashMap<KeyStroke,Binding>();
+            boolean refresh = id2Stroke != null;
+            id2Stroke = new TreeMap<String,KeyStroke>();
+            List<FileObject> dirs = new ArrayList<FileObject>(2);
+            dirs.add(FileUtil.getConfigFile("Shortcuts")); // NOI18N
+            FileObject keymaps = FileUtil.getConfigFile("Keymaps"); // NOI18N
+            if (keymaps != null) {
+                String curr = (String) keymaps.getAttribute("currentKeymap"); // NOI18N
+                if (curr == null) {
+                    curr = "NetBeans"; // NOI18N
+                }
+                dirs.add(keymaps.getFileObject(curr));
+                if (keymapListener == null) {
+                    keymapListener = new FileChangeAdapter() {
+                        public @Override void fileAttributeChanged(FileAttributeEvent fe) {
+                            refreshBindings();
+                        }
+                    };
+                    keymaps.addFileChangeListener(keymapListener);
+                }
+            }
+            for (FileObject dir : dirs) {
+                if (dir != null) {
+                    for (FileObject def : dir.getChildren()) {
+                        if (def.isData()) {
+                            KeyStroke[] strokes = Utilities.stringToKeys(def.getName());
+                            if (strokes == null || strokes.length == 0) {
+                                LOG.log(Level.WARNING, "could not load parse name of " + def.getPath());
+                                continue;
+                            }
+                            Map<KeyStroke,Binding> binder = bindings;
+                            for (int i = 0; i < strokes.length - 1; i++) {
+                                Binding sub = binder.get(strokes[i]);
+                                if (sub != null && sub.nested == null) {
+                                    LOG.log(Level.WARNING, "conflict between " + sub.actionDefinition.getPath() + " and " + def.getPath());
+                                    sub = null;
+                                }
+                                if (sub == null) {
+                                    binder.put(strokes[i], sub = new Binding());
+                                }
+                                binder = sub.nested;
+                            }
+                            // XXX warn about conflicts here too:
+                            binder.put(strokes[strokes.length - 1], new Binding(def));
+                            if (strokes.length == 1) {
+                                String id = idForFile(def);
+                                KeyStroke former = id2Stroke.get(id);
+                                if (former == null || compare(former, strokes[0]) > 0) {
+                                    id2Stroke.put(id, strokes[0]);
+                                }
+                            }
+                        }
+                    }
+                    dir.removeFileChangeListener(bindingsListener);
+                    dir.addFileChangeListener(bindingsListener);
+                }
+            }
+            if (refresh) {
+                // Update accelerators of existing actions after switching keymap.
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
+                            entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                        }
+                    }
+                });
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                for (Map.Entry<String,KeyStroke> entry : id2Stroke.entrySet()) {
+                    LOG.fine(entry.getValue() + " => " + entry.getKey());
+                }
+            }
+        }
+        return bindings;
+    }
     
-    private static List<KeyStroke> context = new ArrayList<KeyStroke>();
+    private static List<KeyStroke> context; // accessed reflectively from org.netbeans.editor.MultiKeymap
     
-    public static void resetContext() {
+    private static void resetContext() {
         context.clear();
         StatusDisplayer.getDefault().setStatusText("");
     }
 
-    public static KeyStroke[] getContext() {
+    public static KeyStroke[] getContext() { // called from ShortcutAndMenuKeyEventProcessor
         return context.toArray(new KeyStroke[context.size()]);
     }
-    
-    public static void shiftContext(KeyStroke stroke) {
+
+    private static void shiftContext(KeyStroke stroke) {
         context.add(stroke);
 
         StringBuilder text = new StringBuilder();
@@ -114,191 +257,135 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
             KeyEvent.getKeyText (keyStroke.getKeyCode ()); 
     }
            
-    private final Action NO_ACTION = new KeymapAction(null, null);
     private static final Logger LOG = Logger.getLogger(NbKeymap.class.getName());
     
-    public Action createMapAction(Keymap k, KeyStroke stroke) {
-        return new KeymapAction(k, stroke);
-    }
-
-    /** Default constructor
-    */
     public NbKeymap() {
-        this("Default", null); // NOI18N
-    }
-
-    NbKeymap(final String name, final Keymap parent) {
-        this.name = name;
-        this.parent = parent;
-        bindings = new HashMap<KeyStroke,Action>();
+        context = new ArrayList<KeyStroke>();
     }
 
     public Action getDefaultAction() {
-        LOG.log(Level.FINE, "getDefaultAction");
-        if (defaultAction != null) {
-            return defaultAction;
-        }
-        return (parent != null) ? parent.getDefaultAction() : null;
+        return null;
     }
 
     public void setDefaultAction(Action a) {
-        LOG.log(Level.FINE, "setDefaultAction {0}", id(a));
-        defaultAction = a;
-        setChanged();
-        notifyObservers();
+        throw new UnsupportedOperationException();
     }
 
     public String getName() {
-        return name;
+        return "Default"; // NOI18N
     }
 
-    public Action getAction(KeyStroke key) {
-        LOG.log(Level.FINE, "getAction {0}", key);
-        
-        Action a;
-
-        KeyStroke[] ctx = getContext();
-        Keymap activ = this;
-        for (int i=0; i<ctx.length; i++) {
-            if (activ == this) {
-                a = bindings.get(ctx[i]);
-                if ((a == null) && (parent != null)) {
-                    a = parent.getAction(ctx[i]);
-                }
-            } else {
-                a = activ.getAction(ctx[i]);
-            }
-            
-            if (a instanceof KeymapAction) {
-                activ = ((KeymapAction)a).keymap;
-            } else { // unknown ctx
-                int code = key.getKeyCode();
-                if (code != KeyEvent.VK_CONTROL &&
-                        code != KeyEvent.VK_ALT &&
-                        code != KeyEvent.VK_ALT_GRAPH &&
-                        code != KeyEvent.VK_SHIFT &&
-                        code != KeyEvent.VK_META) resetContext();
-                return null;
-            }
-        }
-        
-        if (activ == this) {
-            a = bindings.get(key);
-            if ((a == null) && (parent != null)) {
-                a = parent.getAction(key);
-            }
-            return a;
-        } else {
-            a = activ.getAction(key);
-        }
-        
-        if (a != null) {
-            if (!(a instanceof KeymapAction)) {
-                resetContext();
-            }
-            return a;
-        }
-            
-        // no action, should we reset?
-        if (key.isOnKeyRelease() ||
-            (key.getKeyChar() != 0 && key.getKeyChar() != KeyEvent.CHAR_UNDEFINED)) {
-                return null;
-        }
-            
+    public Action getAction(final KeyStroke key) {
         switch (key.getKeyCode()) {
-            case KeyEvent.VK_SHIFT:
-            case KeyEvent.VK_CONTROL:
-            case KeyEvent.VK_ALT:
-            case KeyEvent.VK_META:
+        case KeyEvent.VK_SHIFT:
+        case KeyEvent.VK_CONTROL:
+        case KeyEvent.VK_ALT:
+        case KeyEvent.VK_ALT_GRAPH:
+        case KeyEvent.VK_META:
+        case KeyEvent.VK_UNDEFINED:
+        case KeyEvent.CHAR_UNDEFINED:
+                // Not actually a bindable key press.
                 return null;
-            default:
+        }
+        if (key.isOnKeyRelease()) {
+            // Again, not really our business here.
+            return null;
+        }
+        LOG.log(Level.FINE, "getAction {0}", key);
+        Map<KeyStroke,Binding> binder = bindings();
+        for (KeyStroke ctx : context) {
+            Binding sub = binder.get(ctx);
+            if (sub == null) {
                 resetContext();
-                return NO_ACTION;
+                return BROKEN; // no entry found after known prefix
+            }
+            binder = sub.nested;
+            if (binder == null) {
+                resetContext();
+                return BROKEN; // anomalous, expected to find submap here
+            }
+        }
+        Binding b = binder.get(key);
+        if (b == null) {
+            resetContext();
+            return null; // normal, not found
+        }
+        if (b.nested == null) {
+            resetContext();
+            return b.loadAction(); // found real action
+        } else {
+            return new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    shiftContext(key); // entering submap
+                }
+            };
         }
     }
 
     public KeyStroke[] getBoundKeyStrokes() {
-        LOG.log(Level.FINE, "getBoundKeyStrokes");
-        int i = 0;
-        KeyStroke[] keys = null;
-        synchronized (this) {
-            keys = new KeyStroke[bindings.size()];
-            for (KeyStroke ks: bindings.keySet()) {
-                keys[i++] = ks;
-            }
-        }
-        return keys;
+        assert false;
+        return null;
     }
 
     public Action[] getBoundActions() {
-        LOG.log(Level.FINE, "getBoundActions");
-        int i = 0;
-        Action[] actionsArray = null;
-        synchronized (this) {
-            actionsArray = new Action[bindings.size()];
-            for (Iterator iter = bindings.values().iterator(); iter.hasNext(); ) {
-                actionsArray[i++] = (Action) iter.next();
-            }
-        }
-        return actionsArray;
+        assert false;
+        return null;
     }
 
     public KeyStroke[] getKeyStrokesForAction(Action a) {
-        LOG.log(Level.FINE, "getKeyStrokesForAction {0}", id(a));
-
-        Map<Action,List<KeyStroke>> localActions = actions;
-        if (localActions == null) {
-            localActions = buildReverseMapping ();
-        }
-
-        List<KeyStroke> strokes = localActions.get (a);
-        if (strokes != null) {
-            return strokes.toArray(new KeyStroke[strokes.size ()]);
-        } else {
+        FileObject definingFile = (FileObject) a.getValue("definingFile"); // cf. o.o.awt.Toolbar.setAccelerator
+        if (definingFile == null) {
+            LOG.log(Level.FINE, "no defining file known for {0}", id(a));
             return new KeyStroke[0];
         }
+        String id = idForFile(definingFile);
+        bindings();
+        action2Id.put(a, id);
+        KeyStroke k = id2Stroke.get(id);
+        LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+        return k != null ? new KeyStroke[] {k} : new KeyStroke[0];
     }
-
-    private Map<Action,List<KeyStroke>> buildReverseMapping () {
-        Map<Action,List<KeyStroke>> localActions = actions = new HashMap<Action,List<KeyStroke>> ();
-
-        synchronized (this) {
-            for (Map.Entry<KeyStroke,Action> curEntry: bindings.entrySet()) {
-                Action curAction = curEntry.getValue();
-                KeyStroke curKey = curEntry.getKey();
-
-                List<KeyStroke> keysForAction = localActions.get (curAction);
-                if (keysForAction == null) {
-                    keysForAction = Collections.synchronizedList (new ArrayList<KeyStroke> (1));
-                    localActions.put (curAction, keysForAction);
+    /**
+     * Traverses shadow files to origin.
+     * Returns impl class name if that is obvious (common for SystemAction's);
+     * else just returns file path (usual for more modern registrations).
+     */
+    private static String idForFile(FileObject f) {
+        if (f.hasExt("shadow")) {
+            String path = (String) f.getAttribute("originalFile");
+            if (path != null) {
+                f = FileUtil.getConfigFile(path);
+                if (f == null) {
+                    return path; // #169887: some race condition with layer init?
                 }
-                keysForAction.add (curKey);
+            } else {
+                try {
+                    DataObject d = DataObject.find(f);
+                    if (d instanceof DataShadow) {
+                        f = ((DataShadow) d).getOriginal().getPrimaryFile();
+                    }
+                } catch (DataObjectNotFoundException x) {
+                    LOG.log(Level.INFO, f.getPath(), x);
+                }
             }
         }
-
-        return localActions;
+        // Cannot actually load instanceCreate methodvalue=... attribute; just want to see if it is there.
+        if (f.hasExt("instance") && !Collections.list(f.getAttributes()).contains("instanceCreate")) {
+            String clazz = (String) f.getAttribute("instanceClass");
+            if (clazz != null) {
+                return clazz;
+            } else {
+                return f.getName().replace('-', '.');
+            }
+        }
+        return f.getPath();
     }
 
     public synchronized boolean isLocallyDefined(KeyStroke key) {
-        LOG.log(Level.FINE, "isLocallyDefined {0}", key);
-        return bindings.containsKey(key);
+        assert false;
+        return false;
     }
 
-    /** Updates action accelerator. */
-    private void updateActionAccelerator(final Action a) {
-        if(a == null) {
-            return;
-        }
-        
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                KeyStroke[] keystrokes = getKeyStrokesForAction(a);
-                Arrays.sort (keystrokes, NbKeymap.this);
-                a.putValue(Action.ACCELERATOR_KEY, keystrokes.length > 0 ? keystrokes[0] : null);
-            }
-        });
-    }
-    
     public int compare(KeyStroke k1, KeyStroke k2) {
         //#47024 and 32733 - "Find" should not be shown as an accelerator,
         //nor should "Backspace" for Delete.  Solution:  The shorter text wins.
@@ -308,88 +395,23 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     
     
     public void addActionForKeyStroke(KeyStroke key, Action a) {
-        LOG.log(Level.FINE, "addActionForKeyStroke {0} => {1}", new Object[] { key, id(a) });
-        // Update reverse binding for old action too (#30455):
-        Action old;
-        synchronized (this) {
-            old = bindings.put(key, a);
-            actions = null;
-        }
-        
-        updateActionAccelerator(a);
-        updateActionAccelerator(old);
-        setChanged();
-        notifyObservers();
-    }
-
-    void addActionForKeyStrokeMap(Map<KeyStroke,Action> map) {
-        Set<Action> actionsSet = new HashSet<Action>();
-        synchronized (this) {
-            for (Entry<KeyStroke,Action> entry: map.entrySet ()) {
-                KeyStroke key = entry.getKey();
-                Action value = entry.getValue();
-                // Add both old and new action:
-                actionsSet.add(value);
-                actionsSet.add(bindings.put(key, value));
-            }
-            actions = null;
-        }
-        
-        for(Action a: actionsSet) {
-            updateActionAccelerator(a);
-        }
-        
-        setChanged();
-        notifyObservers();
+        assert false;
     }
 
     public void removeKeyStrokeBinding(KeyStroke key) {
-        LOG.log(Level.FINE, "removeKeyStrokeBinding {0}", key);
-
-        Action a;
-        synchronized (this) {
-            a = bindings.remove(key);
-            actions = null;
-        }
-        updateActionAccelerator(a);
-        setChanged();
-        notifyObservers();
+        assert false;
     }
 
     public void removeBindings() {
-        LOG.log(Level.FINE, "removeBindings");
-
-        Set<Action> actionsSet;
-        synchronized (this) {
-            actionsSet = new HashSet<Action>(bindings.values());
-            bindings.clear();
-            actions = null;
-        }
-        
-        for(Action a: actionsSet) {
-            updateActionAccelerator(a);
-        }
-        
-        setChanged();
-        notifyObservers();
+        assert false;
     }
 
     public Keymap getResolveParent() {
-        return parent;
+        return null;
     }
 
     public void setResolveParent(Keymap parent) {
-        LOG.log(Level.FINE, "setResolveParent {0}", parent == null ? null : parent.getClass());
-        this.parent = parent;
-        setChanged();
-        notifyObservers();
-    }
-
-    /** Returns string representation - can be looong.
-    */
-    @Override
-    public String toString() {
-        return "Keymap[" + name + "]" + bindings; // NOI18N
+        throw new UnsupportedOperationException();
     }
 
     private static Object id(Action a) {
@@ -399,94 +421,4 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
         return a;
     }
     
-    public static class SubKeymap implements Keymap {
-        Object hold;
-        Keymap parent;
-        Map<KeyStroke, Action> bindings;
-        Action defaultAction;
-
-        public SubKeymap(Object hold) {
-            this.hold = hold;
-            bindings = new HashMap<KeyStroke, Action>();
-        }
-        
-        public String getName() {
-            return "name";
-        }
-        
-        public void setResolveParent(Keymap parent) {
-            this.parent = parent;
-        }
-
-        public Keymap getResolveParent() {
-            return parent;
-        }
-
-        public void addActionForKeyStroke(KeyStroke key, Action a) {
-            bindings.put(key, a);
-        }
-
-        public KeyStroke[] getKeyStrokesForAction(Action a) {
-            return new KeyStroke[0];
-        }
-
-        public void setDefaultAction(Action a) {
-                defaultAction = a;
-        }
-
-        public Action getAction(KeyStroke key) {
-            return bindings.get(key);
-        }
-
-        public boolean isLocallyDefined(KeyStroke key) {
-            return bindings.containsKey(key);
-        }
-
-        public void removeKeyStrokeBinding(KeyStroke keys) {
-            bindings.remove(keys);
-        }
-
-        public Action[] getBoundActions() {
-            synchronized (this) {
-                return bindings.values().toArray(new Action[0]);
-            }
-        }
-
-        public KeyStroke[] getBoundKeyStrokes() {
-            synchronized (this) {
-                return bindings.keySet().toArray(new KeyStroke[0]);
-            }
-        }
-  
-        public Action getDefaultAction() {
-            return defaultAction;
-        }
-
-        public void removeBindings() {
-            bindings.clear();
-        }
-    
-    }
-    
-    public static class KeymapAction extends AbstractAction {
-        private Keymap keymap;
-        private KeyStroke stroke;
-	
-        public KeymapAction(Keymap keymap, KeyStroke stroke) {
-            this.keymap = keymap;
-            this.stroke = stroke;
-        }
-        
-        public Keymap getSubMap() {
-            return keymap;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            if (stroke == null) { // NO_ACTION -> reset
-                resetContext();
-            } else {
-                shiftContext(stroke);
-            }	    
-        }
-    }
 }

@@ -53,4 +53,8 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/wag/zclcore-0.5.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/wag/zcl4j_min-0.5.jar!/</resource>
     </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/zcl-api-doc.jar!/</resource>
+    </volume>
 </library>

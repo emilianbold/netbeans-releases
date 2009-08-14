@@ -432,7 +432,7 @@ final class XMLSettingsSupport {
         
         public org.xml.sax.InputSource resolveEntity(String publicId, String systemId)
         throws SAXException {
-            if (INSTANCE_DTD_ID.equals (publicId)) {
+            if (INSTANCE_DTD_ID.equals (publicId) || "-//NetBeans//DTD XML beans 1.0//EN".equals(publicId)) {
                 return new org.xml.sax.InputSource (new ByteArrayInputStream (new byte[0]));
             } else {
                 return null; // i.e. follow advice of systemID

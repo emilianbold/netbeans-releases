@@ -93,6 +93,8 @@ public class FILESELCustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FILESELCustomizer.class, "ACSN_FILESEL_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FILESELCustomizer.class, "ACSD_FILESEL_Dialog"));
         dialog.setVisible(true);
         repaint();
         

@@ -138,7 +138,7 @@ public class SourceGroupSupport {
                 return sourceGroups[i];
             }
         }
-        return null;
+        return sourceGroups[0];
     }
 
     public static String getPackageForFolder(SourceGroup sourceGroup, FileObject folder) {

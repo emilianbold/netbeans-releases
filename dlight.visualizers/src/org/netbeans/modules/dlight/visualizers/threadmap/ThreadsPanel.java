@@ -102,9 +102,9 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -965,10 +965,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                         ThreadState state = threadData.getThreadStateAt(index);
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
                         if (detailsCallback != null) {
-                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
-                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
-                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                            detailsCallback.showStack(visualizer);
+//                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
+//                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
+//                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
+                            detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID());
                         }
                         refreshUI();
                     }
@@ -1160,7 +1160,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        public void showStack(ThreadStackVisualizer visualizer);
+        public void showStack(long timestamp, long threadID);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

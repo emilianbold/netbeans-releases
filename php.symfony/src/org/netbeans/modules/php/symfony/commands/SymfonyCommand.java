@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.symfony.SymfonyScript;
@@ -47,20 +48,24 @@ import org.netbeans.modules.php.symfony.SymfonyScript;
  * @author Tomas Mysik
  */
 public class SymfonyCommand extends FrameworkCommand {
-    private final PhpModule phpModule;
+    private final WeakReference<PhpModule> phpModule;
     private final String preview;
 
     public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
         super(command, description, displayName);
         assert phpModule != null;
 
-        this.phpModule = phpModule;
+        this.phpModule = new WeakReference<PhpModule>(phpModule);
         preview = SymfonyScript.SCRIPT_NAME + " " + getCommand(); // NOI18N
     }
 
     @Override
     protected String getHelpInternal() {
-        return SymfonyScript.getHelp(phpModule, this);
+        PhpModule module = phpModule.get();
+        if (module == null) {
+            return ""; // NOI18N
+        }
+        return SymfonyScript.getHelp(module, this);
     }
 
     @Override

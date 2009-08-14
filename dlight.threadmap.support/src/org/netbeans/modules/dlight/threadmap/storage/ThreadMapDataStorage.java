@@ -44,10 +44,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 public class ThreadMapDataStorage {
     // TODO: currently only one
@@ -109,11 +109,11 @@ public class ThreadMapDataStorage {
     public ThreadMapData queryThreadMapData(ThreadMapDataQuery query) {
         final List<ThreadData> threadsData = new ArrayList<ThreadData>();
 
-        if (query.getTimeTo() == Long.MAX_VALUE) {
-            System.out.println("Query: " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeFrom()) + " - till now ("+TimeUnit.NANOSECONDS.toSeconds(System.nanoTime())+")"); // NOI18N
-        } else {
-            System.out.println("Query: " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeFrom()) + " - " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeTo())); // NOI18N
-        }
+//        if (query.getTimeTo() == Long.MAX_VALUE) {
+//            System.out.println("Query: " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeFrom()) + " - till now ("+TimeUnit.NANOSECONDS.toSeconds(System.nanoTime())+")"); // NOI18N
+//        } else {
+//            System.out.println("Query: " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeFrom()) + " - " + TimeUnit.NANOSECONDS.toSeconds(query.getTimeTo())); // NOI18N
+//        }
 
         for (ThreadDataImpl td : data) {
             threadsData.add(td);

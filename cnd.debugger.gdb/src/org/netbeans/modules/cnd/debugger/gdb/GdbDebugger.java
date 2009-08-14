@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -76,20 +77,20 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
+import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
-import org.netbeans.modules.cnd.debugger.gdb.utils.WinPath;
 import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -169,9 +170,9 @@ public class GdbDebugger implements PropertyChangeListener {
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
-    private final List<CallStackFrame> callstack = Collections.synchronizedList(new ArrayList<CallStackFrame>());
+    private final List<GdbCallStackFrame> callstack = Collections.synchronizedList(new ArrayList<GdbCallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
-    private CallStackFrame currentCallStackFrame;
+    private GdbCallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
@@ -200,7 +201,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean dlopenPending = false;
     private int shareToken;
     private final Disassembly disassembly;
-    private GdbBreakpoint currentBreakpoint = null;
+    private CndBreakpoint currentBreakpoint = null;
     private ExecutionEnvironment execEnv;
     private int platform;
     private PathMap pathMap;
@@ -621,7 +622,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public void showCurrentSource(boolean dis) {
-        final CallStackFrame csf = getCurrentCallStackFrame();
+        final GdbCallStackFrame csf = getCurrentCallStackFrame();
         if (csf == null) {
             return;
         }
@@ -1283,7 +1284,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void addArgsToLocalVariables(String info) {
         List<String> frames = GdbUtils.createListFromString(info);
-        CallStackFrame curFrame = getCurrentCallStackFrame();
+        GdbCallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
             int level;
@@ -1568,8 +1569,8 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
-    private static void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
-        breakpoint.fireGdbBreakpointChange(event);
+    private static void fireBreakpointEvent(CndBreakpoint breakpoint, CndBreakpointEvent event) {
+        breakpoint.fireCndBreakpointChange(event);
     }
 
     /**
@@ -1654,15 +1655,15 @@ public class GdbDebugger implements PropertyChangeListener {
                         return;
                     }
                 } else {
-                    GdbBreakpoint breakpoint = impl.getBreakpoint();
-                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE && lastGo == LastGoState.CONTINUE) {
-                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                    CndBreakpoint breakpoint = impl.getBreakpoint();
+                    if (breakpoint.getSuspend() == CndBreakpoint.SUSPEND_NONE && lastGo == LastGoState.CONTINUE) {
+                        fireBreakpointEvent(breakpoint, new CndBreakpointEvent(
+                                breakpoint, this, CndBreakpointEvent.CONDITION_NONE));
                         gdb.exec_continue();
                     } else {
                         updateCurrentCallStack();
-                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        fireBreakpointEvent(breakpoint, new CndBreakpointEvent(
+                                breakpoint, this, CndBreakpointEvent.CONDITION_NONE));
                         setStopped();
                     }
                 }
@@ -2167,7 +2168,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 //fullname = checkCygwinLibs(fullname);
 
-                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i, from));
+                callstack.add(i, new GdbCallStackFrame(this, func, file, fullname, lnum, addr, i, from));
             }
         }
 
@@ -2391,7 +2392,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return call stack
      */
-    public List<CallStackFrame> getCallStack() {
+    public List<GdbCallStackFrame> getCallStack() {
         return callstack;
     }
 
@@ -2404,7 +2405,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return current stack frame or null
      */
-    public CallStackFrame getCurrentCallStackFrame() {
+    public GdbCallStackFrame getCurrentCallStackFrame() {
         synchronized (callstack) {
             if (currentCallStackFrame != null) {
                 return currentCallStackFrame;
@@ -2420,9 +2421,9 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @param Frame to make current (or null)
      */
-    public void setCurrentCallStackFrame(CallStackFrame callStackFrame) {
+    public void setCurrentCallStackFrame(GdbCallStackFrame callStackFrame) {
         if (callStackFrame.isValid()) {
-            CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
+            GdbCallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
             updateLocalVariables(callStackFrame.getFrameNumber());
             if (old == callStackFrame) {
                 return;
@@ -2435,8 +2436,8 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
-        CallStackFrame old;
+    private GdbCallStackFrame setCurrentCallStackFrameNoFire(GdbCallStackFrame callStackFrame) {
+        GdbCallStackFrame old;
 
         synchronized (callstack) {
             old = getCurrentCallStackFrame();
@@ -2589,7 +2590,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return disassembly;
     }
 
-    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
+    public void setCurrentBreakpoint(CndBreakpoint currentBreakpoint) {
         this.currentBreakpoint = currentBreakpoint;
     }
 

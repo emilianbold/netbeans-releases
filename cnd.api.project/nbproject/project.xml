@@ -31,9 +31,11 @@
                 <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.dlight.xyplot</friend>
                 <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
@@ -44,7 +46,7 @@
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>
-                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
             </friend-packages>
         </data>

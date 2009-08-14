@@ -217,19 +217,21 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
             String domainDirName = dm.getProperties().getDomainDir();
-            domainDir = new File(domainDirName);
-        }
-        
-        if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
-            return new File[] {
-                new File(domainDir, KEYSTORE_LOCATION)  //NOI18N
-            };
-        }
-                
-        if (TOOL_TRUSTSTORE.equals(toolName) || TOOL_TRUSTSTORECLIENT.equals(toolName)) {
-            return new File[] {
-                new File(domainDir, TRUSTSTORE_LOCATION)  //NOI18N
-            };
+            if(domainDirName != null) {
+                domainDir = new File(domainDirName);
+
+                if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
+                    return new File[] {
+                        new File(domainDir, KEYSTORE_LOCATION)  //NOI18N
+                    };
+                }
+
+                if (TOOL_TRUSTSTORE.equals(toolName) || TOOL_TRUSTSTORECLIENT.equals(toolName)) {
+                    return new File[] {
+                        new File(domainDir, TRUSTSTORE_LOCATION)  //NOI18N
+                    };
+                }
+            }
         }
         
         return new File[0];
@@ -257,11 +259,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
 
     @Override
     public Set<Type> getSupportedTypes() {
-        Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
-        // TODO -- remove once the deploy to remote stuff in in place
-        if (null == dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
-            return Collections.EMPTY_SET;
-        }
         Set<Type> retVal = pf.getSupportedTypes();
         Set<Profile> ps = getCorrectedProfileSet();
         if (ps.contains(Profile.JAVA_EE_6_WEB) && !ps.contains(Profile.JAVA_EE_6_FULL)) {
@@ -373,23 +370,31 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return "${j2ee.appclient.tool.args}"; // NOI18N
             }
             if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -javaagent:");
-                 sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath())); 
-                  sb.append("=mode=acscript,arg=-configxml,arg=");
-                  sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath())); 
-                  sb.append(",client=jar=");
+                if(domainPath != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader -javaagent:");
+                     sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
+                      sb.append("=mode=acscript,arg=-configxml,arg=");
+                      sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath()));
+                      sb.append(",client=jar=");
 //                  sb.append(""); // path to /tmp/test/ApplicationClient1Client.jar
 //                   sb.append(" -jar ");
 //                    sb.append(""); // path to /tmp/test/ApplicationClient1Client.jar
-                return sb.toString();
-            }
-            if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
-                FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dm.getProperties().getDomainDir())));
-                if (location == null) {
+                    return sb.toString();
+                } else {
                     return null;
                 }
-                return (FileUtil.toFile(location).getAbsolutePath())+File.separator+"generated"+File.separator+"xml"; // NOI18N
+            }
+            if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
+                if(domainPath != null) {
+                    FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(domainPath)));
+                    if (location == null) {
+                        return null;
+                    }
+                    return (FileUtil.toFile(location).getAbsolutePath())+File.separator+"generated"+File.separator+"xml"; // NOI18N
+                } else {
+                    return null;
+                }
             }
             if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
                 return null; // "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() +

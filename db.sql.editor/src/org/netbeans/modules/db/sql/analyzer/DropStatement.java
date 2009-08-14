@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.Map.Entry;
 import java.util.SortedMap;
 
 /**
@@ -47,42 +46,15 @@ import java.util.SortedMap;
  */
 public class DropStatement extends SQLStatement {
 
-    private final SQLStatementKind kind;
-    int startOffset, endOffset;
     private final QualIdent table;
-    private final SortedMap<Integer, DropContext> offset2Context;
 
-    DropStatement(SQLStatementKind kind, int startOffset, int endOffset, QualIdent table, SortedMap<Integer, DropContext> offset2Context) {
-        this.kind = kind;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    DropStatement(int startOffset, int endOffset, QualIdent table, SortedMap<Integer, Context> offset2Context) {
+        super(startOffset, endOffset, offset2Context);
+        this.kind = SQLStatementKind.DROP;
         this.table = table;
-        this.offset2Context = offset2Context;
-    }
-
-    public SQLStatementKind getKind() {
-        return kind;
     }
 
     public QualIdent getTable() {
         return table;
-    }
-
-    public DropContext getContextAtOffset(int offset) {
-        DropContext result = null;
-        for (Entry<Integer, DropContext> entry : offset2Context.entrySet()) {
-            if (offset >= entry.getKey()) {
-                result = entry.getValue();
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public enum DropContext {
-
-        DROP,
-        TABLE
     }
 }

@@ -42,6 +42,8 @@ package org.netbeans.modules.editor.macros.storage.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -112,6 +114,17 @@ public class MacrosPanel extends JPanel {
         tMacros.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent evt) {
                 tMacrosTableChanged(evt);
+            }
+        });
+
+        // Fix for #135985
+        tMacros.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if( KeyEvent.VK_ENTER == e.getKeyCode()) {
+                    epMacroCode.requestFocusInWindow();
+                    e.consume();
+                }
             }
         });
         
@@ -311,7 +324,8 @@ public class MacrosPanel extends JPanel {
             epMacroCode.setText(model.getMacroByIndex(index).getCode()); //NOI18N
             epMacroCode.getCaret().setDot(0);
             epMacroCode.setEnabled(true);
-            epMacroCode.requestFocusInWindow();
+            // Fix for #135985 commented to avoid focus
+            //epMacroCode.requestFocusInWindow();
             bRemove.setEnabled(true);
             bSetShortcut.setEnabled(true);
         }

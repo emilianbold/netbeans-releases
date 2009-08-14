@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import java.awt.Image;
 import javax.swing.Action;
@@ -48,7 +49,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
@@ -65,20 +65,24 @@ public class HttpMethodNode extends AbstractNode{
     private MetadataModel<RestServicesMetadata> model;
     
     
-    public HttpMethodNode(Project project, String className, HttpMethod method) {
-        this(project, className, method, new InstanceContent());
+    public HttpMethodNode(Project project, RestServiceDescription desc, HttpMethod method) {
+        this(project, desc, method, new InstanceContent());
     }
     
-    private HttpMethodNode(Project project, String className, HttpMethod method,
+    private HttpMethodNode(Project project, RestServiceDescription desc, HttpMethod method,
             InstanceContent content) {
         super(Children.LEAF, new AbstractLookup(content));
         this.methodName = method.getName();
         this.produceMime = method.getProduceMime();
         this.consumeMime = method.getConsumeMime();
         this.returnType = method.getReturnType();
-        
         content.add(this);
-        content.add(OpenCookieFactory.create(project, className, methodName));
+        // enable Test method Uri action only for GET methods
+        if ("GET".equals(method.getType())) { //NOI18N
+            content.add(new MethodUriProvider(desc.getUriTemplate(), method.getPath()));
+        }
+        content.add(project);
+        content.add(OpenCookieFactory.create(project, desc.getClassName(), methodName));
     }
     
     public String getDisplayName() {
@@ -127,10 +131,32 @@ public class HttpMethodNode extends AbstractNode{
     public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
+            SystemAction.get(TestResourceUriAction.class),
             null,
             //SystemAction.get(DeleteAction.class),
             //null,
             SystemAction.get(PropertiesAction.class),
         };
+    }
+
+    private class MethodUriProvider implements ResourceUriProvider {
+
+        private String resourcePath, methodPath;
+
+        private MethodUriProvider(String resourcePath, String methodPath) {
+            this.resourcePath = resourcePath;
+            this.methodPath = methodPath;
+        }
+
+        public String getResourceUri() {
+            if (methodPath == null || methodPath.length() == 0) {
+                return resourcePath;
+            } else if (methodPath.startsWith("/")) { //NOI18N
+                return resourcePath+methodPath;
+            } else {
+                return resourcePath+"/"+methodPath; //NOI18N
+            }
+        }
+
     }
 }

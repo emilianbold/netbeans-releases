@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
@@ -98,8 +99,11 @@ public class JspCompletionProvider implements CompletionProvider {
             this.component = component;
         }
         
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+        protected void doQuery(CompletionResultSet resultSet, Document doc, 
+                int caretOffset) 
+        {
+            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet 
+                = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
             JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
 
             resultSet.addAllItems(jspResultSet.getItems());
@@ -130,7 +134,8 @@ public class JspCompletionProvider implements CompletionProvider {
                 }
             } else {
                 //called directly by infrastructure - run query
-                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet 
+                    = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
                 JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
                 resultSet.addAllItems(jspResultSet.getItems());
                 resultSet.setAnchorOffset(jspResultSet.getAnchor());
@@ -224,16 +229,21 @@ public class JspCompletionProvider implements CompletionProvider {
         int adjustedOffset = caretOffset == 0 ? 0 : caretOffset - 1;
         doc.readLock();
         try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
+            TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
+            TokenSequence<?> tokenSequence = JspSyntaxSupport.tokenSequence(
+                    tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
             if(tokenSequence != null) {
                 tokenSequence.move(adjustedOffset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                     return; //no token found
                 }
                 
-                Token tokenItem = tokenSequence.token();
-                if(tokenSequence.embedded() == null && tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+                Token<?> tokenItem = tokenSequence.token();
+                if(tokenSequence.embedded() == null && 
+                        tokenItem.id() == HTMLTokenId.TEXT && 
+                        !tokenItem.text().toString().startsWith("<") && 
+                        !tokenItem.text().toString().startsWith("&")) 
+                {
                     hideCompletion();
                 }
             }

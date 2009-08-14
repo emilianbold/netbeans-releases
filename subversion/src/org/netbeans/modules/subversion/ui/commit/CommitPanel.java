@@ -78,6 +78,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
@@ -235,6 +236,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    /**
+     * Do NOT remove this method. It may seem unused but is in fact called from {@link #invokeInitPanelMethod(java.lang.String)}
+     * through reflection.
+     */
     private void initFilesPanel() {
 
         /* this method is called using reflection from 'invokeInitPanelMethod()' */
@@ -251,6 +256,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         filesPanel.setAlignmentX(LEFT_ALIGNMENT);
     }
 
+    /**
+     * Do NOT remove this method. It may seem unused but is in fact called from {@link #invokeInitPanelMethod(java.lang.String)}
+     * through reflection.
+     */
     private void initHooksPanel() {
 
         /* this method is called using reflection from 'invokeInitPanelMethod()' */
@@ -270,7 +279,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     String getCommitMessage() {
-        return messageTextArea.getText();
+        return SvnUtils.fixLineEndings(messageTextArea.getText());
     }
 
     private void onBrowseRecentMessages() {

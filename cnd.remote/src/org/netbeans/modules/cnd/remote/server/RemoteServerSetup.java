@@ -65,7 +65,6 @@ public class RemoteServerSetup {
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
     private static final String GET_SCRIPT_INFO = "grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     private static final String DOS2UNIX_CMD = "dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
-    private static final String GET_LIB_INFO = "ls -1 2>&1 "; // NOI18N
     public static final String REMOTE_LIB_DIR = ".netbeans/6.7/cnd2/lib/"; // NOI18N
     
     private final Map<String, Double> scriptSetupMap;
@@ -157,15 +156,15 @@ public class RemoteServerSetup {
                         "mkdir -p " + REMOTE_LIB_DIR); // NOI18N
                 if (exit_status == 0) {
                     needChmod = true;
-                    for (String key : binarySetupMap.keySet()) {
-                        String loc = binarySetupMap.get(key);
-                        log.fine("RSS.setup: Copying" + loc + " to " + executionEnvironment); //NO18N
-                        File file = InstalledFileLocator.getDefault().locate(loc, null, false);
+                    for (String remoteFileName : binarySetupMap.keySet()) {
+                        String localFileName = binarySetupMap.get(remoteFileName);
+                        log.fine("RSS.setup: Copying" + localFileName + " to " + executionEnvironment); //NO18N
+                        File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
                         if (file == null
                                 || !file.exists()
-                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR + file.getName())) {
+                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFileName)) {
                             reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
-                                    executionEnvironment.toString(), key);
+                                    executionEnvironment.toString(), localFileName);
                         }
                     }
                 } else {
@@ -245,7 +244,21 @@ public class RemoteServerSetup {
     }
     
     private List<String> getBinaryUpdates(List<String> list) {
-        RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, GET_LIB_INFO + getBinarySetupFiles());
+
+        // Parsing ls output doesn't work, since it differs in diferent OSes
+        // (not to mention localization):
+        // For example, Ubuntu says:
+        // ls: cannot access .netbeans/6.7/cnd2/lib/rfs_preload-SunOS-x86.so: No such file or directory
+        // while Solaris says
+        // .netbeans/6.7/cnd2/lib/rfs_preload-SunOS-x86.so: No such file or directory
+
+        StringBuilder sb = new StringBuilder("sh -c \""); // NOI18N
+        for (String path : binarySetupMap.keySet()) {
+            sb.append(String.format("if [ ! -x %s ]; then echo %s; fi;", path, path)); // NOI18N
+        }
+        sb.append("\""); // NOI18N
+
+        RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, sb.toString());
         support.run();
         if (!support.isFailed()) {
             log.fine("RSS.getBinaryUpdates: GET_LIB_INFO returned " + support.getExitStatus());
@@ -255,15 +268,11 @@ public class RemoteServerSetup {
                 String val = support.getOutput();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
-                    int pos1 = line.indexOf(':');
-                    if (pos1 > 0) {
+                    if (line.length() > 0) {
                         if (count++ == 0) {
                             list.add(REMOTE_LIB_DIR);
                         }
-                        int pos2 = line.indexOf(':', pos1 + 1);
-                        if (pos2 > 0) {
-                            list.add(line.substring(pos1 + 1, pos2).trim());
-                        }
+                        list.add(line);
                     }
                 }
             }
@@ -295,15 +304,5 @@ public class RemoteServerSetup {
 
     private boolean isFailedOrCanceled() {
         return failed || cancelled;
-    }
-    
-    private String getBinarySetupFiles() {
-        StringBuilder sb = new StringBuilder();
-        
-        for (String path : binarySetupMap.keySet()) {
-            sb.append(path);
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
+    }    
 }

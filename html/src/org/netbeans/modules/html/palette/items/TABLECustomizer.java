@@ -69,6 +69,21 @@ public class TABLECustomizer extends javax.swing.JPanel {
         this.table = table;
 
         initComponents();
+        try {
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner1.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner1.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner2.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner2.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner3.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner3.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner3.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner3.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner4.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner4.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner4.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner4.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)jSpinner5.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner5.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)jSpinner5.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner5.getAccessibleContext().getAccessibleDescription());
+            ((JSpinner.NumberEditor)widthSpinner.getEditor()).getTextField().getAccessibleContext().setAccessibleName(widthSpinner.getAccessibleContext().getAccessibleName());
+            ((JSpinner.NumberEditor)widthSpinner.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(widthSpinner.getAccessibleContext().getAccessibleDescription());
+        } catch (Exception e) {
+        }
     }
     
     public boolean showDialog() {
@@ -96,6 +111,8 @@ public class TABLECustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Dialog"));
         dialog.setVisible(true);
         repaint();
         
@@ -164,6 +181,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel3.setLabelFor(jSpinner3);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_Border")); // NOI18N
 
+        jLabel4.setLabelFor(widthSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_Width")); // NOI18N
 
         jLabel5.setLabelFor(jSpinner4);
@@ -217,7 +235,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(44, 44, 44)
                 .add(jLabel7)
-                .addContainerGap(214, Short.MAX_VALUE))
+                .addContainerGap(216, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(44, 44, 44)
                 .add(jLabel8)
@@ -264,6 +282,10 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Columns")); // NOI18N
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Rows")); // NOI18N
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Rows")); // NOI18N
+        jSpinner1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Rows_Spinner")); // NOI18N
+        jSpinner1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Rows_Spinner")); // NOI18N
+        jSpinner2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Columns_Spinner")); // NOI18N
+        jSpinner2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Columns_Spinner")); // NOI18N
         jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Border")); // NOI18N
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Border")); // NOI18N
         jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Width")); // NOI18N
@@ -276,6 +298,14 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_SpacingHelp")); // NOI18N
         jLabel8.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_PaddingHelp")); // NOI18N
         jLabel8.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_PaddingHelp")); // NOI18N
+        jSpinner3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Border_Spinner")); // NOI18N
+        jSpinner3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Border_Spinner")); // NOI18N
+        jSpinner4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Spacing_Spinner")); // NOI18N
+        jSpinner4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Spacing_Spinner")); // NOI18N
+        jSpinner5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Padding_Spinner")); // NOI18N
+        jSpinner5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Padding_Spinner")); // NOI18N
+        widthSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Width_Spinner")); // NOI18N
+        widthSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Width_Spinner")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

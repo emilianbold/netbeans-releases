@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.dlight.tha;
 
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadAnalyzerDataProvider;
+
+import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;

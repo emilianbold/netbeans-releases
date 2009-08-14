@@ -43,7 +43,7 @@ import java.io.File;
 import org.junit.Test;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.nativeexecution.test.Conditional;
 
@@ -105,8 +105,8 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     public void testLineBreakpointSet() {
         startDebugger("BpTestProject", "main", "");
 
-        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
-        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+        CndBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        CndBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
 
         debugger.resume();
 
@@ -128,10 +128,10 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     public void testLineBreakpointDisable() {
         startDebugger("BpTestProject", "main", "");
 
-        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        CndBreakpoint b1 = setLineBreakpoint("bp.h", 31);
         b1.disable();
         
-        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+        CndBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
 
         debugger.resume();
         // should stop on the second breakpoint only
@@ -147,10 +147,10 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     public void testLineBreakpointDelete() {
         startDebugger("BpTestProject", "main", "");
 
-        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        CndBreakpoint b1 = setLineBreakpoint("bp.h", 31);
         dm.removeBreakpoint(b1);
 
-        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+        CndBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
 
         debugger.resume();
         // should stop on the second breakpoint only
@@ -166,8 +166,8 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     public void testFunctionBreakpointSet() {
         startDebugger("BpTestProject", "main", "");
 
-        GdbBreakpoint b1 = setFunctionBreakpoint("foo1");
-        GdbBreakpoint b2 = setFunctionBreakpoint("foo2");
+        CndBreakpoint b1 = setFunctionBreakpoint("foo1");
+        CndBreakpoint b2 = setFunctionBreakpoint("foo2");
 
         debugger.resume();
 
@@ -190,14 +190,14 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         startDebugger("BpTestProject", "main", "");
 
         // Set a breakpoint inside foo2()
-        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+        CndBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
 
         // go there
         debugger.resume();
         waitForBreakpoint(b2);
 
         // Set a breakpoint inside foo1()
-        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        CndBreakpoint b1 = setLineBreakpoint("bp.h", 31);
 
         // Create a watch on foo1
         Watch watch = dm.createWatch("foo1()");
@@ -207,7 +207,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         var.getValue();
 
         // it should not stop on the breakpoint during evaluation
-        CallStackFrame csf = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame csf = debugger.getCurrentCallStackFrame();
         assertEquals(b2.getPath(), csf.getFullname());
         assertEquals(b2.getLineNumber(), csf.getLineNumber());
 

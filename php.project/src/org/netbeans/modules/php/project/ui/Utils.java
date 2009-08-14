@@ -64,9 +64,8 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
-import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -184,27 +183,6 @@ public final class Utils {
         }
     }
 
-    // input can be with parameters e.g. "/usr/bin/php -q"
-    public static String validatePhpInterpreter(String command) {
-        assert command != null;
-        if (command.trim().length() == 0) {
-            return NbBundle.getMessage(Utils.class, "MSG_NoPhpInterpreter");
-        }
-
-        PhpInterpreter phpInterpreter = new PhpInterpreter(command);
-        File file = new File(phpInterpreter.getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpInterpreterCannotRead");
-        }
-        return null;
-    }
-
     public static void browsePhpUnit(Component parent, JTextField textField) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpUnit"));
@@ -215,26 +193,6 @@ public final class Utils {
             LastUsedFolders.setOptionsPhpUnit(phpUnit);
             textField.setText(phpUnit.getAbsolutePath());
         }
-    }
-
-    // input can be with parameters e.g. "/usr/bin/phpunit  --repeat 3"
-    public static String validatePhpUnit(String command) {
-        if (command == null || command.trim().length() == 0) {
-            return NbBundle.getMessage(Utils.class, "MSG_NoPhpUnit");
-        }
-
-        PhpUnit phpUnit = new PhpUnit(command);
-        File file = new File(phpUnit.getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(Utils.class, "MSG_PhpUnitCannotRead");
-        }
-        return null;
     }
 
     public static void browseTestSources(JTextField textField, PhpProject phpProject) {
@@ -510,8 +468,8 @@ public final class Utils {
      * @param folder folder to browse files from.
      * @param textField textfield to update.
      */
-    public static void browseFolderFile(FileObject folder, JTextField textField) {
-        String selected = browseFolderFile(folder, textField.getText());
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, JTextField textField) {
+        String selected = browseFolderFile(phpVisibilityQuery, folder, textField.getText());
         if (selected != null) {
             textField.setText(selected);
         }
@@ -520,8 +478,8 @@ public final class Utils {
     /**
      * @see #browseFolderFile(org.openide.filesystems.FileObject, javax.swing.JTextField)
      */
-    public static void browseFolderFile(File folder, JTextField textField) {
-        browseFolderFile(FileUtil.toFileObject(folder), textField);
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, File folder, JTextField textField) {
+        browseFolderFile(phpVisibilityQuery, FileUtil.toFileObject(folder), textField);
     }
 
     /**
@@ -530,8 +488,8 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseFolderFile(FileObject folder, String preselected) {
-        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
+    public static String browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, String preselected) {
+        FileObject selected = BrowseFolders.showDialog(phpVisibilityQuery, new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
         }
@@ -584,7 +542,7 @@ public final class Utils {
 
     private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
         FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject selected = BrowseFolders.showDialog(new FileObject[] {rootFolder},
+        FileObject selected = BrowseFolders.showDialog(PhpVisibilityQuery.forProject(project), new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(rootFolder), FileUtil.toFile(selected));

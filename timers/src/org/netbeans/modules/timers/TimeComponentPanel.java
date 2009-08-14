@@ -42,6 +42,7 @@ package org.netbeans.modules.timers;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -68,6 +69,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -280,33 +283,67 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
     }
 
 
-    private static void dumpRoots(Collection objs) {
-        JPanel inner = new JPanel();
-        inner.setLayout(new BorderLayout());
-        JProgressBar bar = new JProgressBar();
-        JLabel msg = new JLabel(NbBundle.getBundle(TimeComponentPanel.class).getString("Computing_object_reachability"));
-        inner.add(msg, BorderLayout.CENTER);
-        inner.add(bar, BorderLayout.SOUTH);
-        Dialog d = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(
-                inner, NbBundle.getBundle(TimeComponentPanel.class).getString("Please_wait")));
-        d.pack();
-        d.setModal(false);
-        d.setVisible(true);
-        
-        String report = getRoots(objs, bar, inner);
+    private static class DumpRoots extends Object implements Runnable {
+        private static final RequestProcessor RP = new RequestProcessor("Dump Roots"); // NOI18N
 
-        inner.removeAll();
-        JScrollPane pane = new JScrollPane();
-        JTextArea editor = new JTextArea(report);
-        msg.setText(NbBundle.getBundle(TimeComponentPanel.class).getString("Object_Reachability"));
-        editor.setColumns(80);
-        editor.setEditable(false);
-        pane.setViewportView(editor);
-        inner.add(pane, BorderLayout.CENTER);
-        d.setSize(Math.min(600, editor.getPreferredSize().width+30), Math.min(400, editor.getPreferredSize().height + 70));
-        d.invalidate();
-        d.validate();
-        d.repaint();
+        private final JPanel inner;
+        private final Dialog d;
+        private Collection objs;
+        private final JProgressBar bar;
+        private String report;
+        private final JLabel msg;
+
+        public DumpRoots(Collection objs) {
+            assert EventQueue.isDispatchThread();
+            this.objs = objs;
+
+            inner = new JPanel();
+            inner.setLayout(new BorderLayout());
+            inner.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+            bar = new JProgressBar();
+            msg = new JLabel(NbBundle.getBundle(TimeComponentPanel.class).getString("Computing_object_reachability"));
+            msg.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+            inner.add(msg, BorderLayout.NORTH);
+            inner.add(bar, BorderLayout.CENTER);
+            d = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(
+                    inner, NbBundle.getBundle(TimeComponentPanel.class).getString("Please_wait")));
+            d.pack();
+            d.setModal(true);
+
+            Task task = RP.post(this);
+            d.setVisible(true);
+            task.waitFinished();
+            
+            finish();
+        }
+
+        public void run() {
+            Collection localObjs = objs;
+            objs = null;
+            report = getRoots(localObjs, bar, inner);
+            while (!d.isVisible()) {
+                // just wait in case constructor's setVisible has not yet
+                // been performed
+            }
+            d.setVisible(false);
+        }
+
+        private void finish() {
+            d.setModal(false);
+            d.setVisible(true);
+            inner.removeAll();
+            JScrollPane pane = new JScrollPane();
+            JTextArea editor = new JTextArea(report);
+            msg.setText(NbBundle.getBundle(TimeComponentPanel.class).getString("Object_Reachability"));
+            editor.setColumns(80);
+            editor.setEditable(false);
+            pane.setViewportView(editor);
+            inner.add(pane, BorderLayout.CENTER);
+            d.setSize(Math.min(600, editor.getPreferredSize().width+30), Math.min(400, editor.getPreferredSize().height + 70));
+            d.invalidate();
+            d.validate();
+            d.repaint();
+        }
     }
     
     class PopupAdapter extends org.openide.awt.MouseUtils.PopupMouseAdapter {
@@ -341,7 +378,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             popup.add(new AbstractAction(NbBundle.getBundle(TimeComponentPanel.class).getString("Find_refs")) {
 
                 public void actionPerformed(ActionEvent arg0) {
-                    dumpRoots(oc.getInstances());
+                    new DumpRoots(oc.getInstances());
                 }
             });
             popup.show(TimeComponentPanel.this, x, y);
@@ -382,12 +419,12 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                         // hack - DO.find, we'not really interrested in
                         // the FileObject reachability
                         // This will go away for general key type
-                        dumpRoots(Collections.singleton(dobj));
+                        new DumpRoots(Collections.singleton(dobj));
                     }
                     catch (DataObjectNotFoundException ex) {
                         // OK, the DO is not ready, FO invalid or whatever.
-                        // Trace the invalid FO instead 
-                        dumpRoots(Collections.singleton(wr.get()));
+                        // Trace the invalid FO instead
+                        new DumpRoots(Collections.singleton(wr.get()));
                     }
                 }
             });
@@ -395,8 +432,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         }
     }
 
-
-    private static String getRoots(Collection objects, JProgressBar bar, final JPanel inner) {
+    static String getRoots(Collection objects, JProgressBar bar, final JPanel inner) {
         // scanning intentionally blocks AWT, force repaints
         bar.getModel().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent arg0) {

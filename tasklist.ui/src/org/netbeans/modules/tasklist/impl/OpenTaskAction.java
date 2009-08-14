@@ -125,7 +125,7 @@ public class OpenTaskAction extends AbstractAction {
             if( null == line )
                 line = lines.getCurrent( 0 );
             if( null != line ) {
-                line.show( ShowOpenType.OPEN , ShowVisibilityType.FRONT);
+                line.show( ShowOpenType.OPEN , ShowVisibilityType.FOCUS);
                 return true;
             }
         } catch( IndexOutOfBoundsException e ) {
