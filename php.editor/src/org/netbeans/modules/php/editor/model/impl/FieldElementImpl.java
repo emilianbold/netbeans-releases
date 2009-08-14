@@ -120,7 +120,8 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
-        return (assignment != null) ? assignment.getTypes() : getReturnTypes();
+        final Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
+        return  retval.isEmpty() ? getReturnTypes() : retval;
     }
 
     public Collection<? extends FieldAssignmentImpl> getAssignments() {

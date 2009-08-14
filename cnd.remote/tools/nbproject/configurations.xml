@@ -23,7 +23,7 @@
   <confs>
     <conf name="Default" type="0">
       <toolsSet>
-        <developmentServer>localhost</developmentServer>
+        <developmentServer>vk155633@elif:22</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>1</platform>
       </toolsSet>

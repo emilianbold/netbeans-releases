@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  *
  * @author Radek Matous
@@ -47,5 +50,7 @@ public interface Parameter {
     String getName();
     String getDefaultValue();
     boolean isMandatory();
-    TypeScope getType();
+    /** mixed types can be documented in php doc*/
+    List<QualifiedName> getTypes();
+    OffsetRange getOffsetRange();
 }

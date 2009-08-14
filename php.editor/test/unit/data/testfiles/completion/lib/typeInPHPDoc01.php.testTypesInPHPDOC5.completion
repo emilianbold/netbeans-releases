@@ -1,5 +1,5 @@
 Code completion result for source line:
-* @return PhpDoc01News|PhpDoc01   text|| text
+* @return PhpDoc01News|PhpDoc01   text|@| text
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    @abstract                                  

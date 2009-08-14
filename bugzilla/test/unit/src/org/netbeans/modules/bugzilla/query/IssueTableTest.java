@@ -94,7 +94,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
         final BugzillaRepository repo = QueryTestUtil.getRepository();
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, false); // false = not saved
+        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, false, false, true); // false = not saved
         assertEquals(0,q.getIssues().length);
         return q;
     }

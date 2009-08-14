@@ -267,7 +267,6 @@ public class VCSHyperlinkSupport {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                if(!kenaiUser.isOnline()) return false;
                 kenaiUser.startChat();
                 return true;
             }
@@ -277,7 +276,6 @@ public class VCSHyperlinkSupport {
         @Override
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
-                if(!kenaiUser.isOnline()) return false;
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 component.setToolTipText(NbBundle.getMessage(VCSHyperlinkSupport.class, "LBL_StartChat", author));
                 return true;

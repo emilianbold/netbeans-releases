@@ -207,10 +207,6 @@ public final class DLightToolkitManagement {
       this.ref = ref;
     }
 
-    public DLightSessionContext getSessionContext(){
-        return ref.getSessionContext();
-    }
-
     DLightSessionInternalReference getSessionReferenceImpl() {
       return ref;
     }

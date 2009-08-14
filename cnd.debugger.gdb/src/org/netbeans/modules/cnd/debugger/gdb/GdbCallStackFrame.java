@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.debugger.common.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.common.utils.AutosProvider;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
@@ -66,7 +67,7 @@ import org.openide.text.NbDocument;
  *
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
-public class CallStackFrame extends org.netbeans.modules.cnd.debugger.common.CallStackFrame {
+public class GdbCallStackFrame extends CallStackFrame {
     public static boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
 
     private final GdbDebugger debugger;
@@ -87,7 +88,7 @@ public class CallStackFrame extends org.netbeans.modules.cnd.debugger.common.Cal
 
     //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
+    public GdbCallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
         this.debugger = debugger;
         this.func = func;
         this.file = file;

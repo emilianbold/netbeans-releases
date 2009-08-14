@@ -92,7 +92,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, ts, false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
         ts = System.currentTimeMillis();
         h.waitUntilDone();
 
@@ -132,7 +132,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         // query for issue1
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, ts, false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         Issue[] issues = q.getIssues();
@@ -203,7 +203,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     public void testLastRefresh() {
         BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
         long lastRefresh = q.getLastRefresh();
-        assertEquals(-1, lastRefresh);
+        assertEquals(0, lastRefresh);
 
         long ts = System.currentTimeMillis();
 
