@@ -238,7 +238,7 @@
     <target name="clean-libs"><antcall target="do-libs"><param name="action" value="clean"/></antcall></target>
     <target name=  "nbm-libs"><antcall target="do-libs"><param name="action" value="nbm"/></antcall></target>
     <target name=   "do-libs">
-        <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.httpunit"/></antcall-->
+        <antcall target="do-module"><param name="module" value="o.n.soa.libs.httpunit"/></antcall>
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.jbiadmincommon"/></antcall>
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.jgo"/></antcall>
         <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.mail"/></antcall-->
