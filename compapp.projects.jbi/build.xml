@@ -39,7 +39,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="projectsjbi" default="netbeans" basedir=".">
+<project name="compapp.projects.jbi" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="ant-extra" depends="init">

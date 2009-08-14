@@ -107,7 +107,7 @@ public class JbiProjectGenerator {
         
         final FileObject fo = createProjectDir(dir);
         
-        // # 113228
+        // vlv # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -248,7 +248,7 @@ public class JbiProjectGenerator {
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject(dir);
 
-        // # 113228
+        // vlv # 113228
         if (fo == null) {
             throw new IOException("Can't create " + dir.getName()); // NOI18N
         }
