@@ -301,7 +301,7 @@ made subject to such option by the copyright holder.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -309,7 +309,7 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.10</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
                     <build-prerequisite/>
