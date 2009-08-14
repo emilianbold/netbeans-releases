@@ -206,57 +206,62 @@ public abstract class Issue {
         final ProgressHandle[] handle = new ProgressHandle[1];
         handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
         handle[0].start();
-        final IssueTopComponent tc = IssueTopComponent.find(issueId);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                final Issue issue = tc.getIssue();
-                if (issue == null) {
-                    tc.initNoIssue();
-                }
-                final boolean tcOpened = tc.isOpened();
-                if(!tcOpened) {
-                    tc.open();
-                }
-                tc.requestActive();
-
-                rp.post(new Runnable() {
-
-                    public void run() {
-                        try {
-                            if (issue != null) {
-                                handle[0].finish();
-                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
-                                handle[0].start();
-                                issue.refresh();
-                            } else {
-                                final Issue refIssue = repository.getIssue(issueId);
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        if(refIssue == null) {
-                                            // lets hope the repository was able to handle this
-                                            // because whatever happend, there is nothing else
-                                            // we can do at this point
-                                            if(!tcOpened) {
-                                                tc.close();
-                                            }
-                                            return;
-                                        }
-                                        tc.setIssue(refIssue);
-                                    }
-                                });
-                                try {
-                                    if(refIssue != null) {
-                                        refIssue.setSeen(true);
-                                    }
-                                } catch (IOException ex) {
-                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        } finally {
-                            handle[0].finish();
-                        }
+                try {
+                    final IssueTopComponent tc = IssueTopComponent.find(issueId);
+                    final Issue issue = tc.getIssue();
+                    if (issue == null) {
+                        tc.initNoIssue();
                     }
-                });
+                    final boolean tcOpened = tc.isOpened();
+                    if(!tcOpened) {
+                        tc.open();
+                    }
+                    tc.requestActive();
+
+                    rp.post(new Runnable() {
+
+                        public void run() {
+                            try {
+                                if (issue != null) {
+                                    handle[0].finish();
+                                    handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
+                                    handle[0].start();
+                                    issue.refresh();
+                                } else {
+                                    final Issue refIssue = repository.getIssue(issueId);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            if(refIssue == null) {
+                                                // lets hope the repository was able to handle this
+                                                // because whatever happend, there is nothing else
+                                                // we can do at this point
+                                                if(!tcOpened) {
+                                                    tc.close();
+                                                }
+                                                return;
+                                            }
+                                            tc.setIssue(refIssue);
+                                        }
+                                    });
+                                    try {
+                                        if(refIssue != null) {
+                                            refIssue.setSeen(true);
+                                        }
+                                    } catch (IOException ex) {
+                                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            } finally {
+                                handle[0].finish();
+                            }
+                        }
+                    });
+                } catch (NullPointerException e) { // tc.find(...) on not initialized TC
+                    handle[0].finish();
+                    throw e;
+                }
             }
         });
     }
