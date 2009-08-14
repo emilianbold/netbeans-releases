@@ -152,6 +152,9 @@ public final class ContextAwareSupport {
                     e,
                     "The service "+service+" can not be accessed."));
         } catch (InvocationTargetException ex) {
+            if (ex.getCause() instanceof ThreadDeath) {
+                throw (ThreadDeath) ex.getCause();
+            }
             Exceptions.printStackTrace(
                     Exceptions.attachMessage(
                     ex,

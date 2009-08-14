@@ -2031,6 +2031,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
             try {
                 CallStackFrame f = t.getCallStack (0, 1) [0];
                 List<String> l = f.getAvailableStrata ();
+                String stratum = f.getDefaultStratum ();
+                //String sourceDebugExtension;
+                    //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
+                if (l.size() == 1 && "Java".equals(l.get(0))) {     // NOI18N
+                    // Hack for non-Java languages that do not define stratum:
+                    String sourceName = f.getSourceName(null);
+                    int ext = sourceName.lastIndexOf('.');
+                    if (ext > 0) {
+                        String extension = sourceName.substring(ext);
+                        extension = extension.toUpperCase();
+                        if (!"JAVA".equals(extension)) {    // NOI18N
+                            l = Collections.singletonList(extension);
+                            stratum = extension;
+                        }
+                    }
+                }
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     if (!languages.contains (l.get (i))) {
@@ -2041,7 +2057,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         languages.add (language);
                     }
                 } // for
-                String stratum = f.getDefaultStratum ();
                 if ( (stratum != null) &&
                      (!stratum.equals (lastStratumn))
                 )

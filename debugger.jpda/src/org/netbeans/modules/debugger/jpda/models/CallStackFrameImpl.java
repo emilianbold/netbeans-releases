@@ -265,6 +265,34 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     /**
+     * Returns the source debug extension.
+     * This is usually the SMAP file.
+     *
+     * @return source debug extension or <code>null</code>.
+     */
+    public String getSourceDebugExtension() {
+        if (!valid && sfLocation == null) return null;
+        try {
+            Location l = getStackFrameLocation();
+            if (VirtualMachineWrapper.canGetSourceDebugExtension(l.virtualMachine())) {
+                return ReferenceTypeWrapper.sourceDebugExtension(LocationWrapper.declaringType(l));
+            } else {
+                return null;
+            }
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            // this stack frame is not available or information in it is not available
+            valid = false;
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (AbsentInformationException ex) {
+            return null;
+        }
+    }
+
+    /**
     * Returns name of file of this frame.
     *
     * @return name of file of this frame
