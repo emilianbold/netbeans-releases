@@ -39,31 +39,28 @@
 
 package org.netbeans.modules.php.symfony;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpModuleVisibilityExtender extends PhpModuleVisibilityExtender {
+public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
     // currently, only "cache" directory directly underneath source directory
-    private static final String CACHE = "cache"; // NOI18N
+    private final File cache;
 
-    private final PhpModule phpModule;
-
-    public SymfonyPhpModuleVisibilityExtender(PhpModule phpModule) {
+    public SymfonyPhpModuleIgnoredFilesExtender(PhpModule phpModule) {
         assert phpModule != null;
-        this.phpModule = phpModule;
+
+        cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), "cache"); // NOI18N
     }
 
     @Override
-    public boolean isVisible(FileObject fileObject) {
-        if (!fileObject.getNameExt().equals(CACHE)) {
-            return true;
-        }
-        FileObject cache = phpModule.getSourceDirectory().getFileObject(CACHE);
-        assert cache != null && cache.isFolder() : "cache directory should exist for symfony project " + phpModule.getSourceDirectory();
-        return !cache.equals(fileObject);
+    public Set<File> getIgnoredFiles() {
+        return Collections.singleton(cache);
     }
 }

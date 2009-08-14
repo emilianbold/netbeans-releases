@@ -151,15 +151,15 @@ public abstract class PhpFrameworkProvider {
     public abstract PhpModuleActionsExtender getActionsExtender(PhpModule phpModule);
 
     /**
-     * Get a {@link PhpModuleVisibilityExtender PHP module visibility extender} for this framework
+     * Get a {@link PhpModuleIgnoredFilesExtender PHP module ignored files extender} for this framework
      * and the given PHP module.
      *
-     * @param  phpModule the PHP module which visibility is going to be extended
-     * @return PHP module visibility extender, can be <code>null</code> if the framework doesn't need
+     * @param  phpModule the PHP module which ignored files are going to be extended
+     * @return PHP module ignored files extender, can be <code>null</code> if the framework doesn't need
      *         to recommend to hide any files or folders
-     * @since 1.11
+     * @since 1.12
      */
-    public abstract PhpModuleVisibilityExtender getVisibilityExtender(PhpModule phpModule);
+    public abstract PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule);
 
     /**
      * Get a {@link FrameworkCommandSupport framework command support} for this framework
