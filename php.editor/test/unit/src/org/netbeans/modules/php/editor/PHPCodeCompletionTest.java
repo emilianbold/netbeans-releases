@@ -121,7 +121,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testComments3() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment ^", false);
+        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment @^", false);
     }
 
     public void testFunctionReturnType1() throws Exception {
@@ -153,7 +153,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testTypesInPHPDOC5() throws Exception {
-        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|^", false);
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|@^", false);
     }
 
 //    public void testNamespaces1() throws Exception {
@@ -706,7 +706,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testIssue157534() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue157534.php", "issue157534^", false);
+        checkCompletion("testfiles/completion/lib/issue157534.php", "issue157534^;", false);
     }
     public void testIssue157534_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue157534.php", "/**/add^", false);
