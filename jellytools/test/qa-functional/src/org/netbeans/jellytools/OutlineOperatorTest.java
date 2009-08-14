@@ -39,12 +39,14 @@
 
 package org.netbeans.jellytools;
 
-import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
+import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jellytools.nodes.JavaNode;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
@@ -79,16 +81,24 @@ public class OutlineOperatorTest extends JellyTestCase {
     }
 
     @Override
-    public void setUp() throws IOException
+    public void setUp() throws Exception
     {
         System.out.println("### " + getName() + " ###");
-        /*
+        
         openDataProjects("SampleProject");
 
         ProjectsTabOperator lrPTO = ProjectsTabOperator.invoke();
-        Node lrlrPTO.getProjectRootNode("SampleProject");
-         *
-         */
+        JavaNode lrTestClass = new JavaNode(lrPTO.getProjectRootNode("SampleProject"), "Source Packages|sample1|TestOutline.java");
+
+        lrTestClass.open();
+
+        EditorOperator eo = new EditorOperator("TestOutline.java");
+        eo.setCaretPosition(67, 1);
+
+        new ToggleBreakpointAction().perform();
+        
+        new EventTool().waitNoEvent(500);
+        
         String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
         String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
         String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchesAction");
@@ -108,6 +118,20 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         dia.ok();
 
+        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
+
+        dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
+
+        txtWatch = new JEditorPaneOperator (dia);
+
+        txtWatch.typeText("test");
+
+        dia.ok();
+
+        new DebugJavaFileAction().perform(lrTestClass);
+
+        Thread.sleep(6000);
+
     }
 
     public void tearDown()
@@ -122,6 +146,10 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         OutlineOperator lrOVO = new OutlineOperator(tco);
 
+        OutlineNode node = lrOVO.getRootNode("test");
+
+
+        System.out.println("Test");
         //Node n = lrOVO.getRootNode();
 
     }
