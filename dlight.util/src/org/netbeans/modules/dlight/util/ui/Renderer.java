@@ -37,17 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.api;
+package org.netbeans.modules.dlight.util.ui;
 
 import javax.swing.JComponent;
 
 /**
- * Interface is used to render details for visualizers
- * that support dual-pane mode.
+ * Interface is used to convert object to user-friendly UI component.
  *
  * @author Alexey Vladykin
  */
-public interface DetailsRenderer<T> {
+public interface Renderer<T> {
 
     /**
      * @param data  object to render
