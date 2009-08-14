@@ -338,6 +338,11 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return sb.toString();
     }
 
+    @Override
+    public CharSequence getText() {
+        return getDisplayText();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

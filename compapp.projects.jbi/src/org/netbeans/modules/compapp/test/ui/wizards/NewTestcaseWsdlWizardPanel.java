@@ -104,13 +104,13 @@ public class NewTestcaseWsdlWizardPanel implements WizardDescriptor.ValidatingPa
         // fireChangeEvent();
         // and uncomment the complicated stuff below.
         if (mComponent.getSelectedWsdlFile() == null) {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+            wiz.putProperty("WizardPanel_errorMessage", 
                     NbBundle.getMessage(NewTestcaseNameVisualPanel.class, 
                     "LBL_One_WSDL_document_must_be_selected")); //NOI18N
             return false; // WSDL not selected
         }
                 
-        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        wiz.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
     
