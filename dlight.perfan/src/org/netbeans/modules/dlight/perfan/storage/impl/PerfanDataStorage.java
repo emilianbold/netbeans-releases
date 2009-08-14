@@ -44,8 +44,6 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.module.dlight.threads.api.Datarace;
@@ -63,21 +61,12 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 public final class PerfanDataStorage extends DataStorage {
 
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
-    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
     private ErprintSession er_print;
     private String experimentDirectory = null;
     private ExecutionEnvironment env;
 
     public PerfanDataStorage() {
         super();
-    }
-
-    public final Map<String, String> getInfo() {
-        return serviceInfoMap;
-    }
-
-    public final String getValue(String name) {
-        return serviceInfoMap.get(name);
     }
 
     @Override
@@ -91,10 +80,6 @@ public final class PerfanDataStorage extends DataStorage {
             return writer.toString().trim().equals("");
         }
         return true;
-    }
-
-    public final String put(String name, String value) {
-        return serviceInfoMap.put(name, value);
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome,

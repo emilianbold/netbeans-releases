@@ -56,7 +56,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 
@@ -85,9 +85,9 @@ public class CallStackNodeModel implements NodeModel {
     public String getDisplayName(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
             return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Name"); // NOI18N
-        } else if (o instanceof CallStackFrame) {
-            CallStackFrame sf = (CallStackFrame) o;
-            CallStackFrame ccsf = debugger.getCurrentCallStackFrame();
+        } else if (o instanceof GdbCallStackFrame) {
+            GdbCallStackFrame sf = (GdbCallStackFrame) o;
+            GdbCallStackFrame ccsf = debugger.getCurrentCallStackFrame();
             if (ccsf != null && ccsf.equals(sf)) { 
                 return BoldVariablesTableModelFilterFirst.toHTML(getCSFName(session, sf, false),
 			true, false, null);
@@ -105,8 +105,8 @@ public class CallStackNodeModel implements NodeModel {
     public String getShortDescription(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
             return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Desc"); // NOI18N
-        } else if (o instanceof CallStackFrame) {
-            CallStackFrame sf = (CallStackFrame) o;
+        } else if (o instanceof GdbCallStackFrame) {
+            GdbCallStackFrame sf = (GdbCallStackFrame) o;
             return getCSFName(session, sf, true);
         } else if ("No current thread" == o) { // NOI18N
             return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread"); // NOI18N
@@ -121,8 +121,8 @@ public class CallStackNodeModel implements NodeModel {
         if (node instanceof String) {
 	    return null;
 	}
-        if (node instanceof CallStackFrame) {
-            CallStackFrame ccsf = debugger.getCurrentCallStackFrame();
+        if (node instanceof GdbCallStackFrame) {
+            GdbCallStackFrame ccsf = debugger.getCurrentCallStackFrame();
             if (ccsf != null && ccsf.equals(node)) {
 		return CURRENT_CALL_STACK;
 	    }
@@ -165,7 +165,7 @@ public class CallStackNodeModel implements NodeModel {
      * @param l A boolean flag to define filename format (l=true means fullname)
      * @return Call Stack Frame name.
      */
-    public static String getCSFName(Session s, CallStackFrame csf, boolean useFullName) {
+    public static String getCSFName(Session s, GdbCallStackFrame csf, boolean useFullName) {
         String csfName;
         String functionName = csf.getFunctionName();
         

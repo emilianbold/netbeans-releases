@@ -95,7 +95,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
         V convert(U obj);
     }
 
-    public static<U, V> DualPaneSupport forExplorerManager(
+    public static<V> DualPaneSupport forExplorerManager(
             final JComponent component, final ExplorerManager explorerManager,
             final DetailsRenderer<V> detailsRenderer,
             final DataAdapter<Node, V> dataAdapter) {

@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.management.api;
 
 import java.awt.EventQueue;
-import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
@@ -55,7 +54,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
-import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
@@ -64,13 +62,20 @@ import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
+import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
+import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
@@ -85,7 +90,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
     private List<SessionStateListener> sessionStateListeners = null;
     private List<DataStorage> storages = null;
-    private List<ServiceInfoDataStorage> serviceInfoDataStorages = null;
+    private ServiceInfoDataStorage serviceInfoDataStorage = null;
     private List<DataCollector> collectors = null;
     private Map<String, Map<String, Visualizer>> visualizers = null;
     private SessionState state;
@@ -93,7 +98,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
-    private final DLightSessionContext sessionContext;
     private final String name;
     private boolean closeOnExit = false;
     private final SessionDataFiltersSupport dataFiltersSupport;
@@ -137,12 +141,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         this.state = SessionState.CONFIGURATION;
         this.name = name;
         sessionID = sessionCount++;
-        sessionContext = DLightSessionContextAccessor.getDefault().newContext();
         dataFiltersSupport = new SessionDataFiltersSupport();
-    }
-
-    public DLightSessionContext getSessionContext() {
-        return sessionContext;
     }
 
     void cleanVisualizers() {
@@ -307,9 +306,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     storages.clear();
                 }
 
-                if (serviceInfoDataStorages != null) {
-                    serviceInfoDataStorages.clear();
-                }
+                serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
 
                 if (collectors != null) {
                     collectors.clear();
@@ -449,6 +446,16 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             }
         }
 
+        // init storage with the target values
+        DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+        for (Map.Entry<String, String> entry : targetInfo.getInfo().entrySet()) {
+            serviceInfoDataStorage.put(entry.getKey(), entry.getValue());
+        }
+        serviceInfoDataStorage.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
+        serviceInfoDataStorage.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
+        serviceInfoDataStorage.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
+        serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
+
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
@@ -459,21 +466,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
 
                 if (storage != null) {
-                    // init storage with the target values
-                    DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
-
-                    Map<String, String> info = targetInfo.getInfo();
-
-                    for (String key : info.keySet()) {
-                        storage.put(key, info.get(key));
-                    }
 
                     toolCollector.init(storage, target);
                     addDataFilterListener(toolCollector);
 
                     if (toolCollector instanceof IndicatorDataProvider) {
                         IndicatorDataProvider idp = (IndicatorDataProvider) toolCollector;
-                        idp.init(storage);
+                        idp.init(serviceInfoDataStorage);
                     }
 
                     if (storages == null) {
@@ -494,48 +493,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
                 target.addTargetListener(toolCollector);
             }
-        } else {
-            //should initialize at least ServiceInfoDataStorage For the Session
-            ServiceInfoDataStorage serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorage(this);
-            DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
-            Map<String, String> info = targetInfo.getInfo();
-            for (String key : info.keySet()) {
-                serviceInfoDataStorage.put(key, info.get(key));
-            }
-            if (serviceInfoDataStorages == null) {
-                serviceInfoDataStorages = new ArrayList<ServiceInfoDataStorage>();
-            }
-            if (!serviceInfoDataStorages.contains(serviceInfoDataStorage)) {
-                serviceInfoDataStorages.add(serviceInfoDataStorage);
-            }
         }
 
-        //We should init IDPs with the ServiceInfoDataStorage
-        ServiceInfoDataStorage storage = null;
-        if (storages != null && !storages.isEmpty()) {
-            for (DataStorage st : storages) {
-                st.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
-                st.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
-                st.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
-                st.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
-
-            }
-            storage = storages.get(0);//I need any, no matter what it is if it contains info needed
-        } else if (serviceInfoDataStorages != null && !serviceInfoDataStorages.isEmpty()) {
-            for (ServiceInfoDataStorage st : serviceInfoDataStorages) {
-                st.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
-                st.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
-                st.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
-                st.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
-            }
-            storage = serviceInfoDataStorages.get(0);
-        }
-
-        if (storage != null) {
-            for (IndicatorDataProvider idp : idproviders) {
-                idp.init(storage);
-                addDataFilterListener(idp);
-            }
+        for (IndicatorDataProvider idp : idproviders) {
+            idp.init(serviceInfoDataStorage);
+            addDataFilterListener(idp);
         }
 
         //and now if we have collectors which cannot be attached let's substitute target
@@ -548,7 +510,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
 
-        DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
         Map<String, String> info = targetInfo.getInfo();
 
         for (String key : info.keySet()) {
@@ -583,9 +544,50 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return (storages == null) ? Collections.<DataStorage>emptyList() : storages;
     }
 
-    public List<ServiceInfoDataStorage> getServiceInfoDataStorages() {
-        //plus
-        return serviceInfoDataStorages == null ? Collections.<ServiceInfoDataStorage>emptyList() : serviceInfoDataStorages;
+    public ServiceInfoDataStorage getServiceInfoDataStorage() {
+        return serviceInfoDataStorage;
+    }
+
+    /**
+     * Creates data provider for data model scheme if matching data storage exists.
+     *
+     * @param dataModelScheme
+     * @param metadata
+     * @return
+     */
+    public DataProvider createDataProvider(DataModelScheme dataModelScheme, DataTableMetadata metadata) {
+        for (DataStorage storage : getStorages()) {
+            if (metadata != null && !storage.hasData(metadata)) {
+                continue;
+            }
+            for (DataStorageType dss : storage.getStorageTypes()) {
+                DataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dss, dataModelScheme);
+                if (dataProvider != null) {
+                    dataProvider.attachTo(serviceInfoDataStorage);
+                    dataProvider.attachTo(storage);
+                    addDataFilterListener(dataProvider);
+                    return dataProvider;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates visualizer data provider for data model scheme.
+     *
+     * @param dataModelScheme
+     * @param metadata
+     * @return
+     */
+    public VisualizerDataProvider createVisualizerDataProvider(DataModelScheme dataModelScheme) {
+        VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModelScheme);
+        if (dataProvider != null && !(dataProvider instanceof DataProvider)) {
+            dataProvider.attachTo(serviceInfoDataStorage);
+            return dataProvider;
+        } else {
+            return null;
+        }
     }
 
     void close() {

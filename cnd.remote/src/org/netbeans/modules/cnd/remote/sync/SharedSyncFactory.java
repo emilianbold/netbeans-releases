@@ -54,6 +54,8 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
 public class SharedSyncFactory extends RemoteSyncFactory {
 
+    /*package*/ static final String ID = "shared"; //NOI18N
+
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
             PrintWriter out, PrintWriter err, File privProjectStorageDir) {
@@ -73,7 +75,7 @@ public class SharedSyncFactory extends RemoteSyncFactory {
 
     @Override
     public String getID() {
-        return "shared"; //NOI18N
+        return ID;
     }
 
     @Override

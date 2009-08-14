@@ -246,6 +246,7 @@
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>
                 <package>org.netbeans.modules.cnd.debugger.common.disassembly</package>
                 <package>org.netbeans.modules.cnd.debugger.common.models</package>
+                <package>org.netbeans.modules.cnd.debugger.common.ui</package>
                 <package>org.netbeans.modules.cnd.debugger.common.utils</package>
             </friend-packages>
         </data>
