@@ -80,7 +80,6 @@ public class FodDataObjectFactory implements DataObject.Factory {
     private FodDataObjectFactory(FileObject fo) {
         this.definition = fo;
         this.info = FoDFileSystem.getInstance().whichProvides(definition);
-        assert info != null : "No info found for " + definition;
     }
 
 
@@ -92,7 +91,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
         if (fo.isFolder()) {
             return null;
         }
-        if (info.isEnabled()) {
+        if (info != null && info.isEnabled()) {
             return null;
         }
         if (fo.getMIMEType().endsWith("+xml")) {
