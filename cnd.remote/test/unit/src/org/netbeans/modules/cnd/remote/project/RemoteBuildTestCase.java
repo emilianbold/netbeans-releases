@@ -39,42 +39,33 @@
 
 package org.netbeans.modules.cnd.remote.project;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.remote.mapper.RemoteBuildTestBase;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.windows.IOProvider;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildTestCase extends RemoteTestBase {
+public class RemoteBuildTestCase extends RemoteBuildTestBase {
 
     public RemoteBuildTestCase(String testName) {
         super(testName);
@@ -84,66 +75,12 @@ public class RemoteBuildTestCase extends RemoteTestBase {
         super(testName, execEnv);       
     }
 
-    private static void instantiateSample(String name, File destdir) throws IOException {
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
-        assertNotNull("FileObject for " + name + " sample not found", templateFO);
-        DataObject templateDO = DataObject.find(templateFO);
-        assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
-        TemplateWizard wiz = new TemplateWizard();
-        wiz.setTemplate(templateDO);
-        projectCreator.initialize(wiz);
-        wiz.putProperty("name", destdir.getName());
-        wiz.putProperty("projdir", destdir);
-        projectCreator.instantiate(wiz);
-        return;
-    }
-
-    @Override
-    protected List<Class> getServises() {
-        List<Class> list = new ArrayList<Class>();
-        list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
-        return list;
-    }
 
     @ForAllEnvironments
     public void testBuildSampleArguments() throws Exception {
+        setupHost("scp");
 
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        setupHost(env);
-
-        RemoteSyncFactory syncFactory = RemoteSyncFactory.fromID("scp");
-        if (syncFactory == null) {
-            syncFactory = RemoteSyncFactory.getDefault();
-        }
-
-        ServerRecord rec = ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
-        assertNotNull("Null ServerRecord for " + env, rec);
-
-        File projectDir = new File(getWorkDir(), "Args_01");
-        instantiateSample("Arguments", projectDir);
-
-        FileObject projectDirFO = FileUtil.toFileObject(projectDir);
-        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
-        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
-        descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
-
-
-        File makefile = new File(projectDir, "Makefile");
-        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
-        assertTrue("makefileFileObject == null", makefileFileObject != null);
-        DataObject dObj = null;
-        try {
-            dObj = DataObject.find(makefileFileObject);
-        } catch (DataObjectNotFoundException ex) {
-        }
-        assertTrue("DataObjectNotFoundException", dObj != null);
-        Node node = dObj.getNodeDelegate();
-        assertTrue("node == null", node != null);
-
-        MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
-        assertTrue("ses == null", ses != null);
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
@@ -203,4 +140,5 @@ public class RemoteBuildTestCase extends RemoteTestBase {
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
     }
+
 }
