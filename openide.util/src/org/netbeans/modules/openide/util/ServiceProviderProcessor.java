@@ -49,11 +49,15 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Completion;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -65,6 +69,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -268,6 +273,76 @@ public class ServiceProviderProcessor extends AbstractProcessor {
             }
         }
         return null;
+    }
+
+    @Override
+    public Iterable<? extends Completion> getCompletions(Element annotated, AnnotationMirror annotation, ExecutableElement attr, String userText) {
+        if (processingEnv == null || annotated == null || !annotated.getKind().isClass()) {
+            return Collections.emptyList();
+        }
+
+        if (   annotation == null
+            || !"org.openide.util.lookup.ServiceProvider".contentEquals(((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName())) {
+            return Collections.emptyList();
+        }
+
+        if (!"service".contentEquals(attr.getSimpleName())) {
+            return Collections.emptyList();
+        }
+
+        TypeElement jlObject = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
+
+        if (jlObject == null) {
+            return Collections.emptyList();
+        }
+        
+        Collection<Completion> result = new LinkedList<Completion>();
+        List<TypeElement> toProcess = new LinkedList<TypeElement>();
+
+        toProcess.add((TypeElement) annotated);
+
+        while (!toProcess.isEmpty()) {
+            TypeElement c = toProcess.remove(0);
+
+            result.add(new TypeCompletion(c.getQualifiedName().toString() + ".class"));
+
+            List<TypeMirror> parents = new LinkedList<TypeMirror>();
+
+            parents.add(c.getSuperclass());
+            parents.addAll(c.getInterfaces());
+
+            for (TypeMirror tm : parents) {
+                if (tm == null || tm.getKind() != TypeKind.DECLARED) {
+                    continue;
+                }
+
+                TypeElement type = (TypeElement) processingEnv.getTypeUtils().asElement(tm);
+
+                if (!jlObject.equals(type)) {
+                    toProcess.add(type);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static final class TypeCompletion implements Completion {
+
+        private final String type;
+
+        public TypeCompletion(String type) {
+            this.type = type;
+        }
+
+        public String getValue() {
+            return type;
+        }
+
+        public String getMessage() {
+            return null;
+        }
+        
     }
 
 }
