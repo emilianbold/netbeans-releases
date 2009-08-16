@@ -1429,7 +1429,7 @@ public class CasualDiff {
             parBounds[1] = endPos(oldTypePar);
             tokenSequence.move(parBounds[1]);
             moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-            tokenSequence.moveNext();
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);//skips > and any subsequent unimportant tokens
             copyTo(localPointer, localPointer = tokenSequence.offset());
         } else {
             tokenSequence.move(selectedBounds[1]);
