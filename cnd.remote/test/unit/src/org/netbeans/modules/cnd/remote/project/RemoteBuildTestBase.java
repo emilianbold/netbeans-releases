@@ -37,12 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.cnd.remote.project;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -50,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -97,6 +100,18 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         return list;
     }
 
+    protected void setupHost() {
+        setupHost((String) null);
+    }
+
+    protected void setSyncFactory(String remoteSyncFactoryID) {
+        ServerRecord record = ServerList.get(getTestExecutionEnvironment());
+        assertNotNull(record);
+        RemoteSyncFactory syncFactory = RemoteSyncFactory.fromID(remoteSyncFactoryID);
+        assertNotNull(syncFactory);
+        ((RemoteServerRecord) record).setSyncFactory(syncFactory);
+    }
+
     protected void setupHost(String remoteSyncFactoryID) {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         setupHost(env);
@@ -132,6 +147,19 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
         assertTrue("ses == null", ses != null);
         return projectDirFO;
+    }
+
+    protected void setDefaultCompilerSet(String name) {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ServerRecord record = ServerList.get(execEnv);
+        assertNotNull(record);
+        final CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        for (CompilerSet cset : csm.getCompilerSets()) {
+            if (cset.getName().equals(name)) {
+                csm.setDefault(cset);
+                break;
+            }
+        }
     }
 
 
