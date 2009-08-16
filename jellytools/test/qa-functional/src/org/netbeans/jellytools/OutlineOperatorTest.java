@@ -128,7 +128,18 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         dia.ok();
 
+        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
+
+        dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
+
+        txtWatch = new JEditorPaneOperator (dia);
+
+        txtWatch.typeText("test");
+
+        dia.ok();
+
         new DebugJavaFileAction().perform(lrTestClass);
+
 
         Thread.sleep(6000);
 
@@ -139,7 +150,7 @@ public class OutlineOperatorTest extends JellyTestCase {
 
     }
 
-    public void testFindComponent()
+    public void testFindComponent() throws Exception
     {
         TopComponentOperator tco = new TopComponentOperator(
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
@@ -148,9 +159,9 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         OutlineNode node = lrOVO.getRootNode("test");
 
+        node.callPopup();
 
-        System.out.println("Test");
-        //Node n = lrOVO.getRootNode();
+        Thread.sleep(10000);
 
     }
 }

@@ -39,8 +39,10 @@
 
 package org.netbeans.jellytools.nodes;
 
+import java.awt.Point;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.OutlineOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *  Handles nodes of the Outline component.
@@ -49,18 +51,42 @@ import org.netbeans.jellytools.OutlineOperator;
  */
 public class OutlineNode {
 
-    OutlineOperator _outline;
-    TreePath _treePath;
+    private OutlineOperator _outline;
+    private TreePath _treePath;
 
     public OutlineNode(OutlineOperator irOutlineOp, TreePath irTreePath)
     {
+        if (irOutlineOp == null)
+            throw new IllegalArgumentException("OutlineOperator argument cannot be null.");
+
+        if (irTreePath == null)
+            throw new IllegalArgumentException("TreePath argument cannot be null.");
+        
         _outline = irOutlineOp;
         _treePath = irTreePath;
+    }
+
+    public OutlineOperator getOutline()
+    {
+        return _outline;
     }
 
     public static TreePath findAndExpandPath(OutlineOperator irOOp, TreePath irTP)
     {
         return irTP;
+    }
+
+    public JPopupMenuOperator callPopup()
+    {
+        Point lrPopupPoint = _outline.getLocationForPath(_treePath);
+
+        //y is for row, x for column
+        return new JPopupMenuOperator(_outline.callPopupOnCell(lrPopupPoint.y, lrPopupPoint.x));
+    }
+
+    public void expand()
+    {
+        _outline.expandPath(_treePath);
     }
 
 }
