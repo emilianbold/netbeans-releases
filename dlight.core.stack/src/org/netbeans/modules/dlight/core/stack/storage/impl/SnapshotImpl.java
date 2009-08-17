@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.storage;
+package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -47,10 +47,10 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 final class SnapshotImpl implements ThreadSnapshot {
     private final ThreadInfo threadInfo;
-    private final SQLStackStorage storage;
+    private final SQLStackDataStorage storage;
     private final int stackID;
 
-    public SnapshotImpl(final SQLStackStorage storage, final int threadID, final int stackID) {
+    public SnapshotImpl(final SQLStackDataStorage storage, final int threadID, final int stackID) {
         this.storage = storage;
         this.stackID = stackID;
         
@@ -72,7 +72,7 @@ final class SnapshotImpl implements ThreadSnapshot {
     }
 
     public List<FunctionCall> getStack() {
-        return storage.getStack(stackID);
+        return storage.getCallStack(stackID);
     }
 
     public MSAState getState() {

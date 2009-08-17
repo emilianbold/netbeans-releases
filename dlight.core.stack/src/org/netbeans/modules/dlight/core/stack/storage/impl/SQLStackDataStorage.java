@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,9 +34,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
+
+package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,7 +47,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,42 +57,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.openide.util.Lookup;
 
 /**
- * Stack data storage over a relational database.
  *
  * @author Alexey Vladykin
  */
-public final class SQLStackStorage {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
-    public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
-            FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
-    protected final SQLDataStorage sqlStorage;
-    private final Map<CharSequence, Integer> funcCache;
-    private final Map<NodeCacheKey, Integer> nodeCache;
-    private int funcIdSequence;
-    private int nodeIdSequence;
-    private final ExecutorThread executor;
-    private boolean isRunning = true;
-    private final CppSymbolDemangler demangler;
+    private SQLDataStorage sqlStorage;
+    private final List<DataTableMetadata> tableMetadatas;
 
-    public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
-        this.sqlStorage = sqlStorage;
-        initTables();
+    public SQLStackDataStorage() {
+        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         funcCache = new HashMap<CharSequence, Integer>();
         nodeCache = new HashMap<NodeCacheKey, Integer>();
         funcIdSequence = 0;
@@ -108,21 +104,74 @@ public final class SQLStackStorage {
         }
     }
 
+    public DataStorageType getBackendDataStorageType() {
+        return DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
+    }
+
+    public List<DataTableMetadata> getBackendTablesMetadata() {
+        return Collections.emptyList();
+    }
+
+    public void attachTo(DataStorage storage) {
+        this.sqlStorage = (SQLDataStorage) storage;
+        try {
+            initTables();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
+    }
+
+    public void addData(String tableName, List<DataRow> data) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<DataStorageType> getStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+    }
+
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
+
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
+        this.tableMetadatas.addAll(tableMetadatas);
+    }
+
+    public boolean shutdown() {
+        isRunning = false;
+        boolean success = true;
+        if (sqlStorage != null) {
+            success &= sqlStorage.shutdown();
+        }
+        funcCache.clear();
+        nodeCache.clear();
+        return success;
+    }
+
+////////////////////////////////////////////////////////////////////////////////
+
+    private final Map<CharSequence, Integer> funcCache;
+    private final Map<NodeCacheKey, Integer> nodeCache;
+    private int funcIdSequence;
+    private int nodeIdSequence;
+    private final ExecutorThread executor;
+    private boolean isRunning = true;
+    private final CppSymbolDemangler demangler;
+
     private void initTables() throws SQLException, IOException {
-        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
+        InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             sqlStorage.execute(reader);
         } finally {
             reader.close();
         }
-    }
-
-    public boolean shutdown() {
-        isRunning = false;
-        funcCache.clear();
-        nodeCache.clear();
-        return true;
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -141,96 +190,86 @@ public final class SQLStackStorage {
         return callerId;
     }
 
-    public void flush() throws InterruptedException {
-        executor.flush();
+    public void flush() {
+        try {
+            executor.flush();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) throws SQLException {
-        List<Long> result = new ArrayList<Long>();
-        PreparedStatement ps = sqlStorage.prepareStatement(
-                "SELECT time_stamp FROM CallStack " + //NOI18N
-                "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
-        ps.setMaxRows(1);
-        for (long time1 = startTime; time1 < endTime; time1 += interval) {
-            long time2 = Math.min(time1 + interval, endTime);
-            ps.setLong(1, time1);
-            ps.setLong(2, time2);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result.add(rs.getLong(1));
+    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
+        try {
+            List<Long> result = new ArrayList<Long>();
+            PreparedStatement ps = sqlStorage.prepareStatement(
+                    "SELECT time_stamp FROM CallStack " + //NOI18N
+                    "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
+            ps.setMaxRows(1);
+            for (long time1 = startTime; time1 < endTime; time1 += interval) {
+                long time2 = Math.min(time1 + interval, endTime);
+                ps.setLong(1, time1);
+                ps.setLong(2, time2);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    result.add(rs.getLong(1));
+                }
+                rs.close();
             }
-            rs.close();
+            return result;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return Collections.emptyList();
         }
-        return result;
     }
 
     public List<FunctionMetric> getMetricsList() {
         return METRICS;
     }
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) throws SQLException {
-        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-        PreparedStatement select = prepareCallersSelect(path);
-        ResultSet rs = select.executeQuery();
-        while (rs.next()) {
-            Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            String funcName = rs.getString(2);
-            if (demangler != null) {
-                funcName = demangler.demangle(funcName);
-            }
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
-        }
-        rs.close();
-        return result;
-    }
-
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) throws SQLException {
-        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-        PreparedStatement select = prepareCalleesSelect(path);
-        ResultSet rs = select.executeQuery();
-        while (rs.next()) {
-            Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            String funcName = rs.getString(2);
-            if (demangler != null) {
-                funcName = demangler.demangle(funcName);
-            }
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
-        }
-        rs.close();
-        return result;
-    }
-
-    public List<FunctionCall> getStack(final int stackID) {
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
+    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
         try {
-            int nodeID = stackID;
-            while (0 < nodeID) {
-                PreparedStatement ps = sqlStorage.prepareStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name " + // NOI18N
-                        "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id " + // NOI18N
-                        "WHERE node_id = ?"); // NOI18N
-                ps.setInt(1, nodeID);
-
-                ResultSet rs = ps.executeQuery();
-                try {
-                    while (rs.next()) {
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), rs.getString(5), rs.getString(5));
-                        result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
-                        nodeID = rs.getInt(2);
-                        break;
-                    }
-                } finally {
-                    rs.close();
+            List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+            PreparedStatement select = prepareCallersSelect(path);
+            ResultSet rs = select.executeQuery();
+            while (rs.next()) {
+                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                String funcName = rs.getString(2);
+                if (demangler != null) {
+                    funcName = demangler.demangle(funcName);
                 }
+                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
             }
+            rs.close();
+            return result;
         } catch (SQLException ex) {
+            ex.printStackTrace();
+            return Collections.emptyList();
         }
-        Collections.reverse(result);
-        return result;
+    }
+
+    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+        try {
+            List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+            PreparedStatement select = prepareCalleesSelect(path);
+            ResultSet rs = select.executeQuery();
+            while (rs.next()) {
+                Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                String funcName = rs.getString(2);
+                if (demangler != null) {
+                    funcName = demangler.demangle(funcName);
+                }
+                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
+            }
+            rs.close();
+            return result;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
@@ -526,6 +565,35 @@ public final class SQLStackStorage {
             System.err.println("ex: " + ex.getSQLState());  // NOI18N
         }
 
+        return result;
+    }
+
+    public List<FunctionCall> getCallStack(final int stackId) {
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+        try {
+            int nodeID = stackId;
+            while (0 < nodeID) {
+                PreparedStatement ps = sqlStorage.prepareStatement(
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name " + // NOI18N
+                        "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id " + // NOI18N
+                        "WHERE node_id = ?"); // NOI18N
+                ps.setInt(1, nodeID);
+
+                ResultSet rs = ps.executeQuery();
+                try {
+                    while (rs.next()) {
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), rs.getString(5), rs.getString(5));
+                        result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
+                        nodeID = rs.getInt(2);
+                        break;
+                    }
+                } finally {
+                    rs.close();
+                }
+            }
+        } catch (SQLException ex) {
+        }
+        Collections.reverse(result);
         return result;
     }
 
