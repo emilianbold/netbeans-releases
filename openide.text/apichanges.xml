@@ -46,6 +46,25 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="Document.findRecentEditorPane">
+        <api name="text"/>
+        <summary>Add Document.findRecentEditorPane</summary>
+        <version major="6" minor="24"/>
+        <date day="12" month="8" year="2009"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            Add NbDocument.findRecentEditorPane to allow non blocking retrieval of recently selected editor pane.
+            Method returns null when editor pane initialization is not finished. Client is notified about finished pane
+            initialization by property change event EditorCookie.Observable.PROP_OPENED_PANES.
+            NbDocument.findRecentEditorPane is replacement for EditorCookie.getOpenedPanes which waits till all editor
+            panes are initialized. It is nonblocking only when EditorCookie is instanceof CloneableEditorSupport.
+            </p>
+        </description>
+        <class package="org.openide.text" name="NbDocument"/>
+        <issue number="168415"/>
+    </change>
     <change id="Line.show">
         <api name="text"/>
         <summary>Improve Line.show</summary>
