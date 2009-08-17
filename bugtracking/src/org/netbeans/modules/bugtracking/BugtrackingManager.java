@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
