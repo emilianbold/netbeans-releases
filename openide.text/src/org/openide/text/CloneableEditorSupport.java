@@ -1092,6 +1092,53 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return ll.isEmpty() ? null : ll.toArray(new JEditorPane[ll.size()]);
     }
 
+    /**
+     * Gets recently selected editor pane opened by this support
+     * Can be called from AWT event thread only. It is nonblocking. It returns either pane
+     * if pane intialization is finished or null if initialization is still in progress.
+     *
+     * @return pane or null
+     *
+     */
+    JEditorPane getRecentPane () {
+        // expected in AWT only
+        assert SwingUtilities.isEventDispatchThread()
+                : "CloneableEditorSupport.getOpenedPaneForTC must be called from AWT thread only"; // NOI18N
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getRecentPane();
+        }
+        
+        Enumeration en = allEditors.getComponents();
+        
+        while (en.hasMoreElements()) {
+            CloneableTopComponent ctc = (CloneableTopComponent) en.nextElement();
+            Pane ed = (Pane) ctc.getClientProperty(PROP_PANE);
+
+            if ((ed == null) && ctc instanceof Pane) {
+                ed = (Pane) ctc;
+            }
+
+            if (ed != null) {
+                JEditorPane p = null;
+                if (getLastSelected() == ed) {
+                    if (ed instanceof CloneableEditor) {
+                        if (((CloneableEditor) ed).isEditorPaneReady()) {
+                            p = ed.getEditorPane();
+                        }
+                    } else {
+                        p = ed.getEditorPane();
+                    }
+                }
+                return p;
+            } else {
+                throw new IllegalStateException("No reference to Pane. Please file a bug against openide/text");
+            }
+        }
+
+        return null;
+    }
+    
     /** Returns the lastly selected Pane or null
      */
     final Pane getLastSelected() {
