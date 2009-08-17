@@ -100,7 +100,7 @@ public class CommentsTest extends GeneratorTest {
             "        /**\n" +
             "         * becko\n" +
             "         */\n" +
-            "        int b; //NOI18N\n" +
+            "        int b;\n" +
             "        // cecko\n" +
             "        int c;\n" +
             "    }\n" +
@@ -124,7 +124,7 @@ public class CommentsTest extends GeneratorTest {
                         "    /**\n" +
                         "     * becko\n" +
                         "     */\n" +
-                        "    int b; //NOI18N\n" +
+                        "    int b;\n" +
                         "    // cecko\n" +
                         "    int c; // trail\n" +
                         "}";
