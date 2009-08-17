@@ -88,6 +88,10 @@ public class TldClassPathSupport implements PropertyChangeListener {
         return LIBRARIES;
     }
 
+    public ClassPath getClassPath() {
+        return cp;
+    }
+
     private void dumpLibs() {
         System.out.println("Available TLD libraries:"); //NOI18N
         for (TldLibrary l : getLibraries().values()) {

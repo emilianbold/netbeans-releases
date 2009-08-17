@@ -72,3 +72,9 @@ p.file_information {
 a.download_link {
 	font-weight: normal;
 }
+
+.legal_box {
+     padding: 4px 5px 10px 10px;
+     margin-right: 25px;
+     background-color:#E6F6FE;
+}

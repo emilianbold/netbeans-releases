@@ -68,7 +68,8 @@ public class SQLCompletion {
         return kind == SQLStatementKind.SELECT
                 || kind == SQLStatementKind.INSERT
                 || kind == SQLStatementKind.DROP
-                || kind == SQLStatementKind.UPDATE;
+                || kind == SQLStatementKind.UPDATE
+                || kind == SQLStatementKind.DELETE;
     }
 
     private SQLCompletion(SQLCompletionContext initContext) {

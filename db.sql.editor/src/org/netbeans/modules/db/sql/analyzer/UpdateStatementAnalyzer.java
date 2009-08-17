@@ -118,6 +118,8 @@ class UpdateStatementAnalyzer extends SQLStatementAnalyzer {
                         case KEYWORD:
                             if (SQLStatementAnalyzer.isKeyword("JOIN", seq)) { // NOI18N
                                 moveToContext(Context.UPDATE);
+                            } else if (SQLStatementAnalyzer.isKeyword("SET", seq)) {  //NOI18N
+                                moveToContext(Context.SET);
                             }
                             break;
                     }

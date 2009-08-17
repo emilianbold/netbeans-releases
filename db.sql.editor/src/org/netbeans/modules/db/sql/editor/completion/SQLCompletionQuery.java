@@ -67,6 +67,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
 import org.netbeans.modules.db.sql.analyzer.DropStatement;
 import org.netbeans.modules.db.sql.analyzer.TablesClause;
 import org.netbeans.modules.db.sql.analyzer.InsertStatement;
@@ -184,6 +185,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case UPDATE:
                 completeUpdate();
                 break;
+            case DELETE:
+                completeDelete();
+                break;
         }
         return items;
     }
@@ -211,6 +215,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case JOIN_CONDITION:
                 completeColumnWithDefinedTable(ident);
+                break;
+            case WHERE:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                } else {
+                    completeColumn(ident);
+                }
                 break;
             case ORDER:
             case GROUP:
@@ -292,6 +303,42 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case SET:
                 completeColumn(ident);
+                break;
+            default:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                }
+        }
+    }
+
+    private void completeDelete() {
+        DeleteStatement deleteStatement = (DeleteStatement) statement;
+        Context context = deleteStatement.getContextAtOffset(env.getCaretOffset());
+        if (context == null) {
+            return;
+        }
+        tablesClause = deleteStatement.getTablesInEffect(env.getCaretOffset());
+
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        substitutionOffset = ident.substitutionOffset;
+        switch (context) {
+            case DELETE:
+            case FROM:
+                completeTable(ident);
+                break;
+            case JOIN_CONDITION:
+                completeColumnWithDefinedTable(ident);
+                break;
+            case WHERE:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                } else {
+                    completeColumn(ident);
+                }
                 break;
             default:
                 if (tablesClause != null) {

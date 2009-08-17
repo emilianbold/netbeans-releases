@@ -46,10 +46,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.openide.awt.Actions;
-import org.openide.awt.Actions.CheckboxMenuItem;
-import org.openide.awt.Actions.MenuItem;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.actions.Presenter;
 
@@ -59,7 +56,7 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
     private Component toolbarPresenter;
 
     public THAToolbarDropdownAction() {
-        defaultAction = THAActionsProvider.getDefault().getStartThreadAnalysisAction();
+        defaultAction = THAActionsProvider.getStartTHAConfigurationAction();
     }
 
     public Object getValue(String key) {
@@ -92,26 +89,13 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
 
     public Component getToolbarPresenter() {
         if (toolbarPresenter == null) {
-
-            final THAConfigurationImpl config = THAConfigurationImpl.getDefault();
-            final CheckboxMenuItem enableRaceDetection = CheckBoxMenuItemFactory.createCheckboxMenuItem(config.getRacesDetectionSwitchAction());
-            final CheckboxMenuItem startDataCollectionOnRun = CheckBoxMenuItemFactory.createCheckboxMenuItem(config.getStartOnRunSwitchAction());
-            final MenuItem removeInstrumentation = new MenuItem(THAActionsProvider.getDefault().getRemoveInstrumentationAction(), true);
-
             final JPopupMenu dropdownPopup = new JPopupMenu() {
-
                 @Override
                 public void setVisible(boolean b) {
-                    removeInstrumentation.setEnabled(THAActionsProvider.getDefault().getRemoveInstrumentationAction().isEnabled());
                     super.setVisible(b);
                 }
             };
-
             dropdownPopup.add(defaultAction);
-//            dropdownPopup.add(enableRaceDetection);
-  //          dropdownPopup.add(startDataCollectionOnRun);
-    //        dropdownPopup.addSeparator();
-      //      dropdownPopup.add(removeInstrumentation);
 
 //            final JButton button = AutoDropDownButtonFactory.createDropDownButton(
 //                    new ImageIcon(new BufferedImage(24, 24,
@@ -119,7 +103,7 @@ public final class THAToolbarDropdownAction implements Action, Presenter.Toolbar
 //                    dropdownPopup, defaultAction);
 
             //toolbarPresenter = button;
-            JButton button =   DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);
+            JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);
             Actions.connect(button, defaultAction);
             toolbarPresenter = button;
         }

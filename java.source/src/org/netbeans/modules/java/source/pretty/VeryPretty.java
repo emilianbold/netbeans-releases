@@ -409,7 +409,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitClassDef(JCClassDecl tree) {
-	Name enclClassNamePrev = enclClassName;
+        Name enclClassNamePrev = enclClassName;
 	enclClassName = tree.name;
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
@@ -1884,11 +1884,11 @@ public final class VeryPretty extends JCTree.Visitor {
         if (stpos >= 0 && stpos < limit)
             lines.add(new CommentLine(stpos, limit - stpos, body));
         if (comment.indent() == 0) {
-            if (!preceding && out.lastBlankLines == 0)
+            if (!preceding && out.lastBlankLines == 0 && comment.style() != Style.LINE)
                 newline();
             out.toLineStart();
         } else if (comment.indent() > 0 && !preceding) {
-            if (out.lastBlankLines == 0)
+            if (out.lastBlankLines == 0 && comment.style() != Style.LINE)
                 newline();
             toLeftMargin();
         } else {

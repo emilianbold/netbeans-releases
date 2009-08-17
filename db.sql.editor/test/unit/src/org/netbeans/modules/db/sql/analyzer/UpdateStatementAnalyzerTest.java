@@ -76,6 +76,7 @@ public class UpdateStatementAnalyzerTest extends NbTestCase {
 
     public void testDetectKind() {
         assertNull(doDetectKind("foo"));
+        assertEquals(SQLStatementKind.UPDATE, doDetectKind("#comment\n update"));
         assertEquals(SQLStatementKind.UPDATE, doDetectKind("update"));
         assertEquals(SQLStatementKind.UPDATE, doDetectKind("update foo set a = 1"));
     }
