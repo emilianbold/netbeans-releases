@@ -650,14 +650,14 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 225, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 183, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                 .add(sendButton)
-                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE))
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
@@ -689,6 +689,11 @@ public class ChatPanel extends javax.swing.JPanel {
         inbox.setContentType("text/html"); // NOI18N
         inbox.setEditable(false);
         inbox.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.inbox.text", new Object[] {})); // NOI18N
+        inbox.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                inboxFocusGained(evt);
+            }
+        });
         inboxScrollPane.setViewportView(inbox);
 
         inboxPanel.add(inboxScrollPane, java.awt.BorderLayout.CENTER);
@@ -831,6 +836,17 @@ public class ChatPanel extends javax.swing.JPanel {
         insertLinkToEditor();
         outbox.requestFocus();
     }//GEN-LAST:event_sendLinkButtonActionPerformed
+
+    private void inboxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_inboxFocusGained
+        // Workaround for MacOS - even non-editable components show caret whenever
+        // the component is focused
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                inbox.getCaret().setVisible(false);
+            }
+        });
+    }//GEN-LAST:event_inboxFocusGained
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttons;
