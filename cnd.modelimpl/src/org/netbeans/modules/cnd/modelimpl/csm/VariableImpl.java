@@ -136,12 +136,26 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 AST next = node.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.ASSIGNEQUAL) {
                     int curlyLevel = 0;
-                    while (next != null && (curlyLevel != 0 || (next.getType() != CPPTokenTypes.COMMA && next.getType() != CPPTokenTypes.SEMICOLON))) {
+                    int templateLevel = 0;
+                    int parenLevel = 0;
+                    while (next != null && (curlyLevel != 0 || next.getType() != CPPTokenTypes.COMMA) && next.getType() != CPPTokenTypes.SEMICOLON) {
                         if(next.getType() != CPPTokenTypes.LCURLY) {
                             curlyLevel++;
                         }
                         if(next.getType() != CPPTokenTypes.RCURLY) {
                             curlyLevel--;
+                        }
+                        if (next.getType() != CPPTokenTypes.LESSTHAN) {
+                            templateLevel++;
+                        }
+                        if (next.getType() != CPPTokenTypes.GREATERTHAN) {
+                            templateLevel--;
+                        }
+                        if (next.getType() != CPPTokenTypes.LPAREN) {
+                            parenLevel++;
+                        }
+                        if (next.getType() != CPPTokenTypes.RPAREN) {
+                            parenLevel--;
                         }
                         lastChild = AstUtil.getLastChildRecursively(next);
                         if (lastChild instanceof CsmAST) {
@@ -223,9 +237,30 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 }
             }
             AST lastInitAst = tok;
+            int curlyLevel = 0;
+            int templateLevel = 0;
+            int parenLevel = 0;
             while (tok != null) {
-                if (tok.getType() == CPPTokenTypes.SEMICOLON) {
+                if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {
                     break;
+                }
+                if (tok.getType() != CPPTokenTypes.LCURLY) {
+                    curlyLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.RCURLY) {
+                    curlyLevel--;
+                }
+                if (tok.getType() != CPPTokenTypes.LESSTHAN) {
+                    templateLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.GREATERTHAN) {
+                    templateLevel--;
+                }
+                if (tok.getType() != CPPTokenTypes.LPAREN) {
+                    parenLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.RPAREN) {
+                    parenLevel--;
                 }
                 lastInitAst = tok;
                 tok = tok.getNextSibling();
