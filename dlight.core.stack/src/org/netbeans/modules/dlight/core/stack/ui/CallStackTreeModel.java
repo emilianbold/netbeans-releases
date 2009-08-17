@@ -42,6 +42,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
  *
@@ -68,6 +69,13 @@ final class CallStackTreeModel {
         return stack.get(index - 1);
     }
 
+    SourceFileInfo getSourceFileInfo(FunctionCall call){
+        return dataProvider.getSourceFileInfo(call);
+    }
+
+    SourceFileInfoDataProvider getSourceFileInfoProvider(){
+        return dataProvider;
+    }
 
 
 }

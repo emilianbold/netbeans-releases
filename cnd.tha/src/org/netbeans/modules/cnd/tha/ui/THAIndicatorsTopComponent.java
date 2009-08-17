@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.tha.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -65,10 +66,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.support.DefaultIndicatorComponentEmptyContentProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
@@ -80,10 +82,11 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class THAIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
-
+public final class THAIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
+    private THAControlPanel controlPanel;
     private static THAIndicatorsTopComponent instance;
     private DLightSession session;
+    private Project project;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
     private static final String PREFERRED_ID = "THAIndicatorsTopComponent"; // NOI18N
@@ -152,8 +155,9 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         panel2 = new JPanel();
         cardsLayoutPanel.add(panel1, "#1");//NOI18N
         cardsLayoutPanel.add(panel2, "#2");//NOI18N
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(cardsLayoutPanel);
+        setLayout(new BorderLayout());
+
+        add(cardsLayoutPanel, BorderLayout.CENTER);
 
     }
 
@@ -176,6 +180,16 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         return (showFirstPanel ? panel2 : panel1);
     }
 
+    void setProject(Project project){
+        this.project = project;
+        controlPanel = THAControlPanel.create(project);
+        add(controlPanel, BorderLayout.NORTH);
+        setSession(null);
+            setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
+            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
+        repaint();
+    }
+
     public void setSession(DLightSession session) {
         if (this.session != null && this.session != session) {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
@@ -189,8 +203,7 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
-            indicators = DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("THA"); // NOI18N
-
+            indicators = null;//Collections.emptyList();//DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("THA"); // NOI18N
         }
         if (indicators != null){
             Collections.sort(indicators, new Comparator<Indicator>() {
@@ -253,7 +266,7 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
             componentToAdd = scrollPane;
         } else {
             indicatorPanels = null;
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(THAIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
+            JLabel emptyLabel = new JLabel("");//NOI18N NbBundle.getMessage(THAIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             componentToAdd = emptyLabel;
 //            add(emptyLabel);
@@ -371,6 +384,10 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         return session;
     }
 
+    Project getProject(){
+        return project;
+    }
+
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {
@@ -405,7 +422,13 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         @Override
         public Component getComponentAfter(Container aContainer, Component aComponent) {
             if (aComponent == getCurrentPanel()) {
-                return getCurrentPanel();//no path to go
+                return controlPanel;
+            }
+            if (aComponent == controlPanel){
+                return getCurrentPanel();
+            }
+            if (indicatorPanels == null){
+                return controlPanel;
             }
             int indexOf = indicatorPanels.indexOf(aComponent);
             if (indexOf == -1) {
@@ -420,7 +443,13 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
         @Override
         public Component getComponentBefore(Container aContainer, Component aComponent) {
             if (aComponent == getCurrentPanel()) {
-                return getCurrentPanel();//no path to go
+                return controlPanel;//no path to go
+            }
+            if (aComponent == controlPanel){
+                return getCurrentPanel();
+            }
+            if (indicatorPanels == null){
+                return controlPanel;
             }
             int indexOf = indicatorPanels.indexOf(aComponent);
             if (indexOf == -1) {
@@ -434,10 +463,11 @@ final class THAIndicatorsTopComponent extends TopComponent implements ExplorerMa
 
         @Override
         public Component getFirstComponent(Container aContainer) {
-            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-                return getCurrentPanel();
-            }
-            return indicatorPanels.get(0);
+            return controlPanel;
+//            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+//                return getCurrentPanel();
+//            }
+//            return indicatorPanels.get(0);
         }
 
         @Override

@@ -41,8 +41,10 @@ package org.netbeans.modules.cnd.tha.support;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -52,6 +54,9 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.perfan.tha.api.THAInstrumentationSupport;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
@@ -66,9 +71,39 @@ public final class THAProjectSupport implements PropertyChangeListener {
     private final static Map<Project, THAProjectSupport> cache = new HashMap<Project, THAProjectSupport>();
     private final Collection<PropertyChangeListener> listeners = new CopyOnWriteArrayList<PropertyChangeListener>();
     private final Project project;
+    private DLightSessionHandler session;
+    private final List<DLightTargetListener> targetListeners = new ArrayList<DLightTargetListener>();
 
     private THAProjectSupport(Project project) {
         this.project = project;
+    }
+
+    public List<DLightTargetListener> getTargetListeners(){
+        return targetListeners;
+    }
+
+    public void addDLightTargetListener(DLightTargetListener l){
+        synchronized(this){
+            if (!targetListeners.contains(l)){
+                targetListeners.add(l);
+            }
+        }
+    }
+
+    public void removeDLightTargetListener(DLightTargetListener l){
+        synchronized(this){
+            targetListeners.remove(l);
+        }
+    }
+
+    public final void setDLigthSessionHandler(DLightSessionHandler session){
+        this.session = session;
+    }
+
+    public void stop(){
+        if (session != null){
+            DLightToolkitManagement.getInstance().stopSession(session);
+        }
     }
 
     public static final synchronized THAProjectSupport getSupportFor(Project project) {

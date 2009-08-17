@@ -904,7 +904,7 @@ public class MakeActionProvider implements ActionProvider {
                         exe,
                         conf,
                         null,
-                        true);
+                        true, context);
                 actionEvents.add(projectActionEvent);
             }
         }
