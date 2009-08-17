@@ -136,14 +136,6 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
             }
         };
-        activeProjectChanged(OpenProjectList.getDefault().getMainProject());
-        OpenProjectList.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (OpenProjectList.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName())) {
-                    activeProjectChanged(OpenProjectList.getDefault().getMainProject());
-                }
-            }
-        });
         looklst = new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 activeProjectProviderChanged();
@@ -511,11 +503,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             activeProjectChanged(null);
         }
 
-        Project mainPrj = OpenProjectList.getDefault().getMainProject();
-
-        Project contextPrj = null;
-        if (mainPrj == null) {
-            contextPrj = getProjectFromLookup(context);
+        Project contextPrj = getProjectFromLookup(context);
+        if (contextPrj == null) {
+            contextPrj = OpenProjectList.getDefault().getMainProject();
         }
 
         if (contextPrj != null) {
