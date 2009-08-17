@@ -278,7 +278,7 @@ public class HtmlCompletionQuery extends UserTask {
                     DTD.Attribute attr = (DTD.Attribute) i.next();
                     String aName = attr.getName();
                     if (aName.equals(prefix) ||
-                            (!existingAttrsNames.contains(isXHtml ? aName : aName.toUpperCase()) &&
+                            (!existingAttrsNames.contains(isXHtml ? aName : aName.toUpperCase(Locale.ENGLISH)) &&
                             !existingAttrsNames.contains(isXHtml ? aName : aName.toLowerCase(Locale.ENGLISH))) || (wordAtCursor.equals(aName) && prefix.length() > 0)) {
                         attribs.add(attr);
                     }
@@ -375,7 +375,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> addEndTag(String tagName, String preText, int offset) {
-        int commonLength = getLastCommonCharIndex("</" + tagName + ">", isXHtml ? preText.trim() : preText.toUpperCase().trim()); //NOI18N
+        int commonLength = getLastCommonCharIndex("</" + tagName + ">", isXHtml ? preText.trim() : preText.toUpperCase(Locale.ENGLISH).trim()); //NOI18N
         if (commonLength == -1) {
             commonLength = 0;
         }
@@ -491,7 +491,7 @@ public class HtmlCompletionQuery extends UserTask {
 
     private HtmlCompletionItem item4Element(DTD.Element e, int offset, boolean possible) {
         String name = e.getName();
-        name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase());
+        name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
         return HtmlCompletionItem.createTag(name, offset, name, possible);
     }
 
