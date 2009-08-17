@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
