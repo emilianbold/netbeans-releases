@@ -49,6 +49,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" stringvalue="false"/>
             </file>
+            <file name="org-netbeans-modules-kenai-ui-KenaiPopupMenu.instance"/>
         </folder>
         <folder name="Window">
             <file name="org-netbeans-modules-kenai-ui-KenaiAction.instance">
@@ -73,7 +74,8 @@
                 <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
                 <attr name="position" intvalue="150"/>
             </file>
-            <file name="org-netbeans-modules-kenai-ui-KenaiPopupMenu.instance">
+            <file name="org-netbeans-modules-kenai-ui-KenaiPopupMenu.shadow">
+                <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-KenaiPopupMenu.instance"/>
                 <attr name="position" intvalue="151"/>
             </file>
         </folder>
