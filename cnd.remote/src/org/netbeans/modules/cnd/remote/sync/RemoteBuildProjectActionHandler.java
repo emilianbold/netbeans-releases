@@ -127,15 +127,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         if (remoteControllerPath == null) {
             return;
         }
-        //FIXUP: until the project system infrastructure is ready...
-        {
-            int pos = remoteControllerPath.lastIndexOf('/');
-            String name = (pos > 0) ? remoteControllerPath.substring(pos+1) : remoteControllerPath;
-            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            pb.setExecutable("pkill"); // NOI18N
-            pb.setArguments(name);
-            pb.call().waitFor();
-        }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
         //TODO: replace as soon as setup is written
@@ -164,13 +155,11 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
 
         String preload = RfsSetupProvider.getPreload(execEnv);
-        if (preload != null) {
-            env.putenv("LD_PRELOAD", preload); // NOI18N
-        }
-        String dir =  System.getProperty("cnd.remote.fs.dir");
-        if (dir != null) {
-            env.putenv("RFS_CONTROLLER_DIR", dir); // NOI18N
-        }
+        assert preload != null;
+        env.putenv("LD_PRELOAD", preload); // NOI18N
+        env.putenv("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
+        env.putenv("RFS_CONTROLLER_PORT", port); // NOI18N
+        
         String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
         if (preloadLog != null) {
             env.putenv("RFS_PRELOAD_LOG", preloadLog); // NOI18N
@@ -179,6 +168,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         if (controllerLog != null) {
             env.putenv("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
         }
+        
         delegate.addExecutionListener(new ExecutionListener() {
             public void executionStarted(int pid) {
                 RemoteUtil.LOGGER.fine("RemoteBuildProjectActionHandler: build started; PID=" + pid);

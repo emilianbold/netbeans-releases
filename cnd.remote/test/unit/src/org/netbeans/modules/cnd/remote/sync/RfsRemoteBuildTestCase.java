@@ -80,7 +80,6 @@ public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
         buildProject(makeProject);
     }
 
-    @Ignore
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
