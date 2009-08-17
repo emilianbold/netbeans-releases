@@ -42,7 +42,6 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
@@ -91,17 +90,14 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        //process only xhtml content
         Source source = result.getSnapshot().getSource();
-        Map<String, String> namespaces = result.getNamespaces();
 
-        //search for a jsf library namespace and if found activate the JsfSupport
-        for (String uri : namespaces.keySet()) {
-            if (JsfSupport.isJSFLibrary(uri)) {
-                JsfSupport.findFor(source);
-                break;
-            }
+        //embedding stuff: process only xhtml file contents, while the task needs to be bound to text/html
+        if(!source.getMimeType().equals("text/xhtml")) { //NOI18N
+            return ;
         }
+
+        JsfSupport.findFor(source); //activate the jsf support
 
         //enable EL support it this xhtml file
         //TODO possibly add if(jsf_used()) { //enable el }
