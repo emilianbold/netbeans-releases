@@ -39,7 +39,18 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.SourceSupportProvider;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -47,76 +58,73 @@ import javax.swing.AbstractAction;
  */
 class GoToSourceAction extends AbstractAction {
 
-    public GoToSourceAction() {
-        super("Test"); // NOI18N
+    private final FunctionCall functionCall;
+    private final Future<SourceFileInfo> sourceFileInfoTask;
+    private boolean isEnabled = true;
+    private boolean gotTheInfo = false;
+
+     GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall) {
+        super(NbBundle.getMessage(GoToSourceAction.class, "GoToSourceActionName"));//NOI18N
+        this.functionCall = funcCall;
+        sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
+
+            public SourceFileInfo call() {
+                if (dataProvider == null){
+                    return null;
+                }
+                return dataProvider.getSourceFileInfo(functionCall);
+            }
+        }, "SourceFileInfo getting info from Call Stack UI"); // NOI18N
+        waitForSourceFileInfo();
+    }
+
+    private void waitForSourceFileInfo() {
+        DLightExecutorService.submit(new Runnable() {
+
+            public void run() {
+                try {
+                    SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
+                    isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
+                } catch (InterruptedException ex) {
+                    isEnabled = false;
+                } catch (ExecutionException ex) {
+                    isEnabled = false;
+                } finally {
+                    synchronized (GoToSourceAction.this) {
+                        gotTheInfo = true;
+                    }
+                    setEnabled(isEnabled);
+
+                }
+
+            }
+        }, "Wait For the SourceFileInfo in Call Stack UI");//NOI18N
+        }
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
     }
 
     public void actionPerformed(ActionEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
+        DLightExecutorService.submit(new Runnable() {
 
+            public void run() {
+                SourceFileInfo sourceFileInfo = null;
+                try {
+                    sourceFileInfo = sourceFileInfoTask.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                    return;
+                }
 
-
-//    private final FunctionCallNode functionCallNode;
-//    private SourceFileInfo sourceInfo;
-//    private Future<Boolean> goToSourceTask;
-//
-//    public GoToSourceAction(FunctionCallNode funcCallNode) {
-////        super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
-//        this.functionCallNode = funcCallNode;
-//        synchronized (sourcePrefetchExecutorLock) {
-//            if (sourcePrefetchExecutor == null) {
-//                sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
-//            }
-//        }
-//        sourcePrefetchExecutor.submit(new Runnable() {
-//
-//            public void run() {
-//                getSource();
-//            }
-//        });
-//    }
-//
-//    public synchronized void actionPerformed(ActionEvent e) {
-//        if (goToSourceTask == null || goToSourceTask.isDone()) {
-//            goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
-//
-//                public Boolean call() {
-//                    return goToSource();
-//                }
-//            }, "GoToSource from Functions List View"); // NOI18N
-//            }
-//    }
-//
-//    private boolean goToSource() {
-//        SourceFileInfo source = getSource();
-//        if (source != null && source.isSourceKnown()) {
-//            sourceSupportProvider.showSource(source);
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//
-//    private SourceFileInfo getSource() {
-//        synchronized (this) {
-//            if (sourceInfo != null) {
-//                return sourceInfo;
-//            }
-//        }
-//        FunctionCallWithMetric functionCall = functionCallNode.getFunctionCall();
-//        SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
-//        if (result != null && result.isSourceKnown()) {
-//            synchronized (this) {
-//                if (sourceInfo == null) {
-//                    sourceInfo = result;
-//                }
-//            }
-//            return sourceInfo;
-//        } else {
-//            setEnabled(false);
-//            functionCallNode.fire();
-//            return null;
-//        }
-//    }
+                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                sourceSupportProvider.showSource(sourceFileInfo);
+            }
+        }, "GoToSource from Call Stack UI"); // NOI18N
+        }
 }

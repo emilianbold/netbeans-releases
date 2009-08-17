@@ -59,6 +59,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.tha.THAServiceInfo;
+import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
+import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
@@ -72,6 +74,7 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -177,6 +180,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
             public void run() {
                 try {
                     session = handle.get();
+                    THAProjectSupport.getSupportFor(pae.getProject()).setDLigthSessionHandler(session);
                     DLightToolkitManagement.getInstance().startSession(session);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
@@ -217,6 +221,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
     }
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
+        
         switch (event.state) {
             case INIT:
             case STARTING:
@@ -235,10 +240,20 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
                 targetFinished(event.status);
                 break;
         }
+        List<DLightTargetListener> targetListeners = THAProjectSupport.getSupportFor(pae.getProject()).getTargetListeners();
+        for (DLightTargetListener l : targetListeners){
+            l.targetStateChanged(event);
+        }
     }
 
     private void targetStarted(int pid) {
         startTimeMillis = System.currentTimeMillis();
+        //send a signal if needed
+        if (pae.getContext().lookup(THAConfigurationImpl.class) != null && pae.getContext().lookup(THAConfigurationImpl.class).collectFromBeginning()) {
+            MakeConfiguration conf = pae.getConfiguration();
+            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+            CommonTasksSupport.sendSignal(execEnv, pid, "USR1", null); // NOI18N
+        }
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }

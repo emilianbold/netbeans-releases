@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -113,7 +114,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
     }
 
-    private static class RacesRenderer implements Renderer {
+    private  class RacesRenderer implements Renderer {
 
         private List<ThreadDump> threadDumps;
 
@@ -127,7 +128,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
 
         public Component getComponent() {
-            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance();
+            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(RacesVisualizer.this.dataProvider);
 //            JPanel result = new JPanel();
 //            result.setLayout(new BorderLayout());
 //            result.add(new JButton(new AbstractAction("ExpandAll") {
@@ -153,7 +154,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
     }
 
     private final class DataraceNode extends THANode<Datarace> {
-
+        public  final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/races_active16.png"); // NOI18N
         private final Datarace race;
 
         DataraceNode(Datarace race) {
@@ -166,6 +167,19 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public String getDisplayName() {
             return race.getAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
         }
+
+        @Override
+        public Image getIcon(int type) {
+            return icon;
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+
+
+
     }
 
      private final class RaceNode extends THANode<ThreadDump> {

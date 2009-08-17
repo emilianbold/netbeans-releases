@@ -37,40 +37,35 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
-
-import java.awt.BorderLayout;
-import java.util.List;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 /**
- * This class will represent panel were CallStack can be displayed
- * @author Maria Tishkova
+ *
+ * @author Egor Ushakov
  */
-public final class CallStackPanel extends JPanel implements ExplorerManager.Provider{
-    private final ExplorerManager manager = new ExplorerManager();
+public abstract class AttachTarget {
+    public static class PidAttach extends AttachTarget {
+        public final long pid;
 
-    public CallStackPanel(SourceFileInfoDataProvider lineInfo, String rootName, boolean isRootVisible, List<FunctionCall> stack) {
-        BeanTreeView treeView = new BeanTreeView();
-        treeView.setRootVisible(isRootVisible);
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(treeView);
-        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack));//NOI18N
+        public PidAttach(long pid) {
+            this.pid = pid;
+        }
     }
 
-    
-    public CallStackPanel(SourceFileInfoDataProvider lineInfo, List<FunctionCall> stack) {
-        this(lineInfo, null, false, stack);
+    public static class CoreAttach extends AttachTarget {
+        public final String path;
+
+        public CoreAttach(String path) {
+            this.path = path;
+        }
+
     }
 
-    public ExplorerManager getExplorerManager() {
-        return manager;
+    public static class GdbServerAttach extends AttachTarget {
+        public final String target;
+
+        public GdbServerAttach(String target) {
+            this.target = target;
+        }
     }
-
-
 }
