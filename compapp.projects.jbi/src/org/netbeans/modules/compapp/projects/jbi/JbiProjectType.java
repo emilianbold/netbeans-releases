@@ -38,50 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.compapp.projects.jbi;
 
-import org.netbeans.api.project.Project;
-
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.NbBundle;
-
-import java.io.IOException;
-
 /**
- * Factory for JBI projects.
+ * Factory for EJB Module projects
  *
  * @author Chris Webster
  */
-public final class JbiProjectType implements AntBasedProjectType {
-
+public final class JbiProjectType {
+    /**
+     * DOCUMENT ME!
+     */
     public static final String TYPE = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
+
+    /**
+     * DOCUMENT ME!
+     */
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi/1"; // NOI18N
-    
-    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi-private/1"; // NOI18N
-
-    public JbiProjectType() {
-    }
-
-    public String getType() {
-        return TYPE;
-    }
-
-    public Project createProject(AntProjectHelper helper) throws IOException {
-        if (null == helper) {
-            throw new IllegalArgumentException(NbBundle.getMessage(JbiProjectType.class, "MSG_helper")); // NOI18N
-        }
-
-        return new JbiProject(helper, this);
-    }
-
-    public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
-    }
-
-    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
-    }
+    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi-private/1"; // NOI18N
 }

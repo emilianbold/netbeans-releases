@@ -331,16 +331,16 @@ public class JbiProjectGenerator {
             JbiProjectProperties.DIST_JAR,
             "${" + JbiProjectProperties.DIST_DIR + "}/" + name + ".zip" // NOI18N
         );
-//        ep.setProperty(JbiProjectProperties.J2EE_PLATFORM, j2eeLevel);
-//        ep.setProperty(JbiProjectProperties.JAR_COMPRESS, "false"); // NOI18N
-//
-//        Deployment deployment = Deployment.getDefault();
-//
-//        ep.setProperty(JbiProjectProperties.JAVAC_SOURCE, "1.4"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
-//
-//        ep.setProperty(JbiProjectProperties.JAVAC_TARGET, "1.4"); // NOI18N
+        ep.setProperty(JbiProjectProperties.J2EE_PLATFORM, j2eeLevel);
+        ep.setProperty(JbiProjectProperties.JAR_COMPRESS, "false"); // NOI18N
+
+        Deployment deployment = Deployment.getDefault();
+                
+        ep.setProperty(JbiProjectProperties.JAVAC_SOURCE, "1.4"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
+
+        ep.setProperty(JbiProjectProperties.JAVAC_TARGET, "1.4"); // NOI18N
 
         ep.setProperty(JbiProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
         ep.setProperty(
@@ -350,30 +350,30 @@ public class JbiProjectGenerator {
         ep.setProperty(
             JbiProjectProperties.BUILD_CLASSES_DIR, "${" + JbiProjectProperties.BUILD_DIR + "}/jar" // NOI18N
         );
-//        ep.setProperty(
-//            JbiProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs" // NOI18N
-//        );
-//        ep.setProperty(
-//            JbiProjectProperties.DIST_JAVADOC_DIR,
-//            "${" + JbiProjectProperties.DIST_DIR + "}/javadoc" // NOI18N
-//        );
-//        ep.setProperty(JbiProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
-//        ep.setProperty(
-//            JbiProjectProperties.DEBUG_CLASSPATH,
-//            "${" + JbiProjectProperties.JAVAC_CLASSPATH + "}:${" + // NOI18N
-//            JbiProjectProperties.BUILD_CLASSES_DIR + "}" // NOI18N
-//        );
-//        ep.setProperty(JbiProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_USE, "true"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-//        ep.setProperty(JbiProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
+        ep.setProperty(
+            JbiProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs" // NOI18N
+        );
+        ep.setProperty(
+            JbiProjectProperties.DIST_JAVADOC_DIR,
+            "${" + JbiProjectProperties.DIST_DIR + "}/javadoc" // NOI18N
+        );
+        ep.setProperty(JbiProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
+        ep.setProperty(
+            JbiProjectProperties.DEBUG_CLASSPATH,
+            "${" + JbiProjectProperties.JAVAC_CLASSPATH + "}:${" + // NOI18N
+            JbiProjectProperties.BUILD_CLASSES_DIR + "}" // NOI18N 
+        );
+        ep.setProperty(JbiProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_USE, "true"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(JbiProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
 
         //============= Start of JBI ========================================//
         ep.setProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID, name); 
