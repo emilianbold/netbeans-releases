@@ -907,6 +907,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             public StatusImpl(AtomicBoolean cosEnabled, Status delegate) {
                 this.cosEnabled = cosEnabled;
                 this.delegate = delegate;
+                this.delegate.addChangeListener(this);
             }
 
             public boolean isBuilt() {
