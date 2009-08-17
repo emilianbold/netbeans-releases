@@ -56,6 +56,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.Icons;
@@ -78,8 +79,8 @@ import org.openide.text.NbDocument;
  * @deprecated Replaced by various classes in the org.netbeans.modules.java.sourceui module.
  */
 @Deprecated
-public final class  UiUtils {    
-    
+public final class  UiUtils {
+
     private UiUtils() {}
     
     /** Gets correct icon for given ElementKind.
@@ -359,7 +360,7 @@ public final class  UiUtils {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                            doShow( l, column);
                             return true;
                         }
                     }
@@ -381,6 +382,18 @@ public final class  UiUtils {
         return false;
     }
     
+    private static void doShow(final Line l, final int column) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                }
+            });
+        }
+    }
+
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         assert handle != null;
         final int[]  result = new int[] {-1};
