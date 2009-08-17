@@ -75,6 +75,7 @@ import org.openide.text.NbDocument;
  * XXX - needs cleanup
  *
  * @author Jan Lahoda
+ * @deprecated Replaced by various classes in the org.netbeans.modules.java.sourceui module.
  */
 @Deprecated
 public final class  UiUtils {    
@@ -82,14 +83,20 @@ public final class  UiUtils {
     private UiUtils() {}
     
     /** Gets correct icon for given ElementKind.
-     *@param modifiers Can be null for empty modifiers collection
+     * @param modifiers Can be null for empty modifiers collection
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementIcons#getElementIcon(javax.lang.model.element.ElementKind, java.util.Collection)}
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static Icon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
         return Icons.getElementIcon(elementKind, modifiers);
     }
-    
-    // XXX Remove
+
+    /**
+     *
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementIcons#getElementIcon(javax.lang.model.element.ElementKind, java.util.Collection)}
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static Icon getDeclarationIcon(Element element) {
         return getElementIcon(element.getKind(), element.getModifiers());
@@ -103,6 +110,8 @@ public final class  UiUtils {
      * @param el    declaration to open
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementOpen#open(org.netbeans.api.java.source.ClasspathInfo, org.netbeans.api.java.source.ElementHandle) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static boolean open(final ClasspathInfo cpInfo, final Element el) {
@@ -114,7 +123,12 @@ public final class  UiUtils {
 	}
 	return false;
     }
-    
+
+    /**
+     *
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementOpen#open(org.openide.filesystems.FileObject, org.netbeans.api.java.source.ElementHandle) }
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static boolean open(final FileObject toSearch, final ElementHandle<? extends Element> toOpen) {
         if (toSearch == null || toOpen == null) {
@@ -146,7 +160,12 @@ public final class  UiUtils {
         VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getVariableHeader(tree, s);
     }
-    
+
+    /**
+     *
+     * @deprecated Use constants from {@link org.netbeans.api.java.source.ui.ElementHeaders}
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static final class PrintPart {
         private PrintPart() {}
@@ -164,6 +183,8 @@ public final class  UiUtils {
     /**
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getHeader(com.sun.source.util.TreePath, org.netbeans.api.java.source.CompilationInfo, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static String getHeader(TreePath treePath, CompilationInfo info, String formatString) {
@@ -178,6 +199,8 @@ public final class  UiUtils {
     /**
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getHeader(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static String getHeader(Element element, CompilationInfo info, String formatString) {
@@ -234,6 +257,8 @@ public final class  UiUtils {
     }
     
     /** Computes dostance between strings
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getDistance(java.lang.String, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static int getDistance(String s, String t) {
