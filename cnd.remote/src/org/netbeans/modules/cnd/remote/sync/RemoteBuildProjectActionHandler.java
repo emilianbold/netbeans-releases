@@ -127,7 +127,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             remoteControllerProcess.destroy();
             // until #170502 is fixed
             try {
-                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID());
+                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
             } catch (IOException e) {
                 RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
             }
@@ -163,7 +163,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             port = line.substring(5);
         } else if (line == null) {
             int rc = remoteControllerProcess.waitFor();
-            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null);
+            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null); // NOI18N
         } else {
             String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
             System.err.printf(message); // NOI18N
@@ -246,9 +246,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             if (err != null) {
                 String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
-                io.getErr().printf("%s\n", message);
+                io.getErr().printf("%s\n", message); // NOI18N
                 io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
-                err.printf("%s\n", message);
+                err.printf("%s\n", message); // NOI18N
             }
         }
     }

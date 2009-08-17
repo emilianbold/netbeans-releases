@@ -43,13 +43,13 @@ class RfsLocalController implements Runnable {
     }
 
     private void respond_ok() {
-        responseStream.printf("1\n");
+        responseStream.printf("1\n"); // NOI18N
         // NOI18N
         responseStream.flush();
     }
 
     private void respond_err(String tail) {
-        responseStream.printf("0 %s\n", tail);
+        responseStream.printf("0 %s\n", tail); // NOI18N
         // NOI18N
         responseStream.flush();
     }
@@ -86,7 +86,7 @@ class RfsLocalController implements Runnable {
                                 if (rc == 0) {
                                     respond_ok();
                                 } else {
-                                    respond_err("1");
+                                    respond_err("1"); // NOI18N
                                 }
                             } catch (InterruptedException ex) {
                                 filter.dropTimestamp(localFile);
@@ -95,7 +95,7 @@ class RfsLocalController implements Runnable {
                             } catch (ExecutionException ex) {
                                 filter.dropTimestamp(localFile);
                                 Exceptions.printStackTrace(ex);
-                                respond_err("2 execution exception\n");
+                                respond_err("2 execution exception\n"); // NOI18N
                             } finally {
                                 responseStream.flush();
                             }
