@@ -71,6 +71,7 @@ import org.openide.util.actions.Presenter;
 
 public final class ShareAction extends CookieAction {
 
+    //XXX this has to be done better for other domains than (test)kenai
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     protected void performAction(Node[] activatedNodes) {

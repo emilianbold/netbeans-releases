@@ -78,6 +78,7 @@ import org.openide.util.actions.Presenter;
  */
 public class KenaiPopupMenu extends CookieAction {
 
+    //XXX this has to be done better for other domains than (test)kenai
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     @Override
