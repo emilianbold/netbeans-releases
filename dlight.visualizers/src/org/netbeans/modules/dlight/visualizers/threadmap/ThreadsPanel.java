@@ -206,7 +206,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private int sortedOrder = 0;
     private TimeLine timeLine;
     private String selectedViewMode = VIEW_MODE_SIMPLE;
-    private final List<String> fullMSAModeValues = Arrays.asList(VIEW_MODE_SIMPLE_FULL_MSA, VIEW_MODE_SIMPLE_FULL_MSA);
+    private final List<String> fullMSAModeValues = Arrays.asList(VIEW_MODE_MSA_FULL, VIEW_MODE_SIMPLE_FULL_MSA);
     private final List<String> msaModeValues = Arrays.asList(VIEW_MODE_MSA, VIEW_MODE_MSA_FULL);
 
     /**
