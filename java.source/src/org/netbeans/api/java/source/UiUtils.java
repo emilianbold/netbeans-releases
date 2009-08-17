@@ -256,7 +256,7 @@ public final class  UiUtils {
         }
     }
     
-    /** Computes dostance between strings
+    /** Computes distance between strings
      * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getDistance(java.lang.String, java.lang.String) }
      *             of the org.netbeans.modules.java.sourceui module
      */
@@ -345,8 +345,8 @@ public final class  UiUtils {
     private static boolean doOpen(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+            LineCookie lc = od.getLookup().lookup(LineCookie.class);
             
             if (ec != null && lc != null && offset != -1) {                
                 StyledDocument doc = ec.openDocument();                
@@ -366,7 +366,7 @@ public final class  UiUtils {
                 }
             }
             
-            OpenCookie oc = (OpenCookie) od.getCookie(OpenCookie.class);
+            OpenCookie oc = od.getLookup().lookup(OpenCookie.class);
             
             if (oc != null) {
                 oc.open();                
@@ -458,30 +458,5 @@ public final class  UiUtils {
         }
     
     }
-    
-        //JL: will anybody need this?:
-//    public static Action createOpenAction(FileObject context, Declaration el) {
-//        return new OpenAction(context, el);
-//    }
-//    
-//    private static final class OpenAction extends AbstractAction {
-//        
-//        private FileObject context;
-//        private Declaration el;
-//        
-//        public OpenAction(FileObject context, Declaration el) {
-//            this.context = context;
-//            this.el = el;
-//            
-//            putValue(NAME, getDisplayName(el));
-//        }
-//        
-//        public void actionPerformed(ActionEvent e) {
-//            open(context, el);
-//        }
-//        
-//    }
-
-    
     
 }
