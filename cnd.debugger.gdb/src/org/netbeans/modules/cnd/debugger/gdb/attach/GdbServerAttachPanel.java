@@ -95,8 +95,6 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.jLabel1.text")); // NOI18N
 
-        targetTF.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.targetTF.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
