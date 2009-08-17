@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,48 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.cnd.remote.project;
-
+import java.io.File;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+
 /**
+ * There hardly is a way to unit test remote operations.
+ * This is just an entry point for manual validation.
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildTestCase extends RemoteBuildTestBase {
+public class UploadSmallFilesTestCase extends RemoteTestBase {
 
-    public RemoteBuildTestCase(String testName) {
-        super(testName);
+    static {
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-
-    public RemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+    public UploadSmallFilesTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
-
 
     @ForAllEnvironments
-    public void testBuildSampleArguments() throws Exception {
-        setupHost();
-        setSyncFactory("scp");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject);
+    public void testCopySmallFiles() throws Exception {
+        File dir = new File("/tmp/smallfiles"); //NOI18N
+        assertTrue(dir.exists());
+        assertTrue(dir.isDirectory());
+        File[] files = dir.listFiles();
+        long totalSize = 0;
+        int totalCount = 0;
+        long totalTime = System.currentTimeMillis();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(execEnv);
+        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
+        for (File localFile : files) {
+            totalCount++;
+            totalSize += localFile.length();
+            assertTrue(localFile.exists());
+            String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+            long time = System.currentTimeMillis();
+            rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+            time = System.currentTimeMillis() - time;
+            System.err.printf("File %s copied to %s:%s in %d ms\n", localFile, execEnv, remoteFile, time);
+        }
+        totalTime = System.currentTimeMillis() - totalTime;
+        System.err.printf("%d Kb in %d files to %s in %d ms\n", totalSize/1024, totalCount, execEnv, totalTime);
     }
-
+    
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(UploadSmallFilesTestCase.class);
     }
-
-
 }
