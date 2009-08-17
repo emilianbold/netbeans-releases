@@ -137,7 +137,7 @@ public class HudsonConnector {
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
         handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes()).connection(); // NOI18N
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
         } finally {
