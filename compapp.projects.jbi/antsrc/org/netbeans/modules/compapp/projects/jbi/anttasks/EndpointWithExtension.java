@@ -54,13 +54,7 @@ public class EndpointWithExtension extends Endpoint {
 
     public EndpointWithExtension(String endpointName, 
             QName serviceQName, 
-            QName interfaceQName) {
-        super(endpointName, serviceQName, interfaceQName);
-    }
-
-    public EndpointWithExtension(String endpointName,
-            QName serviceQName,
-            QName interfaceQName,
+            QName interfaceQName, 
             boolean isConsumes) {
         super(endpointName, serviceQName, interfaceQName, isConsumes);
     }

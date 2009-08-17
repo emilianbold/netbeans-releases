@@ -39,61 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * Output.java
- *
- * Created on March 25, 2005, 2:22 PM
- */
+package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
-package org.netbeans.modules.compapp.catd.n2m;
-
-import org.netbeans.modules.compapp.catd.util.Util;
-import java.io.*;
+import org.apache.tools.ant.Project;
+import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 /**
  *
- * @author blu
+ * @author jqian
  */
-public class Output {
-    private String mName;
-    private File mActual;
-    private File mExpected;
+public class AntProjectHelper {
 
-    /** Creates a new instance of Output */
-    public Output(String name, File actual, File expected) {
-        mName = name;
-        mActual = actual;
-        mExpected = expected;
-    }
-
-    public String getName() {
-        return mName;
-    }
-
-    public String getExpected() {
-        String ret = Util.getFileContent(mExpected);
-        return ret;
-    }
-
-    public String getExpectedWithoutCRNL() {
-        String ret = Util.getFileContentWithoutCRNL(mExpected);
-        return ret;
-    }
-
-    public String getActual() {
-        String ret = Util.getFileContent(mActual);
-        return ret;
-    }
-
-    public String getActualWithoutCRNL() {
-        String ret = Util.getFileContentWithoutCRNL(mActual);
-        return ret;
-    }
-
-    public void removeActual() {
-        if (mActual != null && mActual.exists()) {
-            mActual.delete();
+    @SuppressWarnings("deprecation")
+    public static String getServiceAssemblyID(Project p) {        
+        String saID = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+        if (saID == null) { // for backward compatibility until project is updated            
+            saID = p.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
         }
+        return saID;
+    }
+    
+    @SuppressWarnings("deprecation")
+    public static String getServiceAssemblyDescription(Project p) {    
+        String saDescription = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
+        if (saDescription == null) { // for backward compatibility until project is updated    
+            saDescription = p.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION);
+        }
+        return saDescription;
+    }
+    
+    @SuppressWarnings("deprecation")
+    public static String getServiceUnitDescription(Project p) {    
+        String saDescription = p.getProperty(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
+        if (saDescription == null) { // for backward compatibility until project is updated    
+            saDescription = p.getProperty(JbiProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION);
+        }
+        return saDescription;
     }
 
 }

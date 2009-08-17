@@ -37,6 +37,9 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -48,6 +51,7 @@ import java.util.Arrays;
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
  * @todo documentation
  */
+@SuppressWarnings({"unchecked"})
 public class CommentCollectorTest extends NbTestCase {
 
 
@@ -76,7 +80,7 @@ public class CommentCollectorTest extends NbTestCase {
     @Test
     public void testCollector() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
-        String origin = "/** (COMM1) This comment belongs before class */\n" +
+        final String origin = "/** (COMM1) This comment belongs before class */\n" +
                 "public class Clazz {\n" +
                 "\n\n\n//TODO: (COMM2) This is just right under class (inside)" +
                 "\n\n\n\n\n\n" +
@@ -95,29 +99,32 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-                CommentCollector cc = CommentCollector.getInstance();
+//                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-                cc.collect(workingCopy);
+//                cc.collect(workingCopy);
+                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
+                ti.translate(cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
-                CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 cu.accept(printer, null);
 
-                JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
 
                 TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
                     @Override
                     public Void visitClass(ClassTree node, Void aVoid) {
                         verify(node, CommentSet.RelativePosition.PRECEDING, service, "/** (COMM1) This comment belongs before class */");
-                        verify(node, CommentSet.RelativePosition.INNER, service, "//TODO: (COMM2) This is just right under class (inside)");
                         return super.visitClass(node, aVoid);
                     }
 
                     @Override
                     public Void visitVariable(VariableTree node, Void aVoid) {
                         if (node.toString().contains("field")) {
-                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "/** (COMM3) This belongs to encapsulate field */");
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service, 
+                                    "//TODO: (COMM2) This is just right under class (inside)", 
+                                    "/** (COMM3) This belongs to encapsulate field */");
                         }
                         return super.visitVariable(node, aVoid);
                     }
@@ -152,7 +159,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
 
-    public void testMethod() throws Exception {
+    public void DtestMethod() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String origin = "\n" +
                 "import java.io.File;\n" +
@@ -205,9 +212,9 @@ public class CommentCollectorTest extends NbTestCase {
 
     }
 
-    public void testMethod2() throws Exception {
+    public void DtestMethod2() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
-        String origin =
+        final String origin =
                 "public class Origin {\n" +
                         "    /** * comment * @return 1 */\n" +
                         "    int method() {\n" +
@@ -223,13 +230,16 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-                CommentCollector cc = CommentCollector.getInstance();
+//                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-                cc.collect(workingCopy);
+//                cc.collect(workingCopy);
+                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
+                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                ti.translate(cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
-                CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 cu.accept(printer, null);
 
                 JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
@@ -270,9 +280,9 @@ public class CommentCollectorTest extends NbTestCase {
         assertNotNull("Comments handler service not null", service);
         CommentSet set = service.getComments(tree);
         java.util.List<Comment> cl = set.getComments(position);
-        assertTrue("Unexpected size of " + tree.getKind() + " "
+        assertEquals("Unexpected size of " + tree.getKind() + " "
                 + position.toString().toLowerCase() +
-                " comments.", cl.size() == comments.length);
+                " comments", cl.size(), comments.length);
         Arrays.sort(comments);
         for (Comment comment : cl) {
             String text = comment.getText().trim();
