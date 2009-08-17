@@ -588,7 +588,7 @@ public final class EditorContextDispatcher {
             }
         }
 
-        private void updateCurrentOpenedPane(TopComponent activeComponnet, Object source) {
+        private void updateCurrentOpenedPane(TopComponent activeComponent, Object source) {
             JEditorPane oldEditor = null;
             JEditorPane newEditor = null;
             String MIMEType = null;
@@ -597,7 +597,7 @@ public final class EditorContextDispatcher {
                 EditorCookie ec = currentEditorCookie.get();
                 if ((source == null || source == ec)) {
                     oldEditor = currentOpenedPane.get();
-                    if (ec != null && activeComponnet != null) {
+                    if (ec != null && activeComponent != null) {
                         if (ec.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
                             (ec instanceof EditorCookie.Observable)) {
                             // Document is not yet loaded, wait till we're notified that it is.
@@ -607,18 +607,13 @@ public final class EditorContextDispatcher {
                         }
                         logger.fine("Document " + ec + " loaded, updating...");  // NOI18N
                         long t1 = System.nanoTime();
-                        JEditorPane[] openedPanes = ec.getOpenedPanes();
+                        JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
                         long t2 = System.nanoTime();
                         logger.fine("Time to find opened panes = "+(t2 - t1)+" ns = "+(t2 - t1)/1000000+" ms.");  // NOI18N
-                        if (openedPanes != null && openedPanes.length >= 1) {
-                            for (JEditorPane openedPane : openedPanes) {
-                                if (activeComponnet.isAncestorOf(openedPane)) {
-                                    //System.err.println("\n"+newComponnet+".isAncestorOf("+openedPane+")\n");
-                                    newEditor = openedPane;
-                                    isSetPane = true;
-                                    break;
-                                }
-                            }
+                        if (openedPane != null) {
+                            assert activeComponent.isAncestorOf(openedPane) : "Active component must contain opened pane.";
+                            newEditor = openedPane;
+                            isSetPane = true;
                         }
                     }
                     if (!isSetPane && source == null) {

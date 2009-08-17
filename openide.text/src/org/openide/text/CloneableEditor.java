@@ -78,6 +78,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Flag indicating it was initialized this <code>CloneableEditor</code> */
     private boolean initialized;
 
+    /** Flag indicating progress of DoInitialize tasks */
+    private boolean initVisualFinished;
+
     /** Position of cursor. Used to keep the value between deserialization
      * and initialization time. */
     private int cursorPosition = -1;
@@ -533,6 +536,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 }
             });
             isInInitVisual = false;
+            initVisualFinished = true;
+            
+            //#168415: Notify clients that pane creation is finished.
+            CloneableEditorSupport ces = cloneableEditorSupport();
+            if (ces != null) {
+                ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
+            }
         }
         
         private void initRest() {
@@ -593,6 +603,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     customToolbar = null;
                     pane = null;
                     initialized = false;
+                    initVisualFinished = false;
                 }
             }
         );
@@ -919,6 +930,15 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     //
     public CloneableTopComponent getComponent() {
         return this;
+    }
+
+    /**
+     * #168415: Returns true if creation of editor pane is finished. It is used
+     * to avoid blocking AWT thread by call of getEditorPane.
+     */
+    boolean isEditorPaneReady () {
+        assert SwingUtilities.isEventDispatchThread();
+        return initVisualFinished;
     }
 
     public JEditorPane getEditorPane() {
