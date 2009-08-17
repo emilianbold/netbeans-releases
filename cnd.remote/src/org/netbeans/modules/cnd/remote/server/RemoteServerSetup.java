@@ -63,7 +63,14 @@ public class RemoteServerSetup {
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.7/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
-    private static final String GET_SCRIPT_INFO = "grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
+
+    // Anyhow all REMOTE_SCRIPT_DIR contents should have execution permission.
+    // So it's faster to just invoke "chmod a+x" than first to invoke another command,
+    // then analyze results, and call the same "chmod a+x" if necessary
+    //
+    // private static final String GET_SCRIPT_INFO = "grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
+    private static final String GET_SCRIPT_INFO = "sh -c \"chmod a+x " + REMOTE_SCRIPT_DIR + "* && grep VERSION= " + REMOTE_SCRIPT_DIR + "* 2> /dev/null \"";
+    
     private static final String DOS2UNIX_CMD = "dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
     public static final String REMOTE_LIB_DIR = ".netbeans/6.7/cnd2/lib/"; // NOI18N
     
