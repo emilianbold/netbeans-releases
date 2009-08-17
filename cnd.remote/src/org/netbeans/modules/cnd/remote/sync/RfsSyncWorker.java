@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,6 +52,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -114,8 +114,9 @@ class RfsSyncWorker extends ZipSyncWorker {
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream()));
 
         final InputStream rcStream = remoteControllerProcess.getInputStream();
-        LocalController localController = new LocalController(remoteDir, rcStream,
-                remoteControllerProcess.getOutputStream());
+        LocalController localController = new LocalController(
+                executionEnvironment, localDir,  remoteDir, rcStream,
+                remoteControllerProcess.getOutputStream(), err);
         // read port
         String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
         String port;
@@ -173,18 +174,29 @@ class RfsSyncWorker extends ZipSyncWorker {
         }
     }
     
-    private class LocalController implements Runnable {
+    private static class LocalController implements Runnable {
 
         private final BufferedReader requestReader;
         private final PrintStream responseStream;
         private final String remoteDir;
+        private final File localDir;
+        private final ExecutionEnvironment execEnv;
+        private final PrintWriter err;
+
+        private static final Logger logger = Logger.getLogger("cnd.remote.logger");
 
         private final Set<String> processedFiles = new HashSet<String>();
         
-        public LocalController(String remoteDir, InputStream requestStream, OutputStream responseStream) {
+        public LocalController(ExecutionEnvironment executionEnvironment, 
+                File localDir, String remoteDir,
+                InputStream requestStream, OutputStream responseStream,
+                PrintWriter err) {
+            this.execEnv = executionEnvironment;
+            this.localDir = localDir;
             this.remoteDir = remoteDir;
             this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
             this.responseStream = new PrintStream(responseStream);
+            this.err = err;
         }
 
         private void respond_ok() {
@@ -219,7 +231,7 @@ class RfsSyncWorker extends ZipSyncWorker {
                             logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
                             long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
-                                    executionEnvironment, remoteFile, 0777, err);
+                                    execEnv, remoteFile, 0777, err);
                             try {
                                 int rc = task.get();
                                 fileTime = System.currentTimeMillis() - fileTime;
