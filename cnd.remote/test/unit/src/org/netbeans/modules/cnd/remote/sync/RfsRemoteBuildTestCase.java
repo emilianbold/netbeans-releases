@@ -73,7 +73,7 @@ public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Sinle() throws Exception {
+    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
