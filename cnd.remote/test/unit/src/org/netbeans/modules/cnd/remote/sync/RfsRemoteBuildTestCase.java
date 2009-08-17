@@ -41,16 +41,11 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import org.netbeans.modules.cnd.remote.project.*;
 import junit.framework.Test;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
@@ -58,6 +53,10 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  * @author Vladimir Kvashin
  */
 public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
+
+    static {
+        System.setProperty("cnd.remote.fs", "true");
+    }
 
     public RfsRemoteBuildTestCase(String testName) {
         super(testName);
@@ -74,14 +73,13 @@ public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Sinle() throws Exception {
+    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject);
     }
 
-    @Ignore
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
