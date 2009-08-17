@@ -90,7 +90,7 @@ public class JsfCompletionItem {
 
         private static String generateItemText(FaceletsLibrary.NamedComponent component, String declaredPrefix) {
             String libraryPrefix = component.getLibrary().getDefaultPrefix();
-            return (libraryPrefix != null ? libraryPrefix : declaredPrefix ) + ":" + component.getName(); //NOI18N
+            return (declaredPrefix != null ? declaredPrefix : libraryPrefix ) + ":" + component.getName(); //NOI18N
         }
 
         @Override
