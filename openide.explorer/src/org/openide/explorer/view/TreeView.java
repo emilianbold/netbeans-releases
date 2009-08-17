@@ -1689,6 +1689,7 @@ public abstract class TreeView extends JScrollPane {
 
         remove(searchpanel);
         searchpanel = null;
+        origSelectionPaths = null;
         getViewport().setScrollMode(originalScrollMode);
         invalidate();
         revalidate();
