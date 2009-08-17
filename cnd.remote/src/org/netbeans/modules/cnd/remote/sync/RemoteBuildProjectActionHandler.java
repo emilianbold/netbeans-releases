@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -125,6 +126,12 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         // nobody calls this concurrently => no synchronization
         if (remoteControllerProcess != null) {
             remoteControllerProcess.destroy();
+            // until #170502 is fixed
+            try {
+                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID());
+            } catch (IOException e) {
+                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
+            }
             remoteControllerProcess = null;
         }
     }
