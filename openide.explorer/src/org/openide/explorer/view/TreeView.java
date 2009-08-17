@@ -2144,14 +2144,14 @@ public abstract class TreeView extends JScrollPane {
                 if (keyCode == KeyEvent.VK_ESCAPE) {
                     removeSearchField();
                     ExplorerTree.this.requestFocus();
-                } else if (keyCode == KeyEvent.VK_UP) {
+                } else if (keyCode == KeyEvent.VK_UP || (keyCode == KeyEvent.VK_F3 && e.isShiftDown())) {
                     currentSelectionIndex--;
                     displaySearchResult();
 
                     // Stop processing the event here. Otherwise it's dispatched
                     // to the tree too (which scrolls)
                     e.consume();
-                } else if (keyCode == KeyEvent.VK_DOWN) {
+                } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_F3) {
                     currentSelectionIndex++;
                     displaySearchResult();
 
