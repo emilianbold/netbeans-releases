@@ -44,6 +44,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -385,5 +386,14 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertTrue(methodComments.get(0) == methodComments2.get(0));
         assertTrue(methodComments.get(1) == methodComments2.get(1));
         assertTrue(methodComments.get(2) == methodComments2.get(2));
+    }
+
+    public void testIsEnumConstant() throws Exception {
+        prepareTest("Test", "package test; public enum Test {B; private static final int ii = 0;}");
+        ClassTree clazz = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+        Tree b = clazz.getMembers().get(1);
+        assertTrue(info.getTreeUtilities().isEnumConstant((VariableTree) b));
+        Tree ii = clazz.getMembers().get(2);
+        assertFalse(info.getTreeUtilities().isEnumConstant((VariableTree) ii));
     }
 }
