@@ -137,12 +137,14 @@ public class SQLStatementAnalyzer {
      * subquery if available and move after it. Returns true, if
      * token is available, false otherwise. */
     protected boolean nextToken() {
-        if (nextToken(seq)) {
-            // try to parse subquery if any
-            return parseSubquery();
-        } else {
-            return false;
+        boolean move = nextToken(seq);
+        if (move) {
+            // only if not beginning of SELECT statement
+            if (!(this instanceof SelectStatementAnalyzer) || context.isAfter(Context.SELECT)) {
+                return parseSubquery();
+            }
         }
+        return move;
     }
 
     /** Parses possible subquery, fills subqueries list and returns true if

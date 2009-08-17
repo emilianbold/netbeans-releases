@@ -151,7 +151,7 @@ public class SelectStatementAnalyzerTest extends TestCase {
     }
 
     public void testSubqueries() throws Exception {
-        String sql = "select * from foo where exists (select id from bar where bar.id = foo.id and (select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
+        String sql = " select * from foo where exists (select id from bar where bar.id = foo.id and (select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
         int firstSubStart = sql.indexOf("(select") + 1;
         int firstSubEnd = sql.indexOf(" order", firstSubStart) - 1;
         int secondSubStart = sql.indexOf("(select", firstSubStart) + 1;
