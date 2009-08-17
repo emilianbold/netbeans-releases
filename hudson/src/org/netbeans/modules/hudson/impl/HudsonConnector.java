@@ -155,7 +155,7 @@ public class HudsonConnector {
                 // XXX no good way to only include what you _do_ want without using XSLT
                 "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
                 "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn" +
-                "&exclude=//id");
+                "&exclude=//id&exclude=//description");
         if (docBuild == null) {
             return Collections.emptySet();
         }
