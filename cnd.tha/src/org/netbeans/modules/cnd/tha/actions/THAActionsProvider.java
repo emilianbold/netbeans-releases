@@ -225,7 +225,7 @@ public final class THAActionsProvider implements DLightTargetListener {
                 }
                 startAndAnalyze.setEnabled(false);
                 start.setEnabled(false);
-                enableCollect.setEnabled(false);
+                enableCollect.setEnabled(true);
 
 
                 // Initiate RUN ...
@@ -416,7 +416,7 @@ public final class THAActionsProvider implements DLightTargetListener {
     private void targetStarted(int pid) {
         //means stop button should be enabled
         this.pid = pid;
-        enableCollect.setEnabled(false);
+        //enableCollect.setEnabled(false);
         stop.setEnabled(true);
 
     }
