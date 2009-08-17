@@ -378,7 +378,8 @@ public final class EventSupport {
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
                     if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                        assert this.request == null;
+                        if (this.request != null)
+                            TaskProcessor.resetStateImplAsync(this.request);
                         this.request = TaskProcessor.resetState(source, false, false);
                         SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
                     } else {
