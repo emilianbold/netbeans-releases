@@ -161,7 +161,7 @@ public class HtmlCompletionQuery extends UserTask {
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
         AstNode node = parserResult.findLeaf(searchAstOffset);
-        if(node == null) {
+        if (node == null) {
             return null;
         }
         AstNode root = node.getRootNode();
@@ -199,7 +199,7 @@ public class HtmlCompletionQuery extends UserTask {
                         filterElements(dtd.getElementList(null),
                         preText)));
             }
-                
+
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
@@ -216,7 +216,7 @@ public class HtmlCompletionQuery extends UserTask {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
-            
+
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
@@ -366,8 +366,6 @@ public class HtmlCompletionQuery extends UserTask {
 
     }
 
-    
-
     private boolean usesLowerCase(HtmlParserResult result, int astOffset) {
         //find first open tag for the given offset and check its name case
         AstNode node = AstNodeUtils.getTagNode(result.root(), astOffset);
@@ -439,16 +437,26 @@ public class HtmlCompletionQuery extends UserTask {
             //if dtd element and doesn't have forbidden end tag
             if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf)) &&
                     leaf.type() == AstNode.NodeType.OPEN_TAG) {
+
                 String tagName = leaf.name();
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
                     //TODO - mark required and optional end tags somehow
                     items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
                 }
+
+                //check if the tag needs to have a matching tag and if is matched already
+                if (leaf.needsToHaveMatchingTag() && leaf.getMatchingTag() == null) {
+                    //if not, any of its parent cannot be closed here
+                    break;
+                }
             }
+
+
             leaf = leaf.parent();
 
             assert leaf != null;
+
 
         }
 
