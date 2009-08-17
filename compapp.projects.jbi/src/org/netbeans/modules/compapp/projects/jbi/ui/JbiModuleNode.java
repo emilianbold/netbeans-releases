@@ -58,6 +58,7 @@ import org.openide.actions.CustomizeAction;
 import org.openide.nodes.*;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -207,7 +208,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
     public Image getIcon(int type) {
         Image ret = getProjIcon();
         if (ret == null){
-            ret = Utilities.loadImage("org/netbeans/modules/compapp/projects/jbi/ui/resources/jar.gif"); // NOI18N
+            ret = ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/jbi/ui/resources/jar.gif"); // NOI18N
         }
 
         return ret;
