@@ -56,6 +56,8 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -71,6 +73,7 @@ public final class ConnectAction extends AbstractAction {
     private Dialog dialog;
     private JButton bOk;
     private JButton bCancel;
+    private NotificationLineSupport notificationSupport;
 
     
     public ConnectAction () {
@@ -87,6 +90,7 @@ public final class ConnectAction extends AbstractAction {
         );
     }
 
+    @Override
     public boolean isEnabled() {
         List attachTypes = DebuggerManager.getDebuggerManager ().lookup (
             null, AttachType.class
@@ -109,6 +113,7 @@ public final class ConnectAction extends AbstractAction {
         descr.setOptions (new JButton[] {
             bOk, bCancel
         });
+        notificationSupport = descr.createNotificationLineSupport();
         descr.setClosingOptions (new Object [0]);
         dialog = DialogDisplayer.getDefault ().createDialog (descr);
         dialog.setVisible(true);
@@ -168,10 +173,23 @@ public final class ConnectAction extends AbstractAction {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName () == ConnectorPanel.PROP_TYPE) {
                 stopListening ();
+                notificationSupport.clearMessages();
                 setValid ();
                 startListening ();
             } else if (evt.getPropertyName () == Controller.PROP_VALID) {
                 setValid ();
+            } else if (evt.getPropertyName() == NotifyDescriptor.PROP_ERROR_NOTIFICATION) {
+                Object v = evt.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setErrorMessage(msg);
+            } else if (evt.getPropertyName() == NotifyDescriptor.PROP_INFO_NOTIFICATION) {
+                Object v = evt.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setInformationMessage(msg);
+            } else if (evt.getPropertyName() == NotifyDescriptor.PROP_WARNING_NOTIFICATION) {
+                Object v = evt.getNewValue();
+                String msg = (v == null) ? null : v.toString();
+                notificationSupport.setWarningMessage(msg);
             }
         }
         
