@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -87,6 +88,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private PrintWriter err;
     private File privProjectStorageDir;
     private String remoteDir;
+
+    private NativeProcess remoteControllerProcess = null;
 
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -119,6 +122,20 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
+    private void remoteControllerCleanup() {
+        // nobody calls this concurrently => no synchronization
+        if (remoteControllerProcess != null) {
+            remoteControllerProcess.destroy();
+            // until #170502 is fixed
+            try {
+                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID());
+            } catch (IOException e) {
+                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
+            }
+            remoteControllerProcess = null;
+        }
+    }
+
     private void initRfs() throws IOException, InterruptedException, ExecutionException {
 
         final Env env = pae.getProfile().getEnvironment();
@@ -129,9 +146,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        //TODO: replace as soon as setup is written
+        // nobody calls this concurrently => no synchronization
+        remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
-        NativeProcess remoteControllerProcess = pb.call();
+        remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
@@ -144,6 +162,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         String port;
         if (line != null && line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
+        } else if (line == null) {
+            int rc = remoteControllerProcess.waitFor();
+            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null);
         } else {
             String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
             System.err.printf(message); // NOI18N
@@ -181,7 +202,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     }
 
     private void shutdownRfs() {
-        
+        remoteControllerCleanup();
     }
 
     @Override
@@ -224,8 +245,11 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage()));
+                String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
+                io.getErr().printf("%s\n", message);
+                io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+                err.printf("%s\n", message);
             }
         }
     }

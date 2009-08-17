@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import org.netbeans.modules.cnd.remote.project.*;
 import junit.framework.Test;
-import org.junit.Ignore;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -52,57 +50,25 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Vladimir Kvashin
  */
-public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
+public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
 
-    static {
-        System.setProperty("cnd.remote.fs", "true");
-    }
-
-    public RfsRemoteBuildTestCase(String testName) {
+    public RfsSunStudioRemoteBuildTestCase(String testName) {
         super(testName);
     }
 
-    public RfsRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RfsSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject);
-    }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject);
-        System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject);
-        System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject);
-    }
-
-    @Ignore
     @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         setDefaultCompilerSet("SunStudio");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject);
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RfsRemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(RfsSunStudioRemoteBuildTestCase.class);
     }
 }
