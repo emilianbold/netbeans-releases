@@ -408,8 +408,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @return
      */
     public static synchronized IssueTopComponent find(String issueId) {
+        assert issueId != null;
         for (IssueTopComponent tc : openIssues) {
-            if (issueId.equals(tc.getIssue().getID())) {
+            Issue i = tc.getIssue();
+            if(i == null) continue;
+            if (issueId.equals(i.getID())) {
                 return tc;
             }
         }
