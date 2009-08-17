@@ -34,20 +34,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.analyzer;
+package org.netbeans.modules.db.sql.editor.completion;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Skrivanek
  */
-public enum SQLStatementKind {
+public class DeleteCompletionQueryTest extends SelectCompletionQueryTest {
 
-    DELETE,
-    DROP,
-    INSERT,
-    SELECT,
-    UPDATE
+    public DeleteCompletionQueryTest(String testName) {
+        this(testName, false);
+    }
+
+    /**
+     * @param testName golden file name
+     * @param stdout true to print completion results to stdout
+     */
+    public DeleteCompletionQueryTest(String testName, boolean stdout) {
+        super(testName, stdout);
+    }
+
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new DeleteCompletionQueryTest("deleteAll"));
+        suite.addTest(new DeleteCompletionQueryTest("deleteSubquery"));
+        suite.addTest(new DeleteCompletionQueryTest("deleteSimple"));
+        suite.addTest(new DeleteCompletionQueryTest("deleteWhere", true));
+        return suite;
+    }
 }

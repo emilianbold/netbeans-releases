@@ -85,17 +85,16 @@ public class SQLStatementAnalyzer {
                 return DropStatementAnalyzer.analyze(seq, quoter);
             case UPDATE:
                 return UpdateStatementAnalyzer.analyze(seq, quoter);
+            case DELETE:
+                return DeleteStatementAnalyzer.analyze(seq, quoter);
         }
         return null;
     }
 
     public static SQLStatementKind analyzeKind(TokenSequence<SQLTokenId> seq) {
         seq.moveStart();
-        if (!seq.moveNext()) {
+        if (!nextToken(seq)) {
             return null;
-        }
-        if (seq.token() != null && SQLTokenId.WHITESPACE.equals(seq.token().id())) {
-            seq.moveNext();
         }
         if (isKeyword("SELECT", seq)) { // NOI18N
             return SQLStatementKind.SELECT;
@@ -105,6 +104,8 @@ public class SQLStatementAnalyzer {
             return SQLStatementKind.DROP;
         } else if (isKeyword("UPDATE", seq)) {  //NOI18N
             return SQLStatementKind.UPDATE;
+        } else if (isKeyword("DELETE", seq)) {  //NOI18N
+            return SQLStatementKind.DELETE;
         }
         return null;
     }
@@ -115,7 +116,7 @@ public class SQLStatementAnalyzer {
 
     /** Skip whitespace and comments and move to next token. Returns true, if
      * token is available, false otherwise. */
-    protected boolean nextToken() {
+    private static boolean nextToken(TokenSequence<SQLTokenId> seq) {
         boolean move;
         skip:
         while (move = seq.moveNext()) {
@@ -129,6 +130,12 @@ public class SQLStatementAnalyzer {
             }
         }
         return move;
+    }
+
+    /** Skip whitespace and comments and move to next token. Returns true, if
+     * token is available, false otherwise. */
+    protected boolean nextToken() {
+        return nextToken(seq);
     }
 
     /** Returns fully qualified identifier or null. */

@@ -89,6 +89,8 @@ public class SQLStatement {
     public enum Context {
 
         START(0),
+        // DELETE
+        DELETE(200),
         // DROP TABLE
         DROP_TABLE(300),
         // INSERT
