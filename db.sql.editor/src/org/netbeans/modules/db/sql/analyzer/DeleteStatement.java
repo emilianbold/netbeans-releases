@@ -34,20 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.List;
+import java.util.SortedMap;
+
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Skrivanek
  */
-public enum SQLStatementKind {
+public class DeleteStatement extends SelectStatement {
 
-    DELETE,
-    DROP,
-    INSERT,
-    SELECT,
-    UPDATE
+    DeleteStatement(int startOffset, int endOffset, TablesClause tablesClause, List<SelectStatement> subqueries, SortedMap<Integer, Context> offset2Context) {
+        super(startOffset, endOffset, null, tablesClause, subqueries, offset2Context);
+        this.kind = SQLStatementKind.DELETE;
+    }
 }

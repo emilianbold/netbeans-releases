@@ -53,16 +53,16 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
  *
  * @author Jiri Skrivanek
  */
-public class UpdateStatementAnalyzerTest extends NbTestCase {
+public class DeleteStatementAnalyzerTest extends NbTestCase {
 
-    public UpdateStatementAnalyzerTest(String testName) {
+    public DeleteStatementAnalyzerTest(String testName) {
         super(testName);
     }
 
-    private static UpdateStatement doAnalyze(String sql) {
+    private static DeleteStatement doAnalyze(String sql) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
         Quoter quoter = SQLIdentifiersTestUtilities.createNonASCIIQuoter("\"");
-        return UpdateStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
+        return DeleteStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
     }
 
     private static SQLStatementKind doDetectKind(String sql) {
@@ -76,78 +76,69 @@ public class UpdateStatementAnalyzerTest extends NbTestCase {
 
     public void testDetectKind() {
         assertNull(doDetectKind("foo"));
-        assertEquals(SQLStatementKind.UPDATE, doDetectKind("#comment\n update"));
-        assertEquals(SQLStatementKind.UPDATE, doDetectKind("update"));
-        assertEquals(SQLStatementKind.UPDATE, doDetectKind("update foo set a = 1"));
+        assertEquals(SQLStatementKind.DELETE, doDetectKind("#comment\n delete"));
+        assertEquals(SQLStatementKind.DELETE, doDetectKind("delete"));
+        assertEquals(SQLStatementKind.DELETE, doDetectKind("delete from foo"));
     }
 
     /** Just ensuring the analyzer doesn't end in an infinite loop. */
     public void testCanAnalyze() {
-        assertCanAnalyze("update");
-        assertCanAnalyze("update foo set a = 1");
-        assertCanAnalyze("update foo set a = 1, b = 2 where c = 3");
-        assertCanAnalyze("update foo, bar set foo.a = 1, bar.a = 1 where (select c from car where car.x = bar.x) > 42");
-        assertCanAnalyze("update foo set a = 1 where (select (select");
+        assertCanAnalyze("delete");
+        assertCanAnalyze("delete from foo where a = 1");
+        assertCanAnalyze("delete from foo where (select c from car where car.x = bar.x) > 42");
+        assertCanAnalyze("delete from foo where (select (select");
     }
 
     public void testContext() {
-        String sql = "UPDATE sch.t1 AS alt1 INNER JOIN sch.t2 ON sch.t1.c1 = sch.t2.c1, sch.t3 alt3 ";
-        sql += "SET alt1.c2 = 1, alt3 = 4 WHERE alt1.c1 > alt3.c3";
-        UpdateStatement statement = doAnalyze(sql);
+        String sql = "DELETE sch.t1 alt1 FROM sch.t1 alt1 INNER JOIN sch.t2 ON sch.t1.c1 = sch.t2.c1 ";
+        sql += "WHERE alt1.c1 > sch.t2.c3";
+        DeleteStatement statement = doAnalyze(sql);
         assertNull(statement.getContextAtOffset(0));
-        assertEquals(Context.UPDATE, statement.getContextAtOffset(sql.indexOf(" sch.t1")));
-        assertEquals(Context.UPDATE, statement.getContextAtOffset(sql.indexOf(" sch.t2")));
+        assertEquals(Context.DELETE, statement.getContextAtOffset(sql.indexOf(" sch.t1")));
+        assertEquals(Context.FROM, statement.getContextAtOffset(sql.indexOf("alt1 INNER")));
+        assertEquals(Context.FROM, statement.getContextAtOffset(sql.indexOf(" sch.t2")));
         assertEquals(Context.JOIN_CONDITION, statement.getContextAtOffset(sql.indexOf("sch.t1.c1")));
-        assertEquals(Context.UPDATE, statement.getContextAtOffset(sql.indexOf("sch.t3 alt3")));
-        assertEquals(Context.SET, statement.getContextAtOffset(sql.indexOf("= 1")));
-        assertEquals(Context.SET, statement.getContextAtOffset(sql.indexOf("= 4")));
-        assertEquals(Context.WHERE, statement.getContextAtOffset(sql.indexOf("alt3.c3")));
+        assertEquals(Context.WHERE, statement.getContextAtOffset(sql.indexOf("sch.t2.c3")));
+
+        sql = "DELETE FROM sch.t1 AS alt1 ";
+        sql += "WHERE alt1.c1 > sch.t2.c3";
+        statement = doAnalyze(sql);
+        assertNull(statement.getContextAtOffset(0));
+        assertEquals(Context.FROM, statement.getContextAtOffset(sql.indexOf(" sch.t1")));
+        assertEquals(Context.WHERE, statement.getContextAtOffset(sql.indexOf("sch.t2.c3")));
     }
 
     public void testAnalyzeTables() {
-        UpdateStatement statement = doAnalyze("UPDATE sch.t1 AS alt1 INNER JOIN sch.t2 ON sch.t1.c1 = sch.t2.c1, sch.t3 alt3 SET");
+        DeleteStatement statement = doAnalyze("DELETE sch.t1 alt1 FROM sch.t1 alt1 INNER JOIN sch.t2 ON sch.t1.c1 = sch.t2.c1 ");
         Map<String, QualIdent> expectedAliased = new HashMap<String, QualIdent>();
         expectedAliased.put("alt1", new QualIdent("sch", "t1"));
-        expectedAliased.put("alt3", new QualIdent("sch", "t3"));
         assertEquals(expectedAliased, statement.getTablesClause().getAliasedTableNames());
         assertEquals(Collections.singleton(new QualIdent("sch", "t2")), statement.getTablesClause().getUnaliasedTableNames());
     }
 
-    public void testUnquote() throws Exception {
-        UpdateStatement statement = doAnalyze("UPDATE \"sch\".\"t1\" INNER JOIN \"sch\".\"t2\" ON sch.t1.c1 = sch.t2.c1, \"t3\".\"\" SET");
+    public void testUnquote() {
+        DeleteStatement statement = doAnalyze("DELETE \"sch\".\"t1\" FROM \"sch\".\"t1\" INNER JOIN \"sch\".\"t2\" ON sch.t1.c1 = sch.t2.c1 ");
         HashSet<QualIdent> expectedUnaliased = new HashSet<QualIdent>();
         expectedUnaliased.add(new QualIdent("sch", "t1"));
         expectedUnaliased.add(new QualIdent("sch", "t2"));
-        expectedUnaliased.add(new QualIdent("t3"));
         assertEquals(expectedUnaliased, statement.getTablesClause().getUnaliasedTableNames());
 
-        statement = doAnalyze("UPDATE \"\"");
+        statement = doAnalyze("DELETE FROM \"\"");
         assertTrue(statement.getTablesClause().getUnaliasedTableNames().isEmpty());
     }
 
-    public void testSubqueries() throws Exception {
-        String sql = "UPDATE (SELECT tablename FROM sch.t1) ";
-        sql += "SET c1 = (SELECT c2 FROM t2 WHERE c3 = (SELECT c4 FROM t4)) ";
-        sql += "WHERE alt1.c1 > (SELECT c5 FROM t5)";
-
-        UpdateStatement statement = doAnalyze(sql);
+    public void testSubqueries() {
+        String sql = "DELETE FROM sch.t1 ";
+        sql += "WHERE sch.t1.c1 > (SELECT c2 FROM t2 WHERE c3 = (SELECT c4 FROM t4)) ";
+        DeleteStatement statement = doAnalyze(sql);
         assertEquals(0, statement.startOffset);
         assertEquals(sql.length(), statement.endOffset);
-        assertTrue(statement.getTablesClause().getUnaliasedTableNames().isEmpty());
-        assertEquals(3, statement.getSubqueries().size());
-
-        // (SELECT tablename FROM sch.t1)
-        SelectStatement subquery = statement.getSubqueries().get(0);
-        int offset = sql.indexOf("SELECT");
-        assertEquals(offset, subquery.startOffset);
-        offset = sql.indexOf(")", offset);
-        assertEquals(offset, subquery.endOffset);
-        assertTrue(subquery.getTablesClause().getUnaliasedTableNames().contains(new QualIdent("sch", "t1")));
-        assertTrue(subquery.getSubqueries().isEmpty());
+        assertTrue(statement.getTablesClause().getUnaliasedTableNames().contains(new QualIdent("sch", "t1")));
+        assertEquals(1, statement.getSubqueries().size());
 
         //(SELECT c2 FROM t2 WHERE c3 = (SELECT c4 FROM t4))
-        subquery = statement.getSubqueries().get(1);
-        offset = sql.indexOf("SELECT", offset);
+        SelectStatement subquery = statement.getSubqueries().get(0);
+        int offset = sql.indexOf("SELECT");
         assertEquals(offset, subquery.startOffset);
         int endOffset = sql.indexOf(") ", offset);
         assertEquals(endOffset, subquery.endOffset);
@@ -164,14 +155,5 @@ public class UpdateStatementAnalyzerTest extends NbTestCase {
             assertTrue(subquery.getTablesClause().getUnaliasedTableNames().contains(new QualIdent("t4")));
             assertEquals(0, subquery.getSubqueries().size());
         }
-
-        // (SELECT c5 FROM t5)
-        subquery = statement.getSubqueries().get(2);
-        offset = sql.indexOf("SELECT", offset);
-        assertEquals(offset, subquery.startOffset);
-        offset = sql.indexOf(")", offset);
-        assertEquals(offset, subquery.endOffset);
-        assertTrue(subquery.getTablesClause().getUnaliasedTableNames().contains(new QualIdent("t5")));
-        assertEquals(0, subquery.getSubqueries().size());
     }
 }

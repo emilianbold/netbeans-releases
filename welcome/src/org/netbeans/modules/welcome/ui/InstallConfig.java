@@ -54,8 +54,11 @@ class InstallConfig {
     private boolean javaFX = false;
     private boolean somePacksDisabled = false;
     private Set<String> enabledPackNames = new HashSet<String>(10);
+    private Set<String> availablePackNames = new HashSet<String>(10);
 
     private static final String javaFxPackName = "org.netbeans.modules.javafx.kit"; //NOI18N
+
+    private static final String javaSEPackName = "org.netbeans.modules.java.kit"; //NOI18N
 
     private static final String ergonomicsPackName = "org.netbeans.modules.ide.ergonomics"; //NOI18N
     
@@ -91,6 +94,7 @@ class InstallConfig {
             } else {
                 somePacksDisabled = true;
             }
+            availablePackNames.add(mi.getCodeNameBase());
         }
     }
 
@@ -116,7 +120,7 @@ class InstallConfig {
     }
 
     public boolean isJavaFXInstalled() {
-        return javaFX;
+        return javaFX && availablePackNames.contains(javaSEPackName) && availablePackNames.size() == 1;
     }
 
     public boolean somePacksDisabled() {

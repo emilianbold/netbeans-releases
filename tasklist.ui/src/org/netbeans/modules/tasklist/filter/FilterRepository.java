@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -191,7 +190,20 @@ public final class FilterRepository {
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
             setActive( filter );
+            save();
+        }
             
+        if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
+            prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
+            TaskFilter filter = createNewFilter();
+            filter.setName( NbBundle.getMessage( FilterRepository.class, "LBL_IssuesFilter" ) ); //NOI18N
+            TypesFilter types = new TypesFilter();
+            types.clear();
+            types.setEnabled("org.netbeans.modules.bugtracking.tasklist.TaskListProvider", true); //NOI18N
+            types.setTaskCountLimit( 100 );
+            filter.setTypesFilter( types );
+            filter.setKeywordsFilter( new KeywordsFilter() );
+            filters.add( filter );
             save();
         }
     }
