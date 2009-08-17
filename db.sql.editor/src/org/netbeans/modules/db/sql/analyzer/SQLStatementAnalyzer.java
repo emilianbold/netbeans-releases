@@ -65,6 +65,7 @@ public class SQLStatementAnalyzer {
     protected int startOffset;
     protected Context context = Context.START;
     protected final SortedMap<Integer, Context> offset2Context = new TreeMap<Integer, Context>();
+    protected final List<SelectStatement> subqueries = new ArrayList<SelectStatement>();
 
     protected SQLStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         this.seq = seq;
@@ -132,10 +133,55 @@ public class SQLStatementAnalyzer {
         return move;
     }
 
-    /** Skip whitespace and comments and move to next token. Returns true, if
+    /** Skip whitespace and comments and move to next token. Parse SELECT
+     * subquery if available and move after it. Returns true, if
      * token is available, false otherwise. */
     protected boolean nextToken() {
-        return nextToken(seq);
+        boolean move = nextToken(seq);
+        if (move) {
+            // only if not beginning of SELECT statement
+            if (!(this instanceof SelectStatementAnalyzer) || context.isAfter(Context.SELECT)) {
+                return parseSubquery();
+            }
+        }
+        return move;
+    }
+
+    /** Parses possible subquery, fills subqueries list and returns true if
+     * additional tokens available. */
+    private boolean parseSubquery() {
+        boolean move = true;  // expects previous seq.moveNext() returned true
+        if (SQLStatementAnalyzer.isKeyword("SELECT", seq)) { // NOI18N
+            // Looks like a subquery.
+            int subStartOffset = seq.offset();
+            int parLevel = 1;
+            main:
+            while (move = seq.moveNext()) {
+                switch (seq.token().id()) {
+                    case LPAREN:
+                        parLevel++;
+                        break;
+                    case RPAREN:
+                        if (--parLevel == 0) {
+                            break main;
+                        }
+                        break;
+                }
+            }
+            if (parLevel == 0 || (!move && parLevel > 0)) {
+                int subEndOffset = seq.offset();
+                if (!move && parLevel > 0) {
+                    // looks like an unfinished subquery
+                    subEndOffset += seq.token().length();
+                }
+                TokenSequence<SQLTokenId> subSeq = seq.subSequence(subStartOffset, subEndOffset);
+                SelectStatement subquery = SelectStatementAnalyzer.analyze(subSeq, quoter);
+                if (subquery != null) {
+                    subqueries.add(subquery);
+                }
+            }
+        }
+        return move;
     }
 
     /** Returns fully qualified identifier or null. */

@@ -95,7 +95,11 @@ public class LazyLookupProviders {
         };
     }
     private static Object loadPSPInstance(String implName, String methodName, Lookup lkp) throws Exception {
-        Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(implName);
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        if (loader == null) {
+            loader = Thread.currentThread().getContextClassLoader();
+        }
+        Class<?> clazz = loader.loadClass(implName);
         if (methodName == null) {
             for (Constructor c : clazz.getConstructors()) {
                 Object[] vals = valuesFor(c.getParameterTypes(), lkp);
