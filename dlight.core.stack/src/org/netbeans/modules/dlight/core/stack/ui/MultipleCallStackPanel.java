@@ -45,6 +45,7 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -59,21 +60,28 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private final MultipleCallStackRootNode rootNode = new MultipleCallStackRootNode();
     private final BeanTreeView treeView;
     private Lookup lookup;
+    private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
 
 
 
-    private MultipleCallStackPanel(){
+    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider){
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
         manager.setRootContext(rootNode);//NOI18N
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new BeanTreeView();
         treeView.setRootVisible(false);
         add(treeView);
-
+    
     }
 
     public static final  MultipleCallStackPanel createInstance(){
-        return new MultipleCallStackPanel();
+        return new MultipleCallStackPanel(null);
+    }
+
+
+    public static final  MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider){
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider);
     }
 
     public void clean(){
@@ -100,12 +108,12 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack){
-        rootNode.add(new StackRootNode(null, icon, rootName, stack));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
     }
 
     public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack){
         treeView.setRootVisible(false);
-        rootNode.add(new StackRootNode(null, rootName, stack));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack));
     }
 
     public void update(){
