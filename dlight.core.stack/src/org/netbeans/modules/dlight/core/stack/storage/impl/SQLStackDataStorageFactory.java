@@ -36,34 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.derby;
+package org.netbeans.modules.dlight.core.stack.storage.impl;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ *
  * @author Alexey Vladykin
  */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+@ServiceProvider(service=DataStorageFactory.class)
+public class SQLStackDataStorageFactory implements DataStorageFactory<SQLStackDataStorage> {
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new DerbyDataStorage());
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    public Collection<DataStorageType> getStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown();
-    }
-
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
+    public SQLStackDataStorage createStorage() {
+        return new SQLStackDataStorage();
     }
 }

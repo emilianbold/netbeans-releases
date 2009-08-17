@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
+package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.util.ArrayList;
 import java.util.List;

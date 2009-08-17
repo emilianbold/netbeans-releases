@@ -417,7 +417,7 @@ public abstract class SQLDataStorage implements DataStorage {
         }
     }
 
-    private void enable() {
+    private synchronized void enable() {
         if (!enabled) {
             requestQueue = new LinkedBlockingQueue<Request>();
             enabled = true;
