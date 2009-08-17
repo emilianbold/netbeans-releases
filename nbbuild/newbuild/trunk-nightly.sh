@@ -15,6 +15,9 @@ if [ ! -z $WORKSPACE ]; then
     #Clean obsolete sources first
     rm -rf $NB_ALL
     hg clone $WORKSPACE $NB_ALL
+    #Clone also javafx sources - XXX needs to be parametrized
+    cd $NB_ALL
+    hg clone http://hg.netbeans.org/javafx
 fi
 
 ###################################################################
@@ -98,6 +101,10 @@ if [ $UPLOAD_ML == 1 ]; then
     mv $DIST/jnlp $DIST/ml/
     mv $DIST/javadoc $DIST/ml/
 fi
+
+#XXX Remove any javafx related files before upload to public site
+cd $DIST
+find . -name "*javafx*" -exec rm {} \;
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
