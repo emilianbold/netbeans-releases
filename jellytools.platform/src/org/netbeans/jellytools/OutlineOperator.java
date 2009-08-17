@@ -40,11 +40,19 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Point;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.OutlineModel;
 
 /**
  *  An operator to handle org.netbeans.swing.outline.Outline component used
@@ -70,9 +78,173 @@ public class OutlineOperator extends JTableOperator {
         super(outline);
     }
 
-    static class OutlineFinder implements ComponentChooser
+    protected Outline getOutline()
     {
-        ComponentChooser subFinder;
+        return (Outline)getSource();
+    }
+
+    public int getTreeColumnIndex()
+    {
+        int lnNumColumns = this.getColumnCount();
+
+        for (int i = 0; i < lnNumColumns; i++)
+        {
+            if (convertColumnIndexToModel(i) == 0)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public OutlineNode getRootNode(String isName)
+    {
+        return getRootNode(isName, 0);
+    }
+
+    public OutlineNode getRootNode(final String isName, final int inIndex)
+    {
+        final Outline lrOutline = getOutline();
+
+        TreePath lrTreePath;
+        Timeouts lrTimes = getTimeouts().cloneThis();
+
+        //behavior should be similar to JTreeOperator, so we can use its timeout values
+	lrTimes.setTimeout("Waiter.WaitingTime", getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout"));
+        try
+        {
+            Waiter lrWaiter = new Waiter(new Waitable() {
+                public Object actionProduced(Object anObject) {
+                    Point lrFindPoint = findCell(isName, null, new int[]{getTreeColumnIndex()}, inIndex);
+
+                    //no cell found
+                    if (lrFindPoint.equals(new Point(-1,-1)))
+                        return null;
+
+                    //y is row, x is not important since we're asking for a row in the tree
+                    TreePath lrPath = lrOutline.getLayoutCache().getPathForRow(lrFindPoint.y);
+
+                    //cell found, but it is not a root node
+                    if (lrPath.getPathCount() > 2)
+                        return null;
+
+                    return lrPath;
+                }
+                public String getDescription() {
+                    return("Root tree node cell with name '" + isName + "' not present.");
+                }
+            });
+
+            lrWaiter.setTimeouts(lrTimes);
+            lrTreePath = (TreePath)lrWaiter.waitAction(null);
+        }
+        catch (InterruptedException e) {
+        throw new JemmyException("Interrupted.", e);
+        }
+
+        return new OutlineNode(this, lrTreePath);
+    }
+
+    public void expandPath(final TreePath irTP)
+    {
+        runMapping(new MapVoidAction("expandPath")
+        {
+            public void map()
+            {
+                getOutline().expandPath(irTP);
+            }
+        });
+    }
+
+    public boolean isExpanded(final TreePath irTP)
+    {
+        return((Boolean)runMapping(new MapAction("isExpanded")
+        {
+		public Object map()
+                {
+		    return(getOutline().isExpanded(irTP));
+		}
+        }));
+    }
+
+    protected int getVisibleRootModifier()
+    {
+        return getOutline().isRootVisible() ? 0 : -1;
+    }
+
+    public Point getLocationForPath(TreePath irTreePath)
+    {
+        int lnX = getTreeColumnIndex();
+
+        int lnY = getRowForPath(irTreePath);
+
+        return (lnY == -1) ? new Point(-1, -1) : new Point(lnX, lnY);
+    }
+
+    public int getRowForPath(final TreePath irTreePath)
+    {
+        TreePath lrPath = irTreePath;
+
+        if (!getOutline().isExpanded(irTreePath.getParentPath()))
+            expandPath(irTreePath.getParentPath());
+
+        int lnRow = getVisibleRootModifier() - 1;
+
+        while (lrPath.getParentPath() != null)
+        {
+            lnRow += 1 + getPrecedingSiblingsRowSpan(lrPath);
+            lrPath = lrPath.getParentPath();
+        }
+
+        return lnRow;
+    }
+
+    protected int getPrecedingSiblingsRowSpan(TreePath irTreePath)
+    {
+        OutlineModel lrModel = getOutline().getOutlineModel();
+
+        if (irTreePath.getParentPath() == null)
+            return 0 + getVisibleRootModifier();
+
+        Object lrLast = irTreePath.getLastPathComponent();
+        TreePath lrParent = irTreePath.getParentPath();
+        int lnRowSpan = 0;
+
+        int lnIndex = lrModel.getIndexOfChild(lrParent.getLastPathComponent(), lrLast);
+
+        for (int i = lnIndex; i >= 0; --i)
+        {
+            Object lrSibling = lrModel.getChild(lrParent.getLastPathComponent(), i);
+            lnRowSpan += getRowSpanOfLastElement(irTreePath.pathByAddingChild(lrSibling));
+        }
+
+        return lnRowSpan;
+    }
+
+    protected int getRowSpanOfLastElement(TreePath irTreePath)
+    {
+        OutlineModel lrModel = getOutline().getOutlineModel();
+
+        if (!lrModel.getTreePathSupport().isExpanded(irTreePath))
+            return 1;
+        
+        Object lrLast = irTreePath.getLastPathComponent();
+        int lnRowspan = 1; //1 for the current node
+        int lnChildCount = lrModel.getChildCount(lrLast);
+
+        for (int i = 0; i < lnChildCount; i++)
+        {
+            Object lnChild = lrModel.getChild(lrLast, i);
+
+            TreePath lrTempPath = irTreePath.pathByAddingChild(lnChild);
+            lnRowspan += getRowSpanOfLastElement(lrTempPath);
+        }
+
+        return lnRowspan;
+    }
+
+    private static class OutlineFinder implements ComponentChooser
+    {
+        private ComponentChooser subFinder;
 
         public OutlineFinder(ComponentChooser finder)
         {
@@ -82,7 +254,7 @@ public class OutlineOperator extends JTableOperator {
         public boolean checkComponent(Component comp) {
             Class cls = comp.getClass();
             do {
-                if(cls.getName().equals("org.netbeans.swing.outline.Outline;")) {
+                if(cls.getName().equals("org.netbeans.swing.outline.Outline")) {
                     return(subFinder.checkComponent(comp));
                 }
             } while((cls = cls.getSuperclass()) != null);

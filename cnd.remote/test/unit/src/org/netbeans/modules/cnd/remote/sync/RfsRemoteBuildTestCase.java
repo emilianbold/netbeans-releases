@@ -37,42 +37,57 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.project;
+package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.remote.project.*;
 import junit.framework.Test;
+import org.junit.BeforeClass;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildTestCase extends RemoteBuildTestBase {
+public class RfsRemoteBuildTestCase extends RemoteBuildTestBase {
 
-    public RemoteBuildTestCase(String testName) {
+    public RfsRemoteBuildTestCase(String testName) {
         super(testName);
     }
 
-    public RemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RfsRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("scp");
+        setDefaultCompilerSet("GNU");
+    }
 
     @ForAllEnvironments
-    public void testBuildSampleArguments() throws Exception {
-        setupHost();
-        setSyncFactory("scp");
+    public void testBuildRfsSampleArgsGNU() throws Exception {
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject);
+    }
+
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsSunStudio() throws Exception {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject);
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(RfsRemoteBuildTestCase.class);
     }
-
-
 }
