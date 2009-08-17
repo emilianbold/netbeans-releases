@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.POJOHelper;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -93,10 +94,10 @@ public class VisualClassPathItem {
     private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/compapp/projects/jbi/ui/resources/libraries.gif"; // NOI18N
     private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/compapp/projects/jbi/ui/resources/projectDependencies.gif"; // NOI18N
     private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/compapp/projects/jbi/ui/resources/j2seProject.gif"; // NOI18N
-    private static Icon ICON_JAR = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_JAR));
-    private static Icon ICON_LIBRARY = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_LIBRARY));
-    private static Icon ICON_ARTIFACT = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_ARTIFACT));
-    private static Icon ICON_CLASSPATH = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_CLASSPATH));
+    private static Icon ICON_JAR = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAR, false);
+    private static Icon ICON_LIBRARY = ImageUtilities.loadImageIcon(RESOURCE_ICON_LIBRARY, false);
+    private static Icon ICON_ARTIFACT = ImageUtilities.loadImageIcon(RESOURCE_ICON_ARTIFACT, false);
+    private static Icon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
     
     private int type;
     private Object cpElement;
@@ -203,20 +204,20 @@ public class VisualClassPathItem {
         }
     }
     
-//    /**
-//     * DOCUMENT ME!
-//     *
-//     * @param artifact DOCUMENT ME!
-//     * @param pathInWar DOCUMENT ME!
-//     *
-//     * @return DOCUMENT ME!
-//     */
-//    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
-//        return new VisualClassPathItem(
-//                artifact, VisualClassPathItem.TYPE_ARTIFACT,
-//                artifact.getArtifactLocations()[0].toString(), pathInWar, false
-//                );
-//    }
+    /**
+     * DOCUMENT ME!
+     *
+     * @param artifact DOCUMENT ME!
+     * @param pathInWar DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
+        return new VisualClassPathItem(
+                artifact, VisualClassPathItem.TYPE_ARTIFACT,
+                artifact.getArtifactLocations()[0].toString(), pathInWar, false
+                );
+    }
     
     public static boolean isJavaEEProjectAntArtifact(AntArtifact aa){
         Project project = aa.getProject();

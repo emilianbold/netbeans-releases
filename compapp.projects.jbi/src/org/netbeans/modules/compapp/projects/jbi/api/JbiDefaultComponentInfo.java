@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileStateInvalidException;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -67,6 +67,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
@@ -179,18 +180,16 @@ public class JbiDefaultComponentInfo {
         bindingInfoList = new ArrayList<JbiBindingInfo>();
         
         try {
-            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
-
             // load new container first
-            FileObject wsdlEditorFolderFO = fileSystem.findResource(WSDLEDITOR_NAME);
+            FileObject wsdlEditorFolderFO = FileUtil.getConfigFile(WSDLEDITOR_NAME);
             loadJbiDefaultComponentInfoForSDLEditor(wsdlEditorFolderFO);
 
             // load new container first
-            FileObject compFolderFO = fileSystem.findResource(COMP_RESOURCE_NAME);
+            FileObject compFolderFO = FileUtil.getConfigFile(COMP_RESOURCE_NAME);
             loadJbiDefaultComponentInfoFromFileObject(compFolderFO);
 
             // backward compatibility
-            FileObject sbCompFolderFO = fileSystem.findResource(SB_COMP_RESOURCE_NAME);
+            FileObject sbCompFolderFO = FileUtil.getConfigFile(SB_COMP_RESOURCE_NAME);
             loadJbiDefaultComponentInfoFromFileObject(sbCompFolderFO);
 
         } catch (Exception ex) {
@@ -542,7 +541,12 @@ public class JbiDefaultComponentInfo {
          * registers the file change listener on the layer filesystem.
          */
         private void registerFileChangeListener() {
-            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
+            FileSystem fileSystem = null;
+            try {
+                fileSystem = FileUtil.getConfigRoot().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                sLogger.log(Level.FINE, ex.getMessage(), ex);
+            }
             // listen on filesystem for changes to the jbi component folder
             //TODO: use weak listener
             fileSystem.addFileChangeListener(mFileChangeListener);

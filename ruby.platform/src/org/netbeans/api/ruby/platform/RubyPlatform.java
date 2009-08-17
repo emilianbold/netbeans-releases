@@ -834,7 +834,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.4");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.6");
             }
         };
         if (!EventQueue.isDispatchThread()) {
