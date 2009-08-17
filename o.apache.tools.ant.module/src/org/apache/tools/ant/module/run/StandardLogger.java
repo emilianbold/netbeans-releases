@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
-import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -234,9 +233,16 @@ public final class StandardLogger extends AntLogger {
             }
             if (!session.isExceptionConsumed(t)) {
                 session.consumeException(t);
+                StringBuilder msg = new StringBuilder();
                 while (isBuildException(t)) { // http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
                     Throwable cause = t.getCause();
-                    if (cause != null && cause.toString().equals(t.getMessage())) {
+                    if (cause == null) {
+                        break;
+                    }
+                    String msg1 = t.toString();
+                    String msg2 = cause.toString();
+                    if (msg1.endsWith(msg2)) {
+                        msg.append(msg1.substring(0, msg1.length() - msg2.length()));
                         t = cause;
                     } else {
                         break;
@@ -247,10 +253,13 @@ public final class StandardLogger extends AntLogger {
                     // Check for hyperlink to handle e.g. <fail>
                     // which produces a BE whose toString is the location + message.
                     // But send to other loggers since they may wish to suppress such an error.
-                    String msg = t.toString();
-                    deliverBlockOfTextAsLines(msg, event, AntEvent.LOG_ERR);
+                    msg.append(t);
+                    deliverBlockOfTextAsLines(msg.toString(), event, AntEvent.LOG_ERR);
                 } else if (!isStopException(t) || event.getSession().getVerbosity() >= AntEvent.LOG_VERBOSE) {
                     // ThreadDeath can be thrown when killing an Ant process, so don't print it normally
+                    if (msg.length() > 0) {
+                        deliverBlockOfTextAsLines(msg.toString(), event, AntEvent.LOG_ERR);
+                    }
                     deliverStackTrace(t, event);
                 }
             }
@@ -436,7 +445,7 @@ public final class StandardLogger extends AntLogger {
                 if (IOColorPrint.isSupported(io)) {
                     try {
                         assert mainPart != null;
-                        IOColorPrint.print(io, mainPart, hyperlink, isImportant(all), IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
+                        IOColorPrint.print(io, mainPart, hyperlink, isImportant(all), null);
                         assert postLinkPart != null;
                         session.println(postLinkPart, true, null);
                         return;
@@ -465,7 +474,7 @@ public final class StandardLogger extends AntLogger {
      * <li>message
      * </ol>
      */
-    private static final Pattern HYPERLINK = Pattern.compile("(\"?(.+?)\"?(?:(?::|, line )(\\d+)(?::(\\d+)(?::(\\d+):(\\d+))?)?)?)(: +(.+))"); // NOI18N
+    private static final Pattern HYPERLINK = Pattern.compile("(\"?(.+?)\"?(?:(?::|, line )(\\d+)(?::(\\d+)(?::(\\d+):(\\d+))?)?)?)(: +(.*))"); // NOI18N
     /**
      * Possibly hyperlink a message logged event.
      */

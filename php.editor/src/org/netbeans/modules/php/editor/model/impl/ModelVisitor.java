@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -343,7 +344,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         occurencesBuilder.prepare(node, scope);
 
         if (scope instanceof VariableContainerImpl) {
-            findVariable(scope, node);
             VariableContainerImpl varContainer = (VariableContainerImpl) scope;
             Map<String, VariableNameImpl> map = vars.get(varContainer);
             if (map == null) {
@@ -473,9 +473,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(FormalParameter node) {
         Expression parameterName = node.getParameterName();
         Expression parameterType = node.getParameterType();
-        String typeName = parameterType != null ? CodeUtils.extractUnqualifiedTypeName(node) : null;
         Scope scp = modelBuilder.getCurrentScope();
-        FunctionScopeImpl fncScope =  (FunctionScopeImpl)scp;
+        FunctionScopeImpl fncScope =  (FunctionScopeImpl)scp;        
         while(parameterName instanceof Reference) {
             Reference ref = (Reference)parameterName;
             Expression expression = ref.getExpression();
@@ -483,10 +482,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 parameterName = expression;
             }
         }
-        if (typeName != null && parameterName instanceof Variable) {
-            VariableNameImpl varNameImpl = fncScope.createElement( (Variable) parameterName);
-            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, fncScope, fncScope.getBlockRange(),
-                    new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
+        List<? extends Parameter> parameters = fncScope.getParameters();
+        if (parameterName instanceof Variable) {
+            for (Parameter parameter : parameters) {
+                List<QualifiedName> types = parameter.getTypes();
+                VariableContainerImpl varContainer = (VariableContainerImpl) fncScope;
+                Map<String, VariableNameImpl> map = vars.get(varContainer);
+                if (map == null) {
+                    map = new HashMap<String, VariableNameImpl>();
+                    vars.put(varContainer, map);
+                }
+                String name = parameter.getName();
+                VariableNameImpl varInstance = map.get(name);
+                if (varInstance == null) {
+                    if (varContainer.getVariablesImpl(name).isEmpty()) {
+                        varInstance = new VariableNameImpl(fncScope, name, fncScope.getFile(), parameter.getOffsetRange(), false);
+                        fncScope.addElement(varInstance);
+                        map.put(name, varInstance);
+                    }
+                }
+                if (!types.isEmpty() && varInstance != null) {
+                    varInstance.addElement(new VarAssignmentImpl(varInstance, fncScope, fncScope.getBlockRange(),
+                            parameter.getOffsetRange(), types.get(0).toString()));
+                }
+
+            }
         }
 
         if (parameterName instanceof Variable) {

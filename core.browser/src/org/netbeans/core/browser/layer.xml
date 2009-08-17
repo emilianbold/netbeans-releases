@@ -5,6 +5,7 @@
         <folder name="Browsers">
             <file name="EmbeddedBrowser.settings" url="mozillaBrowser.xml">
                 <attr name="hidden" methodvalue="org.netbeans.core.browser.BrowserFactory.isHidden"/>
+                <attr name="internal" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.browser.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
                 <attr name="position" intvalue="10000"/>

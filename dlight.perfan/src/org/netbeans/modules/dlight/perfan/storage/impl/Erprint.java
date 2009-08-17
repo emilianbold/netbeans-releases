@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -209,7 +209,7 @@ final class Erprint {
         ArrayList<String> result = new ArrayList<String>();
 
         for (String str : stat) {
-            if (str.matches("^ *[0-9]+.*")) { // NOI18N
+            if (str.matches("^ *[0-9]+.*") && !str.contains("<Total>")) { // NOI18N
                 result.add(str.trim());
                 if (--limit == 0) {
                     break;
@@ -292,7 +292,7 @@ final class Erprint {
         return new FunctionStatistic(stat);
     }
 
-    FunctionStatistic getFunctionStatistic(FunctionCallWithMetric functionCall) throws IOException {
+    FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
         synchronized (this) {
             if (stopped) {
                 return new FunctionStatistic(new String[0]);

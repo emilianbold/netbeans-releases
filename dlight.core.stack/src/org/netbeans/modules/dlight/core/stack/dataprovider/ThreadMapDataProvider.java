@@ -42,13 +42,13 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadMapDataProvider extends VisualizerDataProvider {
+public interface ThreadMapDataProvider extends DataProvider {
 
     /**
      * @param metadata define needed time selection and aggregation.
@@ -57,4 +57,7 @@ public interface ThreadMapDataProvider extends VisualizerDataProvider {
     ThreadMapData queryData(ThreadMapDataQuery query);
 
     ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
+    ThreadDump getStackTrace(long timestamp,  long threadID);
+    ThreadDump getStackTrace(long timestamp,  long threadID, int threadstate);
+
 }

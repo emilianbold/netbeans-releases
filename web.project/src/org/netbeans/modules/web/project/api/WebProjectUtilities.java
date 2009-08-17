@@ -56,6 +56,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -839,18 +842,15 @@ public class WebProjectUtilities {
                         Utils.toClasspathString(wsClasspath));
             }
 
-            // set j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsgen.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
+            // set j2ee.platform.wsimport.classpath, j2ee.platform.wsgen.classpath
+            WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+            if (wsStack != null) {
+                WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT); // the same as for WSGEN
+                if (wsTool!= null && wsTool.getLibraries().length > 0) {
+                    String librariesList = Utils.toClasspathString(wsTool.getLibraries());
+                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
+                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
+                }
             }
             
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {

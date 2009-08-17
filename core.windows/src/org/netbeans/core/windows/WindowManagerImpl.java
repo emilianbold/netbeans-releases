@@ -851,8 +851,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return null;
     }
     
-    private static final boolean NAME_HACK = Boolean.getBoolean("nb.tabnames.html"); //NOI18N
-    
     /** Helper method to retrieve some form of display name of TopComponent.
      * First tries TopComponent's getHtmlDisplayName, if is it null then continues
      * with getDisplayName and getName in this order.
@@ -871,39 +869,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         if (displayName == null) {
             displayName = tc.getName();
-        }
-        if (NAME_HACK && displayName != null) {
-            //THIS IS FOR DEMO PURPOSES ONLY!  A PROPER API IS NEEDED
-            //(TopComponent.getHtmlDisplayName()), OR
-            //HTML SHOULD BE PRE-SUPPLIED
-            if (displayName.endsWith("*")) { 
-                
-                if (displayName.startsWith("<html>")) {
-                    displayName = displayName.substring(6);
-                }
-                
-                displayName = "<html><b>" + 
-                    displayName.substring(0, displayName.length()-2);
-                
-            } else {
-                
-                int i = displayName.indexOf ("[r/o]"); 
-                if (i > 0) {
-                    
-                    if (displayName.startsWith("<html>")) {
-                        displayName = displayName.substring(6);
-                        i -= 6;
-                    }
-
-                    int roLength = "[r/o]".length();
-                    String nuName = "<html><font color='#555555'><i>" + //NOI18N
-                        displayName.substring (0, i-1);
-                    if (i + roLength < displayName.length()) {
-                        nuName += displayName.substring(i + roLength);
-                    }
-                    displayName = nuName;
-                }
-            }
         }
         return displayName;
     }

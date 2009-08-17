@@ -61,7 +61,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -182,7 +181,7 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, Arrays.asList(files));
+        return _create(cpInfo, Arrays.asList(files));
     }
 
     /**
@@ -194,6 +193,12 @@ public final class JavaSource {
      * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
+        return _create(cpInfo, files);
+    }
+
+    //where
+
+    private static @NullUnknown JavaSource _create(final ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
             throw new IllegalArgumentException ();
         }    
@@ -280,7 +285,7 @@ public final class JavaSource {
                 if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N                    
                     return null;
                 }
-                js = create(null, Collections.singletonList(fileObject));
+                js = _create(null, Collections.singletonList(fileObject));
             }
             file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
@@ -319,7 +324,8 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {        
+    private JavaSource (final ClasspathInfo cpInfo,
+                        final @NonNull Collection<? extends FileObject> files) throws IOException {
         boolean multipleSources = files.size() > 1;
         final List<Source> sources = new LinkedList<Source>();
         final List<FileObject> fl = new LinkedList<FileObject>();
@@ -344,8 +350,17 @@ public final class JavaSource {
         this.sources = Collections.unmodifiableList(sources);
         this.classpathInfo = cpInfo;        
     }
-    
-    private JavaSource (final ClasspathInfo info, final FileObject classFileObject, final FileObject root) throws IOException {
+
+    /**
+     * Creates a new instance of JavaSource for an class file
+     * @param info the compilation info to be used
+     * @param classFileObject the class file
+     * @param root owning the class file
+     * @throws IOException
+     */
+    private JavaSource (final @NonNull ClasspathInfo info,
+                        final @NonNull FileObject classFileObject,
+                        final @NonNull FileObject root) throws IOException {
         assert info != null;
         assert classFileObject != null;
         assert root != null;
@@ -519,11 +534,6 @@ public final class JavaSource {
         }
     }
 
-    @PatchedPublic
-    private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
-        final Task<CompilationController> _task = task;
-        this.runUserActionTask (_task, shared);
-    }
     
     
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
@@ -611,11 +621,6 @@ public final class JavaSource {
         }
     }
 
-    @PatchedPublic
-    private Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
-        final Task<CompilationController> _task = task;
-        return this.runWhenScanFinished (_task, shared);
-    }
        
     /** Runs a task which permits for modifying the sources.
      * Call to this method will cancel processing of all the phase completion tasks until
@@ -689,11 +694,6 @@ public final class JavaSource {
         }        
     }
 
-    @PatchedPublic
-    private ModificationResult runModificationTask(CancellableTask<WorkingCopy> task) throws IOException { 
-        final Task<WorkingCopy> _task = task;
-        return this.runModificationTask (_task);
-    }
     /**
      * Returns the classpaths ({@link ClasspathInfo}) used by this
      * {@link JavaSource}

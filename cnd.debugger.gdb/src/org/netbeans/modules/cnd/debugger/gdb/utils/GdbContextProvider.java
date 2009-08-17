@@ -43,7 +43,7 @@ import java.io.File;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -59,7 +59,7 @@ public class GdbContextProvider implements ContextBindingSupport.ContextProvider
     public ContextBindingSupport.Context retrieveContext() {
         // TODO: check how to get context from call stack
         DebuggerEngine en = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        CallStackFrame csf = null;
+        GdbCallStackFrame csf = null;
         if (en != null) {
             GdbDebugger d = en.lookupFirst(null, GdbDebugger.class);
             if (d != null) {

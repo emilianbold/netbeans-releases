@@ -85,28 +85,21 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     private Repository selectedRepository;
 
     private class FieldValues {
-        private boolean addComment = false;
-        private boolean addRevisionInfo = false;
-        private boolean addIssueInfo = false;
+        private boolean addLinkInfo = false;
         private boolean resolve = false;
         private boolean commit = false;
         void store() {
-            addComment = addCommentCheckBox.isSelected();
-            addRevisionInfo = addRevisionCheckBox.isSelected();
-            addIssueInfo = addIssueCheckBox.isSelected();
+            addLinkInfo = linkCheckBox.isSelected();
             resolve = resolveCheckBox.isSelected();
             commit = commitRadioButton.isSelected();
 
-            addCommentCheckBox.setSelected(false);
-            addRevisionCheckBox.setSelected(false);
-            addIssueCheckBox.setSelected(false);
+            linkCheckBox.setSelected(false);
+            linkCheckBox.setSelected(false);
             resolveCheckBox.setSelected(false);
             commitRadioButton.setSelected(false);
         }
         void restore() {
-            addCommentCheckBox.setSelected(addComment);
-            addRevisionCheckBox.setSelected(addRevisionInfo);
-            addIssueCheckBox.setSelected(addIssueInfo);
+            linkCheckBox.setSelected(addLinkInfo);
             resolveCheckBox.setSelected(resolve);
             commitRadioButton.setSelected(commit);
         }
@@ -262,14 +255,11 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             fieldValues.restore();
         }
 
-        addCommentCheckBox.setEnabled(enableUpdateFields);
-        addRevisionCheckBox.setEnabled(enableUpdateFields);
-        addIssueCheckBox.setEnabled(enableUpdateFields);
+        linkCheckBox.setEnabled(enableUpdateFields);
         resolveCheckBox.setEnabled(enableUpdateFields);
         pushRadioButton.setEnabled(enableUpdateFields);
         commitRadioButton.setEnabled(enableUpdateFields);
-        changeRevisionFormatButton.setEnabled(enableUpdateFields);
-        changeIssueFormatButton.setEnabled(enableUpdateFields);
+        changeFormatButton.setEnabled(enableUpdateFields);
 
         issueLabel.setEnabled(repoSelected);
         qs.enableFields(repoSelected);
@@ -301,12 +291,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(addCommentCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addCommentCheckBox.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(addRevisionCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addRevisionCheckBox.text")); // NOI18N
-        addRevisionCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(linkCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.linkCheckBox.text")); // NOI18N
+        linkCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addRevisionCheckBoxActionPerformed(evt);
+                linkCheckBoxActionPerformed(evt);
             }
         });
 
@@ -324,16 +312,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 
         org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.issueLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(changeRevisionFormatButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeRevisionFormatButton.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(addIssueCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox.text")); // NOI18N
-        addIssueCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addIssueCheckBoxActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(changeIssueFormatButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeIssueFormatButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(changeFormatButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeFormatButton.text")); // NOI18N
 
         buttonGroup1.add(commitRadioButton);
         commitRadioButton.setSelected(true);
@@ -370,26 +349,15 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(resolveCheckBox)
-                            .add(addCommentCheckBox))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(commitRadioButton)
-                            .add(pushRadioButton)))
-                    .add(layout.createSequentialGroup()
-                        .add(addRevisionCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(changeRevisionFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(125, 125, 125))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(addIssueCheckBox)
+                    .add(resolveCheckBox)
+                    .add(linkCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(changeIssueFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(316, Short.MAX_VALUE))
+                .add(changeFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 196, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(commitRadioButton)
+                    .add(pushRadioButton))
+                .add(125, 125, 125))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(repositoryLabel)
@@ -418,29 +386,21 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
                     .add(layout.createSequentialGroup()
                         .add(resolveCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addCommentCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(addRevisionCheckBox)
-                            .add(changeRevisionFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(linkCheckBox)
+                            .add(changeFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(layout.createSequentialGroup()
                         .add(commitRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pushRadioButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addIssueCheckBox)
-                    .add(changeIssueFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
 
         resolveCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.resolveCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        addCommentCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addCommentCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        addRevisionCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addRevisionCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        linkCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addRevisionCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.jButton2.AccessibleContext.accessibleDescription")); // NOI18N
-        changeRevisionFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeRevisionFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
-        addIssueCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
-        changeIssueFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeIssueFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
+        changeFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeRevisionFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
         commitRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.commitRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
         pushRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.pushRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -461,9 +421,9 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         return new DoubleWidthButton();
     }
 
-    private void addRevisionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRevisionCheckBoxActionPerformed
+    private void linkCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linkCheckBoxActionPerformed
         // TODO add your handling code here:
-}//GEN-LAST:event_addRevisionCheckBoxActionPerformed
+}//GEN-LAST:event_linkCheckBoxActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Repository repo = BugtrackingUtil.createRepository();
@@ -478,24 +438,17 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         // TODO add your handling code here:
     }//GEN-LAST:event_resolveCheckBoxActionPerformed
 
-    private void addIssueCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIssueCheckBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_addIssueCheckBoxActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JCheckBox addCommentCheckBox = new javax.swing.JCheckBox();
-    final javax.swing.JCheckBox addIssueCheckBox = new javax.swing.JCheckBox();
-    final javax.swing.JCheckBox addRevisionCheckBox = new javax.swing.JCheckBox();
     private javax.swing.ButtonGroup buttonGroup1;
-    final org.netbeans.modules.bugtracking.util.LinkButton changeIssueFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton changeRevisionFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.util.LinkButton changeFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JRadioButton commitRadioButton = new javax.swing.JRadioButton();
     private javax.swing.JLabel issueLabel;
     private javax.swing.JPanel issuePanel;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
+    final javax.swing.JCheckBox linkCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JRadioButton pushRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JComboBox repositoryComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel repositoryLabel;

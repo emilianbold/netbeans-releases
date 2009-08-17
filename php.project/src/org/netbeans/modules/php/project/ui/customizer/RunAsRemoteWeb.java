@@ -74,6 +74,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -339,7 +340,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnectionHintLabel.setText(" "); // NOI18N
             return;
         }
-        remoteConnectionHintLabel.setText(configuration.getUrl(uploadDirectoryTextField.getText()));
+        remoteConnectionHintLabel.setText(configuration.getUrl(RunAsValidator.sanitizeUploadDirectory(uploadDirectoryTextField.getText(), true)));
     }
 
     /** This method is called from within the constructor to
@@ -707,7 +708,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(getWebRoot(), indexFileTextField);
+        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
@@ -761,6 +762,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         public FieldUpdater(String propName, JLabel label, JTextField field) {
             super(propName, label, field);
+        }
+
+        @Override
+        protected String getPropValue() {
+            String value = super.getPropValue();
+            if (getPropName().equals(PhpProjectProperties.REMOTE_DIRECTORY)) {
+                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+            }
+            return value;
         }
 
         protected final String getDefaultValue() {

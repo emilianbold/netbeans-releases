@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 
 /**
  *
@@ -83,5 +86,26 @@ public abstract class VCSKenaiSupport {
      * @return true if user is logged into kenai
      */
     public abstract boolean isLogged ();
+    
+    public abstract KenaiUser forName(final String user);
+
+    public abstract boolean isUserOnline(String user);
+
+    public abstract class KenaiUser {
+
+        public abstract boolean isOnline();
+
+        public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+
+        public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+        public abstract Icon getIcon();
+
+        public abstract JLabel createUserWidget();
+
+        public abstract String getUser();
+
+        public abstract void startChat();
+    }
     
 }

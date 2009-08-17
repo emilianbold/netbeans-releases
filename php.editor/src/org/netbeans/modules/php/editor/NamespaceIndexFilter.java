@@ -2,13 +2,16 @@ package org.netbeans.modules.php.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.php.editor.index.IndexedElement;
+import java.util.List;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 
-public class NamespaceIndexFilter<T extends IndexedElement> {
+public class NamespaceIndexFilter<T extends ElementHandle> {
 
     private final String requestPrefix;
     private final QualifiedName prefix;
@@ -68,6 +71,36 @@ public class NamespaceIndexFilter<T extends IndexedElement> {
         return filter(originalElems, getName().trim().length() == 0);
     }
 
+    public List<? extends ModelElement> filterModelElements(final List<? extends ModelElement> originalElems, boolean strictCCOption) {
+        if (getKind().isUnqualified()) {
+            return originalElems;
+        }
+        List<ModelElement> retval = new ArrayList<ModelElement>();
+        String namespaneNameLCase = getNamespaceName().toLowerCase();
+        String namespaneNameLCaseSlashed = namespaneNameLCase;
+        if (!namespaneNameLCaseSlashed.endsWith("\\")) {//NOI18N
+            namespaneNameLCaseSlashed += "\\";
+        }
+        for (ModelElement elem : originalElems) {
+            String fqn = elem.getNamespaceName().append(elem.getName()).toFullyQualified().toString();
+            final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
+            final boolean fullyQualified = getKind().isFullyQualified();
+            if (fullyQualified ? indexOf == 0 : indexOf != -1) {
+                if (strictCCOption && (fullyQualified || getSegmentSize() > 1)) {
+                    final QualifiedName nsFqn = QualifiedName.create(fqn).toNamespaceName(true);
+                    if (nsFqn.toString().toLowerCase().indexOf(namespaneNameLCase) == -1) {
+                        continue;
+                    }
+                    final String elemName = fqn.substring(indexOf + namespaneNameLCaseSlashed.length());
+                    if (elemName.indexOf(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) != -1) {
+                        continue;
+                    }
+                }
+                retval.add(elem);
+            }
+        }
+        return retval;
+    }
     public Collection<T> filter(final Collection<T> originalElems, boolean strictCCOption) {
         if (getKind().isUnqualified()) {
             return originalElems;
@@ -75,14 +108,20 @@ public class NamespaceIndexFilter<T extends IndexedElement> {
         Collection<T> retval = new ArrayList<T>();
         String namespaneNameLCase = getNamespaceName().toLowerCase();
         String namespaneNameLCaseSlashed = namespaneNameLCase;
-        if (!namespaneNameLCaseSlashed.endsWith("\\")) {
-            //NOI18N
+        if (!namespaneNameLCaseSlashed.endsWith("\\")) {//NOI18N
             namespaneNameLCaseSlashed += "\\";
         }
         for (T elem : originalElems) {
-            if (elem instanceof IndexedFullyQualified) {
-                IndexedFullyQualified idxFqn = (IndexedFullyQualified) elem;
-                String fqn = idxFqn.getFullyQualifiedName();
+            if (elem instanceof IndexedFullyQualified || elem instanceof IndexedClassMember) {
+                if (elem instanceof IndexedClassMember) {
+                    int idx = ((IndexedClassMember) elem).getType().getName().toLowerCase().indexOf(getName().toLowerCase());
+                    if (idx == -1) {
+                        retval.add(elem);
+                        continue;
+                    }
+                }
+                String fqn = elem instanceof IndexedFullyQualified ? ((IndexedFullyQualified) elem).getFullyQualifiedName() :
+                    ((IndexedClassMember) elem).getType().getFullyQualifiedName();
                 final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
                 final boolean fullyQualified = getKind().isFullyQualified();
                 if (fullyQualified ? indexOf == 0 : indexOf != -1) {

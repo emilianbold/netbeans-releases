@@ -63,7 +63,7 @@ import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectPropert
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
-//TODO import org.netbeans.modules.sun.manager.jbi.GenericConstants;
+//import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
@@ -349,7 +349,7 @@ public class DeployServiceAssembly extends Task {
                 } catch (BuildException e) {
                                         
                     Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
-                            /*GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME */ "deployServiceAssembly", // TODO
+                            /*GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME*/"deployServiceAssembly",
                             serviceAssemblyID, e.getMessage(), false);                    
                     log("ERROR: " + processResult[0], Project.MSG_ERR);
                     
@@ -372,7 +372,7 @@ public class DeployServiceAssembly extends Task {
                 } catch (BuildException e) {
                     
                     Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
-                            /*GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME*/ "startServiceAssembly", // TODO
+                            /*GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME*/"startServiceAssembly",
                             serviceAssemblyID, e.getMessage(), false);
                     log("ERROR: " +  processResult[0], Project.MSG_ERR);
                     log("Cleaning up...");
@@ -409,7 +409,7 @@ public class DeployServiceAssembly extends Task {
             }
         } catch (ManagementRemoteException e) {
             Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
-                    /*GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME*/ "deployServiceAssembly", // TODO
+                    /*GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME*/"deployServiceAssembly",
                     serviceAssemblyID, e.getMessage(), false);
             throw new BuildException((String) processResult[0]);
         }             

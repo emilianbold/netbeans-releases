@@ -473,7 +473,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     protected DocumentModelAccess getAccess() {
-        getChildren(); //make sure children populated before potential mutation
+        checkChildrenPopulated(); //make sure children populated before potential mutation
         return (DocumentModelAccess) getModel().getAccess();
     }
     

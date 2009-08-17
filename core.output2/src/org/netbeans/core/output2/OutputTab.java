@@ -146,7 +146,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             setFilter(null, false, false);
         }
         setDocument(new OutputDocument(((NbWriter) io.getOut()).out()));
-        io.setClosed(false);
     }
 
     public OutputDocument getDocument() {
@@ -275,6 +274,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void closed() {
         io.setClosed(true);
+        io.setStreamClosed(true);
         Controller.getDefault().removeTab(io);
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
@@ -823,8 +823,11 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
+                            boolean vis = isInputVisible();
+                            boolean closed = io.isStreamClosed();
                             writer.reset();
-                            disableHtmlName();
+                            setInputVisible(vis);
+                            io.setStreamClosed(closed);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }

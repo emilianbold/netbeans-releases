@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Delete" popup menu item, "Edit|Delete" main menu item,
@@ -54,8 +55,10 @@ public class DeleteAction extends ActionNoBlock {
     private static final String deleteMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|" + deletePopup;
 
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+
     /** creates new DeleteAction instance */    
     public DeleteAction() {
-        super(deleteMenu, deletePopup, "org.openide.actions.DeleteAction");
+        super(deleteMenu, deletePopup, "org.openide.actions.DeleteAction", keystroke);
     }
 }

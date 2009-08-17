@@ -186,7 +186,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
-        return new PhpUnitInfo(testDirectory, null);
+        return new PhpUnitInfo(testDirectory, testDirectory, null);
     }
 
     private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
@@ -195,14 +195,19 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        return new PhpUnitInfo(fileObj, fileObj.getName());
+        return new PhpUnitInfo(fileObj.getParent(), fileObj, fileObj.getName());
     }
 
     private static class PhpUnitInfo {
+        public final FileObject workingDirectory;
         public final FileObject startFile;
         public final String testName;
 
-        public PhpUnitInfo(FileObject startFile, String testName) {
+        public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
+            assert workingDirectory != null;
+            assert startFile != null;
+
+            this.workingDirectory = workingDirectory;
             this.startFile = startFile;
             this.testName = testName;
         }
@@ -257,12 +262,14 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public ExternalProcessBuilder getProcessBuilder() {
+            File startFile = FileUtil.toFile(info.startFile);
+            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
+
             ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
+                    .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.workingDirectory)))
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
-            File startFile = FileUtil.toFile(info.startFile);
-            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
             if (configFiles.bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_BOOTSTRAP)
@@ -317,9 +324,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         void handleCodeCoverage() {
-            if (!isCoverageEnabled()
-                    || !allTests(info)) {
-                // XXX not enabled or just one test case (could be handled later)
+            if (!isCoverageEnabled()) {
                 return;
             }
 
@@ -334,7 +339,11 @@ class ConfigActionTest extends ConfigAction {
             if (!PhpUnit.KEEP_LOGS) {
                 PhpUnit.COVERAGE_LOG.delete();
             }
-            coverageProvider.setCoverage(coverage);
+            if (allTests(info)) {
+                coverageProvider.setCoverage(coverage);
+            } else {
+                coverageProvider.updateCoverage(coverage);
+            }
         }
     }
 

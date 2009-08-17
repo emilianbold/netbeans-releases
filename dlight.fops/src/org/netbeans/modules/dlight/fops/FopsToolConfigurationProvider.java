@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
@@ -117,12 +118,24 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         toolConfiguration.addDataCollectorConfiguration(multiDtraceCollectorConfig);
         toolConfiguration.addIndicatorDataProviderConfiguration(multiDtraceCollectorConfig);
 
+        Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
+        Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N
+
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
                         fileColumn,
-                        new Column("totalsize", Long.class, getMessage("Column.TotalSize"), null), // NOI18N
+                        new Column("bytes_read", Long.class, getMessage("Column.BytesRead"), null), // NOI18N
+                        new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
+                        openStackColumn,
+                        closeStackColumn,
                         new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
-                "select file, sum(size) as totalsize, bool_or(operation='close') as closed from fops group by sid, file order by closed asc, totalsize desc", // NOI18N
+                "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
+                "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
+                "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
+                "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
+                "BOOL_OR(operation='close') AS closed " + // NOI18N
+                "FROM fops GROUP BY sid, file " + // NOI18N
+                "ORDER BY closed ASC", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
@@ -142,8 +155,11 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
+        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName()));
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
+        tableConfiguration.setDualPaneMode(true);
+        tableConfiguration.setDataRowRenderer(new StackRenderer(Arrays.asList(openStackColumn, closeStackColumn)));
         indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);

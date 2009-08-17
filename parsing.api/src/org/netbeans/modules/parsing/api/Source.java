@@ -281,84 +281,108 @@ public final class Source {
      * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
-        final String [] text = new String [] {""}; //NOI18N
+        final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         Document doc = getDocument (false);
-        if (doc == null) {
-            // Ideally we should use CloneableEditorSupport.getEditorKit (mimeType),
-            // which would return EditorKit implementation registered for this Source's mimeType.
-            // However, since all Netbeans kit's are subclasses of BaseKit and BaseKit
-            // delegates its read/write methods to a document (ie. BaseDocument in this case)
-            // this has severe performance implications such as #157676.
-            //
-            // The code below is a copy of CharacterConversions.lineSeparatorToLineFeed() method
-            // and it handles line-end conversion. In general EditorKits can do more conversions,
-            // but they usually don't and this should be good enough for Snapshots.
-            try {
-                if (fileObject.isValid ()) {
-                    InputStream is = fileObject.getInputStream ();
-                    try {
-                        BufferedReader reader = new BufferedReader (
-                            new InputStreamReader (
-                                is,
-                                FileEncodingQuery.getEncoding (fileObject)
-                            )
-                        );
+        try {
+            if (doc == null) {
+                // Ideally we should use CloneableEditorSupport.getEditorKit (mimeType),
+                // which would return EditorKit implementation registered for this Source's mimeType.
+                // However, since all Netbeans kit's are subclasses of BaseKit and BaseKit
+                // delegates its read/write methods to a document (ie. BaseDocument in this case)
+                // this has severe performance implications such as #157676.
+                //
+                // The code below is a copy of CharacterConversions.lineSeparatorToLineFeed() method
+                // and it handles line-end conversion. In general EditorKits can do more conversions,
+                // but they usually don't and this should be good enough for Snapshots.
+                try {
+                    if (fileObject.isValid ()) {
+                        InputStream is = fileObject.getInputStream ();
                         try {
-                            StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
-                            boolean lastCharCR = false;
-                            char [] buffer = new char [1024];
-                            int size = -1;
+                            BufferedReader reader = new BufferedReader (
+                                new InputStreamReader (
+                                    is,
+                                    FileEncodingQuery.getEncoding (fileObject)
+                                )
+                            );
+                            try {
+                                StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
+                                boolean lastCharCR = false;
+                                char [] buffer = new char [1024];
+                                int size = -1;
 
-                            final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
-                            final char CR = '\r'; //NOI18N, Unicode carriage return (0x000D)
-                            final char LS = 0x2028; // Unicode line separator (0x2028)
-                            final char PS = 0x2029; // Unicode paragraph separator (0x2029)
+                                final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
+                                final char CR = '\r'; //NOI18N, Unicode carriage return (0x000D)
+                                final char LS = 0x2028; // Unicode line separator (0x2028)
+                                final char PS = 0x2029; // Unicode paragraph separator (0x2029)
 
-                            while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
-                                for(int i = 0; i < size; i++) {
-                                    char ch = buffer[i];
-                                    if (lastCharCR && ch == LF) { // found CRLF sequence
-                                        output.append(LF);
-                                        lastCharCR = false;
-
-                                    } else { // not CRLF sequence
-                                        if (ch == CR) {
-                                            lastCharCR = true;
-                                        } else if (ch == LS || ch == PS) { // Unicode LS, PS
+                                while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
+                                    for(int i = 0; i < size; i++) {
+                                        char ch = buffer[i];
+                                        if (lastCharCR && ch == LF) { // found CRLF sequence
                                             output.append(LF);
                                             lastCharCR = false;
-                                        } else { // current char not CR
-                                            lastCharCR = false;
-                                            output.append(ch);
+
+                                        } else { // not CRLF sequence
+                                            if (ch == CR) {
+                                                lastCharCR = true;
+                                            } else if (ch == LS || ch == PS) { // Unicode LS, PS
+                                                output.append(LF);
+                                                lastCharCR = false;
+                                            } else { // current char not CR
+                                                lastCharCR = false;
+                                                output.append(ch);
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            text[0] = output.toString();
+                                text[0] = output;
+                            } finally {
+                                reader.close ();
+                            }
                         } finally {
-                            reader.close ();
+                            is.close ();
                         }
-                    } finally {
-                        is.close ();
                     }
+                } catch (FileNotFoundException fnfe) {
+                    // working with a stale FileObject, just ignore this (eg see #158119)
+                } catch (IOException ioe) {
+                    LOG.log (Level.WARNING, null, ioe);
                 }
-            } catch (FileNotFoundException fnfe) {
-                // working with a stale FileObject, just ignore this (eg see #158119)
-            } catch (IOException ioe) {
-                LOG.log (Level.WARNING, null, ioe);
+            } else {
+                final Document d = doc;
+                d.render (new Runnable () {
+                    public void run () {
+                        try {
+                            text[0] = d.getText (0, d.getLength());
+                        } catch (BadLocationException ble) {
+                            LOG.log (Level.WARNING, null, ble);
+                        }
+                    }
+                });
             }
-        } else {
-            final Document d = doc;
-            d.render (new Runnable () {
-                public void run () {
-                    try {
-                        text[0] = d.getText (0, d.getLength());
-                    } catch (BadLocationException ble) {
-                        LOG.log (Level.WARNING, null, ble);
-                    }
+        } catch (OutOfMemoryError oome) {
+            // Diagnostics and workaround for issues such as #170290
+            LOG.log(Level.INFO, null, oome);
+
+            // Use empty snapshot
+            text[0] = ""; //NOI18N
+
+            // Help JVM to reclaim the memory occupied by the partially loaded snapshot
+            for (int i = 0; i < 3; i++) {
+                System.gc(); System.runFinalization();
+                try {
+                    Thread.sleep(123);
+                } catch (InterruptedException ex) {
+                    break;
                 }
-            });
+            }
+            
+            if (doc != null) {
+                LOG.warning("Can't create snapshot of " + doc + ", size=" + doc.getLength() + ", mimeType=" + mimeType); //NOI18N
+            } else {
+                LOG.warning("Can't create snapshot of " + fileObject + ", size=" + fileObject.getSize() + ", mimeType=" + mimeType); //NOI18N
+            }
         }
 
         return new Snapshot (

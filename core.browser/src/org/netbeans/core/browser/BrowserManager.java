@@ -47,10 +47,10 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.mozilla.browser.MozillaConfig;
+import org.netbeans.core.IDESettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbPreferences;
 
 /**
  * Enables/disables embedded browser according to OS, CPU architecture etc.
@@ -93,11 +93,11 @@ public class BrowserManager {
     }
 
     public final boolean isEnabled() {
-        return NbPreferences.forModule(BrowserManager.class).getBoolean("embeddedBrowserEnabled", true); //NOI18N
+        return IDESettings.getWWWBrowser() instanceof BrowserFactory;
     }
 
     public void disable() {
-        NbPreferences.forModule(BrowserManager.class).putBoolean("embeddedBrowserEnabled", false); //NOI18N
+        IDESettings.setWWWBrowser( IDESettings.getExternalWWWBrowser() );
         fireChangeEventLater();
     }
 

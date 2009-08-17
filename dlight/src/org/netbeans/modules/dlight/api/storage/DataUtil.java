@@ -63,7 +63,7 @@ public final class DataUtil {
      * Tries to convert given object to int.
      * <code>Number</code> subclasses are converted using <code>intValue()</code> method.
      * <code>String</code>s are parsed with <code>Integer.parseInt()</code>.
-     * In caes string is malformed, or object is of any other class,
+     * In case string is malformed, or object is of any other class,
      * or <code>null</code> is given, default value is returned.
      *
      * @param obj  converted object
@@ -80,5 +80,39 @@ public final class DataUtil {
             }
         }
         return 0;
+    }
+
+    /**
+     * Shortcut for {@link #toFloat(java.lang.Object, float)}
+     * with <code>defaultValue = 0</code>.
+     *
+     * @param obj  converted object
+     * @return conversion result
+     */
+    public static float toFloat(Object obj) {
+        return toFloat(obj, 0f);
+    }
+
+    /**
+     * Tries to convert given object to float.
+     * <code>Number</code> subclasses are converted using <code>floatValue()</code> method.
+     * <code>String</code>s are parsed with <code>Float.parseFloat()</code>.
+     * In case string is malformed, or object is of any other class,
+     * or <code>null</code> is given, default value is returned.
+     *
+     * @param obj  converted object
+     * @param defaultValue  what to return if conversion fails
+     * @return coversion result
+     */
+    public static float toFloat(Object obj, float defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).floatValue();
+        } else if (obj instanceof String) {
+            try {
+                return Float.parseFloat((String) obj);
+            } catch (NumberFormatException ex) {
+            }
+        }
+        return 0f;
     }
 }

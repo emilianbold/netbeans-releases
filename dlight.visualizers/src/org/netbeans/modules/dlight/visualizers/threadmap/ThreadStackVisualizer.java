@@ -36,41 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.module.dlight.threads.api.OpenInEditor;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
+import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,169 +65,80 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
+
     private ThreadDump descriptor;
+    private final MultipleCallStackPanel stackPanel;
+    private JPanel emptyPanel;
+    private final CardLayout cardLayout = new CardLayout();
 
     ThreadStackVisualizer(ThreadDump descriptor) {
         this.descriptor = descriptor;
-        init();
+        stackPanel = MultipleCallStackPanel.createInstance();
+        setLayout(cardLayout);
+        emptyPanel = new JPanel();
+        add(emptyPanel, "empty");//NOI18N
+        add(stackPanel, "stack");//NOI18N
+        if (descriptor == null || descriptor.getThreadStates().isEmpty()){
+            setEmptyContent();
+        }else{
+            setNonEmptyContent();
+        }        
     }
 
-    public String getDisplayName(){
+    private void setEmptyContent() {
+        cardLayout.show(this, "empty");//NOI18N
+        emptyPanel.removeAll();
+        emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
+        long time = 0;
+        if (descriptor != null){
+            time = descriptor.getTimestamp();
+        }
+        String timeString = TimeLineUtils.getMillisValue(time);
+        String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
+        JLabel label = new JLabel(message);
+        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        emptyPanel.add(label);
+    }
+
+    private void setNonEmptyContent() {
+        stackPanel.clean();
+        //and now add all you need
+        final long time = descriptor.getTimestamp();
+        String timeString = TimeLineUtils.getMillisValue(time);
+        String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
+        stackPanel.setRootVisible(rootName);
+        for (ThreadSnapshot stack : descriptor.getThreadStates()) {
+            MSAState msa = stack.getState();
+            ThreadStateResources res = ThreadStateResources.forState(msa);
+            if (res != null) {
+                stackPanel.add(res.name + " " + stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), stack.getStack()); // NOI18N
+            }
+
+        }
+
+        cardLayout.show(this, "stack");//NOI18N
+    }
+
+    public String getDisplayName() {
         if (!descriptor.getThreadStates().isEmpty()) {
             return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
 
-    private void init() {
-        setLayout(new BorderLayout());
-        JScrollPane pane = new JScrollPane();
-        add(pane, BorderLayout.CENTER);
-        JPanel panel = new JPanel();
-        panel.setBackground(new JTextPane().getBackground());
-        panel.setLayout(new GridBagLayout());
-        pane.setViewportView(panel);
-        int y = 0;
-        final long time = descriptor.getTimestamp();
-        String timeString = TimeLineUtils.getMillisValue(time);
-        if (false) {
-            // for testing only
-            if (descriptor.getThreadStates().isEmpty()) {
-                descriptor = new ThreadDump() {
-                    public List<ThreadSnapshot> getThreadStates() {
-                        List<ThreadSnapshot> res = new ArrayList<ThreadSnapshot>();
-                        res.add(new ThreadSnapshot(){
-                            public List<FunctionCall> getStack() {
-                                List<FunctionCall> calls = new ArrayList<FunctionCall>();
-                                calls.add(new FunctionCall() {
-                                    public String getDisplayedName() {
-                                        return "printf()"; //NOI18N
-                                    }
-                                    public Function getFunction() {
-                                        return null;
-                                    }
-                                    public boolean hasOffset() {
-                                        return true;
-                                    }
-                                    public long getOffset() {
-                                        return 20;
-                                    }
-                                });
-                                calls.add(new FunctionCall() {
-                                    public String getDisplayedName() {
-                                        return "main()"; //NOI18N
-                                    }
-                                    public Function getFunction() {
-                                        return null;
-                                    }
-                                    public boolean hasOffset() {
-                                        return true;
-                                    }
-                                    public long getOffset() {
-                                        return 100;
-                                    }
-                                });
-                                return calls;
-                            }
-                            public ThreadInfo getThreadInfo() {
-                                return new ThreadInfo() {
-                                    public int getThreadId() {
-                                        return 1;
-                                    }
-                                    public String getThreadName() {
-                                        return "Thread 1"; //NOI18N
-                                    }
-                                };
-                            }
-                            public MSAState getState() {
-                                return MSAState.Running;
-                            }
-
-                            public MemoryAccessType getMemoryAccessType() {
-                                return null;
-                            }
-                        });
-                        return res;
-                    }
-                    public long getTimestamp() {
-                        return time;
-                    }
-                };
-            }
-        }
-        if (!descriptor.getThreadStates().isEmpty()) {
-            String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
-            panel.add(new JLabel(message),
-                    new GridBagConstraints(0, y,
-                                1, 1,
-                                1., 0.,
-                                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                                new Insets(10, 10, 0, 0), 0, 0));
-            for(ThreadSnapshot stack : descriptor.getThreadStates()){
-                y = addThread(panel, y, stack);
-            }
-        } else {
-            String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
-            panel.add(new JLabel(message), // NOI18N
-                new GridBagConstraints(0, y,
-                            1, 1,
-                            1., 0.,
-                            GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                            new Insets(10, 10, 0, 0), 0, 0));
-        }
-    }
-
-    private int addThread(JPanel panel, int y, ThreadSnapshot stack){
-        MSAState msa = stack.getState();
-        ThreadStateResources res = ThreadStateResources.forState(msa);
-        if (res != null) {
-            y++;
-            panel.add(new JLabel(res.name+" "+stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), JLabel.LEFT), // NOI18N
-                    new GridBagConstraints(0, y,
-                                1, 1,
-                                0., 0.,
-                                GridBagConstraints.WEST, GridBagConstraints.NONE,
-                                new Insets(10, 20, 0, 0), 0, 0));
-            return addStack(panel, y, stack);
-        }
-        return y;
-    }
-
-    private int addStack(JPanel panel, int y, ThreadSnapshot stack) {
-        for(FunctionCall call : stack.getStack()) {
-            y++;
-            final JButton button = new JButton(new OpenAction(call));
-            button.setBorder(BorderFactory.createEmptyBorder());
-            button.setForeground(Color.blue);
-            button.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    button.setContentAreaFilled(true);
-                }
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    button.setContentAreaFilled(false);
-                }
-            });
-            button.setContentAreaFilled(false);
-            panel.add(button,
-                new GridBagConstraints(0, y,
-                            1, 1,
-                            0., 0.,
-                            GridBagConstraints.WEST, GridBagConstraints.NONE,
-                            new Insets(0, 35, 0, 0), 0, 0));
-        }
-        return y;
-    }
+   
 
     public VisualizerConfiguration getVisualizerConfiguration() {
-        return new VisualizerConfiguration(){
+        return new VisualizerConfiguration() {
+
             public DataModelScheme getSupportedDataScheme() {
                 return null;
             }
+
             public DataTableMetadata getMetadata() {
                 return null;
             }
+
             public String getID() {
                 return "CallStack";// NOI18N
             }
@@ -259,11 +157,14 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     private static final class OpenAction extends AbstractAction {
+
         private final FunctionCall call;
+
         private OpenAction(FunctionCall call) {
             super(call.getDisplayedName());
             this.call = call;
         }
+
         public void actionPerformed(ActionEvent e) {
             OpenInEditor.open(call);
         }

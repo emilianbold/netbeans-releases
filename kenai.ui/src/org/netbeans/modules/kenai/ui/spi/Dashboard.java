@@ -54,7 +54,11 @@ public abstract class Dashboard {
      * @return array of ProjectHandles
      */
     public abstract ProjectHandle[] getOpenProjects();
-
+    
+    /**
+     * returns true if given project is member project
+     */
+    public abstract boolean isMemberProject(ProjectHandle m);
     /**
      * Add listener for listening for property changes related to Dashboard
      * @param listener listener to be notified about property change

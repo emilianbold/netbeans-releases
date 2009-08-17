@@ -61,6 +61,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
@@ -73,6 +74,7 @@ import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -100,7 +102,7 @@ import org.openide.util.Lookup;
  *      request.
  *
  */
-class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider {
+class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
     private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
@@ -118,10 +120,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
+    private ServiceInfoDataStorage serviceInfoStorage;
     private volatile HotSpotFunctionsFilter filter;
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    public void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoStorage = serviceInfoStorage;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet) {
@@ -147,6 +150,11 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
 
     public synchronized List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
         return getCallersCallees(CC_MODE.CALLEES, path, aggregate);
+    }
+
+    public List<FunctionCall> getCallStack(int stackId) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.emptyList();
     }
 
     public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
@@ -248,7 +256,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         }
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {
@@ -263,7 +271,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 if (functionCallImpl.hasSourceFileDefined()) {
                     PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
                     if (provider != null) {
-                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(serviceInfoStorage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
                         if (pathMapper != null) {
                             return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
                         }
@@ -276,7 +284,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.storage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

@@ -120,20 +120,20 @@ implements Runnable, ChangeListener, LookupListener {
         boolean empty = true;
         LOG.fine("collecting layers"); // NOI18N
         List<URL> urls = new ArrayList<URL>();
+        urls.add(0, FoDFileSystem.class.getResource("common.xml")); // NOI18N
         for (FeatureInfo info : FeatureManager.features()) {
             if (!info.isPresent()) {
                 continue;
             }
-            if (!info.isEnabled()) {
-                LOG.finest("adding feature " + info.clusterName); // NOI18N
-                if (info.getLayerURL() != null) {
-                    urls.add(info.getLayerURL());
-                }
-            } else {
+            LOG.finest("adding feature " + info.clusterName); // NOI18N
+            if (info.getLayerURL() != null) {
+                urls.add(info.getLayerURL());
+            }
+            if (info.isEnabled()) {
                 empty = false;
             }
         }
-        if (empty && noAdditionalProjects()) {
+        if (empty && noAdditionalProjects() && !FoDEditorOpened.anEditorIsOpened) {
             LOG.fine("adding default layer"); // NOI18N
             urls.add(0, FoDFileSystem.class.getResource("default.xml")); // NOI18N
         }

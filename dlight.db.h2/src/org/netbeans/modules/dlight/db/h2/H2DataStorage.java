@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -201,6 +202,10 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         return stackStorage.putStack(stack, sampleDuration);
     }
 
+    public List<FunctionCall> getCallStack(int stackId) {
+        return stackStorage.getStack(stackId);
+    }
+
     public void flush() {
         try {
             stackStorage.flush();
@@ -242,7 +247,6 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         return stackStorage.getHotSpotFunctions(metric, limit);
-
     }
 
     @Override
@@ -254,7 +258,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 
-    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
         return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 

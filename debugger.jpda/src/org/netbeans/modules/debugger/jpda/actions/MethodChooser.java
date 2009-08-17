@@ -172,7 +172,10 @@ public class MethodChooser implements KeyListener, MouseListener,
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    editorPane = ec.getOpenedPanes()[0];
+                    JEditorPane[] openedPanes = ec.getOpenedPanes();
+                    if (openedPanes != null) {
+                        editorPane = openedPanes[0];
+                    }
                 }
             });
         } catch (InterruptedException ex) {

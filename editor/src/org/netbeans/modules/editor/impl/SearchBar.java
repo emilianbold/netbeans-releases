@@ -713,7 +713,7 @@ public final class SearchBar extends JPanel {
             }
             if (pattern != null) {
                 // valid regexp
-                incrementalSearchTextField.setForeground(Color.BLACK);
+                incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // invalid regexp
@@ -724,7 +724,7 @@ public final class SearchBar extends JPanel {
         } else {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
-                incrementalSearchTextField.setForeground(Color.BLACK);
+                incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
                 navigateOnFocusLost = !empty;
                 org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
@@ -779,7 +779,7 @@ public final class SearchBar extends JPanel {
         
         if (findSupport.find(findProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
-            incrementalSearchTextField.setForeground(Color.BLACK);
+            incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
         } else {
             // text not found - indicate error in incremental search text field with red foreground
             incrementalSearchTextField.setForeground(NOT_FOUND);

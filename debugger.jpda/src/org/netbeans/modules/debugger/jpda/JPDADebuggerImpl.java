@@ -1570,7 +1570,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (operator.flushStaledEvents()) {
             return ;
         }
-        setState (STATE_RUNNING);
+        PropertyChangeEvent stateChangeEvent;
         //notifyToBeResumedAll();
         VirtualMachine vm;
         synchronized (virtualMachineLock) {
@@ -1581,6 +1581,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             List<JPDAThread> allThreads = getAllThreads();
             accessLock.writeLock().lock();
             logger.finer("Debugger WRITE lock taken.");
+            stateChangeEvent = setStateNoFire(STATE_RUNNING);
             // We must resume only threads which are regularly suspended.
             // Otherwise we may unexpectedly resume threads which just hit an event!
             
@@ -1630,6 +1631,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } finally {
                 accessLock.writeLock().unlock();
                 logger.finer("Debugger WRITE lock released.");
+                if (stateChangeEvent != null) {
+                    firePropertyChange(stateChangeEvent);
+                }
                 for (JPDAThreadImpl t : threadsToResume) {
                     try {
                         t.fireAfterResume();
@@ -2026,18 +2030,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (t.getStackDepth () > 0)
             try {
                 CallStackFrame f = t.getCallStack (0, 1) [0];
-                List l = f.getAvailableStrata ();
+                List<String> l = f.getAvailableStrata ();
+                String stratum = f.getDefaultStratum ();
+                //String sourceDebugExtension;
+                    //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
+                if (l.size() == 1 && "Java".equals(l.get(0))) {     // NOI18N
+                    // Hack for non-Java languages that do not define stratum:
+                    String sourceName = f.getSourceName(null);
+                    int ext = sourceName.lastIndexOf('.');
+                    if (ext > 0) {
+                        String extension = sourceName.substring(ext);
+                        extension = extension.toUpperCase();
+                        if (!"JAVA".equals(extension)) {    // NOI18N
+                            l = Collections.singletonList(extension);
+                            stratum = extension;
+                        }
+                    }
+                }
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     if (!languages.contains (l.get (i))) {
-                        String language = (String) l.get (i);
+                        String language = l.get (i);
                         DebuggerManager.getDebuggerManager ().startDebugging (
                             createJSR45DI (language)
                         );
                         languages.add (language);
                     }
                 } // for
-                String stratum = f.getDefaultStratum ();
                 if ( (stratum != null) &&
                      (!stratum.equals (lastStratumn))
                 )

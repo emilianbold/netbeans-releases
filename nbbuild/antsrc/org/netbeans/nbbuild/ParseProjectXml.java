@@ -831,28 +831,12 @@ public final class ParseProjectXml extends Task {
         Set<String> excludedModules = excludedModulesProp != null ?
             new HashSet<String>(Arrays.asList(excludedModulesProp.split(" *, *"))) :
             null;
-        for (Dep dep : deps) { // XXX should operative transitively if runtime
-            if (!dep.compile) { // XXX should be sensitive to runtime
+        for (Dep dep : deps) {
+            if (!runtime && !dep.compile) {
                 continue;
             }
             String cnb = dep.codenamebase;
             File depJar = computeClasspathModuleLocation(modules, cnb, clusterPath, excludedModules, runtime);
-            
-            Attributes attr;
-            JarFile jarFile = new JarFile(depJar, false);
-            try {
-                attr = jarFile.getManifest().getMainAttributes();
-            } finally {
-                jarFile.close();
-            }
-            
-            if (!dep.matches(attr)) { // #68631
-                throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
-            }
-
-            if (!runtime && Boolean.parseBoolean(attr.getValue("OpenIDE-Module-Deprecated"))) {
-                log("The module " + cnb + " has been deprecated", Project.MSG_WARN);
-            }
 
             List<File> additions = new ArrayList<File>();
             additions.add(depJar);
@@ -867,21 +851,39 @@ public final class ParseProjectXml extends Task {
                 additions.addAll(Arrays.asList(entry.getClassPathExtensions()));
             }
             
-            if (!dep.impl && /* #71807 */ dep.run) {
-                String friends = attr.getValue("OpenIDE-Module-Friends");
-                if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
-                    throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
+            if (depJar.isFile()) { // might be false for m.run.cp if DO_NOT_RECURSE and have a runtime-only dep
+                Attributes attr;
+                JarFile jarFile = new JarFile(depJar, false);
+                try {
+                    attr = jarFile.getManifest().getMainAttributes();
+                } finally {
+                    jarFile.close();
                 }
-                String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
-                if ("-".equals(pubpkgs)) {
-                    throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
-                } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
-                    File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
-                    additions.clear();
-                    additions.add(splitJar);
+
+                if (!dep.matches(attr)) { // #68631
+                    throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
+                }
+
+                if (!runtime && Boolean.parseBoolean(attr.getValue("OpenIDE-Module-Deprecated"))) {
+                    log("The module " + cnb + " has been deprecated", Project.MSG_WARN);
+                }
+
+                if (!dep.impl && /* #71807 */ dep.run && !runtime) {
+                    String friends = attr.getValue("OpenIDE-Module-Friends");
+                    if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
+                        throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
+                    }
+                    String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
+                    if ("-".equals(pubpkgs)) {
+                        throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
+                    } else if (pubpkgs != null && publicPackageJarDir != null) {
+                        File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
+                        additions.clear();
+                        additions.add(splitJar);
+                    }
                 }
             }
-            
+
             for (File f : additions) {
                 if (cp.length() > 0) {
                     cp.append(':');
@@ -927,7 +929,8 @@ public final class ParseProjectXml extends Task {
             addRecursiveDeps(additions, modules, nextModule, clusterPath, excludedModules, skipCnb);
         }
     }
-    
+
+    static final String DO_NOT_RECURSE = "do.not.recurse";
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
             Set<File> clusterPath, Set<String> excludedModules, boolean runtime) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
@@ -954,8 +957,12 @@ public final class ParseProjectXml extends Task {
          */
         if (!jar.isFile()) {
             File srcdir = module.getSourceLocation();
+            if (Project.toBoolean(getProject().getProperty(DO_NOT_RECURSE))) {
+                log(jar + " missing for " + moduleProject + " but will not first try to build " + srcdir, Project.MSG_VERBOSE);
+                return jar;
+            }
             if (srcdir != null && srcdir.isDirectory()) {
-                log(jar + " missing; will first try to build " + srcdir, Project.MSG_WARN);
+                log(jar + " missing for " + moduleProject + "; will first try to build " + srcdir, Project.MSG_WARN);
                 Ant ant = new Ant();
                 ant.setProject(getProject());
                 ant.setOwningTarget(getOwningTarget());

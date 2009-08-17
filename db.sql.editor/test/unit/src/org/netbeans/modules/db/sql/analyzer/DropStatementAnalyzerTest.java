@@ -44,8 +44,7 @@ import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
-import org.netbeans.modules.db.sql.analyzer.DropStatement.DropContext;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -89,8 +88,7 @@ public class DropStatementAnalyzerTest extends NbTestCase {
         String sql = "drop table customer";
         DropStatement statement = doAnalyze(sql);
         assertNull(statement.getContextAtOffset(0));
-        assertEquals(DropContext.DROP, statement.getContextAtOffset(sql.indexOf(" table")));
-        assertEquals(DropContext.TABLE, statement.getContextAtOffset(sql.indexOf("customer")));
+        assertEquals(Context.DROP_TABLE, statement.getContextAtOffset(sql.indexOf("customer")));
     }
 
     public void testDetectKind() throws Exception {

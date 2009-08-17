@@ -44,6 +44,7 @@ import org.netbeans.modules.web.core.syntax.completion.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +62,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -75,6 +77,7 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
+ * @author ads
  */
 /**
  *  This is a helper class for parsing and obtaining items for code completion of expression
@@ -100,6 +103,13 @@ public class ELExpression {
     private String replace;
     private boolean isDefferedExecution = false;
     private Document doc;
+    
+    /** EL expression is attribute value */
+    private boolean isAttribute;
+    /** This string contains attribute value prefix ( before EL ) 
+     * if EL expression is attribute value. 
+     */
+    private String myAttributeValue;
 
     public ELExpression(Document doc) {
         this.doc = doc;
@@ -116,10 +126,10 @@ public class ELExpression {
         String value = null;
         document.readLock();
         try {
-            TokenHierarchy hi = TokenHierarchy.get(document);
+            TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
             //find EL token sequence and its superordinate sequence
-            TokenSequence ts = hi.tokenSequence();
-            TokenSequence last = null;
+            TokenSequence<?> ts = hi.tokenSequence();
+            TokenSequence<?> last = null;
             for (;;) {
                 if (ts == null) {
                     break;
@@ -127,6 +137,12 @@ public class ELExpression {
                 if (ts.language() == ELTokenId.language()) {
                     //found EL
                     isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
+                    if ( last.movePrevious() ){
+                        if ( JspTokenId.ATTR_VALUE == last.token().id() ){
+                            isAttribute = true;
+                            myAttributeValue = last.token().text().toString();
+                        }
+                    }
                     break;
                 } else {
                     //not el, scan next embedded token sequence
@@ -157,16 +173,22 @@ public class ELExpression {
 
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
             // it can be start of the function or start of a simple expression.
-            Token token = ts.token();
-            while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) || ts.token().id() == ELTokenId.DOT) &&
+            Token<?> token = ts.token();
+            while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
+                    || ts.token().id() == ELTokenId.DOT || 
+                        ts.token().id() == ELTokenId.LBRACKET
+                        || ts.token().id() == ELTokenId.RBRACKET) &&
                     ts.token().id() != ELTokenId.WHITESPACE &&
                     (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
-                    ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) {
+                    ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) 
+            {
 
                 //repeat until not ( and ' ' and keyword or number
                 if (value == null) {
                     value = ts.token().text().toString();
-                    if (ts.token().id() == ELTokenId.DOT) {
+                    if (ts.token().id() == ELTokenId.DOT || 
+                            ts.token().id() == ELTokenId.LBRACKET) 
+                    {
                         replace = "";
                     } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
                         if (ts.token().offset(hi) <= offset) {
@@ -190,7 +212,9 @@ public class ELExpression {
                 }
             }
 
-            if (ELTokenCategories.OPERATORS.hasCategory(token.id()) || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+            if (ELTokenCategories.OPERATORS.hasCategory(token.id() )
+                    || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) 
+            {
                 return EL_START;
             }
 
@@ -260,14 +284,29 @@ public class ELExpression {
         String elExp = getExpression();
 
         if (elExp != null && !elExp.equals("")) {
-            if (elExp.indexOf('.') > -1) {
-                String beanName = elExp.substring(0, elExp.indexOf('.'));
+            int dotIndex =  elExp.indexOf('.');             // NOI18N
+            int bracketIndex = elExp.indexOf('[');          // NOI18N
+            if (dotIndex > -1 || bracketIndex >-1) {
+                String beanName = elExp.substring(0, getPositiveMin( dotIndex, 
+                        bracketIndex));
                 return beanName;
             }
 
         }
 
         return null;
+    }
+    
+    protected int getPositiveMin( int a , int b ){
+        if ( a < 0 ){
+            return b>=0? b : 0;
+        }
+        else if ( b<0 ){
+            return a;
+        }
+        else {
+            return Math.min(a, b);
+        }
     }
 
     public boolean isDefferedExecution() {
@@ -276,9 +315,40 @@ public class ELExpression {
 
     protected String getPropertyBeingTypedName() {
         String elExp = getExpression();
-        int dotPos = elExp.lastIndexOf('.');
+        int dotPos = elExp.lastIndexOf('.');            // NOI18N
+        int bracketIndex = elExp.lastIndexOf('[');          // NOI18N
 
-        return dotPos == -1 ? null : elExp.substring(dotPos + 1);
+        if ( bracketIndex >-1 || dotPos >-1 ){
+            return elExp.substring( Math.max( bracketIndex, dotPos) + 1);
+        }
+        return null;
+    }
+    
+    protected String removeQuotes( String propertyName ) {
+        if ( propertyName.length() >0 ){
+            char first = propertyName.charAt(0);
+            if ( (first == '"' || first == '\'' )&& propertyName.length() >1 
+                    && propertyName.charAt( propertyName.length()-1) == first)
+            {
+                return propertyName.substring( 1 , propertyName.length() -1 );
+            }
+            else if ( first == '\\'){
+                if ( propertyName.length() >=4 ){
+                    char second = propertyName.charAt(1);
+                    if ( (second == '"' || second =='\'') && 
+                            propertyName.charAt( propertyName.length()-1)==second)
+                    {
+                        if ( propertyName.charAt( propertyName.length() -2 ) 
+                                == '\\')
+                        {
+                            propertyName = propertyName.substring( 2 , 
+                                    propertyName.length() -2);
+                        }
+                    }
+                }
+            }
+        }
+        return propertyName;
     }
 
     static String getPropertyName(String methodName, int prefixLength) {
@@ -294,6 +364,61 @@ public class ELExpression {
         }
 
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
+    }
+    
+    private String[] getParts() {
+        if ( getExpression().indexOf('[') == -1 ){
+            return getExpression().split("\\.");            // NOI18N
+        }
+        List<String> result = new LinkedList<String>();
+        boolean previousDot = false;
+        boolean previousLeftBracket = false;
+        String expression = getExpression();
+        int i=0;
+        while( expression.length() > 0 ){
+            char ch = expression.charAt( i );
+            if ( ch == '.'){
+                if ( previousLeftBracket ){
+                    addPart(result, expression.substring(i+1));
+                    break;
+                }
+                previousDot = true;
+                addPart(result,  expression.substring( 0 , i ));
+                expression = expression.substring( i+1);
+                i=0;
+                continue;
+            }
+            if ( ch == '['){
+                if ( previousLeftBracket ){
+                    addPart(result,  expression.substring(i+1) );
+                    break;
+                }
+                if ( previousDot ){
+                    previousDot = false;
+                }
+                previousLeftBracket = true;
+                addPart(result,  expression.substring( 0 , i ));
+                int index = expression.indexOf(']');
+                if ( index == -1 ){
+                    addPart(result,  expression.substring(i+1) );
+                    break;
+                }
+                else {
+                    addPart(result, removeQuotes( expression.substring(i+1, index )));
+                    expression = expression.substring( index +1);
+                    i=0;
+                    continue;
+                }
+            }
+            i++;
+        }
+        return result.toArray(new String[result.size()] );
+    }
+    
+    private void addPart(List<String> parts, String part ){
+        if ( part != null && part.length() != 0 ){
+            parts.add(part);
+        }
     }
 
     protected abstract class BaseELTaskClass {
@@ -314,7 +439,7 @@ public class ELExpression {
 
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
 
-            String parts[] = getExpression().split("\\.");
+            String parts[] = getParts();
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
 
@@ -393,7 +518,9 @@ public class ELExpression {
      * Go to the java source code of expression
      * - a getter in case of
      */
-    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController> {
+    private class GoToSourceTask extends BaseELTaskClass implements 
+        CancellableTask<CompilationController> 
+    {
 
         private boolean success = false;
 
@@ -401,18 +528,20 @@ public class ELExpression {
             super(beanType);
         }
 
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement bean = getTypePreceedingCaret(parameter);
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement bean = getTypePreceedingCaret(controller);
 
             if (bean != null) {
-                String suffix = getPropertyBeingTypedName();
+                String suffix = removeQuotes(getPropertyBeingTypedName());
 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())) {
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        bean.getEnclosedElements())) 
+                {
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.equals(suffix)) {
-                        success = UiUtils.open(parameter.getClasspathInfo(), method);
+                        success = UiUtils.open(controller.getClasspathInfo(), method);
                         break;
                     }
                 }
@@ -434,27 +563,79 @@ public class ELExpression {
             this.anchorOffset = anchor;
         }
 
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-
-            TypeElement bean = getTypePreceedingCaret(parameter);
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            
+            TypeElement bean = getTypePreceedingCaret(controller);
 
             if (bean != null) {
                 String prefix = getPropertyBeingTypedName();
+                char firstChar =0;
+                if ( prefix.length()> 0){
+                    firstChar = prefix.charAt(0);
+                }
+                if ( firstChar == '"' || firstChar == '\''){
+                    prefix = prefix.substring( 1 );
+                }
 
-                for (ExecutableElement method : ElementFilter.methodsIn(parameter.getElements().getAllMembers(bean))) {
+                for (ExecutableElement method : ElementFilter.methodsIn(
+                        controller.getElements().getAllMembers(bean))) 
+                {
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
                         String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
-
-                        CompletionItem item = ElCompletionItem.createELProperty(propertyName, anchorOffset, type);
+                        CompletionItem item = ElCompletionItem.createELProperty(
+                                propertyName, getInsert( propertyName , firstChar), 
+                                anchorOffset, type);
 
                         completionItems.add(item);
                     }
                 }
             }
+        }
+
+        private String getInsert( String propertyName , char startChar ) {
+            int bracketIndex = getExpression().lastIndexOf("[");    // NOI18N
+            int dotIndex = getExpression().lastIndexOf(".");        // NOI18N
+            
+            if ( dotIndex < bracketIndex ){
+                String quote = null;
+                if ( startChar == '"' || startChar =='\''){
+                    quote = ""+startChar;
+                }
+                else if ( isAttribute && myAttributeValue!= null && 
+                        myAttributeValue.length() > 0 )
+                {
+                    char firstChar = myAttributeValue.charAt( 0 );
+                    if ( firstChar == '"'){
+                        if ( myAttributeValue.indexOf("'")!=-1){
+                            quote = "\\\"";                         // NOI18N
+                        }
+                        else {
+                            quote ="'";                             // NOI18N
+                        }
+                    }
+                    else if( firstChar == '\''){
+                        if ( myAttributeValue.indexOf('"')!=-1){
+                            quote = "\\'";                         // NOI18N
+                        }
+                        else {
+                            quote ="\"";                           // NOI18N
+                        }
+                    }
+                }
+                if ( quote == null ){
+                    quote = "\"";                   // NOI18N
+                }
+                StringBuilder builder = new StringBuilder( quote);
+                builder.append( propertyName );
+                builder.append( quote );
+                builder.append("]");                    // NOI18N
+                return builder.toString();
+            }
+            return propertyName;
         }
 
         public List<CompletionItem> getCompletionItems() {

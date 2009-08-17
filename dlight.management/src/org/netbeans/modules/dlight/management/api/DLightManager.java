@@ -45,14 +45,12 @@ import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
@@ -60,7 +58,6 @@ import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
@@ -68,8 +65,6 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
@@ -96,7 +91,10 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      *
      */
     public DLightManager() {
-        this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
+        for (DLightSessionListener l : IndicatorsComponentProvider.getInstance().getIndicatorComponentListeners()){
+            addDLightSessionListener(l);
+        }
+        //this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
     }
 
     public static DLightManager getDefault() {
@@ -312,73 +310,34 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
          *
          */
 
-        Collection<? extends DataStorage> activeDataStorages = dlightSession.getStorages();
-
-//        for (VisualizerFactory vf : allVisualizerFactories) {
-//            if (vf.canCreate(visualizerID)) {
-        // This is a candidate to be used for Visualizer creation
-        // Check for a second condition:
-
-        DataModelScheme dataModel = configuration.getSupportedDataScheme();
-
-        for (DataStorage storage : activeDataStorages) {
-            if (!storage.hasData(configuration.getMetadata())) {
-                continue;
-            }
-            Collection<DataStorageType> dataStorageTypes = storage.getStorageTypes();
-            for (DataStorageType dss : dataStorageTypes) {
-                // As DataStorage is already specialized, there is always only one
-                // returned DataSchema
-                DataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dss, dataModel);
-
-                if (dataProvider == null) {
-                    // no providers for this storage can be found nor created
-                    continue;
-                } else {
-                    // Found! Can craete visualizer with this id for this dataProvider
-                    visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
-//                    if (visualizer instanceof SessionStateListener) {
-//                        dlightSession.addSessionStateListener((SessionStateListener) visualizer);
-//                        ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
-//
-//                    }
-                    //  visualizer = Visualiz.newVisualizerInstance(visualizerID, activeSession, dataProvider, configuration);
-                    dataProvider.attachTo(storage);
-                    activeSession.addDataFilterListener(dataProvider);
-                    break;
-                }
-            }
-            if (visualizer != null) {
-                break;
+        DataProvider dataProvider = dlightSession.createDataProvider(configuration.getSupportedDataScheme(), configuration.getMetadata());
+        if (dataProvider != null) {
+            // Found! Can create visualizer with this id for this dataProvider
+            visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
+            if (visualizer instanceof SessionStateListener) {
+                dlightSession.addSessionStateListener((SessionStateListener) visualizer);
+                ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
             }
         }
+
         //there is one more changes to find VisualizerDataProvider without any storage attached
 
         if (visualizer == null) {
-            VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModel);
-
-            if (dataProvider == null || dataProvider instanceof DataProvider) {
-                //if it is DataProvider instance it had to be returned at the previous loop
-                //and if we are here it means no storage exists for this DataProvider
-                // no providers for this storage can be found nor created
-                log.fine("Unable to find storage to create Visualizer with ID == " + configuration.getID()); // NOI18N
-                return null;
-            } else {
-                // Found! Can craete visualizer with this id for this dataProvider
-                visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, dataProvider);
+            VisualizerDataProvider visDataProvider = dlightSession.createVisualizerDataProvider(configuration.getSupportedDataScheme());
+            if (visDataProvider != null) {
+                visualizer = VisualizerProvider.getInstance().createVisualizer(configuration, visDataProvider);
                 if (visualizer instanceof SessionStateListener) {
                     dlightSession.addSessionStateListener((SessionStateListener) visualizer);
                     ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
-
                 }
             }
-
         }
+
         if (visualizer == null) {
             log.fine("Unable to find factory to create Visualizer with ID == " + configuration.getID()); // NOI18N
             return null;
-
         }
+
         VisualizerContainer container = visualizer.getDefaultContainer();
         DLightTool tool = dlightSession.getToolByName(toolName);
         if (tool != null) {

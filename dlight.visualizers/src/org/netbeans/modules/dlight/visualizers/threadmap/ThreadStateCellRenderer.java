@@ -176,11 +176,9 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N
-                    buf.append("<font bgcolor=#");// NOI18N
-                    buf.append(Integer.toHexString(res.color.getRed()));
-                    buf.append(Integer.toHexString(res.color.getGreen()));
-                    buf.append(Integer.toHexString(res.color.getBlue()));
-                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("<font bgcolor=\"#");// NOI18N
+                    buf.append(colorToHexString(res.color));
+                    buf.append("\">&nbsp;&nbsp;");// NOI18N
                     buf.append("</font></td>");// NOI18N
                     buf.append("<td>");// NOI18N
                     buf.append(res.name);
@@ -230,6 +228,12 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
         }
         return -1;
+    }
+
+    private static String colorToHexString(Color c) {
+        // Result must be exactly 6 digits long.
+        // Color values 0x0..0xf need special care.
+        return String.format("%06x", c.getRGB() & 0xFFFFFF); // NOI18N
     }
 
     /**

@@ -81,7 +81,7 @@ public class TestModel extends AbstractModel<TestComponent> implements Model<Tes
     public void addChildComponent(Component target, Component child, int index) {
         TestComponent parent = (TestComponent) target;
         TestComponent tc = (TestComponent) child;
-        parent.insertAtIndex(tc.getName(), tc, index > -1 ? index : parent.getChildren().size());
+        parent.insertAtIndex(tc.getName(), tc, index > -1 ? index : parent.getChildrenCount());
     }
 
     public void removeChildComponent(Component child) {

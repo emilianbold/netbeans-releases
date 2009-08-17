@@ -44,7 +44,7 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createPrelude"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-<!--                    <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.javaee.Bundle#TXT_PreludeDisplayName"/> -->
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.javaee.Bundle#TXT_PreludeDisplayName"/>
                 </file>
                 <file name="ModuleConfigFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
@@ -74,7 +74,7 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createEe6"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-<!--                    <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.javaee.Bundle#TXT_DisplayName"/> -->
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.javaee.Bundle#TXT_DisplayName"/>
                 </file>
                 <file name="ModuleConfigFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>

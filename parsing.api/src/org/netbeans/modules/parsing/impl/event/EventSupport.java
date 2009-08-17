@@ -326,21 +326,28 @@ public final class EventSupport {
                             source = Source.create (document);
                     }
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
-                    }                   
+                        TaskProcessor.Request _request = request;
+                        request = null;
+                        EventSupport support = SourceAccessor.getINSTANCE ().getEventSupport (source);
+                        support.k24 = false;
+                        if (_request != null) {
+                            support.resetTask.schedule (TaskProcessor.reparseDelay);
+                            TaskProcessor.resetStateImplAsync (_request);
+                        }
+                    }
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
                 if (editor != null) {
                     editor.addCaretListener(this);
                     editor.addPropertyChangeListener(this);
                 }
-            }
-            final JTextComponent focused = EditorRegistry.focusedComponent();
-            if (focused != null) {
-                final Document doc = editor.getDocument();
-                final Source source = doc == null ? null : Source.create(doc);
-                if (source != null) {
-                    SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                final JTextComponent focused = EditorRegistry.focusedComponent();
+                if (focused != null) {
+                    final Document doc = editor.getDocument();
+                    final Source source = doc == null ? null : Source.create(doc);
+                    if (source != null) {
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                    }
                 }
             }
         }

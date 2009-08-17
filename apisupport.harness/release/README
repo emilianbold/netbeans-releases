@@ -706,8 +706,9 @@ to <module-dependencies>. Since 5.0u1 uses public-package-only JARs where
 appropriate.
 
 module.run.classpath [since 5.0u1] - your main module source's run-time
-classpath, according to <module-dependencies>. Currently identical to
-${module.classpath} except does not use public-package-only JARs.
+classpath, according to <module-dependencies>. Similar to ${module.classpath}
+except does not use public-package-only JARs; includes run-time-only
+dependencies; and processes dependencies transitively.
 
 module.jar - location of module JAR relative to cluster directory. Do not
 override directly; override ${module.jar.basename} (default
@@ -724,6 +725,10 @@ packages at all) you will need to specify it explicitly.
 
 nbm.distribution - optional URL to location where your NBM can be downloaded
 from.
+
+nbm.executable.files [since 6.8] - comma- or space- separated list of patterns of 
+files relative to cluster directory for which executable permissions should be set 
+on Unix system when building the module and on NBM installation/update in runtime.
 
 nbm.homepage - optional URL to HTML homepage for background about the module.
 

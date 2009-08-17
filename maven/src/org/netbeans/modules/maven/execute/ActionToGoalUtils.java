@@ -52,7 +52,6 @@ import org.apache.maven.model.Build;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
-import org.netbeans.modules.maven.configurations.ConfigurationProviderEnabler;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -103,12 +102,9 @@ public final class ActionToGoalUtils {
     }
 
     public static RunConfig createRunConfig(String action, NbMavenProjectImpl project, Lookup lookup) {
-        RunConfig rc = null;
-        boolean configsEnabled = project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled();
-        if (configsEnabled) {
-            M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-            rc = configs.getActiveConfiguration().createConfigForDefaultAction(action, project, lookup);
-        }
+        M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
+        RunConfig rc = configs.getActiveConfiguration().createConfigForDefaultAction(action, project, lookup);
+        
         if (rc == null) {
             UserActionGoalProvider user = project.getLookup().lookup(UserActionGoalProvider.class);
             rc = user.createConfigForDefaultAction(action, project, lookup);
@@ -156,14 +152,7 @@ public final class ActionToGoalUtils {
         if (rc != null ) {
             List<String> acts = new ArrayList<String>(); 
             acts.addAll(rc.getActivatedProfiles());
-            if(configsEnabled){
-              M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-              acts.addAll(configs.getActiveConfiguration().getActivatedProfiles());
-            
-            }else{
-              ProjectProfileHandler profileHandler=project.getLookup().lookup(ProjectProfileHandler.class);
-              acts.addAll(profileHandler.getActiveProfiles(false));
-            }
+            acts.addAll(configs.getActiveConfiguration().getActivatedProfiles());
             rc.setActivatedProfiles(acts);
         }
         return rc;
@@ -171,11 +160,9 @@ public final class ActionToGoalUtils {
 
     public static boolean isActionEnable(String action, NbMavenProjectImpl project, Lookup lookup) {
        
-        if (project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled()) {
-            M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-            if (configs.getActiveConfiguration().isActionEnable(action, project, lookup)) {
-                return true;
-            }
+        M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
+        if (configs.getActiveConfiguration().isActionEnable(action, project, lookup)) {
+            return true;
         }
         
         //check UserActionGoalProvider first
@@ -225,11 +212,9 @@ public final class ActionToGoalUtils {
         List<NetbeansActionMapping> toRet = new ArrayList<NetbeansActionMapping>();
         List<String> names = new ArrayList<String>();
         // first add all project specific custom actions.
-        if (project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled()) {
-            for (NetbeansActionMapping map : configs.getActiveConfiguration().getCustomMappings()) {
-                toRet.add(map);
-                names.add(map.getActionName());
-            }
+        for (NetbeansActionMapping map : configs.getActiveConfiguration().getCustomMappings()) {
+            toRet.add(map);
+            names.add(map.getActionName());
         }
         for (NetbeansActionMapping map : user.getCustomMappings()) {
             toRet.add(map);

@@ -74,7 +74,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -93,10 +92,10 @@ public class TestcaseNode extends FilterNode {
     private static final java.util.logging.Logger mLogger =
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.TestcaseNode"); // NOI18N
     
-    private static Image WARNING_BADGE = ImageUtilities.loadImage(
+    private static Image WARNING_BADGE = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/warningBadge.gif", true); // NOI18N
     
-    private static Image TEST_CASE_ICON = ImageUtilities.loadImage(
+    private static Image TEST_CASE_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/testCase.png", true); // NOI18N
     
     public static final String ACTUAL_OUTPUT_REGEX = "^Actual_\\d{14}(_[FS])?.xml$"; // NOI18N
@@ -696,7 +695,7 @@ public class TestcaseNode extends FilterNode {
             return image;
         } else {
             setShortDescription(NbBundle.getMessage(TestcaseNode.class, "HINT_WARNING_BADGE")); // NOI18N
-            return ImageUtilities.mergeImages(image, WARNING_BADGE, 15, 8); //7, 5);
+            return Utilities.mergeImages(image, WARNING_BADGE, 15, 8); //7, 5);
         }
     }
     

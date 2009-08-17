@@ -138,8 +138,12 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
      * @param message Informational message about latest state change
      */
     public void operationStateChanged(OperationState newState, String message) {
-        fireHandleProgressEvent(new Hk2DeploymentStatus(commandType, 
-                translateState(newState), ActionType.EXECUTE, message));
+        Logger.getLogger("glassfish-javaee").log(Level.FINE, message);
+        // Suppress message except in cases of failure.  Returning an empty
+        // string prevents status from being displayed in build output window.
+        String relayedMessage = newState == OperationState.FAILED ? message : "";
+        fireHandleProgressEvent(new Hk2DeploymentStatus(commandType,
+                translateState(newState), ActionType.EXECUTE, relayedMessage));
     }
 
     private TargetModuleID[] computeResultTMID() {
@@ -207,9 +211,8 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     private TargetModuleID[] createModuleIdTree(Hk2TargetModuleID moduleId) throws InterruptedException, ExecutionException, TimeoutException {
         synchronized (moduleId) {
             // this should only get called in the ear deploy case...
-            Hk2TargetModuleID r = (Hk2TargetModuleID) moduleId;
-            Hk2TargetModuleID root = Hk2TargetModuleID.get((Hk2Target) r.getTarget(),
-                    r.getModuleID(), null, r.getLocation(), true);
+            Hk2TargetModuleID root = Hk2TargetModuleID.get((Hk2Target) moduleId.getTarget(),
+                    moduleId.getModuleID(), null, moduleId.getLocation(), true);
             // build the tree of submodule
             GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".*");
             Future<OperationState> result =
@@ -226,9 +229,9 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                             String type = data.get("applications.application." + moduleId.getModuleID() + ".module." + moduleName + ".engine." + guess + ".sniffer"); // NOI18N
                             if (null != type) {
                                 Hk2TargetModuleID kid = Hk2TargetModuleID.get(
-                                        (Hk2Target) r.getTarget(), moduleName,
+                                        (Hk2Target) moduleId.getTarget(), moduleName,
                                         "web".equals(guess) ? determineContextRoot(root,moduleName) : null,
-                                        r.getLocation() + File.separator +
+                                        moduleId.getLocation() + File.separator +
                                         FastDeploy.transform(moduleName));
                                 root.addChild(kid);
                             }

@@ -49,7 +49,6 @@ import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.*;

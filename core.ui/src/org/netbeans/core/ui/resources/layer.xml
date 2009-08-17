@@ -471,6 +471,7 @@ made subject to such option by the copyright holder.
             <file name="SwingBrowser.settings" url="SwingBrowser.xml">
                 <attr name="SystemFileSystem.icon" stringvalue="nbres:/org/openide/resources/html/htmlView.gif"/>
                 <attr name="hidden" boolvalue="true"/>
+                <attr name="internal" boolvalue="true"/>
                 <attr name="position" intvalue="700"/>
             </file>
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>

@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -139,6 +140,11 @@ public class DtraceParserTest extends NbTestCase {
             return id;
         }
 
+        public List<FunctionCall> getCallStack(int stackId) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
         public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
             fail("Parser is not expected to call this method");
             return null;
@@ -169,7 +175,7 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
+        public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
             fail("Parser is not expected to call this method");
             return null;
         }

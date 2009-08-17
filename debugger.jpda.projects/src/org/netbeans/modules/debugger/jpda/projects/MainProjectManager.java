@@ -63,6 +63,7 @@ import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.windows.WindowManager;
 
 /**
  * Provies access to the main or currently selected project.
@@ -218,7 +219,11 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             if (old != theMainProject) {
                 pcs.firePropertyChange (PROP_MAIN_PROJECT, old, theMainProject);
             }
-        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+        } else if (evt.getSource() == a && "enabled".equals(evt.getPropertyName()) && !a.isEnabled() ||
+                   // If the action is enabled, enable(Project) method is called.
+                   // Here we unset the main project if action gets disabled and
+                   // there do not remain any opened projects.
+                   OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             // Test if the current project is still opened:
             Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
             Project theMainProject = OpenProjects.getDefault().getMainProject();

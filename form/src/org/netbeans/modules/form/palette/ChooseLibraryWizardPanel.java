@@ -41,18 +41,17 @@
 
 package org.netbeans.modules.form.palette;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 import java.awt.Component;
-import java.awt.event.*;
-import java.beans.*;
-import java.util.*;
-
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.*;
-import org.netbeans.api.project.libraries.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.form.project.ClassSource;
+import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 
 /**

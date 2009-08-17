@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer.TableIdent;
 
 /**
  *
@@ -55,47 +56,30 @@ import java.util.SortedMap;
  */
 public class SelectStatement extends SQLStatement {
 
-    // This should be renamed to SelectStatement.
-
-    private final SQLStatementKind kind;
-    int startOffset, endOffset;
     private final List<List<String>> selectValues;
-    private final FromClause fromClause;
     private final List<SelectStatement> subqueries;
-    private final SortedMap<Integer, SelectContext> offset2Context;
 
-    SelectStatement(SQLStatementKind kind, int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SelectStatement> subqueries, SortedMap<Integer, SelectContext> offset2Context) {
-        this.kind = kind;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    SelectStatement(int startOffset, int endOffset, List<List<String>> selectValues, TablesClause fromClause, List<SelectStatement> subqueries, SortedMap<Integer, Context> offset2Context) {
+        super(startOffset, endOffset, offset2Context, fromClause);
+        this.kind = SQLStatementKind.SELECT;
         this.selectValues = selectValues;
-        this.fromClause = fromClause;
         this.subqueries = subqueries;
-        this.offset2Context = offset2Context;
     }
 
-    public SQLStatementKind getKind() {
-        return kind;
-    }
-
-    public FromClause getFromClause() {
-        return fromClause;
-    }
-
-    public FromClause getTablesInEffect(int offset) {
+    public TablesClause getTablesInEffect(int offset) {
         List<SelectStatement> statementPath = new ArrayList<SelectStatement>();
         fillStatementPath(offset, statementPath);
         if (statementPath.size() == 0) {
             return null;
         }
         if (statementPath.size() == 1) {
-            return statementPath.get(0).getFromClause();
+            return statementPath.get(0).getTablesClause();
         }
         Collections.reverse(statementPath);
         Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
         Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
         for (SelectStatement statement : statementPath) {
-            FromClause statementFromClause = statement.getFromClause();
+            TablesClause statementFromClause = statement.getTablesClause();
             if (statementFromClause != null) {
                 unaliasedTableNames.addAll(statementFromClause.getUnaliasedTableNames());
                 for (Entry<String, QualIdent> entry : statementFromClause.getAliasedTableNames().entrySet()) {
@@ -107,7 +91,7 @@ public class SelectStatement extends SQLStatement {
                 }
             }
         }
-        return new FromClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
+        return new TablesClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
     }
 
     public List<List<String>> getSelectValues() {
@@ -118,18 +102,6 @@ public class SelectStatement extends SQLStatement {
         return subqueries;
     }
 
-    public SelectContext getContextAtOffset(int offset) {
-        SelectContext result = null;
-        for (Entry<Integer, SelectContext> entry : offset2Context.entrySet()) {
-            if (offset >= entry.getKey()) {
-                result = entry.getValue();
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
     private void fillStatementPath(int offset, List<SelectStatement> path) {
         if (offset >= startOffset && offset <= endOffset) {
             path.add(this);
@@ -137,16 +109,5 @@ public class SelectStatement extends SQLStatement {
                 subquery.fillStatementPath(offset, path);
             }
         }
-    }
-
-    public enum SelectContext {
-
-        SELECT,
-        FROM,
-        JOIN_CONDITION,
-        WHERE,
-        GROUP_BY,
-        HAVING,
-        ORDER_BY
     }
 }

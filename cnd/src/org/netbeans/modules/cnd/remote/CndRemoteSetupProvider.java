@@ -44,7 +44,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 
 /**
- * An implementation of ServerProvider which configures remote development so that its
+ * An implementation of SetupProvider which configures remote development so that its
  * setup step copies some shared libraries to the remote host.
  *
  * @author gordonp
