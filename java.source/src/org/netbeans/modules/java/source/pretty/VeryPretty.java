@@ -409,7 +409,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitClassDef(JCClassDecl tree) {
-	Name enclClassNamePrev = enclClassName;
+        Name enclClassNamePrev = enclClassName;
 	enclClassName = tree.name;
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
