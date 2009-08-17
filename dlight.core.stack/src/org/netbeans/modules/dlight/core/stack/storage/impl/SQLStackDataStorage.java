@@ -582,7 +582,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 ResultSet rs = ps.executeQuery();
                 try {
                     while (rs.next()) {
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), rs.getString(5), rs.getString(5));
+                        String funcName = rs.getString(5);
+                        if (demangler != null) {
+                            funcName = demangler.demangle(funcName);
+                        }
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName);
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
                         break;
