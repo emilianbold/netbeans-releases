@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer.TableIdent;
 
 /**
  *
@@ -57,13 +56,11 @@ import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer.TableIdent;
 public class SelectStatement extends SQLStatement {
 
     private final List<List<String>> selectValues;
-    private final List<SelectStatement> subqueries;
 
     SelectStatement(int startOffset, int endOffset, List<List<String>> selectValues, TablesClause fromClause, List<SelectStatement> subqueries, SortedMap<Integer, Context> offset2Context) {
-        super(startOffset, endOffset, offset2Context, fromClause);
+        super(startOffset, endOffset, offset2Context, fromClause, subqueries);
         this.kind = SQLStatementKind.SELECT;
         this.selectValues = selectValues;
-        this.subqueries = subqueries;
     }
 
     public TablesClause getTablesInEffect(int offset) {
@@ -98,14 +95,10 @@ public class SelectStatement extends SQLStatement {
         return selectValues;
     }
 
-    public List<SelectStatement> getSubqueries() {
-        return subqueries;
-    }
-
     private void fillStatementPath(int offset, List<SelectStatement> path) {
         if (offset >= startOffset && offset <= endOffset) {
             path.add(this);
-            for (SelectStatement subquery : subqueries) {
+            for (SelectStatement subquery : getSubqueries()) {
                 subquery.fillStatementPath(offset, path);
             }
         }

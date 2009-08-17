@@ -177,6 +177,34 @@ public class SelectStatementAnalyzerTest extends TestCase {
         assertEquals(0, subquery.getSubqueries().size());
     }
 
+    public void testSubqueriesContext() {
+        String sql = "select * from foo where exists ";
+        sql += "(select id from bar where bar.id = foo.id and ";
+        sql += "(select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
+        SelectStatement statement = doAnalyze(sql);
+        Context context = statement.getContextAtOffset(sql.indexOf("bar"));
+        assertEquals(Context.FROM, context);
+
+        context = statement.getContextAtOffset(sql.indexOf("baz"));
+        assertEquals(Context.FROM, context);
+
+        context = statement.getContextAtOffset(sql.indexOf("1"));
+        assertEquals(Context.WHERE, context);
+
+        sql = "select * from foo where exists ";
+        sql += "(select id from bar where bar.id = foo.id) and foo.a";
+        statement = doAnalyze(sql);
+        context = statement.getContextAtOffset(sql.indexOf("foo.a"));
+        assertEquals(Context.WHERE, context);
+
+        // unfinished subquery
+        sql = "select * from foo where exists " +
+                "(select id from ";
+        statement = doAnalyze(sql);
+        context = statement.getContextAtOffset(sql.length() -1);
+        assertEquals(Context.FROM, context);
+    }
+
     public void testContext() throws Exception {
         String sql = "select customer_id from customer inner join invoice on customer.id = invoice.customer_id, foobar " +
                 "where vip = 1 group by customer_id having count(items) < 2 order by customer_id asc";
