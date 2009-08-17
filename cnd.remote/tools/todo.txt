@@ -1,7 +1,5 @@
 TODO:
 
-- track filestamps on local host
-
 - pass directory structure to the remote controller
 
 - check Sun Studio tool chain
@@ -33,3 +31,5 @@ implement logic that tracks files in remote controller
 - host setup: copying binaries to the remote host
 
 - write tests
+
+- track filestamps on local host

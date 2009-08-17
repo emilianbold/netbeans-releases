@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import junit.framework.Test;
+import org.junit.Ignore;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -60,6 +61,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
+    @Ignore
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         setDefaultCompilerSet("GNU");
@@ -71,7 +73,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
     @ForAllEnvironments
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
         buildProject(makeProject);
