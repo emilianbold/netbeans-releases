@@ -342,7 +342,7 @@ public abstract class TreeView extends JScrollPane {
      * @return <code>true</code> if so
      */
     public boolean isPopupAllowed() {
-        return popupListener != null && isShowing();
+        return popupListener != null && isShowing() && isDisplayable();
     }
 
     /** Enable/disable displaying popup menus on tree view items.

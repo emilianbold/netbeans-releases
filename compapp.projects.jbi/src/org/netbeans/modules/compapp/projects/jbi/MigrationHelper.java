@@ -88,9 +88,12 @@ public class MigrationHelper {
     // 6/29/07 IZ #101033
     @SuppressWarnings("deprecation")
     public static void migrateCompAppProperties(String projDir, EditableProperties ep) {
+//        System.out.println("Migrating CompApp Properties:");
         String propFileLoc = projDir + File.separator + "nbproject" + 
                 File.separator + "project.properties"; // NOI18N
+//        System.out.println("propFileLoc=" + propFileLoc);
         File propertyFile = new File(propFileLoc);
+//        System.out.println("property file " + propertyFile.getAbsolutePath() + ": " + propertyFile.exists());
         if (propertyFile.exists()) {
             try {
                 // fix deprecated properties
@@ -110,14 +113,11 @@ public class MigrationHelper {
                 //org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit=SynchronousSample35Application
                 //org.netbeans.modules.compapp.jbiserver.component.conf.root=nbproject/private
                 //org.netbeans.modules.compapp.jbiserver.deployment.conf.root=nbproject/deployment
-
-                boolean changed = false;
-
+                
                 String fileName = propertyFile.getName();
                 BufferedReader reader = new BufferedReader(new FileReader(propertyFile));
 
                 File tempFile = File.createTempFile(fileName, "tmp"); // NOI18N
-                tempFile.deleteOnExit();
                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
 
                 String line;
@@ -133,7 +133,7 @@ public class MigrationHelper {
                             upgradeDeprecatedProperty(line, ep,
                             JbiProjectProperties.ASSEMBLY_UNIT_UUID, 
                             JbiProjectProperties.SERVICE_ASSEMBLY_ID)) {
-                        changed = true;
+                        // NOP
                     } else if (removeDeprecatedProperty(line, ep, 
                             JbiProjectProperties.ASSEMBLY_UNIT_ALIAS) 
                             ||
@@ -145,7 +145,6 @@ public class MigrationHelper {
                             ||
                             removeDeprecatedProperty(line, ep, 
                             JbiProjectProperties.JBI_DEPLOYMENT_CONF_ROOT)) {
-                        changed = true;
                         continue;
                     } 
                     
@@ -154,9 +153,8 @@ public class MigrationHelper {
                 reader.close();
                 writer.close();
 
-                if (changed) {
-                    MyFileUtil.copy(tempFile, propertyFile);
-                }
+//                System.out.println("Updating property file " + propertyFile.getAbsolutePath()); // NOI18N
+                MyFileUtil.move(tempFile, propertyFile);
             } catch (Exception e) {
                 System.out.println("Problem migrating CompApp project properties: " + e); // NOI18N
             }

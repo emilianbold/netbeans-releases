@@ -100,7 +100,7 @@ import org.openide.filesystems.FileChangeListener;
 public class JbiLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-//        JbiProjectProperties.JAVAC_CLASSPATH, JbiProjectProperties.DEBUG_CLASSPATH,
+        JbiProjectProperties.JAVAC_CLASSPATH, JbiProjectProperties.DEBUG_CLASSPATH,
         JbiProjectProperties.JBI_CONTENT_ADDITIONAL, JbiProjectProperties.SRC_DIR
     };
     
@@ -149,7 +149,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         this.resolver = resolver;
         
         if (mEmpty != null) {
-            mEmptyIcon = Utilities.mergeImages(mIcon, mEmpty, 8, 0);
+            mEmptyIcon = ImageUtilities.mergeImages(mIcon, mEmpty, 8, 0);
         }
         
 //        isEmpty = isProjectEmpty();
@@ -318,7 +318,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
     public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
         return BrokenReferencesSupport.isBroken(
                 helper, resolver, BREAKABLE_PROPERTIES,
-                new String[] {} //JbiProjectProperties.JAVA_PLATFORM}
+                new String[] {JbiProjectProperties.JAVA_PLATFORM}
         );
     }
     
@@ -447,14 +447,8 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             List<Action> actions = new ArrayList<Action>();
             
             actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                    new AddProjectAction(true),
+                    new AddProjectAction(), 
                     bundle.getString("LBL_AddProjectAction_Name"),  // NOI18N
-                    null
-                    ));
-
-            actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                    new AddProjectAction(false),
-                    bundle.getString("LBL_AddExternalProjectAction_Name"),  // NOI18N
                     null
                     ));
             
@@ -592,7 +586,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(
                         helper, resolver, BREAKABLE_PROPERTIES,
-                        new String[] {} //JbiProjectProperties.JAVA_PLATFORM}
+                        new String[] {JbiProjectProperties.JAVA_PLATFORM}
                 );
                 
                 if (!hasBrokenLinks(helper, resolver)) {

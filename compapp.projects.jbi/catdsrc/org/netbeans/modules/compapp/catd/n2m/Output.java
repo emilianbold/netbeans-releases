@@ -44,86 +44,50 @@
  *
  * Created on March 25, 2005, 2:22 PM
  */
+
 package org.netbeans.modules.compapp.catd.n2m;
 
 import org.netbeans.modules.compapp.catd.util.Util;
 import java.io.*;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  *
  * @author blu
  */
 public class Output {
-    public static final int CONTENT_TYPE_TEXT = 0;
-    public static final int CONTENT_TYPE_SET = 1;
-
     private String mName;
     private File mActual;
     private File mExpected;
-    private int mContentType;
-    private int mLinesPerElement;
-    private int[] mSetSizes;
 
     /** Creates a new instance of Output */
     public Output(String name, File actual, File expected) {
         mName = name;
         mActual = actual;
         mExpected = expected;
-        mContentType = CONTENT_TYPE_TEXT;
-    }
-
-    public Output(String name, File actual, File expected, String linesPerElement, String setSizes) throws Exception {
-        mName = name;
-        mActual = actual;
-        mExpected = expected;
-        mContentType = CONTENT_TYPE_SET;
-
-        mLinesPerElement = Integer.parseInt(linesPerElement);
-        StringTokenizer st = new StringTokenizer(setSizes, ",");
-        mSetSizes = new int[st.countTokens()];
-        for (int i = 0; i < mSetSizes.length; i++) {
-            mSetSizes[i] = Integer.parseInt(st.nextToken());
-        }
     }
 
     public String getName() {
         return mName;
     }
 
-    public List<Set<String>> getExpected() {
-        List<Set<String>> setList = new LinkedList<Set<String>>();
-        switch (mContentType) {
-            case CONTENT_TYPE_SET:
-                return Util.getFileContentWithoutCRNL(mExpected, mLinesPerElement, mSetSizes);
-            case CONTENT_TYPE_TEXT:
-            default:
-                String str = Util.getFileContentWithoutCRNL(mExpected);
-                Set<String> set = new HashSet<String>();
-                setList.add(set);
-                set.add(str);
-                return setList;
-        }
+    public String getExpected() {
+        String ret = Util.getFileContent(mExpected);
+        return ret;
     }
 
-    public List<Set<String>> getActual() {
-        List<Set<String>> setList;
-        switch (mContentType) {
-            case CONTENT_TYPE_SET:
-                return Util.getFileContentWithoutCRNL(mActual, mLinesPerElement, mSetSizes);
-            case CONTENT_TYPE_TEXT:
-            default:
-                setList = new LinkedList<Set<String>>();
-                String str = Util.getFileContentWithoutCRNL(mActual);
-                Set<String> set = new HashSet<String>();
-                setList.add(set);
-                set.add(str);
-                return setList;
-        }
+    public String getExpectedWithoutCRNL() {
+        String ret = Util.getFileContentWithoutCRNL(mExpected);
+        return ret;
+    }
+
+    public String getActual() {
+        String ret = Util.getFileContent(mActual);
+        return ret;
+    }
+
+    public String getActualWithoutCRNL() {
+        String ret = Util.getFileContentWithoutCRNL(mActual);
+        return ret;
     }
 
     public void removeActual() {
@@ -131,4 +95,5 @@ public class Output {
             mActual.delete();
         }
     }
+
 }

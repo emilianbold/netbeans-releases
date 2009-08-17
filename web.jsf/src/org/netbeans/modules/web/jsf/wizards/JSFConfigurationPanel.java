@@ -165,8 +165,9 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
         String preferredLang = component.getPreferredLanguage();
-        if (preferredLang.equals(PreferredLanguage.JSP.getName()) || preferredLang.equals(PreferredLanguage.Facelets.getName()));
+        if (preferredLang.equals(PreferredLanguage.JSP.getName()) || preferredLang.equals(PreferredLanguage.Facelets.getName())) {
             preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
+        }
         return framework.extendImpl(webModule);
     }
     

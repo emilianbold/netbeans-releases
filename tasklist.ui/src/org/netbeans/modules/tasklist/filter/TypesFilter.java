@@ -93,6 +93,10 @@ class TypesFilter {
     public TypesFilter clone() {
         return new TypesFilter( this );
     }
+
+    void clear() {
+        enabledProviders.clear();
+    }
     
     void load( Preferences prefs, String prefix ) throws BackingStoreException {
         countLimit = prefs.getInt( prefix+"_countLimit", 100 ); //NOI18N
@@ -123,5 +127,6 @@ class TypesFilter {
         enabledProviders.add("org.netbeans.modules.java.source.tasklist.JavaTaskProvider"); //NOI18N
         enabledProviders.add("org.netbeans.modules.tasklist.todo.TodoTaskScanner"); //NOI18N
         enabledProviders.add("org.netbeans.modules.csl.core.GsfTaskProvider"); //NOI18N
+        enabledProviders.add("org.netbeans.modules.bugtracking.tasklist.TaskListProvider"); //NOI18N
     } 
 } 
