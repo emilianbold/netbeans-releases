@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.gdb.attach.AttachTarget;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
@@ -306,13 +307,19 @@ public class GdbDebugger implements PropertyChangeListener {
                 final String path = getFullPath(baseDir, pae.getExecutable());
                 gdb.getLogger().logMessage("IDE: project executable: " + path); // NOI18N
 
-                Long pid = lookupProvider.lookupFirst(null, Long.class);
-                String corePath = lookupProvider.lookupFirst(null, String.class);
-                if (pid != null) {
-                    programPID = pid;
-                } else {
+                AttachTarget attachTarget = lookupProvider.lookupFirst(null, AttachTarget.class);
+                if (attachTarget == null) {
+                    throw new IllegalStateException("No AttachTarget during attach"); // NOI18N
+                }
+                if (attachTarget instanceof AttachTarget.PidAttach) {
+                    programPID = ((AttachTarget.PidAttach)attachTarget).pid;
+                } else if (attachTarget instanceof AttachTarget.CoreAttach) {
                     core = true;
                     continueAfterFirstStop = false;
+                } else if (attachTarget instanceof AttachTarget.GdbServerAttach) {
+                    // do nothing for now
+                } else {
+                    throw new IllegalStateException("Unknown attach target " + attachTarget); // NOI18N
                 }
 
                 if ((pae.getConfiguration()).isDynamicLibraryConfiguration()) {
@@ -322,12 +329,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 } else {
                     gdb.file_exec_and_symbols(path);
                 }
-                CommandBuffer cb;
-                if (core) {
-                    cb = gdb.core(corePath);
-                } else {
-                    cb = gdb.target_attach(Long.toString(programPID));
-                }
+                
+                CommandBuffer cb = getAttachCommand(attachTarget);
                 String err = cb.getError();
                 if (err != null || cb.isTimedOut()) {
                     final String msg;
@@ -480,6 +483,18 @@ public class GdbDebugger implements PropertyChangeListener {
                 msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnSpecifiedStartError");
             }
             warn(true, msg);
+        }
+    }
+
+    private CommandBuffer getAttachCommand(AttachTarget target) {
+        if (target instanceof AttachTarget.CoreAttach) {
+            return gdb.core(((AttachTarget.CoreAttach)target).path);
+        } else if (target instanceof AttachTarget.PidAttach) {
+            return gdb.attach(Long.toString(((AttachTarget.PidAttach)target).pid));
+        } else if (target instanceof AttachTarget.GdbServerAttach) {
+            return gdb.attachRemote(((AttachTarget.GdbServerAttach)target).target);
+        } else {
+            throw new IllegalStateException("Unknown attach target " + target); // NOI18N
         }
     }
 
@@ -2023,7 +2038,11 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public static void debugCore(String corePath, ProjectInformation pinfo) throws DebuggerStartException {
-        attach2Target(corePath, pinfo, ExecutionEnvironmentFactory.getLocal());
+        attach2Target(new AttachTarget.CoreAttach(corePath), pinfo, ExecutionEnvironmentFactory.getLocal());
+    }
+
+    public static void attachGdbServer(String target, ProjectInformation pinfo) throws DebuggerStartException {
+        attach2Target(new AttachTarget.GdbServerAttach(target), pinfo, ExecutionEnvironmentFactory.getLocal());
     }
 
     /**
@@ -2033,10 +2052,10 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param pinfo Miscelaneous project information
      */
     public static void attach(Long pid, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
-        attach2Target(pid, pinfo, exEnv);
+        attach2Target(new AttachTarget.PidAttach(pid), pinfo, exEnv);
     }
 
-    private static void attach2Target(Object target, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
+    private static void attach2Target(AttachTarget target, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
