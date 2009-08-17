@@ -76,7 +76,7 @@ public class SerialVersionUID extends AbstractHint {
     private final AtomicBoolean cancel = new AtomicBoolean();
 
     public SerialVersionUID() {
-        super(true, false, AbstractHint.HintSeverity.WARNING);
+        super(false, false, AbstractHint.HintSeverity.WARNING);
     }
 
     @Override
