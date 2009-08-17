@@ -235,6 +235,12 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static final List<? extends Indexable> splitSources(final Iterable<? extends Indexable> indexables, final List<? super Indexable> javaSources) {
         List<Indexable> virtualSources = new LinkedList<Indexable>();
         for (Indexable indexable : indexables) {
+            if (indexable.getURL() == null) {
+                /*
+                    Issue #168179: This is probably deleted source file. Just skipping. 
+                 */
+                continue;
+            }
             if (VirtualSourceProviderQuery.hasVirtualSource(indexable)) {
                 virtualSources.add(indexable);
             }
