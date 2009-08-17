@@ -263,8 +263,8 @@ public final class ConnectionBuilder {
             URL curr = conn.getURL();
             LOG.log(Level.FINER, "Trying to open {0}", curr);
             if (home != null) {
-                for (ConnectionAuthenticator auth : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
-                    auth.prepareRequest(conn, home);
+                for (ConnectionAuthenticator authenticator : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
+                    authenticator.prepareRequest(conn, home);
                 }
                 if (COOKIES.containsKey(home)) {
                     for (String cookie : COOKIES.get(home)) {
@@ -317,10 +317,10 @@ public final class ConnectionBuilder {
                 continue RETRY;
             case HttpURLConnection.HTTP_FORBIDDEN:
                 if (auth && home != null) {
-                    for (ConnectionAuthenticator auth : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
-                        URLConnection retry = auth.forbidden(conn, home);
+                    for (ConnectionAuthenticator authenticator : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
+                        URLConnection retry = authenticator.forbidden(conn, home);
                         if (retry != null) {
-                            LOG.log(Level.FINER, "Retrying after auth from {0}", auth);
+                            LOG.log(Level.FINER, "Retrying after auth from {0}", authenticator);
                             conn = retry;
                             continue RETRY;
                         }
