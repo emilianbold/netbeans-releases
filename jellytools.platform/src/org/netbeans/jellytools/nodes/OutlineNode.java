@@ -37,42 +37,56 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.project;
+package org.netbeans.jellytools.nodes;
 
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import java.awt.Point;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.OutlineOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
 /**
+ *  Handles nodes of the Outline component.
  *
- * @author Vladimir Kvashin
+ * @author Vojtech.Sigler@sun.com
  */
-public class RemoteBuildTestCase extends RemoteBuildTestBase {
+public class OutlineNode {
 
-    public RemoteBuildTestCase(String testName) {
-        super(testName);
+    private OutlineOperator _outline;
+    private TreePath _treePath;
+
+    public OutlineNode(OutlineOperator irOutlineOp, TreePath irTreePath)
+    {
+        if (irOutlineOp == null)
+            throw new IllegalArgumentException("OutlineOperator argument cannot be null.");
+
+        if (irTreePath == null)
+            throw new IllegalArgumentException("TreePath argument cannot be null.");
+        
+        _outline = irOutlineOp;
+        _treePath = irTreePath;
     }
 
-    public RemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+    public OutlineOperator getOutline()
+    {
+        return _outline;
     }
 
-
-    @ForAllEnvironments
-    public void testBuildSampleArguments() throws Exception {
-        setupHost();
-        setSyncFactory("scp");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject);
+    public static TreePath findAndExpandPath(OutlineOperator irOOp, TreePath irTP)
+    {
+        return irTP;
     }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
+    public JPopupMenuOperator callPopup()
+    {
+        Point lrPopupPoint = _outline.getLocationForPath(_treePath);
+
+        //y is for row, x for column
+        return new JPopupMenuOperator(_outline.callPopupOnCell(lrPopupPoint.y, lrPopupPoint.x));
     }
 
+    public void expand()
+    {
+        _outline.expandPath(_treePath);
+    }
 
 }
