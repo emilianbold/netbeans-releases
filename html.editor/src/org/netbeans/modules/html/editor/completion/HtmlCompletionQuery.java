@@ -181,7 +181,7 @@ public class HtmlCompletionQuery extends UserTask {
             //complete character references
             if (inside || !preText.endsWith(";")) { // NOI18N
                 anchor = documentItemOffset + 1; //plus "&" length
-                result = translateCharRefs(documentItemOffset, dtd.getCharRefList(preText.substring(1)));
+                result = translateCharRefs(documentItemOffset, dtd.getCharRefList(preText.length() > 0 ? preText.substring(1) : ""));
             }
         } else if (id == HTMLTokenId.TAG_OPEN) { // NOI18N
             //complete open tags with prefix

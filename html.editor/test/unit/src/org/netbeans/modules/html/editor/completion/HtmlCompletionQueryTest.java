@@ -224,6 +224,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("&|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&a|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&amp|", arr("amp"), Match.EXACT, 1);
+        assertItems("|&amp;", arr("amp"), Match.CONTAINS, 1);
 
         assertCompletedText("&|", "amp", "&amp;|");
         assertCompletedText("&am|", "amp", "&amp;|");
