@@ -362,6 +362,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         return new ConfigMenu(null);
     }
 
+    @SuppressWarnings("serial")
     private static class ConfigCellRenderer extends JLabel implements ListCellRenderer, UIResource {
         
         private Border defaultBorder = getBorder();
@@ -406,6 +407,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
         
         // #89393: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -455,6 +457,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     
 
     public Action createContextAwareInstance(final Lookup actionContext) {
+        @SuppressWarnings("serial")
         class A extends AbstractAction implements Presenter.Popup {
             public void actionPerformed(ActionEvent e) {
                 assert false;
