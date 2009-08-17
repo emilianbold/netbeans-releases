@@ -79,6 +79,7 @@ public final class ListeningDICookie extends AbstractDICookie {
 
     private ListeningConnector listeningConnector;
     private Map<String, ? extends Argument> args;
+    private boolean isListening = false;
 
     private ListeningDICookie (
         ListeningConnector listeningConnector,
@@ -197,7 +198,23 @@ public final class ListeningDICookie extends AbstractDICookie {
         Argument a = (Argument) args.get ("port");
         if (a == null) return -1;
         String pn = a.value ();
-        if (pn == null) return -1;
+        if (pn == null || pn.length() == 0) {
+            // default to system chosen port when no port is specified:
+            try {
+                String address = listeningConnector.startListening(args);
+                isListening = true;
+                int splitIndex = address.indexOf(':');
+                String localaddr = null;
+                if (splitIndex >= 0) {
+                    localaddr = address.substring(0, splitIndex);
+                    address = address.substring(splitIndex+1);
+                }
+                a.setValue(address);
+                pn = address;
+            } catch (IOException ex) {
+            } catch (IllegalConnectorArgumentsException ex) {
+            }
+        }
         try {
             return Integer.parseInt (pn);
         } catch (NumberFormatException e) {
@@ -224,10 +241,12 @@ public final class ListeningDICookie extends AbstractDICookie {
     public VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException {
         try {
+            if (!isListening) {
             try {
-                listeningConnector.startListening(args); 
+                listeningConnector.startListening(args);
             } catch (Exception e) {
                 // most probably already listening
+            }
             }
             return listeningConnector.accept (args);
         } finally {
