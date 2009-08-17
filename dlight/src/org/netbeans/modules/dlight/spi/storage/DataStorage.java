@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.spi.storage;
 
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -55,13 +54,7 @@ import java.util.List;
  * The same is for {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider},
  * that wants to read data from the DataStorage.
  */
-public abstract class DataStorage {
-
-    private final List<DataTableMetadata> tablesMetadata;
-
-    protected DataStorage() {
-        tablesMetadata = new ArrayList<DataTableMetadata>();
-    }
+public interface DataStorage {
 
     /**
      * Checks if storage contains data described by <param>data</param>
@@ -72,42 +65,7 @@ public abstract class DataStorage {
      * @return <code>true</code> if storage contains <param>data</param>,
      * <code>false</code> otherwise
      */
-    public final boolean hasData(DataTableMetadata data) {
-        if (data == null) {
-            return false;
-        }
-
-        List<DataTableMetadata> sourceTables = data.getSourceTables();
-        if (sourceTables != null) {
-            for (DataTableMetadata tableWeSearch : sourceTables) {
-                boolean found = false;
-                for (DataTableMetadata tableWeHave : tablesMetadata) {
-                    if (tableWeSearch.getName().equals(tableWeHave.getName())) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        // here sourceTables == null
-        for (DataTableMetadata md : tablesMetadata) {
-            if (md.getName().equals(data.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Creates table on the in storage (whatever it means: table creatiion in data base or files creation or something else...)
-     * @param tableMetadatas tables which should be created in the storage
-     * @return <code>true</code> if all tables are sucessully created, <code>false</code> otherwise
-     */
-    protected abstract boolean createTablesImpl(List<DataTableMetadata> tableMetadatas);
+    boolean hasData(DataTableMetadata data);
 
     /**
      * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
@@ -115,7 +73,7 @@ public abstract class DataStorage {
      * @param tableName table name to add data into
      * @param data data to add
      */
-    public abstract void addData(String tableName, List<DataRow> data);
+    void addData(String tableName, List<DataRow> data);
 
     /**
      * Please be sure this method will return not null for the object
@@ -123,31 +81,25 @@ public abstract class DataStorage {
      * without parameter)
      * @return storage types
      */
-    public abstract Collection<DataStorageType> getStorageTypes();
+    Collection<DataStorageType> getStorageTypes();
 
     /**
      * Checks if DataStorage supports {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
      * @param storageType storage type to check
      * @return <code>true</code> if storage supports storageType, <code>false</code> otherwise
      */
-    public final boolean supportsType(DataStorageType storageType) {
-        return getStorageTypes() != null && getStorageTypes().contains(storageType);
-    }
+    boolean supportsType(DataStorageType storageType);
 
     /**
      * Creates tables: invoked to create {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} needed
      * @param tableMetadatas tables decsription to create in the storage
      */
-    public final void createTables(List<DataTableMetadata> tableMetadatas) {
-        if (createTablesImpl(tableMetadatas)) {
-            tablesMetadata.addAll(tableMetadatas);
-        }
-    }
+    void createTables(List<DataTableMetadata> tableMetadatas);
 
     /**
      * Close storage
      * @return <code>true</code> if succeeded, <code>false</code> otherwise
      */
-    public abstract boolean shutdown();
+    boolean shutdown();
 
 }

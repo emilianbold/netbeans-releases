@@ -36,21 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.storage;
 
-package org.netbeans.modules.dlight.impl;
-
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 
 /**
+ * Data storage serving as proxy for another (backend) data storage,
+ * e.g. to provide more convenient interface than the underlying storage.
  *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory.class)
-public class ServiceInfoDataStorageFactoryImpl implements ServiceInfoDataStorageFactory<ServiceInfoDataStorageImpl>{
+public interface ProxyDataStorage extends DataStorage {
 
-    public ServiceInfoDataStorageImpl createStorage() {
-        return new ServiceInfoDataStorageImpl();
-    }
+    /**
+     * @return supported underlying storage type
+     */
+    DataStorageType getBackendDataStorageType();
 
+    /**
+     * @return list of tables to create in the underlying storage
+     */
+    List<DataTableMetadata> getBackendTablesMetadata();
+
+    /**
+     * Called by infrastructure to attach to backend storage.
+     *
+     * @param storage  backend storage supporting the required storage type
+     */
+    void attachTo(DataStorage storage);
 }
