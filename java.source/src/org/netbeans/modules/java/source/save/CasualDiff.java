@@ -2066,6 +2066,12 @@ public class CasualDiff {
                     diffTree(tree, item.element, bounds);
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    if (!commaNeeded(result, item) &&
+                        tree.getKind() == Kind.VARIABLE &&
+                        (((JCModifiers)((VariableTree) tree).getModifiers()).flags & Flags.ENUM) != 0 &&
+                        tokenSequence.token().id() != JavaTokenId.SEMICOLON) {
+                        printer.print(";");
+                    }
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
                     break;
                 }
@@ -2110,6 +2116,7 @@ public class CasualDiff {
                 if (item.operation != Operation.DELETE) {
                     wasComma = false;
                 }
+//                printer.print(";");
             }
         }
         if (printParens && oldList.isEmpty()) {
