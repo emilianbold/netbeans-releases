@@ -63,6 +63,8 @@ public interface RunConfig {
 
     RunConfig getPreExecution();
 
+    RunConfig.ReactorStyle getReactorStyle();
+
 //    void setPreExecution(RunConfig config);
 
     /**
@@ -131,5 +133,18 @@ public interface RunConfig {
 
     FileObject getSelectedFileObject();
 
+    public enum ReactorStyle {
+        NONE,
+        /**
+         * am, --also-make
+         * If project list is specified, also build projects required by the list
+         */
+        ALSO_MAKE,
+        /**
+         * -amd,--also-make-dependents
+         * If project list is specified, also build projects that depend on projects on the list
+         */
+        ALSO_MAKE_DEPENDENTS
+    }
     
 }
