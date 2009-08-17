@@ -58,6 +58,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -76,6 +77,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -117,7 +121,8 @@ public class ConnectPanel extends JPanel implements ActionListener {
     private JComboBox               cbConnectors;
     /** List of JTextFields containing all parameters of curentConnector. */
     private JTextField[]            tfParams;
-    private Controller              controller;
+    private ConnectController       controller;
+    private final DocumentListener  validityDocumentListener = new ValidityDocumentListener();
 
 
     public ConnectPanel () {
@@ -176,8 +181,8 @@ public class ConnectPanel extends JPanel implements ActionListener {
             cbConnectors.addActionListener (this);
         }
         
-        cbConnectors.setSelectedIndex (defaultIndex);
         controller = new ConnectController();
+        cbConnectors.setSelectedIndex (defaultIndex);
     }
 
     public Controller getController() {
@@ -289,6 +294,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
                 c.fill = GridBagConstraints.HORIZONTAL;
                 c.weightx = 1.0;
             add (tfParam, c);
+            tfParam.getDocument().addDocumentListener(validityDocumentListener);
             tfParams [i ++] = tfParam;
         }
         
@@ -300,6 +306,11 @@ public class ConnectPanel extends JPanel implements ActionListener {
             JPanel p = new JPanel ();
             p.setPreferredSize (new Dimension (1, 1));
         add (p, c);
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                checkValid();
+            }
+        });
     }
 
     /**
@@ -438,15 +449,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
                     ( "".equals (paramValue) && a.mustSpecify () )
             ) {
                 NotifyDescriptor.InputLine in = null;
-                String label = translate (a.name());
-                if (label == null) {
-                    label = a.label();
-                } else {
-                    int amp = Mnemonics.findMnemonicAmpersand(label);
-                    if (amp >= 0) {
-                        label = label.substring(0, amp) + label.substring(amp + 1);
-                    }
-                }
+                String label = getLabel(a);
                 if ( "".equals (paramValue) && a.mustSpecify ())
                     in = new NotifyDescriptor.InputLine (
                         label,
@@ -501,6 +504,19 @@ public class ConnectPanel extends JPanel implements ActionListener {
         Properties.getDefault ().getProperties ("debugger").
                 setMap ("connection_settings", m);
     }
+
+    private static String getLabel(Argument a) {
+        String label = translate (a.name());
+        if (label == null) {
+            label = a.label();
+        } else {
+            int amp = Mnemonics.findMnemonicAmpersand(label);
+            if (amp >= 0) {
+                label = label.substring(0, amp) + label.substring(amp + 1);
+            }
+        }
+        return label;
+    }
     
     private static String translate (String str) {
         try {
@@ -511,7 +527,55 @@ public class ConnectPanel extends JPanel implements ActionListener {
         }
     }
 
+    private void checkValid() {
+        int index = cbConnectors.getSelectedIndex ();
+        final Connector connector = (Connector) connectors.get (index);
+        int i, k = tfParams.length;
+        Map args = connector.defaultArguments ();
+        for (i = 0; i < k; i++) {
+            JTextField tf = tfParams [i];
+            String paramName = tf.getName ();
+            String paramValue = tf.getText ();
+            Argument a = (Argument) args.get(paramName);
+            if (a.mustSpecify() && "".equals(paramValue)) {
+                String msg = NbBundle.getMessage(ConnectPanel.class,
+                                                 "MSG_Required_value",
+                                                 getLabel(a));
+                controller.setInformationMessage(msg);
+                controller.setValid(false);
+                break;
+            }
+            if (!"".equals(paramValue) && !a.isValid(paramValue)) {
+                String msg = NbBundle.getMessage(ConnectPanel.class,
+                                                 "MSG_Invalid_value",
+                                                 getLabel(a));
+                controller.setErrorMessage(msg);
+                controller.setValid(false);
+                break;
+            }
+        }
+        if (i >= k) {
+            controller.setErrorMessage(null);
+            controller.setValid(true);
+        }
+    }
+
+    private class ValidityDocumentListener implements DocumentListener {
+        public void insertUpdate(DocumentEvent e) {
+            checkValid();
+        }
+        public void removeUpdate(DocumentEvent e) {
+            checkValid();
+        }
+        public void changedUpdate(DocumentEvent e) {
+            checkValid();
+        }
+    }
+
     private class ConnectController implements Controller {
+
+        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private boolean valid = true;
 
         public boolean cancel () {
             return true;
@@ -608,13 +672,32 @@ public class ConnectPanel extends JPanel implements ActionListener {
          * is valid
          */
         public boolean isValid () {
-            return true;
+            return valid;
+        }
+
+        void setValid(boolean valid) {
+            this.valid = valid;
+            firePropertyChange(PROP_VALID, !valid, valid);
+        }
+
+        void setErrorMessage(String msg) {
+            firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, msg);
+        }
+
+        void setInformationMessage(String msg) {
+            firePropertyChange(NotifyDescriptor.PROP_INFO_NOTIFICATION, null, msg);
+        }
+
+        private void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            pcs.firePropertyChange(propertyName, oldValue, newValue);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
         }
     }
     

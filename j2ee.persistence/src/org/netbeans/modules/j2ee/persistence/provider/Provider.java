@@ -141,22 +141,30 @@ public abstract class Provider {
     /**
      * @return name of the property representing JDBC URL.
      */
-    public abstract String getJdbcUrl();
+    public String getJdbcUrl() {
+        return "javax.persistence.jdbc.url";
+    }
     
     /**
      * @return name of the property representing JDBC driver.
      */
-    public abstract String getJdbcDriver();
+    public String getJdbcDriver() {
+        return "javax.persistence.jdbc.driver";
+    }
     
     /**
      * @return name of the property representing JDBC user name.
      */
-    public abstract String getJdbcUsername();
+    public String getJdbcUsername() {
+        return "javax.persistence.jdbc.user";
+    }
     
     /**
      * @return name of the property representing JDBC password.
      */
-    public abstract String getJdbcPassword();
+    public String getJdbcPassword() {
+        return "javax.persistence.jdbc.password";
+    }
     
     /**
      * @return name of the property representing table generation strategy.

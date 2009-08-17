@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Jiri Skrivanek
  */
 public class SQLStatement {
 
@@ -52,34 +53,60 @@ public class SQLStatement {
     int startOffset, endOffset;
     SortedMap<Integer, Context> offset2Context;
     TablesClause tablesClause;
+    private List<SelectStatement> subqueries;
 
     SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context) {
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-        this.offset2Context = offset2Context;
+        this(startOffset, endOffset, offset2Context, null, null);
     }
 
     SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause) {
+        this(startOffset, endOffset, offset2Context, tablesClause, null);
+    }
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause, List<SelectStatement> subqueries) {
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.offset2Context = offset2Context;
         this.tablesClause = tablesClause;
+        this.subqueries = subqueries;
     }
 
     public SQLStatementKind getKind() {
         return kind;
     }
 
+    /** Returns context at given offset. If offset falls into subquery, it
+     * tries to find context in this subquery and returns it if not null.
+     * @param offset offset within statement
+     * @return context at given offset
+     */
     public Context getContextAtOffset(int offset) {
+        if (offset < startOffset || offset > endOffset) {
+            return null;
+        }
         Context result = null;
+        // scan subqueries
+        if (subqueries != null) {
+            for (SQLStatement subquery : subqueries) {
+                result = subquery.getContextAtOffset(offset);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        // scan this statement
         for (Entry<Integer, Context> entry : offset2Context.entrySet()) {
             if (offset >= entry.getKey()) {
                 result = entry.getValue();
             } else {
-                break;
+                return result;
             }
         }
         return result;
+    }
+
+    public List<SelectStatement> getSubqueries() {
+        return subqueries;
     }
 
     TablesClause getTablesClause() {
