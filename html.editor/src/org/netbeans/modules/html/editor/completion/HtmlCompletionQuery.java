@@ -113,6 +113,7 @@ public class HtmlCompletionQuery extends UserTask {
     CompletionResult query(HtmlParserResult parserResult, DTD dtd) {
 
         Snapshot snapshot = parserResult.getSnapshot();
+        String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         lowerCase = usesLowerCase(parserResult, astOffset);
         isXHtml = parserResult.getHtmlVersion().isXhtml();
@@ -201,7 +202,7 @@ public class HtmlCompletionQuery extends UserTask {
                 
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 result.addAll(e.completeOpenTags(context));
             }
 
@@ -218,7 +219,7 @@ public class HtmlCompletionQuery extends UserTask {
             
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 Collection<CompletionItem> items = e.completeOpenTags(context);
                 result.addAll(items);
             }
@@ -248,7 +249,7 @@ public class HtmlCompletionQuery extends UserTask {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
-                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                     items.addAll(e.completeAttributes(context));
                 }
                 result = items;

@@ -74,30 +74,27 @@ public class AppMgdResTxInjEJBTest extends EntityManagerGenerationTestSupport {
                 "package javax.annotation; public @interface PreDestroy{}");
     }
 
-    /**
-     * need additional investigation, commented for now
-     * @throws Exception
-     */
-//    public void testGenerate() throws Exception{
-//
-//        File testFile = new File(getWorkDir(), "Test.java");
-//        TestUtilities.copyStringToFile(testFile,
-//                "package org.netbeans.test;\n\n" +
-//                "import java.util.*;\n\n" +
-//                "public class Test {\n" +
-//                "}"
-//                );
-//        GenerationOptions options = new GenerationOptions();
-//        options.setMethodName("create");
-//        options.setOperation(GenerationOptions.Operation.PERSIST);
-//        options.setParameterName("object");
-//        options.setParameterType("Object");
-//        options.setQueryAttribute("");
-//        options.setReturnType("Object");
-//
-//        FileObject result = generate(FileUtil.toFileObject(testFile), options);
-//        assertFile(result);
-//    }
+
+    public void testGenerate() throws Exception{
+
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n\n" +
+                "public class Test {\n" +
+                "}"
+                );
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("create");
+        options.setOperation(GenerationOptions.Operation.PERSIST);
+        options.setParameterName("object");
+        options.setParameterType("Object");
+        options.setQueryAttribute("");
+        options.setReturnType("Object");
+
+        FileObject result = generate(FileUtil.toFileObject(testFile), options);
+        assertFile(result);
+    }
     
     public void testGenerateWithExistingEM() throws Exception{
         

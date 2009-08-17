@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -83,7 +84,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     static synchronized void activate() {
         if (!activated) {
-            HtmlExtension.register(new JsfHtmlExtension());
+            HtmlExtension.register("text/xhtml", new JsfHtmlExtension()); //NOI18N
             activated = true;
         }
     }
@@ -140,10 +141,10 @@ public class JsfHtmlExtension extends HtmlExtension {
         final Snapshot snapshot = result.getSnapshot();
         Source source = snapshot.getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
-        if(jsfs == null) {
+        if (jsfs == null) {
             return;
         }
-        Map<String, TldLibrary> libs = jsfs.getLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
 
         Map<String, String> nss = result.getNamespaces();
 
@@ -154,23 +155,22 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         for (String namespace : nss.keySet()) {
 
-            if (JsfSupport.isJSFLibrary(namespace)) { //a) test if this is a jsf library
-                AstNode root = result.root(namespace);
-                final TldLibrary tldl = libs.get(namespace);
-                AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+            AstNode root = result.root(namespace);
+            final FaceletsLibrary tldl = libs.get(namespace);
+            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-                    public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.ENDTAG) {
+                public void visit(AstNode node) {
+                    if (node.type() == AstNode.NodeType.OPEN_TAG ||
+                            node.type() == AstNode.NodeType.ENDTAG) {
 
-                            if (node.getNamespacePrefix() != null) {
-                                Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
-                                highlight(snapshot, node, highlights, coloring);
-                            }
+                        if (node.getNamespacePrefix() != null) {
+                            Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
+                            highlight(snapshot, node, highlights, coloring);
                         }
                     }
-                });
-            }
+                }
+            });
+
         }
 
     }
@@ -195,10 +195,10 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
-         if(jsfs == null) {
+        if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, TldLibrary> libs = jsfs.getLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -208,11 +208,11 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (colonIndex == -1) {
             //editing namespace or tag w/o ns
             //offer all tags
-            for (TldLibrary lib : libs.values()) {
-                String declaredPrefix = declaredNS.get(lib.getURI());
+            for (FaceletsLibrary lib : libs.values()) {
+                String declaredPrefix = declaredNS.get(lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
-                    if (lib.getDefaultPrefix().startsWith(context.getPrefix())) {
+                    if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().startsWith(context.getPrefix())) {
                         items.addAll(queryLibrary(context, lib, lib.getDefaultPrefix(), true));
                     }
                 } else {
@@ -226,7 +226,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (namespace == null) {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
-                for (TldLibrary lib : libs.values()) {
+                for (FaceletsLibrary lib : libs.values()) {
                     if (lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
                         items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
@@ -235,7 +235,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             } else {
                 //query only associated lib
-                TldLibrary lib = libs.get(namespace);
+                FaceletsLibrary lib = libs.get(namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
@@ -268,12 +268,10 @@ public class JsfHtmlExtension extends HtmlExtension {
         return null;
     }
 
-    private Collection<CompletionItem> queryLibrary(CompletionContext context, TldLibrary lib, String nsPrefix, boolean undeclared) {
+    private Collection<CompletionItem> queryLibrary(CompletionContext context, FaceletsLibrary lib, String nsPrefix, boolean undeclared) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for (TldLibrary.Tag tag : lib.getTags().values()) {
-            String tagName = tag.getName();
-            //TODO resolve help!!!
-            items.add(JsfCompletionItem.createTag(nsPrefix + ":" + tagName, context.getCCItemStartOffset(), tag, lib, undeclared));
+        for (FaceletsLibrary.NamedComponent component : lib.getComponents()) {
+            items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared));
         }
 
         return items;
@@ -284,10 +282,10 @@ public class JsfHtmlExtension extends HtmlExtension {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
         JsfSupport jsfs = JsfSupport.findFor(source);
-        if(jsfs == null) {
+        if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, TldLibrary> libs = jsfs.getLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -298,8 +296,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = queriedNode.getNameWithoutPrefix();
 
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
-        TldLibrary lib = libs.get(namespace);
-
+        FaceletsLibrary flib = libs.get(namespace);
+        TldLibrary lib = flib.getAssociatedTLDLibrary();
+        
         if (lib != null) {
             TldLibrary.Tag tag = lib.getTags().get(tagName);
             if (tag != null) {
@@ -314,7 +313,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                         //show only unused attributes except the one where the caret currently stays
                         //this is because of we need to show the item in the completion since
                         //use might want to see javadoc of already used attribute
-                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), lib, tag, a));
+                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
                     }
                 }
 
