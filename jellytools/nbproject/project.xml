@@ -300,32 +300,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.netbeans.jellytools</package>
-                <package>org.netbeans.jellytools.actions</package>
-                <package>org.netbeans.jellytools.modules.db</package>
-                <package>org.netbeans.jellytools.modules.db.actions</package>
-                <package>org.netbeans.jellytools.modules.db.derby</package>
-                <package>org.netbeans.jellytools.modules.db.derby.actions</package>
-                <package>org.netbeans.jellytools.modules.db.nodes</package>
-                <package>org.netbeans.jellytools.modules.debugger</package>
-                <package>org.netbeans.jellytools.modules.debugger.actions</package>
-                <package>org.netbeans.jellytools.modules.editor</package>
-                <package>org.netbeans.jellytools.modules.form</package>
-                <package>org.netbeans.jellytools.modules.form.actions</package>
-                <package>org.netbeans.jellytools.modules.form.properties.editors</package>
-                <package>org.netbeans.jellytools.modules.freeform.actions</package>
-                <package>org.netbeans.jellytools.modules.freeform.nodes</package>
-                <package>org.netbeans.jellytools.modules.j2ee</package>
-                <package>org.netbeans.jellytools.modules.j2ee.actions</package>
-                <package>org.netbeans.jellytools.modules.j2ee.nodes</package>
-                <package>org.netbeans.jellytools.modules.java.editor</package>
-                <package>org.netbeans.jellytools.modules.javacvs</package>
-                <package>org.netbeans.jellytools.modules.javacvs.actions</package>
-                <package>org.netbeans.jellytools.modules.web</package>
-                <package>org.netbeans.jellytools.modules.web.nodes</package>
-                <package>org.netbeans.jellytools.nodes</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
