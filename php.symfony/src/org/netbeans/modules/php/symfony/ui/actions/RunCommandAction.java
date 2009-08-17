@@ -39,12 +39,8 @@
 
 package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.util.concurrent.Callable;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.CommandDescriptor;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,17 +59,7 @@ public final class RunCommandAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        final FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
-        commandSupport.runCommand(new FrameworkCommandSupport.RunCommandListener() {
-            public void runCommand(CommandDescriptor commandDescriptor) {
-                Callable<Process> callable = commandSupport.createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
-                ExecutionDescriptor descriptor = commandSupport.getDescriptor();
-                String displayName = commandSupport.getOutputTitle(commandDescriptor);
-                ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-                service.run();
-            }
-        });
-
+        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override

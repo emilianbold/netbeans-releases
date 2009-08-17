@@ -43,6 +43,9 @@ public class GrailsServerState {
     private Process process;
 
     /** <i>GuardedBy("this")</i> */
+    private boolean debug;
+
+    /** <i>GuardedBy("this")</i> */
     private URL url;
 
     public GrailsServerState(Project prj) {
@@ -50,7 +53,15 @@ public class GrailsServerState {
     }
 
     public synchronized boolean isRunning() {
-        return process != null;
+        if (process == null) {
+            return false;
+        }
+        try {
+            int exitVal = process.exitValue();
+            return false;
+        } catch (IllegalThreadStateException ex) {
+            return true;
+        }
     }
 
     public synchronized Process getProcess() {
@@ -70,6 +81,14 @@ public class GrailsServerState {
 
     public synchronized void setRunningUrl(URL url) {
         this.url = url;
+    }
+
+    public synchronized boolean isDebug() {
+        return debug;
+    }
+
+    public synchronized void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
 }

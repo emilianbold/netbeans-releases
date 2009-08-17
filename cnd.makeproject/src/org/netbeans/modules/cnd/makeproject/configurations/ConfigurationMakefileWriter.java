@@ -188,11 +188,11 @@ public class ConfigurationMakefileWriter {
             String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
             if (makefileWriterClassName != null) {
                 Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
-                for(MakefileWriter instance: mwc){
-                   if (makefileWriterClassName.equals(instance.getClass().getName())){
-                       makefileWriter = instance;
-                       break;
-                   }
+                for (MakefileWriter instance : mwc) {
+                    if (makefileWriterClassName.equals(instance.getClass().getName())) {
+                        makefileWriter = instance;
+                        break;
+                    }
                 }
                 if (makefileWriter == null) {
                     System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
@@ -612,11 +612,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeCleanTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("# Clean Targets\n"); // NOI18N
-        if (hasSubprojects(conf)) {
-            bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}"); // NOI18N
-        } else {
-            bw.write(".clean-conf:"); // NOI18N
-        }
+        bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}"); // NOI18N
         if (conf.isQmakeConfiguration()) {
             bw.write(" nbproject/qt-" + conf.getName() + ".mk"); // NOI18N
         }
@@ -719,16 +715,6 @@ public class ConfigurationMakefileWriter {
             }
         }
         return linkObjects.toString();
-    }
-
-    private static boolean hasSubprojects(MakeConfiguration conf) {
-        LibrariesConfiguration librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
-        for (LibraryItem item : librariesConfiguration.getValue()) {
-            if (item instanceof LibraryItem.ProjectItem) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {

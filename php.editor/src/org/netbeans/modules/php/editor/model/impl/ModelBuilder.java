@@ -123,7 +123,7 @@ class ModelBuilder {
     }
 
      MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {
-        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(node), this);
+        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node), this);
         setCurrentScope(methodScope);
         occurencesBuilder.prepare(node, methodScope);
         return methodScope;

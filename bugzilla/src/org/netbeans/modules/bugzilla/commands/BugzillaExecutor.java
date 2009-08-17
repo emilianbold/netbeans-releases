@@ -82,7 +82,7 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions) {
-        execute(cmd, true, true);
+        execute(cmd, handleExceptions, true);
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
@@ -90,8 +90,7 @@ public class BugzillaExecutor {
             cmd.setFailed(true);
 
             if(checkVersion) {
-                BugzillaAutoupdate jau = new BugzillaAutoupdate();
-                jau.checkAndNotify(repository);
+                checkAutoupdate();
             }
 
             cmd.execute();
@@ -359,6 +358,15 @@ public class BugzillaExecutor {
                 }
                 return false;
             }
+        }
+    }
+
+    private void checkAutoupdate() {
+        try {
+            BugzillaAutoupdate jau = new BugzillaAutoupdate();
+            jau.checkAndNotify(repository);
+        } catch (Throwable t) {
+            Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);
         }
     }
 }

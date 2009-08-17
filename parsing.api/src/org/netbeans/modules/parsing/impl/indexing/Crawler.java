@@ -72,7 +72,12 @@ public abstract class Crawler {
 
     public final Collection<IndexableImpl> getResources() throws IOException {
         init ();
-        return cache;
+        return checkTimeStamps ? resources : allResources;
+    }
+
+    public final Collection<IndexableImpl> getAllResources() throws IOException {
+        init ();
+        return allResources;
     }
 
     public final Collection<IndexableImpl> getDeletedResources () throws IOException {
@@ -81,10 +86,12 @@ public abstract class Crawler {
     }
 
     public final void storeTimestamps() throws IOException {
+        init();
         timeStamps.store();
     }
 
-    public final boolean isFinished() {
+    public final boolean isFinished() throws IOException {
+        init();
         return finished;
     }
 
@@ -98,7 +105,7 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
-    protected abstract boolean collectResources(Collection<IndexableImpl> resources);
+    protected abstract boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources);
 
     // -----------------------------------------------------------------------
     // private implementation
@@ -109,15 +116,18 @@ public abstract class Crawler {
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
 
-    private Collection<IndexableImpl> cache;
+    private Collection<IndexableImpl> resources;
+    private Collection<IndexableImpl> allResources;
     private Collection<IndexableImpl> deleted;
     private boolean finished;
 
     private void init () throws IOException {
-        if (this.cache == null) {
-            Collection<IndexableImpl> resources = new LinkedHashSet<IndexableImpl>();
-            this.finished = collectResources(resources);
-            this.cache = Collections.unmodifiableCollection(resources);
+        if (this.resources == null) {
+            Collection<IndexableImpl> _resources = checkTimeStamps ? new LinkedHashSet<IndexableImpl>() : null;
+            Collection<IndexableImpl> _allResources = new LinkedHashSet<IndexableImpl>();
+            this.finished = collectResources(_resources, _allResources);
+            this.resources = checkTimeStamps ? Collections.unmodifiableCollection(_resources) : null;
+            this.allResources = Collections.unmodifiableCollection(_allResources);
             final Set<String> unseen = timeStamps.getUnseenFiles();
             if (unseen != null) {
                 deleted = new ArrayList<IndexableImpl>(unseen.size());

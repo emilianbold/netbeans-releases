@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -327,7 +328,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+        Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

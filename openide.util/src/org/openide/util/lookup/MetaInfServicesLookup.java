@@ -60,6 +60,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -69,6 +70,7 @@ import org.openide.util.Lookup;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
+    static final RequestProcessor RP = new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
     private static int knownInstancesCount;
     private static final List<Reference<Object>> knownInstances;
     static {
@@ -111,26 +113,16 @@ final class MetaInfServicesLookup extends AbstractLookup {
     protected final void beforeLookup(Lookup.Template t) {
         Class c = t.getType();
 
-        HashSet<AbstractLookup.R> listeners;
-
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 search(c, arr);
-
-                // listeners are notified under while holding lock on class c, 
-                // let say it is acceptable now
-                listeners = setPairsAndCollectListeners(arr);
+                setPairs(arr, RP);
             } else {
                 // ok, nothing needs to be done
                 return;
             }
-        }
-
-        NotifyListeners notify = new NotifyListeners(listeners);
-        if (notify.shallRun()) {
-            notify.run();
         }
     }
 

@@ -1400,6 +1400,7 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("This is all that has been delivered");
     }
 
+    @RandomlyFails // NB-Core-Build #3076, in ChildrenFilterAsLazyKeysTest
     public void testAddingJavaAndFormAtTheEndOfExistingFolder() throws Exception {
         class K extends Keys {
             int cnt;

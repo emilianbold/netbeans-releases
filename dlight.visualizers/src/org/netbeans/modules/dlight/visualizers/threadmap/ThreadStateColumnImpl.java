@@ -47,12 +47,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateColumn;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
 
 /**

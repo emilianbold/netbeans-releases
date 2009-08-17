@@ -206,6 +206,12 @@ class IssueStorage {
         return ids;
     }
 
+    long getQueryTimestamp(String nameSpace, String name) {
+        File folder = getNameSpaceFolder(nameSpace);
+        File file = new File(folder, encode(name) + QUERY_SUFIX);
+        return file.lastModified();
+    }
+
     public Map<String, Long> readArchivedQueryIssues(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N

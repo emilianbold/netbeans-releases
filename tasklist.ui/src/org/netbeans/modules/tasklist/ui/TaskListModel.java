@@ -49,8 +49,6 @@ import org.netbeans.modules.tasklist.impl.TaskComparator;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.modules.tasklist.impl.TaskList;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +62,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     protected static final int COL_GROUP = 0;
     protected static final int COL_DESCRIPTION = 1;
     protected static final int COL_FILE = 2;
-    protected static final int COL_LOCATION = 4;
-    protected static final int COL_LINE = 3;
+    protected static final int COL_LOCATION = 3;
             
     /** Creates a new instance of TaskListModel */
     public TaskListModel( TaskList taskList ) {
@@ -81,7 +78,7 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     }
     
     public int getColumnCount() {
-        return 5;
+        return 4;
     }
     
     @Override
@@ -102,8 +99,6 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
                 return NbBundle.getMessage( TaskListModel.class, "LBL_COL_File" ); //NOI18N
             case COL_LOCATION:
                 return NbBundle.getMessage( TaskListModel.class, "LBL_COL_Location" ); //NOI18N
-            case COL_LINE:
-                return NbBundle.getMessage( TaskListModel.class, "LBL_COL_Line" ); //NOI18N
         }
         return super.getColumnName( column );
     }
@@ -122,20 +117,11 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
                 case COL_DESCRIPTION:
                     return Accessor.getDescription( t );
                 case COL_FILE: {
-                    FileObject fo = Accessor.getResource( t );
-                    if( null == fo || fo.isFolder() )
-                        return null;
-                    return fo.getNameExt();
+                    return Accessor.getFileNameExt( t );
                 }
                 case COL_LOCATION: {
-                    FileObject fo = Accessor.getResource( t );
-                    if( null == fo || fo.isFolder() )
-                        return FileUtil.getFileDisplayName( fo );
-                    return FileUtil.getFileDisplayName( fo.getParent() );
+                    return Accessor.getLocation( t );
                 }
-                case COL_LINE:
-                    int lineNo = Accessor.getLine( t );
-                    return lineNo > 0 ? String.valueOf( lineNo ) : null;
             }
         }
         return null;
@@ -188,9 +174,6 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         switch( sortingCol ) {
         case COL_DESCRIPTION:
             comparator = TaskComparator.getDescriptionComparator( ascending );
-            break;
-        case COL_LINE:
-            comparator = TaskComparator.getLineComparator( ascending );
             break;
         case COL_LOCATION:
             comparator = TaskComparator.getLocationComparator( ascending );

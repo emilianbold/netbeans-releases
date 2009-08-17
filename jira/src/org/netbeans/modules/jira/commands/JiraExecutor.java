@@ -93,16 +93,15 @@ public class JiraExecutor {
         try {
             try {
 
+                cmd.setFailed(true);
+
                 if (ensureConfiguration) {
                     repository.getConfiguration(); // XXX hack
                 }
 
                 if(checkVersion) {
-                    JiraAutoupdate jau = new JiraAutoupdate();
-                    jau.checkAndNotify(repository);
+                    checkAutoupdate();
                 }
-                
-                cmd.setFailed(true);
 
                 cmd.execute();
 
@@ -116,6 +115,14 @@ public class JiraExecutor {
             } catch (CoreException ce) {
                 Jira.LOG.log(Level.FINE, null, ce);
                 throw new WrapperException(ce.getMessage(), ce);
+            } catch(IllegalStateException ise) {
+                String msg = ise.getMessage();
+                if(msg != null && msg.equals("Connection is not open")) {       // NOI18N
+                    Jira.LOG.log(Level.FINE, null, ise);
+                    throw new WrapperException(msg, ise);
+                } else {
+                    throw ise;
+                }
             }
         } catch (WrapperException we) {
             ExceptionHandler handler = ExceptionHandler.createHandler(we, this, repository);
@@ -159,6 +166,15 @@ public class JiraExecutor {
     public boolean handleIOException(IOException io) {
         Jira.LOG.log(Level.SEVERE, null, io);
         return true;
+    }
+
+    private void checkAutoupdate() {
+        try {
+            JiraAutoupdate jau = new JiraAutoupdate();
+            jau.checkAndNotify(repository);
+        } catch(Throwable t) {
+            Jira.LOG.log(Level.SEVERE, "Exception in JIRA autoupdate check.", t);
+        }
     }
 
     private static abstract class ExceptionHandler {

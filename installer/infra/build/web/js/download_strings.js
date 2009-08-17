@@ -64,10 +64,9 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 var ZIP_FILES_LIST_NAME             = "Zip Files";
 var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
-var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
-var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
-var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
-var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
+var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";
@@ -94,8 +93,6 @@ var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part o
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a id=\"zip_link\" href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 
-var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
-
 var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
@@ -108,9 +105,3 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 var START_PAGE = "start.html";
 var ZIP_PAGE   = "zip.html";
 
-var LEGAL_INFO_HEADER = "Important Legal Information:";
-
-var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
-var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
-
-var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {0} code is available under a <a href=\"{1}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{2}\">details about the components in NetBeans</a> and the licenses under which they are covered. Read the <a href=\"{3}\">License Notice</a>.";

@@ -2,7 +2,7 @@
 
     <target name="savaje-debug" if="savaje-platform.trigger">
          <parallel>
-            <sunEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.jvmargs}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" debug="true" debuggeraddressproperty="jpda.port">
+            <sunEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.cmd.options}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" debug="true" debuggeraddressproperty="jpda.port">
                 <fileset dir="${{dist.dir}}">
                     <exclude name="javadoc/**"/>
                 </fileset>

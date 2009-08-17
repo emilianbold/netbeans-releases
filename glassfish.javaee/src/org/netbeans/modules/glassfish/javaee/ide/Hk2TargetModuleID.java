@@ -58,27 +58,27 @@ public class Hk2TargetModuleID implements TargetModuleID {
 
     private final Hk2Target target;
     private final String docBaseURI;
-    private String path;
+    private String contextPath;
     private final String location;
     private TargetModuleID parent;
     private final Vector<TargetModuleID> children;
     final static private Map<String,Hk2TargetModuleID> knownModules =
             new HashMap<String,Hk2TargetModuleID>();
     
-    private Hk2TargetModuleID(Hk2Target target, String docBaseURI, String path, String location) {
+    private Hk2TargetModuleID(Hk2Target target, String docBaseURI, String contextPath, String location) {
         this.target = target;
         this.docBaseURI = docBaseURI;
-        this.path = path;
+        this.contextPath = contextPath;
         this.location = location;
         this.parent = null;
         this.children = new Vector<TargetModuleID>();
     }
 
-    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String path, String location) {
-        return get(target,docBaseURI, path, location, false);
+    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String contextPath, String location) {
+        return get(target, docBaseURI, contextPath, location, false);
     }
 
-    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String path, String location, boolean clearChildren) {
+    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String contextPath, String location, boolean clearChildren) {
         synchronized(knownModules) {
             // Normalize the location data
             if (!location.endsWith(File.separator)) {
@@ -87,7 +87,7 @@ public class Hk2TargetModuleID implements TargetModuleID {
             String key = docBaseURI+location;
             Hk2TargetModuleID retVal = knownModules.get(key);
             if (null == retVal) {
-                retVal = new Hk2TargetModuleID(target, docBaseURI, path, location);
+                retVal = new Hk2TargetModuleID(target, docBaseURI, contextPath, location);
                 knownModules.put(key,retVal);
             }
             if (clearChildren) {
@@ -107,14 +107,14 @@ public class Hk2TargetModuleID implements TargetModuleID {
     public String getModuleID() {
         return docBaseURI;
     }
-    
+
     public String getWebURL() {
         // !PW FIXME path ought to be URL encoded by the time we get here.
-        if (null != path) {
-            if(!path.startsWith("/")) {
-                return target.getServerUri() + "/" + path.replaceAll(" ", "%20");
+        if (null != contextPath) {
+            if(!contextPath.startsWith("/")) {
+                return target.getServerUri() + "/" + contextPath.replaceAll(" ", "%20");
             } else {
-                return target.getServerUri() + path.replaceAll(" ", "%20");
+                return target.getServerUri() + contextPath.replaceAll(" ", "%20");
             }
         }
         return null;
@@ -138,7 +138,7 @@ public class Hk2TargetModuleID implements TargetModuleID {
     }
     
     public void setPath(String p) {
-        this.path = p;
+        this.contextPath = p;
     }
 
     public void addChild(Hk2TargetModuleID child) {

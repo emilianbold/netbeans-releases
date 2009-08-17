@@ -6,6 +6,6 @@
 |--$z [398, 399] : ESCAPED{$z}
 |--draw [466, 532] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}
 |-Circle [601, 759] : ESCAPED{Circle}<font color="#999999">:ESCAPED{Shape}</font>
-|--$point [560, 565] : ESCAPED{$point}
+|--$point [560, 565] : ESCAPED{$point}<font color="#999999">:ESCAPED{Point}</font>
 |--$radius [584, 590] : ESCAPED{$radius}
 |--draw [647, 757] : ESCAPED{draw}ESCAPED{(}ESCAPED{)}

@@ -65,6 +65,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
     /**
      * @deprecated this is meant to be used by the layer.xml and NO ONE ELSE
      */
+    @Deprecated
     public Hk2JavaEEPlatformFactory() {
     }
 
@@ -74,7 +75,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
             JavaPlatformManager.getDefault().getDefaultPlatform(),
             NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
             "J2EE/DeploymentPlugins/gfv3/Lookup",
-            new HashSet(Arrays.asList(new String[] {"1.6","1.5"})),
+            new HashSet<String>(Arrays.asList(new String[] {"1.6","1.5"})),
             new HashSet<J2eeModule.Type>(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR })),
             new HashSet<Profile>(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
                 Profile.JAVA_EE_5})));
@@ -85,7 +86,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         JavaPlatform jp = null; // JavaPlatformManager.getDefault().getDefaultPlatform();
         String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY");
         String lk = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
-        Set sjp = new HashSet(Arrays.asList(new String[] {"1.6"}));
+        Set sjp = new HashSet<String>(Arrays.asList(new String[] {"1.6"}));
         Set<J2eeModule.Type> smt = new HashSet<J2eeModule.Type>(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR,
             J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
         return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,

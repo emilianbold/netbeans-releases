@@ -43,6 +43,7 @@ import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterat
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -62,6 +63,9 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
     }
     
     public String getDisplayName() {
+        if (originalActive()) {
+            return null;
+        }
         if (displayName == null) {
             displayName = (String) fob.getAttribute("displayName"); // NOI18N
             if (displayName == null) { // attribute not available
@@ -72,7 +76,20 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
     }
 
     public InstantiatingIterator getInstantiatingIterator() {
+        if (originalActive()) {
+            return null;
+        }
         return new FeatureOnDemanWizardIterator(fob);
+    }
+
+    private boolean originalActive() {
+        Object orig = fob.getAttribute("originalDefinition"); // NOI18N
+        if (orig instanceof String) {
+            if (FileUtil.getConfigFile((String) orig) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

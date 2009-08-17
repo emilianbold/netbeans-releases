@@ -39,14 +39,19 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import javax.swing.JPanel;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -56,14 +61,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.debugger.gdb.DebuggerStartException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -71,7 +80,7 @@ import org.openide.util.NbBundle;
  */
 public class GdbAttachPanel extends JPanel implements ProcessListReader {
     
-    private final ProcessList procList;
+    private ProcessList procList;
     private final AttachTableModel processModel = new AttachTableModel();
     private final Controller controller;
     private static String lastFilterValue = "";
@@ -79,15 +88,27 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     
     /** Creates new form GdbAttachPanel */
     public GdbAttachPanel() {
-        procList = new ProcessList();
         controller = new GdbAttachController();
         initComponents();
+        initHostCombo();
+        procList = new ProcessList(getCurrentExecutionEnvironment());
         filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
                 filterTextChanged();
             }
         });
         postComponentsInit();
+    }
+
+    private void initHostCombo() {
+        Collection<? extends ServerRecord> records = ServerList.getRecords();
+        for (ServerRecord serverRecord : records) {
+            hostComboBox.addItem(serverRecord);
+        }
+    }
+
+    private ExecutionEnvironment getCurrentExecutionEnvironment() {
+        return ((ServerRecord)hostComboBox.getSelectedItem()).getExecutionEnvironment();
     }
 
     private synchronized void filterTextChanged() {
@@ -312,7 +333,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                 ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
                 if (pi != null) {
                     try {
-                        GdbDebugger.attach(Long.valueOf(pid), pi.getProjectInformation());
+                        GdbDebugger.attach(Long.valueOf(pid), pi.getProjectInformation(), getCurrentExecutionEnvironment());
                     } catch (DebuggerStartException dse) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbAttachPanel.class,
@@ -359,6 +380,8 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         projectCB = new javax.swing.JComboBox();
         allCheckBox = new javax.swing.JCheckBox();
         filterField = new javax.swing.JTextField();
+        hostComboBox = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
 
         processTable.setModel(processModel);
         processTable.setColumnSelectionAllowed(false);
@@ -384,36 +407,53 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             }
         });
 
+        hostComboBox.setRenderer(new MyDevHostListCellRenderer());
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboBoxItemStateChanged(evt);
+            }
+        });
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachPanel.jLabel1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(filterLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filterField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
                 .add(projectLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectCB, 0, 502, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(procLabel)
+                .add(allCheckBox)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(allCheckBox)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(hostComboBox, 0, 519, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(filterLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(filterField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(procLabel)
                 .addContainerGap())
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(hostComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(filterLabel)
                     .add(filterField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(procLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(allCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -427,11 +467,23 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         showAll = allCheckBox.isSelected();
         updateProcessList();
     }//GEN-LAST:event_allCheckBoxActionPerformed
+
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
+        final ExecutionEnvironment exEnv = getCurrentExecutionEnvironment();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                procList = new ProcessList(exEnv);
+                updateProcessList();
+            }
+        });
+    }//GEN-LAST:event_hostComboBoxItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox allCheckBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
+    private javax.swing.JComboBox hostComboBox;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel procLabel;
     private javax.swing.JTable processTable;
@@ -454,5 +506,16 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             documentChanged(e);
         }
 
+    }
+
+    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ServerRecord rec = (ServerRecord) value;
+            label.setText(rec.getServerDisplayName());
+            return label;
+        }
     }
 }

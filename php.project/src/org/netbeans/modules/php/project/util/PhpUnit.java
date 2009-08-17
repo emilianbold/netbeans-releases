@@ -60,11 +60,12 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,15 +136,39 @@ public final class PhpUnit extends PhpProgram {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public PhpUnit(String command) {
+    private PhpUnit(String command) {
         super(command);
     }
 
-    public File getWorkingDirectory() {
-        return new File(getProgram()).getParentFile();
+    public static PhpUnit getDefault() throws InvalidPhpProgramException {
+        String command = PhpOptions.getInstance().getPhpUnit();
+        String error = validate(command);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
+        }
+        return new PhpUnit(command);
+    }
+
+    public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
+        String error = validate(command);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
+        }
+        return new PhpUnit(command);
+    }
+
+    @Override
+    public ExternalProcessBuilder getProcessBuilder() {
+        return super.getProcessBuilder()
+                .workingDirectory(new File(getProgram()).getParentFile());
+    }
+
+    // #170120
+    public File getWorkingDirectory(ConfigFiles configFiles, File defaultWorkingDirectory) {
+        if (configFiles.configuration != null) {
+            return configFiles.configuration.getParentFile();
+        }
+        return defaultWorkingDirectory;
     }
 
     // XXX see 2nd paragraph
@@ -185,8 +210,7 @@ public final class PhpUnit extends PhpProgram {
         }
 
         version = UNKNOWN_VERSION;
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
-                .workingDirectory(getWorkingDirectory())
+        ExternalProcessBuilder externalProcessBuilder = getProcessBuilder()
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
@@ -225,7 +249,7 @@ public final class PhpUnit extends PhpProgram {
         return params.toArray(new String[params.size()]);
     }
 
-    public Files getFiles(PhpProject project, boolean withSuite) {
+    public static ConfigFiles getConfigFiles(PhpProject project, boolean withSuite) {
         List<Pair<String, File>> missingFiles = new LinkedList<Pair<String, File>>();
         File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
         if (bootstrap != null
@@ -237,7 +261,7 @@ public final class PhpUnit extends PhpProgram {
         File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
         if (configuration != null
                 && !configuration.isFile()) {
-            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_Configuration"), configuration));
+            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_XmlConfiguration"), configuration));
             configuration = null;
         }
 
@@ -251,10 +275,10 @@ public final class PhpUnit extends PhpProgram {
             }
         }
         warnAboutMissingFiles(missingFiles);
-        return new Files(bootstrap, configuration, suite);
+        return new ConfigFiles(bootstrap, configuration, suite);
     }
 
-    public File getCustomSuite(PhpProject project) {
+    public static File getCustomSuite(PhpProject project) {
         File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
         if (suite != null
                 && suite.isFile()) {
@@ -458,12 +482,35 @@ public final class PhpUnit extends PhpProgram {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
     }
 
-    public static final class Files {
+    @Override
+    public String validate() {
+        if (!StringUtils.hasText(getProgram())) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_NoPhpUnit");
+        }
+
+        File file = new File(getProgram());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitCannotRead");
+        }
+        return null;
+    }
+
+    public static String validate(String command) {
+        return new PhpUnit(command).validate();
+    }
+
+    public static final class ConfigFiles {
         public final File bootstrap;
         public final File configuration;
         public final File suite;
 
-        public Files(File bootstrap, File configuration, File suite) {
+        public ConfigFiles(File bootstrap, File configuration, File suite) {
             this.bootstrap = bootstrap;
             this.configuration = configuration;
             this.suite = suite;

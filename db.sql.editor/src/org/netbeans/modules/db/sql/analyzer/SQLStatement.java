@@ -39,10 +39,86 @@
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.Map.Entry;
+import java.util.SortedMap;
+
 /**
  *
  * @author Jiri Rechtacek
  */
-public abstract class SQLStatement {
-    public abstract SQLStatementKind getKind ();
+public class SQLStatement {
+
+    SQLStatementKind kind;
+    int startOffset, endOffset;
+    SortedMap<Integer, Context> offset2Context;
+    TablesClause tablesClause;
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.offset2Context = offset2Context;
+    }
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.offset2Context = offset2Context;
+        this.tablesClause = tablesClause;
+    }
+
+    public SQLStatementKind getKind() {
+        return kind;
+    }
+
+    public Context getContextAtOffset(int offset) {
+        Context result = null;
+        for (Entry<Integer, Context> entry : offset2Context.entrySet()) {
+            if (offset >= entry.getKey()) {
+                result = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    TablesClause getTablesClause() {
+        return tablesClause;
+    }
+
+    public enum Context {
+
+        START(0),
+        // DELETE
+        DELETE(200),
+        // DROP TABLE
+        DROP_TABLE(300),
+        // INSERT
+        INSERT_INTO(400),
+        COLUMNS(420),
+        VALUES(430),
+        // SELECT
+        SELECT(500),
+        FROM(510),
+        JOIN_CONDITION(520),
+        WHERE(530),
+        GROUP(540),
+        GROUP_BY(550),
+        HAVING(560),
+        ORDER(570),
+        ORDER_BY(580),
+        // UPDATE
+        UPDATE(600),
+        SET(610);
+
+        private final int order;
+
+        private Context(int order) {
+            this.order = order;
+        }
+
+        public boolean isAfter(Context context) {
+            return this.order >= context.order;
+        }
+    }
 }

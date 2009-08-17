@@ -49,6 +49,7 @@ import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOPosition;
@@ -175,7 +176,7 @@ public class IOExtensionsTest extends NbTestCase {
         assertEquals(1290, p);
     }
 
-    public void testColorPrinting() throws IOException {
+    public void testColorLinePrinting() throws IOException {
         for (int i = 0; i < 11; i++) {
             int c = 55 + i * 20;
             IOColorLines.println(io, "Test line " + i, new Color(c, 0, 0));
@@ -183,8 +184,12 @@ public class IOExtensionsTest extends NbTestCase {
             IOColorLines.println(io, "Test line " + i, new Color(0, 0, c));
         }
         IOColorLines.println(io, "Line with listener", new L(), false, new Color(120, 120, 0));
-        IOColorLines.println(io, "          Line with listener", new L(), false, new Color(120, 120, 0));
-        IOColorLines.println(io, "Another line with importnat listener", new L(), true, new Color(0, 100, 255));
+        IOColorLines.println(io, "          Listener starting with spaces", new L(), false, new Color(120, 120, 0));
+        IOColorLines.println(io, "Important listener ended by spaces  ", new L(), true, new Color(0, 100, 255));
+        IOColorLines.println(io, "\tMultiple\nline listener containing tabs\t...", new L(), true, new Color(50, 100, 55));
+        IOColorLines.println(io, "\tListener started by tab", new L(), false, new Color(120, 120, 0));
+        IOColorLines.println(io, "          Line with listener started by spaces, ended by tab\t", new L(), false, new Color(120, 120, 0));
+        IOColorLines.println(io, "\tLine with\timportant\tlistener full of tabs\t", new L(), true, new Color(0, 100, 255));
 
         for (int i = 0; i < 50; i++) {
             io.getOut().println(i);
@@ -196,6 +201,48 @@ public class IOExtensionsTest extends NbTestCase {
         }
         IOColorLines.println(io, longLine, new Color(255, 0, 0));
         IOColorLines.println(io, longLine, new L(), false, new Color(255, 0, 0));
+    }
+
+    public void testColorPrinting() throws IOException, InterruptedException {
+        for (int i = 0; i < 10; i++) {
+            int c = 55 + i * 20;
+            IOColorPrint.print(io, "Test line " + i, new Color(c, 0, 0));
+            IOColorPrint.print(io, "more more " + i, new Color(0, c, 0));
+            IOColorLines.println(io, "of them " + i, new Color(0, 0, c));
+        }
+        IOColorPrint.print(io, "1st with listeners\t", new L(), false, new Color(120, 120, 0));
+        IOColorPrint.print(io, "          2nd listener", new L(), false, new Color(120, 255, 0));
+        IOColorPrint.print(io, "   Listener \twith tab inside    \n", new L(), true, new Color(0, 100, 255));
+        IOColorPrint.print(io, "\t\t\t\t   Important listener surounded by tabs\t\t\t", new L(), true, new Color(0, 100, 255));
+
+        IOColorPrint.print(io, "No listener", new Color(120, 120, 0));
+        IOColorPrint.print(io, "listener", new L(), false, new Color(120, 255, 0));
+        IOColorPrint.print(io, "No listener\n", new Color(255, 120, 0));
+        IOColorPrint.print(io, "\tMultiple\nline listener\t...\n", new L(), true, new Color(50, 100, 55));
+        IOColorPrint.print(io, "\tMultiple line,\nmultiple tabs\t\n\tlistener\t...\n", new L(), true, new Color(150, 100, 55));
+
+        IOColorPrint.print(io, "colored part", Color.MAGENTA);
+        io.getOut().print("normal");
+        io.getErr().print("error\n");
+
+        io.getOut().print("normal");
+        IOColorPrint.print(io, "listener", new L(), false, Color.MAGENTA);
+        io.getErr().println("error");
+
+        io.getOut().print("normal");
+        IOColorPrint.print(io, "\tlistener\t", new L(), false, Color.MAGENTA);
+        io.getOut().println("normal");
+
+        for (int i = 0; i < 50; i++) {
+            io.getOut().println(i);
+        }
+
+        StringBuilder longLine = new StringBuilder("Long line ...");
+        for (int i = 0; i < 100; i++) {
+            longLine.append("...test " + i + " ...");
+        }
+        IOColorPrint.print(io, longLine, new Color(255, 0, 0));
+        IOColorPrint.print(io, longLine, new L(), false, new Color(255, 0, 0));
     }
 
     public class L implements OutputListener {

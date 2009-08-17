@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.sql.analyzer;
 
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 
 /**
@@ -49,25 +48,16 @@ import java.util.SortedMap;
  */
 public class InsertStatement extends SQLStatement {
 
-    private final SQLStatementKind kind;
-    int startOffset, endOffset;
     private final List<String> columns;
     private final List<String> values;
-    private final SortedMap<Integer, InsertContext> offset2Context;
     private final QualIdent table;
 
-    InsertStatement(SQLStatementKind kind, int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, InsertContext> offset2Context) {
-        this.kind = kind;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    InsertStatement(int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, Context> offset2Context) {
+        super(startOffset, endOffset, offset2Context);
+        this.kind = SQLStatementKind.INSERT;
         this.columns = columns;
         this.values = values;
-        this.offset2Context = offset2Context;
         this.table = table;
-    }
-
-    public SQLStatementKind getKind() {
-        return kind;
     }
 
     public QualIdent getTable () {
@@ -80,25 +70,5 @@ public class InsertStatement extends SQLStatement {
 
     public List<String> getValues() {
         return values;
-    }
-
-    public InsertContext getContextAtOffset(int offset) {
-        InsertContext result = null;
-        for (Entry<Integer, InsertContext> entry : offset2Context.entrySet()) {
-            if (offset >= entry.getKey()) {
-                result = entry.getValue();
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public enum InsertContext {
-
-        INSERT,
-        INTO,
-        COLUMNS,
-        VALUES,
     }
 }

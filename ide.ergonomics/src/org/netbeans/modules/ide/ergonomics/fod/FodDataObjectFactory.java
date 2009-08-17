@@ -74,10 +74,12 @@ public class FodDataObjectFactory implements DataObject.Factory {
     private static MultiFileLoader delegate;
     private static final Set<FileObject> ignore = new WeakSet<FileObject>();
 
-    private FileObject definition;
+    private final FileObject definition;
+    private final FeatureInfo info;
     
     private FodDataObjectFactory(FileObject fo) {
         this.definition = fo;
+        this.info = FoDFileSystem.getInstance().whichProvides(definition);
     }
 
 
@@ -87,6 +89,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
 
     public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
         if (fo.isFolder()) {
+            return null;
+        }
+        if (info != null && info.isEnabled()) {
             return null;
         }
         if (fo.getMIMEType().endsWith("+xml")) {

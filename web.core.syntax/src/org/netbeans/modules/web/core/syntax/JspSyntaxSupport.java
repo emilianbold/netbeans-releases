@@ -54,7 +54,7 @@ import javax.servlet.jsp.tagext.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;

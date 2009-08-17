@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.editor.api;
 
 import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -227,6 +228,11 @@ public class GroovyIndexer extends EmbeddingIndexer {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+
         }
         
         @Override

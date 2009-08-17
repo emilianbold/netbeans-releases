@@ -98,7 +98,8 @@ public class HtmlCompletionQuery extends UserTask {
         if (parserResult == null) {
             return;
         }
-        if (parserResult.getSnapshot().getMimeType().equals("text/html")) {
+        String resultMimeType = parserResult.getSnapshot().getMimeType();
+        if (resultMimeType.equals("text/html")) {
             //proceed only on html content
             this.completionResult = query((HtmlParserResult) parserResult);
         }
@@ -112,6 +113,7 @@ public class HtmlCompletionQuery extends UserTask {
     CompletionResult query(HtmlParserResult parserResult, DTD dtd) {
 
         Snapshot snapshot = parserResult.getSnapshot();
+        String sourceMimetype = snapshot.getSource().getMimeType();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         lowerCase = usesLowerCase(parserResult, astOffset);
         isXHtml = parserResult.getHtmlVersion().isXhtml();
@@ -200,7 +202,7 @@ public class HtmlCompletionQuery extends UserTask {
                 
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 result.addAll(e.completeOpenTags(context));
             }
 
@@ -217,7 +219,7 @@ public class HtmlCompletionQuery extends UserTask {
             
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 Collection<CompletionItem> items = e.completeOpenTags(context);
                 result.addAll(items);
             }
@@ -247,7 +249,7 @@ public class HtmlCompletionQuery extends UserTask {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
-                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                     items.addAll(e.completeAttributes(context));
                 }
                 result = items;

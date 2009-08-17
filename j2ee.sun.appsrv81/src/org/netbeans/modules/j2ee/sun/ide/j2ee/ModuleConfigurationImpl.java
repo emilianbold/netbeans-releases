@@ -47,7 +47,6 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -321,14 +320,14 @@ public class ModuleConfigurationImpl implements
                 
         private void rewriteBuildImpl(FileObject tmp) {
             File f = FileUtil.toFile(tmp);
-            Project p = null;
+            final Project p;// = null;
             if (null != f) {
                 p = FileOwnerQuery.getOwner(f.toURI());
+            } else {
+                p = null;
             }
             if (null != p) {
-                // TODO : change addExtension default value to true after GF 3317 is resolved
-                //boolean addExtension = true;
-                boolean addExtension = false;
+                final boolean addExtension;// = false;
                 DeploymentManager dm = getDeploymentManager(p);
                 if (null == dm) {
                     addExtension = false;
@@ -336,6 +335,10 @@ public class ModuleConfigurationImpl implements
                     SunDeploymentManagerInterface sdmi =
                             (SunDeploymentManagerInterface) dm;
                     if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) < ServerLocationManager.GF_V2) {
+                        addExtension = false;
+                    } else {
+                        // TODO : change addExtension default value to true after GF 3317 is resolved
+                        //addExtension = true;
                         addExtension = false;
                     }
                 } else { // null != dm && ! (dm instanceof SunDeploymentManagerInterface) 
@@ -347,21 +350,27 @@ public class ModuleConfigurationImpl implements
                 if (null == jmp) {
                     return;
                 }
-                String target = J2eeModule.Type.EAR.equals(jmp.getJ2eeModule().getType()) ? "pre-dist" : "-pre-dist"; // NOI18N
-                try {
-                    if (addExtension) {
-                        BuildExtension.copyTemplate(p);
-                        BuildExtension.extendBuildXml(p,target);
-                    } else {
-                        BuildExtension.abbreviateBuildXml(p,target);
-                        BuildExtension.removeTemplate(p);
+                final String target = J2eeModule.Type.EAR.equals(jmp.getJ2eeModule().getType()) ? "pre-dist" : "-pre-dist"; // NOI18N
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+
+                    public void run() {
+                        try {
+                            if (addExtension) {
+                                BuildExtension.copyTemplate(p);
+                                BuildExtension.extendBuildXml(p, target);
+                            } else {
+                                BuildExtension.abbreviateBuildXml(p, target);
+                                BuildExtension.removeTemplate(p);
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                });
+
             }
         }
-        
+
         private DeploymentManager getDeploymentManager(Project p) {
             DeploymentManager dm = null;
             J2eeModuleProvider provider = getProvider(p);

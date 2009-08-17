@@ -40,22 +40,21 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.php.project.util.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -96,8 +95,8 @@ public final class ProjectPropertiesSupport {
         project.addWeakPropertyEvaluatorListener(listener);
     }
 
-    public static void addWeakIgnoredFoldersListener(PhpProject project, ChangeListener listener) {
-        project.addWeakIgnoredFoldersListener(listener);
+    public static void addWeakIgnoredFilesListener(PhpProject project, ChangeListener listener) {
+        project.addWeakIgnoredFilesListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -171,12 +170,12 @@ public final class ProjectPropertiesSupport {
         return sources;
     }
 
-    public static PhpInterpreter getPhpInterpreter(PhpProject project) {
+    public static PhpInterpreter getPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
         String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
-        if (interpreter != null && interpreter.length() > 0) {
-            return new PhpInterpreter(interpreter);
+        if (StringUtils.hasText(interpreter)) {
+            return PhpInterpreter.getCustom(interpreter);
         }
-        return new PhpInterpreter(PhpOptions.getInstance().getPhpInterpreter());
+        return PhpInterpreter.getDefault();
     }
 
     public static boolean isCopySourcesEnabled(PhpProject project) {
@@ -204,10 +203,6 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
-    }
-
-    public static Set<FileObject> getIgnoredFolders(PhpProject project) {
-        return project.getIgnoredFolders();
     }
 
     /**
@@ -365,8 +360,7 @@ public final class ProjectPropertiesSupport {
     public static List<PhpFrameworkProvider> getFrameworks(PhpProject project) {
         // XXX: improve performance
         List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
-        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
-        assert phpModule != null;
+        PhpModule phpModule = project.getPhpModule();
         for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             if (frameworkProvider.isInPhpModule(phpModule)) {
                 frameworks.add(frameworkProvider);
