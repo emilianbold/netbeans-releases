@@ -1,7 +1,5 @@
 TODO:
 
-- host setup: copying binaries to the remote host
-
 - track filestamps on local host
 
 - pass directory structure to the remote controller
@@ -21,8 +19,6 @@ TODO:
 
 - replace realpath w/ tracking chdir
 
-- write tests
-
 - don't wait for file forever; make kindof "alive" confirmations
 
 - copy files in background upon user saves them
@@ -33,3 +29,7 @@ DONE:
 
 - don't ask NB site twice about the same file:
 implement logic that tracks files in remote controller
+
+- host setup: copying binaries to the remote host
+
+- write tests
