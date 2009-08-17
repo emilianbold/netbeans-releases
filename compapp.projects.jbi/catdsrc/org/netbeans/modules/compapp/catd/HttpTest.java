@@ -51,14 +51,13 @@ import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.InputSource;
 
 import org.w3c.dom.Document;
-//import com.meterware.httpunit.*;
+import com.meterware.httpunit.*;
 import junit.framework.*;
 
 /**
  * An example of testing servlets using httpunit and JUnit.
  **/
 public class HttpTest extends TestCase {
-/* TODO ADD
 
     private DocumentBuilder builder;
     private Properties testProps;
@@ -114,6 +113,9 @@ public class HttpTest extends TestCase {
         return suite;
     }
     
+    /**
+     * Utility method to load a properties file
+     */
     static Properties loadProperties(String propertiesFile) throws IOException{
         FileInputStream fis = null;
         Properties props = null;
@@ -164,7 +166,6 @@ public class HttpTest extends TestCase {
         }
         
     }
-*/
 }
 
 
