@@ -81,6 +81,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final String tmpDir;
     private static final String url;
     private String dbURL;
+    private final List<DataTableMetadata> tableMetadatas;
 
     static {
         try {
@@ -153,6 +154,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private H2DataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
+        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -173,19 +175,16 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     }
 
     @Override
-    public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
             if (tdmd == null) {
                 continue;
             }
             if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
-                if (!createTable(tdmd)) {
-                    return false;
-                }
+                createTable(tdmd);
             }
+            this.tableMetadatas.add(tdmd);
         }
-
-        return true;
     }
 
     @Override
@@ -262,5 +261,11 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 
-   
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
+    }
+
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
 }

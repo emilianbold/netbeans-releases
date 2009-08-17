@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.storage;
 
 import java.util.List;
@@ -48,27 +47,22 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
  *
  * @author Alexey Vladykin
  */
-public abstract class ProxyDataStorage extends DataStorage {
+public interface ProxyDataStorage extends DataStorage {
 
     /**
      * @return supported underlying storage type
      */
-    public abstract DataStorageType getBackendDataStorageType();
+    DataStorageType getBackendDataStorageType();
 
     /**
      * @return list of tables to create in the underlying storage
      */
-    public abstract List<DataTableMetadata> getBackendTablesMetadata();
+    List<DataTableMetadata> getBackendTablesMetadata();
 
     /**
      * Called by infrastructure to attach to backend storage.
      *
      * @param storage  backend storage supporting the required storage type
      */
-    public abstract void attachTo(DataStorage storage);
-
-    /**
-     * @return backend storage this proxy was attached to
-     */
-    public abstract DataStorage getBackendDataStorage();
+    void attachTo(DataStorage storage);
 }
