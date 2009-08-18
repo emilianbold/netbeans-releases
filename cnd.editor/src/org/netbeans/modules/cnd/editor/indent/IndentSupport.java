@@ -787,6 +787,12 @@ public class IndentSupport {
         while (t != null) {
             switch (t.getTokenID()) {
                 case EQ:
+                case LTLT:
+                case GTGT:
+                case PLUSEQ:
+                case MINUSEQ:
+                case LTLTEQ:
+                case GTGTEQ:
                 case AMPEQ:
                 case BAREQ:
                 case STAREQ:
