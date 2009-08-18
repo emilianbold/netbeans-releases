@@ -1134,7 +1134,7 @@ public class FileStatusCache {
                             if (mimeTypeFlag) {
                                 // call svn prop command only when really needed
                                 FileInformation fi = master.getCachedStatus(file);
-                                if (fi == null || (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
+                                if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
                                     binaryString = getMimeType(client, file);
                                 } else {
                                     binaryString = "";                  //NOI18N
@@ -1190,7 +1190,9 @@ public class FileStatusCache {
                         return mime != null ? mime : "";                //NOI18N
                     }
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                        LABELS_CACHE_LOG.log(Level.FINE, null, ex);
+                    }
                     return "";                                          //NOI18N
                 }
                 return "";                                              //NOI18N
