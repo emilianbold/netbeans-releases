@@ -93,6 +93,7 @@ public class ReactorChecker implements PrerequisitesChecker {
         if (config.getProject() == null) {
             return true;
         }
+        boolean is211 = isAtLeast211Maven();
         boolean isReactor = config.getReactorStyle() != RunConfig.ReactorStyle.NONE;
         boolean isOldSchoolReactor = false;
         for (String goal : config.getGoals()) {
@@ -129,7 +130,7 @@ public class ReactorChecker implements PrerequisitesChecker {
             }
         }
 
-        if (isOldSchoolReactor && isAtLeast211Maven() && config instanceof BeanRunConfig) {
+        if (isOldSchoolReactor && is211 && config instanceof BeanRunConfig) {
             //convert to new way of doing things..
             BeanRunConfig beanRunConfig = (BeanRunConfig) config;
             List<String> goals = new ArrayList<String>(beanRunConfig.getGoals());
@@ -162,6 +163,24 @@ public class ReactorChecker implements PrerequisitesChecker {
             beanRunConfig.setProperties(props);
             beanRunConfig.setGoals(goals);
             beanRunConfig.setActivatedProfiles(profiles);
+        }
+        if (isReactor && !isOldSchoolReactor && !is211 && config instanceof BeanRunConfig) {
+            //convert to new way of doing things..
+            BeanRunConfig beanRunConfig = (BeanRunConfig) config;
+            List<String> goals = new ArrayList<String>(beanRunConfig.getGoals());
+            Properties props = beanRunConfig.getProperties();
+            props.setProperty("make.goals", StringUtils.join(goals.iterator(), ","));
+            goals.clear();
+            if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE) {
+                goals.add("reactor:make");
+            }
+            if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE_DEPENDENTS) {
+                goals.add("reactor:make-dependents");
+            }
+            props.setProperty("make.artifacts", config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+            beanRunConfig.setReactorStyle(RunConfig.ReactorStyle.NONE);
+            beanRunConfig.setProperties(props);
+            beanRunConfig.setGoals(goals);
         }
 
         if (showDialog) {
