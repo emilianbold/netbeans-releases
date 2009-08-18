@@ -239,11 +239,11 @@ public class SyntaxTree {
                         tagElement.offset(), tagElement.offset() + tagElement.length(),
                         currentNodeDtdElement, tagElement.isEmpty(), stack(stack));
 
-                //check if the tag can be empty
-                if(tagElement.isEmpty() && !currentNodeDtdElement.isEmpty()) {
-                    //the tag is empty, but cannot be, mark error
-                    openTagNode.addDescriptionToNode(TAG_CANNOT_BE_EMPTY, NbBundle.getMessage(SyntaxTree.class, "MSG_TAG_CANNOT_BE_EMPTY"), Description.ERROR);
-                }
+//                //check if the tag can be empty
+//                if(tagElement.isEmpty() && !currentNodeDtdElement.isEmpty()) {
+//                    //the tag is empty, but cannot be, mark error
+//                    openTagNode.addDescriptionToNode(TAG_CANNOT_BE_EMPTY, NbBundle.getMessage(SyntaxTree.class, "MSG_TAG_CANNOT_BE_EMPTY"), Description.ERROR);
+//                }
 
                 //check tag attributes
                 checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
