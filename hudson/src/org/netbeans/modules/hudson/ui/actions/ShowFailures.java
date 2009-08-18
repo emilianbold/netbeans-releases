@@ -57,7 +57,6 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -243,7 +242,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
         } catch (FileNotFoundException x) {
             Toolkit.getDefaultToolkit().beep();
         } catch (Exception x) {
-            Exceptions.printStackTrace(x);
+            Toolkit.getDefaultToolkit().beep();
+            LOG.log(Level.INFO, null, x);
         }
     }
 
