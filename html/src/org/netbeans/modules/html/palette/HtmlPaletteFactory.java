@@ -38,47 +38,80 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.html.palette;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider;
 import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
-
-
-
-
-
 /**
  *
- * @author Libor Kotouc
+ * @author Libor Kotouc, mfukala@netbeans.org
  */
 public final class HtmlPaletteFactory {
 
-    public static final String HTML_PALETTE_FOLDER = "HTMLPalette";
+    static final String DEFAULT_HTML_PALETTE_FOLDER = "HTMLPalette"; //NOI18N
 
-    private static PaletteController palette = null;
+    //palette folder to palettecontroller map
+    private static Map<String, PaletteController> PALETTES = new HashMap<String, PaletteController>();
 
+    //get default html palette
     public static PaletteController getPalette() throws IOException {
+        return getOrCreatePalette(DEFAULT_HTML_PALETTE_FOLDER);
+    }
 
-        if (palette == null)
-            palette = PaletteFactory.createPalette(HTML_PALETTE_FOLDER, new HtmlPaletteActions(), null, new HtmlDragAndDropHandler());
-            
+    public static PaletteController getPalette(FileObject fileObject) throws IOException {
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(fileObject.getMIMEType()));
+        HtmlPaletteFolderProvider provider = lookup.lookup(HtmlPaletteFolderProvider.class);
+        if (provider == null) {
+            provider = new PaletteNameProvider(); //fallback impl.
+        }
+        String paletteFolder = provider.getPaletteFolderName(fileObject);
+
+        if (paletteFolder == null) {
+            paletteFolder = DEFAULT_HTML_PALETTE_FOLDER; //fallback if the provider is not interested in this file
+        }
+
+        return getOrCreatePalette(paletteFolder);
+        
+    }
+
+    private static PaletteController getOrCreatePalette(String paletteFolder) throws IOException {
+        PaletteController palette = PALETTES.get(paletteFolder);
+        if(palette == null) {
+            palette = PaletteFactory.createPalette(paletteFolder, new HtmlPaletteActions(), null, new HtmlDragAndDropHandler());
+            PALETTES.put(paletteFolder, palette);
+        }
+
         return palette;
     }
 
     private static class HtmlDragAndDropHandler extends DragAndDropHandler {
 
         public HtmlDragAndDropHandler() {
-            super( true );
+            super(true);
         }
-        
+
         @Override
         public void customize(ExTransferable t, Lookup item) {
             //do nothing
         }
+    }
+
+    public static class PaletteNameProvider implements HtmlPaletteFolderProvider {
+
+        public String getPaletteFolderName(FileObject fileObject) {
+            return DEFAULT_HTML_PALETTE_FOLDER;
+        }
+        
     }
 }

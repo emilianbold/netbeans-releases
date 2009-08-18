@@ -1921,7 +1921,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
         }
 
-        if (id == PHPTokenId.PHP_VARIABLE) {
+        if (id == PHPTokenId.PHP_VARIABLE || id == PHPTokenId.PHP_STRING) {
             String s = token.text().toString();
             int length = s.length();
             int wordOffset = offset-ts.offset();
