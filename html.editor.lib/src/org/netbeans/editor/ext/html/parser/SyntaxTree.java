@@ -65,6 +65,7 @@ public class SyntaxTree {
     static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
     static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
+    static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         if (dtd == null) {
@@ -237,6 +238,12 @@ public class SyntaxTree {
                 AstNode openTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         tagElement.offset(), tagElement.offset() + tagElement.length(),
                         currentNodeDtdElement, tagElement.isEmpty(), stack(stack));
+
+                //check if the tag can be empty
+                if(tagElement.isEmpty() && !currentNodeDtdElement.isEmpty()) {
+                    //the tag is empty, but cannot be, mark error
+                    openTagNode.addDescriptionToNode(TAG_CANNOT_BE_EMPTY, NbBundle.getMessage(SyntaxTree.class, "MSG_TAG_CANNOT_BE_EMPTY"), Description.ERROR);
+                }
 
                 //check tag attributes
                 checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
