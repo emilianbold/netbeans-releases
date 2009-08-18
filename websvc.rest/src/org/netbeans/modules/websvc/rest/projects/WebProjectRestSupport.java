@@ -89,9 +89,8 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     public static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
 
-    String[] classPathTypes = new String[]{
-                ClassPath.COMPILE,
-                ClassPath.EXECUTE
+    String[] classPathTypes = new String[] {
+                ClassPath.COMPILE
             };
 
     /** Creates a new instance of WebProjectRestSupport */
