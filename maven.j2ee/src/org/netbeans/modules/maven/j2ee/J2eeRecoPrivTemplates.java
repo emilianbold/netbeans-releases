@@ -38,10 +38,10 @@
  */
 
 package org.netbeans.modules.maven.j2ee;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -159,7 +159,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (EjbProjectConstants.JAVA_EE_5_LEVEL.equals(jar.getJ2eePlatformVersion())) {
+                if (Profile.JAVA_EE_5.equals(jar.getJ2eeProfile())) {
                     return EJB_TYPES_5;
                 }
             }
@@ -170,7 +170,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
             WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null && WebModule.JAVA_EE_5_LEVEL.equals(web.getJ2eePlatformVersion())) {
+            if (web != null && Profile.JAVA_EE_5.equals(web.getJ2eeProfile())) {
                 return WEB_TYPES_5;
             }
             return WEB_TYPES;
@@ -188,7 +188,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (EjbProjectConstants.JAVA_EE_5_LEVEL.equals(jar.getJ2eePlatformVersion())) {
+                if (Profile.JAVA_EE_5.equals(jar.getJ2eeProfile())) {
                     return EJB_PRIVILEGED_NAMES_5;
                 }
             }
@@ -199,7 +199,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
             WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null && WebModule.JAVA_EE_5_LEVEL.equals(web.getJ2eePlatformVersion())) {
+            if (web != null && Profile.JAVA_EE_5.equals(web.getJ2eeProfile())) {
                 return WEB_PRIVILEGED_NAMES_5;
             }
             return WEB_PRIVILEGED_NAMES;
