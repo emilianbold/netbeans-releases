@@ -62,6 +62,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
@@ -287,8 +288,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
-            commitTable.dataChanged();
-            listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+            Runnable inAWT = new Runnable() {
+                public void run() {
+                    commitTable.dataChanged();
+                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+                }
+            };
+            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
         }
     }
 
