@@ -358,7 +358,10 @@ public final class ProjectPropertiesSupport {
      * @return PHP frameworks that are in the given PHP project.
      */
     public static List<PhpFrameworkProvider> getFrameworks(PhpProject project) {
-        // XXX: improve performance
+        // XXX: improve performance:
+        //        hold php frameworks in php project and:
+        //          - listen on lookup result of php frameworks (for new frameworks in SFS)
+        //          - listen on source directory (for new frameworks in project)
         List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
         PhpModule phpModule = project.getPhpModule();
         for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {

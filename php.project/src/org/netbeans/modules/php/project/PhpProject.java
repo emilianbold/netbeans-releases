@@ -401,8 +401,6 @@ public class PhpProject implements Project {
         }
     }
 
-    // XXX should somehow listen on newly added frameworks to project
-    // add set of _classes_ of framework providers and check them every time while calling ProjectPropertiesSupport.getFrameworks()
     private void putIgnoredFrameworkFiles(Set<File> ignored) {
         PhpModule phpModule = getPhpModule();
         for (PhpFrameworkProvider provider : ProjectPropertiesSupport.getFrameworks(this)) {
