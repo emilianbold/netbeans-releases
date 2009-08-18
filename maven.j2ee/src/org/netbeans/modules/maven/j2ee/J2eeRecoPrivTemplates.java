@@ -84,6 +84,20 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "web-service-clients",  // NOI18N
                 "j2ee-types",           // NOI18N
     };
+
+    /**
+     * Supported template categories for Java EE 6 projects (full?).
+     */
+    private static final String[] EJB_TYPES_6 = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "web-services",         // NOI18N
+        "web-service-clients",  // NOI18N
+        "wsdl",                 // NOI18N
+        "j2ee-types"           // NOI18N
+    };
+
     
     private static final String[] EJB_PRIVILEGED_NAMES_4 = new String[] {
         
@@ -106,6 +120,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "Templates/WebServices/WebService",// NOI18N
                 "Templates/WebServices/WebServiceClient"// NOI18N
     };
+
+    private static final String[] EJB_PRIVILEGED_NAMES_6 = EJB_PRIVILEGED_NAMES_5;
     
     private static final String[] WEB_TYPES = new String[] {
                 "servlet-types",        // NOI18N
@@ -159,8 +175,12 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (Profile.JAVA_EE_5.equals(jar.getJ2eeProfile())) {
+                Profile p = jar.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
                     return EJB_TYPES_5;
+                }
+                if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                    return EJB_TYPES_6;
                 }
             }
             return EJB_TYPES_4;
@@ -188,8 +208,12 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (Profile.JAVA_EE_5.equals(jar.getJ2eeProfile())) {
+                Profile p = jar.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
                     return EJB_PRIVILEGED_NAMES_5;
+                }
+                if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                    return EJB_PRIVILEGED_NAMES_6;
                 }
             }
             return EJB_PRIVILEGED_NAMES_4;
