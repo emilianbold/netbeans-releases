@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -136,7 +137,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private File activatedFile(Node node) {
-        DataObject dobj = (DataObject) node.getCookie(DataObject.class);
+        DataObject dobj = node.getCookie(DataObject.class);
         if (dobj != null) {
             FileObject fo = dobj.getPrimaryFile();
             return FileUtil.toFile(fo);
@@ -145,7 +146,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private JEditorPane activatedEditorPane(Node node) {
-        EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
+        EditorCookie ec = node.getCookie(EditorCookie.class);
         if (ec == null) {
             return null;
         }
@@ -168,25 +169,28 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         if (nodes == null) {
             return;
         }
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             File file = activatedFile(node);
             if (file != null) {
-                String filePath = file.getAbsolutePath();
-                FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
+                final String filePath = file.getAbsolutePath();
+                final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
-                    if (!fileAnnotationInfo.isAnnotated()) {
-                        // Calculate line numbers if only offset is known
-                        log.fine("Annotating " + filePath + "\n"); // NOI18N)
-                        List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
-                        for (LineAnnotationInfo line : lines) {
-                            line.setLine(node);
-                            log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (!fileAnnotationInfo.isAnnotated()) {
+                                // Calculate line numbers if only offset is known
+                                log.fine("Annotating " + filePath + "\n"); // NOI18N)
+                                List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
+                                for (LineAnnotationInfo line : lines) {
+                                    line.setLine(node);
+                                    log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                                }
+                                fileAnnotationInfo.setAnnotated(true);
+                            }
+                            JEditorPane jEditorPane = activatedEditorPane(node);
+                            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
                         }
-                        fileAnnotationInfo.setAnnotated(true);
-                    }
-
-                    JEditorPane jEditorPane = activatedEditorPane(node);
-                    AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
+                    });
                 }
             }
         }
@@ -356,10 +360,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             }
             JEditorPane currentPane = activatedEditorPane(node);
             try {
-                sourceLine = Utilities.getLineOffset((BaseDocument)currentPane.getDocument(), (int)offset);
+                sourceLine = Utilities.getLineOffset((BaseDocument) currentPane.getDocument(), (int) offset);
                 sourceLine++;
-            }
-            catch (BadLocationException ble) {
+            } catch (BadLocationException ble) {
                 sourceLine = -1;
             }
             setLine(sourceLine);

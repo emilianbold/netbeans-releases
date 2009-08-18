@@ -14,6 +14,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -150,19 +153,16 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         textComponent.addComponentListener(this);
         editorUI.addPropertyChangeListener(this);
 
-//    List<TestAnnotationMark> marks = new ArrayList<TestAnnotationMark>(10);
-//
-//    for (int i = 0; i < 10; i++) {
-//      marks.add(i, new TestAnnotationMark(i * 10-1, "Blah-blah-HOTSPOT"));
-//    }
-//
-//    TestAnnotationMarkProvider amp = TestAnnotationMarkInstaller.getMarkProvider(textComponent);
-//    if (amp != null) {
-//      amp.setMarks(marks);
-//    }
-
+        List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
+        int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
             setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 235, 255)); // thp: controls color of text hightligting block and lines
+            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip()));
+        }
+
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(marks);
         }
         revalidate();  // resize the component
     }
@@ -355,10 +355,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 //      latestAnnotationTask.cancel();
 //    }
 
-//    TestAnnotationMarkProvider amp = TestAnnotationMarkInstaller.getMarkProvider(textComponent);
-//    if (amp != null) {
-//      amp.setMarks(Collections.<TestAnnotationMark>emptyList());
-//    }
+    AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+    if (amp != null) {
+      amp.setMarks(Collections.<AnnotationMark>emptyList());
+    }
 
         clearRecentFeedback();
     }
