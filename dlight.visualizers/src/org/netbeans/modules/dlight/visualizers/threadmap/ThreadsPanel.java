@@ -107,6 +107,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * A panel to display TA threads and their state.
@@ -404,7 +405,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         legendPanel = new JPanel();
         legendPanel.setLayout(new BorderLayout());
         legendPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        initLegend(false);
+        initLegend(isFullMode());
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
@@ -517,6 +518,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         threadsSelectionCombo.addActionListener(this);
         showOnlySelectedThreads.addActionListener(this);
         viewModeSelectionCombo.addActionListener(this);
+        viewModeSelectionCombo.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("ViewMode", 0)); // NOI18N
 
         //if (detailsCallback != null) {
         //    showThreadsDetails.addActionListener(this);
@@ -790,6 +792,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             performDefaultAction();
         }else if (e.getSource() == viewModeSelectionCombo){
             selectedViewMode = viewModeSelectionCombo.getSelectedItem() + "";
+            NbPreferences.forModule(getClass()).putInt("ViewMode", viewModeSelectionCombo.getSelectedIndex()); // NOI18N
             initLegend(isFullMode());
             refreshUI();
             viewPort.repaint();
@@ -1006,13 +1009,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                         }
                         ThreadState state = threadData.getThreadStateAt(index);
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
+                        refreshUI();
                         if (detailsCallback != null) {
 //                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
 //                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
 //                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
                             detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID());
                         }
-                        refreshUI();
                     }
                 }
             }
@@ -1197,6 +1200,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             scaleToFitButton.setEnabled(true);
             scaleToFitButton.setToolTipText(scaleToFit ? FIXED_SCALE_TOOLTIP : SCALE_TO_FIT_TOOLTIP);
         }
+    }
+
+    long getInterval() {
+        return manager.getInterval();
     }
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
