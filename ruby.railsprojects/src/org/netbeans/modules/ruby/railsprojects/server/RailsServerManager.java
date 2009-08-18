@@ -320,16 +320,21 @@ public final class RailsServerManager {
         }
         if(server instanceof GlassFishGem) {
             GlassFishGem gfGem = (GlassFishGem) server;
+            // Gem bug: --log cannot be last (will be followed by --port here)
+            if(gfGem.compareVersion("0.9.5") >= 0) {
+                // log supported on 0.9.5 and above (broken in 0.9.4)
+                result.add("--log");
+            }
             if(gfGem.compareVersion("0.9.0") >=0) {
                 // port option supported on 0.9.0 and above
                 result.add("--port");
                 result.add(Integer.toString(port));
             }
-            if(gfGem.compareVersion("0.9.3") >=0) {
-                // log level option supported on 0.9.3 and above
-                result.add("--log-level");
-                result.add("7");
-            }
+//            if(gfGem.compareVersion("0.9.3") >=0) {
+//                // log level option supported on 0.9.3 and above
+//                result.add("--log-level");
+//                result.add("3");
+//            }
             result.add(dir.getAbsolutePath());
         } else {
             result.add("--port");
