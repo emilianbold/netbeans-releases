@@ -43,15 +43,14 @@ package org.netbeans.modules.websvc.core.jaxws;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import javax.swing.border.EtchedBorder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.websvc.core.ServiceNodesProvider;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.netbeans.modules.websvc.project.api.WebService;
 import org.netbeans.modules.websvc.project.api.WebServiceData;
@@ -155,9 +154,16 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                         Node[] serviceNodes = new Node[webServices.size()];
                         int i = 0;
                         for (WebService service : webServices) {
-                            serviceNodes[i++] = new ServiceNode(service.createNode());
+                            Node n = service.createNode();
+                            if (n != null) {
+                                serviceNodes[i++] = new ServiceNode(n);
+                            }
                         }
-                        children.add(serviceNodes);
+                        if (i < webServices.size()) {
+                            children.add(Arrays.copyOf(serviceNodes, i));
+                        } else {
+                            children.add(serviceNodes);
+                        }
                         projectNodeList.add(new ProjectNode(children, rootNode));
                     }
                 }
