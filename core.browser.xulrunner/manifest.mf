@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.core.browser.xulrunner/1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Install: org/netbeans/core/browser/xulrunner/Installer.class
+OpenIDE-Module-Localizing-Bundle: org/netbeans/core/browser/xulrunner/Bundle.properties
+AutoUpdate-Show-In-Client: false
+AutoUpdate-Essential-Module: true
+OpenIDE-Module-Layer: org/netbeans/core/browser/xulrunner/layer.xml
