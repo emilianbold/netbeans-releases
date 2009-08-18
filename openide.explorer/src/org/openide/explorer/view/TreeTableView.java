@@ -57,11 +57,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 
@@ -1319,7 +1319,7 @@ public class TreeTableView extends BeanTreeView {
 
         private class SortedNode extends FilterNode {
             public SortedNode (Node original) {
-                super (original, new SortedChildren (original));
+                super(original, original.isLeaf() ? Children.LEAF : new SortedChildren(original));
                 original2filter.put (original, this);
             }
             public Node getOriginalNode () {
@@ -1362,19 +1362,17 @@ public class TreeTableView extends BeanTreeView {
                 sortNodes ();
             }
 
-            private void sortNodes () {
-                Node [] originalNodes = original.getChildren ().getNodes ();
-                if (isSortingActive ()) {
-                    Collection<Node> sortedNodes = new TreeSet<Node> (getRowComparator ());
-                    for (Node n : originalNodes) {
-                        sortedNodes.add (n);
-                    }
-                    setKeys (sortedNodes.toArray (new Node[0]));
+            private void sortNodes() {
+                Node[] origNodes = original.getChildren().getNodes();
+                if (isSortingActive()) {
+                    Node[] sortedNodes = new Node[origNodes.length];
+                    System.arraycopy(origNodes, 0, sortedNodes, 0, origNodes.length);
+                    Collections.sort(Arrays.asList(sortedNodes), getRowComparator());
+                    setKeys(sortedNodes);
                 } else {
-                    setKeys (originalNodes);
+                    setKeys(origNodes);
                 }
             }
-
         }
 
         void setNoSorting() {

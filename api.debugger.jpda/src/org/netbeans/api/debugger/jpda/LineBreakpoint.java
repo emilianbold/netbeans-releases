@@ -456,18 +456,13 @@ public class LineBreakpoint extends JPDABreakpoint {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof LineBreakpointImpl) {
-                LineBreakpoint lbthis = this;
-                LineBreakpoint lb = (LineBreakpoint) obj;
-                return lbthis.url.equals(lb.url) && lbthis.lineNumber == lb.lineNumber;
-            }
-            return false;
+            // We want each breakpoint to be distinctive
+            return obj == this;
         }
 
         @Override
         public int hashCode() {
-            LineBreakpoint lbthis = this;
-            return lbthis.url.hashCode() + lbthis.lineNumber;
+            return System.identityHashCode(this);
         }
 
         public void fileFolderCreated(FileEvent fe) {

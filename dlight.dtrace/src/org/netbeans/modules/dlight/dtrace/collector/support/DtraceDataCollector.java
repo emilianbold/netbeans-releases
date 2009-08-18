@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -70,6 +71,7 @@ import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccess
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -216,12 +218,13 @@ public final class DtraceDataCollector
      * {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+    public Collection<DataStorageType> getRequiredDataStorageTypes() {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-        DataStorageType dst =
+        DataStorageType sqlStorageType =
                 dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
-
-        return Arrays.asList(dst);
+        DataStorageType stackStorageType =
+                dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID);
+        return Arrays.asList(sqlStorageType, stackStorageType);
     }
 
     public boolean isAttachable() {
@@ -229,8 +232,14 @@ public final class DtraceDataCollector
     }
 
     @Override
-    public void init(DataStorage storage, DLightTarget target) {
-        this.storage = storage;
+    public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
+
+        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
+        this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        StackDataStorage stackStorage = (StackDataStorage) storages.get(dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        if (this.parser instanceof DtraceDataAndStackParser) {
+            ((DtraceDataAndStackParser)this.parser).setStackDataStorage(stackStorage);
+        }
 
         if (isSlave) {
             return;

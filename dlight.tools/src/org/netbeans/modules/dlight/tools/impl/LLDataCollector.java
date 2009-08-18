@@ -128,11 +128,11 @@ public class LLDataCollector
         return tables;
     }
 
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return Arrays.<DataStorageType>asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+    public Collection<DataStorageType> getRequiredDataStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
-    public void init(DataStorage storage, DLightTarget target) {
+    public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         this.target = target;
         ExecutionEnvironment env = target.getExecEnv();
         if (!env.isLocal()) {

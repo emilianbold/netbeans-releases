@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="core.browser.xulrunner.linux">
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra">
+        <mkdir dir="${cluster}/modules/lib"/>
+        <unzip src="external/xulrunner-linux.zip" dest="${cluster}/modules/lib"/>
+    </target>
+    
+</project>
