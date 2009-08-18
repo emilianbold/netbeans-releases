@@ -65,6 +65,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -145,7 +146,7 @@ public class CommitAction extends ContextAction {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, commitButton);
+        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, panel.progressPanel);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
 
@@ -283,8 +284,9 @@ public class CommitAction extends ContextAction {
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
 
-    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, final JButton commitButton) {
-        SvnProgressSupport support = new SvnProgressSupport() {
+    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, JPanel progressPanel) {
+        SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
+            
             public void perform() {
                 // get files without exclusions
                 File[] contextFiles = ctx.getFiles();

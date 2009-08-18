@@ -115,6 +115,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
     private Icon expandedIcon, collapsedIcon;
+    final PlaceholderPanel progressPanel = new PlaceholderPanel();
 
     private CommitTable commitTable;
     private List<SvnHook> hooks = Collections.emptyList();
@@ -348,6 +349,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
 
+        JPanel bottomPanel = new VerticallyNonResizingPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
+        bottomPanel.add(progressPanel);
+        progressPanel.setAlignmentY(CENTER_ALIGNMENT);
+
         setLayout(new BoxLayout(this, Y_AXIS));
         add(topPanel);
         add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
@@ -362,13 +368,15 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         add(hooksSectionPanel);
         add(makeVerticalStrut(hooksSectionPanel, jLabel2, RELATED));
         add(jLabel2);
+        add(makeVerticalStrut(hooksSectionPanel, bottomPanel, RELATED));
+        add(bottomPanel);
         topPanel.setAlignmentX(LEFT_ALIGNMENT);
         jScrollPane1.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
         hooksSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         hooksSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
-        jLabel2.setAlignmentX(LEFT_ALIGNMENT);
+        bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
 
         setBorder(createEmptyBorder(26,                       //top
                                     getContainerGap(WEST),    //left
