@@ -227,6 +227,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz163135.cpp");
     }
 
+    public void testIZ155054() throws Exception {
+        // IZ#155054 : False positive error highlighting errors on template specializations
+        performStaticTest("iz155054.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
