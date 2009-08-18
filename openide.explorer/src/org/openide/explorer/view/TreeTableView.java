@@ -1363,12 +1363,14 @@ public class TreeTableView extends BeanTreeView {
             }
 
             private void sortNodes() {
-                Node[] sortedNodes = original.getChildren().getNodes();
+                Node[] origNodes = original.getChildren().getNodes();
                 if (isSortingActive()) {
+                    Node[] sortedNodes = new Node[origNodes.length];
+                    System.arraycopy(origNodes, 0, sortedNodes, 0, origNodes.length);
                     Collections.sort(Arrays.asList(sortedNodes), getRowComparator());
                     setKeys(sortedNodes);
                 } else {
-                    setKeys(sortedNodes);
+                    setKeys(origNodes);
                 }
             }
         }
