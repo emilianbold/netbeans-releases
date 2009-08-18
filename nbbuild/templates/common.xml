@@ -340,24 +340,9 @@ made subject to such option by the copyright holder.
         <input addproperty="storepass" message="Enter password for ${keystore}:"/>
     </target>
 
-    <target name="-init-executables" depends="-check-executables,-define-executables-reference-defined,-define-executables-reference-undefined"/>
-
-    <target name="-check-executables">
-        <condition property="has.executables">
-            <and>
-            <isset property="nbm.executable.files"/>
-            <not>
-               <equals arg1="${nbm.executable.files}" arg2=""/>
-            </not>
-            </and>
-        </condition>
-    </target>
-
-    <target name="-define-executables-reference-defined" if="has.executables">
+    <target name="-init-executables">
+        <property name="module.executable.files" value="[NOTHING]"/><!-- fallback -->
         <fileset dir="${cluster}" id="module.executable.files" includes="${nbm.executable.files}"/>
-    </target>
-    <target name="-define-executables-reference-undefined" unless="has.executables">
-        <fileset dir="${cluster}" id="module.executable.files" excludes="**"/>
     </target>
 
     <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass,-init-executables" description="Build NBM archive.">
