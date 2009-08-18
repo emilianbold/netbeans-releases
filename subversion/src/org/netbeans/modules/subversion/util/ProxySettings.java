@@ -107,7 +107,7 @@ public class ProxySettings {
             username            = "";                                                                                       // NOI18N
             password            = "";                                                                                       // NOI18N            
         
-            notProxyHosts       = System.getProperty("http.nonProxyHosts", "");                                             // NOI18N            
+            notProxyHosts       = System.getProperty("http.nonProxyHosts", "").replace("|", ", "); //NOI18N
             httpHost            = System.getProperty("http.proxyHost",     "");                                             // NOI18N            
             httpPort            = System.getProperty("http.proxyPort",     "");                                             // NOI18N                
             httpsHost           = System.getProperty("https.proxyHost",    "");                                             // NOI18N            
