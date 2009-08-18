@@ -36,31 +36,51 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
 
-import java.util.ArrayList;
+package org.netbeans.modules.dlight.core.stack.storage.impl;
+
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
-final class ThreadDumpImpl implements ThreadDump {
+final class SnapshotImpl implements ThreadSnapshot {
+    private final ThreadInfo threadInfo;
+    private final SQLStackDataStorage storage;
+    private final int stackID;
 
-    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
-    private final long timestamp;
+    public SnapshotImpl(final SQLStackDataStorage storage, final int threadID, final int stackID) {
+        this.storage = storage;
+        this.stackID = stackID;
+        
+        this.threadInfo = new ThreadInfo() {
 
-    public ThreadDumpImpl(long timestamp) {
-        this.timestamp = timestamp;
+            public int getThreadId() {
+                return threadID;
+            }
+
+            public String getThreadName() {
+                return "Thread " + threadID; // NOI18N
+            }
+        };
     }
 
-    public List<ThreadSnapshot> getThreadStates() {
-        return stacks;
+
+    public ThreadInfo getThreadInfo() {
+        return threadInfo;
     }
 
-    public void addStack(ThreadSnapshot stack) {
-        stacks.add(stack);
+    public List<FunctionCall> getStack() {
+        return storage.getCallStack(stackID);
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public MSAState getState() {
+        // TODO: implement!
+        return MSAState.Running;
+    }
+
+    public MemoryAccessType getMemoryAccessType() {
+        return null;
     }
 }

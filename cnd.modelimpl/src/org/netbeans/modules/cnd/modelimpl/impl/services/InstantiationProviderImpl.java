@@ -53,6 +53,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -129,6 +130,21 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         appendTemplateParamsSignature(template.getTemplateParameters(), sb);
         return sb;
+    }
+
+    @Override
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
+        if (CsmKindUtilities.isTemplate(classifier) && CsmKindUtilities.isClass(classifier)) {
+            CsmProject proj = contextFile.getProject();
+            if (proj instanceof ProjectBase) {
+                CsmClass cls = (CsmClass) classifier;
+                StringBuilder fqn = new StringBuilder(cls.getUniqueName());
+                fqn.append('<'); // NOI18N
+                Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                return specs;
+            }
+        }
+        return Collections.<CsmOffsetableDeclaration>emptyList();
     }
 
     private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature

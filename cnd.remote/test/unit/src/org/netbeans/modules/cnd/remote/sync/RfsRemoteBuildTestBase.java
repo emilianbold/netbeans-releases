@@ -36,34 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.derby;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.remote.project.*;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
- * @author Alexey Vladykin
+ *
+ * @author Vladimir Kvashin
  */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new DerbyDataStorage());
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    static {
+        System.setProperty("cnd.remote.fs", "true");
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown();
+    public RfsRemoteBuildTestBase(String testName) {
+        super(testName);
     }
 
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
+    public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 }
