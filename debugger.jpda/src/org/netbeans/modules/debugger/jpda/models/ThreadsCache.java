@@ -65,6 +65,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -233,7 +234,7 @@ public class ThreadsCache implements Executor {
         }
     }
     
-    private List<ThreadGroupReference> addGroups(ThreadGroupReference group) {
+    private List<ThreadGroupReference> addGroups(ThreadGroupReference group) throws ObjectCollectedExceptionWrapper {
         List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
         ThreadGroupReference parent;
         try {
@@ -242,11 +243,8 @@ public class ThreadsCache implements Executor {
             parent = null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             parent = null;
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            Exceptions.printStackTrace(ex);
-            parent = null;
         }
-        if (groupMap.get(parent) == null) {
+        if (parent != null && groupMap.get(parent) == null) {
             addedGroups.addAll(addGroups(parent));
         }
         List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
@@ -280,10 +278,24 @@ public class ThreadsCache implements Executor {
             List<ThreadGroupReference> addedGroups = null;
             synchronized (this) {
                 if (group != null) {
-                    addedGroups = addGroups(group);
+                    try {
+                        addedGroups = addGroups(group);
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        try {
+                            if (ObjectReferenceWrapper.isCollected(thread)) {
+                                return true;
+                            }
+                        } catch (InternalExceptionWrapper ex1) {
+                            return true;
+                        } catch (VMDisconnectedExceptionWrapper ex1) {
+                            return true;
+                        } catch (ObjectCollectedExceptionWrapper ex1) {
+                            return true;
+                        }
+                    }
                 }
                 List<ThreadReference> threads = threadMap.get(group);
-                if (!threads.contains(thread)) { // could be added by init()
+                if (threads != null && !threads.contains(thread)) { // could be added by init()
                     threads.add(thread);
                 }
                 if (!allThreads.contains(thread)) { // could be added by init()
@@ -414,14 +426,28 @@ public class ThreadsCache implements Executor {
                     continue;
                 }
                 if (group != null) {
-                    if (addedGroups == null) {
-                        addedGroups = addGroups(group);
-                    } else {
-                        addedGroups.addAll(addGroups(group));
+                    try {
+                        if (addedGroups == null) {
+                            addedGroups = addGroups(group);
+                        } else {
+                            addedGroups.addAll(addGroups(group));
+                        }
+                    } catch (ObjectCollectedExceptionWrapper occex) {
+                        try {
+                            if (ObjectReferenceWrapper.isCollected(thread)) {
+                                continue;
+                            }
+                        } catch (InternalExceptionWrapper ex1) {
+                            continue;
+                        } catch (VMDisconnectedExceptionWrapper ex1) {
+                            return ;
+                        } catch (ObjectCollectedExceptionWrapper ex1) {
+                            continue;
+                        }
                     }
                 }
                 List<ThreadReference> threads = threadMap.get(group);
-                if (!threads.contains(thread)) { // could be added by init()
+                if (threads != null && !threads.contains(thread)) { // could be added by init()
                     threads.add(thread);
                 }
             }
