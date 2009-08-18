@@ -150,9 +150,15 @@ public class GdbProxy {
     }
     
     /** Attach to a running program */
-    public CommandBuffer target_attach(String pid) {
+    public CommandBuffer attach(String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
         return engine.sendCommandEx("attach " + pid); // NOI18N
+    }
+
+    /** Attach to a running remote program */
+    public CommandBuffer attachRemote(String target) {
+        // TODO: We may consider using -target-select remote ... (MI style)
+        return engine.sendCommandEx("target remote " + target); // NOI18N
     }
     
     /** Detach from a running program */

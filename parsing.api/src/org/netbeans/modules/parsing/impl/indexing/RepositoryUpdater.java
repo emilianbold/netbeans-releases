@@ -1412,34 +1412,36 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 final String mimeType = resultIterator.getSnapshot().getMimeType();
                                 final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
 
-                                for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
-                                    EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
-                                    }
+                                if (infos != null && infos.size() > 0) {
+                                    for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
+                                        EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
+                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                            LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
+                                        }
 
-                                    final Parser.Result pr = resultIterator.getParserResult();
-                                    if (pr != null) {
-                                        final String indexerName = indexerFactory.getIndexerName();
-                                        final int indexerVersion = indexerFactory.getIndexVersion();
-                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
-                                        transactionContexts.add(context);
+                                        final Parser.Result pr = resultIterator.getParserResult();
+                                        if (pr != null) {
+                                            final String indexerName = indexerFactory.getIndexerName();
+                                            final int indexerVersion = indexerFactory.getIndexVersion();
+                                            final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
+                                            transactionContexts.add(context);
 
-                                        final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
-                                        if (indexer != null) {
-                                            try {
-                                                SPIAccessor.getInstance().index(indexer, dirty, pr, context);
-                                            } catch (ThreadDeath td) {
-                                                throw td;
-                                            } catch (Throwable t) {
-                                                LOGGER.log(Level.WARNING, null, t);
+                                            final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
+                                            if (indexer != null) {
+                                                try {
+                                                    SPIAccessor.getInstance().index(indexer, dirty, pr, context);
+                                                } catch (ThreadDeath td) {
+                                                    throw td;
+                                                } catch (Throwable t) {
+                                                    LOGGER.log(Level.WARNING, null, t);
+                                                }
                                             }
                                         }
                                     }
+                                }
 
-                                    for (Embedding embedding : resultIterator.getEmbeddings()) {
-                                        run(resultIterator.getResultIterator(embedding));
-                                    }
+                                for (Embedding embedding : resultIterator.getEmbeddings()) {
+                                    run(resultIterator.getResultIterator(embedding));
                                 }
                             }
                         });

@@ -335,6 +335,12 @@ public final class RailsServerManager {
             result.add("--port");
             result.add(Integer.toString(port));
         }
+        String extraArgs = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVER_ARGS);
+        if (extraArgs != null) {
+            for (String arg : Utilities.parseParameters(extraArgs)) {
+                result.add(arg);
+            }
+        }
         return result.toArray(new String[result.size()]);
     }
     

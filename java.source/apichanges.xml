@@ -105,6 +105,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeUtilities.isEnumConstant">
+             <api name="general"/>
+             <summary>Added TreeUtilities.isEnumConstant() method.</summary>
+             <version major="0" minor="48"/>
+             <date day="14" month="8" year="2009"/>
+             <author login="msauer"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeUtilities.isEnumConstant()</code> method, which
+                 determines whether tree represents an enum constant.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="170373"/>
+        </change>
         <change id="CompilationInfo.getSourceVersion">
              <api name="general"/>
              <summary>Added CompilationInfo.getSourceVersion() method.</summary>

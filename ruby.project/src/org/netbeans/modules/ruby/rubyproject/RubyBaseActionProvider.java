@@ -136,7 +136,7 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         return updateHelper;
     }
 
-    protected void saveFile(final FileObject file) {
+    protected static void saveFile(final FileObject file) {
         // Save the file
         try {
             DataObject dobj = DataObject.find(file);

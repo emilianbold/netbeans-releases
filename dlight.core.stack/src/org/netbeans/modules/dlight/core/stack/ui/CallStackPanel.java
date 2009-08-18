@@ -44,6 +44,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 
@@ -54,17 +55,17 @@ import org.openide.explorer.view.BeanTreeView;
 public final class CallStackPanel extends JPanel implements ExplorerManager.Provider{
     private final ExplorerManager manager = new ExplorerManager();
 
-    public CallStackPanel(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
+    public CallStackPanel(SourceFileInfoDataProvider lineInfo, String rootName, boolean isRootVisible, List<FunctionCall> stack) {
         BeanTreeView treeView = new BeanTreeView();
         treeView.setRootVisible(isRootVisible);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(treeView);
-        manager.setRootContext(new StackRootNode(null, rootName, stack));//NOI18N
+        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack));//NOI18N
     }
 
     
-    public CallStackPanel(List<FunctionCall> stack) {
-        this(null, false, stack);
+    public CallStackPanel(SourceFileInfoDataProvider lineInfo, List<FunctionCall> stack) {
+        this(lineInfo, null, false, stack);
     }
 
     public ExplorerManager getExplorerManager() {

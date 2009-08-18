@@ -180,7 +180,11 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     }
     
     public String getContextPath() {
-        if(getDeploymentDescriptor() != null) {
+        Profile prof = getJ2eeProfile();
+        // #170528the javaee6 level might not have a descriptor,
+        // but I still keep the check for older versions, as it was known to fail without one
+        // in older versions it probably means the web.xml file is generated..
+        if(getDeploymentDescriptor() != null || prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
                 if (path != null) {
@@ -197,7 +201,11 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     
     public void setContextPath(String newPath) {
         //TODO store as pom profile configuration, probably for the deploy-plugin.
-        if (getDeploymentDescriptor() != null) {
+        Profile prof = getJ2eeProfile();
+        // #170528 the javaee6 level might not have a descriptor,
+        // but I still keep the check for older versions, as it was known to fail without one
+        // in older versions it probably means the web.xml file is generated..
+        if (getDeploymentDescriptor() != null|| prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
             try {
                 provider.getConfigSupport().setWebContextRoot(newPath);
             }

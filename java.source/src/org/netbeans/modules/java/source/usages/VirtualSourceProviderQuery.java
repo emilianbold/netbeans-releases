@@ -44,6 +44,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -99,7 +100,12 @@ public final class VirtualSourceProviderQuery {
     
     public static boolean hasVirtualSource (final Indexable indexable) {
         Parameters.notNull("indexable", indexable);
-        final String extension = FileObjects.getExtension(indexable.getURL().getFile());
+        URL url = indexable.getURL();
+        if (url == null) {
+            // Issue #168179: This is probably deleted source file. Just skipping.
+            return false;
+        }
+        final String extension = FileObjects.getExtension(url.getFile());
         return hasVirtualSource(extension);
     }
     

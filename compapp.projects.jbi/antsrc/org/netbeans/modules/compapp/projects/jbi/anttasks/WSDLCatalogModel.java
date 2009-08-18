@@ -42,7 +42,6 @@ package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
@@ -52,13 +51,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.Properties;
 
 import javax.swing.text.Document;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 
@@ -278,14 +276,14 @@ public class WSDLCatalogModel implements CatalogModel {
     
     
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
-        CatalogResolver catalogResolver;
+        NbCatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;
         
         
-        CatalogManager manager = new CatalogManager(null);
+        NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
+        catalogResolver = new NbCatalogResolver(manager);
         //catalogResolver = new CatalogResolver(true);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         

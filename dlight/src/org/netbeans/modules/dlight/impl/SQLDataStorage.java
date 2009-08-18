@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public abstract class SQLDataStorage extends DataStorage {
+public abstract class SQLDataStorage implements DataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
 
@@ -417,7 +417,7 @@ public abstract class SQLDataStorage extends DataStorage {
         }
     }
 
-    private void enable() {
+    private synchronized void enable() {
         if (!enabled) {
             requestQueue = new LinkedBlockingQueue<Request>();
             enabled = true;

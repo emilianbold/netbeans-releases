@@ -42,16 +42,22 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.tha.support.THAProjectSupport;
 import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
+import org.netbeans.modules.cnd.tha.ui.THAIndicatorDelegator;
+import org.netbeans.modules.cnd.tha.ui.THAIndicatorsTopComponent;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -59,129 +65,32 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public final class THAActionsProvider {
+public final class THAActionsProvider implements DLightTargetListener {
 
-    private final static THAActionsProvider instance = new THAActionsProvider();
-    private Action startThreadAnalyzer;
-    private Action startThreadAnalyzerConfiguration;
-    private RemoveInstrumentationAction removeInstrumentation;
+    private Action startAndAnalyze;
+    private Action start;
+    private Action enableCollect;
+    private Action stop;
+    private Action enableDataRaces;
+    private Action enableDeadlocks;
+    private int pid;
+    private DLightTarget target;
+    private static Action startThreadAnalyzerConfiguration;
 
-    private THAActionsProvider() {
-        initActions();
-    }
-
-    public static THAActionsProvider getDefault() {
-        return instance;
-    }
-
-    public Action getStartTHAConfigurationAction(){
-        return startThreadAnalyzerConfiguration;
-    }
-
-    public Action getStartThreadAnalysisAction() {
-        return startThreadAnalyzer;
-    }
-
-    public Action getRemoveInstrumentationAction() {
-        return removeInstrumentation;
-    }
-
-    private void initActions() {
-        startThreadAnalyzer = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
-
-            public synchronized boolean enable(final Project project) {
-                boolean result = THAProjectSupport.getSupportFor(project) != null;
-
-                if (result) {
-                    removeInstrumentation.setProject(project);
-                }
-
-                return result;
-            }
-
-            public void perform(final Project project) {
-                if (project == null) {
-                    return;
-                }
-
-                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
-
-                if (support == null) {
-                    return;
-                }
-
-                if (!support.isConfiguredForInstrumentation()) {
-                    boolean instrResult = support.doInstrumentation();
-                    if (!instrResult) {
-                        return;
-                    }
-                }
-
-
-
-                // Initiate RUN ...
-                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-
-                if (ap != null) {
-                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
-                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.getDefault())); // NOI18N
-                    }
-                }
-
-
-                // Disable ???
-            }
-        }, loc("LBL_THAMainProjectAction"), null); // NOI18N
-
-        startThreadAnalyzer.putValue("command", "THAProfile"); // NOI18N
-        startThreadAnalyzer.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        startThreadAnalyzer.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
-        startThreadAnalyzer.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
-
-        removeInstrumentation = new RemoveInstrumentationAction();
+    static {
         startThreadAnalyzerConfiguration = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
 
             public synchronized boolean enable(final Project project) {
-                boolean result = THAProjectSupport.getSupportFor(project) != null;
-
-                if (result) {
-                    removeInstrumentation.setProject(project);
-                }
-
-                return result;
+                return project != null;
             }
 
             public void perform(final Project project) {
                 if (project == null) {
                     return;
                 }
-
-                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
-
-                if (support == null) {
-                    return;
-                }
-
-                if (!support.isConfiguredForInstrumentation()) {
-                    boolean instrResult = support.doInstrumentation();
-                    if (!instrResult) {
-                        return;
-                    }
-                }
-
-
-
-                // Initiate RUN ...
-                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-
-                if (ap != null) {
-                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
-                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.getDefault())); // NOI18N
-                    }
-                }
-
-
-                // Disable ???
+                THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(project);
+                topComponent.open();
+                topComponent.requestActive();
             }
         }, loc("LBL_THAMainProjectAction"), null); // NOI18N
 
@@ -189,6 +98,199 @@ public final class THAActionsProvider {
         startThreadAnalyzerConfiguration.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
         startThreadAnalyzerConfiguration.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
         startThreadAnalyzerConfiguration.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
+    }
+    private RemoveInstrumentationAction removeInstrumentation;
+    private final Project project;
+    private final static Map<Project, THAActionsProvider> cache = new HashMap<Project, THAActionsProvider>();
+
+    private THAActionsProvider(Project project) {
+        this.project = project;
+        THAProjectSupport.getSupportFor(project).addDLightTargetListener(this);
+        initActions();
+    }
+
+    public static final synchronized THAActionsProvider getSupportFor(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        if (cache.containsKey(project)) {
+            return cache.get(project);
+        }
+
+
+
+        THAActionsProvider support = new THAActionsProvider(project);
+        cache.put(project, support);
+
+        return support;
+    }
+
+    public static Action getStartTHAConfigurationAction() {
+        return startThreadAnalyzerConfiguration;
+    }
+
+    public Action getStartThreadAnalysisAction() {
+        return startAndAnalyze;
+    }
+
+    public Action getEnableCollectAction() {
+        return enableCollect;
+    }
+
+    public Action getStopAction(){
+        return stop;
+    }
+
+    public Action getEnableDataraceAction() {
+        return enableDataRaces;
+    }
+
+    public Action getEnableDeadlockAction() {
+        return enableDeadlocks;
+    }
+
+    public Action getStartAction() {
+        return start;
+    }
+
+    public Action getRemoveInstrumentationAction() {
+        return removeInstrumentation;
+    }
+
+    private void initActions() {
+        removeInstrumentation = new RemoveInstrumentationAction();
+        startAndAnalyze = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (project == null) {
+                    return;
+                }
+
+                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
+
+                if (support == null) {
+                    return;
+                }
+
+                if (!support.isConfiguredForInstrumentation()) {
+                    boolean instrResult = support.doInstrumentation();
+                    if (!instrResult) {
+                        return;
+                    }
+                }
+
+                startAndAnalyze.setEnabled(false);
+                start.setEnabled(false);
+                enableCollect.setEnabled(false);
+                
+
+                // Initiate RUN ...
+                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+                if (ap != null) {
+                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
+                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.create(true))); // NOI18N
+                    }
+                }
+
+            }
+        };
+        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        if (startAndAnalyze.isEnabled()) {
+            removeInstrumentation.setProject(project);
+        }
+        startAndAnalyze.putValue("command", "THAProfile"); // NOI18N
+        startAndAnalyze.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        startAndAnalyze.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
+        startAndAnalyze.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb24.png", false)); // NOI18N
+        start = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (project == null) {
+                    return;
+                }
+
+                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
+
+                if (support == null) {
+                    return;
+                }
+
+                if (!support.isConfiguredForInstrumentation()) {
+                    boolean instrResult = support.doInstrumentation();
+                    if (!instrResult) {
+                        return;
+                    }
+                }
+                startAndAnalyze.setEnabled(false);
+                start.setEnabled(false);
+                enableCollect.setEnabled(true);
+
+
+                // Initiate RUN ...
+                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+                if (ap != null) {
+                    if (Arrays.asList(ap.getSupportedActions()).contains("custom.action")) { // NOI18N
+                        ap.invokeAction("custom.action", Lookups.fixed(THAConfigurationImpl.create(false))); // NOI18N
+                    }
+                }
+
+            }
+        };
+        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        if (start.isEnabled()) {
+            removeInstrumentation.setProject(project);
+        }
+
+
+        start.putValue("command", "THAProfile"); // NOI18N
+        start.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        start.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/runProject24.png"); // NOI18N
+        start.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/runProject24.png", false)); // NOI18N
+
+        enableCollect = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                startCollect();
+            }
+        };
+        stop = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (project == null) {
+                    return;
+                }
+
+                THAProjectSupport support = THAProjectSupport.getSupportFor(project);
+                support.stop();
+
+            }
+        };
+        stop.setEnabled(false);
+
+
+        stop.putValue("command", "THAProfileStop"); // NOI18N
+        stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
+        stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
+        stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N
+
+        enableDataRaces = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
+        enableDataRaces.setEnabled(false);
+        enableDeadlocks = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
+        enableDeadlocks.setEnabled(false);
+
+
+
     }
 
     private static String loc(String key, String... params) {
@@ -277,6 +379,68 @@ public final class THAActionsProvider {
                         return result;
                     }
                 }, "RemoveInstrumentationAction state verification task"); // NOI18N
+            }
+        }
+    }
+
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        this.target = event.target;
+        switch (event.state) {
+            case INIT:
+            case STARTING:
+                break;
+            case RUNNING:
+                targetStarted(event.status);
+                break;
+            case FAILED:
+            case STOPPED:
+                targetFailed();
+                break;
+            case TERMINATED:
+                targetFinished(event.status);
+                break;
+            case DONE:
+                targetFinished(event.status);
+                break;
+        }
+    }
+
+    public void startCollect() {
+        if (0 < pid) {
+            CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+        }
+    }
+
+    private void targetStarted(int pid) {
+        //means stop button should be enabled
+        this.pid = pid;
+        //enableCollect.setEnabled(false);
+        stop.setEnabled(true);
+
+    }
+
+    private void targetFailed() {
+        //back all as it was
+        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        enableCollect.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        stop.setEnabled(false);
+    }
+
+    private void targetFinished(Integer status) {
+        start.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        startAndAnalyze.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        enableCollect.setEnabled(THAProjectSupport.getSupportFor(project) != null);
+        stop.setEnabled(false);
+    }
+
+    private class EnableCollectAction extends AbstractAction {
+
+        public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand() == null) {
+                return;//nothing to do
+            } else {
+                //use it as a pid and send a signal
             }
         }
     }

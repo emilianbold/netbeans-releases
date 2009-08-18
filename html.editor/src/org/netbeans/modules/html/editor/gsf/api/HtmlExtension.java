@@ -42,6 +42,7 @@ package org.netbeans.modules.html.editor.gsf.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,24 +58,25 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  */
 public abstract class HtmlExtension {
 
-    private static final Collection<HtmlExtension> EXTENSIONS = new ArrayList<HtmlExtension>();
-    /** register a new extension to the html support
+    private static final Map<String, Collection<HtmlExtension>> EXTENSIONS = new HashMap<String, Collection<HtmlExtension>>();
+    
+    /** register a new extension to the html support. The mimeType applies to source mimetype, not embedded mimetype!
      * TODO use mimelookup
      */
-    public static void register(HtmlExtension extension) {
+    public static void register(String mimeType, HtmlExtension extension) {
         synchronized (EXTENSIONS) {
-            EXTENSIONS.add(extension);
+            Collection<HtmlExtension> existing = EXTENSIONS.get(mimeType);
+            if(existing == null) {
+                existing = new ArrayList<HtmlExtension>();
+                EXTENSIONS.put(mimeType, existing);
+            }
+            existing.add(extension);
         }
     }
-
-    public static void unregister(HtmlExtension extension) {
-        synchronized (EXTENSIONS) {
-            EXTENSIONS.remove(extension);
-        }
-    }
-
-    public static Collection<HtmlExtension> getRegisteredExtensions() {
-        return EXTENSIONS;
+    
+    public static Collection<HtmlExtension> getRegisteredExtensions(String mimeType) {
+        Collection<HtmlExtension> exts = EXTENSIONS.get(mimeType);
+        return exts != null ? exts : Collections.EMPTY_LIST;
     }
 
     //highlighting

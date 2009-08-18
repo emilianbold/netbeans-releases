@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +50,7 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -100,30 +100,18 @@ public final class DataStorageManager {
      *  Returns previously created or created new instance of DataStorage
      *  for requested schema (if it can be found within all available DataStorages)
      */
-    public DataStorage getDataStorageFor(DLightSession session, DataCollector<?> collector) {
-        Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
-        for (DataStorageType type : supportedTypes) {
-            DataStorage storage = getDataStorageFor(session, type, collector.getDataTablesMetadata());
-
-            if (storage != null) {
-                return storage;
-            }
-
+    public Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
+        Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
+        for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
+            result.put(type, getDataStorageFor(session, type, collector.getDataTablesMetadata()));
         }
-        return null;
+        return result;
     }
 
-    public DataStorage getDataStorage(DataStorageType storageType) {
-        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
-    }
-
-//
-//  public void registerDataStorage(DataStorage dataStorage){
-//    if (allDataStorages.contains(dataStorage)){
-//      return;
+//    private DataStorage getDataStorage(DataStorageType storageType) {
+//        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
 //    }
-//    if (activeDataStorages.contains(log))
-//  }
+
     private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (session == null) {
             return null;
@@ -141,6 +129,11 @@ public final class DataStorageManager {
         for (DataStorageFactory storage : dataStorageFactories) {
             if (storage.getStorageTypes().contains(storageType)) {
                 DataStorage newStorage = storage.createStorage();
+                if (newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                }
                 if (newStorage != null) {
                     newStorage.createTables(tableMetadatas);
                     if (activeSessionStorages == null) {

@@ -39,28 +39,13 @@
 
 package org.netbeans.modules.cnd.remote.project;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import java.io.File;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.remote.mapper.RemoteBuildTestBase;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.openide.windows.IOProvider;
 /**
  *
  * @author Vladimir Kvashin
@@ -78,67 +63,16 @@ public class RemoteBuildTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testBuildSampleArguments() throws Exception {
-        setupHost("scp");
-
+        setupHost();
+        setSyncFactory("scp");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_01");
-
-        final CountDownLatch done = new CountDownLatch(1);
-        final AtomicInteger build_rc = new AtomicInteger(-1);
-
-//        ExecutionListener listener = new ExecutionListener() {
-//            public void executionFinished(int rc) {
-//                //System.err.printf("EXECUTION FINISHED\n");
-//                build_rc.set(rc);
-//                done.countDown();
-//            }
-//            public void executionStarted() {
-//                //System.err.printf("EXECUTION STARTED\n");
-//            }
-//        };
-
-        final String successLine = "BUILD SUCCESSFUL";
-        final String failureLine = "BUILD FAILED";
-
-        IOProvider iop = IOProvider.getDefault();
-        assert iop instanceof CndTestIOProvider;
-        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
-            public void linePrinted(String line) {
-                if(line != null) {
-                    if (line.startsWith(successLine)) {
-                        build_rc.set(0);
-                        done.countDown();
-                    }
-                    else if (line.startsWith(failureLine)) {
-                        // message is:
-                        // BUILD FAILED (exit value 1, total time: 326ms)
-                        int rc = -1;
-                        String[] tokens = line.split("[ ,]");
-                        if (tokens.length > 4) {
-                            try {
-                                rc = Integer.parseInt(tokens[4]);
-                            } catch(NumberFormatException nfe) {
-                                nfe.printStackTrace();
-                            }
-                        }
-                        build_rc.set(rc);
-                        done.countDown();
-                    }
-                }
-            }
-        });
-
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-        makeActionProvider.invokeAction("build", null);
-
-
-        done.await();
-
-        assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
+        buildProject(makeProject);
     }
 
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteBuildTestCase.class);
     }
+
 
 }

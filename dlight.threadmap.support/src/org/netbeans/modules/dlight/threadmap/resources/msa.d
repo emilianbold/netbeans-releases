@@ -19,7 +19,7 @@ BEGIN {
    endian_shift=*((char*)p)?0:8;
 }
 
-tick-100ms
+tick-10ms
 /!t || t->t_procp->p_pidp->pid_id != $1/
 {
        pidp = `pidhash[$1 & (`pid_hashsz - 1)];
@@ -31,7 +31,7 @@ tick-100ms
        nextreport=timestamp;
 }
 
-tick-100ms
+tick-10ms
 /t && t->t_procp->p_pidp->pid_id == $1 && timestamp > nextreport/
 {
        ttid      = t->t_tid;
@@ -46,12 +46,12 @@ tick-100ms
        states[ttid][cur_mstate] -= !delta;
        delta = (delta || (t->t_state & 0x6)) ? delta : 1;
 
-       nextreport = (t->t_tid < t->t_forw->t_tid) ? nextreport : nextreport + 10000000;
+       nextreport = (t->t_tid < t->t_forw->t_tid) ? nextreport : nextreport + 500*1000*1000;
 
        t = t->t_forw;
 }
 
-tick-100ms
+tick-10ms
 /delta && lastts[ttid]/
 {
        /* the following two let us properly attribute OTHER WAIT */
@@ -63,7 +63,7 @@ tick-100ms
 
 }
 
-tick-100ms
+tick-10ms
 /delta/
 {
        w[wi] = 0;
@@ -71,9 +71,10 @@ tick-100ms
        delta = 0;
        lastts[ttid] = timestamp;
 }
-
+/*
 proc:::lwp-exit
 {
       printf("%d %d %d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d\n", cpu, ttid, timestamp,
                           0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0);
 }
+*/

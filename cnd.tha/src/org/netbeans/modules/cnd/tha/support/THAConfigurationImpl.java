@@ -39,66 +39,36 @@
 package org.netbeans.modules.cnd.tha.support;
 
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.BooleanStateAction;
 
 public class THAConfigurationImpl implements THAConfiguration {
 
-    private static final THAConfigurationImpl instance = new THAConfigurationImpl();
-    private final BooleanStateAction raceDetectionSwitch;
-    private final BooleanStateAction onStartDetectionSwitch;
+    private static final THAConfigurationImpl instance = new THAConfigurationImpl(true);
+    private boolean raceDetectionSwitch;
+    private boolean onStartDetectionSwitch;
 
-    private THAConfigurationImpl() {
-        raceDetectionSwitch = new BooleanStateAction() {
-
-            @Override
-            public String getName() {
-                return getMessage("THA_RaceDetection"); // NOI18N
-            }
-
-            @Override
-            public HelpCtx getHelpCtx() {
-                return null;
-            }
-        };
-
-        raceDetectionSwitch.setBooleanState(true);
-
-        onStartDetectionSwitch = new BooleanStateAction() {
-
-            @Override
-            public String getName() {
-                return getMessage("THA_OnStart"); // NOI18N
-            }
-
-            @Override
-            public HelpCtx getHelpCtx() {
-                return null;
-            }
-        };
-
-        onStartDetectionSwitch.setBooleanState(true);
+    private THAConfigurationImpl(boolean onStartDetectionSwitch) {
+       raceDetectionSwitch = true;
+       this.onStartDetectionSwitch = onStartDetectionSwitch;
     }
 
     public static THAConfigurationImpl getDefault() {
         return instance;
     }
 
-    public BooleanStateAction getRacesDetectionSwitchAction() {
+    public static  synchronized  THAConfigurationImpl create(boolean collectFromBegining){
+        THAConfigurationImpl conf = new THAConfigurationImpl(collectFromBegining);
+        return conf;
+    }
+
+   
+
+    public boolean collectDataRaces() {
         return raceDetectionSwitch;
     }
 
-    public BooleanStateAction getStartOnRunSwitchAction() {
-        return onStartDetectionSwitch;
-    }
-
-    public boolean collectDataRaces() {
-        return raceDetectionSwitch.getBooleanState();
-    }
-
     public boolean collectFromBeginning() {
-        return onStartDetectionSwitch.getBooleanState();
+        return onStartDetectionSwitch;
     }
 
     public boolean collectDeadlocks() {

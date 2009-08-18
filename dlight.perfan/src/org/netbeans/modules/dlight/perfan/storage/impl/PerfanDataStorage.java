@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,15 +59,17 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
-public final class PerfanDataStorage extends DataStorage {
+public final class PerfanDataStorage implements DataStorage {
 
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
     private ErprintSession er_print;
     private String experimentDirectory = null;
     private ExecutionEnvironment env;
+    private final List<DataTableMetadata> tableMetadatas;
 
     public PerfanDataStorage() {
         super();
+        tableMetadatas = new ArrayList<DataTableMetadata>();
     }
 
     @Override
@@ -211,9 +214,17 @@ public final class PerfanDataStorage extends DataStorage {
         return PerfanDataStorageFactory.supportedTypes;
     }
 
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
+
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
+    }
+
     @Override
-    protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
-        return true;
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
+        this.tableMetadatas.addAll(tableMetadatas);
     }
 
     @Override

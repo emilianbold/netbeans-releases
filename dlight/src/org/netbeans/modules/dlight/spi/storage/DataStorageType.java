@@ -91,6 +91,13 @@ public final class DataStorageType {
     return other.getID().equals(this.id);
   }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 17 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
+    }
+
   private static final class DataStorageTypeAccessorImpl extends DataStorageTypeAccessor {
 
     @Override
