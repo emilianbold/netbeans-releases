@@ -1,4 +1,4 @@
-DELETE FROM customer_tab c1 WHERE customer_id = (SELECT invoice_id FROM invoice_tab WHERE invoice_id = (select order_id from |purchase_order_tab))
+DELETE FROM customer_tab c1 WHERE customer_id = (SELECT invoice_id FROM invoice_tab WHERE invoice_id = (select |order_id from purchase_order_tab))
 
 --
 catalog_1*

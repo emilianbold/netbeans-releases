@@ -83,6 +83,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private SQLStackStorage stackStorage;
     private String dbURL;
+    private final List<DataTableMetadata> tableMetadatas;
 
     static {
         String tempDir = null;
@@ -146,6 +147,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     private DerbyDataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
+        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -186,20 +188,17 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
 
     @Override
-    public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
+            this.tableMetadatas.add(tdmd);
             if (tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
                 if (!tables.containsKey(STACK_METADATA_VIEW_NAME)) {
                     tables.put(STACK_METADATA_VIEW_NAME, tdmd);
                 }
                 continue;
             }
-            if (!createTable(tdmd)) {
-                return false;
-            }
+            createTable(tdmd);
         }
-
-        return true;
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -266,4 +265,11 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
         return stackStorage.getThreadDump(timestamp, threadID, threadState);
     }
 
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
+    }
+
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
 }
