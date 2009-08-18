@@ -47,15 +47,18 @@ import java.util.Collection;
 import java.util.Map;
 import javax.swing.JComponent;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.util.HelpCtx;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -64,7 +67,8 @@ public class ImportPreviewStep extends AbstractStep {
     
     private PreviewPanel previewPanel;
     private Context context;
-    private CommitTable table;    
+    private CommitTable table;
+    private WizardStepProgressSupport support;
     
     public ImportPreviewStep(Context context) {
         this.context = context;
@@ -111,34 +115,57 @@ public class ImportPreviewStep extends AbstractStep {
         }        
     }    
 
-    public void setup(String repositoryPath, String rootLocalPath) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+    public void setup(final String repositoryPath, final String rootLocalPath, SVNUrl repository) {
+        support = new WizardStepProgressSupport(previewPanel.progressPanel) {
+            @Override
+            protected void perform() {
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                
+                if (files.length == 0 || isCanceled()) {
+                    return;
+                }
 
-        if (files.length == 0) {
-            return;
-        }
+                if (repositoryPath != null) {
+                    table.setRootFile(repositoryPath, rootLocalPath);
+                }
 
-        if(repositoryPath != null) {
-            table.setRootFile(repositoryPath, rootLocalPath);
-        }
+                ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
 
-        SvnFileNode[] nodes;        
-        ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
-
-        for (int i = 0; i<files.length; i++) {
-            File file = files[i];
-            SvnFileNode node = new SvnFileNode(file);
-            nodesList.add(node);
-        }
-        nodes = nodesList.toArray(new SvnFileNode[files.length]);
-        table.setNodes(nodes);
-        table.getTableModel().addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent e) {
-                validateUserInput();
+                for (int i = 0; i < files.length; i++) {
+                    File file = files[i];
+                    SvnFileNode node = new SvnFileNode(file);
+                    nodesList.add(node);
+                    if (isCanceled()) {
+                        return;
+                    }
+                }
+                final SvnFileNode[] nodes = nodesList.toArray(new SvnFileNode[files.length]);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        table.setNodes(nodes);
+                        table.getTableModel().addTableModelListener(new TableModelListener() {
+                            public void tableChanged(TableModelEvent e) {
+                                validateUserInput();
+                            }
+                        });
+                        validateUserInput();
+                    }
+                });
             }
-        });
-        validateUserInput();
+
+            @Override
+            public void setEditable(boolean editable) {
+                // nothing
+            }
+        };
+        support.start(Subversion.getInstance().getRequestProcessor(repository), repository,  org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "BK1009")); //NOI18N
+    }
+
+    public void stop() {
+        if(support != null) {
+            support.cancel();
+        }
     }
 
     public Map getCommitFiles() {
