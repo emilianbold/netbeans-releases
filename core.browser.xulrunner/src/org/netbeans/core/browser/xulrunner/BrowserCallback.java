@@ -37,52 +37,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.api;
+package org.netbeans.core.browser.xulrunner;
 
-import org.openide.util.Lookup;
+import java.awt.AWTEvent;
+import org.w3c.dom.Node;
 
 /**
- * Factory to create embedded browser.
- *
+ * Callback into WebBrowserImpl to fire browser events.
+ * 
  * @author S. Aubrecht
  */
-public abstract class EmbeddedBrowserFactory {
+public interface BrowserCallback {
 
-    /**
-     * @return The one and only instance.
-     */
-    public static EmbeddedBrowserFactory getDefault() {
-        EmbeddedBrowserFactory res = Lookup.getDefault().lookup(EmbeddedBrowserFactory.class);
-        if( null == res ) {
-            res = new EmbeddedBrowserFactory() {
+    boolean fireBrowserEvent( int type, String url );
 
-                @Override
-                public boolean isEnabled() {
-                    return false;
-                }
-
-                @Override
-                public WebBrowser createEmbeddedBrowser() {
-                    throw new IllegalStateException();
-                }
-            };
-        }
-        return res;
-    }
-
-    /**
-     *
-     * @return True if embedded browser implementation is available for current
-     * OS and JDK and if user has enabled embedded browser in Options, false otherwise.
-     */
-    public abstract boolean isEnabled();
-
-    /**
-     * Creates a new embedded browser component. Don't forget to invoke dispose()
-     * when the browser is no longer needed.
-     * @return Embedded browser.
-     * @throws IllegalStateException If embedded browser isn't enabled.
-     * @see WebBrowser#dispose()
-     */
-    public abstract WebBrowser createEmbeddedBrowser();
+    void fireBrowserEvent( int type, AWTEvent e, Node n );
 }
