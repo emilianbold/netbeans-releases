@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="SideBar">
+            <file name="org-netbeans-modules-dlight-annotationsupport-AnnotationBarManager.instance">
+                <attr name="position" intvalue="2300"/>
+            </file>
+            <!-- place in between line numbers sidebar and folding sidebar #57544 -->
+        </folder>
+    </folder>
+</filesystem>

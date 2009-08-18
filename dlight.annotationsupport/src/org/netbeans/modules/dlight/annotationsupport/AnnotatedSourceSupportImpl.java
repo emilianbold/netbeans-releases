@@ -73,6 +73,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     private static boolean checkedLogging = checkLogging();
     private static boolean logginIsOn;
     private HashMap<String, FileAnnotationInfo> activeAnnotations = null;
+    private static String SPACES = "            ";  // NOI18N
 
     public AnnotatedSourceSupportImpl() {
         enableSourceFileTracking();
@@ -100,19 +101,29 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     String annotation = "";
                     String tooltip = "";
+                    int col = 0;
                     for (Column column : metrics) {
                         if (annotation.length() > 0) {
-                            annotation += "/"; // NOI18N
-                            tooltip += "/"; // NOI18N
+                            annotation += " "; // NOI18N
+                            tooltip += " "; // NOI18N
                         }
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
+                        String metricValString = metricVal.toString();
+                        if (col == 0 && metricValString.length() < 7) {
+                            metricValString = SPACES.substring(0, 7 - metricValString.length()) + metricValString;
+                        }
+                        if (col == 1 && metricValString.length() < 3) {
+                            metricValString = SPACES.substring(0, 3 - metricValString.length()) + metricValString;
+                        }
                         String metricUName = column.getColumnUName();
-                        annotation = annotation + metricVal;
+                        annotation = annotation + metricValString;
                         tooltip = tooltip + metricUName;
+                        col++;
                     }
                     lineAnnotationInfo.setAnnotation(annotation);
                     lineAnnotationInfo.setAnnotationToolTip(tooltip);
+                    fileAnnotationInfo.setTooltip(tooltip);
                     fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                 }
             }
@@ -133,6 +144,25 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         return null;
     }
 
+    private JEditorPane activatedEditorPane(Node node) {
+        EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if (panes == null) {
+            ec.open();
+        }
+
+        panes = ec.getOpenedPanes();
+        if (panes == null) {
+            return null;
+        }
+        JEditorPane currentPane = panes[0];
+        return currentPane;
+    }
+
     private void annotateCurrentSourceFiles() {
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         if (nodes == null) {
@@ -143,15 +173,20 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             if (file != null) {
                 String filePath = file.getAbsolutePath();
                 FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
-                if (fileAnnotationInfo != null && !fileAnnotationInfo.isAnnotated()) {
-                    // Calculate line numbers if only offset is known
-                    log.fine("Annotating " + filePath + "\n"); // NOI18N)
-                    List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
-                    for (LineAnnotationInfo line : lines) {
-                        line.setLine(node);
-                        log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                if (fileAnnotationInfo != null) {
+                    if (!fileAnnotationInfo.isAnnotated()) {
+                        // Calculate line numbers if only offset is known
+                        log.fine("Annotating " + filePath + "\n"); // NOI18N)
+                        List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
+                        for (LineAnnotationInfo line : lines) {
+                            line.setLine(node);
+                            log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                        }
+                        fileAnnotationInfo.setAnnotated(true);
                     }
-                    fileAnnotationInfo.setAnnotated(true);
+
+                    JEditorPane jEditorPane = activatedEditorPane(node);
+                    AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
                 }
             }
         }
@@ -225,6 +260,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     class FileAnnotationInfo {
 
         private String filePath;
+        private String tooltip;
         private List<LineAnnotationInfo> lineAnnotationInfo;
         private boolean annotated;
 
@@ -254,6 +290,15 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             return lineAnnotationInfo;
         }
 
+        public LineAnnotationInfo getLineAnnotationInfo(int line) {
+            for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+                if (lineInfo.getLine() == line) {
+                    return lineInfo;
+                }
+            }
+            return null;
+        }
+
         /**
          * @param lineAnnotationInfo the lineAnnotationInfo to set
          */
@@ -273,6 +318,20 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
          */
         public void setAnnotated(boolean annotated) {
             this.annotated = annotated;
+        }
+
+        /**
+         * @return the tooltip
+         */
+        public String getTooltip() {
+            return tooltip;
+        }
+
+        /**
+         * @param tooltip the tooltip to set
+         */
+        public void setTooltip(String tooltip) {
+            this.tooltip = tooltip;
         }
     }
 
@@ -295,21 +354,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             if (sourceLine >= 0) {
                 return;
             }
-            EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return;
-            }
-
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes == null) {
-                ec.open();
-            }
-
-            panes = ec.getOpenedPanes();
-            if (panes == null) {
-                return;
-            }
-            JEditorPane currentPane = panes[0];
+            JEditorPane currentPane = activatedEditorPane(node);
             try {
                 sourceLine = Utilities.getLineOffset((BaseDocument)currentPane.getDocument(), (int)offset);
                 sourceLine++;
