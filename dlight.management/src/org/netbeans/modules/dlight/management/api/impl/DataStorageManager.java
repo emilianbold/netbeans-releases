@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,22 +100,17 @@ public final class DataStorageManager {
      *  Returns previously created or created new instance of DataStorage
      *  for requested schema (if it can be found within all available DataStorages)
      */
-    public DataStorage getDataStorageFor(DLightSession session, DataCollector<?> collector) {
-        Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
-        for (DataStorageType type : supportedTypes) {
-            DataStorage storage = getDataStorageFor(session, type, collector.getDataTablesMetadata());
-
-            if (storage != null) {
-                return storage;
-            }
-
+    public Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
+        Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
+        for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
+            result.put(type, getDataStorageFor(session, type, collector.getDataTablesMetadata()));
         }
-        return null;
+        return result;
     }
 
-    public DataStorage getDataStorage(DataStorageType storageType) {
-        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
-    }
+//    private DataStorage getDataStorage(DataStorageType storageType) {
+//        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
+//    }
 
     private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (session == null) {

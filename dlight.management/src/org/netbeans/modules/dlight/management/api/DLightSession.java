@@ -459,15 +459,15 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
-                DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
+                Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                     context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
                 }
 
-                if (storage != null) {
+                if (currentStorages != null && !currentStorages.isEmpty()) {
 
-                    toolCollector.init(storage, target);
+                    toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
 
                     if (toolCollector instanceof IndicatorDataProvider) {
@@ -479,8 +479,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         storages = new ArrayList<DataStorage>();
                     }
 
-                    if (!storages.contains(storage)) {
-                        storages.add(storage);
+                    for (DataStorage storage : currentStorages.values()) {
+                        if (!storages.contains(storage)) {
+                            storages.add(storage);
+                        }
                     }
 
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {

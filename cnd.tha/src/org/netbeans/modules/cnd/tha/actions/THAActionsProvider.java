@@ -279,14 +279,12 @@ public final class THAActionsProvider implements DLightTargetListener {
         enableDataRaces = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
             }
         };
         enableDataRaces.setEnabled(false);
         enableDeadlocks = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
             }
         };
         enableDeadlocks.setEnabled(false);

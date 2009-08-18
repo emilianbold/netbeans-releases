@@ -52,7 +52,6 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
-import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -205,7 +204,7 @@ public final class DLightCPUToolConfigurationProvider
 
         //  columns.add(new Column("name_qualified", String.class, loc("CPUMonitorTool.ColumnName.name_qualified"), null)); // NOI18N
 
-        List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
+        List<FunctionMetric> metricsList = StackDataStorage.METRICS;
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
 
         for (FunctionMetric metric : metricsList) {
