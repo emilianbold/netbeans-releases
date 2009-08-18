@@ -46,6 +46,8 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -154,6 +156,12 @@ public final class TableSorter extends AbstractTableModel {
     }
 
     private void clearSortingState() {
+        boolean assertEnabled = false;
+        assert assertEnabled = true;
+        if (assertEnabled && !EventQueue.isDispatchThread()) {
+            IllegalStateException ise = new IllegalStateException();
+            Logger.getLogger(TableSorter.class.getName()).log(Level.INFO, null, ise);
+        }
         viewToModel = null;
         modelToView = null;
     }
