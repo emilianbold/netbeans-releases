@@ -40,28 +40,32 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
-import org.netbeans.modules.web.core.syntax.completion.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -70,6 +74,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
+import org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -230,8 +235,10 @@ public class ELExpression {
         return NOT_EL;
     }
 
-    public List<CompletionItem> getPropertyCompletionItems(String beanType, int anchor) {
-        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType, anchor);
+    public List<CompletionItem> getPropertyCompletionItems(String beanType, 
+            int anchor) 
+    {
+        CompletionInfo task = getPropertyCompletionInfo(beanType, anchor);
         runTask(task);
 
         return task.getCompletionItems();
@@ -258,13 +265,17 @@ public class ELExpression {
 
         return null;
     }
+    
+    protected CompletionInfo getPropertyCompletionInfo(String beanType, int anchor) {
+        return new PropertyCompletionItemsTask(beanType, anchor);
+    }
 
     protected FileObject getFileObject() {
         return DataLoadersBridge.getDefault().getFileObject(doc);
     }
             
 
-    protected void runTask(CancellableTask task) {
+    protected void runTask(CancellableTask<CompilationController> task) {
         
         if(getFileObject() == null) {
             return ;
@@ -420,7 +431,7 @@ public class ELExpression {
             parts.add(part);
         }
     }
-
+    
     protected abstract class BaseELTaskClass {
 
         protected String beanType;
@@ -432,12 +443,14 @@ public class ELExpression {
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
-        protected TypeElement getTypePreceedingCaret(CompilationInfo parameter) {
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller) {
             if (beanType == null) {
                 return null;
             }
 
-            TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
+            TypeElement lastKnownType = controller.getElements().
+                getTypeElement(beanType);
+            TypeMirror lastReturnType = null;
 
             String parts[] = getParts();
             // part[0] - the bean
@@ -449,28 +462,105 @@ public class ELExpression {
                 limit += 1;
             }
 
+            parts:
             for (int i = 1; i < limit; i++) {
-                if (lastKnownType == null) {
+                if (lastKnownType == null && lastReturnType == null) {
                     logger.fine("EL CC: Could not resolve type for property " //NOI18N
                             + parts[i] + " in " + getExpression()); //NOI18N
 
                     return null;
                 }
+                if (lastKnownType != null) {
+                    String accessorName = getAccessorName(parts[i]);
+                    List<ExecutableElement> allMethods = ElementFilter
+                            .methodsIn(lastKnownType.getEnclosedElements());
+                    
+                    lastKnownType = null;
 
-                String accessorName = getAccessorName(parts[i]);
-                List<ExecutableElement> allMethods = ElementFilter.methodsIn(lastKnownType.getEnclosedElements());
-                lastKnownType = null;
+                    for (ExecutableElement method : allMethods) {
+                        if (accessorName.equals(method.getSimpleName()
+                                .toString()))
+                        {
+                            TypeMirror returnType = method.getReturnType();
+                            lastReturnType = returnType;
 
-                for (ExecutableElement method : allMethods) {
-                    if (accessorName.equals(method.getSimpleName().toString())) {
-                        TypeMirror returnType = method.getReturnType();
+                            if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
+                                lastKnownType = (TypeElement) controller
+                                        .getTypes().asElement(returnType);
+                                break;
+                            }
+                            else if (returnType.getKind() == TypeKind.ARRAY) {
+                                continue parts;
+                            }
+                        }
 
-                        if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
-                            lastKnownType = (TypeElement) parameter.getTypes().asElement(returnType);
-                            break;
+                    }
+                }
+                if ( lastKnownType== null  && lastReturnType != null ) 
+                {
+                    /* 
+                     * property name could be:
+                     * 1) index ( in array or collection )
+                     * 2) key in hash map 
+                     */
+                    if ( lastReturnType.getKind() == TypeKind.ARRAY)
+                    {
+                        TypeMirror typeMirror = ((ArrayType)lastReturnType).
+                            getComponentType();
+                        if ( typeMirror.getKind() == TypeKind.DECLARED){
+                            lastKnownType = (TypeElement) controller.getTypes().
+                                asElement(typeMirror);
+                        }
+                        else if ( typeMirror.getKind() == TypeKind.ARRAY){
+                            lastReturnType = typeMirror;
+                            continue;
                         }
                     }
-
+                    else if ( controller.getTypes().isAssignable( 
+                            controller.getTypes().erasure(lastReturnType), 
+                                controller.getElements().getTypeElement(
+                                        List.class.getCanonicalName()).asType()))
+                    {
+                        if ( lastReturnType instanceof DeclaredType ){
+                            List<? extends TypeMirror> typeArguments = 
+                                ((DeclaredType)lastReturnType).getTypeArguments();
+                            if ( typeArguments.size() != 0 ){
+                                TypeMirror typeMirror = typeArguments.get(0);
+                                if ( typeMirror.getKind() == TypeKind.DECLARED){
+                                    lastKnownType = (TypeElement) controller.getTypes().
+                                        asElement( typeMirror );
+                                }
+                            }
+                        }
+                        if ( lastKnownType == null ){
+                            lastKnownType = controller.getElements().
+                                getTypeElement(Object.class.getCanonicalName());
+                        }
+                    }
+                    else if (controller.getTypes().isAssignable(
+                            controller.getTypes().erasure(lastReturnType),
+                                controller.getElements().getTypeElement(
+                                        Map.class.getCanonicalName()).asType()))
+                    {
+                        if (lastReturnType instanceof DeclaredType) {
+                            List<? extends TypeMirror> typeArguments = 
+                                ((DeclaredType) lastReturnType)
+                                    .getTypeArguments();
+                            if (typeArguments.size() == 2) {
+                                TypeMirror typeMirror = typeArguments.get(1);
+                                if (typeMirror.getKind() == TypeKind.DECLARED) {
+                                    lastKnownType = (TypeElement) controller
+                                            .getTypes().asElement(typeMirror);
+                                }
+                            }
+                        }
+                        if (lastKnownType == null) {
+                            lastKnownType = controller.getElements()
+                                    .getTypeElement(
+                                            Object.class.getCanonicalName());
+                        }
+                    }
+                    lastReturnType = null;
                 }
             }
 
@@ -552,8 +642,17 @@ public class ELExpression {
             return success;
         }
     }
+    
+    protected interface CompletionInfo extends CancellableTask<CompilationController> {
+        
+        List<CompletionItem> getCompletionItems();
+        
+        String getTypeOnCaretQualifiedName();
+    }
 
-    private class PropertyCompletionItemsTask extends BaseELTaskClass implements CancellableTask<CompilationController> {
+    private class PropertyCompletionItemsTask extends BaseELTaskClass 
+        implements  CompletionInfo 
+    {
 
         private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
         private int anchorOffset;
@@ -569,6 +668,7 @@ public class ELExpression {
             TypeElement bean = getTypePreceedingCaret(controller);
 
             if (bean != null) {
+                myQName = bean.getQualifiedName().toString();
                 String prefix = getPropertyBeingTypedName();
                 char firstChar =0;
                 if ( prefix.length()> 0){
@@ -641,6 +741,12 @@ public class ELExpression {
         public List<CompletionItem> getCompletionItems() {
             return completionItems;
         }
+        
+        public String getTypeOnCaretQualifiedName() {
+            return myQName;
+        }
+        
+        private String myQName;
     }
 
     /** Return context, whether the expression is about a bean, implicit object or

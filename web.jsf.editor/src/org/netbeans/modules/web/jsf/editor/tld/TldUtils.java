@@ -60,6 +60,7 @@ public class TldUtils {
             JSF_LIBRARY_DISPLAY_NAMES.put("http://mojarra.dev.java.net/mojarra_ext", "Mojarra Extensions"); //NOI18N
             JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/composite", "Composite Components"); //NOI18N
             JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/html", "Html Basic"); //NOI18N
+            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/core", "JSF Core"); //NOI18N
         }
         
         return JSF_LIBRARY_DISPLAY_NAMES.get(libraryUri);
