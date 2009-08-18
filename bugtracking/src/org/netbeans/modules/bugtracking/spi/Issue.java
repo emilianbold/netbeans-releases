@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
 
 /**
@@ -111,6 +112,8 @@ public abstract class Issue {
             ISSUE_STATUS_MODIFIED;
     
     private Repository repository;
+
+    private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
 
     /**
      * Creates an issue
@@ -203,45 +206,64 @@ public abstract class Issue {
         final ProgressHandle[] handle = new ProgressHandle[1];
         handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
         handle[0].start();
-        final IssueTopComponent tc = IssueTopComponent.find(issueId);
+        IssueTopComponent _tc = null;
+        try {
+        _tc = IssueTopComponent.find(issueId);
+        } catch (NullPointerException e) {
+            handle[0].finish();
+            throw e;
+        }
+        final IssueTopComponent tc = _tc;
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
-                final Issue issue = tc.getIssue();
-                if (issue == null) {
-                    tc.initNoIssue();
-                }
-                tc.open();
-                tc.requestActive();
-
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-
-                    public void run() {
-                        try {
-                            if (issue != null) {
-                                handle[0].finish();
-                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
-                                handle[0].start();
-                                issue.refresh();
-                            } else {
-                                final Issue refIssue = repository.getIssue(issueId);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        tc.setIssue(refIssue);
-                                    }
-                                });
-                                try {
-                                    refIssue.setSeen(true);
-                                } catch (IOException ex) {
-                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        } finally {
-                            handle[0].finish();
-                        }
+                    final Issue issue = tc.getIssue();
+                    if (issue == null) {
+                        tc.initNoIssue();
                     }
-                });
+                    final boolean tcOpened = tc.isOpened();
+                    if(!tcOpened) {
+                        tc.open();
+                    }
+                    tc.requestActive();
+
+                    rp.post(new Runnable() {
+
+                        public void run() {
+                            try {
+                                if (issue != null) {
+                                    handle[0].finish();
+                                    handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
+                                    handle[0].start();
+                                    issue.refresh();
+                                } else {
+                                    final Issue refIssue = repository.getIssue(issueId);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            if(refIssue == null) {
+                                                // lets hope the repository was able to handle this
+                                                // because whatever happend, there is nothing else
+                                                // we can do at this point
+                                                if(!tcOpened) {
+                                                    tc.close();
+                                                }
+                                                return;
+                                            }
+                                            tc.setIssue(refIssue);
+                                        }
+                                    });
+                                    try {
+                                        if(refIssue != null) {
+                                            refIssue.setSeen(true);
+                                        }
+                                    } catch (IOException ex) {
+                                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            } finally {
+                                handle[0].finish();
+                            }
+                        }
+                    });
             }
         });
     }
@@ -269,7 +291,7 @@ public abstract class Issue {
                 tc.open();
                 tc.requestActive();
 
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                rp.post(new Runnable() {
 
                     public void run() {
                         try {

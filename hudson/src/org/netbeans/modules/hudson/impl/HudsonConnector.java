@@ -137,7 +137,7 @@ public class HudsonConnector {
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
         handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes()).connection(); // NOI18N
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
         } finally {
@@ -154,7 +154,8 @@ public class HudsonConnector {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
                 // XXX no good way to only include what you _do_ want without using XSLT
                 "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
-                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn");
+                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn" +
+                "&exclude=//id&exclude=//description");
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -172,7 +173,12 @@ public class HudsonConnector {
                     continue;
                 }
                 String nodeName = detail.getNodeName();
-                String text = detail.getFirstChild().getTextContent();
+                Node firstChild = detail.getFirstChild();
+                if (firstChild == null) {
+                    LOG.warning("#170267: unexpected empty <build> child: " + nodeName);
+                    continue;
+                }
+                String text = firstChild.getTextContent();
                 if (nodeName.equals("number")) { // NOI18N
                     number = Integer.parseInt(text);
                 } else if (nodeName.equals("building")) { // NOI18N
@@ -180,7 +186,7 @@ public class HudsonConnector {
                 } else if (nodeName.equals("result")) { // NOI18N
                     result = Result.valueOf(text);
                 } else {
-                    LOG.fine("unexpected <build> child: " + nodeName);
+                    LOG.warning("unexpected <build> child: " + nodeName);
                 }
             }
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));

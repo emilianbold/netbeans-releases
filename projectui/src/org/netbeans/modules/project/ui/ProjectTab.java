@@ -98,6 +98,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -473,8 +474,28 @@ public class ProjectTab extends TopComponent
                  Node tempNode = root.findNode(objectToSelect);
                  if (tempNode == null) {
                      Project project = FileOwnerQuery.getOwner(objectToSelect);
-                     if (project != null && !OpenProjectList.getDefault().isOpen(project)) {
-                         DialogDisplayer dd = DialogDisplayer.getDefault();
+                     Project found = null;
+                     for (;;) {
+                         if (project != null) {
+                             for (Project p : OpenProjectList.getDefault().getOpenProjects()) {
+                                 if (p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                                     found = p;
+                                     break;
+                                 }
+                             }
+                         }
+                         if (found instanceof LazyProject) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                         } else {
+                             tempNode = root.findNode(objectToSelect);
+                             break;
+                         }
+                     }
+                     if (project != null && found == null) {
                          String message = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm", //NOI18N
                                  ProjectUtils.getInformation(project).getDisplayName());
                          String title = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm_title");//NOI18N

@@ -131,6 +131,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
 
+    public void testNamespaces1() throws Exception {
+        reformatFileContents("testfiles/formatting/namespaces1.php");
+    }
+
     public void test161049() throws Exception {
         reformatFileContents("testfiles/formatting/issue161049.php");
     }
@@ -142,6 +146,18 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test162785() throws Exception {
         reformatFileContents("testfiles/formatting/issue162785.php");
     }
+
+    public void test162586() throws Exception {
+        reformatFileContents("testfiles/formatting/issue162586.php");
+    }
+
+    public void test165762() throws Exception {
+        reformatFileContents("testfiles/formatting/issue165762.php");
+    }
+
+    public void test166550() throws Exception {
+        reformatFileContents("testfiles/formatting/issue166550.php");
+    }
     
     public void test159339_161408() throws Exception {
         reformatFileContents("testfiles/formatting/issues_159339_161408.php");
@@ -149,6 +165,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void test164219() throws Exception {
         reformatFileContents("testfiles/formatting/issue164219.php");
+    }
+
+    public void test162320() throws Exception {
+        reformatFileContents("testfiles/formatting/issue162320.php");
     }
 
     private void reformatFileContents(String file) throws Exception {

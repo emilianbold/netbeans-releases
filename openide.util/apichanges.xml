@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="NbBundle.varargs">
+        <api name="util"/>
+        <summary><code>NbBundle.getMessage</code> can take arbitrarily many format arguments</summary>
+        <version major="7" minor="27"/>
+        <date day="5" month="8" year="2009"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                <code>NbBundle.getMessage</code> now has a varargs overload that
+                permits you to specify four or more format arguments without
+                explicitly constructing an array.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbBundle"/>
+    </change>
     <change id="EditableProperties">
         <api name="util"/>
         <summary>Copied API from <code>project.ant</code> for <code>EditableProperties</code>.</summary>

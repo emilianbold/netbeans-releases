@@ -51,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -86,7 +87,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     
     private static final String UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME = "UpToDateStatusProvider"; //NOI18N
     private static final String TEXT_BASE_PATH = "Editors/text/base/"; //NOI18N
-    
+
     private AnnotationView view;
     private JTextComponent pane;
     private BaseDocument document;
@@ -96,6 +97,11 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     
     private Collection<Mark> currentMarks = null;
     private SortedMap<Integer, List<Mark>> marksMap = null;
+
+    private static WeakHashMap<String, Collection<? extends MarkProviderCreator>> mime2Creators = new WeakHashMap<String, Collection<? extends MarkProviderCreator>>();
+    private static WeakHashMap<String, Collection<? extends UpToDateStatusProviderFactory>> mime2StatusProviders = new WeakHashMap<String, Collection<? extends UpToDateStatusProviderFactory>>();
+
+    private static LegacyCrapProvider legacyCrap;
     
     /** Creates a new instance of AnnotationViewData */
     public AnnotationViewDataImpl(AnnotationView view, JTextComponent pane) {
@@ -126,13 +132,24 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         
         document = null;
     }
+
+    public static void initProviders(String mimeType) {
+        // Legacy mime path (text/base)
+        MimePath legacyMimePath = MimePath.parse("text/base");
+        legacyCrap = MimeLookup.getLookup(legacyMimePath).lookup(LegacyCrapProvider.class);
+        lookupProviders(mimeType);
+    }
+
+    private static void lookupProviders(String mimeType) {
+        MimePath mimePath = MimePath.parse(mimeType);
+        // Mark providers
+        mime2Creators.put(mimeType, MimeLookup.getLookup(mimePath).lookupAll(MarkProviderCreator.class));
+        // Status providers
+        mime2StatusProviders.put(mimeType, MimeLookup.getLookup(mimePath).lookupAll(UpToDateStatusProviderFactory.class));
+    }
     
     private void gatherProviders(JTextComponent pane) {
         long start = System.currentTimeMillis();
-
-        // Legacy mime path (text/base)
-        MimePath legacyMimePath = MimePath.parse("text/base");
-        LegacyCrapProvider legacyCrap = MimeLookup.getLookup(legacyMimePath).lookup(LegacyCrapProvider.class);
 
         // Collect legacy mark providers
         List<MarkProvider> newMarkProviders = new ArrayList<MarkProvider>();
@@ -142,9 +159,14 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         
         // Collect mark providers
         String mimeType = pane.getUI().getEditorKit(pane).getContentType();
-        MimePath mimePath = MimePath.parse(mimeType);
         Collection<? extends MarkProviderCreator> creators = 
-            MimeLookup.getLookup(mimePath).lookupAll(MarkProviderCreator.class);
+            mime2Creators.get(mimeType);
+
+        if (creators == null) { //nothing for current mimeType, probably wrong init
+            lookupProviders(mimeType);
+            creators = mime2Creators.get(mimeType);
+        }
+
         createMarkProviders(creators, newMarkProviders, pane);
 
         this.markProviders = newMarkProviders;
@@ -158,7 +180,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         
         // Collect status providers
         Collection<? extends UpToDateStatusProviderFactory> factories = 
-            MimeLookup.getLookup(mimePath).lookupAll(UpToDateStatusProviderFactory.class);
+            mime2StatusProviders.get(mimeType);
         createStatusProviders(factories, newStatusProviders, pane);
 
         this.statusProviders = newStatusProviders;

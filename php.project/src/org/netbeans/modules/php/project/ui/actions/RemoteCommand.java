@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
@@ -146,7 +147,8 @@ public abstract class RemoteCommand extends Command {
                 .setOperationMonitor(operationMonitor)
                 .setAdditionalInitialSubdirectory(getRemoteDirectory())
                 .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()))
-                .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(getProject())));
+                .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(getProject()))
+                .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(getProject())));
     }
 
     protected RemoteConfiguration getRemoteConfiguration() {

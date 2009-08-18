@@ -47,6 +47,44 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ExternalURLDisplayer">
+        <api name="awt"/>
+        <summary>URLDisplayer can show URLs in an external browser even
+        if the preferred browser is an internal one.</summary>
+        <version major="7" minor="14"/>
+        <date day="7" month="8" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            URLDisplayer.showURL(URL) shows the given page using preferred
+            web browser defined in IDE options. However when the preffered browser
+            is an internal one (either embedded native browser or SwingBrowser)
+            then there's need to show some URLs in an external browser, e.g. when
+            a modal dialog is showing.
+            Method showURLExternal(URL) attempts to display the given page in
+            an external browser. The default implementation just delegates to showURL(URL).
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="169240"/>
+    </change>
+    <change id="HtmlBrowser.toolbar">
+        <api name="awt"/>
+        <summary>Added 'location' String property to HtmlBrowser.Impl</summary>
+        <version major="7" minor="13"/>
+        <date day="4" month="8" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            HtmlBrowser.Impl class now has a String property to set/get browser
+            location. The location doesn't have to be a valid URL, for example
+            "about:config" may be accepted as well depeneding on actual browser
+            implementation.
+            The default property implementation attempts to convert the String
+            location to/from URL address.
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="169241"/>
+    </change>
     <change id="Actions.asynchronous">
         <api name="awt"/>
         <summary>Support for asynchronous actions</summary>

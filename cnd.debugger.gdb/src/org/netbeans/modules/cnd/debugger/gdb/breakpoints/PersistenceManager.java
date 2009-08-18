@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.PropertyChangeEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -104,7 +106,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         Breakpoint[] bpts = DebuggerManager.getDebuggerManager().getBreakpoints();
         ArrayList<Breakpoint> unloaded = new ArrayList<Breakpoint>();
         for (Breakpoint b : bpts) {
-            if (b instanceof GdbBreakpoint) {
+            if (b instanceof CndBreakpoint) {
                 unloaded.add(b);
                 b.removePropertyChangeListener(this);
             }
@@ -123,14 +125,14 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     }
     
     public void breakpointAdded(Breakpoint breakpoint) {
-        if (breakpoint instanceof GdbBreakpoint) {
+        if (breakpoint instanceof CndBreakpoint) {
             storeBreakpoints();
             breakpoint.addPropertyChangeListener(this);
         }
     }
 
     public void breakpointRemoved(Breakpoint breakpoint) {
-        if (breakpoint instanceof GdbBreakpoint) {
+        if (breakpoint instanceof CndBreakpoint) {
             storeBreakpoints();
             breakpoint.removePropertyChangeListener(this);
         }
@@ -142,7 +144,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() instanceof GdbBreakpoint) {
+        if (evt.getSource() instanceof CndBreakpoint) {
             if (!Breakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
                 storeBreakpoints();
             }
@@ -154,7 +156,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         List<? extends Reader> readers = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
         for (Reader r : readers) {
             String[] ns = r.getSupportedClassNames ();
-            if (ns.length == 1 && GdbBreakpoint.class.getName().equals(ns[0])) {
+            if (ns.length == 1 && CndBreakpoint.class.getName().equals(ns[0])) {
                 breakpointsReader = (BreakpointsReader) r;
                 break;
             }
@@ -180,7 +182,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         List<Breakpoint> bb = new ArrayList<Breakpoint>();
         for (i = 0; i < k; i++) {
             // Don't store hidden breakpoints
-            if (bs[i] instanceof GdbBreakpoint && !((GdbBreakpoint) bs [i]).isHidden()) {
+            if (bs[i] instanceof CndBreakpoint && !((CndBreakpoint) bs [i]).isHidden()) {
                 bb.add(bs[i]);
             }
         }

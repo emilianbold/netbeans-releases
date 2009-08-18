@@ -171,6 +171,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
+                            for (CompileTuple tuple : virtualSourceTuples) {
+                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                            }
                             toCompile.addAll(virtualSourceTuples);
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
@@ -232,6 +235,12 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static final List<? extends Indexable> splitSources(final Iterable<? extends Indexable> indexables, final List<? super Indexable> javaSources) {
         List<Indexable> virtualSources = new LinkedList<Indexable>();
         for (Indexable indexable : indexables) {
+            if (indexable.getURL() == null) {
+                /*
+                    Issue #168179: This is probably deleted source file. Just skipping. 
+                 */
+                continue;
+            }
             if (VirtualSourceProviderQuery.hasVirtualSource(indexable)) {
                 virtualSources.add(indexable);
             }
@@ -242,9 +251,18 @@ public class JavaCustomIndexer extends CustomIndexer {
         return virtualSources;
     }
 
-    private static Collection<? extends CompileTuple> translateVirtualSources(final Iterable<? extends Indexable> virtualSources, final URL rootURL) throws IOException {
-        final File root = new File (URI.create(rootURL.toString()));
-        return VirtualSourceProviderQuery.translate(virtualSources, root);
+    private static Collection<? extends CompileTuple> translateVirtualSources(final Collection<? extends Indexable> virtualSources, final URL rootURL) throws IOException {
+        if (virtualSources.isEmpty()) {
+            return Collections.<CompileTuple>emptySet();
+        }
+        try {
+            final File root = new File (URI.create(rootURL.toString()));
+            return VirtualSourceProviderQuery.translate(virtualSources, root);
+        } catch (IllegalArgumentException e) {
+            //Called on non local fs => not supported, log and ignore.
+            JavaIndex.LOG.warning("Virtual sources in the root: " + rootURL +" are ignored due to: " + e.getMessage()); //NOI18N
+            return Collections.<CompileTuple>emptySet();
+        }
     }
 
     private static CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
@@ -567,6 +585,27 @@ public class JavaCustomIndexer extends CustomIndexer {
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
             clearFiles(context, deleted);
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+            assert removedRoots != null;
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            try {
+                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {
+                        for (URL removedRoot : removedRoots) {
+                            cim.removeRoot(removedRoot);
+                        }
+                        return null;
+                    }
+                });
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+
+            } catch (InterruptedException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
 
         @Override

@@ -42,6 +42,10 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.api.debugger.Properties;
 
 /**
@@ -52,17 +56,17 @@ public class BreakpointsReader implements Properties.Reader {
 
     public String [] getSupportedClassNames() {
         return new String[] {
-            GdbBreakpoint.class.getName(), 
+            CndBreakpoint.class.getName(),
         };
     }
     
     public Object read(String typeID, Properties properties) {
-        GdbBreakpoint b = null;
+        CndBreakpoint b = null;
         // Read both LineBreakpoint and LineBreakpoint$LineBreakpointComparable
         if (typeID.equals(LineBreakpoint.class.getName()) ||
                         typeID.equals(LineBreakpoint.class.getName() + "$LineBreakpointComparable")) { // NOI18N
-            LineBreakpoint lb = LineBreakpoint.create(properties.getString(GdbBreakpoint.PROP_URL, null),
-                        properties.getInt(GdbBreakpoint.PROP_LINE_NUMBER, 1));
+            LineBreakpoint lb = LineBreakpoint.create(properties.getString(CndBreakpoint.PROP_URL, null),
+                        properties.getInt(CndBreakpoint.PROP_LINE_NUMBER, 1));
             b = lb;
         }
         if (typeID.equals (FunctionBreakpoint.class.getName()) ||
@@ -78,14 +82,14 @@ public class BreakpointsReader implements Properties.Reader {
             b = ab;
         }
         
-        b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
-        b.setSkipCount(properties.getInt(GdbBreakpoint.PROP_SKIP_COUNT, 0));
-        b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
-        b.setGroupName(properties.getString(GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
-        b.setSuspend(properties.getInt(GdbBreakpoint.PROP_SUSPEND, GdbBreakpoint.SUSPEND_ALL),
-                properties.getString(GdbBreakpoint.PROP_THREAD_ID, "1")); // NOI18N
+        b.setCondition(properties.getString(CndBreakpoint.PROP_CONDITION, "")); // NOI18N
+        b.setSkipCount(properties.getInt(CndBreakpoint.PROP_SKIP_COUNT, 0));
+        b.setPrintText(properties.getString(CndBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
+        b.setGroupName(properties.getString(CndBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
+        b.setSuspend(properties.getInt(CndBreakpoint.PROP_SUSPEND, CndBreakpoint.SUSPEND_ALL),
+                properties.getString(CndBreakpoint.PROP_THREAD_ID, "1")); // NOI18N
         
-        if (properties.getBoolean(GdbBreakpoint.PROP_ENABLED, true)) {
+        if (properties.getBoolean(CndBreakpoint.PROP_ENABLED, true)) {
             b.enable();
         } else {
             b.disable();
@@ -94,19 +98,19 @@ public class BreakpointsReader implements Properties.Reader {
     }
     
     public void write(Object object, Properties properties) {
-        GdbBreakpoint b = (GdbBreakpoint) object;
-        properties.setString(GdbBreakpoint.PROP_PRINT_TEXT, b.getPrintText());
-        properties.setString(GdbBreakpoint.PROP_GROUP_NAME, b.getGroupName());
-        properties.setInt(GdbBreakpoint.PROP_SUSPEND, b.getSuspend());
-        properties.setString(GdbBreakpoint.PROP_THREAD_ID, b.getThreadID());
-        properties.setBoolean(GdbBreakpoint.PROP_ENABLED, b.isEnabled());
-        properties.setString(GdbBreakpoint.PROP_CONDITION, b.getCondition());
-        properties.setInt(GdbBreakpoint.PROP_SKIP_COUNT, b.getSkipCount());
+        CndBreakpoint b = (CndBreakpoint) object;
+        properties.setString(CndBreakpoint.PROP_PRINT_TEXT, b.getPrintText());
+        properties.setString(CndBreakpoint.PROP_GROUP_NAME, b.getGroupName());
+        properties.setInt(CndBreakpoint.PROP_SUSPEND, b.getSuspend());
+        properties.setString(CndBreakpoint.PROP_THREAD_ID, b.getThreadID());
+        properties.setBoolean(CndBreakpoint.PROP_ENABLED, b.isEnabled());
+        properties.setString(CndBreakpoint.PROP_CONDITION, b.getCondition());
+        properties.setInt(CndBreakpoint.PROP_SKIP_COUNT, b.getSkipCount());
         
         if (object instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) object;
-            properties.setString(GdbBreakpoint.PROP_URL, lb.getURL());
-            properties.setInt(GdbBreakpoint.PROP_LINE_NUMBER, lb.getLineNumber());
+            properties.setString(CndBreakpoint.PROP_URL, lb.getURL());
+            properties.setInt(CndBreakpoint.PROP_LINE_NUMBER, lb.getLineNumber());
         } else if (object instanceof FunctionBreakpoint) {
             FunctionBreakpoint fb = (FunctionBreakpoint) object;
             properties.setString(FunctionBreakpoint.PROP_FUNCTION_NAME, fb.getFunctionName());

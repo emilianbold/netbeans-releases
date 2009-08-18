@@ -45,10 +45,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.openide.util.Exceptions;
 import org.openide.windows.Mode;
@@ -223,7 +226,7 @@ public class EditorWindowOperator {
      * Otherwise it does nothing.
      * @return true if tabs were moved, false otherwise
      */
-    public boolean jumpLeft() {
+    public static boolean jumpLeft() {
         if(btLeft().isEnabled()) {
             Container cont = getEditor().findTabDisplayer();
             // click left corner
@@ -264,6 +267,20 @@ public class EditorWindowOperator {
      */
     public static void selectDocument(String name) {
         btDown().push();
+
+
+        JComponentOperator jComp = new JComponentOperator(MainWindowOperator.getDefault());
+
+        JListOperator listOper = new JListOperator(MainWindowOperator.getDefault());
+
+        int index = listOper.findItemIndex(name);
+        if(index > -1) {
+            listOper.selectItem(index);
+        } else {
+            throw new JemmyException("Cannot select document \""+name+"\".");
+        }
+
+        /*
         JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
         int row = tableOper.findCellRow(name);
         if(row > -1) {
@@ -271,6 +288,8 @@ public class EditorWindowOperator {
         } else {
             throw new JemmyException("Cannot select document \""+name+"\".");
         }
+         *
+         */
     }
     
     /** Performs verification by accessing all sub-components */    

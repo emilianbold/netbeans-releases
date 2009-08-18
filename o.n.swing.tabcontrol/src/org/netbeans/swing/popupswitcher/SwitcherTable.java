@@ -159,12 +159,13 @@ public class SwitcherTable extends JTable {
         if (icon == null ) {
             icon = nullIcon;
         }
-        ren.setText(selected || item.isActive() ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+        boolean active = item.isActive() && !Boolean.getBoolean("nb.tabnames.html");
+        ren.setText(selected || active ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
         ren.setIconTextGap(26 - icon.getIconWidth());
         
-        if (item.isActive()) {
+        if (active) {
             if( Utilities.isWindows() ) {
                 ren.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
             } else {
@@ -181,6 +182,7 @@ public class SwitcherTable extends JTable {
     private String stripHtml( String htmlText ) {
         if( null == htmlText )
             return null;
+        // XXX might be better to only strip <font> tags; <b> and <i> probably harmless?
         String res = htmlText.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         res = res.trim();

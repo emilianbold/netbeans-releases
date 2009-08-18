@@ -44,13 +44,19 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.io.CharConversionException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -97,10 +103,69 @@ public class UnitDetails extends DetailsPanel{
                     text += "<br>";
 
                 }
+                String desc = null;
                 if (u instanceof Unit.Update) {
                     Unit.Update uu = ((Unit.Update) u);
                     text += "<b>" + getBundle ("UnitDetails_Plugin_InstalledVersion") + "</b>" + uu.getInstalledVersion () + "<br>"; // NOI18N
                     text += "<b>" + getBundle ("UnitDetails_Plugin_AvailableVersion") + "</b>" + uu.getAvailableVersion () + "<br>"; // NOI18N
+
+                    OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
+                    OperationInfo<InstallSupport> info = container.add(u.updateUnit, uu.getRelevantElement());
+                    Set<UpdateElement> reqs = info.getRequiredElements();
+                    Set<UpdateElement> required = new LinkedHashSet<UpdateElement> ();
+                    required.addAll(reqs);
+                    for(OperationInfo i : container.listAll()) {
+                        if(!required.contains(i.getUpdateElement()) && !i.getUpdateUnit().equals(u.updateUnit)) {
+                            required.add(i.getUpdateElement());
+                        }
+                    }
+
+
+                    if (required.size() != 0) {
+                        List<UpdateElement> visibleRequirements = new ArrayList<UpdateElement>();
+                        for (UpdateElement ue : required) {
+                            if (ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
+                                visibleRequirements.add(ue);
+                            }
+                        }
+                        OperationContainer containerForVisibleUpdate = OperationContainer.createForUpdate();
+                        OperationContainer containerForVisibleInstall = OperationContainer.createForInstall();
+                        List<OperationInfo<InstallSupport>> infoList = new ArrayList<OperationInfo<InstallSupport>>();
+                        for (UpdateElement ue : visibleRequirements) {
+                            if (containerForVisibleUpdate.canBeAdded(ue.getUpdateUnit(), ue)) {
+                                infoList.add(containerForVisibleUpdate.add(ue));
+                            } else if (containerForVisibleInstall.canBeAdded(ue.getUpdateUnit(), ue)) {
+                                infoList.add(containerForVisibleInstall.add(ue));
+                            }
+                        }
+                        List<UpdateElement> requiredElementsCoveredByVisible = new ArrayList<UpdateElement>();
+                        for (OperationInfo<InstallSupport> i : infoList) {
+                            Set<UpdateElement> visibleRequired = i.getRequiredElements();
+                            for (UpdateElement r : visibleRequired) {
+                                if (!requiredElementsCoveredByVisible.contains(r)) {
+                                    requiredElementsCoveredByVisible.add(r);
+                                }
+                            }
+                        }
+
+                        desc = "";
+                        for (UpdateElement ue : required) {
+                            if (!requiredElementsCoveredByVisible.contains(ue) &&
+                                    !ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
+                                desc += "&nbsp;&nbsp;&nbsp;&nbsp;" +
+                                        ue.getDisplayName();
+                                if (ue.getUpdateUnit().getInstalled() != null) {
+                                    desc += " [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->";
+                                } else {
+                                    desc += " <span color=\"red\">new!</span> [";
+                                }
+
+                                desc += ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion();
+                                desc += "]";
+                                desc += "<br>";
+                            }
+                        }
+                    }
                 } else {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.getDisplayVersion() + "<br>"; // NOI18N
                 }
@@ -126,6 +191,10 @@ public class UnitDetails extends DetailsPanel{
                 if (u.getDescription() != null && u.getDescription().length () > 0) {
                     text += "<br><h3>" + getBundle ("UnitDetails_Plugin_Description") + "</h3>"; // NOI18N
                     text += u.getDescription ();
+                }
+                if(desc!=null && desc.length() > 0) {
+                    text += "<br><br><h4>" + "Internal Updates" + "</h4>"; // NOI18N
+                    text += desc;
                 }
             } catch (CharConversionException e) {
                 err.log (Level.INFO, null, e);

@@ -42,6 +42,7 @@
 package org.netbeans.updater;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.*;
 
@@ -97,6 +98,8 @@ public final class ModuleUpdater extends Thread {
     
     public static final String UPDATER_JAR = "updater.jar"; // NOI18N
     public static final String AUTOUPDATE_UPDATER_JAR_PATH = "netbeans/modules/ext/" + UPDATER_JAR; // NOI18N
+
+    public static final String EXECUTABLE_FILES_ENTRY = "Info/executable.list";
     
     /** files that are supposed to be installed (when running inside the ide) */
     private Collection<File> forInstall;
@@ -354,6 +357,8 @@ public final class ModuleUpdater extends Thread {
                 try {
                     jarFile = new JarFile (nbm);
                     Enumeration entries = jarFile.entries();
+                    List <String> executableFiles = readExecutableFilesList(jarFile);
+                    List <File> filesToChmod = new ArrayList <File> ();
                     while( entries.hasMoreElements() ) {
                         JarEntry entry = (JarEntry) entries.nextElement();
                         checkStop();
@@ -383,19 +388,26 @@ public final class ModuleUpdater extends Thread {
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
+                                if(executableFiles.contains(pathTo)) {
+                                    filesToChmod.add(destFile);
+                                }
                                 UpdaterFrame.setProgressValue( bytesRead );
                             }
                         } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
                                   !entry.isDirectory() ) {
-                            // run main                  
-                            File destFile = new File (getMainDirectory (cluster),
-                                entry.getName().substring(UPDATE_MAIN_DIR.length() + 1) );
+                            // run main
+                            String pathTo = entry.getName().substring(UPDATE_MAIN_DIR.length() + 1);
+                            File destFile = new File (getMainDirectory (cluster), pathTo);
+                            if(executableFiles.contains(pathTo)) {
+                                filesToChmod.add(destFile);
+                            }
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
                             bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
                             UpdaterFrame.setProgressValue( bytesRead );
                         }
                     }
+                    chmod(filesToChmod);
                     if ( hasMainClass ) {                    
                         MainConfig mconfig = new MainConfig (getMainDirString (cluster) + UpdateTracking.FILE_SEPARATOR + JVM_PARAMS_FILE, cluster);
                         if (mconfig.isValid()) {
@@ -455,7 +467,82 @@ public final class ModuleUpdater extends Thread {
             t.deleteUnusedFiles ();            
         }
     }
-    
+
+    private List<String> readExecutableFilesList(JarFile jarFile) {
+        List<String> list = new ArrayList<String>();
+        JarEntry executableFilesEntry = jarFile.getJarEntry(EXECUTABLE_FILES_ENTRY);
+        if (executableFilesEntry != null) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(jarFile.getInputStream(executableFilesEntry), "UTF-8"));
+                String s = null;
+                while ((s = reader.readLine()) != null) {
+                    list.add(s);
+                }
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    private void chmod(List<File> executableFiles) {
+        if (isWindows() || executableFiles.isEmpty()) {
+            return;
+        }
+        // Determine if java.io.File.setExecutable method is supported
+        Method setExecutableMethod = null;
+        try {
+            setExecutableMethod = File.class.getMethod("setExecutable", Boolean.TYPE, Boolean.TYPE);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        if (setExecutableMethod != null) {
+            for (File executableFile : executableFiles) {
+                try {
+                    setExecutableMethod.invoke(executableFile, true, false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // Find chmod
+            File chmod = new File("/bin/chmod"); // NOI18N
+            if (!chmod.isFile()) {
+                chmod = new File("/usr/bin/chmod"); // NOI18N
+            }
+            if (chmod.isFile()) {
+                Process process = null;
+                try {
+                    List<String> command = new ArrayList<String>();
+                    command.add(chmod.getAbsolutePath());
+                    command.add("a+x");
+                    for (File executableFile : executableFiles) {
+                        command.add(executableFile.getAbsolutePath());
+                    }
+                    process = new ProcessBuilder(command).start();
+                    process.waitFor();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (process != null) {
+                        process.destroy();
+                    }
+                }
+
+            }
+        }
+    }
+
     public static boolean trickyDeleteOnWindows(File destFile) {
         assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());

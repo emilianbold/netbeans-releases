@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Enumeration;
 import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 
 // XXX most usages of FileSystem.getDisplayName for localized exception messages
 // should be using FileUtil.getFileDisplayName instead
@@ -228,11 +229,11 @@ final class AbstractFileObject extends AbstractFolder {
         FileSystem fs = getAbstractFileSystem();
 
         if (fs.isReadOnly()) {
-            FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
         }
 
         if (isReadOnly()) {
-            FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
         }
 
         testLock(lock);
@@ -298,11 +299,13 @@ final class AbstractFileObject extends AbstractFolder {
     */
     private void testLock(FileLock l) throws IOException {
         if (lock == null) {
-            FSException.io("EXC_InvalidLock", l, getPath(), getAbstractFileSystem().getDisplayName(), lock); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_InvalidLock",
+                    l, getPath(), getAbstractFileSystem().getDisplayName(), lock));
         }
 
         if (lock.get() != l) {
-            FSException.io("EXC_InvalidLock", l, getPath(), getAbstractFileSystem().getDisplayName(), lock.get()); // NOI18N                
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_InvalidLock",
+                    l, getPath(), getAbstractFileSystem().getDisplayName(), lock.get()));
         }
     }
 
@@ -343,7 +346,7 @@ final class AbstractFileObject extends AbstractFolder {
 
         //FileSystem fs = getAbstractFileSystem ();
         //if (fs.isReadOnly()) 
-        //  FSException.io("EXC_FSisRO", fs.getDisplayName ()); // NOI18N
+        //  throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", fs.getDisplayName ()); // NOI18N
         if (fire) {
             oldValue = getAttribute(attrName);
         }
@@ -384,7 +387,7 @@ final class AbstractFileObject extends AbstractFolder {
     */
     public FileObject createFolder(String name) throws IOException {
         if (name.contains("/") || name.contains("\\")) {
-            FSException.io("EXC_SlashNotAllowed", name);
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_SlashNotAllowed", name));
         }
         AbstractFileObject fo;
 
@@ -395,15 +398,15 @@ final class AbstractFileObject extends AbstractFolder {
                 AbstractFileSystem fs = getAbstractFileSystem();
 
                 if (fs.isReadOnly()) {
-                    FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
                 }
 
                 if (isReadOnly()) {
-                    FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
                 }
 
                 if (!isFolder()) {
-                    FSException.io("EXC_FoNotFolder", name, getPath(), fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FoNotFolder", name, getPath(), fs.getDisplayName()));
                 }
 
                 getAbstractFileSystem().change.createFolder(getPath() + PATH_SEP + name);
@@ -412,9 +415,7 @@ final class AbstractFileObject extends AbstractFolder {
 
                 if (fo == null) {
                     // system error
-                    throw new FileStateInvalidException(
-                        FileSystem.getString("EXC_ApplicationCreateError", getPath(), name)
-                    );
+                    throw new FileStateInvalidException(NbBundle.getMessage(AbstractFileObject.class, "EXC_ApplicationCreateError", getPath(), name));
                 }
 
                 if (hasListeners()) {
@@ -451,17 +452,17 @@ final class AbstractFileObject extends AbstractFolder {
                 AbstractFileSystem fs = getAbstractFileSystem();
 
                 if (fs.isReadOnly()) {
-                    FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
                 }
 
                 if (isReadOnly()) {
-                    FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
                 }
 
                 n = ((ext == null) || "".equals(ext)) ? name : (name + EXT_SEP + ext); // NOI18N
 
                 if (!isFolder()) {
-                    FSException.io("EXC_FoNotFolder", n, getPath(), fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FoNotFolder", n, getPath(), fs.getDisplayName()));
                 }
                 
                 fName = getPath() + PATH_SEP + n;
@@ -476,9 +477,7 @@ final class AbstractFileObject extends AbstractFolder {
 
                 if (fo == null) {
                     // system error
-                    throw new FileStateInvalidException(
-                        FileSystem.getString("EXC_ApplicationCreateError", getPath(), n)
-                    );
+                    throw new FileStateInvalidException(NbBundle.getMessage(AbstractFileObject.class, "EXC_ApplicationCreateError", getPath(), n));
                 }
 
                 if (hasListeners()) {
@@ -506,14 +505,15 @@ final class AbstractFileObject extends AbstractFolder {
     public void rename(FileLock lock, String name, String ext)
     throws IOException {
         if (parent == null) {
-            FSException.io("EXC_CannotRenameRoot", getAbstractFileSystem().getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRenameRoot", getAbstractFileSystem().getDisplayName()));
         }
 
         if (
             (name.indexOf('/') != -1) || ((ext != null) && (ext.indexOf('/') != -1)) || (name.indexOf('\\') != -1) ||
                 ((ext != null) && (ext.indexOf('\\') != -1))
         ) {
-            FSException.io("EXC_CannotRename", getPath(), getAbstractFileSystem().getDisplayName(), name + "." + ext); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRename",
+                    getPath(), getAbstractFileSystem().getDisplayName(), name + "." + ext));
         }
 
         try {
@@ -536,13 +536,12 @@ final class AbstractFileObject extends AbstractFolder {
                 oldFullName = getPath();
 
                 if (isReadOnly()) {
-                    FSException.io(
-                        "EXC_CannotRename", getPath(), getAbstractFileSystem().getDisplayName(), newFullName
-                    ); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRename",
+                            getPath(), getAbstractFileSystem().getDisplayName(), newFullName));
                 }
 
                 if (getFileSystem().isReadOnly()) {
-                    FSException.io("EXC_FSisRO", getAbstractFileSystem().getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", getAbstractFileSystem().getDisplayName()));
                 }
 
                 String on = getName();
@@ -580,7 +579,7 @@ final class AbstractFileObject extends AbstractFolder {
     */
     void handleDelete(FileLock lock) throws IOException {
         if (parent == null) {
-            FSException.io("EXC_CannotDeleteRoot", getAbstractFileSystem().getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotDeleteRoot", getAbstractFileSystem().getDisplayName()));
         }
 
         String fullName;
@@ -653,11 +652,11 @@ final class AbstractFileObject extends AbstractFolder {
                 synchronized (abstractTarget) {
                     // try copying thru the transfer
                     if (abstractFS.isReadOnly()) {
-                        FSException.io("EXC_FSisRO", abstractFS.getDisplayName()); // NOI18N
+                        throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", abstractFS.getDisplayName()));
                     }
 
                     if (!target.canWrite()) {
-                        FSException.io("EXC_FisRO", target.getPath(), abstractFS.getDisplayName()); // NOI18N
+                        throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FisRO", target.getPath(), abstractFS.getDisplayName()));
                     }
 
                     String n = "".equals(ext) ? name : (name + EXT_SEP + ext); // NOI18N
@@ -671,8 +670,7 @@ final class AbstractFileObject extends AbstractFolder {
                         if (fo == null) {
                             // system error
                             throw new FileStateInvalidException(
-                                FileSystem.getString("EXC_ApplicationCreateError", abstractTarget.getPath(), n)
-                            );
+                                    NbBundle.getMessage(AbstractFileObject.class, "EXC_ApplicationCreateError", abstractTarget.getPath(), n));
                         }
 
                         if (abstractTarget.hasListeners()) {
@@ -705,7 +703,7 @@ final class AbstractFileObject extends AbstractFolder {
         AbstractFileSystem fs = getAbstractFileSystem();
 
         if (parent == null) {
-            FSException.io("EXC_CannotDeleteRoot", fs.getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotDeleteRoot", fs.getDisplayName()));
         }
 
         AbstractFileSystem.Transfer from = getAbstractFileSystem().transfer;
@@ -726,11 +724,11 @@ final class AbstractFileObject extends AbstractFolder {
                     testLock(lock);
 
                     if (abstractFS.isReadOnly()) {
-                        FSException.io("EXC_FSisRO", abstractFS.getDisplayName()); // NOI18N
+                        throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FSisRO", abstractFS.getDisplayName()));
                     }
 
                     if (!target.canWrite()) {
-                        FSException.io("EXC_FisRO", target.getPath(), abstractFS.getDisplayName()); // NOI18N
+                        throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_FisRO", target.getPath(), abstractFS.getDisplayName()));
                     }
 
                     String n = "".equals(ext) ? name : (name + EXT_SEP + ext); // NOI18N
@@ -756,8 +754,7 @@ final class AbstractFileObject extends AbstractFolder {
                         if (fo == null) {
                             // system error
                             throw new FileStateInvalidException(
-                                FileSystem.getString("EXC_ApplicationCreateError", abstractTarget.getPath(), n)
-                            );
+                                    NbBundle.getMessage(AbstractFileObject.class, "EXC_ApplicationCreateError", abstractTarget.getPath(), n));
                         }
 
                         if (hasAtLeastOneListeners()) {

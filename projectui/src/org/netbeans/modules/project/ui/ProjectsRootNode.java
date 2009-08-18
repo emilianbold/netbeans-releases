@@ -457,7 +457,7 @@ public class ProjectsRootNode extends AbstractNode {
                 fsRefreshTask.schedule(DELAY);
             }
         };
-        private final RequestProcessor.Task fsRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        private final RequestProcessor.Task fsRefreshTask = Hacks.RP.create(new Runnable() {
             public void run() {
                 setProjectFiles();
             }
@@ -548,10 +548,10 @@ public class ProjectsRootNode extends AbstractNode {
                 OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
                 BadgingLookup bl = (BadgingLookup) getLookup();
                 if (bl.isSearchInfo()) {
-                    OpenProjectList.log(Level.FINER, "is search info {0}", bl);
+                    OpenProjectList.log(Level.FINER, "is search info {0}", newProj);
                     bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
                 } else {
-                    OpenProjectList.log(Level.FINER, "no search info {0}", bl);
+                    OpenProjectList.log(Level.FINER, "no search info {0}", newProj);
                     bl.setMyLookups(n.getLookup());
                 }
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
@@ -653,7 +653,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
+                task = Hacks.RP.create(this);
             }
 
             synchronized (privateLock) {
@@ -781,7 +781,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            RequestProcessor.getDefault().post(new Runnable () {
+            Hacks.RP.post(new Runnable () {
                 public void run() {
                     setProjectFiles();
                 }

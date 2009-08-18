@@ -98,7 +98,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
     
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
-    private static String WELCOME_XHTML = "template-client.xhtml"; //NOI18N
+    private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
@@ -181,7 +181,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
-            FileObject welcomeFile = webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"); //NOI18N
+            FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
+                                                                webModule.getDocumentBase().getFileObject(WELCOME_JSF);
             if (welcomeFile != null) {
                 result.add(welcomeFile);
             }
@@ -356,84 +357,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         ddRoot.addServletMapping(mapping);
                     }
                     
-                    boolean verifyObjectsDefined = false;
-                    boolean validateXmlDefined = false;
-                    boolean savingMethodDefined = false;
-                    boolean faceletsSuffixDefined = false;
-                    boolean faceletsDevelopmentDefined = false;
-                    boolean faceletsSkipCommentsDefined = false;
                     boolean faceletsEnabled = panel.isEnableFacelets();
-                    
-                    InitParam[] params = ddRoot.getContextParam();
-                    for (int i = 0; 
-                            i < params.length 
-                            && !(verifyObjectsDefined
-                            && validateXmlDefined
-                            && savingMethodDefined); i++) {
-                        InitParam initParam = params[i];
-                        String name = initParam.getParamName().trim();
-                        if (VERIFYOBJECTS_PARAM_NAME.equals(name)) {
-                            verifyObjectsDefined = true;
-                        } else if (VALIDATEXML_PARAM_NAME.equals(name)) {
-                            validateXmlDefined = true;
-                        } else if (SAVINGMETHOD_PARAM_NAME.equals(name)) {
-                            savingMethodDefined = true;
-                        } else if (faceletsEnabled && JSFUtils.FACELETS_DEFAULT_SUFFIX.equals(name)) {
-                            faceletsSuffixDefined = true;
-                        } else if (faceletsEnabled && JSFUtils.FACELETS_DEVELOPMENT.equals(name)) {
-                            faceletsDevelopmentDefined = true;
-                        } else if (faceletsEnabled && JSFUtils.FACELETS_SKIPCOMMNETS.equals(name)) {
-                            faceletsSkipCommentsDefined = true;
-                        }
-                    }
-                    
-                    InitParam contextParam;
-                    if (!verifyObjectsDefined) {
-                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME); 
-                        contextParam.setParamName(VERIFYOBJECTS_PARAM_NAME);
-                        if (panel != null && panel.verifyObjects())
-                            contextParam.setParamValue(TRUE); 
-                        else
-                            contextParam.setParamValue(FALSE);
-                        ddRoot.addContextParam(contextParam);
-                    }
-                    
-                    if (!validateXmlDefined) {
-                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
-                        contextParam.setParamName(VALIDATEXML_PARAM_NAME);
-                        if(panel == null || panel.validateXML())
-                            contextParam.setParamValue(TRUE);
-                        else
-                            contextParam.setParamValue(FALSE);
-                        ddRoot.addContextParam(contextParam);
-                    }
-                    
-                    if (!savingMethodDefined) {
-                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
-                        contextParam.setParamName(SAVINGMETHOD_PARAM_NAME);
-                        contextParam.setParamValue("client");
-                        ddRoot.addContextParam(contextParam);
-                    }
-                    if (faceletsEnabled) {
-                        if (!faceletsSuffixDefined) {
-                            contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
-                            contextParam.setParamName(JSFUtils.FACELETS_DEFAULT_SUFFIX);
-                            contextParam.setParamValue(".xhtml"); //NOI18N
-                            ddRoot.addContextParam(contextParam);
-                        }
-                        if (!faceletsDevelopmentDefined) {
-                            contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
-                            contextParam.setParamName(JSFUtils.FACELETS_DEVELOPMENT);
-                            contextParam.setParamValue(panel.isDebugFacelets()?"true":"false"); //NOI18N
-                            ddRoot.addContextParam(contextParam);
-                        }
-                        if (!faceletsSkipCommentsDefined) {
-                            contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
-                            contextParam.setParamName(JSFUtils.FACELETS_SKIPCOMMNETS);
-                            contextParam.setParamValue(panel.isSkipComments()?"true":"false"); //NOI18N
-                            ddRoot.addContextParam(contextParam);
-                        }
-                    }
 
                     if (isMyFaces) {
                         boolean listenerDefined = false;
@@ -477,16 +401,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
-                        welcomeFiles.addWelcomeFile(FORWARD_JSF);
-                        if (canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) {
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
-                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
-                                content = content.replaceAll("__ENCODING__", encoding.name());
-                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, encoding.name());  //NOI18N
-                        }
-//                        welcomeFiles.addWelcomeFile("forward.jsp"); //NOI18N
+                          welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
                     }
                     ddRoot.write(dd);                    
                     
@@ -607,12 +522,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
                 }
-//                if (webModule.getDocumentBase().getFileObject("forward.jsp") == null) {
-//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + "forward.jsp");
-//                    content = readResource(is, encoding.name());
-//                    target = FileUtil.createData(webModule.getDocumentBase(), "forward.jsp");//NOI18N
-//                    createFile(target, content, encoding.name());
-//                }
                 if (webModule.getDocumentBase().getFileObject(CSS_FOLDER+File.separator+DEFAULT_CSS) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
                     .getResourceAsStream(baseFolder + DEFAULT_CSS);  

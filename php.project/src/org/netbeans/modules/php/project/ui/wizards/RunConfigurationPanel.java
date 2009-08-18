@@ -336,7 +336,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(URL, runAsRemoteWeb.getUrl());
         settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
         settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
-        settings.putProperty(REMOTE_DIRECTORY, runAsRemoteWeb.getUploadDirectory());
+        settings.putProperty(REMOTE_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true));
         settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
     }
 
@@ -397,7 +397,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public boolean isFinishPanel() {
-        return areOtherStepsValid();
+        switch (wizardType) {
+            case REMOTE:
+                return false;
+            default:
+                return areOtherStepsValid();
+        }
     }
 
     final void fireChangeEvent() {

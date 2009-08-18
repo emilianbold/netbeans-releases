@@ -145,27 +145,27 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+    public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot ddbeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void removeDConfigBean(DConfigBeanRoot arg0) throws BeanNotFoundException {
+    public void removeDConfigBean(DConfigBeanRoot dconfigBeanRoot) throws BeanNotFoundException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public DConfigBeanRoot restoreDConfigBean(InputStream arg0, DDBeanRoot arg1) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+    public DConfigBeanRoot restoreDConfigBean(InputStream is, DDBeanRoot ddbeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void saveDConfigBean(OutputStream arg0, DConfigBeanRoot arg1) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+    public void saveDConfigBean(OutputStream os, DConfigBeanRoot dconfigBeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void restore(InputStream arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+    public void restore(InputStream is) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void save(OutputStream arg0) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
+    public void save(OutputStream os) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

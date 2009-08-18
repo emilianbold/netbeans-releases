@@ -47,7 +47,6 @@ import java.util.*;
 import java.lang.reflect.Method;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;

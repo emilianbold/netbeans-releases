@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -60,7 +61,11 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     private static final String[] METRO_LIBRARIES =
-        new String[] {"webservices", "javax.activation", "jaxb"}; //NOI18N
+            new String[] {"webservices(|-osgi).jar", //NOI18N
+                          "webservices-api(|-osgi).jar", //NOI18N
+                          "jaxb(|-osgi).jar", //NOI18N
+                          "jaxb-api(|-osgi).jar", //NOI18N
+                          "javax.activation.jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
@@ -139,7 +144,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
             List<URL> cPath = new ArrayList<URL>();
             if (isMetroInstalled()) {
                 for (String entry : METRO_LIBRARIES) {
-                    File f = getJarName(gfRootStr, entry);
+                    File f = getWsJarName(gfRootStr, entry);
                     if ((f != null) && (f.exists())) {
                         try {
                             cPath.add(f.toURI().toURL());
@@ -155,39 +160,46 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     protected boolean isMetroInstalled() {
-        File f = getJarName(gfRootStr, METRO_LIBRARIES[0]);
+        File f = getWsJarName(gfRootStr, METRO_LIBRARIES[0]);
         return f!=null && f.exists();
     }
-    
-    protected static class VersionFilter implements FileFilter {
-       
-        private String nameprefix;
-        
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
+
+    private static class VersionFilter implements FileFilter {
+
+        private final Pattern pattern;
+
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
         }
-        
+
         public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
+            return pattern.matcher(file.getName()).matches();
         }
-        
+
     }
-    
-    protected File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+
+    public static File getWsJarName(String glassfishInstallRoot, String jarNamePattern) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePrefix.lastIndexOf("/");
+        int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
-            String subdir = jarNamePrefix.substring(0, subindex);
-            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
             modulesDir = new File(modulesDir, subdir);
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
 
         if(candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
         } else {
-            return null;
+            File endorsed = new File(modulesDir,"endorsed"); //NOI18N
+            if (endorsed!= null && endorsed.isDirectory()) {
+                File candidates1[] = endorsed.listFiles(new VersionFilter(jarNamePattern));
+                if (candidates1 != null && candidates1.length > 0) {
+                    return candidates1[0]; // the first one
+                }
+            }
         }
-    } 
+        return null;
+    }
 
 }

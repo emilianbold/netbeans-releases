@@ -258,8 +258,19 @@ public class IgnoreAction extends ContextAction {
             List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
             if (patterns != null && patterns.contains(file.getName()) == false) {
                 patterns.add(file.getName());
-                Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
+                // cannot use client.setIgnoredPatterns since there's a bug in the implementation in the svnClientAdapter
+                // which doesn't respect a svn 1.6 contract about non-cr/cr-lf line-endings
+                String value = getPatternsAsString(patterns);
+                Subversion.getInstance().getClient(true).propertySet(parent, ISVNProperty.IGNORE, value, false);
             }            
         }
+    }
+
+    private static String getPatternsAsString(List<String> patterns) {
+        String value = "";                                              //NOI18N
+        for (String pattern : patterns) {
+            value += pattern + "\n";                                    //NOI18N
+        }
+        return value;
     }
 }

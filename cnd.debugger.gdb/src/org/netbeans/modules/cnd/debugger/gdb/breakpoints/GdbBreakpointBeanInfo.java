@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.BeanDescriptor;
 import java.beans.SimpleBeanInfo;
 
@@ -53,7 +54,7 @@ class GdbBreakpointBeanInfo extends SimpleBeanInfo {
     @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(
-                GdbBreakpoint.class,
+                CndBreakpoint.class,
                 GdbBreakpointCustomizer.class);
     }
 

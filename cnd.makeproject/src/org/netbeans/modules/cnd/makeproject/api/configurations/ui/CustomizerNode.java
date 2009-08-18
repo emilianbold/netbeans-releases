@@ -52,10 +52,10 @@ public class CustomizerNode {
     public static final String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
     public static final String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 
-    public String name;
-    public String displayName;
-    public boolean advanced;
-    public CustomizerNode[] children;
+    public final String name;
+    public final String displayName;
+    public final boolean advanced;
+    public final CustomizerNode[] children;
 
     public enum CustomizerStyle {SHEET, PANEL};
         

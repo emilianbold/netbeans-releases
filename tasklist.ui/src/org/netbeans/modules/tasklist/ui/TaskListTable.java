@@ -597,9 +597,6 @@ class TaskListTable extends JTable {
                 case TaskListModel.COL_FILE:
                     ratio = 0.1f;
                     break;
-                case TaskListModel.COL_LINE:
-                    ratio = 0.05f;
-                    break;
                 }
                 ratio = Settings.getDefault().getPreferredColumnWidth( index, isFoldingModel(), ratio );
             }

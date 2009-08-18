@@ -281,6 +281,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                 bufferedImage = ImageIO.read(fo.getInputStream());
             }
         } catch (IOException ex) {
+            System.out.print(ex.getMessage());
         }
 
         if (bufferedImage != null) {

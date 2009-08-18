@@ -12,6 +12,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.annotationsupport</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.collector.stdout</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -108,9 +114,21 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.threads</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.tools</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.toolsui</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -113,7 +117,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private int createBreakpointImpls() {
         int count = 0;
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
-            if (bp instanceof GdbBreakpoint) {
+            if (bp instanceof CndBreakpoint) {
                 createBreakpointImpl(bp);
                 count++;
             }
@@ -141,7 +145,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     
     private void removeBreakpointImpls() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
-	    if (bp instanceof GdbBreakpoint) {
+	    if (bp instanceof CndBreakpoint) {
 		removeBreakpointImpl(bp);
 	    }
 	}

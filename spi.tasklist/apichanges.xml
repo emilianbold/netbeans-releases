@@ -72,6 +72,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="issue_support" >
+        <api name="TaskListSPI"/>
+        <summary>Task List implementation uses Indexing API to cache scanned tasks.</summary>
+        <version major="1" minor="6"/>
+        <date day="7" month="8" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+             Task List API and user interface has been extended to support a generic URL
+             as the resource the task is associated with. This allows for example
+             bug tracking issues to be displayed in Task List window.
+            </p>
+        </description>
+        <issue number="169975"/>
+    </change>
     <change id="indexing_api" >
         <api name="TaskListSPI"/>
         <summary>Task List implementation uses Indexing API to cache scanned tasks.</summary>

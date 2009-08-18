@@ -44,6 +44,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -89,30 +91,49 @@ public final class RunAsValidator {
      * @return an error message or <code>null</code> if everything is OK.
      */
     public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
-        String err = Utils.validatePhpInterpreter(phpInterpreter);
-        if (err != null) {
-            return err;
+        try {
+            PhpInterpreter.getCustom(phpInterpreter);
+        } catch (InvalidPhpProgramException ex) {
+            return ex.getLocalizedMessage();
         }
         return validateIndexFile(projectDirectory, indexFile, arguments);
     }
 
     private static final String INVALID_SEPARATOR = "\\";
     public static String validateUploadDirectory(String uploadDirectory, boolean allowEmpty) {
-        if (allowEmpty && (uploadDirectory == null || uploadDirectory.trim().length() == 0)) {
+        if (allowEmpty && !StringUtils.hasText(uploadDirectory)) {
             return null;
         }
 
-        if (uploadDirectory == null || uploadDirectory.trim().length() == 0) {
+        if (!StringUtils.hasText(uploadDirectory)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_MissingUploadDirectory");
         } else if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.SEPARATOR);
-        } else if (uploadDirectory.length() > 1
-                && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryEnd", TransferFile.SEPARATOR);
         } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
         }
         return null;
+    }
+
+    /**
+     * Sanitize upload directory, see issue #169793 for more information.
+     * @param uploadDirectory upload directory to sanitize
+     * @param allowEmpty <code>true</code> if the string can be empty
+     * @return sanitized upload directory
+     */
+    public static String sanitizeUploadDirectory(String uploadDirectory, boolean allowEmpty) {
+        if (StringUtils.hasText(uploadDirectory)) {
+            while (uploadDirectory.length() > 1
+                    && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
+                uploadDirectory = uploadDirectory.substring(0, uploadDirectory.length() - 1);
+            }
+        } else if (!allowEmpty) {
+            uploadDirectory = TransferFile.SEPARATOR;
+        }
+        if (allowEmpty && TransferFile.SEPARATOR.equals(uploadDirectory)) {
+            uploadDirectory = ""; // NOI18N
+        }
+        return uploadDirectory;
     }
 
     /**

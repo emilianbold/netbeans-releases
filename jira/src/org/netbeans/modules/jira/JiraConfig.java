@@ -79,7 +79,7 @@ public class JiraConfig {
         return instance;
     }
 
-    public Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(JiraConfig.class);
     }
 

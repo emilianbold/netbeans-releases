@@ -535,7 +535,7 @@ public class HgCommand {
      * @return String
      */
     public static String getHgVersion() {
-        List<String> list = new LinkedList<String>();
+        List<String> list;
         try {
             list = execForVersionCheck();
         } catch (HgException ex) {
@@ -961,11 +961,8 @@ public class HgCommand {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
 
         try {
-
-            List<String> list = new LinkedList<String>();
-            list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
+            List<String> list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(root, null, list, messages, true);
-
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -980,11 +977,8 @@ public class HgCommand {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
 
         try {
-
-            List<String> list = new LinkedList<String>();
-            list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
+            List<String> list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(root, null, list, messages, true);
-
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -2484,7 +2478,6 @@ public class HgCommand {
             Mercurial.STATUS_LOG.finer("getDirStatusWithFlags: starting for " + dir.getAbsolutePath()); //NOI18N
             startTime = System.currentTimeMillis();
         }
-        List<FileStatus> statusList = new ArrayList<FileStatus>();
         FileInformation prev_info = null;
         List<String> list = doRepositoryDirStatusCmd(repository, dir, statusFlags);
 

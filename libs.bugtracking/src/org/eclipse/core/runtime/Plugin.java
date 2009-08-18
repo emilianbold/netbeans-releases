@@ -96,7 +96,8 @@ public class Plugin implements ILog {
             default:
                 l = Level.INFO;
         }
-        BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode(), status.getException());
+        BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode());
+        BugtrackingRuntime.LOG.log(Level.INFO, null, status.getException());
     }
 
     private class StateLocation implements IPath {

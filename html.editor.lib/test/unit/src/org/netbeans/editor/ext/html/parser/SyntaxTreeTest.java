@@ -71,9 +71,9 @@ public class SyntaxTreeTest extends TestBase {
         NbReaderProvider.setupReaders();
     }
 
-    public static Test suite(){
+    public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testUncheckedAST"));
+        suite.addTest(new SyntaxTreeTest("testIssue169209"));
         return suite;
     }
 
@@ -140,6 +140,13 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<div>", 1);
         assertAST("</div>", 1);
     }
+
+    //fails now
+//    public void testIssue169209() throws Exception {
+//         AstNode root = parse("<html><head><title></title><s| </head>", null);
+//         AstNodeUtils.dumpTree(root);
+//         assertNotNull(AstNodeUtils.query(root, "html/head/s"));
+//    }
 
     public void testNamespaceTag() throws Exception {
         assertAST("<div> <ul> <wicket:link> <li>item</li> </wicket:link> </ul> </div>", 0);

@@ -132,7 +132,7 @@ import org.openide.util.NbBundle;
 public class JSFClientGenerator {
     
     private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
-    private static final String WELCOME_JSF_FL_PAGE = "template-client.xhtml";  //NOI18N
+    private static final String WELCOME_JSF_FL_PAGE = "index.xhtml";  //NOI18N
     private static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
@@ -1290,7 +1290,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, methodInfo);
                     
                     bodyText = "if pagingInfo.getItemCount() == -1) {\n" +
-                            "pagingInfo.setItemCount(jpaController."+ (useSessionBean ? "findAll().size()" :  "get" + simpleEntityName + "Count()")+");\n" +
+                            "pagingInfo.setItemCount(jpaController."+ (useSessionBean ? "count()" :  "get" + simpleEntityName + "Count()")+");\n" +
                             "}\n" +
                             "return pagingInfo;";
                     methodInfo = new MethodInfo("getPagingInfo", publicModifier, utilPackage + ".PagingInfo", null, null, null, bodyText, null, null);

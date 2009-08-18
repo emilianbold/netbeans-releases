@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -138,6 +137,11 @@ public abstract class SQLDataStorage extends DataStorage {
 
             return statement;
         }
+
+        @Override
+        public String toString() {
+            return "insert into " + tableName + ": " + dataRow.toString(); // NOI18N
+        }
     }
     private LinkedBlockingQueue<Request> requestQueue;
     private final Object insertPreparedStatmentsLock = new Object();
@@ -152,8 +156,6 @@ public abstract class SQLDataStorage extends DataStorage {
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
     private final Map<String, PreparedStatement> stmts;
-    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
-
 
     static {
         classToType.put(Integer.class, "int"); //NOI18N
@@ -440,18 +442,6 @@ public abstract class SQLDataStorage extends DataStorage {
             stmts.put(sql, stmt);
         }
         return stmt;
-    }
-
-    public final Map<String, String> getInfo() {
-        return serviceInfoMap;
-    }
-
-    public final String getValue(String name) {
-        return serviceInfoMap.get(name);
-    }
-
-    public final String put(String name, String value) {
-        return serviceInfoMap.put(name, value);
     }
 
     public static final class EnumStringConstructor<T> {

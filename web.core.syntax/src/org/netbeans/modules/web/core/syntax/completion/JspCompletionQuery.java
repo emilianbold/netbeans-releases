@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
@@ -77,7 +78,9 @@ public class JspCompletionQuery {
         return JSP_COMPLETION_QUERY;
     }
     
-    void query(CompletionResultSet result, JTextComponent component, int offset) {
+    void query(CompletionResultSet<? extends CompletionItem> result, 
+            JTextComponent component, int offset) 
+    {
         BaseDocument doc = (BaseDocument)component.getDocument();
         JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
         
@@ -88,12 +91,14 @@ public class JspCompletionQuery {
                 return;
 
             //do not use SyntaxElements for determining comments, it doesn't work well
-            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenHierarchy<?> th = TokenHierarchy.get(doc);
             TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
             ts.move(offset);
             if (ts.moveNext() || ts.movePrevious()) {
                 if (ts.token().id() == JspTokenId.COMMENT ||
-                        (ts.token().id() == JspTokenId.EOL && ts.movePrevious() && ts.token().id() == JspTokenId.COMMENT)) {
+                        (ts.token().id() == JspTokenId.EOL && ts.movePrevious() 
+                                && ts.token().id() == JspTokenId.COMMENT)) 
+                {
                     queryJspCommentContent(result, offset, doc);
                 }
             }
@@ -119,7 +124,8 @@ public class JspCompletionQuery {
                 
                 // DIRECTIVE COMPLETION
             case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
-                queryJspDirective(result, component, offset, sup, (SyntaxElement.Directive)elem, doc);
+                queryJspDirective(result, component, offset, sup, 
+                        (SyntaxElement.Directive)elem, doc);
                 break;
                 
                 // CONTENT LANGUAGE

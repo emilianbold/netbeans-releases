@@ -6,6 +6,7 @@ CPUTYPE=`uname -p`
 BITNESS=32
 SH=`/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null`
 OSFAMILY=
+DATETIME=`date -u +'%Y-%m-%d %H:%M:%S'`
 
 if [ "${CPUTYPE}" = "unknown" ]; then
    CPUTYPE=`uname -m`
@@ -76,5 +77,6 @@ echo OSFAMILY=${OSFAMILY}
 echo USER=${USER}
 echo SH=${SH}
 echo TMPDIRBASE=${TMPDIRBASE}
+echo DATETIME=${DATETIME}
 
 exit 0

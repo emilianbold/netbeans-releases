@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.form.palette;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.*;
 import org.openide.util.ChangeSupport;

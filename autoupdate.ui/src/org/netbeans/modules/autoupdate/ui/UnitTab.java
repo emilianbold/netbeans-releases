@@ -1585,7 +1585,13 @@ public class UnitTab extends javax.swing.JPanel {
                     Unit.Installed installed = (Unit.Installed)u;
                     if (installed.getRelevantElement ().isEnabled ()) {
                         OperationInfo info = Containers.forDisable ().add (installed.updateUnit, installed.getRelevantElement ());
-                        assert info != null;
+                        // Issue #169640
+                        // The relevant element can actually be present in forDisable container
+                        // due to current Unit.Installed.setMarked() implementation as
+                        // it operates on the the same ("global") Containers.forDisable() container.
+                        // That is the reason for the commenting the following assertion originally presented
+                        
+                        //assert info != null;
                     }
                 }
             }
