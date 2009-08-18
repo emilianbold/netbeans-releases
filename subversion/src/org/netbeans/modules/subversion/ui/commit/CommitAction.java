@@ -286,68 +286,68 @@ public class CommitAction extends ContextAction {
     private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, final JButton commitButton) {
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                try {
-                    // get files without exclusions
-                    File[] contextFiles = ctx.getFiles();
-                    if (contextFiles.length == 0) {
-                        return;
-                    }
+                // get files without exclusions
+                File[] contextFiles = ctx.getFiles();
+                if (contextFiles.length == 0) {
+                    return;
+                }
 
-                    // The commits are made non recursively, so
-                    // add also the roots to the to be commited list.
-                    List<File> rootFiles = ctx.getRoots();
-                    Set<File> filesSet = new HashSet<File>();
-                    for(File file : contextFiles) {
-                        filesSet.add(file);
-                    }
-                    for(File file : rootFiles) {
-                        filesSet.add(file);
-                    }
-                    contextFiles = filesSet.toArray(new File[filesSet.size()]);
+                // The commits are made non recursively, so
+                // add also the roots to the to be commited list.
+                List<File> rootFiles = ctx.getRoots();
+                Set<File> filesSet = new HashSet<File>();
+                for (File file : contextFiles) {
+                    filesSet.add(file);
+                }
+                for (File file : rootFiles) {
+                    filesSet.add(file);
+                }
+                contextFiles = filesSet.toArray(new File[filesSet.size()]);
 
-                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                    if (isDeepRefresh()) {
-                        // make a deep refresh to get the not yet notified external changes
-                        for (File f : contextFiles) {
-                            cache.refreshRecursively(f);
-                        }
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                if (isDeepRefresh()) {
+                    // make a deep refresh to get the not yet notified external changes
+                    for (File f : contextFiles) {
+                        cache.refreshRecursively(f);
                     }
-                    // get all changed files while honoring the flat folder logic
-                    File[][] split = Utils.splitFlatOthers(contextFiles);
-                    List<File> fileList = new ArrayList<File>();
-                    for (int c = 0; c < split.length; c++) {
-                        contextFiles = split[c];
-                        boolean recursive = c == 1;
-                        if (recursive) {
-                            File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
-                            for (int i= 0; i < files.length; i++) {
-                                for(int r = 0; r < contextFiles.length; r++) {
-                                    if( SvnUtils.isParentOrEqual(contextFiles[r], files[i]) ) {
-                                        if(!fileList.contains(files[i])) {
-                                            fileList.add(files[i]);
-                                        }
+                }
+                // get all changed files while honoring the flat folder logic
+                File[][] split = Utils.splitFlatOthers(contextFiles);
+                List<File> fileList = new ArrayList<File>();
+                for (int c = 0; c < split.length; c++) {
+                    contextFiles = split[c];
+                    boolean recursive = c == 1;
+                    if (recursive) {
+                        File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
+                        for (int i = 0; i < files.length; i++) {
+                            for (int r = 0; r < contextFiles.length; r++) {
+                                if (SvnUtils.isParentOrEqual(contextFiles[r], files[i])) {
+                                    if (!fileList.contains(files[i])) {
+                                        fileList.add(files[i]);
                                     }
                                 }
                             }
-                        } else {
-                            File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
-                            for (int i= 0; i<files.length; i++) {
-                                if(!fileList.contains(files[i])) {
-                                    fileList.add(files[i]);
-                                }
+                        }
+                    } else {
+                        File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
+                        for (int i = 0; i < files.length; i++) {
+                            if (!fileList.contains(files[i])) {
+                                fileList.add(files[i]);
                             }
                         }
                     }
-
-                    if(fileList.size()==0) {
-                        return;
-                    }
-                    fileList.addAll(getUnversionedParents(fileList, false));
-                    SvnFileNode[] nodes = getFileNodes(fileList);
-                    data.setNodes(nodes);
-                } finally {
-                    commitButton.setEnabled(containsCommitable(data));
                 }
+
+                if (fileList.size() == 0) {
+                    return;
+                }
+                fileList.addAll(getUnversionedParents(fileList, false));
+                final SvnFileNode[] nodes = getFileNodes(fileList);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        data.setNodes(nodes);
+                    }
+                });
             }
         };
         return support;
@@ -370,6 +370,7 @@ public class CommitAction extends ContextAction {
      * @param commit
      */
     private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
+        assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
         Set<String> stickyTags = new HashSet<String>();
