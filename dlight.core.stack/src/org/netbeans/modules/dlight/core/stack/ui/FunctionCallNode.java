@@ -53,11 +53,13 @@ import org.openide.util.ImageUtilities;
  */
 final class FunctionCallNode extends AbstractNode {
     private final FunctionCall functionCall;
+    private GoToSourceAction action;
   
 
      FunctionCallNode(CallStackTreeModel stackModel, FunctionCall functionCall) {
          super(stackModel.getCaller(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCaller(functionCall)));
          this.functionCall = functionCall;
+         action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall);
     }
 
     @Override
@@ -77,7 +79,7 @@ final class FunctionCallNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction() {
-        return super.getPreferredAction();
+        return action;
     }
 
 

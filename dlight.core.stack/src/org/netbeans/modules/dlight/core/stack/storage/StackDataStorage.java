@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.storage;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
@@ -63,6 +64,8 @@ public interface StackDataStorage {//extends StackSupport {
      * @return
      */
     int putStack(List<CharSequence> stack, long sampleDuration);
+
+    List<FunctionCall> getCallStack(int stackId);
 
     List<Long> getPeriodicStacks(long startTime, long endTime, long interval);
 

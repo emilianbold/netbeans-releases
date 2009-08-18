@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.jsf.editor;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -46,6 +47,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldClassPathSupport;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileObject;
@@ -92,17 +96,32 @@ public class JsfSupport {
     }
 
     private TldClassPathSupport cpSupport;
+    private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
+    private ClassPath classpath;
 
     private JsfSupport(WebModule wm) {
-        this.wm = wm;
-        //create classpath support
-        this.cpSupport = new TldClassPathSupport(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE));
+        assert wm != null;
 
+        this.wm = wm;
+
+        this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        //create classpath support
+        this.cpSupport = new TldClassPathSupport(classpath);
+
+        this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
         //register html extension
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
 
+    }
+
+    public ClassPath getClassPath() {
+        return classpath;
+    }
+
+    public WebModule getWebModule() {
+        return wm;
     }
 
     @Override
@@ -111,14 +130,14 @@ public class JsfSupport {
     }
 
     /** Library's uri to library map */
-    public Map<String, TldLibrary> getLibraries() {
+    public Map<String, TldLibrary> getTldLibraries() {
         return cpSupport.getLibraries();
     }
 
-    public static boolean isJSFLibrary(String uri) {
-        //XXX implement based on current JSF version
-        return true;
+    /** Library's uri to library map */
+    public Map<String, FaceletsLibrary> getFaceletsLibraries() {
+        return faceletsLibrarySupport.getLibraries();
     }
-    
+
 
 }

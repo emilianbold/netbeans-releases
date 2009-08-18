@@ -160,7 +160,7 @@ class SftpSupport {
                 ex.printStackTrace();
                 rc = 3;
             } catch (CancellationException ex) {
-                ex.printStackTrace();
+                // no trace
                 rc = 4;
             }
             LOG.fine("Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName + (rc == 0 ? " OK" : " FAILED"));

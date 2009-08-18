@@ -93,8 +93,6 @@ var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part o
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a id=\"zip_link\" href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 
-var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
-
 var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
@@ -107,9 +105,3 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 var START_PAGE = "start.html";
 var ZIP_PAGE   = "zip.html";
 
-var LEGAL_INFO_HEADER = "Important Legal Information:";
-
-var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
-var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
-
-var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {0} code is available under a <a href=\"{1}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{2}\">details about the components in NetBeans</a> and the licenses under which they are covered. Read the <a href=\"{3}\">License Notice</a>.";

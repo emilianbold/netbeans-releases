@@ -143,12 +143,17 @@
                     <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a> / Download</div>
 
                     <div id="fixed-top-contentbox">                        			
+                         
                         <div class="bg-white">                            
                             <table class="top_header">
                                 <tr>
                                     <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_STARTED_HEADER.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script></td>
                                 </tr>
                             </table>
+
+                        <table>
+
+			<td>
                             <div class="bg-white f-page-cell" style="padding-left: 15px">
                                 <div>
                                     <script type="text/javascript">load_page_img("download-arrow.gif", 'class="float-left"')</script>
@@ -161,7 +166,30 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>			
+                        </div>
+			</td>
+		      
+			<td style="vertical-align:top;padding-top:20px;" width="40%">
+					<div class="black legal_box">
+						<div class="bold">
+                                			<script type="text/javascript">message(LEGAL_INFO_HEADER)</script>
+							<br><br>
+						</div>
+						<div>
+	                        	    		<script type="text/javascript">
+								message(LEGAL_INFO_MESSAGE.
+								replace("{0}",get_build_info(true).BUILD_DISPLAY_VERSION_SHORT).
+								replace("{1}",CDDL_GPLV2_LINK).
+								replace("{2}",LICENSE_DETAILS_LINK).
+								replace("{3}",LICENSE_NOTES_LINK))
+							</script>
+						</div>
+                                        </div>
+
+				</td>
+                        </table>
+
+
                     </div>
 		    <br><br>
                     <div class="b-top-dashed">

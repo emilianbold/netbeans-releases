@@ -5,7 +5,6 @@
 package org.netbeans.modules.cnd.gizmo.ui;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
@@ -13,7 +12,6 @@ import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
@@ -50,50 +48,16 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (session == null) {
             return null;
         }
-        String projectFolder = null;
-        List<DataStorage> storages = session.getStorages();
-        if (storages != null) {
-            for (DataStorage storage : storages) {
-                if (storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER) != null) {
-                    return storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
-                }
-            }
-        }
-        List<ServiceInfoDataStorage> serviceInfoStorages = session.getServiceInfoDataStorages();
-        if (serviceInfoStorages != null) {
-            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
-                if (storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER) != null) {
-                    return storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
-                }
-            }
-        }
-
-        return projectFolder;
+        ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
+        return serviceInfoStorage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
     }
 
     private String getPlatform(DLightSession session) {
         if (session == null) {
             return null;
         }
-        String projectFolder = null;
-        List<DataStorage> storages = session.getStorages();
-        if (storages != null) {
-            for (DataStorage storage : storages) {
-                if (storage.getValue(GizmoServiceInfo.PLATFORM) != null) {
-                    return storage.getValue(GizmoServiceInfo.PLATFORM);
-                }
-            }
-        }
-        List<ServiceInfoDataStorage> serviceInfoStorages = session.getServiceInfoDataStorages();
-        if (serviceInfoStorages != null) {
-            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
-                if (storage.getValue(GizmoServiceInfo.PLATFORM) != null) {
-                    return storage.getValue(GizmoServiceInfo.PLATFORM);
-                }
-            }
-        }
-
-        return projectFolder;
+        ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
+        return serviceInfoStorage.getValue(GizmoServiceInfo.PLATFORM);
     }
 
     private GizmoIndicatorsTopComponent getComponent(DLightSession newSession) {
@@ -191,19 +155,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     }
 
     private boolean needToHandle(DLightSession session){
-        List<ServiceInfoDataStorage> infoStorages = session.getServiceInfoDataStorages();
-        for (ServiceInfoDataStorage storage : infoStorages){
-            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
-                return true;
-            }
-        }
-        List<DataStorage> storages = session.getStorages();
-        for (DataStorage storage : storages){
-            if (storage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null){
-                return true;
-            }
-        }
-
-        return false;
+        ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
+        return serviceInfoStorage.getValue(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN()) != null;
     }
 }

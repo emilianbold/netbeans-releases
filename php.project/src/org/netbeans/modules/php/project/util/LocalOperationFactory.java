@@ -59,13 +59,9 @@ final class LocalOperationFactory extends FileOperationFactory {
     private static final Logger LOGGER = Logger.getLogger(LocalOperationFactory.class.getName());
     private static final boolean IS_WARNING_LOGGABLE = LOGGER.isLoggable(Level.WARNING);
     private static final boolean IS_FINE_LOGGABLE = LOGGER.isLoggable(Level.FINE);
-    private final PhpProject project;
 
     LocalOperationFactory(PhpProject project) {
-        if (project == null) {
-            throw new IllegalArgumentException("project can't be null");
-        }
-        this.project = project;
+        super(project);
     }
 
     private boolean isEnabledAndValidConfig() {
@@ -93,7 +89,7 @@ final class LocalOperationFactory extends FileOperationFactory {
         while (writableFolder != null && !writableFolder.exists()) {
             writableFolder = writableFolder.getParentFile();
         }
-        
+
         boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
             if (IS_WARNING_LOGGABLE) {
@@ -101,10 +97,10 @@ final class LocalOperationFactory extends FileOperationFactory {
             }
             return false;
         }
-        
+
         return true;
     }
-    
+
     @Override
     Callable<Boolean> createCopyHandler(final FileObject source) {
         Callable<Boolean> retval = (isEnabledAndValidConfig()) ? new Callable<Boolean>() {

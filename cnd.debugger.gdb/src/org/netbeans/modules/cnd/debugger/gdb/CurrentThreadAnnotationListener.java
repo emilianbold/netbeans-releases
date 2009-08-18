@@ -141,7 +141,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // there is at most one
     private RequestProcessor.Task taskRemove;
     private RequestProcessor.Task taskAnnotate;
-    private List<CallStackFrame> stackToAnnotate;
+    private List<GdbCallStackFrame> stackToAnnotate;
 
     private void removeAnnotations() {
         synchronized (rp) {
@@ -164,7 +164,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         annotatedAddresses.clear();
     }
 
-    private void annotateCallStack(List<CallStackFrame> stack) {
+    private void annotateCallStack(List<GdbCallStackFrame> stack) {
         synchronized (rp) {
             if (taskRemove != null) {
                 taskRemove.cancel();
@@ -174,12 +174,12 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskAnnotate == null) {
                 taskAnnotate = rp.post(new Runnable() {
                     public void run() {
-                        List<CallStackFrame> stack;
+                        List<GdbCallStackFrame> stack;
                         synchronized (rp) {
                             if (stackToAnnotate == null) {
                                 return ; // Nothing to do
                             }
-                            stack = new ArrayList<CallStackFrame>(stackToAnnotate);
+                            stack = new ArrayList<GdbCallStackFrame>(stackToAnnotate);
                             stackToAnnotate = null;
                         }
                         
@@ -188,7 +188,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         
                         // Add new annotations
                         String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
-                        for (CallStackFrame csf : stack) {
+                        for (GdbCallStackFrame csf : stack) {
                             // 1) Is current stackFrame annotated
                             if (!annotatedAddresses.add(csf.getAddr())) {
                                 continue;

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -106,6 +108,28 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         
     }
 
+    private static class IncludeWarningInfo extends OffsetableErrorInfo implements CsmErrorInfo {
+
+        private String message;
+
+        public IncludeWarningInfo(CsmInclude incl) {
+            super(incl, Severity.WARNING);
+            this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissedWarning", getIncludeText(incl));
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        private static String getIncludeText(CsmInclude incl){
+            if (incl.isSystem()){
+                return "<"+incl.getIncludeName()+">"; // NOI18N
+            }
+            return "\""+incl.getIncludeName()+"\""; // NOI18N
+        }
+
+    }
+
     private static class ErrorDirectiveInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
         private String message;
@@ -134,5 +158,30 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         for (CsmErrorDirective error : file.getErrors()) {
             response.addError(new ErrorDirectiveInfo(error));
         }
+        Collection<CsmFile> visited = new HashSet<CsmFile>();
+        for (CsmInclude incl : file.getIncludes()) {
+            CsmFile newFile = incl.getIncludeFile();
+            if (newFile != null && hasBrokenIncludes(newFile, visited)) {
+                response.addError(new IncludeWarningInfo(incl));
+            }
+        }
     }
+
+    private boolean hasBrokenIncludes(CsmFile file, Collection<CsmFile> visited) {
+        if (visited.contains(file)) {
+            return false;
+        }
+        visited.add(file);
+        if (!CsmFileInfoQuery.getDefault().getBrokenIncludes(file).isEmpty()) {
+            return true;
+        }
+        for (CsmInclude incl : file.getIncludes()) {
+            CsmFile newFile = incl.getIncludeFile();
+            if (newFile != null && hasBrokenIncludes(newFile, visited)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

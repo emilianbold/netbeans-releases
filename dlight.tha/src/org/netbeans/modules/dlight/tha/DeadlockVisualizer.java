@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.Renderer;
@@ -50,6 +51,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -86,11 +88,13 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     public synchronized void refresh() {
         if (refreshTask == null) {
-            final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view = (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>)getComponent();
+            final MasterSlaveView<Deadlock, DeadlockTHANodeFactory> view = (MasterSlaveView<Deadlock, DeadlockTHANodeFactory>) getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
+
                 public void run() {
                     final List<? extends Deadlock> deadlocks = dataProvider.getDeadlocks();
                     UIThread.invoke(new Runnable() {
+
                         public void run() {
                             view.setMasterData(deadlocks);
                         }
@@ -101,7 +105,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-    private static class DeadlockRenderer implements Renderer {
+    private class DeadlockRenderer implements Renderer {
 
         private List<DeadlockThreadSnapshot> snapshots;
 
@@ -121,10 +125,10 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance();
-            for (DeadlockThreadSnapshot dts : snapshots){
-                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()) , true, dts.getHeldLockCallStack());//NOI18N
-                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()) , true, dts.getRequestedLockCallStack());//NOI18N
+            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
+            for (DeadlockThreadSnapshot dts : snapshots) {
+                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), true, dts.getHeldLockCallStack());//NOI18N
+                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), true, dts.getRequestedLockCallStack());//NOI18N
             }
             stackPanel.expandAll();
             return stackPanel;
@@ -132,9 +136,12 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-private final class DeadlockNode extends THANode<Deadlock>{
+    private final class DeadlockNode extends THANode<Deadlock> {
+
         private final Deadlock deadlock;
-        DeadlockNode(Deadlock deadlock){
+        public final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
+
+        DeadlockNode(Deadlock deadlock) {
             super(deadlock);
             this.deadlock = deadlock;
         }
@@ -144,15 +151,21 @@ private final class DeadlockNode extends THANode<Deadlock>{
             return deadlock.isActual() ? "Actual deadlock" : "Potential deadlock";//NOI18N
         }
 
+        @Override
+        public Image getIcon(int type) {
+            return icon;
+        }
 
-
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
     }
 
-    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock>{
+    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
 
         public THANode create(Deadlock object) {
             return new DeadlockNode(object);
         }
-
     }
 }

@@ -293,20 +293,32 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
-            stock.put("netbeans.dest.dir", ModuleList.findNetBeansOrgDestDir(nbroot).getAbsolutePath()); // NOI18N
+            File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
+            stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
+            // Register *.dir for nb.org modules. There is no equivalent for external modules.
+            Map<String,String> clusterProperties = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.propertiesFilePropertyProvider(
+                    new File(nbroot, "nbbuild/cluster.properties"))).getProperties(); // NOI18N
+            if (clusterProperties != null) {
+                for (Map.Entry<String,String> dirEntry : clusterProperties.entrySet()) {
+                    String key = dirEntry.getKey();
+                    if (!key.endsWith(".dir")) { // NOI18N
+                        continue;
+                    }
+                    String clusterDir = new File(destDir, dirEntry.getValue()).getAbsolutePath()./* #48449 */intern();
+                    String modules = clusterProperties.get(key.substring(0, key.length() - 4));
+                    if (modules == null) {
+                        continue;
+                    }
+                    for (String module : modules.split(",")) { // NOI18N
+                        stock.put((module + ".dir").intern(), clusterDir); // NOI18N
+                    }
+                }
+            }
         } else {
             nbroot = null;
         }
         String codeNameBase = project.getCodeNameBase();
         if (ml != null) {
-            // Register *.dir for nb.org modules. There is no equivalent for external modules.
-            for (ModuleEntry e : ml.getAllEntriesSoft()) {
-                String nborgPath = e.getNetBeansOrgPath();
-                if (nborgPath != null) {
-                    // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
-                    stock.put((nborgPath + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
-                }
-            }
             ModuleEntry thisEntry = ml.getEntry(codeNameBase);
             if (thisEntry != null) { // can be null e.g. for a broken suite component module
                 assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;

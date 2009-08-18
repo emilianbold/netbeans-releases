@@ -207,7 +207,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         var.getValue();
 
         // it should not stop on the breakpoint during evaluation
-        CallStackFrame csf = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame csf = debugger.getCurrentCallStackFrame();
         assertEquals(b2.getPath(), csf.getFullname());
         assertEquals(b2.getLineNumber(), csf.getLineNumber());
 

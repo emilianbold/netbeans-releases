@@ -55,7 +55,6 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
 
     private final List<List<String>> selectValues = new ArrayList<List<String>>();
     private final List<TableIdent> fromTables = new ArrayList<TableIdent>();
-    private final List<SelectStatement> subqueries = new ArrayList<SelectStatement>();
 
     public static SelectStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         seq.moveStart();
@@ -204,34 +203,6 @@ class SelectStatementAnalyzer extends SQLStatementAnalyzer {
         // which doesn't belong to the current SELECT value, once again.
         seq.movePrevious();
         return parts;
-    }
-
-    @Override
-    protected boolean nextToken() {
-        boolean move = super.nextToken();
-        if (context.isAfter(Context.SELECT) && SQLStatementAnalyzer.isKeyword("SELECT", seq)) { // NOI18N
-            // Looks like a subquery.
-            int subStartOffset = seq.offset();
-            int parLevel = 1;
-            main: while (move = seq.moveNext()) {
-                switch (seq.token().id()) {
-                    case LPAREN:
-                        parLevel++;
-                        break;
-                    case RPAREN:
-                        if (--parLevel == 0) {
-                            TokenSequence<SQLTokenId> subSeq = seq.subSequence(subStartOffset, seq.offset());
-                            SelectStatement subquery = SelectStatementAnalyzer.analyze(subSeq, quoter);
-                            if (subquery != null) {
-                                subqueries.add(subquery);
-                            }
-                            break main;
-                        }
-                        break;
-                }
-            }
-        }
-        return move;
     }
 
     private boolean isKeywordAfterFrom() {

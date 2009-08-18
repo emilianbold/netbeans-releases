@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.source.classpath;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -59,6 +61,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -81,18 +84,22 @@ public class SourcePathCheck extends JavaParserResultTask {
         if (cpInfo != null) {
             final ClassPath cachedSrc = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE);
             final ClassPath src = cpInfo.getClassPath(PathKind.SOURCE);
-            final Set<URL> unknown = new HashSet<URL>();
-            if (cachedSrc.entries().isEmpty() && !src.entries().isEmpty()) {
-                for (ClassPath.Entry entry : src.entries()) {
-                    final URL url = entry.getURL();
-                    if (!this.factory.firedFor.contains(url) && JavaIndex.isLibrary(url)) {
-                        unknown.add(url);
-                        this.factory.firedFor.add(url);
-                    }
+            try {
+                final Set<URL> unknown = new HashSet<URL>();
+                if (cachedSrc.entries().isEmpty() && !src.entries().isEmpty()) {
+                    for (ClassPath.Entry entry : src.entries()) {
+                        final URL url = entry.getURL();
+                        if (!this.factory.firedFor.contains(url) && JavaIndex.isLibrary(url) && FileOwnerQuery.getOwner(url.toURI()) != null) {                                                        
+                            unknown.add(url);
+                            this.factory.firedFor.add(url);
+                        }
+                    }                
                 }
-            }
-            if (!unknown.isEmpty()) {
-                PathRegistry.getDefault().registerUnknownSourceRoots(src, unknown);
+                if (!unknown.isEmpty()) {
+                    PathRegistry.getDefault().registerUnknownSourceRoots(src, unknown);
+                }
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }

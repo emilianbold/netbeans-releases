@@ -56,7 +56,9 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,11 +67,11 @@ import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 public class JsfCompletionItem {
 
     //----------- Factory methods --------------
-    public static JsfTag createTag(String name, int substitutionOffset, TldLibrary.Tag tag, TldLibrary library, boolean autoimport) {
-        return new JsfTag(name, substitutionOffset, tag, library, autoimport);
+    public static JsfTag createTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
+        return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport);
     }
 
-    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, TldLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, FaceletsLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
         return new JsfTagAttribute(name, substitutionOffset, library, tag, attr);
     }
 
@@ -77,20 +79,23 @@ public class JsfCompletionItem {
 
         private static final String BOLD_OPEN_TAG = "<b>"; //NOI18N
         private static final String BOLD_END_TAG = "</b>"; //NOI18N
-        private TldLibrary library;
-        private TldLibrary.Tag tag;
+        private FaceletsLibrary.NamedComponent component;
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
 
-        public JsfTag(String text, int substitutionOffset, TldLibrary.Tag tag, TldLibrary library, boolean autoimport) {
-            super(text, substitutionOffset, null, true);
-            this.library = library;
-            this.tag = tag;
+        public JsfTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
+            super(generateItemText(component, declaredPrefix), substitutionOffset, null, true);
+            this.component = component;
             this.autoimport = autoimport;
+        }
+
+        private static String generateItemText(FaceletsLibrary.NamedComponent component, String declaredPrefix) {
+            String libraryPrefix = component.getLibrary().getDefaultPrefix();
+            return (declaredPrefix != null ? declaredPrefix : libraryPrefix ) + ":" + component.getName(); //NOI18N
         }
 
         @Override
         protected String getRightHtmlText() {
-            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + library.getDisplayName() + "</font>";
+            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + component.getLibrary().getDisplayName() + "</font>"; //NOI18N
         }
 
         @Override
@@ -114,8 +119,8 @@ public class JsfCompletionItem {
                     public void run(ResultIterator resultIterator) throws Exception {
                         //suppose we are always top level
                         Result result = resultIterator.getParserResult(substitutionOffset);
-                        if (result.getSnapshot().getMimeType().equals("text/html")) {
-                            htmlRootNode[0] = AstNodeUtils.query(((HtmlParserResult)result).root(), "html");
+                        if (result.getSnapshot().getMimeType().equals("text/html")) { //NOI18N
+                            htmlRootNode[0] = AstNodeUtils.query(((HtmlParserResult)result).root(), "html"); //NOI18N
                         }
                     }
                 });
@@ -133,9 +138,10 @@ public class JsfCompletionItem {
                                     //if there are no attributes, just add the new one at the end of the tag,
                                     //if there are some, add the new one on a new line and reformat the tag
 
+                                    FaceletsLibrary lib = JsfTag.this.component.getLibrary();
                                     int insertPosition = htmlRootNode[0].endOffset() - 1; //just before the closing symbol
-                                    String text = (!noAttributes ? "\n" : "") + " xmlns:" + JsfTag.this.library.getDefaultPrefix() +
-                                            "=\"" + JsfTag.this.library.getURI() + "\"";
+                                    String text = (!noAttributes ? "\n" : "") + " xmlns:" + lib.getDefaultPrefix() + //NOI18N
+                                            "=\"" + lib.getNamespace() + "\""; //NOI18N
 
                                     doc.insertString(insertPosition, text, null);
 
@@ -178,27 +184,55 @@ public class JsfCompletionItem {
         @Override
         public String getHelp() {
             StringBuffer sb = new StringBuffer();
-            sb.append(getLibraryHelpHeader(library));
-            sb.append("<h1>");
-            sb.append(tag.getName());
-            sb.append("</h1>");
-            sb.append(tag.getDescription());
+            sb.append(getLibraryHelpHeader(component.getLibrary()));
+            sb.append("<h1>"); //NOI18N
+            sb.append(component.getName());
+            sb.append("</h1>"); //NOI18N
+
+            TldLibrary.Tag tag = component.getTag();
+            if(tag != null) {
+                //there is TLD available
+                String descr = tag.getDescription();
+                if(descr == null) {
+                    NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR"); //NOI18N
+                } else {
+                    sb.append(descr);
+                }
+            } else {
+                String msg = NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD"); //NOI18N
+                //extract some simple info from the component
+                sb.append("<table border=\"1\">"); //NOI18N
+                for(String[] descr : component.getDescription()) {
+                    sb.append("<tr>"); //NOI18N
+                    sb.append("<td>"); //NOI18N
+                    sb.append("<div style=\"font-weight: bold\">"); //NOI18N
+                    sb.append(descr[0]);
+                    sb.append("</div>"); //NOI18N
+                    sb.append("</td>"); //NOI18N
+                    sb.append("<td>"); //NOI18N
+                    sb.append(descr[1]);
+                    sb.append("</td>"); //NOI18N
+                    sb.append("</tr>"); //NOI18N
+                }                
+                sb.append("</table>"); //NOI18N
+                sb.append("<p style=\"color: red\">" + msg + "</p>"); //NOI18N
+            }
             return sb.toString();
         }
 
         @Override
         public boolean hasHelp() {
-            return this.tag.getDescription() != null;
+            return true;
         }
     }
 
     public static class JsfTagAttribute extends HtmlCompletionItem.Attribute {
 
-        private TldLibrary library;
+        private FaceletsLibrary library;
         private TldLibrary.Tag tag;
         private TldLibrary.Attribute attr;
 
-        public JsfTagAttribute(String value, int offset, TldLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+        public JsfTagAttribute(String value, int offset, FaceletsLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
             super(value, offset, attr.isRequired(), null);
             this.library = library;
             this.tag = tag;
@@ -209,9 +243,9 @@ public class JsfCompletionItem {
         public String getHelp() {
             StringBuffer sb = new StringBuffer();
             sb.append(getLibraryHelpHeader(library));
-            sb.append("<div><b>Tag:</b> ");
+            sb.append("<div><b>Tag:</b> "); //NOI18N
             sb.append(tag.getName());
-            sb.append("</div>");
+            sb.append("</div>"); //NOI18N
             sb.append("<h1>"); //NOI18N
             sb.append(attr.getName());
             sb.append("</h1>"); //NOI18N
@@ -225,12 +259,12 @@ public class JsfCompletionItem {
         }
     }
 
-    private static String getLibraryHelpHeader(TldLibrary library) {
+    private static String getLibraryHelpHeader(FaceletsLibrary library) {
         StringBuffer sb = new StringBuffer();
         sb.append("<div><b>Library:</b> "); //NOI18N
         sb.append(library.getDisplayName());
         sb.append(" ("); //NOI18N
-        sb.append(library.getURI());
+        sb.append(library.getNamespace());
         sb.append(")</div>"); //NOI18N
         return sb.toString();
 

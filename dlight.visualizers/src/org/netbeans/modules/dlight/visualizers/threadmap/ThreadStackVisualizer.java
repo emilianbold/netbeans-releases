@@ -78,7 +78,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         emptyPanel = new JPanel();
         add(emptyPanel, "empty");//NOI18N
         add(stackPanel, "stack");//NOI18N
-        if (descriptor.getThreadStates().isEmpty()){
+        if (descriptor == null || descriptor.getThreadStates().isEmpty()){
             setEmptyContent();
         }else{
             setNonEmptyContent();

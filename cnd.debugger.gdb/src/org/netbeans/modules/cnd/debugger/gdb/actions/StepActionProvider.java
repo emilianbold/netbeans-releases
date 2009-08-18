@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
@@ -177,7 +177,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     }
 
     private boolean isStepOutValid() {
-        List<CallStackFrame> callstack = getDebugger().getCallStack();
+        List<GdbCallStackFrame> callstack = getDebugger().getCallStack();
         return callstack.size() == 1 ||
                 (callstack.size() > 1 && callstack.get(1).isValid());
     }

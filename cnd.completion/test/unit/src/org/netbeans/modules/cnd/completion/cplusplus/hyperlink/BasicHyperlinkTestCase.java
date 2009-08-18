@@ -604,6 +604,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ161901.cc", 3, 22, "IZ161901.cc", 3, 5);
     }
 
+    public void testIZ169750() throws Exception {
+        // IZ#169750 : Unresolved id in the case variable declared in while
+        performTest("IZ169750.cc", 5, 37, "IZ169750.cc", 5, 12);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -71,8 +71,8 @@ import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -105,6 +105,48 @@ public class JsfElExpression extends ELExpression {
         this.webModule = wm;
     }
     
+    /* Managed properties of managed bean could be declared in 
+     * faces-config.xml. But they still should have accessors in 
+     * class file. So this code will duplicate class file accessor scaning. 
+     * 
+     * 
+    public List<CompletionItem> getPropertyCompletionItems(String beanType, int anchor) {
+        List<CompletionItem> result = new LinkedList<CompletionItem>();
+        CompletionInfo completionInfo = getPropertyCompletionInfo(beanType, 
+                anchor);
+        runTask( completionInfo );
+        result.addAll( completionInfo.getCompletionItems() );
+        
+        String qName = completionInfo.getTypeOnCaretQualifiedName();
+        if ( qName == null ){
+            return result;
+        }
+        List<FacesManagedBean> managedBeans = JSFBeanCache.getBeans(webModule);
+        FacesManagedBean bean = null;
+        for (FacesManagedBean managedBean : managedBeans) {
+            String beanName = managedBean.getManagedBeanClass();
+            if ( qName.equals( beanName )){
+                bean = managedBean;
+            }
+        }
+        if ( bean == null ){
+            return result;
+        }
+        String prefix = getPropertyBeingTypedName();
+        List<ManagedProperty> managedProperties = bean.getManagedProperties();
+        for (ManagedProperty managedProperty : managedProperties) {
+            String propName = managedProperty.getPropertyName();
+            if ( propName != null && propName.startsWith(prefix)){
+                CompletionItem item = ElCompletionItem.createELProperty(
+                        propName, propName, 
+                        anchor, managedProperty.getPropertyClass());
+                result.add( item );
+            }
+        }
+        
+        return result;
+    }*/
+    
     @Override
     protected int findContext(String expr) {
         int dotIndex = expr.indexOf('.');
@@ -115,8 +157,8 @@ public class JsfElExpression extends ELExpression {
             String first = expr.substring(0, getPositiveMin(dotIndex, bracketIndex));
             
             // look through all registered managed beans
-            List <ManagedBean> beans = JSFBeanCache.getBeans(webModule);
-            for (ManagedBean bean : beans) {
+            List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
+            for (FacesManagedBean bean : beans) {
                 if (first.equals(bean.getManagedBeanName())) {
                     value = EL_JSF_BEAN;
                     break;
@@ -186,9 +228,9 @@ public class JsfElExpression extends ELExpression {
             beanName = bundleName.substring(2,bundleName.length()-1);
         }
   
-        List <ManagedBean>beans = JSFBeanCache.getBeans(webModule);
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
         
-        for (ManagedBean bean : beans){
+        for (FacesManagedBean bean : beans){
             if (beanName.equals(bean.getManagedBeanName())){
                 return bean.getManagedBeanClass();
             }
