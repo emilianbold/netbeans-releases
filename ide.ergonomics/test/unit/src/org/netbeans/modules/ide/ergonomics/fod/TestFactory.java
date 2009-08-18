@@ -11,15 +11,19 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectFactory.class, position=29998)
 public final class TestFactory extends ProjectOpenedHook
-implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
+implements ProjectFactory, Project, ProjectInformation, SubprojectProvider, LogicalViewProvider {
 
     static Set<FileObject> recognize = new HashSet<FileObject>();
     static Set<Project> subprojects = new HashSet<Project>();
@@ -117,6 +121,21 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
     }
 
     public void removeChangeListener(ChangeListener listener) {
+    }
+
+    public Node createLogicalView() {
+        AbstractNode an = new AbstractNode(new Children.Array());
+        an.setName("xyz");
+        an.setDisplayName("Name xyz");
+
+        an.getChildren().add(new Node[]{ new AbstractNode(Children.LEAF), new AbstractNode(Children.LEAF) });
+        an.getChildren().getNodeAt(0).setName("a");
+        an.getChildren().getNodeAt(1).setName("b");
+        return an;
+    }
+
+    public Node findPath(Node root, Object target) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 

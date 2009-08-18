@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -62,6 +63,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -185,6 +191,13 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertNotNull("Icon provided", info.getIcon());
         info.addPropertyChangeListener(this);
 
+        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("Provider done", lvp);
+        Node n = lvp.createLogicalView();
+        assertNotNull("Node provided", n);
+        assertNull("Nothing found", lvp.findPath(n, ""));
+        assertEquals("One child: " + n.getChildren().snapshot(), 1, n.getChildren().getNodesCount());
+
         assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
         assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
 
@@ -209,6 +222,18 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertEquals("Info delegates", "x", info.getName());
         assertEquals("Info delegates2", "y", info.getDisplayName());
         assertEquals("Info delegates icon", null, info.getIcon());
+
+        LogicalViewProvider lvp2 = p.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("Provider created", lvp2);
+        if (lvp == lvp2) {
+            fail("Should be different, the real: " + lvp2);
+        }
+        Node r = lvp2.createLogicalView();
+        assertNotNull("Root found", r);
+        assertEquals("Same name", n.getName(), r.getName());
+        assertEquals("Same display name", n.getDisplayName(), r.getDisplayName());
+        assertEquals("Two children", 2, r.getChildren().getNodesCount());
+        assertEquals("Two children", 2, n.getChildren().getNodesCount());
 
         OpenProjects.getDefault().close (new Project[] { newP });
         if (OpenProjects.getDefault().getOpenProjects().length != 0) {
