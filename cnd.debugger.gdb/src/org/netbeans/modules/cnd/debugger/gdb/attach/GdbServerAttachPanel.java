@@ -61,12 +61,16 @@ import org.openide.util.NbBundle;
 public class GdbServerAttachPanel extends javax.swing.JPanel {
     private final Controller controller;
 
+    // TODO: preserve between sessions
+    private static String lastTargetValue = "host:port"; //NOI18N
+
     /** Creates new form GdbServerAttachPanel */
     public GdbServerAttachPanel() {
         controller = new GdbServerAttachController();
         initComponents();
         // Fill the Projects combo box
         GdbAttachPanel.fillProjectsCombo(projectCB);
+        targetTF.setText(lastTargetValue);
     }
 
     Controller getController() {
@@ -90,8 +94,6 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         projectLabel.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.projectLabel.text")); // NOI18N
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.jLabel1.text")); // NOI18N
-
-        targetTF.setText(org.openide.util.NbBundle.getMessage(GdbServerAttachPanel.class, "GdbServerAttachPanel.targetTF.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -134,18 +136,18 @@ public class GdbServerAttachPanel extends javax.swing.JPanel {
         }
 
         public boolean ok() {
-            String target = targetTF.getText();
-            if (target.length() == 0) {
+            lastTargetValue = targetTF.getText();
+            if (lastTargetValue.length() == 0) {
                 return false;
             }
             ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
             if (pi != null) {
                 try {
-                    GdbDebugger.attachGdbServer(target, pi.getProjectInformation());
+                    GdbDebugger.attachGdbServer(lastTargetValue, pi.getProjectInformation());
                 } catch (DebuggerStartException dse) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(GdbServerAttachPanel.class,
-                           "ERR_UnexpecedAttachGdbServerFailure", target))); // NOI18N
+                           "ERR_UnexpecedAttachGdbServerFailure", lastTargetValue))); // NOI18N
                 }
             }
             return true;

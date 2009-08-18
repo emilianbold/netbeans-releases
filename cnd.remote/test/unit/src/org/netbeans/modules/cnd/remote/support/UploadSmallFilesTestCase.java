@@ -39,10 +39,13 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
@@ -74,19 +77,31 @@ public class UploadSmallFilesTestCase extends RemoteTestBase {
         long totalTime = System.currentTimeMillis();
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(execEnv);
+
+        File tmpFile = File.createTempFile("copy_small_files", ".dat");
+        String remoteDir = "/tmp/" + tmpFile.getName();
+        tmpFile.delete();
+        
+        Future<Integer> mkDirTask = CommonTasksSupport.mkDir(execEnv, remoteDir, new PrintWriter(System.err));
+        System.out.printf("Mkdir %s\n", remoteDir);
+        int rc = mkDirTask.get(30, TimeUnit.SECONDS);
+        System.out.printf("mkdir %s done, rc=%d\n", remoteDir, rc);
+        assertEquals(0, rc);
+        //Thread.sleep(2000);
+
         RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
         for (File localFile : files) {
             totalCount++;
             totalSize += localFile.length();
-            assertTrue(localFile.exists());
-            String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+            assertTrue(localFile.exists());                        
+            String remoteFile = remoteDir + "/" + localFile.getName(); //NOI18N
             long time = System.currentTimeMillis();
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
             time = System.currentTimeMillis() - time;
-            System.err.printf("File %s copied to %s:%s in %d ms\n", localFile, execEnv, remoteFile, time);
+            System.out.printf("File %s copied to %s:%s in %d ms\n", localFile, execEnv, remoteFile, time);
         }
         totalTime = System.currentTimeMillis() - totalTime;
-        System.err.printf("%d Kb in %d files to %s in %d ms\n", totalSize/1024, totalCount, execEnv, totalTime);
+        System.out.printf("%d Kb in %d files to %s in %d ms\n", totalSize/1024, totalCount, execEnv, totalTime);
     }
     
     public static Test suite() {
