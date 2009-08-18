@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl.Para
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -108,9 +107,9 @@ public final class DLightParallelAdviserToolConfigurationProvider
                 new DTDCConfiguration(scriptFile,
                 Arrays.asList(profilerTableMetadata));
         dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
+        dtraceDataCollectorConfiguration.setOutputPrefix("cpu:"); // NOI18N
         toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(
-                dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+                dtraceDataCollectorConfiguration);
         // D-Trace 2
         String scriptFile2 = Util.copyResource(getClass(),
                 Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
@@ -127,16 +126,16 @@ public final class DLightParallelAdviserToolConfigurationProvider
         Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
         DTDCConfiguration dtraceDataCollectorConfiguration2 = new DTDCConfiguration(scriptFile2, Arrays.asList(new DataTableMetadata("MSA", // NOI18N
                 Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null)));
+        dtraceDataCollectorConfiguration2.setOutputPrefix("msa:"); // NOI18N
 //        dtraceDataCollectorConfiguration2.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
 //        dtraceDataCollectorConfiguration2.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
-        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration2, "msa"); // NOI18N
-        toolConfiguration.addDataCollectorConfiguration(collector);
+        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration2);
 
 
         // Indicator
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
-        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration2);
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);

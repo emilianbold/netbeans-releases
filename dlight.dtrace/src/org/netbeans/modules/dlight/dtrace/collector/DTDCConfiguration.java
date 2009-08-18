@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector;
 
+import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 
 
 /**
@@ -76,6 +76,8 @@ public final class DTDCConfiguration implements
     private List<String> requiredPrivileges;
     private boolean stackSupportEnabled = false;
     private int indicatorFiringFactor;
+    private boolean standalone;
+    private String prefix;
 
 
     static {
@@ -148,6 +150,33 @@ public final class DTDCConfiguration implements
         this.stackSupportEnabled = stackSupportEnabled;
     }
 
+    /**
+     * If <code>standalone = true</code>, the DTrace script will be executed
+     * in a separate <code>dtrace</code> instance. If <code>standalone = false</code>,
+     * the DTrace script is merged with scripts from other @{link DTDConfiguration}s
+     * and executed in a single <code>dtrace</code>. Latter mode (merged)
+     * is the default, because attaching one <code>dtrace</code> instance to
+     * a process gives less overhead than attaching many instances.
+     *
+     * @param standalone  pass <code>true</code> for standalone mode,
+     *      <code>false</code> for merged mode.
+     */
+    public void setStandalone(boolean standalone) {
+        this.standalone = standalone;
+    }
+
+    /**
+     * Prefix is used in merged scripts mode (see {@link #setStandalone(boolean)})
+     * to distinguish output from individual DTrace scripts. Format strings of
+     * all <code>printf</code> and <code>printa</code> calls in this script
+     * are prepended with this prefix before merging with other scripts.
+     *
+     * @param prefix  prefix to distinguish this script's output after merge
+     */
+    public void setOutputPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     int getIndicatorFiringFactor() {
         return indicatorFiringFactor;
     }
@@ -174,6 +203,14 @@ public final class DTDCConfiguration implements
 
     boolean isStackSupportEnabled() {
         return stackSupportEnabled;
+    }
+
+    boolean isStandalone() {
+        return standalone;
+    }
+
+    String getOutputPrefix() {
+        return prefix;
     }
 
     /**
@@ -224,6 +261,16 @@ public final class DTDCConfiguration implements
         @Override
         public int getIndicatorFiringFactor(DTDCConfiguration conf) {
             return conf.getIndicatorFiringFactor();
+        }
+
+        @Override
+        public boolean isStandalone(DTDCConfiguration conf) {
+            return conf.isStandalone();
+        }
+
+        @Override
+        public String getOutputPrefix(DTDCConfiguration conf) {
+            return conf.getOutputPrefix();
         }
     }
 }

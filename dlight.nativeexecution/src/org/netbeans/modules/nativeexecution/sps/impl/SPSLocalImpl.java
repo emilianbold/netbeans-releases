@@ -44,8 +44,8 @@ import java.io.PrintWriter;
 import java.security.SignatureException;
 import java.security.acl.NotOwnerException;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
@@ -116,7 +116,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         return new SPSLocalImpl(execEnv, privpCmd);
     }
 
-    public void requestPrivileges(List<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
+    public void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         try {
             // Construct privileges list
             StringBuffer sb = new StringBuffer();

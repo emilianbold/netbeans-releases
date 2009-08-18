@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
@@ -56,17 +57,29 @@ public final class DtraceDataCollectorFactory
         implements DataCollectorFactory<DTDCConfiguration>,
         IndicatorDataProviderFactory<DTDCConfiguration> {
 
-    public DtraceDataCollectorFactory() {
-    }
+    private DtraceDataCollector mergedDtraceCollector;
 
-    public DtraceDataCollector create(DTDCConfiguration configuration) {
-        return new DtraceDataCollector(configuration);
+    public DtraceDataCollectorFactory() {
     }
 
     public String getID() {
         return DTDCConfigurationAccessor.getDefault().getID();
     }
 
-    public void reset() {
+    public synchronized DtraceDataCollector create(DTDCConfiguration configuration) {
+        if (DTDCConfigurationAccessor.getDefault().isStandalone(configuration)) {
+            return new DtraceDataCollector(false, configuration);
+        } else {
+            if (mergedDtraceCollector == null) {
+                mergedDtraceCollector = new DtraceDataCollector(true, configuration);
+            } else {
+                mergedDtraceCollector.addSlaveConfiguration(configuration);
+            }
+            return mergedDtraceCollector;
+        }
+    }
+
+    public synchronized void reset() {
+        mergedDtraceCollector = null;
     }
 }

@@ -56,7 +56,6 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
@@ -128,10 +127,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
-        MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(mdcc);
+        DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
+        toolConfiguration.addDataCollectorConfiguration(dcc);
         // it's an indicator data provider as well!
-        toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
                 initDtraceIndicatorDataProviderConfiguration());
         toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
@@ -146,7 +145,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         return new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.MEMORY);
     }
 
-    private MultipleDTDCConfiguration initDtraceDataCollectorConfiguration() {
+    private DTDCConfiguration initDtraceDataCollectorConfiguration() {
 
         DTDCConfiguration dataCollectorConfiguration =
                 new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata));
@@ -154,9 +153,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
         dataCollectorConfiguration.setStackSupportEnabled(true);
+        dataCollectorConfiguration.setOutputPrefix("mem:"); // NOI18N
 
-        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
-        return mdc;
+        return dataCollectorConfiguration;
     }
 
     private IndicatorDataProviderConfiguration initSunStudioIndicatorDataProviderConfiguration() {
@@ -171,9 +170,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         dataCollectorConfiguration.setScriptArgs(" -DNOSTACK"); // NOI18N
         dataCollectorConfiguration.setStackSupportEnabled(true); // true
+        dataCollectorConfiguration.setOutputPrefix("mem:"); // NOI18N
 
-        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
-        return mdc;
+        return dataCollectorConfiguration;
 
     }
 

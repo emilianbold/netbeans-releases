@@ -91,4 +91,8 @@ public abstract class DTDCConfigurationAccessor {
     public abstract boolean isStackSupportEnabled(DTDCConfiguration conf);
 
     public abstract int getIndicatorFiringFactor(DTDCConfiguration conf);
+
+    public abstract boolean isStandalone(DTDCConfiguration conf);
+
+    public abstract String getOutputPrefix(DTDCConfiguration conf);
 }

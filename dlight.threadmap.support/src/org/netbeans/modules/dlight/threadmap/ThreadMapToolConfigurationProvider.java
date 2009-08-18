@@ -55,7 +55,6 @@ import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
@@ -101,11 +100,10 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
         dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
         dtraceDataCollectorConfiguration.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+        dtraceDataCollectorConfiguration.setOutputPrefix("msa:"); // NOI18N
 
-        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa"); // NOI18N
-
-        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
-        toolConfiguration.addDataCollectorConfiguration(collector);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration);
+        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration);
 
         return toolConfiguration;
     }

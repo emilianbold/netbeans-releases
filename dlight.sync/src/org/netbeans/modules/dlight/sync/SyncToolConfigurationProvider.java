@@ -59,7 +59,6 @@ import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
@@ -150,8 +149,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
         dataCollectorConfiguration.setStackSupportEnabled(true);
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
-        result.add(new MultipleDTDCConfiguration(
-            dataCollectorConfiguration, "sync:")); // NOI18N
+        dataCollectorConfiguration.setOutputPrefix("sync:"); // NOI18N
+        result.add(dataCollectorConfiguration);
         result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
         result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
         return result;

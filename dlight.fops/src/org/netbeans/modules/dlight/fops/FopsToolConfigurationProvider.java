@@ -52,7 +52,6 @@ import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
@@ -112,11 +111,10 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 new DTDCConfiguration(script, Arrays.asList(dtraceFopsMetadata));
         dtraceCollectorConfig.setStackSupportEnabled(true);
         dtraceCollectorConfig.setIndicatorFiringFactor(1);
-        final MultipleDTDCConfiguration multiDtraceCollectorConfig
-                = new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:"); // NOI18N
+        dtraceCollectorConfig.setOutputPrefix("fops:"); // NOI18N
 
-        toolConfiguration.addDataCollectorConfiguration(multiDtraceCollectorConfig);
-        toolConfiguration.addIndicatorDataProviderConfiguration(multiDtraceCollectorConfig);
+        toolConfiguration.addDataCollectorConfiguration(dtraceCollectorConfig);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceCollectorConfig);
 
         Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
         Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N

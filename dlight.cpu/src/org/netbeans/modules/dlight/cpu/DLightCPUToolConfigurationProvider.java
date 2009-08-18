@@ -55,7 +55,6 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
@@ -142,10 +141,10 @@ public final class DLightCPUToolConfigurationProvider
                 Arrays.asList(profilerTableMetadata));
 
         dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
+        dtraceDataCollectorConfiguration.setOutputPrefix("cpu:"); // NOI18N
 
         toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(
-                dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+                dtraceDataCollectorConfiguration);
 
 //        DataTableMetadata detailedViewTableMetadataDtrace =
 //            createFunctionsListMetadata(profilerTableMetadata);
