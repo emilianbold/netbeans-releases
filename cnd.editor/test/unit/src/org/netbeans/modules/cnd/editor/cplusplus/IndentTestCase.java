@@ -968,4 +968,16 @@ public class IndentTestCase extends EditorBase {
             "  }\n" +
             "}");
     }
+
+    public void testIZ168505() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "std::cout |<< \"Welcome ...\" << std::endl;\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:168505 cout arrows should be better aligned, like in emacs",
+            "std::cout \n" +
+            "        << \"Welcome ...\" << std::endl;\n"
+            );
+    }
 }
