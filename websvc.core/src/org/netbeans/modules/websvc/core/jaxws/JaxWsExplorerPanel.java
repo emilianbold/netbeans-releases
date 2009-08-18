@@ -151,19 +151,15 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                     List<WebService> webServices = wsData.getServiceProviders();
                     if (webServices.size() > 0) {
                         Children children = new Children.Array();
-                        Node[] serviceNodes = new Node[webServices.size()];
+                        List<Node> serviceNodes = new ArrayList<Node>();
                         int i = 0;
                         for (WebService service : webServices) {
                             Node n = service.createNode();
                             if (n != null) {
-                                serviceNodes[i++] = new ServiceNode(n);
+                                serviceNodes.add(new ServiceNode(n));
                             }
                         }
-                        if (i < webServices.size()) {
-                            children.add(Arrays.copyOf(serviceNodes, i));
-                        } else {
-                            children.add(serviceNodes);
-                        }
+                        children.add(serviceNodes.toArray(new Node[serviceNodes.size()]));
                         projectNodeList.add(new ProjectNode(children, rootNode));
                     }
                 }
