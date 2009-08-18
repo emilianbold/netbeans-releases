@@ -51,7 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
+import org.netbeans.modules.subversion.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
@@ -68,7 +68,7 @@ public class ImportPreviewStep extends AbstractStep {
     private PreviewPanel previewPanel;
     private Context context;
     private CommitTable table;
-    private WizardStepProgressSupport support;
+    private PanelProgressSupport support;
     
     public ImportPreviewStep(Context context) {
         this.context = context;
@@ -116,7 +116,7 @@ public class ImportPreviewStep extends AbstractStep {
     }    
 
     public void setup(final String repositoryPath, final String rootLocalPath, SVNUrl repository) {
-        support = new WizardStepProgressSupport(previewPanel.progressPanel) {
+        support = new PanelProgressSupport(previewPanel.progressPanel) {
             @Override
             protected void perform() {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -155,11 +155,6 @@ public class ImportPreviewStep extends AbstractStep {
                         validateUserInput();
                     }
                 });
-            }
-
-            @Override
-            public void setEditable(boolean editable) {
-                // nothing
             }
         };
         support.start(Subversion.getInstance().getRequestProcessor(repository), repository,  org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "BK1009")); //NOI18N
