@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Future;
@@ -103,7 +104,7 @@ public class SunStudioDataCollector
 
     private static final String ID = "PerfanDataStorage"; // NOI18N
     private static final String COLLECTOR_NAME = "SunStudio"; // NOI18N
-    private static final List<DataStorageType> supportedStorageTypes;
+    private static final DataStorageType supportedStorageType;
     private static final AtomicInteger uid = new AtomicInteger(0);
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
     // Below is COMPLETE list of DataTableMetadata objects...
@@ -135,8 +136,7 @@ public class SunStudioDataCollector
     static {
         SunStudioDCConfigurationAccessor dcAccess = SunStudioDCConfigurationAccessor.getDefault();
 
-        supportedStorageTypes = Arrays.asList(
-                DataStorageTypeFactory.getInstance().getDataStorageType(ID));
+        supportedStorageType = DataStorageTypeFactory.getInstance().getDataStorageType(ID);
 
         cpuInfoTable = new DataTableMetadata(
                 dcAccess.getCPUTableName(),
@@ -325,8 +325,8 @@ public class SunStudioDataCollector
         validationListeners.remove(listener);
     }
 
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return supportedStorageTypes;
+    public Collection<DataStorageType> getRequiredDataStorageTypes() {
+        return Collections.singletonList(supportedStorageType);
     }
 
     public List<DataTableMetadata> getDataTablesMetadata() {
@@ -387,11 +387,12 @@ public class SunStudioDataCollector
         }
     }
 
-    public void init(final DataStorage dataStorage, final DLightTarget target) {
+    public void init(final Map<DataStorageType, DataStorage> storages, final DLightTarget target) {
         synchronized (lock) {
-            if (!(dataStorage instanceof PerfanDataStorage)) {
+            DataStorage storage = storages.get(supportedStorageType);
+            if (!(storage instanceof PerfanDataStorage)) {
                 throw new IllegalArgumentException("Storage " + // NOI18N
-                        dataStorage + " cannot be used for PerfanDataCollector!"); // NOI18N
+                        storage + " cannot be used for PerfanDataCollector!"); // NOI18N
             }
 
             DLightLogger.assertTrue(validatedTarget == target,
@@ -400,7 +401,7 @@ public class SunStudioDataCollector
             String experimentDir = hostInfo.getTempDir() + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
 
             config = new CollectorConfiguration(
-                    (PerfanDataStorage) dataStorage,
+                    (PerfanDataStorage) storage,
                     target, target.getExecEnv(),
                     experimentDir, sproHome, collectedInfo);
 

@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.db.h2;
 import java.sql.SQLException;
 import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
 
 /**
  * @author Alexey Vladykin
@@ -49,7 +50,9 @@ public class H2StackStorageTest extends CommonStackDataStorageTests {
 
     protected StackDataStorage createStorage() {
         try {
-            return new H2DataStorage();
+            SQLStackDataStorage result = new SQLStackDataStorage();
+            result.attachTo(new H2DataStorage());
+            return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
             return null;
@@ -57,10 +60,10 @@ public class H2StackStorageTest extends CommonStackDataStorageTests {
     }
 
     protected boolean shutdownStorage(StackDataStorage db) {
-        return ((H2DataStorage) db).shutdown();
+        return ((SQLStackDataStorage) db).shutdown();
     }
 
     protected void flush(StackDataStorage db) {
-        ((H2DataStorage) db).flush();
+        ((SQLStackDataStorage) db).flush();
     }
 }

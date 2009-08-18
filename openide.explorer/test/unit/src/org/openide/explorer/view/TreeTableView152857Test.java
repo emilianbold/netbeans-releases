@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
@@ -89,7 +90,7 @@ public class TreeTableView152857Test extends NbTestCase {
         Thread.sleep (1000);
         ((StringKeys) root.getChildren ()).doSetKeys (new String [] {"1", "2"});
         Thread.sleep (1000);
-        
+
         assertEquals ("Node on 0nd position is '1'", "1", ta.getChildAt (0).toString ());
         assertEquals ("Node on 1st position is '2'", "2", ta.getChildAt (1).toString ());
 
@@ -146,6 +147,50 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible (false);
     }
 
+    public void testSorting() throws PropertyVetoException, InterruptedException, InvocationTargetException {
+        StringKeys children = new StringKeys(true);
+        children.doSetKeys(new String[]{"1", "3", "2", "2", "1"});
+        Node root = new TestNode(children, "root");
+        TreeNode ta = Visualizer.findVisualizer(root);
+        view = new TTV(root);
+        DialogDescriptor dd = new DialogDescriptor(view, "", false, null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.setVisible(true);
+        Thread.sleep(1000);
+
+        view.sort(0, true);
+        Thread.sleep(1000);
+        assertEquals("1", ta.getChildAt(0).toString());
+        assertEquals("3", ta.getChildAt(1).toString());
+        assertEquals( "2", ta.getChildAt(2).toString());
+        assertEquals("2", ta.getChildAt(3).toString());
+        assertEquals("1", ta.getChildAt(4).toString());
+
+        assertEquals("1", view.getTableValueAt(1));
+        assertEquals("1", view.getTableValueAt(2));
+        assertEquals("2", view.getTableValueAt(3));
+        assertEquals("2", view.getTableValueAt(4));
+        assertEquals("3", view.getTableValueAt(5));
+
+
+        view.sort(0, false);
+        Thread.sleep(1000);
+        assertEquals("1", ta.getChildAt(0).toString());
+        assertEquals("3", ta.getChildAt(1).toString());
+        assertEquals( "2", ta.getChildAt(2).toString());
+        assertEquals("2", ta.getChildAt(3).toString());
+        assertEquals("1", ta.getChildAt(4).toString());
+
+        assertEquals("3", view.getTableValueAt(1));
+        assertEquals("2", view.getTableValueAt(2));
+        assertEquals("2", view.getTableValueAt(3));
+        assertEquals("1", view.getTableValueAt(4));
+        assertEquals("1", view.getTableValueAt(5));
+        Thread.sleep(1000);
+
+        d.setVisible(false);
+    }
+
     private static class StringKeys extends Keys<String> {
 
         public StringKeys (boolean lazy) {
@@ -186,6 +231,30 @@ public class TreeTableView152857Test extends NbTestCase {
             return manager;
         }
 
+        String getTableValueAt(int pos) {
+            return view.treeTable.getModel().getValueAt(pos, 0).toString();
+        }
+
+        void sort(int column, boolean ascending) {
+            try {
+                Method setSortingColumn = view.getClass().getDeclaredMethod("setSortingColumn", new Class[]{int.class});
+                setSortingColumn.setAccessible(true);
+                setSortingColumn.invoke(view, column);
+                Method setSortingOrder = view.getClass().getDeclaredMethod("setSortingOrder", new Class[]{boolean.class});
+                setSortingOrder.setAccessible(true);
+                setSortingOrder.invoke(view, ascending);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     private static class TestNode extends AbstractNode {
