@@ -112,13 +112,6 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     
     public Project getOwner(FileObject f) {
-        try {
-            if (f.getFileSystem().isDefault()) {
-                LOG.log(Level.INFO, null, new IllegalStateException("Call to FOQ on SFS file " + f.getPath()));
-            }
-        } catch (FileStateInvalidException ex) {
-            LOG.log(Level.INFO, null, ex);
-        }
         while (f != null) {
             synchronized (this) {
                 if (lastFoundKey != null && lastFoundKey.get() == f) {
