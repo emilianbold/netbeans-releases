@@ -79,28 +79,9 @@
     
     <target name="compile" depends="model-gen,projectized-common.compile"/>
 
-    <target name="clean"><!-- XXX: depends="projectized-common.clean" -->
+    <target name="clean" depends="projectized-common.clean">
         <delete dir="${saas.model.jaxb}"/>
         <delete dir="${saas.model.wadl}"/>
-        <!-- XXX trying to keep people from accidentally readding bogus files in build: -->
-        <!-- (http://www.selenic.com/mercurial/bts/issue988) -->
-        <delete failonerror="false" includeemptydirs="true">
-            <fileset dir="build">
-                <exclude name="testuserdir/"/>
-                <!-- <hack> -->
-                <exclude name="classes/org/netbeans/modules/websvc/saas/Bundle.properties"/>
-                <exclude name="classes/org/netbeans/modules/websvc/saas/resources/layer.xml"/>
-                <!-- </hack> -->
-            </fileset>
-        </delete>
-        <delete dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
-        <delete file="${netbeans.javadoc.dir}/${code.name.base.dashes}.zip"/>
-        <delete failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
-            <fileset dir="${cluster}">
-                <patternset refid="module.files"/>
-            </fileset>
-        </delete>
-        <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
     </target>
     
 </project>
