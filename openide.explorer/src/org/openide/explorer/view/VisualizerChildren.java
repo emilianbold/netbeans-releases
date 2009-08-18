@@ -63,8 +63,8 @@ final class VisualizerChildren extends Object {
     
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {
-        visNodes = Collections.EMPTY_LIST;
-        snapshot = Collections.EMPTY_LIST;
+        visNodes = Collections.emptyList();
+        snapshot = Collections.emptyList();
         parent = null;
     }    
     
