@@ -36,53 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.core.browser.xulrunner;
 
-package org.netbeans.core.browser.api;
-
-import org.openide.util.Lookup;
+import org.openide.modules.ModuleInstall;
 
 /**
- * Factory to create embedded browser.
- *
- * @author S. Aubrecht
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-public abstract class EmbeddedBrowserFactory {
+public class Installer extends ModuleInstall {
 
-    /**
-     * @return The one and only instance.
-     */
-    public static EmbeddedBrowserFactory getDefault() {
-        EmbeddedBrowserFactory res = Lookup.getDefault().lookup(EmbeddedBrowserFactory.class);
-        if( null == res ) {
-            res = new EmbeddedBrowserFactory() {
-
-                @Override
-                public boolean isEnabled() {
-                    return false;
-                }
-
-                @Override
-                public WebBrowser createEmbeddedBrowser() {
-                    throw new IllegalStateException();
-                }
-            };
-        }
-        return res;
+    @Override
+    public void restored() {
+        System.setProperty("mozswing.gtklaf_check", "false"); //NOI18N
     }
-
-    /**
-     *
-     * @return True if embedded browser implementation is available for current
-     * OS and JDK and if user has enabled embedded browser in Options, false otherwise.
-     */
-    public abstract boolean isEnabled();
-
-    /**
-     * Creates a new embedded browser component. Don't forget to invoke dispose()
-     * when the browser is no longer needed.
-     * @return Embedded browser.
-     * @throws IllegalStateException If embedded browser isn't enabled.
-     * @see WebBrowser#dispose()
-     */
-    public abstract WebBrowser createEmbeddedBrowser();
 }

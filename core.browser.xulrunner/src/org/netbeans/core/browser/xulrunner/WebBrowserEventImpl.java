@@ -37,52 +37,73 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.api;
+package org.netbeans.core.browser.xulrunner;
 
-import org.openide.util.Lookup;
+import org.netbeans.core.browser.api.*;
+import java.awt.AWTEvent;
+import org.w3c.dom.Node;
 
 /**
- * Factory to create embedded browser.
- *
+ * Browser event implementation.
+ * 
  * @author S. Aubrecht
  */
-public abstract class EmbeddedBrowserFactory {
+class WebBrowserEventImpl extends WebBrowserEvent {
 
-    /**
-     * @return The one and only instance.
-     */
-    public static EmbeddedBrowserFactory getDefault() {
-        EmbeddedBrowserFactory res = Lookup.getDefault().lookup(EmbeddedBrowserFactory.class);
-        if( null == res ) {
-            res = new EmbeddedBrowserFactory() {
+    private final int type;
+    private final WebBrowser browser;
+    private final Node node;
+    private final AWTEvent event;
+    private boolean cancelled = false;
+    private final String url;
 
-                @Override
-                public boolean isEnabled() {
-                    return false;
-                }
-
-                @Override
-                public WebBrowser createEmbeddedBrowser() {
-                    throw new IllegalStateException();
-                }
-            };
-        }
-        return res;
+    public WebBrowserEventImpl( int type, WebBrowser browser, String url ) {
+        this.type = type;
+        this.browser = browser;
+        this.url = url;
+        this.event = null;
+        this.node = null;
     }
 
-    /**
-     *
-     * @return True if embedded browser implementation is available for current
-     * OS and JDK and if user has enabled embedded browser in Options, false otherwise.
-     */
-    public abstract boolean isEnabled();
+    public WebBrowserEventImpl( int type, WebBrowser browser, AWTEvent event, Node node ) {
+        this.type = type;
+        this.browser = browser;
+        this.event = event;
+        this.node = node;
+        this.url = null;
+    }
 
-    /**
-     * Creates a new embedded browser component. Don't forget to invoke dispose()
-     * when the browser is no longer needed.
-     * @return Embedded browser.
-     * @throws IllegalStateException If embedded browser isn't enabled.
-     * @see WebBrowser#dispose()
-     */
-    public abstract WebBrowser createEmbeddedBrowser();
+    @Override
+    public int getType() {
+        return type;
+    }
+
+    @Override
+    public WebBrowser getWebBrowser() {
+        return browser;
+    }
+
+    @Override
+    public String getURL() {
+        return null != url ? url : browser.getURL();
+    }
+
+    @Override
+    public AWTEvent getAWTEvent() {
+        return event;
+    }
+
+    @Override
+    public Node getNode() {
+        return node;
+    }
+
+    @Override
+    public void cancel() {
+        cancelled = true;
+    }
+
+    boolean isCancelled() {
+        return cancelled;
+    }
 }

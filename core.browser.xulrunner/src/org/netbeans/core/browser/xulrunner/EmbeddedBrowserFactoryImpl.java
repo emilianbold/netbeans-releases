@@ -37,52 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.api;
+package org.netbeans.core.browser.xulrunner;
 
-import org.openide.util.Lookup;
+import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
+import org.netbeans.core.browser.api.WebBrowser;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Factory to create embedded browser.
- *
+ * Embedded browser factory.
+ * 
  * @author S. Aubrecht
  */
-public abstract class EmbeddedBrowserFactory {
+@ServiceProvider(service=EmbeddedBrowserFactory.class)
+public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
 
-    /**
-     * @return The one and only instance.
-     */
-    public static EmbeddedBrowserFactory getDefault() {
-        EmbeddedBrowserFactory res = Lookup.getDefault().lookup(EmbeddedBrowserFactory.class);
-        if( null == res ) {
-            res = new EmbeddedBrowserFactory() {
-
-                @Override
-                public boolean isEnabled() {
-                    return false;
-                }
-
-                @Override
-                public WebBrowser createEmbeddedBrowser() {
-                    throw new IllegalStateException();
-                }
-            };
-        }
-        return res;
+    public EmbeddedBrowserFactoryImpl() {
     }
 
-    /**
-     *
-     * @return True if embedded browser implementation is available for current
-     * OS and JDK and if user has enabled embedded browser in Options, false otherwise.
-     */
-    public abstract boolean isEnabled();
+    @Override
+    public boolean isEnabled() {
+        return BrowserManager.isSupportedPlatform() && BrowserManager.getDefault().isEnabled();
+    }
 
-    /**
-     * Creates a new embedded browser component. Don't forget to invoke dispose()
-     * when the browser is no longer needed.
-     * @return Embedded browser.
-     * @throws IllegalStateException If embedded browser isn't enabled.
-     * @see WebBrowser#dispose()
-     */
-    public abstract WebBrowser createEmbeddedBrowser();
+    @Override
+    public WebBrowser createEmbeddedBrowser() {
+        if( !isEnabled() )
+            throw new IllegalStateException();
+        return new WebBrowserImpl();
+    }
 }
