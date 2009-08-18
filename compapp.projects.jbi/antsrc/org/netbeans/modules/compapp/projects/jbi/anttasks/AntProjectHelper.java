@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +37,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.completion;
+package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
+import org.apache.tools.ant.Project;
+import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 /**
  *
- * @author marekfukala
+ * @author jqian
  */
-public class HtmlCompletionQueryTest_XHTML extends HtmlCompletionQueryTest {
+public class AntProjectHelper {
 
-    public HtmlCompletionQueryTest_XHTML() throws IOException, BadLocationException {
-        super(HtmlCompletionQueryTest_XHTML.class.getName());
-    }
-
-    @Override
-    protected String getPublicID() {
-        return "-//W3C//DTD XHTML 1.0 Strict//EN";
+    @SuppressWarnings("deprecation")
+    public static String getServiceAssemblyID(Project p) {        
+        String saID = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+        if (saID == null) { // for backward compatibility until project is updated            
+            saID = p.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+        }
+        return saID;
     }
     
+    @SuppressWarnings("deprecation")
+    public static String getServiceAssemblyDescription(Project p) {    
+        String saDescription = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
+        if (saDescription == null) { // for backward compatibility until project is updated    
+            saDescription = p.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION);
+        }
+        return saDescription;
+    }
+    
+    @SuppressWarnings("deprecation")
+    public static String getServiceUnitDescription(Project p) {    
+        String saDescription = p.getProperty(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
+        if (saDescription == null) { // for backward compatibility until project is updated    
+            saDescription = p.getProperty(JbiProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION);
+        }
+        return saDescription;
+    }
+
 }

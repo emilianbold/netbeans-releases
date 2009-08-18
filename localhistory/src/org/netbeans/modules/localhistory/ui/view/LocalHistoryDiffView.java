@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.*;
@@ -148,14 +149,13 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     }
 
     /**
-     * Copies file' content to a temporary folder
+     * Copies entry file's content to the given temporary file
      * @param entry contains the file's content
-     * @param tempFolder target folder
+     * @param tmpHistoryFile target temporary file
      * @throws java.io.IOException
      */
-    private static void extractHistoryFile (StoreEntry entry, File tempFolder) throws IOException {
+    private static void extractHistoryFile (StoreEntry entry, File tmpHistoryFile) throws IOException {
         File file = entry.getFile();
-        File tmpHistoryFile = new File(tempFolder, file.getName());
         tmpHistoryFile.deleteOnExit();
         FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
         Utils.associateEncoding(file, tmpHistoryFile);
@@ -174,12 +174,17 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
 
             final File file = entry.getFile();
             File tempFolder = Utils.getTempFolder();
+            // we have to hold references to these files, otherwise associated encoding for them will be lost
+            // Utils.associateEncoding holds only a weak reference
             final File tmpHistoryFile = new File(tempFolder, file.getName());
+            final List<File> siblingTmpFiles = new LinkedList<File>();
             try {
-                extractHistoryFile(entry, tempFolder);
+                extractHistoryFile(entry, tmpHistoryFile);
                 List<StoreEntry> siblings = entry.getSiblingEntries();
                 for (StoreEntry siblingEntry : siblings) {
-                    extractHistoryFile(siblingEntry, tempFolder);
+                    File tmpHistorySiblingFile = new File(tempFolder, siblingEntry.getFile().getName());
+                    siblingTmpFiles.add(tmpHistorySiblingFile);
+                    extractHistoryFile(siblingEntry, tmpHistorySiblingFile);
                 }
             } catch (IOException ioe) {
                 LocalHistory.LOG.log(Level.SEVERE, null, ioe);

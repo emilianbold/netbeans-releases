@@ -46,6 +46,7 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Set;
@@ -93,35 +94,33 @@ public class WsdlTreeViewPanel extends JPanel implements ExplorerManager.Provide
         
         mManager = new ExplorerManager();
         mManager.addPropertyChangeListener(new ExplorerPropertyChangeListener());
-
-        if (mProject != null) {
+        if(mProject != null) {
             
-            SourceGroup[] ownerProjectSourceGroup;
+            SourceGroup[] ownerSourceGroup;
             
-            List<SourceGroup> dependentProjectSourceGroups = new ArrayList<SourceGroup>();
+            List<SourceGroup> sourceGroupsList = new ArrayList<SourceGroup>();
 
-            // wsdls in JbiProject
-            ownerProjectSourceGroup = getSourceGroups(mProject);
+            //wsdl in JbiProject 
+            ownerSourceGroup = getSourceGroups(mProject);            
             
-            // find depedent projects (JBI module projects and their referened projects)
-            // #149180
-            Set<Project> dependentProjects = 
-                    ProjectUtil.getClasspathProjects(mProject, true);
-
-            for (Project dProject : dependentProjects) {
+            //find depedent projects
+            Set dependentProjects = ProjectUtil.getClasspathProjects(mProject);
+            Iterator it = dependentProjects.iterator();
+            while(it.hasNext()) {
+                Project dProject = (Project) it.next();
                 SourceGroup[] groups = getSourceGroups(dProject);
                 
-                if (groups != null) {
-                    for (SourceGroup group : groups) {
-                        dependentProjectSourceGroups.add(group);
+                if(groups != null && groups.length > 0) {
+                    for(int i = 0; i < groups.length; i++) {
+                        sourceGroupsList.add(groups[i]);
                     }
                 }
             }
             
             AbstractNode rootNode = new AbstractNode(
                 new WsdlViewNodes.SourceGroups(mProject,
-                            ownerProjectSourceGroup,
-                            dependentProjectSourceGroups.toArray(new SourceGroup[]{})));
+                            ownerSourceGroup,
+                            sourceGroupsList.toArray(new SourceGroup[]{})));
             mManager.setRootContext( rootNode );
         }        
         

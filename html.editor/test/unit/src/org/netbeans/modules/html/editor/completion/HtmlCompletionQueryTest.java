@@ -224,6 +224,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("&|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&a|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&amp|", arr("amp"), Match.EXACT, 1);
+        assertItems("|&amp;", arr("amp"), Match.CONTAINS, 1);
 
         assertCompletedText("&|", "amp", "&amp;|");
         assertCompletedText("&am|", "amp", "&amp;|");
@@ -340,15 +341,15 @@ public class HtmlCompletionQueryTest extends TestBase {
         return "-//W3C//DTD HTML 4.01 Transitional//EN";
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws BadLocationException, ParseException {
+    protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws BadLocationException, ParseException {
         assertItems(documentText, expectedItemsNames, type, -1);
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
+    protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         assertItems(getDocument(documentText), expectedItemsNames, type, expectedAnchor);
     }
 
-    private void assertItems(Document doc, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
+    protected void assertItems(Document doc, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         String content = doc.getText(0, doc.getLength());
 
         final int pipeOffset = content.indexOf("|");
@@ -492,7 +493,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private String[] arr(String... args) {
+    protected String[] arr(String... args) {
         return args;
     }
 
