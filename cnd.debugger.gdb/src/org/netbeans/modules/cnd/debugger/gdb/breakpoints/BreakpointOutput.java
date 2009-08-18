@@ -64,7 +64,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointListener;
-import org.netbeans.modules.cnd.debugger.gdb.models.BreakpointsNodeModel;
 import org.netbeans.modules.cnd.debugger.gdb.IOManager;
 
 /**
