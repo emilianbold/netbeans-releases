@@ -84,7 +84,8 @@ public class MemberNode extends LeafNode {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        lbl.setIcon(KenaiUser.forName(user.getName()).getIcon());
+                        if (lbl!=null)
+                            lbl.setIcon(KenaiUser.forName(user.getName()).getIcon());
                     }
                 });
             }
