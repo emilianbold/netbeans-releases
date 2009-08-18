@@ -444,7 +444,6 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="-build-external-cluster" if="${one.cluster.name}-is-external" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check,-external-cluster-check,-external-no-sources">
-    <fail message="shouldn't get here"/>
     <resolve name="cluster.sources" value="${one.cluster.name}.sources"/>
     <resolve name="cluster.dir" value="${one.cluster.name}.dir"/>
     <subant buildpath="${nb_all}/${cluster.sources}/build.xml" inheritAll="false"/>
