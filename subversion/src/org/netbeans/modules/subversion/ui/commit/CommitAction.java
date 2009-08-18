@@ -145,7 +145,7 @@ public class CommitAction extends ContextAction {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, commitButton, panel);
+        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, commitButton);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
 
@@ -283,7 +283,7 @@ public class CommitAction extends ContextAction {
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
 
-    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, final JButton commitButton, final CommitPanel panel) {
+    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, final JButton commitButton) {
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
                 try {
@@ -347,17 +347,6 @@ public class CommitAction extends ContextAction {
                     data.setNodes(nodes);
                 } finally {
                     commitButton.setEnabled(containsCommitable(data));
-
-                    panel.addVersioningListener(new VersioningListener() {
-                        public void versioningEvent(VersioningEvent event) {
-                            refreshCommitDialog(panel, data, commitButton);
-                        }
-                    });
-                    data.getTableModel().addTableModelListener(new TableModelListener() {
-                        public void tableChanged(TableModelEvent e) {
-                            refreshCommitDialog(panel, data, commitButton);
-                        }
-                    });
                 }
             }
         };
