@@ -58,6 +58,7 @@ import org.netbeans.modules.web.core.syntax.completion.ELFunctions.Function;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -228,7 +229,7 @@ public class ElCompletionProvider implements CompletionProvider {
             switch (parseType) {
                 case ELExpression.EL_START:
                     // implicit objects
-                    for (ELImplicitObjects.ELImplicitObject implOb : 
+                    for (ELImplicitObject implOb : 
                         ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) 
                     {
                         result.addItem(ElCompletionItem.createELImplicitObject(
