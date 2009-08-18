@@ -210,6 +210,16 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
+//     public void testUnallowedEmptyTag() throws Exception {
+//        //<stype> cannot be empty - issue #166042
+//        assertAST("<html><head><title></title><style type=\"text/javascript\"/></head><body></body></html>",
+//                // 0123456789012345678901234567890123456789
+//                // 0         1         2         3
+//                desc(SyntaxTree.TAG_CANNOT_BE_EMPTY, 27, 33, Description.ERROR)
+//                );
+//
+//    }
+
     public void testIssue162576() throws Exception {
         String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" " +
                 "\"http://www.w3.org/TR/html4/strict.dtd\">" +
