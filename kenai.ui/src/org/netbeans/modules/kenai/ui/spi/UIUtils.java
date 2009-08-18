@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
@@ -274,6 +275,28 @@ public final class UIUtils {
                 }
             }
         });
+        result.addMouseListener(new MouseAdapter() {
+            private Cursor oldCursor;
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                oldCursor = result.getCursor();
+                result.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                result.setCursor(oldCursor);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton()==1)
+                    u.startChat();
+            }
+
+        });
+
         return result;
     }
 
