@@ -1319,7 +1319,7 @@ public class TreeTableView extends BeanTreeView {
 
         private class SortedNode extends FilterNode {
             public SortedNode (Node original) {
-                super (original, new SortedChildren (original));
+                super(original, original.isLeaf() ? Children.LEAF : new SortedChildren(original));
                 original2filter.put (original, this);
             }
             public Node getOriginalNode () {
