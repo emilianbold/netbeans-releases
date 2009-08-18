@@ -47,6 +47,10 @@ import org.openide.filesystems.FileUtil;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Represents real or virtual (non-local) file.
@@ -56,6 +60,9 @@ import java.util.ArrayList;
 public class SvnFileNode {
 
     private final File file;
+    private String relativePath;
+    private String copy;
+    private boolean copyScanned;
 
     public SvnFileNode(File file) {
         this.file = FileUtil.normalizeFile(file);
@@ -95,5 +102,33 @@ public class SvnFileNode {
             list.add(fo);
         }
         return list.toArray(new Object[list.size()]);
+    }
+
+    /**
+     * Returns relativePath of this node's file. 
+     * @return relative path of this node's file.
+     */
+    public String getRelativePath() {
+        if (relativePath == null) {
+            try {
+                assert !java.awt.EventQueue.isDispatchThread();
+                relativePath = SvnUtils.getRelativePath(getFile());
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
+            if (relativePath == null) {
+                relativePath = NbBundle.getMessage(SvnFileNode.class, "SvnFileNode.relativePath.unknown"); //NOI18N
+            }
+        }
+        return relativePath;
+    }
+
+    public String getCopy () {
+        if (!copyScanned) {
+            assert !java.awt.EventQueue.isDispatchThread();
+            copy = SvnUtils.getCopy(getFile());
+            copyScanned = true;
+        }
+        return copy;
     }
 }

@@ -135,6 +135,9 @@ public class ImportPreviewStep extends AbstractStep {
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
                     SvnFileNode node = new SvnFileNode(file);
+                    // initialize nodes
+                    node.getCopy();
+                    node.getRelativePath();
                     nodesList.add(node);
                     if (isCanceled()) {
                         return;

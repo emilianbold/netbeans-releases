@@ -202,6 +202,9 @@ public class CommitAction extends ContextAction {
         for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
+            // initialize node properties
+            node.getRelativePath();
+            node.getCopy();
             nodesList.add(node);
         }
         nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
@@ -391,7 +394,7 @@ public class CommitAction extends ContextAction {
             if (options == CommitOptions.EXCLUDE) {
                 continue;
             }
-            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
+            stickyTags.add(fileNode.getCopy());
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 enabled = false;
