@@ -37,50 +37,38 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.storage;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
 
-final class SnapshotImpl implements ThreadSnapshot {
-    private final ThreadInfo threadInfo;
-    private final SQLStackStorage storage;
-    private final int stackID;
-
-    public SnapshotImpl(final SQLStackStorage storage, final int threadID, final int stackID) {
-        this.storage = storage;
-        this.stackID = stackID;
-        
-        this.threadInfo = new ThreadInfo() {
-
-            public int getThreadId() {
-                return threadID;
-            }
-
-            public String getThreadName() {
-                return "Thread " + threadID; // NOI18N
-            }
-        };
+    public RfsSunStudioRemoteBuildTestCase(String testName) {
+        super(testName);
     }
 
-
-    public ThreadInfo getThreadInfo() {
-        return threadInfo;
+    public RfsSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
     }
 
-    public List<FunctionCall> getStack() {
-        return storage.getStack(stackID);
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsSunStudio() throws Exception {
+        setDefaultCompilerSet("SunStudio");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject);
     }
 
-    public MSAState getState() {
-        // TODO: implement!
-        return MSAState.Running;
-    }
-
-    public MemoryAccessType getMemoryAccessType() {
-        return null;
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RfsSunStudioRemoteBuildTestCase.class);
     }
 }

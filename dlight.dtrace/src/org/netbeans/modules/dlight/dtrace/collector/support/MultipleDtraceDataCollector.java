@@ -63,6 +63,7 @@ import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurati
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceDataCollector.IndicatorDataProvideHandler;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
@@ -105,8 +106,10 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
     }
 
 //  @Override
-    public List<DataStorageType> getSupportedDataStorageTypes() {
-        return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+    public List<DataStorageType> getRequiredDataStorageTypes() {
+        return Arrays.asList(
+                DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE),
+                DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
     }
 
 //  @Override
@@ -119,12 +122,12 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
     }
 
 //  @Override
-    public void init(DataStorage storage, DLightTarget target) {
+    public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         for (DtraceDataCollector ddc : slaveCollectors.values()) {
-            ddc.init(storage, target);
+            ddc.init(storages, target);
         }
         collector.setLocalScriptPath(mergeScripts().getAbsolutePath());
-            collector.init(storage, target);
+        collector.init(storages, target);
     }
 
     private File mergeScripts() {

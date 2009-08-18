@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.spi.collector;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -61,11 +62,11 @@ public interface DataCollector<G extends DataCollectorConfiguration>
         extends DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
 
     /**
-     * The types of storage this collector supports
+     * The types of storage this collector requires
      * @return returns list of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
      * data collector can put data into
      */
-    Collection<DataStorageType> getSupportedDataStorageTypes();
+    Collection<DataStorageType> getRequiredDataStorageTypes();
 
     /**
      * The description of tables data collector will put information in.
@@ -80,7 +81,7 @@ public interface DataCollector<G extends DataCollectorConfiguration>
      * @param storage storage this collector willput data into
      * @param target target this collector serve for
      */
-    void init(DataStorage storage, DLightTarget target);
+    void init(Map<DataStorageType, DataStorage> storages, DLightTarget target);
 
     /**
      * DataCollector can attach to the {@link org.netbeans.modules.dlight.api.execution.DLightTarget}.

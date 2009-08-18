@@ -139,15 +139,16 @@ public final class CLIODataCollector
      * @return returns list of {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
+    public Collection<DataStorageType> getRequiredDataStorageTypes() {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
 
         return Arrays.asList(
                 dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
-    public void init(DataStorage storage, DLightTarget target) {
-        this.storage = storage;
+    public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
+        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
+        this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
         log.fine("Do INIT for " + storage.toString()); // NOI18N
     }
 

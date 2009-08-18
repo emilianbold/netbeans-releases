@@ -36,34 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.derby;
+package org.netbeans.modules.dlight.core.stack.storage.impl;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 
-/**
- * @author Alexey Vladykin
- */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+final class ThreadDumpImpl implements ThreadDump {
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new DerbyDataStorage());
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    private final List<ThreadSnapshot> stacks = new ArrayList<ThreadSnapshot>();
+    private final long timestamp;
+
+    public ThreadDumpImpl(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown();
+    public List<ThreadSnapshot> getThreadStates() {
+        return stacks;
     }
 
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
+    public void addStack(ThreadSnapshot stack) {
+        stacks.add(stack);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

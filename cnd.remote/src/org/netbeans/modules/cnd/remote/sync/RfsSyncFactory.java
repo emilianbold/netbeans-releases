@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
 class RfsSyncFactory extends RemoteSyncFactory {
 
-    public static final boolean ENABLE_RFS = CndUtils.getBoolean("cnd.remote.fs", false);
+    public static final boolean ENABLE_RFS = CndUtils.getBoolean("cnd.remote.fs", true);
     /*package*/ static final String ID = "rfs"; //NOI18N
 
     @Override

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.storage;
 
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -54,6 +55,8 @@ public interface StackDataStorage {//extends StackSupport {
 
     public static final String STACK_DATA_STORAGE_TYPE_ID = "stack"; //NOI18N
     public static final String STACK_METADATA_VIEW_NAME = "DtraceStack"; //NOI18N
+    public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
+            FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
 
     /**
      * Submits new stack (sample) to the storage.
