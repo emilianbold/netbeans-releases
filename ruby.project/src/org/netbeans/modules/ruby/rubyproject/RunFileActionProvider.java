@@ -85,45 +85,74 @@ public final class RunFileActionProvider implements ActionProvider {
         }
     }
 
-    private void runFile(File f, boolean debug) {
-        RunFileArgs existing = ARGS_FOR_FILE.get(f);
-        if (existing != null && !existing.displayDialog) {
-            doRun(f, existing, debug);
-            return;
-        }
+    static RunFileArgs getRunArgs(File file) {
+        return ARGS_FOR_FILE.get(file);
+    }
+
+    /**
+     * Displays the Run/Debug File dialog for the given file.
+     * @param presetArgs
+     * @param file
+     * @param debug
+     * @param allowPlatformChange
+     * @return the args from the dialog, or <code>null</code> if the user
+     * pressed cancel.
+     */
+    static RunFileArgs showDialog(RunFileArgs presetArgs,
+            File file,
+            boolean debug,
+            boolean allowPlatformChange) {
 
         Object[] options = new Object[]{
             DialogDescriptor.OK_OPTION,
             DialogDescriptor.CANCEL_OPTION
         };
 
-        RunFilePanel panel = new RunFilePanel(existing);
+        RunFilePanel panel = new RunFilePanel(presetArgs, allowPlatformChange);
 
         String key = debug ? "DebugFile" : "RunFile"; //NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(panel,
-                NbBundle.getMessage(RunFileActionProvider.class, key, f.getName()), true,
+                NbBundle.getMessage(RunFileActionProvider.class, key, file.getName()), true,
                 options, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        
+
         descriptor.setClosingOptions(new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             RunFileArgs runFileArgs = panel.getArgs();
-            ARGS_FOR_FILE.put(f, runFileArgs);
-            doRun(f, runFileArgs, debug);
+            ARGS_FOR_FILE.put(file, runFileArgs);
+            return runFileArgs;
         }
+
+        return null;
+
     }
 
-    private void doRun(File f, RunFileArgs runFileArgs, boolean debug) {
-        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(runFileArgs.getPlatform(), f.getName(), f.getParentFile());
+    private void runFile(File file, boolean debug) {
+        RunFileArgs existing = ARGS_FOR_FILE.get(file);
+        if (existing != null && !existing.displayDialog) {
+            doRun(file, existing, debug);
+            return;
+        }
+
+        RunFileArgs runFileArgs = showDialog(existing, file, debug, true);
+
+        if (runFileArgs == null) {
+            return;
+        }
+        doRun(file, runFileArgs, debug);
+    }
+
+    private void doRun(File file, RunFileArgs runFileArgs, boolean debug) {
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(runFileArgs.getPlatform(), file.getName(), file.getParentFile());
         if (runFileArgs.getRunArgs() != null) {
             desc.additionalArgs(Utilities.parseParameters(runFileArgs.getRunArgs()));
         }
         desc.jvmArguments(runFileArgs.getJvmArgs());
         desc.debug(debug);
-        desc.script(f.getAbsolutePath());
+        desc.script(file.getAbsolutePath());
         RubyProcessCreator rpc = new RubyProcessCreator(desc);
-        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), f.getName()).run();
+        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), file.getName()).run();
     }
 
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
