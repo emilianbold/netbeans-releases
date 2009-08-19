@@ -106,6 +106,7 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -1014,7 +1015,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 //                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
 //                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
 //                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                            detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID());
+                            ThreadDumpQuery query = new ThreadDumpQuery(threadData.getThreadID(), state,  showThreadsID, prefferedState,
+                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
+                            detailsCallback.showStack(query);
                         }
                     }
                 }
@@ -1209,7 +1212,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        public void showStack(long timestamp, long threadID);
+        public void showStack(ThreadDumpQuery query);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

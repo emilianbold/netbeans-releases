@@ -36,30 +36,74 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+package org.netbeans.modules.dlight.core.stack.api;
+
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 /**
- *
- * @author Alexander Simon
+ * The query to be used to get ThreadDump
+ * 
+ * @author Maria Tishkova
  */
-public interface ThreadMapDataProvider extends DataProvider {
+public final class ThreadDumpQuery {
+    private final long threadID;
+    private final ThreadState threadState;
+    private final List<Integer> showThreads;
+    private final MSAState prefferedState;
+    private final boolean isMSAMode;
+    private final boolean isFullMode;
+    private final long startTime;
+
 
     /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
+     * The query to filter out the data for stacks
+     * @param threadID thread id
+     * @param threadState thread state (to get timestamp)
+     * @param showThreads the list of the threads to get thread dump for
+     * @param prefferedState the state we would like to get stack for
+     * @param isMSAMode 
+     * @param isFullMode
+     * @param startTime start time
      */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    public ThreadDumpQuery(long threadID, ThreadState threadState, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime){
+        this.threadID = threadID;
+        this.threadState = threadState;
+        this.showThreads = showThreads;
+        this.prefferedState = prefferedState;
+        this.isMSAMode = isMSAMode;
+        this.isFullMode = isFullMode;
+        this.startTime = startTime;
+    }
 
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
+    public boolean isFullMode() {
+        return isFullMode;
+    }
 
+    public boolean isMSAMode() {
+        return isMSAMode;
+    }
+
+    public MSAState getPrefferedState() {
+        return prefferedState;
+    }
+
+    public List<Integer> getShowThreads() {
+        return showThreads;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public ThreadState getThreadState() {
+        return threadState;
+    }
+
+    public long getThreadID() {
+        return threadID;
+    }
+
+    
 }
