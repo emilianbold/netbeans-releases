@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          ergonomics(ergonomics),
-                                         extra-core-browser-macosx(baseide), ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
         </for-each>                                                  

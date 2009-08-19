@@ -41,17 +41,17 @@ pack_all_components()
 
     cd $NB_ALL/nbbuild/netbeans
 
-    codename="org-netbeans-core-browser"
-    native="extra/modules/lib/native"
-    locale="extra/modules/locale"
-    config="extra/config/Modules"
-    update_tracking="extra/update_tracking"
-    modules="extra/modules"
+    #codename="org-netbeans-core-browser"
+    #native="extra/modules/lib/native"
+    #locale="extra/modules/locale"
+    #config="extra/config/Modules"
+    #update_tracking="extra/update_tracking"
+    #modules="extra/modules"
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-linux       "$config/$codename-linux.xml      $update_tracking/$codename-linux.xml   $modules/$codename-linux.jar   $locale/$codename-linux_*.jar   $native/linux/xulrunner"
-    pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-windows     "$config/$codename-win.xml        $update_tracking/$codename-win.xml     $modules/$codename-win.jar     $locale/$codename-win_*.jar     $native/win32/xulrunner"
-    pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-solaris-x86 "$config/$codename-solaris.xml    $update_tracking/$codename-solaris.xml $modules/$codename-solaris.jar $locale/$codename-solaris_*.jar $native/solaris-x86/xulrunner"
-    pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-macosx      "$config/$codename-macosx.xml     $update_tracking/$codename-macosx.xml  $modules/$codename-macosx.jar  $locale/$codename-macosx_*.jar  $native/macosx/xulrunner $native/macosx/libcocoautils.jnilib"
+    #pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-linux       "$config/$codename-linux.xml      $update_tracking/$codename-linux.xml   $modules/$codename-linux.jar   $locale/$codename-linux_*.jar   $native/linux/xulrunner"
+    #pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-windows     "$config/$codename-win.xml        $update_tracking/$codename-win.xml     $modules/$codename-win.jar     $locale/$codename-win_*.jar     $native/win32/xulrunner"
+    #pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-solaris-x86 "$config/$codename-solaris.xml    $update_tracking/$codename-solaris.xml $modules/$codename-solaris.jar $locale/$codename-solaris_*.jar $native/solaris-x86/xulrunner"
+    #pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-macosx      "$config/$codename-macosx.xml     $update_tracking/$codename-macosx.xml  $modules/$codename-macosx.jar  $locale/$codename-macosx_*.jar  $native/macosx/xulrunner $native/macosx/libcocoautils.jnilib"
 
     rm -rf extra
 
