@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -115,25 +117,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      * @return the preferred width of this component
      */
     private int getBarWidth() {
-        return 120; // thp: controls bar width
-//        String longestString = "";  // NOI18N
-//        if (elementAnnotations == null) {
-//            longestString = elementAnnotationsSubstitute;
-//        } else {
-//            synchronized(elementAnnotations) {
-//                Iterator<AnnotateLine> it = elementAnnotations.values().iterator();
-//                while (it.hasNext()) {
-//                    AnnotateLine line = it.next();
-//                    String displayName = getDisplayName(line); // NOI18N
-//                    if (displayName.length() > longestString.length()) {
-//                        longestString = displayName;
-//                    }
-//                }
-//            }
-//        }
-//        char[] data = longestString.toCharArray();
-//        int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
-//        return w + 4;
+        String sample = fileAnnotationInfo.getLineAnnotationInfo().get(0).getAnnotation();
+        int cwidth = getGraphics().getFontMetrics().charWidth('X');
+        return sample.length()*cwidth + 4; // thp: controls bar width
     }
 
     /**
