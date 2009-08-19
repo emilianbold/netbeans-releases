@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.spi;
+package org.netbeans.modules.dlight.management.remote.spi;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
