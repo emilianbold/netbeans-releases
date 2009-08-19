@@ -42,6 +42,7 @@ import com.sun.faces.config.ConfigManager;
 import com.sun.faces.config.configprovider.MetaInfFaceletTaglibraryConfigProvider;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
+import com.sun.faces.facelets.tag.composite.CompositeLibrary;
 import com.sun.faces.facelets.tag.jsf.core.CoreLibrary;
 import com.sun.faces.facelets.tag.jsf.html.HtmlLibrary;
 import com.sun.faces.facelets.tag.jstl.core.JstlCoreLibrary;
@@ -216,6 +217,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     private Collection<TagLibrary> getDefaultLibraries() {
         Collection<TagLibrary> libs = new ArrayList<TagLibrary>();
+        libs.add(new CompositeLibrary());
         libs.add(new CoreLibrary());
         libs.add(new HtmlLibrary());
         libs.add(new UILibrary());

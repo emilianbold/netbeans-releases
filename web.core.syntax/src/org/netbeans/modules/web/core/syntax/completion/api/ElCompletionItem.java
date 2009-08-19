@@ -38,9 +38,10 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
-import org.netbeans.modules.web.core.syntax.completion.*;
 import java.awt.Color;
+
 import javax.swing.ImageIcon;
+
 import org.openide.util.ImageUtilities;
 
 /**
@@ -87,10 +88,10 @@ public class ElCompletionItem {
         protected ImageIcon getIcon() {
             ImageIcon icon = null;
             switch (type) {
-                case ELImplicitObjects.OBJECT_TYPE:
+                case org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.OBJECT_TYPE:
                     icon = ImageUtilities.loadImageIcon(OBJECT_PATH, false);
                     break;
-                case ELImplicitObjects.MAP_TYPE:
+                case org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE:
                     icon = ImageUtilities.loadImageIcon(MAP_PATH, false);
                     break;
             }
@@ -105,7 +106,7 @@ public class ElCompletionItem {
         @Override
         public String getItemText() {
             String result = text;
-            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE) {
+            if (type == org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE) {
                 result = result + "[]";
             }
             return result;    //NOI18N
@@ -113,7 +114,7 @@ public class ElCompletionItem {
 
         @Override
         protected int getMoveBackLength() {
-            return type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE ? 1 : 0;
+            return type == org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE ? 1 : 0;
         }
     }
 

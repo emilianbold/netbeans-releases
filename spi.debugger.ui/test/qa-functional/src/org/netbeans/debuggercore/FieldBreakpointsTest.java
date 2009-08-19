@@ -72,7 +72,17 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class FieldBreakpointsTest extends JellyTestCase {
 
-    //MainWindowOperator.StatusTextTracer stt = null;
+    private static String[] tests = new String[] {
+        "testFieldBreakpointCreation",
+        "testFieldBreakpointPrefilledValues",
+        "testFieldBreakpointFunctionalityAccess",
+        "testFieldBreakpointFunctionalityModification",
+        "testConditionalFieldBreakpointFunctionality",
+        "testFieldBreakpointsValidation" 
+    };
+
+    private static boolean initialized = false;
+
     /**
      *
      * @param name
@@ -94,25 +104,21 @@ public class FieldBreakpointsTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FieldBreakpointsTest.class).addTest(
-                    "testFieldBreakpointCreation",
-                    "testFieldBreakpointPrefilledValues",
-                    "testFieldBreakpointFunctionalityAccess",
-                    "testFieldBreakpointFunctionalityModification",
-                    "testConditionalFieldBreakpointFunctionality",
-                    "testFieldBreakpointsValidation" 
-                )
-            .enableModules(".*").clusters(".*"));
+        return createModuleTest(FieldBreakpointsTest.class, tests);
     }
 
     /**
      *
      */
     @Override
-    public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+    public void setUp() throws IOException {        
         System.out.println("########  " + getName() + "  ####### ");
+        if (!initialized)
+        {
+            openDataProjects(Utilities.testProjectName);
+            Utilities.cleanBuildTestProject();
+            initialized = true;
+        }
     }
 
     /**

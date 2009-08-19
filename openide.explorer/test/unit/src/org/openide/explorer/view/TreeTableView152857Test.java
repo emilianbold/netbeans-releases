@@ -162,7 +162,7 @@ public class TreeTableView152857Test extends NbTestCase {
         Thread.sleep(1000);
         assertEquals("1", ta.getChildAt(0).toString());
         assertEquals("3", ta.getChildAt(1).toString());
-        assertEquals( "2", ta.getChildAt(2).toString());
+        assertEquals("2", ta.getChildAt(2).toString());
         assertEquals("2", ta.getChildAt(3).toString());
         assertEquals("1", ta.getChildAt(4).toString());
 
@@ -177,7 +177,7 @@ public class TreeTableView152857Test extends NbTestCase {
         Thread.sleep(1000);
         assertEquals("1", ta.getChildAt(0).toString());
         assertEquals("3", ta.getChildAt(1).toString());
-        assertEquals( "2", ta.getChildAt(2).toString());
+        assertEquals("2", ta.getChildAt(2).toString());
         assertEquals("2", ta.getChildAt(3).toString());
         assertEquals("1", ta.getChildAt(4).toString());
 
@@ -188,13 +188,63 @@ public class TreeTableView152857Test extends NbTestCase {
         assertEquals("1", view.getTableValueAt(5));
         Thread.sleep(1000);
 
+        view.noSorting();
+        Thread.sleep(1000);
+        assertEquals("1", ta.getChildAt(0).toString());
+        assertEquals("3", ta.getChildAt(1).toString());
+        assertEquals("2", ta.getChildAt(2).toString());
+        assertEquals("2", ta.getChildAt(3).toString());
+        assertEquals("1", ta.getChildAt(4).toString());
+
+        assertEquals("1", view.getTableValueAt(1));
+        assertEquals("3", view.getTableValueAt(2));
+        assertEquals("2", view.getTableValueAt(3));
+        assertEquals("2", view.getTableValueAt(4));
+        assertEquals("1", view.getTableValueAt(5));
+        Thread.sleep(1000);
+
         d.setVisible(false);
+    }
+
+    public void testSetChildren() throws InterruptedException {
+        TestNode root = new TestNode(Children.LEAF, "root");
+        TreeNode ta = Visualizer.findVisualizer(root);
+        view = new TTV(root);
+        DialogDescriptor dd = new DialogDescriptor(view, "", false, null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.setVisible(true);
+        Thread.sleep(1000);
+        assertEquals(0, ta.getChildCount());
+
+        view.sort(0, false);
+        root.doSetChildren(new StringKeys("0", "1", "2"));
+        Thread.sleep(1000);
+        assertEquals(3, ta.getChildCount());
+        assertEquals("2", view.getTableValueAt(1));
+        assertEquals("1", view.getTableValueAt(2));
+        assertEquals("0", view.getTableValueAt(3));
+
+        view.sort(0, true);
+        root.doSetChildren(new StringKeys("5", "6"));
+        Thread.sleep(1000);
+        assertEquals(2, ta.getChildCount());
+        assertEquals("5", view.getTableValueAt(1));
+        assertEquals("6", view.getTableValueAt(2));
+
+        root.doSetChildren(Children.LEAF);
+        Thread.sleep(1000);
+        assertEquals(0, ta.getChildCount());
     }
 
     private static class StringKeys extends Keys<String> {
 
         public StringKeys (boolean lazy) {
             super (lazy);
+        }
+
+        public StringKeys(String ...keys) {
+            super();
+            setKeys(keys);
         }
 
         @Override
@@ -255,6 +305,24 @@ public class TreeTableView152857Test extends NbTestCase {
                 Exceptions.printStackTrace(ex);
             }
         }
+
+        void noSorting() {
+            try {
+                Method noSorting = view.getClass().getDeclaredMethod("noSorting");
+                noSorting.setAccessible(true);
+                noSorting.invoke(view);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     private static class TestNode extends AbstractNode {
@@ -267,6 +335,10 @@ public class TreeTableView152857Test extends NbTestCase {
         public TestNode (Children children, String name) {
             super (children);
             setName (name);
+        }
+
+        void doSetChildren(Children ch) {
+            setChildren(ch);
         }
 
         @Override

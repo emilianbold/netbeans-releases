@@ -137,8 +137,12 @@ implements Runnable {
                         DataOutputStream dos = new DataOutputStream(out);
                         ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
                         dos.close();
-                        Object[] params = new Object[]{out.toByteArray(), time};
-                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                        if (dos.size() > 0) {
+                            Object[] params = new Object[]{out.toByteArray(), time};
+                            Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                        } else {
+                            LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                        }
                         stoppable = null;
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);

@@ -70,6 +70,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
+import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -352,7 +353,7 @@ public class SvnClientExceptionHandler {
        
         ProxySettings proxySettings = new ProxySettings();
         String proxyHost = proxySettings.getHttpsHost();
-        int proxyPort = proxySettings.getHttpsPort();                                     
+        int proxyPort = proxySettings.getHttpsPort();
         if(proxyHost.equals("")) {                                              // NOI18N
             proxyHost = proxySettings.getHttpHost();
             proxyPort = proxySettings.getHttpPort();
@@ -374,7 +375,7 @@ public class SvnClientExceptionHandler {
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
-                connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
+                connectProxy(proxySocket, host, port, proxyHost, proxyPort, proxySettings.getUsername(), proxySettings.getPassword());
             } 
         }
                         
@@ -422,10 +423,14 @@ public class SvnClientExceptionHandler {
         return url;
     }
 
-    private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort) throws IOException {
-      
-      String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n"; // NOI18N
-        
+    private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort, String userName, String password) throws IOException {
+      StringBuilder sb = new StringBuilder("CONNECT ").append(host).append(":").append(port).append(" HTTP/1.0\r\n") //NOI18N
+              .append("Connection: Keep-Alive\r\n");                    //NOI18N
+      if (userName != null && password != null && userName.length() > 0) {
+          Subversion.LOG.info("connectProxy: adding proxy authorization field"); //NOI18N
+          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes())).append("\r\n"); //NOI18N
+      }
+      String connectString = sb.append("\r\n").toString();
       byte connectBytes[];
       try {
          connectBytes = connectString.getBytes(CHARSET_NAME);

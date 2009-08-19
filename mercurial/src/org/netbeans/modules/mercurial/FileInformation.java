@@ -371,8 +371,14 @@ public class FileInformation implements Serializable {
                 if (directChild) {
                     counters[counterType + 1 + COUNTER_MAX_INDEX] += value;
                 }
-                // XXX this might accidentaly fail
-                assert counters[counterType] >= 0;
+                if (counters[counterType] < 0) {
+                    Mercurial.LOG.warning("addToCounter: negative counter value: " + counterType + "=" + counters[counterType]); //NOI18N
+                }
+                boolean assertEnabled = false;
+                assert assertEnabled = true;
+                if (assertEnabled && counters[counterType] < 0) {
+                    throw new IllegalArgumentException("Negative counter value"); //NOI18N
+                }
                 importantCounterChanged = mostImportantCounter != getMostImportantCounter(false, Collections.EMPTY_SET);
             }
         }
