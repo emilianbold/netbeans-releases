@@ -145,13 +145,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
     public boolean shutdown() {
         isRunning = false;
-        boolean success = true;
-        if (sqlStorage != null) {
-            success &= sqlStorage.shutdown();
-        }
         funcCache.clear();
         nodeCache.clear();
-        return success;
+        return true;
     }
 
 ////////////////////////////////////////////////////////////////////////////////

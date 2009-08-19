@@ -79,7 +79,7 @@ public final class DataUtil {
             } catch (NumberFormatException ex) {
             }
         }
-        return 0;
+        return defaultValue;
     }
 
     /**
@@ -113,6 +113,6 @@ public final class DataUtil {
             } catch (NumberFormatException ex) {
             }
         }
-        return 0f;
+        return defaultValue;
     }
 }

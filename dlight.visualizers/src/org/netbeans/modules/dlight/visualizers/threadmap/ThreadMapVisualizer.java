@@ -98,12 +98,14 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public void showStack(long timestamp, long threadID) {
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getStackTrace(timestamp, threadID));
+            public ThreadStackVisualizer showStack(long timestamp, long threadID, long startTime) {
+                ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getStackTrace(timestamp, threadID), startTime);
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
                 tc.requestVisible();
+                tc.requestFocus(true);
+                return visualizer;
             }
         });
 

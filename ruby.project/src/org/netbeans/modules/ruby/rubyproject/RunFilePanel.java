@@ -56,7 +56,7 @@ import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 final class RunFilePanel extends javax.swing.JPanel {
 
     /** Creates new form RunFilePanel */
-    public RunFilePanel(RunFileActionProvider.RunFileArgs args) {
+    public RunFilePanel(RunFileActionProvider.RunFileArgs args, boolean allowPlatformChange) {
         initComponents();
         initJvmArgs();
         PlatformComponentFactory.addPlatformChangeListener(platformCombo, new PlatformComponentFactory.PlatformChangeListener() {
@@ -69,11 +69,13 @@ final class RunFilePanel extends javax.swing.JPanel {
             jvmArgsField.setText(args.getJvmArgs());
             platformCombo.setSelectedItem(args.getPlatform());
         }
-
+        platformCombo.setEnabled(allowPlatformChange);
+        platformLabel.setEnabled(allowPlatformChange);
+        managePlatformsButton.setEnabled(allowPlatformChange);
     }
 
     RunFileActionProvider.RunFileArgs getArgs() {
-        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(), getJvmArgs(), displayDialog.isSelected());
+        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(), getJvmArgs(), !displayDialog.isSelected());
     }
     
     private void initJvmArgs() {

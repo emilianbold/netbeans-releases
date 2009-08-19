@@ -83,8 +83,11 @@ public class GdbVersionPeculiarity {
         }
     }
 
+    private static final boolean DISABLE_PENDING = Boolean.getBoolean("gdb.breakpoints.pending.disabled"); //NOI18N
+
     public String breakPendingFlag() {
-        if (version >= 6.8) {
+        if (!DISABLE_PENDING
+                && (version >= 6.8 || platform == PlatformTypes.PLATFORM_MACOSX)) {
             return "-f "; // NOI18N
         } else {
             return "";
