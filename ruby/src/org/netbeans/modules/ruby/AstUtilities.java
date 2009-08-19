@@ -1545,16 +1545,18 @@ public class AstUtilities {
     /**
      * Gets the root node from the given <code>parserResult</code>. May return
      * <code>null</code> if <code>parserResult</code> was not a <code>RubyParserResult</code> or
-     * did not have a root node.
+     * did not have a root node. For example for parts of .erb files the parserResult might
+     * (validly) be RhtmlParser$FakeParserResult, in which case this method returns <code>null</code>.
+     * 
      * @param parserResult 
      * @return the root node or <code>null</code>.
      */
     public static Node getRoot(Parser.Result parserResult) {
         if (!(parserResult instanceof RubyParseResult)) {
-            if (LOGGER.isLoggable(Level.WARNING)) {
+            if (LOGGER.isLoggable(Level.FINE)) {
                 String msg = "Expected RubyParseResult, but got " + parserResult; //NOI18N
                 // log an exception too see the stack trace
-                LOGGER.log(Level.WARNING, msg, new Exception(msg));
+                LOGGER.log(Level.FINE, msg, new Exception(msg));
             }
             return null;
         }
