@@ -177,7 +177,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
                 isMyFaces = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
             }            
-            
+
+            FileObject webInf = webModule.getWebInf();
+            if (webInf == null) {
+                webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
+            }
+            assert webInf != null;
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
