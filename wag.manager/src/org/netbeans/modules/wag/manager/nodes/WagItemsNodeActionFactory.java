@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,83 +31,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.wag.manager.nodes;
 
-import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.wag.manager.actions.AddSearchAction;
+import org.netbeans.modules.wag.manager.actions.DeleteSearchAction;
+import org.netbeans.modules.wag.manager.actions.NextResultsAction;
+import org.netbeans.modules.wag.manager.actions.PreviousResultsAction;
+import org.netbeans.modules.wag.manager.actions.RefineSearchAction;
+import org.netbeans.modules.wag.manager.actions.RefreshSearchAction;
 import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
+import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
-import org.openide.nodes.AbstractNode;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author peterliu
  */
-@ServicesTabNodeRegistration(
-    position=215,
-    name="wagRootNode",
-    displayName="org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway",
-    shortDescription="org.netbeans.modules.wag.manager.nodes.Bundle#Web_API_Gateway_Desc",
-    iconResource="org/netbeans/modules/wag/manager/resources/wag.png"
-)
-public class WagRootNode extends AbstractNode {
-    
-    public WagRootNode() {
-        this(new WagRootNodeChildren(), new InstanceContent());
+public class WagItemsNodeActionFactory {
+
+    private static WagItemsNodeActionFactory instance;
+
+    private WagItemsNodeActionFactory() {
     }
 
-    WagRootNode(WagRootNodeChildren children, InstanceContent content) {
-        super(children, new AbstractLookup(content));
-    }
-    
-    @Override
-    public String getName() {
-        return "wagRootNode";
-    }
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway");
-    }
-    
-    @Override
-    public String getShortDescription() {
-        return NbBundle.getMessage(WagRootNode.class, "Web_API_Gateway_Desc");
+    public synchronized static WagItemsNodeActionFactory getInstance() {
+        if (instance == null) {
+            instance = new WagItemsNodeActionFactory();
+        }
+
+        return instance;
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(AddSearchAction.class),
-            SystemAction.get(ViewZemblyApiBrowserAction.class)
+    public Action[] getActions(Class type) {
+        if (type == WagSearchResults.class) {
+            return new Action[]{
+                        SystemAction.get(AddSearchAction.class),
+                        SystemAction.get(ViewZemblyApiBrowserAction.class)
+                    };
+        } else if (type == WagSearchResult.class) {
+            return new Action[]{
+                        SystemAction.get(RefineSearchAction.class),
+                        SystemAction.get(NextResultsAction.class),
+                        SystemAction.get(PreviousResultsAction.class),
+                        SystemAction.get(RefreshSearchAction.class),
+                        SystemAction.get(DeleteSearchAction.class)
+                    };
+        }
 
-        };
+        return new Action[]{};
     }
-    
-    static final java.awt.Image ICON =
-            ImageUtilities.loadImage( "org/netbeans/modules/wag/manager/resources/wag.png" ); //NOI18N
-    
-    @Override
-    public Image getIcon(int type){
-        return ICON;
-    }
-    
-    @Override
-    public Image getOpenedIcon(int type){
-        return ICON;
-    }
-   
 }

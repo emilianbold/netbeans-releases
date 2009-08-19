@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,117 +31,76 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.wag.manager.model;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.util.Collection;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author peterliu
  */
-public class WagSearchResult extends WagItems<WagService> implements Comparable<WagSearchResult> {
+public class WagApi extends WagItems<WagService> implements Comparable<WagApi> {
+ 
+    public static final String PROP_NAME = "api";
 
-    public static final String PROP_NAME = "searchResult";
-    private String query;
-    private int maxResults;
-    private int currentIndex;
-
-    static {
-        try {
-            BeanInfo info = Introspector.getBeanInfo(WagSearchResult.class);
-            PropertyDescriptor[] propertyDescriptors = info.getPropertyDescriptors();
-            for (int i = 0; i < propertyDescriptors.length; ++i) {
-                PropertyDescriptor pd = propertyDescriptors[i];
-                if (pd.getName().equals("items") || pd.getName().equals("pps")) {    //NOI18N
-                    pd.setValue("transient", Boolean.TRUE);
-                }
-            }
-        } catch (IntrospectionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+    private String name;
+    private String path;
+ 
+    public WagApi(String name, String path) {
+        this.name = name;
+        this.path = path;
     }
 
-    public WagSearchResult(String query, int maxResults) {
-        super();
-        this.query = query;
-        this.maxResults = maxResults;
+    public String getName() {
+        return name;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public String getDisplayName() {
-        return getQuery();
+        return getName();
     }
 
     public String getDescription() {
-        return getQuery();
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    public void setMaxResults(int maxResults) {
-        this.maxResults = maxResults;
-    }
-
-  
-    public void next() {
-        currentIndex += maxResults;
-        refresh();
-    }
-
-    public void previous() {
-        currentIndex -= maxResults;
-
-        if (currentIndex < 0) {
-            currentIndex = 0;
-        }
-
-        refresh();
+        return getPath();
     }
 
     protected Collection<WagService> loadItems() {
-        return ZemblySession.getInstance().getSearchEngine().search(query, maxResults, currentIndex);
+        return ZemblySession.getInstance().getContentRetriever().getServices(path);
     }
 
     protected String getPropName() {
         return PROP_NAME;
     }
-
+    
     @Override
     public int hashCode() {
-        return query.hashCode();
+        return name.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof WagSearchResult) {
-            return query.equals(((WagSearchResult) obj).getQuery());
+            return name.equals(((WagApi) obj).getName());
         }
 
         return false;
     }
 
-    public int compareTo(WagSearchResult result) {
-        return query.compareTo(result.getQuery());
+    public int compareTo(WagApi result) {
+        return name.compareTo(result.getName());
+    }
+
+    public String toString() {
+        return "name: " + name + " path: " + path;
     }
 }

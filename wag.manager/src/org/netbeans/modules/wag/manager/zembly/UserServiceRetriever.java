@@ -36,95 +36,81 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.wag.manager.search;
+package org.netbeans.modules.wag.manager.zembly;
 
+import com.zembly.gateway.client.Zembly;
+import com.zembly.oauth.api.Parameter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.modules.wag.manager.model.WagDomain;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
-import com.zembly.oauth.api.Parameter;
-import com.zembly.gateway.client.Zembly;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 /**
  *
  * @author peterliu
  */
-public class SearchEngine {
+public class UserServiceRetriever {
 
-    private static final String BASE_URL = "http://zembly.com/things/";
-    private static final String HTTP_METHOD = "POST";
-    private static final String SEARCH_ITEM_URI = "platform/repository/SearchItems;exec";
+    private static final String GET_USER_OWNED_ITEMS_URI = "platform.user.GetUserOwnedItems"; // NOI18N
     private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
-    private static final String SEARCH_STRING_PARAM = "searchString";
-    private static final String SEARCH_FOR = "searchFor";
-    private static final String START_INDEX = "startIndex";
-    private static final String MAX_RESULTS_PARAM = "maxResults";
+    private static final String ITEM_TYPE_PARAM = "itemType";     //NOI18N
+    private static final String ITEM_TYPE_VALUE = "[\"SERVICE\"]";    //NOI18N
+    private static final String SHOW_DRAFTS_PARAM = "showDrafts";   //NOI18N
+    private static final String SHOW_DRAFTS_VALUE = "true";        //NOI18N
+    private static final String USERID_PARAM = "userid";        //NOI18N
+    private static final String NAME_ATTR = "name";     //NOI18N
+    private static final String PATH_ATTR = "path";     //NOI18N
+    private static final String ITEMS_ATTR = "items";   //NOI18N
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
     private static final String CONTENT_TYPE_ATTR = "contentType";
-    private static final String ITEMS_ATTR = "items";
-    private static final String PATH_ATTR = "path";
-    private static final String NAME_ATTR = "name";
     private static final String URL_ATTR = "url";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
-    private static final String JAVA_SERVICE_CONTENT_TYPE = "application/java";
-    private static SearchEngine instance;
+
     private Zembly zembly;
 
-    private SearchEngine() {
-        try {
-            zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");
-        } catch (Exception ex) {
-            // ignore
-        }
+    public UserServiceRetriever(Zembly zembly) {
+        this.zembly = zembly;
     }
 
-    public static SearchEngine getInstance() {
-        if (instance == null) {
-            instance = new SearchEngine();
-        }
-
-        return instance;
-    }
-
-    public List<WagService> search(String query, int maxResults, int startIndex) {
+    public Collection<WagService> getYourServices() {
         try {
-            List<Parameter> params = new ArrayList<Parameter>();
-            params.add(Parameter.create(SEARCH_STRING_PARAM, query));
-            params.add(Parameter.create(MAX_RESULTS_PARAM, Integer.toString(maxResults)));
-            params.add(Parameter.create(SEARCH_FOR, "SERVICE"));
-            params.add(Parameter.create(START_INDEX, Integer.toString(startIndex)));
-            String result = zembly.callService(SEARCH_ITEM_URI, params);
+            String userid = ZemblySession.getInstance().getUserInfo().getUserid();
+            String result = zembly.callService(GET_USER_OWNED_ITEMS_URI,
+                    new String[][]{
+                        {USERID_PARAM, userid},
+                        {ITEM_TYPE_PARAM, ITEM_TYPE_VALUE},
+                        {SHOW_DRAFTS_PARAM, SHOW_DRAFTS_VALUE}
+                    });
+            System.out.println("your domains: " + result);
 
-            return parse(result);
+            return parseYourServices(result);
         } catch (Exception ex) {
-            handleException(ex);
+            ex.printStackTrace();
         }
 
         return Collections.emptyList();
     }
 
-    private List<WagService> parse(String data) {
+    private Collection<WagService> parseYourServices(String data) {
         try {
-            //System.out.println("data = " + data);
-            List<WagService> services = new ArrayList<WagService>();
-            List<Parameter> params = new ArrayList<Parameter>();
+            Collection<WagService> services = new ArrayList<WagService>();
+            Collection<Parameter> params = new ArrayList<Parameter>();
 
             JSONTokener parser = new JSONTokener(data);
             JSONObject obj = (JSONObject) parser.nextValue();
-            JSONArray items = obj.getJSONArray(ITEMS_ATTR);
+            JSONArray items = (JSONArray) obj.getJSONArray(ITEMS_ATTR);
 
-            for (int i = 0; i < items.length(); i++) {
+           for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
 
                 WagService svc = new WagService();
@@ -160,16 +146,12 @@ public class SearchEngine {
                 }
             }
 
+
             return services;
         } catch (Exception ex) {
-            handleException(ex);
+            ex.printStackTrace();
         }
 
         return Collections.emptyList();
-    }
-
-    private void handleException(Exception ex) {
-        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
-        DialogDisplayer.getDefault().notify(msg);
     }
 }
