@@ -44,26 +44,25 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.wag.manager.model.WagItems;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.model.WagSearchResult;
-import org.netbeans.modules.wag.manager.model.WagSearchResult.State;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
-public class WagSearchResultNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
+public class WagItemsNodeChildren<T extends WagItems, C extends WagItems>
+        extends Children.Keys<Object> implements PropertyChangeListener {
 
-    private static final String SEARCHING_KEY = "Searching";    //NOI18N
+    private static final String LOADING_KEY = "Loading...";    //NOI18N
 
-    private WagSearchResult searchResult;
+    protected T wagItems;
 
-    public WagSearchResultNodeChildren(WagSearchResult result) {
-        searchResult = result;
-        searchResult.addPropertyChangeListener(WeakListeners.propertyChange(this, searchResult));
+    public WagItemsNodeChildren(T wagItems) {
+        this.wagItems = wagItems;
+        wagItems.addPropertyChangeListener(WeakListeners.propertyChange(this, wagItems));
     }
 
     @Override
@@ -77,17 +76,16 @@ public class WagSearchResultNodeChildren extends Children.Keys<Object> implement
     }
 
     protected void updateKeys() {
-        switch (searchResult.getState()) {
+        switch (wagItems.getState()) {
             case UNINITIALIZED:
-                searchResult.refresh();
+                wagItems.refresh();
                 break;
-            case SEARCHING:
-                setKeys(Arrays.asList(SEARCHING_KEY));
+            case LOADING:
+                setKeys(Arrays.asList(LOADING_KEY));
                 break;
-            case FOUND:
+            case INITIALIZED:
                 ArrayList<Object> keys = new ArrayList<Object>();
-                Collection<WagService> services = searchResult.getServices();
-                keys.addAll(services);
+                keys.addAll(wagItems.getItems());
                 setKeys(keys);
                 break;
             default:
@@ -103,20 +101,21 @@ public class WagSearchResultNodeChildren extends Children.Keys<Object> implement
     }
 
     protected Node[] createNodes(Object key) {
-        if (key instanceof WagService) {
-            WagService svc = (WagService) key;
-            return new Node[] {new WagServiceNode(svc)};
+        if (key instanceof WagItems) {
+            return new Node[] {new WagItemsNode((WagItems) key)};
+        } else if (key instanceof WagService) {
+            return new Node[] {new WagServiceNode((WagService) key)};
         } else if (key instanceof String) {
-            if (key.equals(SEARCHING_KEY)) {
-                return getSearchingNode();
+            if (key.equals(LOADING_KEY)) {
+                return getLoadingNode();
             }
         }
         return new Node[0];
     }
 
-    private Node[] getSearchingNode() {
+    private Node[] getLoadingNode() {
         AbstractNode node = new AbstractNode(Children.LEAF);
-        node.setName(NbBundle.getMessage(WagSearchResultNodeChildren.class, "Searching"));
+        node.setName(NbBundle.getMessage(WagItemsNodeChildren.class, "Loading")); //NOI18N
         node.setIconBaseWithExtension("org/netbeans/modules/wag/manager/resources/wait.gif"); // NOI18N
         return new Node[] { node };
     }
