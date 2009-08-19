@@ -994,14 +994,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             int viewColumn = columnModel.getColumnIndexAtX(e.getX());
             int col = table.convertColumnIndexToModel(viewColumn);
             if (col == 1){
-                ThreadStateColumnImpl threadData = manager.getThreadData(row);
+                final ThreadStateColumnImpl threadData = manager.getThreadData(row);
                 Rectangle rect = table.getCellRect(rowIndex, viewColumn, false);
                 Point point = new Point(e.getPoint().x - rect.x, e.getPoint().y - rect.y);
                 int index = ThreadStateColumnImpl.point2index(manager, this, threadData, point, rect.width);
                 if (index >= 0) {
-                    MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
+                    final MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
                     if (prefferedState != null) {
-                        List<Integer> showThreadsID = new ArrayList<Integer>();
+                        final List<Integer> showThreadsID = new ArrayList<Integer>();
                         showThreadsID.add(manager.getThreadData(row).getThreadID());
                         for(Integer i : filteredDataToDataIndex) {
                             if (i.intValue() != row) {
@@ -1017,7 +1017,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 //                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    ThreadStackVisualizer v = detailsCallback.showStack(query);
+                                    ThreadDumpQuery  query = new ThreadDumpQuery(threadData.getThreadID(), state,  showThreadsID, prefferedState,
+                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
+                                    ThreadStackVisualizer v = detailsCallback.showStack(state.getTimeStamp(), query);
                                     v.selectRootNode();
                                 }
                             });
@@ -1215,7 +1217,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        public void showStack(ThreadDumpQuery query);
+        public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
