@@ -99,7 +99,7 @@ public class LineAnnotationInfo {
                 int maxColumnWith = getFileAnnotationInfo().getMaxColumnWidth()[col];
                 String formattedMetric = SPACES.substring(0, maxColumnWith - metric.length()) + metric;
                 if (annotation.length() > 0) {
-                    annotation += " ";
+                    annotation += " "; // NOI18N
                 }
                 annotation += formattedMetric;
                 col++;
