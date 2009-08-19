@@ -8,7 +8,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.modules.dlight.annotationsupport.AnnotatedSourceSupportImpl.FileAnnotationInfo;
 
 /**
  *

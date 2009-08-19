@@ -39,8 +39,6 @@ import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.dlight.annotationsupport.AnnotatedSourceSupportImpl.FileAnnotationInfo;
-import org.netbeans.modules.dlight.annotationsupport.AnnotatedSourceSupportImpl.LineAnnotationInfo;
 
 /**
  *

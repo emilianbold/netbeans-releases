@@ -97,7 +97,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                         fileAnnotationInfo.setFilePath(filePath);
                         activeAnnotations.put(filePath, fileAnnotationInfo);
                     }
-                    LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo();
+                    LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo(fileAnnotationInfo);
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     String annotation = "";
@@ -177,17 +177,18 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 if (fileAnnotationInfo != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
+                            JEditorPane jEditorPane = activatedEditorPane(node);
                             if (!fileAnnotationInfo.isAnnotated()) {
+                                fileAnnotationInfo.setEditorPane(jEditorPane);
                                 // Calculate line numbers if only offset is known
                                 log.fine("Annotating " + filePath + "\n"); // NOI18N)
                                 List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
                                 for (LineAnnotationInfo line : lines) {
-                                    line.setLine(node);
+                                    //line.setLine(jEditorPane);
                                     log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
                                 }
                                 fileAnnotationInfo.setAnnotated(true);
                             }
-                            JEditorPane jEditorPane = activatedEditorPane(node);
                             AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
                         }
                     });
@@ -261,160 +262,4 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         return true;
     }
 
-    class FileAnnotationInfo {
-
-        private String filePath;
-        private String tooltip;
-        private List<LineAnnotationInfo> lineAnnotationInfo;
-        private boolean annotated;
-
-        public FileAnnotationInfo() {
-            lineAnnotationInfo = new ArrayList<LineAnnotationInfo>();
-            annotated = false;
-        }
-
-        /**
-         * @return the filePath
-         */
-        public String getFilePath() {
-            return filePath;
-        }
-
-        /**
-         * @param filePath the filePath to set
-         */
-        public void setFilePath(String filePath) {
-            this.filePath = filePath;
-        }
-
-        /**
-         * @return the lineAnnotationInfo
-         */
-        public List<LineAnnotationInfo> getLineAnnotationInfo() {
-            return lineAnnotationInfo;
-        }
-
-        public LineAnnotationInfo getLineAnnotationInfo(int line) {
-            for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
-                if (lineInfo.getLine() == line) {
-                    return lineInfo;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * @param lineAnnotationInfo the lineAnnotationInfo to set
-         */
-        public void setLineAnnotationInfo(List<LineAnnotationInfo> lineAnnotationInfo) {
-            this.lineAnnotationInfo = lineAnnotationInfo;
-        }
-
-        /**
-         * @return the isAnnotated
-         */
-        public boolean isAnnotated() {
-            return annotated;
-        }
-
-        /**
-         * @param isAnnotated the isAnnotated to set
-         */
-        public void setAnnotated(boolean annotated) {
-            this.annotated = annotated;
-        }
-
-        /**
-         * @return the tooltip
-         */
-        public String getTooltip() {
-            return tooltip;
-        }
-
-        /**
-         * @param tooltip the tooltip to set
-         */
-        public void setTooltip(String tooltip) {
-            this.tooltip = tooltip;
-        }
-    }
-
-    class LineAnnotationInfo {
-
-        private int line;
-        private long offset;
-        private String annotation;
-        private String annotationToolTip;
-
-        /**
-         * @return the line
-         */
-        public int getLine() {
-            return line;
-        }
-
-        public void setLine(Node node) {
-            int sourceLine = getLine();
-            if (sourceLine >= 0) {
-                return;
-            }
-            JEditorPane currentPane = activatedEditorPane(node);
-            try {
-                sourceLine = Utilities.getLineOffset((BaseDocument) currentPane.getDocument(), (int) offset);
-                sourceLine++;
-            } catch (BadLocationException ble) {
-                sourceLine = -1;
-            }
-            setLine(sourceLine);
-        }
-
-        /**
-         * @param line the line to set
-         */
-        public void setLine(int line) {
-            this.line = line;
-        }
-
-        /**
-         * @return the annotation
-         */
-        public String getAnnotation() {
-            return annotation;
-        }
-
-        /**
-         * @param annotation the annotation to set
-         */
-        public void setAnnotation(String annotation) {
-            this.annotation = annotation;
-        }
-
-        /**
-         * @return the annotationToolTip
-         */
-        public String getAnnotationToolTip() {
-            return annotationToolTip;
-        }
-
-        /**
-         * @param annotationToolTip the annotationToolTip to set
-         */
-        public void setAnnotationToolTip(String annotationToolTip) {
-            this.annotationToolTip = annotationToolTip;
-        }
-
-        /**
-         * @return the offset
-         */
-        public long getOffset() {
-            return offset;
-        }
-
-        /**
-         * @param offset the offset to set
-         */
-        public void setOffset(long offset) {
-            this.offset = offset;
-        }
-    }
 }
