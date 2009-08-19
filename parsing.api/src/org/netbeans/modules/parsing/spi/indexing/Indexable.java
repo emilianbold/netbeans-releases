@@ -168,9 +168,9 @@ public final class Indexable {
         @Override
         public Context createContext(FileObject indexFolder, URL rootURL, 
                 String indexerName, int indexerVersion, IndexFactoryImpl factory,
-                boolean followUpJob, boolean checkForEditorModifications, boolean allFilesJob,
+                boolean followUpJob, boolean checkForEditorModifications,
                 boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, allFilesJob, sourceForBinaryRoot, cancelRequest);
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, sourceForBinaryRoot, cancelRequest);
         }
 
         @Override
@@ -214,6 +214,11 @@ public final class Indexable {
         @Override
         public IndexingSupport context_getAttachedIndexingSupport(Context context) {
             return context.getAttachedIndexingSupport();
+        }
+
+        @Override
+        public void setAllFilesJob(final Context context, final boolean allFilesJob) {
+            context.setAllFilesJob(allFilesJob);
         }
     }
 

@@ -67,7 +67,7 @@ public final class Context {
     private final int indexerVersion;
     private final boolean followUpJob;
     private final boolean checkForEditorModifications;
-    private final boolean allFilesJob;
+    private boolean allFilesJob;
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
     
@@ -81,7 +81,6 @@ public final class Context {
              final URL rootURL, final String indexerName, final int indexerVersion,
              final IndexFactoryImpl factory, boolean followUpJob,
              final boolean checkForEditorModifications,
-             final boolean allFilesJob,
              final boolean sourceForBinaryRoot,
              final CancelRequest cancelRequest
     ) throws IOException {
@@ -97,7 +96,6 @@ public final class Context {
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
         this.checkForEditorModifications = checkForEditorModifications;
-        this.allFilesJob = allFilesJob;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
     }
@@ -241,6 +239,10 @@ public final class Context {
 
     IndexingSupport getAttachedIndexingSupport() {
         return this.indexingSupport;
+    }
+
+    void setAllFilesJob (final boolean allFilesJob) {
+        this.allFilesJob = allFilesJob;
     }
 
     static String getIndexerPath (final String indexerName, final int indexerVersion) {
