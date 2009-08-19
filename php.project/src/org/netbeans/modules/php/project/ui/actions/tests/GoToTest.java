@@ -43,10 +43,11 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
-import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.gototest.TestLocator;
@@ -116,16 +117,16 @@ public class GoToTest implements TestLocator {
     private LocationResult findSource(PhpProject project, FileObject testFo) {
         FileObject sources = getSources(project);
         assert sources != null : "Project sources must be found";
-        PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
-        assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
-        Collection<? extends String> classNames = unitSupport.getClassNames(testFo);
-        for (String clsName : classNames) {
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        assert editorSupport != null : "Editor support must exist";
+        Collection<PhpClass> classes = editorSupport.getClasses(testFo);
+        for (PhpClass phpClass : classes) {
+            String clsName = phpClass.getName();
             if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
                 int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
                 assert lastIndexOf != -1;
                 String srcClassName = clsName.substring(0, lastIndexOf);
-                Collection<? extends FileObject> files = unitSupport.filesForClassName(
-                        sources, srcClassName);
+                Collection<FileObject> files = editorSupport.filesForClass(sources, new PhpClass(srcClassName, srcClassName, -1));
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(sources, fileObject)) {
@@ -140,13 +141,13 @@ public class GoToTest implements TestLocator {
     public static LocationResult findTest(PhpProject project, FileObject srcFo) {
         FileObject tests = getTests(project);
         if (tests != null) {
-            PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
-            assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
-            Collection<? extends String> classNames = unitSupport.getClassNames(srcFo);
-            for (String clsName : classNames) {
+            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+            assert editorSupport != null : "Editor support must exist";
+            Collection<PhpClass> classes = editorSupport.getClasses(srcFo);
+            for (PhpClass phpClass : classes) {
+                String clsName = phpClass.getName();
                 String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
-                Collection<? extends FileObject> files = unitSupport.filesForClassName(
-                        tests, testClsName);
+                Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsName, -1));
                 for (FileObject fileObject : files) {
                     if (CommandUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(tests, fileObject)) {
