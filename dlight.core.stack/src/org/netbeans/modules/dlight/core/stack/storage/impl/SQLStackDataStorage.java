@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
@@ -473,7 +474,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         return select;
     }
 
-    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
+    public ThreadDump getThreadDump(ThreadDumpQuery query) {
         ThreadDumpImpl result = null;
 
         try {
@@ -499,8 +500,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
      //               "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
                                    "thread_id = ? and time_stamp <= ? "); // NOI18N
 
-            statement.setLong(1, threadID);
-            statement.setLong(2, timestamp);
+            statement.setLong(1, query.getThreadID());
+            statement.setLong(2, query.getStartTime() - query.getThreadState().getTimeStamp());
             //statement.setInt(3, threadState);
 
             ResultSet rs = statement.executeQuery();

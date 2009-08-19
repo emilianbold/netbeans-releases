@@ -37,42 +37,73 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 /**
- *
- * @author mt154047
+ * The query to be used to get ThreadDump
+ * 
+ * @author Maria Tishkova
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider.class)
-public class CndPathMapperProvider implements PathMapperProvider{
+public final class ThreadDumpQuery {
+    private final long threadID;
+    private final ThreadState threadState;
+    private final List<Integer> showThreads;
+    private final MSAState prefferedState;
+    private final boolean isMSAMode;
+    private final boolean isFullMode;
+    private final long startTime;
 
-    public PathMapper getPathMapper(ExecutionEnvironment env) {
-         PathMap mapper = HostInfoProvider.getMapper(env);
-         return new PathMapperImpl(mapper);
+
+    /**
+     * The query to filter out the data for stacks
+     * @param threadID thread id
+     * @param threadState thread state (to get timestamp)
+     * @param showThreads the list of the threads to get thread dump for
+     * @param prefferedState the state we would like to get stack for
+     * @param isMSAMode 
+     * @param isFullMode
+     * @param startTime start time
+     */
+    public ThreadDumpQuery(long threadID, ThreadState threadState, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime){
+        this.threadID = threadID;
+        this.threadState = threadState;
+        this.showThreads = showThreads;
+        this.prefferedState = prefferedState;
+        this.isMSAMode = isMSAMode;
+        this.isFullMode = isFullMode;
+        this.startTime = startTime;
     }
 
-    private class PathMapperImpl implements PathMapper{
-        private final PathMap pathMap;
-
-        public PathMapperImpl(PathMap pathMap) {
-            this.pathMap = pathMap;
-        }
-
-        public String getRemotePath(String localPath) {
-            return pathMap.getRemotePath(localPath,true);
-        }
-
-        public String getLocalPath(String remotePath) {
-            return pathMap.getLocalPath(remotePath,true);
-        }
-
+    public boolean isFullMode() {
+        return isFullMode;
     }
 
+    public boolean isMSAMode() {
+        return isMSAMode;
+    }
+
+    public MSAState getPrefferedState() {
+        return prefferedState;
+    }
+
+    public List<Integer> getShowThreads() {
+        return showThreads;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public ThreadState getThreadState() {
+        return threadState;
+    }
+
+    public long getThreadID() {
+        return threadID;
+    }
+
+    
 }
