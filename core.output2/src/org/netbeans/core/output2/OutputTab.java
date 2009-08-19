@@ -690,8 +690,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private static final int ACTION_SMALLERFONT = 16;
     private static final int ACTION_FONTTYPE = 17;
     private static final int ACTION_FILTER = 18;
+    private static final int ACTION_PASTE = 19;
 
     Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
+    Action pasteAction = new TabAction(ACTION_PASTE, "ACTION_PASTE"); //NOI18N
     Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
     Action saveAsAction = new TabAction(ACTION_SAVEAS, "ACTION_SAVEAS"); //NOI18N
     Action closeAction = new TabAction(ACTION_CLOSE, "ACTION_CLOSE"); //NOI18N
@@ -716,7 +718,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action prevTabAction = new TabAction(ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
-        copyAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
+        copyAction, pasteAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
         wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
         clearAction, closeAction,};
 
@@ -793,6 +795,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             switch (id) {
                 case ACTION_COPY:
                     getOutputPane().copy();
+                    break;
+                case ACTION_PASTE:
+                    getOutputPane().paste();
                     break;
                 case ACTION_WRAP:
                     boolean wrapped = getOutputPane().isWrapped();
@@ -873,6 +878,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     assert false;
             }
         }
+    }
+
+    @Override
+    public void setInputVisible(boolean val) {
+        super.setInputVisible(val);
+        pasteAction.setEnabled(val);
     }
 
     private boolean validRegExp(String pattern) {
