@@ -38,15 +38,11 @@
  */
 package org.netbeans.modules.wag.manager.model;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,64 +52,63 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
-public class WagSearchResults {
+public class WagSearchResults extends WagItems<WagSearchResult> {
 
     public static final String WAG_HOME = System.getProperty("netbeans.user") +
             File.separator + "config" + File.separator + "WebApiGateway"; // NOI18N
     public static final String WAG_SEARCH_RESULTS = "WagSearchResults";     //NOI18N
     public static final String XML_EXT = "xml"; //NOI18N
     public static final String PROP_NAME = "searchResults";
-    private static WagSearchResults instance;
-    private SortedSet<WagSearchResult> results;
-    private PropertyChangeSupport pps;
 
-    private WagSearchResults() {
-        results = new TreeSet<WagSearchResult>();
-        pps = new PropertyChangeSupport(this);
+    public WagSearchResults() {
+        super();
+        load();
     }
 
-    public synchronized static WagSearchResults getInstance() {
-        if (instance == null) {
-            instance = new WagSearchResults();
-            instance.load();
-        }
-
-        return instance;
+    public String getDisplayName() {
+        return NbBundle.getMessage(WagSearchResults.class, "Search_Node");
     }
 
-    public Collection<WagSearchResult> getResults() {
-        return Collections.unmodifiableSortedSet(results);
-    }
 
+    public String getDescription() {
+        return NbBundle.getMessage(WagSearchResults.class, "Search_Node_Desc");
+    }
+    
     public void addResults(Collection<WagSearchResult> resultsToAdd) {
-        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(results);
-        results.addAll(resultsToAdd);
-        fireChange(old, Collections.unmodifiableSortedSet(results));
+        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(items);
+        items.addAll(resultsToAdd);
+        fireChange(old, Collections.unmodifiableSortedSet(items));
     }
 
     public void removeResults(Collection<WagSearchResult> resultsToRemove) {
-        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(results);
-        results.removeAll(resultsToRemove);
-        fireChange(old, Collections.unmodifiableSortedSet(results));
+        SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(items);
+        items.removeAll(resultsToRemove);
+        fireChange(old, Collections.unmodifiableSortedSet(items));
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pps.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pps.removePropertyChangeListener(l);
-    }
-
+    @Override
     protected void fireChange(Object old, Object neu) {
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, PROP_NAME, old, neu);
-        pps.firePropertyChange(pce);
+        super.fireChange(old, neu);
         save();
+    }
+
+    @Override
+    public void refresh() {
+        // noop
+    }
+
+    protected Collection<WagSearchResult> loadItems() {
+        return null;
+    }
+
+    protected String getPropName() {
+        return PROP_NAME;
     }
 
     public static FileObject getWagHome() {
@@ -148,7 +143,7 @@ public class WagSearchResults {
                 Object result = (SortedSet<WagSearchResult>) d.readObject();
                 d.close();
 
-                this.results = (TreeSet<WagSearchResult>) result;
+                this.items = (TreeSet<WagSearchResult>) result;
             } catch (Exception ex) {
                 // simply ignore if the file is invalid and start fresh
             }
@@ -159,7 +154,7 @@ public class WagSearchResults {
         try {
             FileObject fobj = getWagSearchResultsFile();
             XMLEncoder e = new XMLEncoder(new BufferedOutputStream(fobj.getOutputStream()));
-            e.writeObject(results);
+            e.writeObject(items);
             e.close();
         } catch (FileAlreadyLockedException ex) {
             // ignore
