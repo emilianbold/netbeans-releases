@@ -125,21 +125,23 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
         // Check current focused file in editor whether it should be annotated
         final JTextComponent jEditorPane = EditorRegistry.lastFocusedComponent();
-        Object source = jEditorPane.getDocument().getProperty(Document.StreamDescriptionProperty);
-        if (source instanceof DataObject) {
-            FileObject fo = ((DataObject) source).getPrimaryFile();
-            File file = FileUtil.toFile(fo);
-            final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(file.getAbsolutePath());
-            if (fileAnnotationInfo != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (!fileAnnotationInfo.isAnnotated()) {
-                            fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
-                            fileAnnotationInfo.setAnnotated(true);
+        if (jEditorPane != null) {
+            Object source = jEditorPane.getDocument().getProperty(Document.StreamDescriptionProperty);
+            if (source instanceof DataObject) {
+                FileObject fo = ((DataObject) source).getPrimaryFile();
+                File file = FileUtil.toFile(fo);
+                final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(file.getAbsolutePath());
+                if (fileAnnotationInfo != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (!fileAnnotationInfo.isAnnotated()) {
+                                fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                                fileAnnotationInfo.setAnnotated(true);
+                            }
+                            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
                         }
-                        AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
-                    }
-                });
+                    });
+                }
             }
         }
     }
