@@ -202,12 +202,12 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         this.issue = issue;
         initCombos();
-        List<String> kws = issue.getRepository().getConfiguration().getKeywords();
+        List<String> kws = issue.getBugzillaRepository().getConfiguration().getKeywords();
         keywords.clear();
         for (String keyword : kws) {
             keywords.add(keyword.toUpperCase());
         }
-        boolean showQAContact = !(issue.getRepository() instanceof KenaiRepository);
+        boolean showQAContact = !(issue.getBugzillaRepository() instanceof KenaiRepository);
         if (qaContactLabel.isVisible() != showQAContact) {
             GroupLayout layout = (GroupLayout)getLayout();
             JLabel temp = new JLabel();
@@ -476,7 +476,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initCombos() {
-        BugzillaRepository repository = issue.getRepository();
+        BugzillaRepository repository = issue.getBugzillaRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
@@ -502,7 +502,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-        BugzillaRepository repository = issue.getRepository();
+        BugzillaRepository repository = issue.getBugzillaRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
@@ -511,7 +511,7 @@ public class IssuePanel extends javax.swing.JPanel {
         List<String> allStatuses = bc.getStatusValues();
         List<String> openStatuses = bc.getOpenStatusValues();
         List<String> statuses = new LinkedList<String>();
-        boolean oldRepository = (issue.getRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        boolean oldRepository = (issue.getBugzillaRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
         String nev = "NEW"; // NOI18N
         String unconfirmed = "UNCONFIRMED"; // NOI18N
         String reopened = "REOPENED"; // NOI18N
@@ -1472,7 +1472,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        BugzillaRepository repository = issue.getRepository();
+        BugzillaRepository repository = issue.getBugzillaRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
@@ -1503,7 +1503,7 @@ public class IssuePanel extends javax.swing.JPanel {
             issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
-                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
                 reloadForm(false);
             } catch (CoreException cex) {
                 cex.printStackTrace();
@@ -1629,7 +1629,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
         if (isNew) {
-            BugzillaRepository repository = issue.getRepository();
+            BugzillaRepository repository = issue.getBugzillaRepository();
             if (repository != null) {
                 BugtrackingOwnerSupport.getInstance().setLooseAssociation(
                         BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
@@ -1713,12 +1713,12 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
         String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.message"); // NOI18N
-        String kws = BugzillaUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
+        String kws = BugzillaUtil.getKeywords(message, keywordsField.getText(), issue.getBugzillaRepository());
         keywordsField.setText(kws);
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), issue.getRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), issue.getBugzillaRepository(), this); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
@@ -1730,7 +1730,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), issue.getRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), issue.getBugzillaRepository(), this); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
@@ -1778,7 +1778,7 @@ public class IssuePanel extends javax.swing.JPanel {
         enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                issue.getRepository().refreshConfiguration();
+                issue.getBugzillaRepository().refreshConfiguration();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         try {
@@ -1810,7 +1810,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getBugzillaRepository(), this); // NOI18N
         if (newIssue != null) {
             duplicateField.setText(newIssue.getID());
         }
