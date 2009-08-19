@@ -182,6 +182,13 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private void discardBar() {
         if (bar != null) {
             bar.removeMouseListener(mouseListener);
+            //EMI: On OSX, an animation thread is started when the progressbar is created, even if not displayed (or added to a container).
+            // The following line is needed to kill the animation thread otherwise this tends to be alive for the rest of the JVM execution
+            // pumping a lot of repaing events in the event queue (in my tests, about 50% of the CPU while idle).
+            // The culprit apple.laf.CUIAquaProgressBar$Animator was discovered with the normal Profiler, while Tim Boudreau told me about a similar
+            // problem with OSX and the pulsating button (that also has a thread for that animation).
+            // Finally, btrace and this IDEA bug report (http://www.jetbrains.net/jira/browse/IDEADEV-25376) connected the dots.
+            bar.getUI().uninstallUI(bar);
             bar = null;
         }
     }
@@ -225,6 +232,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         separator = null;
     }
     
+    @Override
     public Dimension getPreferredSize() {
         Dimension retValue;
         retValue = super.getPreferredSize();
@@ -232,6 +240,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         return retValue;
     }
 
+    @Override
     public Dimension getMinimumSize() {
         Dimension retValue;
         retValue = super.getMinimumSize();
@@ -239,6 +248,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         return retValue;
     }        
     
+    @Override
     public Dimension getMaximumSize() {
         Dimension retValue;
         retValue = super.getMaximumSize();
@@ -440,11 +450,14 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
     
     private void removeListItem(InternalHandle handle) {
-        handleComponentMap.remove(handle);
+        ListComponent c = handleComponentMap.remove(handle);
         pane.removeListComponent(handle);
         pane.updateBoldFont(model.getSelectedHandle());
         if (showingPopup) {
             resizePopup();
+        }
+        if (c != null) {
+            c.clearProgressBarOSX();
         }
     }
 
@@ -532,12 +545,14 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
 
         }
         
+        @Override
         public void componentResized(ComponentEvent evt) {
             if (showingPopup) {
                 resizePopup();
             }
         }
         
+        @Override
         public void componentMoved(ComponentEvent evt) {
             if (showingPopup) {
                 resizePopup();
@@ -547,6 +562,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
     
     private class MListener extends MouseAdapter {
+        @Override
         public void mouseClicked(java.awt.event.MouseEvent e) {
             if (e.getButton() != MouseEvent.BUTTON1) {
                 showMenu(e);
