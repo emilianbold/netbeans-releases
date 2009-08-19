@@ -69,7 +69,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -265,8 +264,22 @@ public class ListComponent extends JPanel {
             mainLabel.repaint();
         }
     }
+
+    //Called to clear the progressbar
+    void clearProgressBarOSX() {
+        //EMI: On OSX, an animation thread is started when the progressbar is created, even if not displayed (or added to a container).
+        // The following line is needed to kill the animation thread otherwise this tends to be alive for the rest of the JVM execution
+        // pumping a lot of repaing events in the event queue (in my tests, about 50% of the CPU while idle).
+        // The culprit apple.laf.CUIAquaProgressBar$Animator was discovered with the normal Profiler, while Tim Boudreau told me about a similar
+        // problem with OSX and the pulsating button (that also has a thread for that animation).
+        // Finally, btrace and this IDEA bug report (http://www.jetbrains.net/jira/browse/IDEADEV-25376) connected the dots.
+        if (bar != null) {
+            bar.getUI().uninstallUI(bar);
+        }
+    }
     
     private class MListener extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getSource() == bar) {
                 handle.requestExplicitSelection();
@@ -275,7 +288,7 @@ public class ListComponent extends JPanel {
             if (e.getClickCount() > 1 && (e.getSource() == mainLabel || e.getSource() == dynaLabel)) {
                 handle.requestView();
             }
-            if (e.getButton() != e.BUTTON1) {
+            if (e.getButton() != MouseEvent.BUTTON1) {
                 showMenu(e);
             } else {
                 ListComponent.this.requestFocus();
