@@ -155,6 +155,13 @@ public class Utilities {
     public static KeyStroke buildProjectShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0);
     public static KeyStroke openBreakpointsShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_5, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);
 
+    public static void cleanBuildTestProject()
+    {
+        Node lrProjectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_RebuildAction_Name")).perform(lrProjectNode);
+        Utilities.waitStatusText("Finished building debugTestProject (clean,jar).");
+    }
+
     public static boolean verifyMainMenu(String actionPath, boolean expected) {
         if (expected == MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled()) {
             return MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled();
@@ -202,13 +209,13 @@ public class Utilities {
     }
 
     public static boolean checkAnnotation(EditorOperator operator, int line, String annotationType) {
-        new EventTool().waitNoEvent(10000);
+        //new EventTool().waitNoEvent(10000);
         Object[] annotations = operator.getAnnotations(line);
         boolean found = false;
         JemmyProperties.getProperties().getOutput().print(">>>>> Annotations on line: " + line + "\n");
         for (int i = 0; i < annotations.length; i++) {
             JemmyProperties.getProperties().getOutput().print("    " + operator.getAnnotationType(annotations[i]) + "\n");
-            if (annotationType.equals(operator.getAnnotationType(annotations[i]))) {
+            if (annotationType.equals(EditorOperator.getAnnotationType(annotations[i]))) {
                 found = true;
             }
         }

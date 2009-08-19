@@ -39,6 +39,7 @@
 
 package org.netbeans.jellytools;
 
+import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
@@ -155,7 +156,12 @@ public class OutlineOperatorTest extends JellyTestCase {
         TopComponentOperator tco = new TopComponentOperator(
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
 
+        Thread.sleep(5000);
         OutlineOperator lrOVO = new OutlineOperator(tco);
+
+        lrOVO.getRootNode("test").expand();
+
+        lrOVO.getRootNode("test", 1).expand();
 
         OutlineNode node = lrOVO.getRootNode("test", 2);
 
