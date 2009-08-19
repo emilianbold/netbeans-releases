@@ -68,15 +68,21 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -164,8 +170,78 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    
-    
+
+    @Override
+    public void visit(NamespaceDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(LambdaFunctionDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(NamespaceName node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(GotoLabel node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(GotoStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(UseStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+
+        super.visit(node);
+    }
     
     @Override
     public void visit(IfStatement node) {
