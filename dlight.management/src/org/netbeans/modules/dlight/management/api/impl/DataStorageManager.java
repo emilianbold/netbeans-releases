@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -117,13 +118,6 @@ public final class DataStorageManager {
         return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
     }
 
-//
-//  public void registerDataStorage(DataStorage dataStorage){
-//    if (allDataStorages.contains(dataStorage)){
-//      return;
-//    }
-//    if (activeDataStorages.contains(log))
-//  }
     private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (session == null) {
             return null;
@@ -141,6 +135,11 @@ public final class DataStorageManager {
         for (DataStorageFactory storage : dataStorageFactories) {
             if (storage.getStorageTypes().contains(storageType)) {
                 DataStorage newStorage = storage.createStorage();
+                if (newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                }
                 if (newStorage != null) {
                     newStorage.createTables(tableMetadatas);
                     if (activeSessionStorages == null) {

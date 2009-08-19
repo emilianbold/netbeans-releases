@@ -37,69 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.html.palette.api;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Instances of this class are stored in the mimelookup. Use Editor/mimetype/ folder to store yours.
  *
- * @author Tomas Stupka
+ * @author marekfukala
  */
-public class KenaiConfiguration extends BugzillaConfiguration {
-    private List<String> products;
-    private BugzillaRepository repository;
+public interface HtmlPaletteFolderProvider {
 
-    /** one instance for all kenai repositories */
-    private static RepositoryConfiguration rc;
-
-    public KenaiConfiguration(BugzillaRepository repository, String product) {
-        this.repository = repository;
-        // XXX check if product exists
-        ArrayList<String> l = new ArrayList<String>();
-        l.add(product);
-        this.products = Collections.unmodifiableList(l);
-    }
-
-    @Override
-    public List<String> getProducts() {
-        ensureProduct();
-        return products;
-    }
-
-    @Override
-    public List<String> getComponents(String product) {
-        ensureProduct();
-        return super.getComponents(product);
-    }
-
-    @Override
-    public List<String> getVersions(String product) {
-        ensureProduct();
-        return super.getVersions(product);
-    }
-
-    private synchronized void ensureProduct() {
-        List<String> knownProducts = super.getProducts();
-        for (String knownProduct : products) {
-            if(!knownProducts.contains(knownProduct)) {
-                initialize(repository, true);
-                rc = null;
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
-        if(rc == null) {
-            rc = super.getRepositoryConfiguration(repository, forceRefresh);
-        }
-        return rc;
-    }
+    /** @return name of the system filesystem folder where some palette items are located. */
+    public String getPaletteFolderName(FileObject fileObject);
 
 }

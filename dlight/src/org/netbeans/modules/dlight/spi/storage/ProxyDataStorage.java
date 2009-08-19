@@ -36,70 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.storage;
 
-package org.netbeans.modules.bugzilla.kenai;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 
 /**
+ * Data storage serving as proxy for another (backend) data storage,
+ * e.g. to provide more convenient interface than the underlying storage.
  *
- * @author Tomas Stupka
+ * @author Alexey Vladykin
  */
-public class KenaiConfiguration extends BugzillaConfiguration {
-    private List<String> products;
-    private BugzillaRepository repository;
+public interface ProxyDataStorage extends DataStorage {
 
-    /** one instance for all kenai repositories */
-    private static RepositoryConfiguration rc;
+    /**
+     * @return supported underlying storage type
+     */
+    DataStorageType getBackendDataStorageType();
 
-    public KenaiConfiguration(BugzillaRepository repository, String product) {
-        this.repository = repository;
-        // XXX check if product exists
-        ArrayList<String> l = new ArrayList<String>();
-        l.add(product);
-        this.products = Collections.unmodifiableList(l);
-    }
+    /**
+     * @return list of tables to create in the underlying storage
+     */
+    List<DataTableMetadata> getBackendTablesMetadata();
 
-    @Override
-    public List<String> getProducts() {
-        ensureProduct();
-        return products;
-    }
-
-    @Override
-    public List<String> getComponents(String product) {
-        ensureProduct();
-        return super.getComponents(product);
-    }
-
-    @Override
-    public List<String> getVersions(String product) {
-        ensureProduct();
-        return super.getVersions(product);
-    }
-
-    private synchronized void ensureProduct() {
-        List<String> knownProducts = super.getProducts();
-        for (String knownProduct : products) {
-            if(!knownProducts.contains(knownProduct)) {
-                initialize(repository, true);
-                rc = null;
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
-        if(rc == null) {
-            rc = super.getRepositoryConfiguration(repository, forceRefresh);
-        }
-        return rc;
-    }
-
+    /**
+     * Called by infrastructure to attach to backend storage.
+     *
+     * @param storage  backend storage supporting the required storage type
+     */
+    void attachTo(DataStorage storage);
 }

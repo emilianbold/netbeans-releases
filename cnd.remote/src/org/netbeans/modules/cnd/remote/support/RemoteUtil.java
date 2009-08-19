@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -53,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 public class RemoteUtil {
 
     private static final Map<ExecutionEnvironment, String> homeDirs = new LinkedHashMap<ExecutionEnvironment, String>();
+    public static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
     private RemoteUtil() {}
 

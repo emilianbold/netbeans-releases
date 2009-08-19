@@ -175,7 +175,7 @@ made subject to such option by the copyright holder.
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
         </folder>
     </folder>
-    
+   
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">

@@ -37,20 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.impl;
+package org.netbeans.modules.web.jsf.editor;
 
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Enables JSF palette for fileobjects located in capable project.
  *
- * @author mt154047
+ * @author marekfukala
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory.class)
-public class ServiceInfoDataStorageFactoryImpl implements ServiceInfoDataStorageFactory<ServiceInfoDataStorageImpl>{
+public class JsfHtmlPaletteFolderProvider implements HtmlPaletteFolderProvider {
 
-    public ServiceInfoDataStorageImpl createStorage() {
-        return new ServiceInfoDataStorageImpl();
+    public String getPaletteFolderName(FileObject fileObject) {
+        return (fileObject.getMIMEType().equals("text/xhtml") && 
+                JsfSupport.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
     }
 
 }

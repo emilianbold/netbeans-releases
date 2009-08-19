@@ -61,12 +61,21 @@ public class NetbeansActionMapping implements java.io.Serializable {
 
     private String preAction;
 
-
+    private String reactor;
 
       //-----------/
      //- Methods -/
     //-----------/
-    
+
+
+    public String getReactor() {
+        return reactor;
+    }
+
+    public void setReactor(String reactor) {
+        this.reactor = reactor;
+    }
+
     public String getBasedir() {
         return basedir;
     }
