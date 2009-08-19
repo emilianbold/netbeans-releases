@@ -578,7 +578,9 @@ public class ELExpression {
          */
         protected String getExpressionSuffix(ExecutableElement method) {
 
-            if (method.getModifiers().contains(Modifier.PUBLIC) && method.getParameters().size() == 0) {
+            if (method.getModifiers().contains(Modifier.PUBLIC) 
+                    && checkMethodParameters(method)) 
+            {
                 String methodName = method.getSimpleName().toString();
 
                 if (methodName.startsWith("get")) { //NOI18N
@@ -592,13 +594,22 @@ public class ELExpression {
                 if (isDefferedExecution()) {
                     //  also return values for method expressions
 
-                    if ("java.lang.String".equals(method.getReturnType().toString())) { //NOI18N
+                    if (checkMethodReturnType(method)) { 
                         return methodName;
                     }
                 }
             }
 
             return null; // not a property accessor
+        }
+        
+        protected boolean checkMethodParameters( ExecutableElement method ){
+            return method.getParameters().size() == 0;
+        }
+        
+        protected boolean checkMethodReturnType( ExecutableElement method ){
+            return String.class.getCanonicalName().equals( 
+                    method.getReturnType().toString());
         }
 
         public void cancel() {
