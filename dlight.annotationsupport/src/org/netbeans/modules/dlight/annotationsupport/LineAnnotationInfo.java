@@ -48,14 +48,16 @@ import org.netbeans.editor.Utilities;
  * @author thp
  */
 public class LineAnnotationInfo {
+    private static String SPACES = "                               ";  // NOI18N
     private FileAnnotationInfo fileAnnotationInfo;
     private int line;
     private long offset;
     private String annotation;
-    private String annotationToolTip;
+    private String columns[];
 
     public LineAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
+        annotation = null;
     }
 
     /**
@@ -90,28 +92,20 @@ public class LineAnnotationInfo {
      * @return the annotation
      */
     public String getAnnotation() {
+        if (annotation == null) {
+            annotation = "";
+            int col = 0;
+            for (String metric : getColumns()) {
+                int maxColumnWith = getFileAnnotationInfo().getMaxColumnWidth()[col];
+                String formattedMetric = SPACES.substring(0, maxColumnWith - metric.length()) + metric;
+                if (annotation.length() > 0) {
+                    annotation += " ";
+                }
+                annotation += formattedMetric;
+                col++;
+            }
+        }
         return annotation;
-    }
-
-    /**
-     * @param annotation the annotation to set
-     */
-    public void setAnnotation(String annotation) {
-        this.annotation = annotation;
-    }
-
-    /**
-     * @return the annotationToolTip
-     */
-    public String getAnnotationToolTip() {
-        return annotationToolTip;
-    }
-
-    /**
-     * @param annotationToolTip the annotationToolTip to set
-     */
-    public void setAnnotationToolTip(String annotationToolTip) {
-        this.annotationToolTip = annotationToolTip;
     }
 
     /**
@@ -140,5 +134,19 @@ public class LineAnnotationInfo {
      */
     public void setFileAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
+    }
+
+    /**
+     * @return the columns
+     */
+    public String[] getColumns() {
+        return columns;
+    }
+
+    /**
+     * @param columns the columns to set
+     */
+    public void setColumns(String[] columns) {
+        this.columns = columns;
     }
 }

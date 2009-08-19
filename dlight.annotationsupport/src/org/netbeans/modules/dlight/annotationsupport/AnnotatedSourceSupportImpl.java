@@ -95,36 +95,30 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     if (fileAnnotationInfo == null) {
                         fileAnnotationInfo = new FileAnnotationInfo();
                         fileAnnotationInfo.setFilePath(filePath);
+                        fileAnnotationInfo.setColumnNames(new String[metrics.size()]);
+                        fileAnnotationInfo.setMaxColumnWidth(new int[metrics.size()]);
                         activeAnnotations.put(filePath, fileAnnotationInfo);
                     }
                     LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo(fileAnnotationInfo);
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
-                    String annotation = "";
-                    String tooltip = "";
+                    lineAnnotationInfo.setColumns(new String[metrics.size()]);
                     int col = 0;
                     for (Column column : metrics) {
-                        if (annotation.length() > 0) {
-                            annotation += " "; // NOI18N
-                            tooltip += " "; // NOI18N
-                        }
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
                         String metricValString = metricVal.toString();
-                        if (col == 0 && metricValString.length() < 7) {
-                            metricValString = SPACES.substring(0, 7 - metricValString.length()) + metricValString;
+                        lineAnnotationInfo.getColumns()[col] = metricValString;
+                        int metricValLength = metricValString.length();
+                        if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
+                            fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
                         }
-                        if (col == 1 && metricValString.length() < 3) {
-                            metricValString = SPACES.substring(0, 3 - metricValString.length()) + metricValString;
-                        }
+
                         String metricUName = column.getColumnUName();
-                        annotation = annotation + metricValString;
-                        tooltip = tooltip + metricUName;
+                        fileAnnotationInfo.getColumnNames()[col] = metricUName;
+                        
                         col++;
                     }
-                    lineAnnotationInfo.setAnnotation(annotation);
-                    lineAnnotationInfo.setAnnotationToolTip(tooltip);
-                    fileAnnotationInfo.setTooltip(tooltip);
                     fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                 }
             }
@@ -185,7 +179,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                                 List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
                                 for (LineAnnotationInfo line : lines) {
                                     //line.setLine(jEditorPane);
-                                    log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                                    log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + fileAnnotationInfo.getTooltip() + "]" + "\n"); // NOI18N)
                                 }
                                 fileAnnotationInfo.setAnnotated(true);
                             }

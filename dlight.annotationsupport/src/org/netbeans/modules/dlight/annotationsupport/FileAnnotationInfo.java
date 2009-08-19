@@ -52,9 +52,12 @@ public class FileAnnotationInfo {
     private String tooltip;
     private List<LineAnnotationInfo> lineAnnotationInfo;
     private boolean annotated;
+    private String columnNames[];
+    private int maxColumnWidth[];
 
     public FileAnnotationInfo() {
         lineAnnotationInfo = new ArrayList<LineAnnotationInfo>();
+        tooltip = null;
         annotated = false;
     }
 
@@ -113,14 +116,17 @@ public class FileAnnotationInfo {
      * @return the tooltip
      */
     public String getTooltip() {
+        if (tooltip == null) {
+            String tt = "";
+            for (String col : getColumnNames()) {
+                if (tt.length() > 0) {
+                    tt += " "; // NOI18N
+                }
+                tt += col;
+            }
+            tooltip = tt;
+        }
         return tooltip;
-    }
-
-    /**
-     * @param tooltip the tooltip to set
-     */
-    public void setTooltip(String tooltip) {
-        this.tooltip = tooltip;
     }
 
     /**
@@ -135,5 +141,33 @@ public class FileAnnotationInfo {
      */
     public void setEditorPane(JEditorPane editorPane) {
         this.editorPane = editorPane;
+    }
+
+    /**
+     * @return the maxColumnWidth
+     */
+    public int[] getMaxColumnWidth() {
+        return maxColumnWidth;
+    }
+
+    /**
+     * @param maxColumnWidth the maxColumnWidth to set
+     */
+    public void setMaxColumnWidth(int[] maxColumnWidth) {
+        this.maxColumnWidth = maxColumnWidth;
+    }
+
+    /**
+     * @return the columnNames
+     */
+    public String[] getColumnNames() {
+        return columnNames;
+    }
+
+    /**
+     * @param columnNames the columnNames to set
+     */
+    public void setColumnNames(String[] columnNames) {
+        this.columnNames = columnNames;
     }
 }
