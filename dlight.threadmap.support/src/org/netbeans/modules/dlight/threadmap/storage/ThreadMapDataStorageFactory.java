@@ -36,54 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.support.impl;
+package org.netbeans.modules.dlight.threadmap.storage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import java.util.Collections;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.threadmap.dataprovider.ThreadMapDataProviderImpl;
-import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+//import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author Alexander Simon
+ * @author Alexey Vladykin
  */
-@ServiceProviders({@ServiceProvider(service = DataProviderFactory.class)})
-public class ThreadMapDataProviderFactory implements DataProviderFactory {
+//@ServiceProvider(service = DataStorageFactory.class)
+public class ThreadMapDataStorageFactory implements DataStorageFactory<ThreadMapDataStorage> {
 
-    private final List<DataStorageType> supportedStorageTypes;
-    private final List<DataModelScheme> providedSchemas;
-
-    public ThreadMapDataProviderFactory() {
-        supportedStorageTypes = new ArrayList<DataStorageType>(1);
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(ThreadMapDataStorage.THREAD_MAP_STORAGE_TYPE_ID)); //NOI18N
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-        providedSchemas = new ArrayList<DataModelScheme>(1);
-        providedSchemas.add(DataModelSchemeProvider.getInstance().getScheme("model:threadmap")); //NOI18N
+    public Collection<DataStorageType> getStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(ThreadMapDataStorage.THREAD_MAP_STORAGE_TYPE_ID));
     }
 
-    public ThreadMapDataProvider create() {
-        return new ThreadMapDataProviderImpl();
-    }
-
-    public Collection<DataModelScheme> getProvidedDataModelScheme() {
-        return providedSchemas;
-    }
-
-    public boolean provides(DataModelScheme dataModel) {
-        return getProvidedDataModelScheme().contains(dataModel);
-    }
-
-    public Collection<DataStorageType> getSupportedDataStorageTypes() {
-        return supportedStorageTypes;
+    public ThreadMapDataStorage createStorage() {
+        return new ThreadMapDataStorage();
     }
 }
