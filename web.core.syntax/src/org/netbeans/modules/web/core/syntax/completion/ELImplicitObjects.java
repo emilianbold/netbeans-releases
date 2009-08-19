@@ -43,7 +43,13 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 //import org.netbeans.jmi.javamodel.Method;
+
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
+import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -52,78 +58,49 @@ import java.util.Collection;
 
 /** Represents Implicit objects for EL
  **/
-public class ELImplicitObjects {
+@ServiceProvider(service=ImplicitObjectProvider.class)
+public class ELImplicitObjects implements ImplicitObjectProvider {
     
-    public static final int OBJECT_TYPE = 0;
-    public static final int MAP_TYPE = 1;
-
-    public static class ELImplicitObject {
-        private String name;
-        private int type;
-        private String clazz; 
-                
-        /** Creates a new instance of ELImplicitObject */
-        public ELImplicitObject(String name) {
-            this.name = name;
-            this.setType(MAP_TYPE);
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public void setType(int type) {
-            this.type = type;
-        }
-        
-        public String getClazz(){
-            return clazz;
-        }
-        
-        public void setClazz(String clazz){
-            this.clazz = clazz;
-        }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider#getImplicitObjects()
+     */
+    public Collection<ELImplicitObject> getImplicitObjects() {
+        return getELImplicitObjects();
     }
     
-    public static class PageContextObject extends ELImplicitObject{
+    static class PageContextObject extends ELImplicitObject{
         public PageContextObject(String name){
             super(name);
-            setType(ELImplicitObjects.OBJECT_TYPE);
+            setType(OBJECT_TYPE);
             setClazz("javax.servlet.jsp.PageContext"); //NOI18N
         }
     }
     
-    private static Collection <ELImplicitObject> implicitELObjects = null;
-    
-    private static void initImplicitObjects() {
-        if (implicitELObjects == null){
-            implicitELObjects = new ArrayList();
-            implicitELObjects.add(new PageContextObject("pageContext")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("pageScope")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("requestScope")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("sessionScope")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("applicationScope")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("param")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("paramValues")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("header")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("headerValues")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("initParam")); //NOI18N
-            implicitELObjects.add(new ELImplicitObject("cookie")); //NOI18N
-        }
+    private Collection<ELImplicitObject> getELImplicitObjects() {
+        Collection<ELImplicitObject> implicitELObjects;
+        implicitELObjects = new ArrayList<ELImplicitObject>(11);
+        implicitELObjects.add(new PageContextObject("pageContext")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("pageScope")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("requestScope")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("sessionScope")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("applicationScope")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("param")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("paramValues")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("header")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("headerValues")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("initParam")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("cookie")); // NOI18N
+        return implicitELObjects;
     }
     
     /** Returns implicit objects that starts with the prefix.
      */
     public static Collection <ELImplicitObject> getELImplicitObjects(String prefix){
         initImplicitObjects();
-        Collection <ELImplicitObject> filtered = implicitELObjects;
+        Collection <ELImplicitObject> filtered = IMPLICIT_OBJECTS;
         if (prefix != null && !prefix.equals("")){
-            filtered = new ArrayList();
-            for (ELImplicitObject elem : implicitELObjects) {
+            filtered = new ArrayList<ELImplicitObject>();
+            for (ELImplicitObject elem : IMPLICIT_OBJECTS) {
                 if (elem.getName().startsWith(prefix))
                     filtered.add(elem);
             }
@@ -147,7 +124,7 @@ public class ELImplicitObjects {
                     name = expr;
             }
             name = name.trim();
-            for (ELImplicitObject elem : implicitELObjects) {
+            for (ELImplicitObject elem : IMPLICIT_OBJECTS) {
                 if (elem.getName().equals(name)){
                     obj = elem;
                     break;
@@ -156,6 +133,21 @@ public class ELImplicitObjects {
         }
         return obj;
     }
-
     
+    private static void initImplicitObjects() {
+        IMPLICIT_OBJECTS = new LinkedList<ELImplicitObject>();
+        Collection<? extends ImplicitObjectProvider> providers = 
+            Lookup.getDefault().lookupAll( ImplicitObjectProvider.class );
+        for (ImplicitObjectProvider objectProvider : providers) {
+            Collection<ELImplicitObject> implicitObjects = 
+                objectProvider.getImplicitObjects();
+            IMPLICIT_OBJECTS.addAll( implicitObjects );
+        }
+    }
+
+    private static Collection<ELImplicitObject> IMPLICIT_OBJECTS;
+    
+    static {
+        initImplicitObjects();
+    }
 }

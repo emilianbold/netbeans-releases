@@ -1524,6 +1524,9 @@ public class AstUtilities {
 
     public static Node getRoot(final FileObject sourceFO) {
         Source source = Source.create(sourceFO);
+        if (source == null) {
+            return null;
+        }
         final Node[] rootHolder = new Node[1];
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {

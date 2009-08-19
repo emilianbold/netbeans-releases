@@ -204,6 +204,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N
+        //addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER1_0, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
         
         return result;
