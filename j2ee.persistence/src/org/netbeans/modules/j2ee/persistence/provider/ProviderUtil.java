@@ -81,7 +81,8 @@ public class ProviderUtil {
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
-    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
+    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider(Persistence.VERSION_2_0);
+    public static final Provider ECLIPSELINK_PROVIDER1_0 = new EclipseLinkProvider(Persistence.VERSION_1_0);
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
@@ -329,7 +330,7 @@ public class ProviderUtil {
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
         Properties properties = persistenceUnit.newProperties();
-        Map connectionProperties = provider.getConnectionPropertiesMap(connection);
+        Map connectionProperties = provider.getConnectionPropertiesMap(connection, version);
         for (Iterator it = connectionProperties.keySet().iterator(); it.hasNext();) {
             String propertyName = (String) it.next();
             Property property = properties.newProperty();
@@ -370,7 +371,8 @@ public class ProviderUtil {
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
         
-        Map<String, String> propertiesMap = provider.getConnectionPropertiesMap(connection);
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        Map<String, String> propertiesMap = provider.getConnectionPropertiesMap(connection, version);
         
         for (String name : propertiesMap.keySet()) {
             Property property = getProperty(properties, name);
@@ -454,10 +456,12 @@ public class ProviderUtil {
      */
     public static Provider getProvider(PersistenceUnit persistenceUnit){
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit ? Persistence.VERSION_1_0 : Persistence.VERSION_2_0;
+
         for (Provider each : getAllProviders()){
             if(each.getProviderClass().equals(persistenceUnit.getProvider())){
-                return each;
+                String provVersion = each.getVersion();
+                if(provVersion == null || (version.equals(provVersion)))return each;
             }
         }
         return DEFAULT_PROVIDER;
@@ -609,6 +613,7 @@ public class ProviderUtil {
      * was no PUDataObject (i.e. no persistence.xml) in the project, a new one
      * will be created and version will be determined based on project classpath. Use
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
+     * It's not recommended to call this method if there is no PUDataObject yet, it's better o get version first and call with version
      *
      *@param project the project whose PUDataObject is to be get. Must not be null.
      *
@@ -686,7 +691,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            ECLIPSELINK_PROVIDER, TOPLINK_PROVIDER, HIBERNATE_PROVIDER,
+            ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER,
             KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

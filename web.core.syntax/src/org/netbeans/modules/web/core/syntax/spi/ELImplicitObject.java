@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,71 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.core.syntax.spi;
 
-package org.netbeans.modules.j2ee.persistence.provider;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.openide.util.NbBundle;
-
-/**
- * This class represents the EclipseLink provider.
- *
- * @author Andrei Badea
- */
-class EclipseLinkProvider extends Provider {
-
-    public EclipseLinkProvider(String version){
-        super("org.eclipse.persistence.jpa.PersistenceProvider", version); //NOI18N
+public class ELImplicitObject {
+    
+    public static final int OBJECT_TYPE = 0;
+    public static final int MAP_TYPE = 1;
+            
+    /** Creates a new instance of ELImplicitObject */
+    public ELImplicitObject(String name) {
+        myName = name;
+        setType(MAP_TYPE);
     }
 
-    public EclipseLinkProvider(){
-        this(null); //NOI18N
+    public String getName() {
+        return myName;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
+    public int getType() {
+        return myType;
     }
 
-    @Override
-    public String getJdbcUrl() {
-        return   Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.url" : super.getJdbcUrl();
+    public void setType(int type) {
+        myType = type;
     }
-
-    @Override
-    public String getJdbcDriver() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.driver" : "javax.persistence.jdbc.driver";
+    
+    public String getClazz(){
+        return myClazz;
     }
-
-    @Override
-    public String getJdbcUsername() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.user" : "javax.persistence.jdbc.user";
+    
+    public void setClazz(String clazz){
+        myClazz = clazz;
     }
-
-    @Override
-    public String getJdbcPassword() {
-        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.password" : "javax.persistence.jdbc.password";
-    }
-
-    public String getTableGenerationPropertyName() {
-        return "eclipselink.ddl-generation";
-    }
-
-    public String getTableGenerationDropCreateValue() {
-        return "drop-and-create-tables";
-    }
-
-    public String getTableGenerationCreateValue() {
-        return "create-tables";
-    }
-
-    public Map getUnresolvedVendorSpecificProperties() {
-        return Collections.EMPTY_MAP;
-    }
-
-    public Map getDefaultVendorSpecificProperties() {
-        return Collections.EMPTY_MAP;
-    }
+    
+    private String myName;
+    private int myType;
+    private String myClazz; 
 }

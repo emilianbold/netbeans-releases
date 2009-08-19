@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.dd;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -60,6 +62,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,6 +70,7 @@ import org.openide.filesystems.FileObject;
  * @author Marek Fukala, Andrei Badea
  */
 public class PersistenceUtils {
+
     
     // TODO multiple mapping files
     
@@ -176,6 +180,21 @@ public class PersistenceUtils {
             version=Persistence.VERSION_2_0;
         }
         else if(compile.findResource("javax/persistence/Entity.class")!=null)
+        {
+            version=Persistence.VERSION_1_0;
+        }
+        return version;
+    }
+
+    public static String getJPAVersion(Library lib) {
+        List<URL> roots=lib.getContent("classpath");
+        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+        String version=null;
+        if(cp.findResource("javax/persistence/criteria/JoinType.class")!=null)
+        {
+            version=Persistence.VERSION_2_0;
+        }
+        else if(cp.findResource("javax/persistence/Entity.class")!=null)
         {
             version=Persistence.VERSION_1_0;
         }
