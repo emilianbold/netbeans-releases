@@ -61,6 +61,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.util.Collections;
 import javax.swing.Box;
@@ -114,6 +115,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
     private Icon expandedIcon, collapsedIcon;
+    final PlaceholderPanel progressPanel = new PlaceholderPanel();
 
     private CommitTable commitTable;
     private List<SvnHook> hooks = Collections.emptyList();
@@ -293,8 +295,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
-            commitTable.dataChanged();
-            listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+            Runnable inAWT = new Runnable() {
+                public void run() {
+                    commitTable.dataChanged();
+                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+                }
+            };
+            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
         }
     }
 
@@ -337,6 +349,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
 
+        JPanel bottomPanel = new VerticallyNonResizingPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
+        bottomPanel.add(progressPanel);
+        progressPanel.setAlignmentY(CENTER_ALIGNMENT);
+
         setLayout(new BoxLayout(this, Y_AXIS));
         add(topPanel);
         add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
@@ -351,13 +368,15 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         add(hooksSectionPanel);
         add(makeVerticalStrut(hooksSectionPanel, jLabel2, RELATED));
         add(jLabel2);
+        add(makeVerticalStrut(hooksSectionPanel, bottomPanel, RELATED));
+        add(bottomPanel);
         topPanel.setAlignmentX(LEFT_ALIGNMENT);
         jScrollPane1.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
         hooksSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         hooksSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
-        jLabel2.setAlignmentX(LEFT_ALIGNMENT);
+        bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
 
         setBorder(createEmptyBorder(26,                       //top
                                     getContainerGap(WEST),    //left
