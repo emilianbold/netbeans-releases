@@ -205,6 +205,19 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
     }
 
+    public static PhpLanguageOptions.PhpVersion getPhpVersion(PhpProject project) {
+        PhpLanguageOptions.PhpVersion phpVersion = null;
+        String value = project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION);
+        if (value != null) {
+            try {
+                phpVersion = PhpLanguageOptions.PhpVersion.valueOf(value);
+            } catch (IllegalArgumentException iae) {
+                // ignored
+            }
+        }
+        return phpVersion != null ? phpVersion : PhpLanguageOptions.PhpVersion.PHP_5;
+    }
+
     /**
      * @return run as type, {@link PhpProjectProperties.RunAsType#LOCAL} is the default.
      */
