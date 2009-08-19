@@ -44,11 +44,11 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -61,6 +61,8 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Filip Zamboj
  */
 public class DebuggingActionsTest extends JellyTestCase{
+
+    private static Node beanNode;
 
     public DebuggingActionsTest(String name) {
         super(name);
@@ -81,12 +83,18 @@ public class DebuggingActionsTest extends JellyTestCase{
     }
 
     /** setUp method  */
-    public void setUp() throws IOException {
-
-
-
-        openDataProjects(Utilities.testProjectName);
+    public void setUp() throws IOException {        
         System.out.println("########  " + getName() + "  #######");
+
+        if (beanNode == null)
+        {
+            openDataProjects(Utilities.testProjectName);
+            beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            new EventTool().waitNoEvent(1000);
+            Utilities.cleanBuildTestProject();
+        }
     }
 
     public void tearDown() {
@@ -95,17 +103,11 @@ public class DebuggingActionsTest extends JellyTestCase{
         Utilities.deleteAllBreakpoints();
     }
 
- 
-
     static int lastLineNumber = 0;
 
     public void testStartDebugging() throws Throwable {
         try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
+            
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
             new DebugJavaFileAction().perform(beanNode);
@@ -120,11 +122,7 @@ public class DebuggingActionsTest extends JellyTestCase{
     }
 
     public void testContinue() throws Throwable {
-        try {Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
+        try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
             new DebugJavaFileAction().perform(beanNode);
@@ -145,11 +143,7 @@ public class DebuggingActionsTest extends JellyTestCase{
 
     public void testPause() throws Throwable {
         try {
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);
+            
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
             new DebugJavaFileAction().perform(beanNode);
