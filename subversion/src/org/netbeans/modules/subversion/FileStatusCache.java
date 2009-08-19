@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.WeakSet;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -322,7 +323,7 @@ public class FileStatusCache {
      * @param recursively if true all children are also refreshed
      */
     public void refreshAsync(final boolean recursively, final File... files) {
-        if (files.length == 0) {
+        if (files == null || files.length == 0) {
             return;
         }
         rp.post(new Runnable() {
@@ -594,7 +595,7 @@ public class FileStatusCache {
     }
         
     // --- Private methods ---------------------------------------------------
-
+    private final Set<File> plannedForRecursiveScan = new WeakSet(50);
     private Map<File, FileInformation> getScannedFiles(File dir) {
         Map<File, FileInformation> files;
 
@@ -617,12 +618,30 @@ public class FileStatusCache {
         // scan and populate cache with results
 
         dir = FileUtil.normalizeFile(dir);
+        // recursive scan for unexplored folders
+        boolean recursiveScanEnabled = !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")); //NOI18N - leave option to disable the recursive scan
+        if (recursiveScanEnabled) {
+            // do not scan dir's children twice. It can happen that the same folder gets to this point more than once due to getScannedFile recursive nature
+            // 1. if dir is unknown
+            // 2. scanFolder(dir) > createMissingEntry(dir's child) > getStatus(dir) > getScannedFiles(dir) again and before turno.writeEntry(dir) is called
+            File f = new File(dir.getAbsolutePath()); // do not add directly dir so the set doesn't get too big (references to dir are kept outside of this method - e.g. in turbo)
+            synchronized (plannedForRecursiveScan) {
+                recursiveScanEnabled = !plannedForRecursiveScan.contains(f) && plannedForRecursiveScan.add(f); // this will return false if dir is already there
+            }
+        }
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = files.get(file);
+            // recursive scan for unexplored folders: run refresh on children if necessary
+            if (recursiveScanEnabled                                        // scan is allowed and dir is not yet planned
+                    && (info.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored files
+                    && file.isDirectory()                                   // scan only folders
+                    && turbo.readEntry(file, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
+                refreshAsync(file.listFiles());
+            }
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
             }
