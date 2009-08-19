@@ -1209,7 +1209,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ts.moveNext();
         tokenIndexAlreadyAdded = ts.index();
         result.setBounds(new int[]{start, end});
-        System.out.println("tokenIndexAlreadyAdded = " + tokenIndexAlreadyAdded);
+//        System.out.println("tokenIndexAlreadyAdded = " + tokenIndexAlreadyAdded);
         return result;
     }
 
