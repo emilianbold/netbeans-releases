@@ -40,8 +40,7 @@ package org.netbeans.modules.dlight.core.stack.dataprovider;
 
 import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 
 /**
@@ -56,8 +55,11 @@ public interface ThreadMapDataProvider extends DataProvider {
      */
     ThreadMapData queryData(ThreadMapDataQuery query);
 
-    ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
-    ThreadDump getStackTrace(long timestamp,  long threadID);
-    ThreadDump getStackTrace(long timestamp,  long threadID, int threadstate);
+    /**
+     * Returns stack thread dump on the base of the query passed
+     * @param query query to be used to get ThreadDump
+     * @return returns thread dump on the base of the query requested
+     */
+    ThreadDump getThreadDump(ThreadDumpQuery query);
 
 }

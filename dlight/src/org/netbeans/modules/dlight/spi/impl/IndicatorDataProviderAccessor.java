@@ -37,24 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.spi;
+package org.netbeans.modules.dlight.spi.impl;
+
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 
 /**
- * Represents Path Mapper
+ * Accessor class
+ * @author mt154047
  */
-public interface PathMapper {
+public abstract class IndicatorDataProviderAccessor {
 
-    /**
-     * Returns remote path for the <code>localPath</code>
-     * @param localPath
-     * @return remote path if exists, otherwise localPath itself
-     */
-    String getRemotePath(String localPath);
+ private static volatile IndicatorDataProviderAccessor DEFAULT;
 
-    /**
-     * Returns local path mapped on the remote path
-     * @param remotePath
-     * @return local path if map exists, otherwise remotePath itself
-     */
-    String getLocalPath(String remotePath);
+    public static IndicatorDataProviderAccessor getDefault() {
+        IndicatorDataProviderAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(IndicatorDataProvider.class.getName(), true, IndicatorDataProvider.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
+    }
+
+    public static void setDefault(IndicatorDataProviderAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public IndicatorDataProviderAccessor() {
+    }
+
+    public abstract  void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l);
+
+    public abstract  boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l);
+
 }

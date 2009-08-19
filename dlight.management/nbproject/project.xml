@@ -73,7 +73,7 @@
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.management.api</package>
-                <package>org.netbeans.modules.dlight.management.spi</package>
+                <package>org.netbeans.modules.dlight.management.remote.spi</package>
                 <package>org.netbeans.modules.dlight.management.ui.spi</package>
             </friend-packages>
         </data>
