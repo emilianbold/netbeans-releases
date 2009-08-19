@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
@@ -127,7 +128,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         pid = null;
     }
 
-    public synchronized void requestPrivileges(List<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
+    public synchronized void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         ConnectionManager mgr = ConnectionManager.getInstance();
 
         final Session session = ConnectionManagerAccessor.getDefault().

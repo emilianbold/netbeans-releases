@@ -278,7 +278,7 @@ import org.openide.util.NbBundle;
             if (dataStorage == null) {
                 return null;
             }
-            Map<String, String> serviceInfo = ((ServiceInfoDataStorage) dataStorage).getInfo();
+            Map<String, String> serviceInfo = dataStorage.getInfo();
             String projectFolderName = serviceInfo.get(GIZMO_PROJECT_FOLDER);
             if (projectFolderName == null) {
                 return null;

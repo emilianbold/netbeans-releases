@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.sps.impl;
 
 import java.security.acl.NotOwnerException;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import javax.swing.Action;
@@ -73,11 +74,11 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     abstract String getPID();
 
     public abstract void requestPrivileges(
-            List<String> requestedPrivileges,
+            Collection<String> requestedPrivileges,
             String root, char[] passwd) throws NotOwnerException;
 
     public void requestPrivileges(
-            final List<String> requestedPrivileges,
+            final Collection<String> requestedPrivileges,
             boolean askForPassword) throws NotOwnerException {
 
         if (SwingUtilities.isEventDispatchThread()) {
@@ -114,7 +115,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     }
 
     public boolean hasPrivileges(
-            final List<String> privs) {
+            final Collection<String> privs) {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)){
             invalidate();
             return false;
@@ -154,7 +155,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
      * @return
      */
     public AsynchronousAction getRequestPrivilegesAction(
-            final List<String> requestedPrivileges,
+            final Collection<String> requestedPrivileges,
             final Runnable onPrivilegesGranted) {
         final RequestPrivilegesAction action =
                 RequestPrivilegesAction.getInstance(this, requestedPrivileges);

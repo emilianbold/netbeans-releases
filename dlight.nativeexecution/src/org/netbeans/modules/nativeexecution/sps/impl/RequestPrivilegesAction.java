@@ -39,7 +39,7 @@
 package org.netbeans.modules.nativeexecution.sps.impl;
 
 import java.security.acl.NotOwnerException;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.support.ObservableAction;
@@ -51,9 +51,9 @@ public final class RequestPrivilegesAction
     private final static ConcurrentHashMap<Key, RequestPrivilegesAction> cache =
             new ConcurrentHashMap<Key, RequestPrivilegesAction>();
     private final SPSCommonImpl support;
-    private final List<String> requestedPrivileges;
+    private final Collection<String> requestedPrivileges;
 
-    public static RequestPrivilegesAction getInstance(SPSCommonImpl support, List<String> requestedPrivileges) {
+    public static RequestPrivilegesAction getInstance(SPSCommonImpl support, Collection<String> requestedPrivileges) {
         Key key = new Key(support, requestedPrivileges);
         RequestPrivilegesAction result = cache.get(key);
 
@@ -69,7 +69,7 @@ public final class RequestPrivilegesAction
 
     private RequestPrivilegesAction(
             final SPSCommonImpl support,
-            final List<String> requestedPrivileges) {
+            final Collection<String> requestedPrivileges) {
 
         super(loc("TaskPrivilegesSupport_GrantPrivileges_Action")); // NOI18N
         this.support = support;
@@ -97,9 +97,9 @@ public final class RequestPrivilegesAction
     private static class Key {
 
         SolarisPrivilegesSupport support;
-        List<String> requestedPrivileges;
+        Collection<String> requestedPrivileges;
 
-        public Key(SolarisPrivilegesSupport support, List<String> requestedPrivileges) {
+        public Key(SolarisPrivilegesSupport support, Collection<String> requestedPrivileges) {
             this.support = support;
             this.requestedPrivileges = requestedPrivileges;
         }

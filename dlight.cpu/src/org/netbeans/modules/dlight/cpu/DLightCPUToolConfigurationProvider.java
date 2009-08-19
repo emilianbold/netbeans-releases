@@ -52,10 +52,10 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
@@ -64,7 +64,6 @@ import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -131,21 +130,11 @@ public final class DLightCPUToolConfigurationProvider
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         }
 
-        // Use D-Trace as a provider of data for detailed view
-        String scriptFile = Util.copyResource(getClass(),
-                Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
-
-        DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
-
         DTDCConfiguration dtraceDataCollectorConfiguration =
-                new DTDCConfiguration(scriptFile,
-                Arrays.asList(profilerTableMetadata));
-
-        dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
+                DTDCConfiguration.createCpuSamplingConfiguration();
 
         toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(
-                dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+                dtraceDataCollectorConfiguration);
 
 //        DataTableMetadata detailedViewTableMetadataDtrace =
 //            createFunctionsListMetadata(profilerTableMetadata);
@@ -155,7 +144,7 @@ public final class DLightCPUToolConfigurationProvider
 //            detailedViewTableMetadataDtrace,
 //            "name", // NOI18N
 //            true);
-        VisualizerConfiguration detailsVisualizerConfigDtrace = createDTraceBasedVisualizerConfiguration(profilerTableMetadata);
+        VisualizerConfiguration detailsVisualizerConfigDtrace = createDTraceBasedVisualizerConfiguration(CpuSamplingSupport.CPU_SAMPLE_TABLE);
 
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
@@ -182,18 +171,6 @@ public final class DLightCPUToolConfigurationProvider
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 
         return toolConfiguration;
-    }
-
-    private DataTableMetadata createProfilerTableMetadata() {
-        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
-        Column cpuId = new Column("cpu_id", Integer.class, loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
-        Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
-        Column mstate = new Column("mstate", Integer.class, loc("CPUMonitorTool.ColumnName.mstate"), null); // NOI18N
-        Column duration = new Column("duration", Integer.class, loc("CPUMonitorTool.ColumnName.duration"), null); // NOI18N
-        Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
-
-        return new DataTableMetadata("CallStack", // NOI18N
-                Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
     }
 
     private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata) {

@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -122,14 +122,14 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
 
     public static class RequestPrivilegesTaskParams {
 
-        final List<String> requestedPrivileges;
+        final Collection<String> requestedPrivileges;
         final boolean askForPassword;
         final private String privilegesString;
         final SPSCommonImpl support;
 
         public RequestPrivilegesTaskParams(
                 SPSCommonImpl support,
-                List<String> requestedPrivileges,
+                Collection<String> requestedPrivileges,
                 boolean askForPassword) {
             this.support = support;
             this.requestedPrivileges = requestedPrivileges;
