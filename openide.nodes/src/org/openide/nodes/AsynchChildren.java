@@ -48,7 +48,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Children object which creates its keys on a background thread.  To use,
- * implement AsynchChildren.Provider and pass that to the constructor.
+ * implement {@link ChildFactory} and pass that to the constructor.
  *
  * @author Tim Boudreau
  * @param T the type of key object used to create the child nodes
@@ -63,7 +63,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     /**
      * Create a new AsyncChildren instance with the passed provider object
      * which will manufacture key objects and nodes.
-     * @param provider An object which can provide a list of keys and make
+     * @param factory An object which can provide a list of keys and make
      *        Nodes for them
      */ 
     AsynchChildren(ChildFactory<T> factory) {
