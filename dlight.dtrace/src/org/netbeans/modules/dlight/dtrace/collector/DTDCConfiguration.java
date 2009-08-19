@@ -38,11 +38,14 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector;
 
+import java.net.URL;
+import java.util.Arrays;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
 
 
@@ -69,7 +72,7 @@ public final class DTDCConfiguration implements
      */
     public static final String DTRACE_PROC = "dtrace_proc"; // NOI18N
     static final String DTDC_CONFIGURATION_ID = "DtraceDataCollectorConfigurationId"; // NOI18N
-    private String scriptPath;
+    private URL scriptUrl;
     private String args;
     private List<DataTableMetadata> datatableMetadata;
     private DtraceParser parser;
@@ -89,8 +92,8 @@ public final class DTDCConfiguration implements
      * @param scriptPath path to d-trace script (on the localhost).
      * @param dataTableMetadata metadats description of provided data.
      */
-    public DTDCConfiguration(String scriptPath, List<DataTableMetadata> dataTableMetadata) {
-        this.scriptPath = scriptPath;
+    public DTDCConfiguration(URL scriptUrl, List<DataTableMetadata> dataTableMetadata) {
+        this.scriptUrl = scriptUrl;
         this.datatableMetadata = dataTableMetadata;
         this.args = null;
         this.parser = null;
@@ -197,8 +200,8 @@ public final class DTDCConfiguration implements
         return requiredPrivileges;
     }
 
-    String getScriptPath() {
-        return scriptPath;
+    URL getScriptUrl() {
+        return scriptUrl;
     }
 
     boolean isStackSupportEnabled() {
@@ -219,6 +222,13 @@ public final class DTDCConfiguration implements
      */
     public String getID() {
         return DTDC_CONFIGURATION_ID;
+    }
+
+    public static DTDCConfiguration createCpuSamplingConfiguration() {
+        DTDCConfiguration result = new DTDCConfiguration(CpuSamplingSupport.CPU_SAMPLING_SCRIPT_URL, Arrays.asList(CpuSamplingSupport.CPU_SAMPLE_TABLE));
+        result.setStackSupportEnabled(true);
+        result.setOutputPrefix("cpu:"); // NOI18N
+        return result;
     }
 
     private static final class DTDCConfigurationAccessorImpl extends DTDCConfigurationAccessor {
@@ -244,8 +254,8 @@ public final class DTDCConfiguration implements
         }
 
         @Override
-        public String getScriptPath(DTDCConfiguration conf) {
-            return conf.getScriptPath();
+        public URL getScriptUrl(DTDCConfiguration conf) {
+            return conf.getScriptUrl();
         }
 
         @Override

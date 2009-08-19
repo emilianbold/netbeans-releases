@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -141,11 +142,10 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private List<DataCollectorConfiguration> initDataCollectorConfigurations() {
         List<DataCollectorConfiguration> result = new ArrayList<DataCollectorConfiguration>();
 
-        String scriptFile = Util.copyResource(getClass(),
-            Util.getBasePath(getClass()) + "/resources/sync.d"); // NOI18N
+        URL scriptUrl = getClass().getResource("resources/sync.d"); // NOI18N
 
         DTDCConfiguration dataCollectorConfiguration =
-            new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+            new DTDCConfiguration(scriptUrl, Arrays.asList(rawTableMetadata));
 
         dataCollectorConfiguration.setStackSupportEnabled(true);
         dataCollectorConfiguration.setIndicatorFiringFactor(1);

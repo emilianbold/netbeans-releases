@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,7 +149,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private DTDCConfiguration initDtraceDataCollectorConfiguration() {
 
         DTDCConfiguration dataCollectorConfiguration =
-                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata));
+                new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata));
 
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
@@ -166,7 +167,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private IndicatorDataProviderConfiguration initDtraceIndicatorDataProviderConfiguration() {
 
         DTDCConfiguration dataCollectorConfiguration =
-                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
+                new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         dataCollectorConfiguration.setScriptArgs(" -DNOSTACK"); // NOI18N
         dataCollectorConfiguration.setStackSupportEnabled(true); // true
@@ -176,8 +177,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     }
 
-    private String getScriptFile() {
-        return Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d"); // NOI18N
+    private URL getScriptUrl() {
+        return getClass().getResource("resources/mem.d"); // NOI18N
     }
 
     private LLDataCollectorConfiguration initLLDataCollectorConfiguration() {

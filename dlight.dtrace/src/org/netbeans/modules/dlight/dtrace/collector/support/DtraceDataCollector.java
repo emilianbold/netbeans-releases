@@ -41,10 +41,12 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,7 +125,7 @@ public final class DtraceDataCollector
             DLightLogger.getLogger(DtraceDataCollector.class);
     private Set<String> requiredPrivilegesSet;
     private DataTableMetadata tableMetaData = null;
-    private String localScriptPath;
+    private URL localScriptUrl;
     private String extraArgs;
     private String scriptPath;
     private Future<Integer> dtraceTask = null;
@@ -189,7 +191,7 @@ public final class DtraceDataCollector
     //        : configuration.getParser(), configuration.getDatatableMetadata());
 
 
-            this.localScriptPath = cfgInfo.getScriptPath(configuration);
+            this.localScriptUrl = cfgInfo.getScriptUrl(configuration);
             this.extraArgs = cfgInfo.getArgs(configuration);
 
             this.requiredPrivilegesSet = new HashSet<String>(
@@ -232,12 +234,12 @@ public final class DtraceDataCollector
         this.isSlave = isSlave;
     }
 
-    String getLocalScriptPath() {
-        return localScriptPath;
+    URL getLocalScriptUrl() {
+        return localScriptUrl;
     }
 
-    void setLocalScriptPath(String path) {
-        localScriptPath = path;
+    void setLocalScriptUrl(URL path) {
+        localScriptUrl = path;
     }
 
     ProcessLineCallback getProcessLineCallback() {
@@ -274,7 +276,10 @@ public final class DtraceDataCollector
             for (DtraceDataCollector ddc : slaveCollectors.values()) {
                 ddc.init(storages, target);
             }
-            setLocalScriptPath(mergeScripts().getAbsolutePath());
+            try {
+                setLocalScriptUrl(mergeScripts().toURI().toURL());
+            } catch (MalformedURLException ex) {
+            }
         }
 
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
@@ -293,15 +298,15 @@ public final class DtraceDataCollector
         if (execEnv.isLocal()) {
             // No need to copy file on localhost -
             // just esnure execution permissions...
-            scriptPath = localScriptPath;
+            scriptPath = Util.copyResource(localScriptUrl);
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
-            File script = new File(localScriptPath);
+            String briefName = Util.getBriefName(localScriptUrl);
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                scriptPath = hostInfo.getTempDir() + "/" + script.getName(); // NOI18N
+                scriptPath = hostInfo.getTempDir() + "/" + briefName; // NOI18N
                 Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        localScriptPath, execEnv, scriptPath, 0777, null);
+                        Util.copyResource(localScriptUrl), execEnv, scriptPath, 0777, null);
                 copyResult.get();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -689,7 +694,7 @@ public final class DtraceDataCollector
                 w.write("#!/usr/sbin/dtrace -ZCqs\n"); // NOI18N
                 for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                     DtraceDataCollector ddc = entry.getValue();
-                    BufferedReader r = new BufferedReader(new FileReader(ddc.getLocalScriptPath()));
+                    BufferedReader r = new BufferedReader(new InputStreamReader(ddc.getLocalScriptUrl().openStream()));
                     try {
                         for (String line = r.readLine(); line != null; line = r.readLine()) {
                             if (!line.startsWith("#!")) { // NOI18N

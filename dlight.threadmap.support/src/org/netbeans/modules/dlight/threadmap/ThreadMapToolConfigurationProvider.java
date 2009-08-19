@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.threadmap;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,10 +94,9 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         indicatorConfig.addVisualizerConfiguration(visualizerConfig);
         toolConfiguration.addIndicatorConfiguration(indicatorConfig);
 
-        String scriptFile = Util.copyResource(getClass(),
-                Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
+        URL scriptUrl = getClass().getResource("resources/msa.d"); // NOI18N
 
-        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
+        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(msaTableMetadata));
 
         dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
         dtraceDataCollectorConfiguration.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...

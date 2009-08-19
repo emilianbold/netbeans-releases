@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -103,12 +104,10 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final DataTableMetadata dtraceFopsMetadata =
                 new DataTableMetadata("fops", fopsColumns, null); // NOI18N
 
-        final String script = Util.copyResource(
-                FopsToolConfigurationProvider.class,
-                "org/netbeans/modules/dlight/fops/resources/fops.d"); // NOI18N
+        final URL scriptUrl = getClass().getResource("resources/fops.d"); // NOI18N
 
         final DTDCConfiguration dtraceCollectorConfig =
-                new DTDCConfiguration(script, Arrays.asList(dtraceFopsMetadata));
+                new DTDCConfiguration(scriptUrl, Arrays.asList(dtraceFopsMetadata));
         dtraceCollectorConfig.setStackSupportEnabled(true);
         dtraceCollectorConfig.setIndicatorFiringFactor(1);
         dtraceCollectorConfig.setOutputPrefix("fops:"); // NOI18N

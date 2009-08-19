@@ -51,6 +51,7 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,49 +94,34 @@ public final class DLightParallelAdviserToolConfigurationProvider
                 new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
         toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
         // D-Trace
-        String scriptFile = Util.copyResource(getClass(),
-                Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
-        Column timestamp = new Column("time_stamp", Long.class); // NOI18N
-        Column cpuId = new Column("cpu_id", Integer.class); // NOI18N
-        Column threadId = new Column("thread_id", Integer.class); // NOI18N
-        Column mstate = new Column("mstate", Integer.class); // NOI18N
-        Column duration = new Column("duration", Integer.class); // NOI18N
-        Column stackId = new Column("leaf_id", Integer.class); // NOI18N
-        DataTableMetadata profilerTableMetadata = new DataTableMetadata("CallStack", // NOI18N
-                Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
-        DTDCConfiguration dtraceDataCollectorConfiguration =
-                new DTDCConfiguration(scriptFile,
-                Arrays.asList(profilerTableMetadata));
-        dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
-        dtraceDataCollectorConfiguration.setOutputPrefix("cpu:"); // NOI18N
+        DTDCConfiguration dtraceDataCollectorConfiguration = DTDCConfiguration.createCpuSamplingConfiguration();
         toolConfiguration.addDataCollectorConfiguration(
                 dtraceDataCollectorConfiguration);
-        // D-Trace 2
-        String scriptFile2 = Util.copyResource(getClass(),
-                Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
-        Column threads = new Column("threads", Integer.class); // NOI18N
-        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
-        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
-        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
-        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
-        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
-        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
-        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
-        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
-        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
-        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
-        DTDCConfiguration dtraceDataCollectorConfiguration2 = new DTDCConfiguration(scriptFile2, Arrays.asList(new DataTableMetadata("MSA", // NOI18N
-                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null)));
-        dtraceDataCollectorConfiguration2.setOutputPrefix("msa:"); // NOI18N
-//        dtraceDataCollectorConfiguration2.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
-//        dtraceDataCollectorConfiguration2.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
-        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration2);
+        // D-Trace 2  -- causes NPE as there is no msa.d in this module
+//        URL scriptUrl = getClass().getResource(Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
+//        Column threads = new Column("threads", Integer.class); // NOI18N
+//        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
+//        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
+//        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
+//        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
+//        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
+//        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
+//        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
+//        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
+//        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
+//        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
+//        DTDCConfiguration dtraceDataCollectorConfiguration2 = new DTDCConfiguration(scriptUrl, Arrays.asList(new DataTableMetadata("MSA", // NOI18N
+//                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null)));
+//        dtraceDataCollectorConfiguration2.setOutputPrefix("msa:"); // NOI18N
+////        dtraceDataCollectorConfiguration2.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
+////        dtraceDataCollectorConfiguration2.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+//        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration2);
 
 
         // Indicator
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
-        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration2);
+//        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration2);
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
