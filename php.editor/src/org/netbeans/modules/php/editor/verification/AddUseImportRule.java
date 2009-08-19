@@ -199,143 +199,145 @@ public class AddUseImportRule extends AbstractRule {
                         }
                     });
                     if (suitableUses.isEmpty()) {
+                        AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
                         hints.add(new Hint(AddUseImportRule.this,
-                                getDisplayName(),
+                                importFix.getDescription(),
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                                Collections.<HintFix>singletonList(new AddImportFix(doc, currentScope, importName)), 500));
+                                Collections.<HintFix>singletonList(importFix), 500));
 
                         QualifiedName name = QualifiedName.getPreferredName(indexedName, currentScope);
                         if (name != null) {
+                            ChangeNameFix changeNameFix = new ChangeNameFix(doc, node, currentScope, name, nodeName);
                             hints.add(new Hint(AddUseImportRule.this,
-                                    getDisplayName(),
+                                    changeNameFix.getDescription(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                                    Collections.<HintFix>singletonList(new ChangeNameFix(doc, node, currentScope, name, nodeName)), 500));
+                                    Collections.<HintFix>singletonList(changeNameFix), 500));
                         }
-
                     }
+
                 }
-
             }
+
+        }
+    }
+
+    class AddImportFix implements HintFix {
+
+        private BaseDocument doc;
+        private NamespaceScope scope;
+        private QualifiedName importName;
+
+        public AddImportFix(BaseDocument doc, NamespaceScope scope, QualifiedName importName) {
+            this.doc = doc;
+            this.importName = importName;
+            this.scope = scope;
         }
 
-        class AddImportFix implements HintFix {
+        OffsetRange getOffsetRange() {
+            return new OffsetRange(getOffset(), getOffset() + getGeneratedCode().length());
+        }
 
-            private BaseDocument doc;
-            private NamespaceScope scope;
-            private QualifiedName importName;
+        public boolean isInteractive() {
+            return false;
+        }
 
-            public AddImportFix(BaseDocument doc, NamespaceScope scope, QualifiedName importName) {
-                this.doc = doc;
-                this.importName = importName;
-                this.scope = scope;
+        public boolean isSafe() {
+            return true;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportFix_Description", getGeneratedCode());
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + getGeneratedCode(), true, 0);//NOI18N
+            edits.apply();
+            UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, getOffsetRange().getEnd()));
+        }
+
+        private String getGeneratedCode() {
+            return "use " + importName.toString() + ";";//NOI18N
             }
 
-            OffsetRange getOffsetRange() {
-                return new OffsetRange(getOffset(), getOffset() + getGeneratedCode().length());
-            }
-
-            public boolean isInteractive() {
-                return false;
-            }
-
-            public boolean isSafe() {
-                return true;
-            }
-
-            public String getDescription() {
-                return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportFix_Description", getGeneratedCode());
-            }
-
-            public void implement() throws Exception {
-                int templateOffset = getOffset();
-                EditList edits = new EditList(doc);
-                edits.replace(templateOffset, 0, "\n" + getGeneratedCode(), true, 0);//NOI18N
-                edits.apply();
-                UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, getOffsetRange().getEnd()));
-            }
-
-            private String getGeneratedCode() {
-                return "use " + importName.toString() + ";";//NOI18N
-            }
-
-            private int getOffset() {
-                try {
-                    ModelElement offsetElement = null;
-                    Collection<? extends UseElement> declaredUses = scope.getDeclaredUses();
-                    if (!declaredUses.isEmpty()) {
-                        offsetElement = declaredUses.iterator().next();
-                    }
-                    if (offsetElement == null) {
-                        offsetElement = scope;
-                    }
-                    return Utilities.getRowEnd(doc, offsetElement.getOffset());
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+        private int getOffset() {
+            try {
+                ModelElement offsetElement = null;
+                Collection<? extends UseElement> declaredUses = scope.getDeclaredUses();
+                if (!declaredUses.isEmpty()) {
+                    offsetElement = declaredUses.iterator().next();
                 }
-                return 0;
+                if (offsetElement == null) {
+                    offsetElement = scope;
+                }
+                return Utilities.getRowEnd(doc, offsetElement.getOffset());
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            return 0;
+        }
+    }
+
+    class ChangeNameFix implements HintFix {
+
+        private BaseDocument doc;
+        private ASTNode node;
+        private NamespaceScope scope;
+        private QualifiedName newName;
+        private QualifiedName oldName;
+
+        public ChangeNameFix(BaseDocument doc, ASTNode node, NamespaceScope scope,
+                QualifiedName newName, QualifiedName oldName) {
+            this.doc = doc;
+            this.newName = newName;
+            this.oldName = oldName;
+            this.scope = scope;
+            this.node = node;
         }
 
-        class ChangeNameFix implements HintFix {
-
-            private BaseDocument doc;
-            private ASTNode node;
-            private NamespaceScope scope;
-            private QualifiedName newName;
-            private QualifiedName oldName;
-
-            public ChangeNameFix(BaseDocument doc, ASTNode node, NamespaceScope scope,
-                    QualifiedName newName, QualifiedName oldName) {
-                this.doc = doc;
-                this.newName = newName;
-                this.oldName = oldName;
-                this.scope = scope;
-                this.node = node;
-            }
-
-            OffsetRange getOffsetRange() {
-                return new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            }
-
-            public boolean isInteractive() {
-                return false;
-            }
-
-            public boolean isSafe() {
-                return true;
-            }
-
-            public String getDescription() {
-                return NbBundle.getMessage(AddUseImportRule.class, "ChangeNameFix_Description", getGeneratedCode());
-            }
-
-            public void implement() throws Exception {
-                int templateOffset = getOffset();
-                EditList edits = new EditList(doc);
-                edits.replace(templateOffset, oldName.toString().length(), getGeneratedCode(), true, 0);//NOI18N
-                edits.apply();
-                UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, templateOffset));
-            }
-
-            private String getGeneratedCode() {
-                return newName.toString();
-            }
-
-            private int getOffset() {
-                return node.getStartOffset();
-            }
+        OffsetRange getOffsetRange() {
+            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
 
-        private boolean isClassName(ASTNode parentNode) {
-            return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
-                    parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||
-                    parentNode instanceof StaticFieldAccess;
+        public boolean isInteractive() {
+            return false;
         }
 
-        private boolean isFunctionName(ASTNode parentNode) {
-            return parentNode instanceof FunctionName;
+        public boolean isSafe() {
+            return true;
         }
+
+        public String getDescription() {
+            return NbBundle.getMessage(AddUseImportRule.class, "ChangeNameFix_Description", getGeneratedCode());
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, oldName.toString().length(), getGeneratedCode(), true, 0);//NOI18N
+            edits.apply();
+            UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, templateOffset));
+        }
+
+        private String getGeneratedCode() {
+            return newName.toString();
+        }
+
+        private int getOffset() {
+            return node.getStartOffset();
+        }
+    }
+
+    private boolean isClassName(ASTNode parentNode) {
+        return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
+                parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||
+                parentNode instanceof StaticFieldAccess;
+    }
+
+    private boolean isFunctionName(ASTNode parentNode) {
+        return parentNode instanceof FunctionName;
     }
 }
