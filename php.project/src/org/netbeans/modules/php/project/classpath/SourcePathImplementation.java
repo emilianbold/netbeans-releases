@@ -142,7 +142,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         StringBuilder buffer = new StringBuilder(100);
         for (File file : project.getIgnoredFiles()) {
             String relPath = PropertyUtils.relativizeFile(root, file);
-            if (isUnderneath(relPath)) { // NOI18N
+            if (isUnderneath(relPath)) {
                 String pattern = relPath;
                 if (file.isDirectory()) {
                     pattern += "/**"; // NOI18N
@@ -171,7 +171,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (test != null) {
                 assert test.isDirectory();
                 String relPath = PropertyUtils.relativizeFile(root, test);
-                if (isUnderneath(relPath)) { // NOI18N
+                if (isUnderneath(relPath)) {
                     String pattern = relPath + "/**"; // NOI18N
                     if (buffer.length() > 0) {
                         buffer.append(","); // NOI18N
