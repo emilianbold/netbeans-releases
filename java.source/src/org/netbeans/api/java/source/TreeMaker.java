@@ -2679,9 +2679,11 @@ public final class TreeMaker {
         return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, (BlockTree) body, defaultValue);
     }
     
-    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {
+    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {        
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        List<? extends StatementTree> trees = block.getStatements();
+        TranslateIdentifier ti = new TranslateIdentifier(copy, true, false, seq);
+        ti.translate(block);
+        /*List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();
         for (StatementTree statement : trees) {
             seq.move((int) pos.getStartPosition(null, statement));
@@ -2714,6 +2716,6 @@ public final class TreeMaker {
                         break;
                 }
             }
-        }
+        }*/
     }
 }

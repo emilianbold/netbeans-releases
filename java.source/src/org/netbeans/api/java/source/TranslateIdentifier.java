@@ -720,8 +720,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return null;
         } else {
             if (copyComments) {
-                mapComments(tree);
-//                mapComments2(tree);
+//                mapComments(tree);
+                mapComments2(tree);
             }
             TreePath path = info.getTrees().getPath(unit, tree);
             if (path == null) {
@@ -758,8 +758,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return null;
         } else {
             if (copyComments) {
-                mapComments(tree);
-//                mapComments2(tree);
+//                mapComments(tree);
+                mapComments2(tree);
             }
             Tree newTree = tree.accept(this, null);
             // #144209
@@ -767,55 +767,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return newTree;
         }
     }
-    
-    private void mapComments(Tree tree) {
-        if (((JCTree) tree).pos <= 0) {
-            return;
-        }
-        commentService.getComments(tree).commentsMapped();
-        SourcePositions pos = info.getTrees().getSourcePositions();
-        seq.move((int) pos.getStartPosition(null, tree));
-        PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
-        int indent = NOPOS;
-        Token<JavaTokenId> token;
-        boolean b = false;
-        while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
-            if (seq.index() <= tokenIndexAlreadyAdded) {
-                return;
-            } else {
-                if (!b) {
-                    tokenIndexAlreadyAdded = seq.index();
-                    b = true;
-                }
-            }
-            switch (token.id()) {
-                case LINE_COMMENT:
-                    commentService.addComment(tree, Comment.create(Comment.Style.LINE, NOPOS, NOPOS, indent, token.toString()));
-                    indent = 0;
-                    break;
-                case BLOCK_COMMENT:
-                    commentService.addComment(tree, Comment.create(Comment.Style.BLOCK, NOPOS, NOPOS, indent, token.toString()));
-                    indent = NOPOS;
-                    break;
-                case JAVADOC_COMMENT:
-                    commentService.addComment(tree, Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, indent, token.toString()));
-                    indent = NOPOS;
-                    break;
-                case WHITESPACE:
-                    String tokenText = token.toString();
-                    commentService.addComment(tree, Comment.create(Comment.Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
-                    int newLinePos = tokenText.lastIndexOf('\n');
-                    if (newLinePos < 0) {
-                        if (indent >= 0)
-                            indent += tokenText.length();
-                    } else {
-                        indent = tokenText.length() - newLinePos - 1;
-                    }
-                    break;
-            }
-        }
-    }
-    
+        
     private void mapComments2(Tree tree) {
         if (((JCTree) tree).pos <= 0) {
             return;
@@ -885,12 +837,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     private boolean isEvil(Tree tree) {
         Tree.Kind kind = tree.getKind();
         switch (kind) {
-            case INT_LITERAL:            
-            case LONG_LITERAL:            
-            case BOOLEAN_LITERAL:            
-            case CHAR_LITERAL:            
             case MODIFIERS:
             case COMPILATION_UNIT:
+            case PRIMITIVE_TYPE:
                 return true;
             default: return false;
         }
@@ -918,7 +867,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                 }
 
             } else {
-                skipEvil(seq);
+//                skipEvil(seq);
                 Tree ctree = getTree(info.getTreeUtilities(), seq);
                 if (ctree != null && foundComments != null) {
                     int[] bounds = foundComments.getBounds();
@@ -926,6 +875,10 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                     if (tree.getKind() == Tree.Kind.COMPILATION_UNIT && weight == 0) {
                         attachComments(foundComments, tree, commentService, endPositions, seq);
                     } else if (weight >= 0) {
+                        TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
+                        if (path != null && path.getParentPath().getLeaf() == ctree) {
+                            attachComments(foundComments, tree, commentService, endPositions, seq);
+                        }
 //                        attachComments(foundComments, ctree, commentService, endPositions, seq);
                         return;
                     } else {
@@ -1236,14 +1189,14 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         int start = ts.offset();
         int end = ts.offset() + ts.token().length();
         while (ts.moveNext()) {
+            if (ts.index() < tokenIndexAlreadyAdded) continue;
             t = ts.token();
             if (isComment(t.id())) {
                 result.add(t);
                 start = Math.min(ts.offset(), start);
                 end = Math.max(ts.offset() + t.length(), end);
                 isLC = t.id() == JavaTokenId.LINE_COMMENT;
-                lastCommentIndex = ts.index();
-                tokenIndexAlreadyAdded = ts.index();
+                lastCommentIndex = ts.index();                
             } else if (t.id() == JavaTokenId.WHITESPACE) {
                 if ((numberOfNL(t) + (isLC ? 1 : 0)) > maxTension) {
                     break;
@@ -1254,6 +1207,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         }
         ts.moveIndex(lastCommentIndex);
         ts.moveNext();
+        tokenIndexAlreadyAdded = ts.index();
         result.setBounds(new int[]{start, end});
         System.out.println("tokenIndexAlreadyAdded = " + tokenIndexAlreadyAdded);
         return result;
