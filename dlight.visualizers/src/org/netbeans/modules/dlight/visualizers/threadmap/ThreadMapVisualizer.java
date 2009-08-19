@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
@@ -98,8 +99,8 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public ThreadStackVisualizer showStack(long timestamp, long threadID, long startTime) {
-                ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getStackTrace(timestamp, threadID), startTime);
+            public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getThreadDump(query), startTime);
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();

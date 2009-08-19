@@ -388,6 +388,40 @@ public class ExtendedTokenSequence {
         }
     }
 
+    /*package local*/ Token<CppTokenId> lookPreviousLineImportant(CppTokenId ... search){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                    case ESCAPED_WHITESPACE:
+                    case DOXYGEN_LINE_COMMENT:
+                        return null;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        for(CppTokenId id : search) {
+                            if (id == ts.token().id()) {
+                                return ts.token();
+                            }
+                        }
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
     /*package local*/ Token<CppTokenId> lookPreviousImportant(){
         int index = ts.index();
         try {

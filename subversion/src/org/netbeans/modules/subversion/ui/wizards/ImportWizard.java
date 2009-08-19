@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep;
@@ -100,6 +101,7 @@ public final class ImportWizard implements ChangeListener {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks                
                 repositoryStep.stop();
                 importStep.stop();
+                importPreviewStep.stop();
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
             if(wizardIterator.current() == importStep) {
@@ -113,10 +115,11 @@ public final class ImportWizard implements ChangeListener {
 
     private void setupImportPreviewStep() {
         // must be initialized so we may retrieve the commitFiles for the ImportAction
-        String repositoryUrl = repositoryStep.getRepositoryFile().getRepositoryUrl().toString();
+        SVNUrl repository = repositoryStep.getRepositoryFile().getRepositoryUrl();
+        String repositoryUrl = repository.toString();
         String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
         String localPath = context.getRootFiles()[0].getAbsolutePath();            
-        importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath);
+        importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath, repository);
     }
     
     private void setErrorMessage(AbstractStep.WizardMessage msg) {

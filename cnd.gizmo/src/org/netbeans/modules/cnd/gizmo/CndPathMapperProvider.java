@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.gizmo;
 
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.dlight.management.spi.PathMapper;
-import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
+import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -50,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.management.spi.PathMapperProvider.class)
+@ServiceProvider(service = org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider.class)
 public class CndPathMapperProvider implements PathMapperProvider{
 
     public PathMapper getPathMapper(ExecutionEnvironment env) {

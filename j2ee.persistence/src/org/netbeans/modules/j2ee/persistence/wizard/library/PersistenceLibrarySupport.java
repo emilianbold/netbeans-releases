@@ -291,7 +291,7 @@ public class PersistenceLibrarySupport  {
         for (Library each : LibraryManager.getDefault().getLibraries()){
             ClassPath cp = getLibraryClassPath(each);
             Provider provider = extractProvider(cp);
-            if (provider != null && containsClass(cp, "javax.persistence.EntityManager")){ //NOI18N
+            if (provider != null && containsClass(cp, "javax.persistence.EntityManager") && provider.isOnClassPath(cp)){ //NOI18N
                 providerLibs.add(new ProviderLibrary(each, cp, provider));
             }
         }
@@ -344,7 +344,7 @@ public class PersistenceLibrarySupport  {
     
     private static Provider extractProvider(ClassPath cp) {
         for (Provider each : ProviderUtil.getAllProviders()){
-            if (PersistenceLibrarySupport.containsClass(cp, each.getProviderClass())){
+            if (each.isOnClassPath(cp)){
                 return each;
             }
         }

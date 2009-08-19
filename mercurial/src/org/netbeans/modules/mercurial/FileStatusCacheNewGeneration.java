@@ -434,11 +434,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         if (counterUp != -1 || counterDown != -1) {
             // update all managed parents
             while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                if (!info.isDirectory()) {
+                    // folder is probably deleted, but getCachedStatus recognized it as an Up-To-Date file
+                    // this may happen: after restart, ide scans dirs, finds a deleted file which triggers this method
+                    // if it's parent is deleted, too, getCachedStatus returns an Up-To-Date file
+                    info = createFolderFileInformation(parent, null);
+                }
                 if (counterUp != -1) {
                     info.addToCounter(counterUp, 1, direct);
                 }
                 if (counterDown != -1) {
-                    info.addToCounter(counterDown, -1, direct);
+                    try {
+                        info.addToCounter(counterDown, -1, direct);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.WARNING, "Decreasing value for counter {0}, for directory {1}. Triggered by {2} which turned to {3}", //NOI18N
+                                new Object[] {counterDown, parent.getAbsolutePath(), file.getAbsolutePath(), counterUp});
+                        LOG.log(Level.WARNING, null, ex);
+                    }
                 }
                 direct = false;
             }

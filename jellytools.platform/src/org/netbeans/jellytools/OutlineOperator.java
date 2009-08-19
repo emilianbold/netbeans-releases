@@ -142,7 +142,7 @@ public class OutlineOperator extends JTableOperator {
                     return lrPath;
                 }
                 public String getDescription() {
-                    return("Tree node cell with name '" + isName + "' not present.");
+                    return("Tree node cell with name '" + isName + "' present.");
                 }
             });
 
@@ -184,6 +184,22 @@ public class OutlineOperator extends JTableOperator {
         }
 
         return findNextPathElement(irParentPath, isPath);
+    }
+
+    public void waitExpanded(final TreePath irTP)
+    {
+         if(irTP != null) {            
+            waitState(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(isExpanded(irTP));
+                    }
+                    public String getDescription() {
+                        return("Has \"" + irTP.toString() + "\" path expanded");
+                    }
+                });
+        } else {
+            throw(new JemmyException("No such path: null"));
+        }
     }
 
     public void expandPath(final TreePath irTP)

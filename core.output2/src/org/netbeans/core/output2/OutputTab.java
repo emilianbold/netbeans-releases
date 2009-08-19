@@ -48,7 +48,6 @@ import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
@@ -84,6 +83,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -387,13 +387,29 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             boolean matchCase = FindDialogPanel.matchCase();
             int[] sel = reversed ? out.getLines().rfind(pos, lastPattern, regExp, matchCase)
                     : out.getLines().find(pos, lastPattern, regExp, matchCase);
+            String appendMsg = null;
+            if (sel == null) {
+                sel = reversed ? out.getLines().rfind(out.getLines().getCharCount(), lastPattern, regExp, matchCase)
+                        : out.getLines().find(0, lastPattern, regExp, matchCase);
+                if (sel != null) {
+                    appendMsg = NbBundle.getMessage(OutputTab.class, reversed ? "MSG_SearchFromEnd" : "MSG_SearchFromBeg");
+                }
+            }
+            String msg;
             if (sel != null) {
                 getOutputPane().unlockScroll();
                 getOutputPane().setSelection(sel[0], sel[1]);
-                return true;
+                int line = out.getLines().getLineAt(sel[0]);
+                int col = sel[0] - out.getLines().getLineStart(line);
+                msg = NbBundle.getMessage(OutputTab.class, "MSG_Found", lastPattern, line + 1, col + 1);
+                if (appendMsg != null) {
+                    msg = msg + "; " + appendMsg;
+                }
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                msg = NbBundle.getMessage(OutputTab.class, "MSG_NotFound", lastPattern);
             }
+            StatusDisplayer.getDefault().setStatusText(msg);
+            return sel != null;
         }
         return false;
     }
@@ -674,8 +690,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private static final int ACTION_SMALLERFONT = 16;
     private static final int ACTION_FONTTYPE = 17;
     private static final int ACTION_FILTER = 18;
+    private static final int ACTION_PASTE = 19;
 
     Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
+    Action pasteAction = new TabAction(ACTION_PASTE, "ACTION_PASTE"); //NOI18N
     Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
     Action saveAsAction = new TabAction(ACTION_SAVEAS, "ACTION_SAVEAS"); //NOI18N
     Action closeAction = new TabAction(ACTION_CLOSE, "ACTION_CLOSE"); //NOI18N
@@ -700,7 +718,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action prevTabAction = new TabAction(ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
-        copyAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
+        copyAction, pasteAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
         wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
         clearAction, closeAction,};
 
@@ -777,6 +795,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             switch (id) {
                 case ACTION_COPY:
                     getOutputPane().copy();
+                    break;
+                case ACTION_PASTE:
+                    getOutputPane().paste();
                     break;
                 case ACTION_WRAP:
                     boolean wrapped = getOutputPane().isWrapped();
@@ -857,6 +878,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     assert false;
             }
         }
+    }
+
+    @Override
+    public void setInputVisible(boolean val) {
+        super.setInputVisible(val);
+        pasteAction.setEnabled(val);
     }
 
     private boolean validRegExp(String pattern) {

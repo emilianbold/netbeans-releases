@@ -81,11 +81,11 @@ public final class THAActionsProvider implements DLightTargetListener {
         startThreadAnalyzerConfiguration = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformer() {
 
             public synchronized boolean enable(final Project project) {
-                return project != null;
+                return THAProjectSupport.isSupported(project);
             }
 
             public void perform(final Project project) {
-                if (project == null) {
+                if (!THAProjectSupport.isSupported(project)) {
                     return;
                 }
                 THAIndicatorsTopComponent topComponent = THAIndicatorDelegator.getInstance().getProjectComponent(project);
@@ -110,7 +110,7 @@ public final class THAActionsProvider implements DLightTargetListener {
     }
 
     public static final synchronized THAActionsProvider getSupportFor(Project project) {
-        if (project == null) {
+        if (!THAProjectSupport.isSupported(project)){
             return null;
         }
 
