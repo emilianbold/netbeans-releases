@@ -56,6 +56,7 @@
     <!-- ============================================================================
       Default
     ============================================================================= -->
+    <!--
     <target name="clean-all">
         <antcall target="clean-platform">
             <param name="product.platforms" value="windows"/>
@@ -115,7 +116,7 @@
     <target name="clean-platform" depends="clean"/>
     <target name="build-platform" depends="clean-platform,checkout,build"/>
     <target name="release-platform" depends="build-platform,release"/>
-
+    -->
 
     <!--
       The default target. 
