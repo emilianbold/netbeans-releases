@@ -242,7 +242,7 @@ public class BugtrackingUtil {
         JLabel label = new JLabel();
         Mnemonics.setLocalizedText(label, message);
         panel.add(label);
-        label.setLabelFor(bar.getCommand());
+        label.setLabelFor(bar.getIssueComponent());
         LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
         int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
