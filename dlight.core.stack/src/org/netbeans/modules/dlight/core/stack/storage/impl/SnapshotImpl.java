@@ -49,10 +49,12 @@ final class SnapshotImpl implements ThreadSnapshot {
     private final ThreadInfo threadInfo;
     private final SQLStackDataStorage storage;
     private final int stackID;
+    private final MSAState state;
 
-    public SnapshotImpl(final SQLStackDataStorage storage, final int threadID, final int stackID) {
+    public SnapshotImpl(final SQLStackDataStorage storage, final int threadID, final int stackID, final MSAState state) {
         this.storage = storage;
         this.stackID = stackID;
+        this.state = state;
         
         this.threadInfo = new ThreadInfo() {
 
@@ -76,8 +78,7 @@ final class SnapshotImpl implements ThreadSnapshot {
     }
 
     public MSAState getState() {
-        // TODO: implement!
-        return MSAState.Running;
+        return state;
     }
 
     public MemoryAccessType getMemoryAccessType() {

@@ -75,6 +75,7 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
 import org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects;
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -257,7 +258,7 @@ public class ELExpression {
         String beanName = extractBeanName();
 
         // not found within declared beans, try implicit objects
-        ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
+        ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
 
         if (implObj != null) {
             return implObj.getClazz();

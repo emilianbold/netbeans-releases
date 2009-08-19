@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
+import org.openide.nodes.NodeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
@@ -1325,8 +1326,45 @@ public class TreeTableView extends BeanTreeView {
             public Node getOriginalNode () {
                 return super.getOriginal ();
             }
+
+            @Override
+            protected NodeListener createNodeListener() {
+                return new FilterNode.NodeAdapter(this) {
+
+                    @Override
+                    protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
+                        super.propertyChange(fn, ev);
+                        if (ev.getPropertyName().equals(Node.PROP_LEAF)) {
+                            final org.openide.nodes.Children[] newChildren = new org.openide.nodes.Children[1];
+                            Children.MUTEX.readAccess(new Runnable() {
+
+                                public void run() {
+                                    boolean origIsLeaf = getOriginal().isLeaf();
+                                    boolean thisIsLeaf = isLeaf();
+                                    if (origIsLeaf && !thisIsLeaf) {
+                                        newChildren[0] = Children.LEAF;
+                                    } else if (!origIsLeaf && thisIsLeaf) {
+                                        newChildren[0] = new SortedChildren(getOriginal());
+                                    }
+                                }
+                            });
+
+                            if (newChildren[0] != null) {
+                                Children.MUTEX.postWriteRequest(
+                                        new Runnable() {
+
+                                            public void run() {
+                                                setChildren(newChildren[0]);
+                                            }
+                                        }
+                                );
+                            }
+                        }
+                    }
+                };
+            }
         }
-        
+
         private class SortedChildren extends FilterNode.Children {
             public SortedChildren (Node n) {
                 super (n);

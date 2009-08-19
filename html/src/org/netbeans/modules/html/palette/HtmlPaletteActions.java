@@ -47,10 +47,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -97,14 +99,9 @@ public class HtmlPaletteActions extends PaletteActions {
         public void actionPerformed(ActionEvent e) {
       
             ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
-//            if (drop == null) {
-//                String body = (String) item.lookup(String.class);
-//                drop = new HTMLEditorDropDefault(body);
-//            }
-            
             JTextComponent target = Utilities.getFocusedComponent();
             if (target == null) {
-                String msg = NbBundle.getMessage(HtmlPaletteActions.class, "MSG_ErrorNoFocusedDocument");
+                String msg = NbBundle.getMessage(HtmlPaletteActions.class, "MSG_ErrorNoFocusedDocument"); //NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -117,11 +114,14 @@ public class HtmlPaletteActions extends PaletteActions {
             }
             
             try {
-                PaletteController pc = HtmlPaletteFactory.getPalette();
-                pc.clearSelection();
+                FileObject fo = DataLoadersBridge.getDefault().getFileObject(target);
+                if(fo != null) {
+                    PaletteController pc = HtmlPaletteFactory.getPalette(fo);
+                    pc.clearSelection();
+                }
             }
-            catch (IOException ioe) {
-            } //should not occur
+            catch (IOException ignored) {
+            }
 
         }
     }

@@ -36,25 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.datacollector;
 
-package org.netbeans.modules.dlight.management.spi;
+import java.net.URL;
+import java.util.Arrays;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
 /**
- * Represents Path Mapper
+ * @author Alexey Vladykin
  */
-public interface PathMapper {
+public final class CpuSamplingSupport {
 
-    /**
-     * Returns remote path for the <code>localPath</code>
-     * @param localPath
-     * @return remote path if exists, otherwise localPath itself
-     */
-    String getRemotePath(String localPath);
+    private CpuSamplingSupport() {
+    }
 
-    /**
-     * Returns local path mapped on the remote path
-     * @param remotePath
-     * @return local path if map exists, otherwise remotePath itself
-     */
-    String getLocalPath(String remotePath);
+    public static final URL CPU_SAMPLING_SCRIPT_URL =
+            CpuSamplingSupport.class.getResource("/org/netbeans/modules/dlight/core/stack/resources/calls.d"); // NOI18N
+
+    public static final Column TIMESTAMP_COLUMN =
+            new Column("time_stamp", Long.class, getMessage("CpuSampling.Column.time_stamp"), null); // NOI18N
+
+    public static final Column CPU_COLUMN =
+            new Column("cpu_id", Integer.class, getMessage("CpuSampling.Column.cpu_id"), null); // NOI18N
+
+    public static final Column THREAD_COLUMN =
+            new Column("thread_id", Integer.class, getMessage("CpuSampling.Column.thread_id"), null); // NOI18N
+
+    public static final Column MICROSTATE_COLUMN =
+            new Column("mstate", Integer.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
+
+    public static final Column DURATION_COLUMN =
+            new Column("duration", Integer.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
+
+    public static final Column STACK_COLUMN =
+            new Column("leaf_id", Integer.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
+
+    public static final DataTableMetadata CPU_SAMPLE_TABLE =
+            new DataTableMetadata("CallStack", // NOI18N
+            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN), null);
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CpuSamplingSupport.class, key);
+    }
 }

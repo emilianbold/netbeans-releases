@@ -37,75 +37,73 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.dtrace.collector;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
-
-
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 /**
- * This class is to configure
+ * The query to be used to get ThreadDump
+ * 
+ * @author Maria Tishkova
  */
-public final class MultipleDTDCConfiguration
-        implements DataCollectorConfiguration,
-        IndicatorDataProviderConfiguration {
+public final class ThreadDumpQuery {
+    private final long threadID;
+    private final ThreadState threadState;
+    private final List<Integer> showThreads;
+    private final MSAState preferredState;
+    private final boolean isMSAMode;
+    private final boolean isFullMode;
+    private final long startTime;
 
-    private static final String ID =
-            "MultipleDtraceDataCollectorConfiguration"; // NOI18N
-    private final DTDCConfiguration configuration;
-    private final String prefix;
-
-
-    static {
-        MultipleDTDCConfigurationAccessor.setDefault(
-                new MultipleDTDCConfigurationAccessorImpl());
-    }
 
     /**
-     * Constructs new MultipleDTDCConfiguration object
-     * @param configuration dtrace data collector configuration
-     * @param prefix script output prefix
+     * The query to filter out the data for stacks
+     * @param threadID thread id
+     * @param threadState thread state (to get timestamp)
+     * @param showThreads the list of the threads to get thread dump for
+     * @param prefferedState the state we would like to get stack for
+     * @param isMSAMode 
+     * @param isFullMode
+     * @param startTime start time
      */
-    public MultipleDTDCConfiguration(
-            final DTDCConfiguration configuration, final String prefix) {
-        this.configuration = configuration;
-        this.prefix = prefix;
+    public ThreadDumpQuery(long threadID, ThreadState threadState, List<Integer> showThreads, MSAState preferredState, boolean isMSAMode, boolean isFullMode, long startTime){
+        this.threadID = threadID;
+        this.threadState = threadState;
+        this.showThreads = showThreads;
+        this.preferredState = preferredState;
+        this.isMSAMode = isMSAMode;
+        this.isFullMode = isFullMode;
+        this.startTime = startTime;
     }
 
-    /**
-     * Returns unique ID to be used to identify configuration
-     * @return unique id
-     */
-    public String getID() {
-        return ID;
+    public boolean isFullMode() {
+        return isFullMode;
     }
 
-    /*package*/ DTDCConfiguration getDTDCConfiguration() {
-        return configuration;
+    public boolean isMSAMode() {
+        return isMSAMode;
     }
 
-    /*package*/ String getOutputPrefix() {
-        return prefix;
+    public MSAState getPreferredState() {
+        return preferredState;
     }
 
-    private static final class MultipleDTDCConfigurationAccessorImpl
-            extends MultipleDTDCConfigurationAccessor {
-
-        @Override
-        public String getID() {
-            return ID;
-        }
-
-        @Override
-        public DTDCConfiguration getDTDCConfiguration(
-                MultipleDTDCConfiguration configuration) {
-            return configuration.getDTDCConfiguration();
-        }
-
-        public String getOutputPrefix(MultipleDTDCConfiguration configuration) {
-            return configuration.getOutputPrefix();
-        }
+    public List<Integer> getShowThreads() {
+        return showThreads;
     }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public ThreadState getThreadState() {
+        return threadState;
+    }
+
+    public long getThreadID() {
+        return threadID;
+    }
+
+    
 }

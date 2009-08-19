@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,51 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.impl;
 
-import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+package org.netbeans.modules.dlight.management.remote.spi;
+
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author masha
+ * Path mapper provider information about path mapping if exists for the Execution enviroment
  */
-public abstract class MultipleDTDCConfigurationAccessor {
+public interface PathMapperProvider {
 
-    private static volatile MultipleDTDCConfigurationAccessor DEFAULT;
+    /**
+     * Returns PathMapper if exists
+     * @param env execution enviroment to get path mapper for
+     * @return path mapper info if exists, <code>null</code> otherwise
+     */
+    public PathMapper getPathMapper(ExecutionEnvironment env);
 
-    public static MultipleDTDCConfigurationAccessor getDefault() {
-        MultipleDTDCConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(MultipleDTDCConfiguration.class.getName(), true,
-                    MultipleDTDCConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-
-        return DEFAULT;
-    }
-
-    public static void setDefault(MultipleDTDCConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public MultipleDTDCConfigurationAccessor() {
-    }
-
-    public abstract String getID();
-
-    public abstract DTDCConfiguration getDTDCConfiguration(
-            MultipleDTDCConfiguration configuration);
-
-    public abstract String getOutputPrefix(
-            MultipleDTDCConfiguration configuration);
 }

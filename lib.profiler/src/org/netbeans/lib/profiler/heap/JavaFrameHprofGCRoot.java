@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +36,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.support;
 
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+package org.netbeans.lib.profiler.heap;
+
+import java.util.Iterator;
 
 /**
  *
+ * @author Tomas Hurka
  */
-@ServiceProviders({
-    @ServiceProvider(service = DataCollectorFactory.class),
-    @ServiceProvider(service = IndicatorDataProviderFactory.class)
-})
-public final class MultipleDtraceDataCollectorFactory
-    implements DataCollectorFactory<MultipleDTDCConfiguration>,
-    IndicatorDataProviderFactory<MultipleDTDCConfiguration> {
-
-    private final Object lock = new Object();
+class JavaFrameHprofGCRoot extends HprofGCRoot implements JavaFrameGCRoot {
     
-    private MultipleDtraceDataCollector currentCollector = null;
+    JavaFrameHprofGCRoot(HprofHeap h, long offset) {
+        super(h,offset);
+    }
 
-    public MultipleDtraceDataCollector create(MultipleDTDCConfiguration configuration) {
-        //return MultipleDtraceDataCollectorSupport.getInstance().getCollector(configuration);
-        synchronized (lock) {
-            if (currentCollector == null) {
-                currentCollector = new MultipleDtraceDataCollector(configuration);
-            } else {
-                currentCollector.addConfiguration(configuration);
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+
+    
+    private int getThreadSerialNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize());
+    }
+
+    public int getFrameNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize() + 4);
+    }    
+
+    public ThreadObjectGCRoot getThreadGCRoot() {
+        int serial = getThreadSerialNumber();
+        Iterator gcRootsIt = heap.getGCRoots().iterator();
+        
+        while(gcRootsIt.hasNext()) {
+            Object gcRoot = gcRootsIt.next();
+            
+            if (gcRoot instanceof ThreadObjectHprofGCRoot) {
+                ThreadObjectHprofGCRoot threadObjGC = (ThreadObjectHprofGCRoot) gcRoot;
+                if (serial == threadObjGC.getThreadSerialNumber()) {
+                    return threadObjGC;
+                }
             }
-            return currentCollector;
         }
+        return null;
     }
 
-    public String getID() {
-        return MultipleDTDCConfigurationAccessor.getDefault().getID();
-    }
-
-    public void reset() {
-        synchronized (lock) {
-            currentCollector = null;
-        }
-    }
 }

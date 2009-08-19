@@ -277,6 +277,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
     }
 
+    public final void paste() {
+        textView.paste();
+    }
+
     protected void setDocument (Document doc) {
         if (hasSelection()) {
             hasSelectionChanged(false);

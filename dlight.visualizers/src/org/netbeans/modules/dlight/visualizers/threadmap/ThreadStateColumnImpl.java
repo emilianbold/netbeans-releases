@@ -203,7 +203,8 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
                             if (index < (threadData.size() - 1)) {
                                 xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - panel.getViewStart()) * factor), width);
                             } else {
-                                xx = Math.min((int) ((dataEnd - panel.getViewStart()) * factor), width + 1);
+                                //xx = Math.min((int) ((dataEnd - panel.getViewStart()) * factor), width + 1);
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp() + panel.getInterval()) - panel.getViewStart()) * factor), width);
                             }
                             if (x <= point.x && point.x < xx) {
                                 return index;

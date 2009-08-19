@@ -100,6 +100,7 @@ public class OutlineNode {
     public void expand()
     {
         getOutline().expandPath(getTreePath());
+        getOutline().waitExpanded(getTreePath());        
     }
 
 }

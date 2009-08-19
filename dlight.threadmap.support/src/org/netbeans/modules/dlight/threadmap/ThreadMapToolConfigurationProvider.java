@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.threadmap;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +56,6 @@ import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
@@ -94,18 +94,16 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         indicatorConfig.addVisualizerConfiguration(visualizerConfig);
         toolConfiguration.addIndicatorConfiguration(indicatorConfig);
 
-        String scriptFile = Util.copyResource(getClass(),
-                Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
+        URL scriptUrl = getClass().getResource("resources/msa.d"); // NOI18N
 
-        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
+        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(msaTableMetadata));
 
         dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
         dtraceDataCollectorConfiguration.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+        dtraceDataCollectorConfiguration.setOutputPrefix("msa:"); // NOI18N
 
-        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa"); // NOI18N
-
-        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
-        toolConfiguration.addDataCollectorConfiguration(collector);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration);
+        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration);
 
         return toolConfiguration;
     }

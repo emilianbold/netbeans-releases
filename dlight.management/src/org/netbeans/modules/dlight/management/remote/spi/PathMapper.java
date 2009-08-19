@@ -37,20 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.spi;
-
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.dlight.management.remote.spi;
 
 /**
- * Path mapper provider information about path mapping if exists for the Execution enviroment
+ * Represents Path Mapper
  */
-public interface PathMapperProvider {
+public interface PathMapper {
 
     /**
-     * Returns PathMapper if exists
-     * @param env execution enviroment to get path mapper for
-     * @return path mapper info if exists, <code>null</code> otherwise
+     * Returns remote path for the <code>localPath</code>
+     * @param localPath
+     * @return remote path if exists, otherwise localPath itself
      */
-    public PathMapper getPathMapper(ExecutionEnvironment env);
+    String getRemotePath(String localPath);
 
+    /**
+     * Returns local path mapped on the remote path
+     * @param remotePath
+     * @return local path if map exists, otherwise remotePath itself
+     */
+    String getLocalPath(String remotePath);
 }

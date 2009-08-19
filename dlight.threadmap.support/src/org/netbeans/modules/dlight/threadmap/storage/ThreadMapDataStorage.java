@@ -39,22 +39,31 @@
 package org.netbeans.modules.dlight.threadmap.storage;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadData;
 import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 
-public class ThreadMapDataStorage {
+public class ThreadMapDataStorage implements ProxyDataStorage {
     // TODO: currently only one
+
+    public static final String THREAD_MAP_STORAGE_TYPE_ID = "ThreadMapDataStorage"; // NOI18N
 
     private static final List<ThreadMapDataStorage> instances = new ArrayList<ThreadMapDataStorage>();
     private final List<ThreadDataImpl> data;
     private TimeDuration frequency;
+    private SQLDataStorage sqlStorage;
 
 
     static {
@@ -65,7 +74,7 @@ public class ThreadMapDataStorage {
         return instances.get(0);
     }
 
-    private ThreadMapDataStorage() {
+    /*package*/ ThreadMapDataStorage() {
         data = new LinkedList<ThreadDataImpl>();
     }
 
@@ -136,5 +145,39 @@ public class ThreadMapDataStorage {
     public boolean shutdown() {
         clear();
         return true;
+    }
+
+    public DataStorageType getBackendDataStorageType() {
+        return DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
+    }
+
+    public List<DataTableMetadata> getBackendTablesMetadata() {
+        return Collections.emptyList();
+    }
+
+    public void attachTo(DataStorage storage) {
+        this.sqlStorage = (SQLDataStorage) storage;
+    }
+
+    public boolean hasData(DataTableMetadata data) {
+        return false;
+    }
+
+    public void addData(String tableName, List<DataRow> data) {
+        if (sqlStorage != null) {
+            sqlStorage.addData(tableName, data);
+        }
+    }
+
+    public Collection<DataStorageType> getStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(THREAD_MAP_STORAGE_TYPE_ID));
+    }
+
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
+
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 }
