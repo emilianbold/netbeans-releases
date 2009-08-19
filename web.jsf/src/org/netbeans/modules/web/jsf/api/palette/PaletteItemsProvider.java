@@ -37,23 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
+package org.netbeans.modules.web.jsf.api.palette;
 
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.web.jsf.palette.items.JsfForm;
+import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 
 /**
  *
- * @author Radek Matous
+ * @author marekfukala
  */
-public abstract class IndexedFullyQualified extends IndexedElement{
-    IndexedFullyQualified(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
-        super(name,in,index,fileUrl,offset,flags,kind);
+public final class PaletteItemsProvider {
+
+    private static Collection<PaletteItem> ITEMS;
+
+    public static final synchronized Collection<PaletteItem> getPaletteItems() {
+        if(ITEMS == null) {
+            ITEMS = new ArrayList<PaletteItem>();
+            ITEMS.add(new JsfForm());
+            ITEMS.add(new JsfTable());
+        }
+        return ITEMS;
     }
 
-    public abstract String getFullyQualifiedName();
-    public QualifiedName getQualifiedName() {
-        return QualifiedName.create(getNamespaceName()).append(getName());
-    }
-    public abstract String getNamespaceName();
 }

@@ -889,9 +889,9 @@ Missing position for node SCRIPT[0:0]:EXPR_RESULT[2124:9]:SETPROP[2124:9]:OBJECT
 
   <OBJLITNAME>setRequestHeaders</OBJLITNAME>: <FUNCTION>function() <BLOCK>{
     <VAR>var <NAME>headers = <OBJECTLIT>{
-      <OBJLITNAME>'X-Requested-Wit</OBJLITNAME>h': <STRING>'XMLHttpRequest'</STRING>,
-      <OBJLITNAME>'X-Prototype-Versio</OBJLITNAME>n': <GETPROP><NAME>Prototype</NAME>.<STRING>Version</STRING></GETPROP>,
-      <OBJLITNAME>'Accep</OBJLITNAME>t': <STRING>'text/javascript, text/html, application/xml, text/xml, */*'</STRING>
+      '<OBJLITNAME>X-Requested-With</OBJLITNAME>': <STRING>'XMLHttpRequest'</STRING>,
+      '<OBJLITNAME>X-Prototype-Version</OBJLITNAME>': <GETPROP><NAME>Prototype</NAME>.<STRING>Version</STRING></GETPROP>,
+      '<OBJLITNAME>Accept</OBJLITNAME>': <STRING>'text/javascript, text/html, application/xml, text/xml, */*'</STRING>
     }</OBJECTLIT></NAME></VAR>;
 
     <BLOCK>if (<IFNE><EQ><GETPROP><THIS>this</THIS>.<STRING>method</STRING></GETPROP> == <STRING>'post'</STRING></EQ></IFNE>) <BLOCK>{
@@ -1196,7 +1196,7 @@ Missing position for node SCRIPT[0:0]:EXPR_RESULT[2124:9]:SETPROP[2124:9]:OBJECT
   <OBJLITNAME>inspect</OBJLITNAME>: <FUNCTION>function(<PARAMETER>element</PARAMETER>) <BLOCK>{
     <EXPR_VOID><SETNAME><BINDNAME>element</BINDNAME> = <CALL><NAME>$</NAME>(<NAME>element</NAME>)</CALL></SETNAME></EXPR_VOID>;
     <VAR>var <NAME>result = <ADD><STRING>'&lt;'</STRING> + <CALL><NAME>element</NAME>.<GETPROP><STRING>tagName</STRING></GETPROP>.<GETPROP><STRING>toLowerCase</STRING></GETPROP>()</CALL></ADD></NAME></VAR>;
-    <EXPR_VOID><CALL><CALL><NAME>$H</NAME>(<OBJECTLIT>{<OBJLITNAME>'i</OBJLITNAME>d': <STRING>'id'</STRING>, <OBJLITNAME>'classNam</OBJLITNAME>e': <STRING>'class'</STRING>}</OBJECTLIT></CALL>).<GETPROP><STRING>each</STRING></GETPROP>(<FUNCTION>function(<PARAMETER>pair</PARAMETER>) <BLOCK>{
+    <EXPR_VOID><CALL><CALL><NAME>$H</NAME>(<OBJECTLIT>{'<OBJLITNAME>id</OBJLITNAME>': <STRING>'id'</STRING>, '<OBJLITNAME>className</OBJLITNAME>': <STRING>'class'</STRING>}</OBJECTLIT></CALL>).<GETPROP><STRING>each</STRING></GETPROP>(<FUNCTION>function(<PARAMETER>pair</PARAMETER>) <BLOCK>{
       <VAR>var <NAME>property = <CALL><NAME>pair</NAME>.<GETPROP><STRING>first</STRING></GETPROP>()</CALL></NAME>, <NAME>attribute = <CALL><NAME>pair</NAME>.<GETPROP><STRING>last</STRING></GETPROP>()</CALL></NAME></VAR>;
       <VAR>var <NAME>value = (<CALL><OR><GETELEM><NAME>element</NAME>[<NAME>property</NAME>]</GETELEM> || <STRING>''</STRING></OR>).<GETPROP><STRING>toString</STRING></GETPROP>()</CALL></NAME></VAR>;
       <BLOCK>if (<IFNE><NAME>value</NAME></IFNE>) <EXPR_VOID><SETNAME><BINDNAME><ADD><NAME>result</NAME></BINDNAME> += <ADD><ADD><ADD><STRING>' '</STRING> + <NAME>attribute</NAME></ADD> + <STRING>'='</STRING></ADD> + <CALL><NAME>value</NAME>.<GETPROP><STRING>inspect</STRING></GETPROP>(<TRUE>true</TRUE>)</CALL></ADD></ADD></SETNAME></EXPR_VOID>;</BLOCK><TARGET/>

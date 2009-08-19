@@ -45,6 +45,7 @@ import java.util.Collection;
  */
 public interface NamespaceScope extends VariableScope {
     QualifiedName getQualifiedName();
+    Collection<? extends UseElement> getDeclaredUses();
     Collection<? extends TypeScope> getDeclaredTypes();
     Collection<? extends ClassScope> getDeclaredClasses();
     Collection<? extends InterfaceScope> getDeclaredInterfaces();

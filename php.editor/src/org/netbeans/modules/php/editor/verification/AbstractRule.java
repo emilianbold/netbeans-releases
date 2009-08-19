@@ -37,23 +37,57 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
+package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Radek Matous
  */
-public abstract class IndexedFullyQualified extends IndexedElement{
-    IndexedFullyQualified(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
-        super(name,in,index,fileUrl,offset,flags,kind);
+public abstract class AbstractRule implements AstRule {
+    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+        if (isKindSupported(kind)) {
+            computeHintsImpl(context, hints, kind);
+        }
+    }
+    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind);
+
+    boolean isKindSupported(PHPHintsProvider.Kind kind) {
+        return kind.equals(PHPHintsProvider.Kind.SUGGESTION);
+    }
+    @Override
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(PHPHintsProvider.DEFAULT_LINE_HINTS);
     }
 
-    public abstract String getFullyQualifiedName();
-    public QualifiedName getQualifiedName() {
-        return QualifiedName.create(getNamespaceName()).append(getName());
+    public boolean getDefaultEnabled() {
+        return true;
     }
-    public abstract String getNamespaceName();
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
 }

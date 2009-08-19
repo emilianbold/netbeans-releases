@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,26 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
-
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+package org.netbeans.modules.php.editor.model;
 
 /**
- *
  * @author Radek Matous
  */
-public abstract class IndexedFullyQualified extends IndexedElement{
-    IndexedFullyQualified(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
-        super(name,in,index,fileUrl,offset,flags,kind);
-    }
-
-    public abstract String getFullyQualifiedName();
-    public QualifiedName getQualifiedName() {
-        return QualifiedName.create(getNamespaceName()).append(getName());
-    }
-    public abstract String getNamespaceName();
+public interface UseElement extends ModelElement {
+    String getAliasName();
 }
