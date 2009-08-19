@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.tasklist.impl;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -53,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.spi.tasklist.FileTaskScanner;
@@ -84,7 +88,7 @@ public class TaskList {
     public TaskList() {
     }
     
-    void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks, TaskFilter filter ) {
+    void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks, TaskFilter filter ) throws IOException {
         lock.writeLock().lock();
         
         List<Task> removed = clear( scanner, resource );
@@ -160,11 +164,16 @@ public class TaskList {
         List<Task> toRemove = null;
         List<Task> tasks = pushScanner2tasks.get( scanner );
         if( null != tasks ) {
-            for( Task t : tasks ) {
-                if( resource.equals( Accessor.getResource( t ) ) ) {
-                    if( null == toRemove )
-                        toRemove = new LinkedList<Task>();
-                    toRemove.add( t );
+            if( null == resource ) {
+                toRemove = new LinkedList<Task>();
+                toRemove.addAll(tasks);
+            } else {
+                for( Task t : tasks ) {
+                    if( resource.equals( Accessor.getFile( t ) ) ) {
+                        if( null == toRemove )
+                            toRemove = new LinkedList<Task>();
+                        toRemove.add( t );
+                    }
                 }
             }
         }
@@ -269,14 +278,14 @@ public class TaskList {
         }
     }
     
-    void clear( FileTaskScanner scanner, FileObject... resources ) {
+    void clear( FileTaskScanner scanner, FileObject... resources ) throws IOException {
         lock.readLock().lock();
         ArrayList<Task> toRemove = null;
         List<Task> tasks = fileScanner2tasks.get( scanner );
         if( null != tasks ) {
             for( Task t : tasks ) {
                 for( FileObject rc : resources ) {
-                    if( rc.equals( Accessor.getResource( t ) ) ) {
+                    if( rc.equals( Accessor.getFile( t ) ) ) {
                         if( null == toRemove )
                             toRemove = new ArrayList<Task>( resources.length );
                         toRemove.add( t );
@@ -306,7 +315,7 @@ public class TaskList {
             return null;
         List<Task> toRemove = null;
         for( Task t : tasks ) {
-            if( resource.equals( Accessor.getResource( t ) ) ) {
+            if( resource.equals( Accessor.getFile( t ) ) ) {
                 if( null == toRemove )
                     toRemove = new LinkedList<Task>();
                 toRemove.add( t );
@@ -326,21 +335,21 @@ public class TaskList {
     
     void clear( FileObject resource ) {
         List<Task> toRemove = null;
-        
+
         lock.writeLock().lock();
-        
+
         for( List<Task> scannerTasks : fileScanner2tasks.values() ) {
             for( Task t : scannerTasks ) {
-                if( resource.equals( Accessor.getResource(t) ) ) {
+                if( resource.equals( Accessor.getFile(t) ) ) {
                     if( null == toRemove )
                         toRemove = new LinkedList<Task>();
                     toRemove.add( t );
                 }
             }
         }
-        
+
         if( null != toRemove ) {
-            
+
             sortedTasks.removeAll( toRemove );
             allTasks.removeAll( toRemove );
             for( List<Task> scannerTasks : fileScanner2tasks.values() ) {
@@ -350,14 +359,14 @@ public class TaskList {
                 groupTasks.removeAll( toRemove );
             }
         }
-        
+
         lock.writeLock().unlock();
-            
+
         if( null != toRemove ) {
             fireTasksRemoved( toRemove );
         }
     }
-    
+
     void clear() {
         lock.writeLock().lock();
         sortedTasks.clear();
@@ -373,10 +382,10 @@ public class TaskList {
         lock.writeLock().lock();
         LinkedList<Task> toRemove = new LinkedList<Task>();
         for( Task t : allTasks ) {
-            FileObject fo = Accessor.getResource(t);
-            if( !fo.isValid() )
+            FileObject fo = Accessor.getFile(t);
+            if( null != fo && !fo.isValid() )
                 toRemove.add(t);
-        }
+            }
 
         if( !toRemove.isEmpty() ) {
             sortedTasks.removeAll( toRemove );

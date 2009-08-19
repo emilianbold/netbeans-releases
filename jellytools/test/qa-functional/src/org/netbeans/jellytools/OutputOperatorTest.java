@@ -53,7 +53,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *  Test of OutputOperator.
@@ -82,25 +81,7 @@ public class OutputOperatorTest extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new OutputOperatorTest("testInvoke"));
-        suite.addTest(new OutputOperatorTest("testGetOutputTab"));
-        suite.addTest(new OutputOperatorTest("testGetText"));
-        suite.addTest(new OutputOperatorTest("testSelectAll"));
-        suite.addTest(new OutputOperatorTest("testCopy"));
-        suite.addTest(new OutputOperatorTest("testFind"));
-        suite.addTest(new OutputOperatorTest("testFindNext"));        
-        //suite.addTest(new OutputOperatorTest("testNextError"));        
-        //suite.addTest(new OutputOperatorTest("testPreviousError"));
-        suite.addTest(new OutputOperatorTest("testWrapText"));
-        suite.addTest(new OutputOperatorTest("testSaveAs"));
-        suite.addTest(new OutputOperatorTest("testClear"));
-        suite.addTest(new OutputOperatorTest("testVerify"));
-        return suite;
-         */
+    public static NbTest suite() {        
         return (NbTest) createModuleTest(OutputOperatorTest.class, tests);
     }
     

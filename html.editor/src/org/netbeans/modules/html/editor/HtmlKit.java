@@ -104,11 +104,11 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public HtmlKit() {
         this(HTML_MIME_TYPE);
+        NbReaderProvider.setupReaders();
     }
 
     public HtmlKit(String mimeType) {
         super();
-        NbReaderProvider.setupReaders();
     }
 
     @Override
@@ -139,6 +139,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
         c.setTransferHandler(new HtmlTransferHandler());
+        NbReaderProvider.setupReaders();
     }
     
     protected DeleteCharAction createDeletePrevAction() {

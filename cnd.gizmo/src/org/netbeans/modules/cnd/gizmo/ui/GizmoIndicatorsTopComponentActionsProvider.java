@@ -40,12 +40,11 @@
 package org.netbeans.modules.cnd.gizmo.ui;
 
 import javax.swing.Action;
-import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mt154047
  */
 interface GizmoIndicatorsTopComponentActionsProvider {
-    Action[] getActions(TopComponent source);
+    Action[] getActions(GizmoIndicatorsTopComponent source);
 }

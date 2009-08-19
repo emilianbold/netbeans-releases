@@ -772,6 +772,15 @@ public class SvnUtils {
     }
 
     /**
+     * Removes all occurances of '\r' and replaces them with '\n'
+     * @param text
+     * @return
+     */
+    public static String fixLineEndings(String text) {
+        return text.replaceAll("\r\n", "\n").replace('\r', '\n');
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {

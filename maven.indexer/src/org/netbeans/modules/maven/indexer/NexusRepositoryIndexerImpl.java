@@ -71,14 +71,17 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
+import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
@@ -1074,8 +1077,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private static class NbIndexCreator extends AbstractIndexCreator {
+        //TODO make weak referenced to save long term memory footprint??
+        private MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
 
-        public ArtifactRepository repository = EmbedderFactory.getOnlineEmbedder().getLocalRepository();
+        public ArtifactRepository repository = online.getLocalRepository();
 
 
         public void updateDocument(ArtifactInfo context, Document doc) {
@@ -1085,7 +1090,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 return;
             }
             try {
-                MavenProject mp = RepositoryUtil.readMavenProject(ai.groupId, ai.artifactId, ai.version, repository);
+                MavenProject mp = load(ai, repository);
                 if (mp != null) {
                     @SuppressWarnings("unchecked")
                     List<Dependency> dependencies = mp.getDependencies();
@@ -1098,6 +1103,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             } catch (InvalidArtifactRTException ex) {
                 ex.printStackTrace();
             }
+        }
+
+        private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
+            try {
+                ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
+                Artifact projectArtifact = artifactFactory.createProjectArtifact(
+                        ai.groupId,
+                        ai.artifactId,
+                        ai.version,
+                        null);
+
+                MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
+                return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
+            } catch (InvalidProjectModelException ex) {
+                //ignore nexus is falling ???
+                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+            } catch (ProjectBuildingException ex) {
+                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+            } catch (Exception exception) {
+                LOGGER.log(Level.FINE, "Failed to load project model from repository.", exception);
+            }
+            return null;
         }
 
         public void populateArtifactInfo(ArtifactContext context) throws IOException {

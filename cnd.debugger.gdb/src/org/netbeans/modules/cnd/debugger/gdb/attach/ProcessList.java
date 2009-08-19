@@ -44,9 +44,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -66,55 +74,68 @@ final class ProcessList {
     }
 
     private PTYPE ptype = PTYPE.UNINITIALIZED;
-    private final List<String> argsSimple = new ArrayList<String>();
+    private final String argsSimple;
+    private final ExecutionEnvironment exEnv;
 
-    protected ProcessList() {
-        if (Utilities.isWindows()) {
-            File file = new File(CompilerSetManager.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
-            if (file.exists()) {
-                argsSimple.add(file.getAbsolutePath());
-                ptype = PTYPE.WINDOWS;
-            } else {
-                file = new File(CompilerSetManager.getMSysBase() + "/bin", "ps.exe"); // NOI18N
+    protected ProcessList(ExecutionEnvironment exEnv) {
+        this.exEnv = exEnv;
+        StringBuffer sb = new StringBuffer();
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
+            if (!hostInfo.getOSFamily().isUnix()) {
+                if (exEnv.isRemote()) {
+                    throw new IllegalStateException("Remote windows machines are not supported yet"); // NOI18N
+                }
+                File file = new File(CompilerSetManager.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
                 if (file.exists()) {
-                    argsSimple.add(file.getAbsolutePath());
+                    sb.append(file.getAbsolutePath());
                     ptype = PTYPE.WINDOWS;
+                } else {
+                    file = new File(CompilerSetManager.getMSysBase() + "/bin", "ps.exe"); // NOI18N
+                    if (file.exists()) {
+                        sb.append(file.getAbsolutePath());
+                        ptype = PTYPE.WINDOWS;
+                    } else {
+                        ptype = PTYPE.NONE;
+                    }
+                }
+            } else {
+                if (HostInfoUtils.fileExists(exEnv, "/bin/ps")) { // NOI18N
+                    sb.append("/bin/ps -a -o"); // NOI18N
+                    // Used only localy, so we can use Utilities.getOperatingSystem()
+                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                        sb.append(" user,pid,ppid,stime,time,command"); // NOI18N
+                    } else {
+                        sb.append(" user,pid,ppid,stime,time,args"); // NOI18N
+                    }
+                    ptype = PTYPE.STD;
+                } else if (HostInfoUtils.fileExists(exEnv, "/usr/bin/ps")) { // NOI18N
+                    sb.append("/usr/bin/ps -a -o"); // NOI18N
+                    sb.append(" user,pid,ppid,stime,time,args"); // NOI18N
+                    ptype = PTYPE.STD;
                 } else {
                     ptype = PTYPE.NONE;
                 }
             }
-        } else {
-            if (new File("/bin/ps").exists()) { // NOI18N
-                argsSimple.add("/bin/ps"); // NOI18N
-                argsSimple.add("-a"); // NOI18N
-                argsSimple.add("-o"); // NOI18N
-                // Used only localy, so we can use Utilities.getOperatingSystem()
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                    argsSimple.add("user,pid,ppid,stime,time,command"); // NOI18N
-                } else {
-                    argsSimple.add("user,pid,ppid,stime,time,args"); // NOI18N
-                }
-                ptype = PTYPE.STD;
-            } else if (new File("/usr/bin/ps").exists()) { // NOI18N
-                argsSimple.add("/usr/bin/ps"); // NOI18N
-                argsSimple.add("-a"); // NOI18N
-                argsSimple.add("-o"); // NOI18N
-                argsSimple.add("user,pid,ppid,stime,time,args"); // NOI18N
-                ptype = PTYPE.STD;
-            } else {
-                ptype = PTYPE.NONE;
-            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            ptype = PTYPE.NONE;
+        } catch (CancellationException caex) {
+            Exceptions.printStackTrace(caex);
+            ptype = PTYPE.NONE;
         }
+        argsSimple = sb.toString();
     }
 
-    private void request(final ProcessListReader plr, final List<String> args) {
-        if (!argsSimple.isEmpty()) {
+    private void request(final ProcessListReader plr, final String cmd) {
+        if (argsSimple.length() > 0) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        ProcessBuilder pb = new ProcessBuilder(args);
-                        pb.redirectErrorStream(true);
-                        Process process = pb.start();
+                        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
+                        npb.setCommandLine(cmd);
+                        npb.redirectError();
+                        NativeProcess process = npb.call();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                         reader.readLine(); // read and ignore header line...
                         List<String> proclist = new ArrayList<String>();
@@ -128,6 +149,8 @@ final class ProcessList {
                     }
                 }
             });
+        } else {
+            plr.processListCallback(Collections.<String>emptyList());
         }
     }
 
@@ -136,19 +159,15 @@ final class ProcessList {
     }
 
     void requestFull(ProcessListReader plr) {
-        List<String> argsFull = new ArrayList<String>(argsSimple);
+        String argsFull = argsSimple;
         if (ptype == PTYPE.WINDOWS) {
-            argsFull.add("-W"); // NOI18N
+            argsFull += " -W"; // NOI18N
         } else if (ptype == PTYPE.STD) {
-            argsFull.add("-A"); // NOI18N
+            argsFull += " -A"; // NOI18N
         }
         request(plr, argsFull);
     }
-    
-    protected PTYPE getPType() {
-        return ptype;
-    }
-    
+
     protected boolean isStd() {
         return ptype == PTYPE.STD;
     }

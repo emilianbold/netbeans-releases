@@ -39,9 +39,7 @@
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +50,7 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -61,7 +58,6 @@ public final class DataStorageManager {
 
     private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
     private Map<DLightSession, List<DataStorage>> activeDataStorages = new HashMap<DLightSession, List<DataStorage>>();
-   private Map<DLightSession, List<ServiceInfoDataStorage>> activeServiceInfoDataStorages = new HashMap<DLightSession, List<ServiceInfoDataStorage>>();
     private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
     private static final DataStorageManager instance = new DataStorageManager();
     private DLightSession lastSession;
@@ -89,18 +85,6 @@ public final class DataStorageManager {
                 }
             }
         }
-        List<ServiceInfoDataStorage> serviceInfoStorages = activeServiceInfoDataStorages.get(session);
-        if (serviceInfoStorages != null) {
-            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
-                if (storages == null || !storages.contains(storage)){
-                    if (!storage.shutdown()) {
-                        log.finest("ServiceInfoDataStorage " + storage + " is not closed");//NOI18N
-                    } else {
-                        log.finest("ServiceInfoDataStorage " + storage + " successfully closed");//NOI18N
-                    }
-                }
-            }
-        }
         return activeDataStorages.remove(session);
     }
 
@@ -112,58 +96,22 @@ public final class DataStorageManager {
         lastSession = session;
     }
 
-    public ServiceInfoDataStorage getServiceInfoDataStorage(DLightSession session) {
-        if (session == null) {
-            return null;
-        }
-        List<ServiceInfoDataStorage> activeSessionInfoStorages = activeServiceInfoDataStorages.get(session);
-        if (activeSessionInfoStorages != null && activeSessionInfoStorages.size() > 0){
-            return activeSessionInfoStorages.get(0);
-        }
-        List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
-        if (activeSessionStorages != null && activeSessionStorages.size() > 0) {
-            ServiceInfoDataStorage result = activeSessionStorages.get(0);
-            activeServiceInfoDataStorages.put(session, Arrays.asList(result));
-            return result;
-        }
-        //we can get any
-        ServiceInfoDataStorageFactory  serInfo = Lookup.getDefault().lookup(ServiceInfoDataStorageFactory.class);
-        if (serInfo == null){
-            return null;
-        }
-        ServiceInfoDataStorage result = serInfo.createStorage();
-        activeServiceInfoDataStorages.put(session, Arrays.asList(result));
-        return result;
-    }
-
     /**
      *  Returns previously created or created new instance of DataStorage
      *  for requested schema (if it can be found within all available DataStorages)
      */
-    public DataStorage getDataStorageFor(DLightSession session, DataCollector<?> collector) {
-        Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
-        for (DataStorageType type : supportedTypes) {
-            DataStorage storage = getDataStorageFor(session, type, collector.getDataTablesMetadata());
-
-            if (storage != null) {
-                return storage;
-            }
-
+    public Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
+        Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
+        for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
+            result.put(type, getDataStorageFor(session, type, collector.getDataTablesMetadata()));
         }
-        return null;
+        return result;
     }
 
-    public DataStorage getDataStorage(DataStorageType storageType) {
-        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
-    }
-
-//
-//  public void registerDataStorage(DataStorage dataStorage){
-//    if (allDataStorages.contains(dataStorage)){
-//      return;
+//    private DataStorage getDataStorage(DataStorageType storageType) {
+//        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
 //    }
-//    if (activeDataStorages.contains(log))
-//  }
+
     private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (session == null) {
             return null;
@@ -181,6 +129,11 @@ public final class DataStorageManager {
         for (DataStorageFactory storage : dataStorageFactories) {
             if (storage.getStorageTypes().contains(storageType)) {
                 DataStorage newStorage = storage.createStorage();
+                if (newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                }
                 if (newStorage != null) {
                     newStorage.createTables(tableMetadatas);
                     if (activeSessionStorages == null) {

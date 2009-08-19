@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
@@ -150,9 +150,15 @@ public class GdbProxy {
     }
     
     /** Attach to a running program */
-    public CommandBuffer target_attach(String pid) {
+    public CommandBuffer attach(String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
         return engine.sendCommandEx("attach " + pid); // NOI18N
+    }
+
+    /** Attach to a running remote program */
+    public CommandBuffer attachRemote(String target) {
+        // TODO: We may consider using -target-select remote ... (MI style)
+        return engine.sendCommandEx("target remote " + target); // NOI18N
     }
     
     /** Detach from a running program */
@@ -476,7 +482,7 @@ public class GdbProxy {
         } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
-        if (flags == GdbBreakpoint.SUSPEND_THREAD) {
+        if (flags == CndBreakpoint.SUSPEND_THREAD) {
             // FIXME - Does the Mac support -p?
             cmd.append("-p " + threadID + " "); // NOI18N
         }

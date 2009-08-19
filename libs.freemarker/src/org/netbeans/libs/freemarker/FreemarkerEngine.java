@@ -249,7 +249,9 @@ class FreemarkerEngine extends AbstractScriptEngine {
         
         public MyTemplate(FileObject fo, String s, Reader r, Configuration c) throws IOException {
             super(s, r, c);
-            fo.addFileChangeListener(FileUtil.weakFileChangeListener(this, fo));
+            if (fo != null) {
+                fo.addFileChangeListener(FileUtil.weakFileChangeListener(this, fo));
+            }
         }
 
         @Override

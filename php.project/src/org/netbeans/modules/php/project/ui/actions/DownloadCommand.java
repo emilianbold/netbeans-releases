@@ -107,13 +107,23 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     }
 
     public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
+            FileObject sources, Set<TransferFile> forDownload) {
+        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload);
+    }
+
+    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
             boolean showDownloadDialog, FileObject sources, FileObject... filesToDownload) {
+        download(remoteClient, remoteLog, operationMonitor, projectName, showDownloadDialog, sources, filesToDownload, null);
+    }
+
+    private static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
+            boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload) {
         String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
         try {
             progressHandle.start();
-            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources, filesToDownload);
+            Set<TransferFile> forDownload = transferFilesToDownload != null ? transferFilesToDownload : remoteClient.prepareDownload(sources, filesToDownload);
 
             if (showDownloadDialog) {
                 // avoid timeout errors

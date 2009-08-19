@@ -64,7 +64,6 @@ public abstract class CndBreakpoint extends Breakpoint {
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
     public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
-    public static final String          PROP_FUNCTION_NAME = "functionName"; // NOI18N
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     public static final String          PROP_SKIP_COUNT = "skipCount"; // NOI18N
@@ -121,11 +120,11 @@ public abstract class CndBreakpoint extends Breakpoint {
         setLineNumber(ln, true);
     }
     
-    protected void setValid() {
+    public void setValid() {
         setValidity(Breakpoint.VALIDITY.VALID, null);
     }
     
-    protected void setInvalid(String msg) {
+    public void setInvalid(String msg) {
         setValidity(Breakpoint.VALIDITY.INVALID, msg);
     }
     

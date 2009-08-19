@@ -65,6 +65,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -136,46 +139,62 @@ public final class PhpProjectGenerator {
         return helper;
     }
 
-    private static AntProjectHelper createProject0(ProjectProperties projectProperties) throws IOException {
+    private static AntProjectHelper createProject0(final ProjectProperties projectProperties) throws IOException {
         File projectDirectory = projectProperties.getProjectDirectory();
         if (projectDirectory == null) {
             projectDirectory = projectProperties.getSourcesDirectory();
         }
         assert projectDirectory != null;
         FileObject projectFO = FileUtil.createFolder(projectDirectory);
-        AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
+        final AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws MutexException {
+                    try {
+                        // configure
+                        Element data = helper.getPrimaryConfigurationData(true);
+                        Document doc = data.getOwnerDocument();
+                        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                        nameEl.appendChild(doc.createTextNode(projectProperties.getName()));
+                        data.appendChild(nameEl);
+                        helper.putPrimaryConfigurationData(data, true);
 
-        // configure
-        Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-        nameEl.appendChild(doc.createTextNode(projectProperties.getName()));
-        data.appendChild(nameEl);
-        helper.putPrimaryConfigurationData(data, true);
+                        EditableProperties sharedProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        EditableProperties sharedProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                        configureSources(helper, projectProperties, sharedProperties, privateProperties);
+                        configureEncoding(projectProperties, sharedProperties, privateProperties);
+                        configureTags(projectProperties, sharedProperties, privateProperties);
+                        configureIncludePath(projectProperties, sharedProperties, privateProperties);
+                        // #146882
+                        configureUrl(projectProperties, sharedProperties, privateProperties);
 
-        configureSources(helper, projectProperties, sharedProperties, privateProperties);
-        configureEncoding(projectProperties, sharedProperties, privateProperties);
-        configureTags(projectProperties, sharedProperties, privateProperties);
-        configureIncludePath(projectProperties, sharedProperties, privateProperties);
-        // #146882
-        configureUrl(projectProperties, sharedProperties, privateProperties);
+                        if (projectProperties.getRunAsType() != null) {
+                            // run configuration panel shown
+                            configureCopySources(projectProperties, sharedProperties, privateProperties);
+                            configureIndexFile(projectProperties, sharedProperties, privateProperties);
+                            configureRunConfiguration(projectProperties, sharedProperties, privateProperties);
+                        }
 
-        if (projectProperties.getRunAsType() != null) {
-            // run configuration panel shown
-            configureCopySources(projectProperties, sharedProperties, privateProperties);
-            configureIndexFile(projectProperties, sharedProperties, privateProperties);
-            configureRunConfiguration(projectProperties, sharedProperties, privateProperties);
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, sharedProperties);
+                        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+                        ProjectManager.getDefault().saveProject(project);
+
+                    } catch (IOException ioe) {
+                        throw new MutexException(ioe);
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            Exception ie = e.getException();
+            if (ie instanceof IOException) {
+                throw (IOException) ie;
+            }
+            Exceptions.printStackTrace(e);
         }
-
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, sharedProperties);
-        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-
-        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(project);
-
         return helper;
     }
 

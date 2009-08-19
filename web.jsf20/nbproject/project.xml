@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <public-packages>
                 <subpackages>javax.faces</subpackages>
+                <subpackages>com.sun.faces</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-2_0/jsf-api.jar</runtime-relative-path>

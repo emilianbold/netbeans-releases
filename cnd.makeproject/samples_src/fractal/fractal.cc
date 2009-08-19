@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    // call Mantelbrot routine
+    // call Mandelbrot routine
     Mandelbrot();
     
     // calculate wall time

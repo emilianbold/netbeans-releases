@@ -320,8 +320,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
-                synchronized(defaultInstance.pcs) {
-                    defaultInstance.pcs.addPropertyChangeListener(listener);
+                if (defaultInstance != null) {
+                    synchronized(defaultInstance.pcs) {
+                        defaultInstance.pcs.addPropertyChangeListener(listener);
+                    }
                 }
             }
         });
@@ -331,8 +333,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
-                synchronized(defaultInstance.pcs) {
-                    defaultInstance.pcs.removePropertyChangeListener(listener);
+                if (defaultInstance != null) {
+                    synchronized(defaultInstance.pcs) {
+                        defaultInstance.pcs.removePropertyChangeListener(listener);
+                    }
                 }
             }
         });

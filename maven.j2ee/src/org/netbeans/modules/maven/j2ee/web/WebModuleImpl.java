@@ -130,12 +130,21 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
                     return Profile.J2EE_14;
                 }
+                if (WebApp.VERSION_2_5.equals(waVersion)) {
+                    return Profile.JAVA_EE_5;
+                }
+                if (WebApp.VERSION_3_0.equals(waVersion)) {
+                    return Profile.JAVA_EE_6_WEB;
+                }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
+            //make 15 the default..
+            //TODO how to differentiate with 1.6??
+            return Profile.JAVA_EE_5;
+        } else {
+            return Profile.JAVA_EE_6_WEB;
         }
-        //make 15 the default..
-        return Profile.JAVA_EE_5;
     }
     
     public FileObject getDocumentBase() {
@@ -171,7 +180,11 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     }
     
     public String getContextPath() {
-        if(getDeploymentDescriptor() != null) {
+        Profile prof = getJ2eeProfile();
+        // #170528the javaee6 level might not have a descriptor,
+        // but I still keep the check for older versions, as it was known to fail without one
+        // in older versions it probably means the web.xml file is generated..
+        if(getDeploymentDescriptor() != null || prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
                 if (path != null) {
@@ -188,7 +201,11 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     
     public void setContextPath(String newPath) {
         //TODO store as pom profile configuration, probably for the deploy-plugin.
-        if (getDeploymentDescriptor() != null) {
+        Profile prof = getJ2eeProfile();
+        // #170528 the javaee6 level might not have a descriptor,
+        // but I still keep the check for older versions, as it was known to fail without one
+        // in older versions it probably means the web.xml file is generated..
+        if (getDeploymentDescriptor() != null|| prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
             try {
                 provider.getConfigSupport().setWebContextRoot(newPath);
             }

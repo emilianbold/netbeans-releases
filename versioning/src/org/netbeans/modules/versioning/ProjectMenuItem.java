@@ -121,9 +121,19 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private Set<VersioningSystem> getOwnersForProjectNodes(Node [] nodes) {
         Set<File> rootFiles = getRootFilesForProjectNodes(nodes);
         Set<VersioningSystem> owners = new HashSet<VersioningSystem>(2);
+        boolean someUnversioned = false;
         for (File file : rootFiles) {
             VersioningSystem fileOwner = VersioningManager.getInstance().getOwner(file);
-            owners.add(fileOwner);
+            if (fileOwner == null) {
+                // some root file is unversioned
+                someUnversioned = true;
+            } else {
+                owners.add(fileOwner);
+            }
+        }
+        if (owners.size() == 0 && someUnversioned) {
+            // all rootfiles were unversioned, return a null owner for them
+            owners.add(null);
         }
         return owners;
     }

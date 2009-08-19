@@ -57,7 +57,7 @@ cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libra
 prev_generated=../lastSuccessful/archive/$generated
 if [ -d $prev_generated ]; then
     # kits.txt is too verbose and changes too frequently to include in diff
-    diff -r -U 25 -x kits.txt $prev_generated $generated > $generated.diff
+    diff -r -u --show-function-line='^[A-Z][A-Z]' -x kits.txt $prev_generated $generated > $generated.diff
     if [ -s $generated.diff ]; then
         (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
     fi

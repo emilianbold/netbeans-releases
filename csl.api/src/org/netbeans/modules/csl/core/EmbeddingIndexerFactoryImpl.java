@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.net.URL;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -64,6 +65,12 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     @Override
     public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
         getFactory().filesDeleted(deleted, context);
+    }
+
+    @Override
+    public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+        assert removedRoots != null;
+        getFactory().rootsRemoved(removedRoots);
     }
     
     @Override
@@ -117,6 +124,11 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
 
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            // no-op
+        }
+
+        @Override
+        public void rootsRemoved(Iterable<? extends URL> removedRoots) {
             // no-op
         }
 

@@ -60,11 +60,11 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointPanel;
@@ -120,7 +120,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
 
     public Action[] getActions(NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
-        if (!(node instanceof GdbBreakpoint)) 
+        if (!(node instanceof CndBreakpoint))
             return original.getActions(node);
         
         Action[] oas = original.getActions(node);
@@ -150,7 +150,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             goToSource((LineBreakpoint) node);
         } else if (node instanceof AddressBreakpoint) {
             goToSource((AddressBreakpoint) node);
-        } else if (node instanceof GdbBreakpoint) {
+        } else if (node instanceof CndBreakpoint) {
             customize((Breakpoint) node);
         } else {
             original.performDefaultAction(node);
@@ -220,7 +220,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         d.setVisible(true);
     }
     
-    private static void goToSource(GdbBreakpoint b) {
+    private static void goToSource(CndBreakpoint b) {
         EditorContextBridge.showSource(b, null);
     }
 }

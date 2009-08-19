@@ -65,6 +65,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
@@ -353,6 +354,16 @@ public class Util {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
                 Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
+                if (SCHEMA_1 == null) {
+                    try {
+                        SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                        SCHEMA_1 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general.xsd")); // NOI18N
+                        SCHEMA_2 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general-2.xsd")); // NOI18N
+                    } catch (SAXException e) {
+                        Exceptions.printStackTrace(e); // cf. #169994
+                        putPrimaryConfigurationDataAs1(helper, dataAs1);
+                    }
+                }
                 try {
                     XMLUtil.validate(dataAs1, SCHEMA_1);
                     putPrimaryConfigurationDataAs1(helper, dataAs1);
@@ -369,6 +380,7 @@ public class Util {
             }
         });
     }
+    private static Schema SCHEMA_1, SCHEMA_2;
     private static void putPrimaryConfigurationDataAs1(AntProjectHelper helper, Element data) {
         helper.createAuxiliaryConfiguration().removeConfigurationFragment(FreeformProjectType.NAME_SHARED, NAMESPACE, true);
         helper.putPrimaryConfigurationData(data, true);
@@ -381,16 +393,6 @@ public class Util {
                 appendChild(doc.createTextNode(findText(findElement(data, "name", NAMESPACE)))); // NOI18N
         helper.putPrimaryConfigurationData(dummy1, true);
         helper.createAuxiliaryConfiguration().putConfigurationFragment(data, true);
-    }
-    private static final Schema SCHEMA_1, SCHEMA_2;
-    static {
-        try {
-            SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            SCHEMA_1 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general.xsd")); // NOI18N
-            SCHEMA_2 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general-2.xsd")); // NOI18N
-        } catch (SAXException e) {
-            throw new ExceptionInInitializerError(e);
-        }
     }
     private static String format(Element data) {
         LSSerializer ser = ((DOMImplementationLS) data.getOwnerDocument().getImplementation().getFeature("LS", "3.0")).createLSSerializer();

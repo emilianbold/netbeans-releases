@@ -141,7 +141,15 @@ public interface GlassfishModule {
     public Map<String, String> getInstanceProperties();
 
     public GlassfishInstanceProvider getInstanceProvider();
-    
+
+    /**
+     * Returns true if server is remote.  Remote servers have special
+     * properties, such as being non-startable from within the IDE.
+     *
+     * @return true if this is a remote server.
+     */
+    public boolean isRemote();
+
     /**
      * Sets a property in the instance properties map, if that property has not
      * been set yet.
@@ -154,7 +162,7 @@ public interface GlassfishModule {
      *   and overwrite is false.  Otherwise, returns the new value being set.
      */
     public String setEnvironmentProperty(String name, String value, boolean overwrite);    
-    
+
     /**
      * Start the server.
      * 

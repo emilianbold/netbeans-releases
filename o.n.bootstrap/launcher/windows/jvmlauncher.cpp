@@ -88,7 +88,7 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
         javaServerDllPath = "";
     }
     javaBinPath = javaPath + prefix + JAVA_BIN_DIR;
-    if (fileExists(javaExePath.c_str()) && (!javaClientDllPath.empty() || !javaServerDllPath.empty())) {
+    if (fileExists(javaExePath.c_str()) || !javaClientDllPath.empty() || !javaServerDllPath.empty()) {
         if (!fileExists(javawExePath.c_str())) {
             logMsg("javaw.exe not exists, forcing java.exe");
             javawExePath = javaExePath;
@@ -147,6 +147,14 @@ bool JvmLauncher::start(const char *mainClassName, list<string> args, list<strin
         } else {
             javaDllPath = javaClientDllPath.empty() ? javaServerDllPath : javaClientDllPath;
         }
+
+        // it is necessary to absolutize dll path because current dir has to be
+        // temporarily changed for dll loading
+        char absoluteJavaDllPath[MAX_PATH] = "";
+        strncpy(absoluteJavaDllPath, javaDllPath.c_str(), MAX_PATH);
+        normalizePath(absoluteJavaDllPath, MAX_PATH);
+        javaDllPath = absoluteJavaDllPath;
+
         logMsg("Java DLL path: %s", javaDllPath.c_str());
         if (!canLoadJavaDll()) {
             logMsg("Fallbacking to running java in separate process, dll cannot be loaded (64bit dll?).");

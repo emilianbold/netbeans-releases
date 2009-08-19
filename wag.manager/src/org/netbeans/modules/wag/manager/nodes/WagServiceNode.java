@@ -55,7 +55,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
 public class WagServiceNode extends AbstractNode {
 
@@ -81,7 +81,7 @@ public class WagServiceNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return service.getName();
+        return service.getDisplayName();
     }
 
     @Override

@@ -53,9 +53,11 @@ made subject to such option by the copyright holder.
   <property name="s2b_root_3_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_1"/>
   <property name="s2b_root_app_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_4"/>
   <property name="s2b_root_app_5" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_5"/>
+  <property name="s2b_root_app_6" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_6"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
   <property name="s2b_root_client_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_1_4"/>
   <property name="s2b_root_client_5_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_5_0"/>
+  <property name="s2b_root_client_6_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_6_0"/>
 
   <target name="build-init" depends="projectized.build-init"/>
 
@@ -311,6 +313,31 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>  
+        <schema2beans schema="${s2b_res_root}/application_6.xsd"
+ 	  mddFile="${s2b_res_root}/application_6.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.application.model_6"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+    <replace file="${s2b_root_app_6}/Application.java" summary="true">
+        <replacetoken>public java.lang.String getVersion() {</replacetoken>
+        <replacevalue>public java.lang.String getVersionString() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_app_6}/Application.java" summary="true">
+        <replacetoken>public void setVersion(java.lang.String value) {</replacetoken>
+        <replacevalue>public void setVersionString(java.lang.String value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_app_6}/Application.java" summary="true">
+        <replacetoken>(getVersion()</replacetoken>
+        <replacevalue>(getVersionString()</replacevalue>
+    </replace>
+    <replace file="${s2b_root_app_6}/Application.java" summary="true">
+        <replacetoken>setVersion("6");</replacetoken>
+        <replacevalue>setVersionString("6");</replacevalue>
+    </replace>
         <schema2beans schema="${s2b_res_root}/application-client_1_4.xsd"
  	  mddFile="${s2b_res_root}/application-client_1_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.client.model_1_4"
@@ -329,6 +356,31 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/application-client_6.xsd"
+ 	  mddFile="${s2b_res_root}/application-client_6.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.client.model_6_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+    <replace file="${s2b_root_client_6_0}/ApplicationClient.java" summary="true">
+        <replacetoken>public java.lang.String getVersion() {</replacetoken>
+        <replacevalue>public java.lang.String getVersionString() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_client_6_0}/ApplicationClient.java" summary="true">
+        <replacetoken>public void setVersion(java.lang.String value) {</replacetoken>
+        <replacevalue>public void setVersionString(java.lang.String value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_client_6_0}/ApplicationClient.java" summary="true">
+        <replacetoken>(getVersion()</replacetoken>
+        <replacevalue>(getVersionString()</replacevalue>
+    </replace>
+    <replace file="${s2b_root_client_6_0}/ApplicationClient.java" summary="true">
+        <replacetoken>setVersion("6");</replacetoken>
+        <replacevalue>setVersionString("6");</replacevalue>
+    </replace>
   </target>
 
   <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
@@ -345,8 +397,10 @@ made subject to such option by the copyright holder.
         <mkdir dir="${s2b_root_3_1}"/>
         <mkdir dir="${s2b_root_app_1_4}"/>
         <mkdir dir="${s2b_root_app_5}"/>
+        <mkdir dir="${s2b_root_app_6}"/>
         <mkdir dir="${s2b_root_client_1_4}"/>
         <mkdir dir="${s2b_root_client_5_0}"/>
+        <mkdir dir="${s2b_root_client_6_0}"/>
         <delete>
             <fileset dir="${s2b_root_web_2_4}">
                 <include name="*.java"/>
@@ -402,6 +456,12 @@ made subject to such option by the copyright holder.
         </delete>
         <delete dir="${s2b_root_app_5}"/>
         <delete>
+            <fileset dir="${s2b_root_app_6}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_app_6}"/>
+        <delete>
             <fileset dir="${s2b_root_client_1_4}">
                 <include name="*.java"/>
             </fileset>
@@ -413,6 +473,12 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete dir="${s2b_root_client_5_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_6_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_6_0}"/>
   </target>
   
   <target name="javadoc" depends="init-javadoc, projectized.javadoc"/>

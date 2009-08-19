@@ -201,6 +201,11 @@ public final class DashboardImpl extends Dashboard {
         changeSupport.removePropertyChangeListener(listener);
     }
 
+    @Override
+    public boolean isMemberProject(ProjectHandle m) {
+        return memberProjects.contains(m);
+    }
+
     private static class Holder {
         private static final DashboardImpl theInstance = new DashboardImpl();
     }
@@ -581,8 +586,7 @@ public final class DashboardImpl extends Dashboard {
             memberProjects.addAll(projects);
             memberProjectsLoaded = true;
             for( ProjectHandle p : projects ) {
-                if( ignoredProjectIds.contains(p.getId()) )
-                    continue;
+                ignoredProjectIds.remove(p.getId());
                 if( !allProjects.contains(p) )
                     allProjects.add(p);
             }

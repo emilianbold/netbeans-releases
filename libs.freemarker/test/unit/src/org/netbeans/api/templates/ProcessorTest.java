@@ -33,11 +33,16 @@ package org.netbeans.api.templates;
 import freemarker.ext.beans.BeansWrapper;
 import java.awt.Color;
 import java.awt.Panel;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +50,7 @@ import java.util.logging.Level;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.junit.Log;
@@ -80,6 +86,25 @@ public class ProcessorTest extends TestCase {
 
     @Override
     protected void tearDown() throws Exception {
+    }
+
+    public void testWorksWithoutFileObjects() throws UnsupportedEncodingException, ScriptException {
+        ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine eng = manager.getEngineByName("freemarker");
+        assertNotNull("engine found", eng);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Writer w = new OutputStreamWriter(out);
+        ByteArrayInputStream in = new ByteArrayInputStream("Hi!".getBytes("UTF-8"));
+
+        eng.getContext().setWriter(w);
+
+        InputStreamReader r = new InputStreamReader(in, "UTF-8");
+        eng.eval(r);
+
+
+        assertTrue("Content shall be unchanged", Arrays.equals("Hi!".getBytes("UTF-8"), out.toByteArray()));
+
     }
 
     public void testApply() throws Exception {

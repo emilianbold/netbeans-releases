@@ -59,7 +59,7 @@ public abstract class GapBranchElement implements Element {
 
     protected static final Element[] EMPTY_ELEMENT_ARRAY = new Element[0];
 
-    private GapList children;
+    private final GapList children;
     
     public GapBranchElement() {
         children = new GapList();

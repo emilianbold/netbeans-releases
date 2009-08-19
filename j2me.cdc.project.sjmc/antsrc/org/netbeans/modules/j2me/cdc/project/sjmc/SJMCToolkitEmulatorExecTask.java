@@ -58,6 +58,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,7 +91,7 @@ public class SJMCToolkitEmulatorExecTask extends Task {
     }    
     
     public void execute() throws BuildException {
-        List arguments = new ArrayList();
+        List<String> arguments = new ArrayList<String>();
         String os = System.getProperty("os.name");
         if (os.toLowerCase().indexOf("windows") >= 0) {
             arguments.add(home + File.separator + "bin" + File.separator + "emulator.exe");
@@ -98,6 +99,11 @@ public class SJMCToolkitEmulatorExecTask extends Task {
             arguments.add(home + File.separator + "bin" + File.separator + "emulator");
         }
         
+        if (jvmargs != null && jvmargs.trim().length() != 0){
+            String[] params = Commandline.translateCommandline(jvmargs);
+            arguments.addAll(Arrays.asList(params));
+        }
+
         assert device != null;
         arguments.add("-Xdevice:" + device);
         assert profile != null;
@@ -127,7 +133,7 @@ public class SJMCToolkitEmulatorExecTask extends Task {
             StringTokenizer xlets = new StringTokenizer(mainclass, ";");
             while(xlets.hasMoreElements()){
                 arguments.add("-name");
-                arguments.add(xlets.nextElement());
+                arguments.add((String)xlets.nextElement());
                 arguments.add("-path");
                 arguments.add(createPath());                
                 if (args != null && args.length() != 0){

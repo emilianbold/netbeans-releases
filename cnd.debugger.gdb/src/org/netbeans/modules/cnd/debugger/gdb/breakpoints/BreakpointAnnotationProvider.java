@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -84,10 +88,10 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Jancura, Martin Entlicher
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider, DebuggerManagerListener {
 
-    private final Map<GdbBreakpoint, Set<Annotation>> breakpointToAnnotations = new HashMap<GdbBreakpoint, Set<Annotation>>();
+    private final Map<CndBreakpoint, Set<Annotation>> breakpointToAnnotations = new HashMap<CndBreakpoint, Set<Annotation>>();
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
@@ -128,10 +132,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                 log.fine("BreakpointAnnotationProvider.annotate: " + fo.getNameExt() + " is already annotated");
                 return ;
             }
-            Set<GdbBreakpoint> annotatedBreakpoints = breakpointToAnnotations.keySet();
+            Set<CndBreakpoint> annotatedBreakpoints = breakpointToAnnotations.keySet();
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
                 if (isAnnotatable(breakpoint)) {
-                    GdbBreakpoint b = (GdbBreakpoint) breakpoint;
+                    CndBreakpoint b = (CndBreakpoint) breakpoint;
                     if (!annotatedBreakpoints.contains(b)) {
                         b.addPropertyChangeListener (this);
                         breakpointToAnnotations.put(b, new WeakSet<Annotation>());
@@ -154,7 +158,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
 
     public void breakpointAdded(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
-            GdbBreakpoint b = (GdbBreakpoint) breakpoint;
+            CndBreakpoint b = (CndBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointAdded: " + b.getPath() + ":" + b.getLineNumber());
             b.addPropertyChangeListener (this);
             RequestProcessor.getDefault().post(new AnnotationRefresh(b, false, true));
@@ -167,7 +171,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
 
     public void breakpointRemoved(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
-            GdbBreakpoint b = (GdbBreakpoint) breakpoint;
+            CndBreakpoint b = (CndBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointRemoved: " + b.getPath() + ":" + b.getLineNumber());
             b.removePropertyChangeListener (this);
             RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, false));
@@ -183,19 +187,19 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (propertyName == null) {
             return;
         }
-        if ( (!GdbBreakpoint.PROP_ENABLED.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_VALIDITY.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_CONDITION.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_SKIP_COUNT.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_URL.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_FUNCTION_NAME.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) &&
+        if ( (!CndBreakpoint.PROP_ENABLED.equals(propertyName)) &&
+             (!CndBreakpoint.PROP_VALIDITY.equals(propertyName)) &&
+             (!CndBreakpoint.PROP_CONDITION.equals(propertyName)) &&
+             (!CndBreakpoint.PROP_SKIP_COUNT.equals(propertyName)) &&
+             (!CndBreakpoint.PROP_URL.equals(propertyName)) &&
+             (!FunctionBreakpoint.PROP_FUNCTION_NAME.equals(propertyName)) &&
+             (!CndBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) &&
              (!AddressBreakpoint.PROP_ADDRESS_VALUE.equals(propertyName)) &&
              (!AddressBreakpoint.PROP_REFRESH.equals(propertyName))) {
             return;
         }
         
-        GdbBreakpoint b = (GdbBreakpoint) evt.getSource();
+        CndBreakpoint b = (CndBreakpoint) evt.getSource();
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
         Breakpoint[] bkpts = manager.getBreakpoints();
         boolean found = false;
@@ -213,10 +217,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     }
 
     private final class AnnotationRefresh implements Runnable {
-        private GdbBreakpoint b;
+        private CndBreakpoint b;
         private boolean remove, add;
 
-        public AnnotationRefresh(GdbBreakpoint b, boolean remove, boolean add) {
+        public AnnotationRefresh(CndBreakpoint b, boolean remove, boolean add) {
             this.b = b;
             this.remove = remove;
             this.add = add;
@@ -243,10 +247,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         return (b instanceof LineBreakpoint ||
                 b instanceof FunctionBreakpoint ||
                 b instanceof AddressBreakpoint) &&
-               !((GdbBreakpoint) b).isHidden();
+               !((CndBreakpoint) b).isHidden();
     }
     
-    private static String getAnnotationType(GdbBreakpoint b, boolean isConditional) {
+    private static String getAnnotationType(CndBreakpoint b, boolean isConditional) {
         boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
         String annotationType;
         if (b instanceof LineBreakpoint) {
@@ -273,7 +277,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     }
     
     /** @return The annotation lines or <code>null</code>. */
-    private static int[] getAnnotationLines(GdbBreakpoint b, FileObject fo) {
+    private static int[] getAnnotationLines(CndBreakpoint b, FileObject fo) {
         if (b instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) b;
             try {
@@ -317,7 +321,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     }
     
     // Is called under synchronized (breakpointToAnnotations)
-    private void addAnnotationTo(GdbBreakpoint b, FileObject fo) {
+    private void addAnnotationTo(CndBreakpoint b, FileObject fo) {
         int[] lines = getAnnotationLines(b, fo);
         if (lines == null || lines.length == 0) {
             return;
@@ -360,7 +364,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     }
 
     // Is called under synchronized (breakpointToAnnotations)
-    private void removeAnnotations(GdbBreakpoint b) {
+    private void removeAnnotations(CndBreakpoint b) {
         Set<Annotation> annotations = breakpointToAnnotations.remove(b);
         if (annotations == null) {
             return;

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="html">
+                <file name="org-netbeans-modules-web-jsf-editor-HtmlSourceTask$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+            </folder>
+            <folder name="xhtml">
+                <file name="org-netbeans-modules-web-jsf-editor-JsfHtmlPaletteFolderProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider"/>
+                </file>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-web-jsf-editor-completion-JsfElCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
+                    <file name="JSFJSPHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.el.JsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-jsp">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-web-jsf-editor-completion-JsfElCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
+                    <file name="JSFJSPHyperlinkProvider.instance">
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.el.JsfHyperlinkProvider"/>
+                    </file>
+                </folder>
+            </folder>
+
+        </folder>
+    </folder>
+
+    <folder name="XHTMLPalette">
+
+        <file name="HTML.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.editor.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+            <attr name="position" intvalue="100"/>
+        </file>
+
+        <file name="HTML_Forms.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.editor.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+            <attr name="position" intvalue="200"/>
+        </file>
+
+        <folder name="JSF">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.editor.Bundle"/>
+            <attr name="position" intvalue="400"/>
+            <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
+            <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
+        </folder>
+    </folder>
+
+
+</filesystem>

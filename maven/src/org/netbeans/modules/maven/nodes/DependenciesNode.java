@@ -333,6 +333,7 @@ public class DependenciesNode extends AbstractNode {
         
     }
     
+    @SuppressWarnings("serial")
     private class AddDependencyAction extends AbstractAction {
         public AddDependencyAction() {
             putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
@@ -373,6 +374,7 @@ public class DependenciesNode extends AbstractNode {
     }
     
  
+    @SuppressWarnings("serial")
     private class DownloadJavadocSrcAction extends AbstractAction {
         private boolean javadoc;
         public DownloadJavadocSrcAction(boolean javadoc) {
@@ -416,6 +418,7 @@ public class DependenciesNode extends AbstractNode {
         }
     }  
 
+    @SuppressWarnings("serial")
     public static class ResolveDepsAction extends AbstractAction {
         private Project project;
         public ResolveDepsAction(Project prj) {
@@ -445,6 +448,7 @@ public class DependenciesNode extends AbstractNode {
         return b;
     }
     
+    @SuppressWarnings("serial")
     private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
 
         public ShowClasspathDepsAction() {
@@ -473,6 +477,7 @@ public class DependenciesNode extends AbstractNode {
         
     }
 
+    @SuppressWarnings("serial")
     private class ShowManagedStateAction extends AbstractAction implements Presenter.Popup {
 
         public ShowManagedStateAction() {
@@ -561,6 +566,7 @@ public class DependenciesNode extends AbstractNode {
         }
     }
 
+    @SuppressWarnings("serial")
     private static class ExpandAction extends AbstractAction {
         private DependenciesChildren parent;
 

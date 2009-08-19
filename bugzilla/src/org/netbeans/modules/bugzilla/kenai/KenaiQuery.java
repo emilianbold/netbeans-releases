@@ -55,7 +55,7 @@ public class KenaiQuery extends BugzillaQuery {
     private boolean predefinedQuery = false;
 
     public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved, boolean predefined) {
-        super(name, repository, urlParameters, saved);
+        super(name, repository, urlParameters, saved, false, false);
         this.product = product;
         this.predefinedQuery = predefined;
         controller = createControler(repository, this, urlParameters);

@@ -39,22 +39,27 @@
 package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
+import java.net.URL;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,8 +68,19 @@ import org.openide.util.NbBundle;
  */
 public class FopsToolConfigurationProvider implements DLightToolConfigurationProvider {
     private static final String ID = "dlight.tool.fops"; // NOI18N
+    private static final String FILE_COUNT_ID = "file-count"; // NOI18N
 
     private static final int INDICATOR_POSITION = 400;
+
+    private static final int BINARY_ORDER = 1024;
+    private static final int DECIMAL_ORDER = 1000;
+    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
+
+    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
+    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+    static {
+        FRAC_FORMAT.setMaximumFractionDigits(1);
+    }
 
     public FopsToolConfigurationProvider() {
     }
@@ -74,45 +90,79 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(ID, toolName);
 
-        /* DTrace tool - FOPS */
+        Column opColumn = new Column("operation", String.class, getMessage("Column.OpType"), null); // NOI18N
+        Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
+        Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
+        Column fileCountColumn = new Column("file_count", Long.class, getMessage("Column.FileCount"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
                 new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
-                new Column("cpu", Integer.class, getMessage("Column.CPU"), null), // NOI18N
-                new Column("thread", Integer.class, getMessage("Column.Thread"), null), // NOI18N
-                new Column("operation", String.class, getMessage("Column.OpType"), null), // NOI18N
-                new Column("handle", Integer.class, getMessage("Column.Handle"), null), // NOI18N
-                new Column("file", String.class, getMessage("Column.Filename"), null), // NOI18N
-                new Column("size", Long.class, getMessage("Column.Size"), null), // NOI18N
+                opColumn,
+                new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
+                fileColumn,
+                sizeColumn,
+                fileCountColumn,
                 new Column("stack_id", Long.class, getMessage("Column.StackId"), null)); // NOI18N
 
         final DataTableMetadata dtraceFopsMetadata =
                 new DataTableMetadata("fops", fopsColumns, null); // NOI18N
 
-        final String script = Util.copyResource(
-                FopsToolConfigurationProvider.class,
-                "org/netbeans/modules/dlight/fops/resources/fops.d"); // NOI18N
+        final URL scriptUrl = getClass().getResource("resources/fops.d"); // NOI18N
 
         final DTDCConfiguration dtraceCollectorConfig =
-                new DTDCConfiguration(script, Arrays.asList(dtraceFopsMetadata));
+                new DTDCConfiguration(scriptUrl, Arrays.asList(dtraceFopsMetadata));
         dtraceCollectorConfig.setStackSupportEnabled(true);
         dtraceCollectorConfig.setIndicatorFiringFactor(1);
+        dtraceCollectorConfig.setOutputPrefix("fops:"); // NOI18N
 
-        toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:")); // NOI18N
-
+        toolConfiguration.addDataCollectorConfiguration(dtraceCollectorConfig);
         toolConfiguration.addIndicatorDataProviderConfiguration(dtraceCollectorConfig);
+
+        Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
+        Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N
+
+        DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
+                Arrays.asList(
+                        fileColumn,
+                        new Column("bytes_read", Long.class, getMessage("Column.BytesRead"), null), // NOI18N
+                        new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
+                        openStackColumn,
+                        closeStackColumn,
+                        new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
+                "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
+                "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
+                "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
+                "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
+                "BOOL_OR(operation='close') AS closed " + // NOI18N
+                "FROM fops GROUP BY sid, file " + // NOI18N
+                "ORDER BY closed ASC", // NOI18N
+                Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), 100, // NOI18N
+                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), BINARY_ORDER, // NOI18N
                 Arrays.asList(
-                        new GraphDescriptor(Color.GRAY, getMessage("Indicator.Value"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToIOPlot());
+                        new GraphDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
+                        new GraphDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
+                new DataRowToIOPlot(opColumn, sizeColumn, fileCountColumn));
+        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
+                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0)))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
-        indicatorConfiguration.addVisualizerConfiguration(
-                new TableVisualizerConfiguration(dtraceFopsMetadata));
+        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
+            public String render(int value) {
+                return formatValue(value);
+            }
+        });
+
+        AdvancedTableViewVisualizerConfiguration tableConfiguration =
+                new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
+        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName()));
+        tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
+        tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
+        tableConfiguration.setDualPaneMode(true);
+        tableConfiguration.setDataRowRenderer(new StackRenderer(Arrays.asList(openStackColumn, closeStackColumn)));
+        indicatorConfiguration.addVisualizerConfiguration(tableConfiguration);
 
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 
@@ -123,12 +173,58 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         return NbBundle.getMessage(FopsToolConfigurationProvider.class, name);
     }
 
-    private static class DataRowToIOPlot implements DataRowToPlot {
-        public void addDataRow(DataRow row) {
-            //throw new UnsupportedOperationException("Not supported yet.");
+    private static String formatValue(long value) {
+        double dbl = value;
+        int i = 0;
+        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
         }
-        public void tick(float[] data, Map<String,String> details) {
-            //throw new UnsupportedOperationException("Not supported yet.");
+        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
+        }
+        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
+        return nf.format(dbl) + SUFFIXES[i];
+    }
+
+    private static class DataRowToIOPlot implements DataRowToPlot {
+
+        private final String opColumn;
+        private final String sizeColumn;
+        private final String fileCountColumn;
+        private long reads;
+        private long writes;
+        private long fileCount;
+
+        public DataRowToIOPlot(Column opColumn, Column sizeColumn, Column fileCountColumn) {
+            this.opColumn = opColumn.getColumnName();
+            this.sizeColumn = sizeColumn.getColumnName();
+            this.fileCountColumn = fileCountColumn.getColumnName();
+        }
+
+        public synchronized void addDataRow(DataRow row) {
+            String op = row.getStringValue(opColumn);
+            if ("read".equals(op) || "write".equals(op)) { // NOI18N
+                int bytes = DataUtil.toInt(row.getData(sizeColumn));
+                if ("read".equals(op)) { // NOI18N
+                    reads += bytes;
+                } else {
+                    writes += bytes;
+                }
+            }
+            int newFileCount = DataUtil.toInt(row.getData(fileCountColumn), -1);
+            if (0 <= newFileCount) {
+                fileCount = newFileCount;
+            }
+        }
+
+        public synchronized void tick(float[] data, Map<String,String> details) {
+            data[0] = writes;
+            data[1] = reads;
+            details.put(FILE_COUNT_ID, String.valueOf(fileCount));
+            writes = 0;
+            reads = 0;
         }
     }
 }

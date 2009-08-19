@@ -68,7 +68,7 @@ import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.modules.php.project.util.PhpUnit.Files;
+import org.netbeans.modules.php.project.util.PhpUnit.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -266,9 +266,11 @@ public final class CreateTestsAction extends NodeAction {
         }
         proceeded.add(sourceFo);
 
+        final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
         final String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
         final File sourceFile = FileUtil.toFile(sourceFo);
         final File parent = FileUtil.toFile(sourceFo.getParent());
+        final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
 
         // find out the name of a class(es)
         PhpUnitSupport phpUnitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
@@ -276,7 +278,7 @@ public final class CreateTestsAction extends NodeAction {
         Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
         if (classNames.size() == 0) {
             // run phpunit in order to have some output
-            generateSkeleton(phpProject, phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
+            generateSkeleton(phpUnit, configFiles, sourceFo.getName(), sourceFo, workingDirectory, paramSkeleton);
             failed.add(sourceFo);
             return;
         }
@@ -290,7 +292,7 @@ public final class CreateTestsAction extends NodeAction {
             final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpProject, phpUnit, className, sourceFo, parent, paramSkeleton);
+            Future<Integer> result = generateSkeleton(phpUnit, configFiles, className, sourceFo, workingDirectory, paramSkeleton);
             try {
                 if (result.get() != 0) {
                     // test not generated
@@ -309,27 +311,26 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private Future<Integer> generateSkeleton(PhpProject project, PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
+    private Future<Integer> generateSkeleton(PhpUnit phpUnit, ConfigFiles configFiles, String className, FileObject sourceFo, File workingDirectory, String paramSkeleton) {
         // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(parent);
+        ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
+                .workingDirectory(workingDirectory);
 
-        Files files = phpUnit.getFiles(project, false);
-        if (files.bootstrap != null) {
+        if (configFiles.bootstrap != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(files.bootstrap.getAbsolutePath());
+                    .addArgument(configFiles.bootstrap.getAbsolutePath());
         }
-        if (files.configuration != null) {
+        if (configFiles.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                    .addArgument(files.configuration.getAbsolutePath());
+                    .addArgument(configFiles.configuration.getAbsolutePath());
         }
 
         externalProcessBuilder = externalProcessBuilder
                 .addArgument(paramSkeleton)
                 .addArgument(className)
-                .addArgument(sourceFo.getNameExt());
+                .addArgument(FileUtil.toFile(sourceFo).getAbsolutePath());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
                 String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, className, sourceFo.getNameExt())); // NOI18N
         return service.run();

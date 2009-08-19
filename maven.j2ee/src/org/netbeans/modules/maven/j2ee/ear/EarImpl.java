@@ -134,6 +134,10 @@ class EarImpl implements EarImplementation, EarImplementation2,
                 if ("5".equals(version)) {
                     return Profile.JAVA_EE_5;
                 }
+                // 6 is not valid value in netbeans, it's 1.6
+                if ("6".equals(version)) {
+                    return Profile.JAVA_EE_6_FULL;
+                }
                 return Profile.fromPropertiesString(version.trim());
             }
         } else {
@@ -147,6 +151,9 @@ class EarImpl implements EarImplementation, EarImplementation2,
                 } catch (IOException exc) {
                     ErrorManager.getDefault().notify(exc);
                 }
+            } else {
+                //TODO try to check the pom model again and user 'version' element if existing..
+                return Profile.JAVA_EE_6_FULL;
             }
         }
         // hardwire?

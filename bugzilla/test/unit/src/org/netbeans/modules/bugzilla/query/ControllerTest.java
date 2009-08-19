@@ -85,7 +85,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
         String parametersUrl = getParametersUrl();
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), parametersUrl, System.currentTimeMillis(), false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), parametersUrl, true, false, true);
         QueryController c = q.getController();
         
         // wait while populate

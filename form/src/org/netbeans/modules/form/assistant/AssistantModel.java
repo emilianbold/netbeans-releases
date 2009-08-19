@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.form.assistant;
 
-import java.beans.*;
-import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * Assistant model.

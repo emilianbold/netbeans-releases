@@ -56,10 +56,12 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -81,6 +83,7 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
+    private int debuggerPid = -1;
 
     private final MICommand[] commandList = new MICommand[20];
     private int nextCommandPos = 0;
@@ -145,6 +148,7 @@ public class GdbProxyEngine {
         }
 
         final NativeProcess proc = npb.call();
+        debuggerPid = proc.getPID();
         toGdb = gdbReader(proc.getInputStream(), proc.getOutputStream());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
@@ -161,6 +165,15 @@ public class GdbProxyEngine {
                 }
             }
         });
+    }
+
+    // Interrupts the debugger
+    public void interrupt() {
+        CommonTasksSupport.sendSignal(
+                debugger.getHostExecutionEnvironment(),
+                debuggerPid,
+                Signal.INT.toString(),
+                null);
     }
 
     private void unexpectedGdbExit(int rc) {

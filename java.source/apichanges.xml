@@ -105,6 +105,46 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeUtilities.isEnumConstant">
+             <api name="general"/>
+             <summary>Added TreeUtilities.isEnumConstant() method.</summary>
+             <version major="0" minor="48"/>
+             <date day="14" month="8" year="2009"/>
+             <author login="msauer"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeUtilities.isEnumConstant()</code> method, which
+                 determines whether tree represents an enum constant.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="170373"/>
+        </change>
+        <change id="CompilationInfo.getSourceVersion">
+             <api name="general"/>
+             <summary>Added CompilationInfo.getSourceVersion() method.</summary>
+             <version major="0" minor="47"/>
+             <date day="12" month="8" year="2009"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CompilationInfo.getSourceVersion()</code> to return the SourceVersion used by the javac compiler.
+             </description>
+             <class package="org.netbeans.api.java.source" name="CompilationInfo"/>
+             <issue number="169970"/>
+        </change>
+        <change id="JavaSource.patchedPublic">
+             <api name="general"/>
+             <summary>Removing the binary compatibility methods (using bytecode patching) from JavaSource</summary>
+             <version major="0" minor="46"/>
+             <date day="6" month="8" year="2009"/>
+             <author login="tzezula"/>
+             <compatibility binary="incompatible" deletion="yes" source="compatible"/>
+             <description>
+                 The JavaSource class contains methods introduced to keep binary compatibility among milestones of NB 6.0.
+                 These methods are not needed anymore and will be removed.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaSource"/>
+        </change>
         <change id="TreeMaker.Method">
              <api name="general"/>
              <summary>Added new Method allowing creating varargs methods.</summary>
@@ -113,7 +153,7 @@ is the proper place.
              <author login="moonko"/>
              <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
-                 Addint <code>TreeMake.Method(..., boolean isVarArg)</code> to allow creation of methods with variable lenght of arguments. 
+                 Adding <code>TreeMake.Method(..., boolean isVarArg)</code> to allow creation of methods with variable lenght of arguments.
              </description>
             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
         </change>
@@ -125,7 +165,7 @@ is the proper place.
              <author login="moonko"/>
              <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
-                 Addint <code>Comment.create(Comment.Style, String)</code> to create new comment of any style from string. 
+                 Adding <code>Comment.create(Comment.Style, String)</code> to create new comment of any style from string.
              </description>
              <class package="org.netbeans.api.java.source" name="Comment"/>
         </change>

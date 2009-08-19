@@ -67,6 +67,9 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
@@ -151,6 +154,7 @@ final public class WebProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
@@ -893,6 +897,15 @@ final public class WebProjectProperties {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
+            // set j2ee.platform.embeddableejb.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
+                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
+                privateProps.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                        Utils.toClasspathString(ejbClasspath));
+            } else {
+                privateProps.remove(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH);
+            }
+
             // update j2ee.platform.wscompile.classpath
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
                 File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
@@ -902,19 +915,19 @@ final public class WebProjectProperties {
                 privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
             }
 
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
+            WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+            if (wsStack != null) {
+                WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT);
+                if (wsTool!= null && wsTool.getLibraries().length > 0) {
+                    String librariesList = Utils.toClasspathString(wsTool.getLibraries());
+                    privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
+                    privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
+                } else {
+                    privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
+                    privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
+                }
             } else {
                 privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
                 privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
             }
 

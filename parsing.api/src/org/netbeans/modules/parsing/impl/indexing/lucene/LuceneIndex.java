@@ -234,6 +234,38 @@ public class LuceneIndex implements IndexImpl {
             }
         });
     }
+
+    /**
+     * Checks if the lucene index is valid.
+     * @param tryOpen if true the index is opened to verify integrity otherwise
+     * only segment names are checked.
+     * @return tru when index is valid
+     * @throws IOException when index is already closed
+     */
+    public boolean isValid (final boolean tryOpen) throws IOException {
+        checkPreconditions();
+       return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<Boolean>() {
+            public Boolean run() throws IOException {
+                boolean res = false;
+                try {
+                    res = IndexReader.indexExists(directory);
+                } catch (IOException e) {
+                    //Directory does not exist, no need to call clear
+                    return res;
+                }
+                if (res && tryOpen) {
+                    try {
+                        getReader(false);
+                    } catch (java.io.IOException e) {
+                        res = false;
+                        clear();
+                    }
+                }
+                return res;
+            }
+        }).booleanValue();
+        
+    }
     
     public void close() throws IOException {
         checkPreconditions();

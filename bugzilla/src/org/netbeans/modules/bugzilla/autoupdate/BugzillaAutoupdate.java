@@ -83,23 +83,28 @@ public class BugzillaAutoupdate {
      *         downloaded
      */
     public boolean checkAndNotify(BugzillaRepository repository) {
-        if(wasCheckedToday(getLastCheck(repository))) {
-            return true;
-        }
-        if(!BugzillaConfig.getInstance().getCheckUpdates()) {
-            return true;
-        }
-        if(!checkSupportedBugzillaServerVersion(repository) && checkNewBugzillaPluginAvailable()) {
-            AutoupdatePanel panel = new AutoupdatePanel();
-            if(BugzillaUtil.show(
-                    panel,
-                    NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                    NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
-                    new HelpCtx(BugzillaAutoupdate.class)))
-            {
-                BugtrackingUtil.openPluginManager();
-                return false;
+        Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify start");
+        try {
+            if(wasCheckedToday(getLastCheck(repository))) {
+                return true;
             }
+            if(!BugzillaConfig.getInstance().getCheckUpdates()) {
+                return true;
+            }
+            if(!checkSupportedBugzillaServerVersion(repository) && checkNewBugzillaPluginAvailable()) {
+                AutoupdatePanel panel = new AutoupdatePanel();
+                if(BugzillaUtil.show(
+                        panel,
+                        NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                        NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
+                        new HelpCtx(BugzillaAutoupdate.class)))
+                {
+                    BugtrackingUtil.openPluginManager();
+                    return false;
+                }
+            }
+        } finally {
+            Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify finish");
         }
         return true;
     }

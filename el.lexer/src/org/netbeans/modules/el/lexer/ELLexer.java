@@ -443,8 +443,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                                 lexerState = ISI_BRACKET;
                                 break;
                         }
-                        Token<ELTokenId> tid = matchKeyword(input);
                         input.backup(1);
+                        Token<ELTokenId> tid = matchKeyword(input);
                         if (tid == null){
                             if (actChar == ':'){
                                 tid = token(ELTokenId.TAG_LIB_PREFIX);

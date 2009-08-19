@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -57,10 +59,14 @@ public class SaveAction extends Action {
     private static final String saveMenu = Bundle.getStringTrimmed(
                                             "org.netbeans.core.ui.resources.Bundle", "Menu/File")
                                             + "|" + savePopup;
+
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK);
     
     /** Creates new SaveAction instance. */
     public SaveAction() {
-        super(saveMenu, savePopup, "org.openide.actions.SaveAction");
+        super(saveMenu, savePopup, "org.openide.actions.SaveAction", keystroke);
     }
     
      /** Performs popup action Save on given component operator

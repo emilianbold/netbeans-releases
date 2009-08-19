@@ -59,12 +59,14 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -154,6 +156,19 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 m.put(q.getDisplayName(), qh);
             }
             ret.add(qh);
+        }
+        if(!KenaiUtil.isLoggedIn()) {
+            QueryHandle myIssuesFake = new QueryHandle() {
+                @Override
+                public String getDisplayName() {
+                    return NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssuesNotLoggedIn");
+                }
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {}
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {}
+            };
+            ret.add(myIssuesFake);
         }
         return ret;
     }
@@ -288,7 +303,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
         public void closeQueries() {
             for (QueryHandle qh : queries) {
-                QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+                if(qh instanceof QueryHandleImpl) {
+                    QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+                }
             }
             synchronized (projectListeners) {
                 ph.removePropertyChangeListener(this);

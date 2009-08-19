@@ -41,6 +41,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -60,6 +61,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -79,6 +81,8 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
+
+    private static final String PREMATURE_EOF_CODE = "compiler.err.premature.eof"; // NOI18N
     
     /** Creates a new instance of ImplementAllAbstractMethodsCreator */
     public ImplementAllAbstractMethods() {
@@ -133,19 +137,33 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         final TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         Element e = info.getTrees().getElement(path);
         boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface()) && e.getKind() != ElementKind.ENUM;
+        final Tree leaf = path.getLeaf();
         
         if (isUsableElement) {
             //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
             for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
                 if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
-                    performer.makeClassAbstract(path.getLeaf(), e.getSimpleName().toString());
+                    performer.makeClassAbstract(leaf, e.getSimpleName().toString());
                     return;
                 }
             }
+
+            if (leaf.getKind() == Kind.CLASS) {
+                CompilationUnitTree cut = info.getCompilationUnit();
+                // do not offer for class declarations without body
+                long start = info.getTrees().getSourcePositions().getStartPosition(cut, leaf);
+                long end = info.getTrees().getSourcePositions().getEndPosition(cut, leaf);
+                for (Diagnostic d : info.getDiagnostics()) {
+                    long position = d.getPosition();
+                    if (d.getCode().equals(PREMATURE_EOF_CODE) && position > start && position < end) {
+                        return;
+                    }
+                }
+            }
             
-            performer.fixAllAbstractMethods(path, path.getLeaf());
+            performer.fixAllAbstractMethods(path, leaf);
         } else {
-            if (path.getLeaf().getKind() == Kind.NEW_CLASS) {
+            if (leaf.getKind() == Kind.NEW_CLASS) {
                 //if the parent of path.getLeaf is an error, the situation probably is like:
                 //new Runnable {}
                 //(missing '()' for constructor)
@@ -154,14 +172,14 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 new TreePathScanner() {
                     @Override
                     public Object visitNewClass(NewClassTree nct, Object o) {
-                        if (path.getLeaf() == nct) {
+                        if (leaf == nct) {
                             parentError[0] = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ERRONEOUS;
                         }
                         return super.visitNewClass(nct, o);
                     }
                 }.scan(path.getParentPath(), null);
                 if (!parentError[0]) {
-                    performer.fixAllAbstractMethods(path, path.getLeaf());
+                    performer.fixAllAbstractMethods(path, leaf);
                 }
             }
         }

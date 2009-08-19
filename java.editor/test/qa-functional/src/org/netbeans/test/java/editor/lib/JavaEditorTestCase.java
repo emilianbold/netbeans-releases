@@ -47,7 +47,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.diff.LineDiff;
-import org.netbeans.test.java.editor.lib.EditorTestCase;
 
 /**
  *
@@ -65,6 +64,11 @@ public class JavaEditorTestCase extends EditorTestCase {
         return PROJECT_NAME;
     }
 
+    /**
+     * Compare goldenfile with content of editor
+     * @param oper
+     * @throws IOException
+     */
     public void compareGoldenFile(EditorOperator oper) throws IOException {
         File fGolden = null;
         fGolden = getGoldenFile();
@@ -79,5 +83,19 @@ public class JavaEditorTestCase extends EditorTestCase {
         if (diff.diff(fGolden, fRef, fDiff)) {
             fail("Golden files differ");
         }
+    }
+
+    /**
+     * Compare goldenfile with ref file, which was created during the test
+     * @throws IOException
+     */
+    public void compareGoldenFile() throws IOException {
+	File fGolden = getGoldenFile();
+	String refFileName = getName()+".ref";
+	String diffFileName = getName()+".diff";
+	File fRef = new File(getWorkDir(),refFileName);
+	LineDiff diff = new LineDiff(false);
+	File fDiff = new File(getWorkDir(),diffFileName);
+        if(diff.diff(fGolden, fRef, fDiff)) fail("Golden files differ");
     }
 }

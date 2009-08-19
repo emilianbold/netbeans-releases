@@ -118,6 +118,7 @@ public class Controller {
         if (io.getToolTipText() != null) {
             ioContainer.setToolTipText(result, io.getToolTipText());
         }
+        io.setClosed(false);
 
         //Make sure names are boldfaced for all open streams - if the tabbed
         //pane was just added in, it will just have used the name of the
@@ -300,7 +301,8 @@ public class Controller {
 
         // workaround for JDK bug (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6670274)
         // NB issue #113388
-        private final boolean dontUseHtml = System.getProperty("java.version").startsWith("1.6.0_14");
+        private final boolean dontUseHtml = System.getProperty("java.version").startsWith("1.6.0_14")
+                || System.getProperty("java.version").startsWith("1.6.0_15");
 
         public void run() {
             for (OutputTab t : components) {

@@ -45,14 +45,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.versioning.util.Utils;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -167,7 +162,7 @@ public class CommitTableModel extends AbstractTableModel {
         if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(COLUMN_NAME_BRANCH)) {
-            String branch = SvnUtils.getCopy(nodes[rowIndex].getFile());
+            String branch = nodes[rowIndex].getCopy();
             return branch == null ? "" : branch; // NOI18N
         } else if (col.equals(COLUMN_NAME_STATUS)) {
             node = nodes[rowIndex];
@@ -184,11 +179,7 @@ public class CommitTableModel extends AbstractTableModel {
                 String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
-                try {                     
-                    shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());                    
-                } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
-                }                    
+                shortPath = nodes[rowIndex].getRelativePath();
                 if (shortPath == null) {
                     shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }

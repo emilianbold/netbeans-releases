@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
@@ -87,7 +87,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     }
     
     static int getCurrentCallStackFrameIndex(GdbDebugger debugger) {
-	CallStackFrame csf = debugger.getCurrentCallStackFrame();
+	GdbCallStackFrame csf = debugger.getCurrentCallStackFrame();
         if (csf != null) {
             return csf.getFrameNumber();
         } else {
@@ -97,7 +97,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     
     static void setCurrentCallStackFrameIndex(GdbDebugger debugger, int index) {
 	if (index < debugger.getStackDepth()) {
-	    CallStackFrame csf = debugger.getCallStack().get(index);
+	    GdbCallStackFrame csf = debugger.getCallStack().get(index);
 	    csf.makeCurrent();
 	}
     }

@@ -72,12 +72,15 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // application-client
         schemas.add(new SchemaInfo("application-client_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("application-client_5.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("application-client_6.xsd", JAVAEE_NS));
         // application
         schemas.add(new SchemaInfo("application_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("application_5.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("application_6.xsd", JAVAEE_NS));
         // web services
         schemas.add(new SchemaInfo("j2ee_web_services_1_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_1_2.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_web_services_1_3.xsd", JAVAEE_NS));
         // web services client
         schemas.add(new SchemaInfo("j2ee_web_services_client_1_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_client_1_2.xsd", JAVAEE_NS));
@@ -86,6 +89,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // ejb-jar
         schemas.add(new SchemaInfo("ejb-jar_2_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("ejb-jar_3_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("ejb-jar_3_1.xsd", JAVAEE_NS));
         // web-app
         schemas.add(new SchemaInfo("web-app_2_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("web-app_2_5.xsd", JAVAEE_NS));
@@ -99,6 +103,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // j2ee and java ee schemas
         schemas.add(new SchemaInfo("j2ee_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_5.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_6.xsd", JAVAEE_NS));
         // web 2.2 and 2.3 dtds
         schemas.add(new SchemaInfo("web-app_2_2.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", true)); //NO18N
         schemas.add(new SchemaInfo("web-app_2_3.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", true)); //NO18N

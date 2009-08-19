@@ -111,6 +111,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems Inc.//DTD Application Server 8.1 Domain//EN"                              ,"sun-domain_1_1.dtd",
         "-//Sun Microsystems Inc.//DTD Application Server 9.0 Domain//EN"                              ,"sun-domain_1_2.dtd",
         "-//Sun Microsystems Inc.//DTD Application Server 9.1 Domain//EN"                              ,"sun-domain_1_3.dtd",
+        "-//Sun Microsystems Inc.//DTD GlassFish Communications Server 1.5 Domain//EN"     ,"sun-domain_1_4.dtd",
+        "-//Sun Microsystems Inc.//DTD GlassFish Communications Server 2.0 Domain//EN"     ,"sun-domain_1_5.dtd",
         "-//Sun Microsystems, Inc.//DTD Application Server 9.0 SIP Servlet 1.1//EN"                    , "sun-sip-app_1_1-0.dtd",
         
         "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"                                       , "application_1_3.dtd",
@@ -120,6 +122,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.3//EN"                                , "application-client_1_3.dtd",
         "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN"                                , "application-client_1_2.dtd",
         "-//Sun Microsystems, Inc.//DTD Connector 1.0//EN"                                              , "connector_1_0.dtd",
+        "-//Java Community Process//DTD SIP Application 1.0//EN"                                    , "sip-app_1_0.dtd",
         "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"                                        , "web-app_2_3.dtd",
         "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"                                        , "web-app_2_2.dtd",
         "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"                                        , "web-jsptaglibrary_1_2.dtd",

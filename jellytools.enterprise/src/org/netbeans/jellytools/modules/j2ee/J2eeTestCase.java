@@ -97,10 +97,12 @@ public class J2eeTestCase extends JellyTestCase {
         File tmpDir = new File(tmpDirPath);
         for (String file : tmpDir.list()) {
             if (file.startsWith(PID_FILE_PREFIX)){
-                new File(tmpDir, file).delete();
+                if ( !(new File(tmpDir, file).delete()) )
+                    LOG.warning("File '"+ tmpDirPath + File.pathSeparator + file + "' not successfully deleted!");
             }
         }
-        new File(tmpDir, PID_FILE_PREFIX + pid).createNewFile();
+        if (! (new File(tmpDir, PID_FILE_PREFIX + pid).createNewFile()))
+            LOG.warning("File '"+ tmpDirPath + File.pathSeparator + PID_FILE_PREFIX + pid + "' not successfully created!");;
     }
     
     private static void registerGlassfish() {
@@ -395,19 +397,5 @@ public class J2eeTestCase extends JellyTestCase {
                 dialog.close();
             }
         }
-    }
-
-    private void waitScanFinished(){
-       ClassLoader l = Thread.currentThread().getContextClassLoader();
-        if (l == null) {
-            l = getClass().getClassLoader();
-        }
-        Class<?> sourceUtils;
-        try {
-            sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
-            sourceUtils.getMethod("waitScanFinished").invoke(null);
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Waiting for classpath scanning failed", ex);
-        }
-    }
+    }   
 }

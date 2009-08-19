@@ -126,8 +126,8 @@
       in the component must be set as a client property. See example:</p>
 
       <pre>
-      public class CustomComponent extends javax.swing.JComponent {
-        public CustomComponent() {
+      public class MyComponent extends javax.swing.JComponent {
+        public MyComponent() {
           ...
           putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         }

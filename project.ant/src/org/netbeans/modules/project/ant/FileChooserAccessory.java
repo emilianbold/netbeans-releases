@@ -281,9 +281,9 @@ public class FileChooserAccessory extends javax.swing.JPanel
     }
 
     private void update(List<File> files) {
-        StringBuffer absolute = new StringBuffer();
-        StringBuffer relative = new StringBuffer();
-        StringBuffer variable = new StringBuffer();
+        StringBuilder absolute = new StringBuilder();
+        StringBuilder relative = new StringBuilder();
+        StringBuilder variable = new StringBuilder();
         boolean isRelative = true;
         for (File file : files) {
             String varPath = getVariablesModel().getRelativePath(file, true);

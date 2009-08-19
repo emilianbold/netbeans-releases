@@ -60,12 +60,15 @@ import org.openide.util.NbPreferences;
 public class IDESettings  {
     /** Web Browser prefered by user */
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
+    public static final String PROP_EXTERNAL_WWWBROWSER = "ExternalWWWBrowser"; // NOI18N
 
     static Preferences getPreferences() {
         return NbPreferences.forModule(IDESettings.class);
     }
 
-    /** Getter for preffered web browser.
+    /** Getter for preffered web browser. The browser may be an internal one
+     * (URLs will be rendered in some TopComponent) or external browser like
+     * Mozilla or Internet Explorer.
      *
      * First time when this function is called Lookup is used
      * to find prefered browser factory in a browser registry.
@@ -74,8 +77,69 @@ public class IDESettings  {
      * may return null if it is not possible to get the browser
      */
     public static HtmlBrowser.Factory getWWWBrowser () {
+        return getBrowser( PROP_WWWBROWSER, false );
+    }
+
+    /** Getter for preffered external web browser.
+     *
+     * First time when this function is called Lookup is used
+     * to find prefered browser factory in a browser registry.
+     *
+     * @return prefered external browser,
+     * may return null if it is not possible to get the browser or no external
+     * browser is available.
+     */
+    public static HtmlBrowser.Factory getExternalWWWBrowser () {
+        return getBrowser( PROP_EXTERNAL_WWWBROWSER, true );
+    }
+
+    /** Setter for preffered browser.
+     *
+     *  Actually Node.Handle of node that represent browser in lookup folder is stored.
+     *
+     * @param brow prefered browser capable of providing implementation
+     */
+    public static void setWWWBrowser (HtmlBrowser.Factory brow) {
+        setBrowser( PROP_WWWBROWSER, brow );
+        if( isExternal( brow ) ) {
+            setExternalWWWBrowser(brow);
+        }
+    }
+
+    /** Setter for preffered external browser.
+     *
+     *  Actually Node.Handle of node that represent browser in lookup folder is stored.
+     *
+     * @param brow prefered browser capable of providing implementation
+     */
+    public static void setExternalWWWBrowser (HtmlBrowser.Factory brow) {
+        setBrowser( PROP_EXTERNAL_WWWBROWSER, brow );
+    }
+
+    private static void setBrowser (String prefId, HtmlBrowser.Factory brow) {
         try {
-            Object obj = getPreferences().get(PROP_WWWBROWSER, null);
+            if (brow == null) {
+                getPreferences().put(prefId, "");//NOI18N
+                return;
+            }
+
+            Lookup.Item<HtmlBrowser.Factory> item =
+                    Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, brow));
+            if (item != null) {
+                getPreferences().put(prefId, item.getId ());
+            } else {
+                // strange
+                Logger.getLogger (IDESettings.class.getName ()).warning ("IDESettings: Cannot find browser in lookup");// NOI18N
+                getPreferences().put(prefId, "");//NOI18N
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace (ex);
+        }
+    }
+
+    private static HtmlBrowser.Factory getBrowser( String prefId, boolean mustBeExternal ) {
+        try {
+            Object obj = getPreferences().get(prefId, null);
 
             if (obj instanceof String && !"".equals (obj)) {
                 // use new style
@@ -100,6 +164,8 @@ public class IDESettings  {
 
                         try {
                             if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden")))
+                                continue;
+                            if (mustBeExternal && Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("internal")) )
                                 continue;
                             InstanceCookie cookie = (InstanceCookie) dobjs[i].getCookie (InstanceCookie.class);
 
@@ -127,31 +193,37 @@ public class IDESettings  {
         return null;
     }
 
-    /** Setter for preffered browser.
-     *
-     *  Actually Node.Handle of node that represent browser in lookup folder is stored.
-     *
-     * @param brow prefered browser capable of providing implementation
-     */
-    public static void setWWWBrowser (HtmlBrowser.Factory brow) {
-        try {
-            if (brow == null) {
-                getPreferences().put(PROP_WWWBROWSER, "");//NOI18N
-                return;
-            }
+    private static boolean isExternal( HtmlBrowser.Factory brow ) {
+        // check if it is not set to be hidden
+        FileObject fo = FileUtil.getConfigFile ("Services/Browsers");   // NOI18N
 
-            Lookup.Item<HtmlBrowser.Factory> item =
-                    Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, brow));
-            if (item != null) {
-                getPreferences().put(PROP_WWWBROWSER, item.getId ());
-            } else {
-                // strange
-                Logger.getLogger (IDESettings.class.getName ()).warning ("IDESettings: Cannot find browser in lookup");// NOI18N
-                getPreferences().put(PROP_WWWBROWSER, "");//NOI18N
+        DataFolder folder = DataFolder.findFolder (fo);
+        DataObject [] dobjs = folder.getChildren ();
+        for (int i = 0; i < dobjs.length; i++) {
+            Object o = null;
+
+            try {
+                if (Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden")))
+                    continue;
+                if (!Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("internal")) )
+                    continue;
+                InstanceCookie cookie = (InstanceCookie) dobjs[i].getCookie (InstanceCookie.class);
+
+                if (cookie == null)
+                    continue;
+                o = cookie.instanceCreate ();
+                if (o != null && o.equals (brow)) {
+                    return false;
+                }
             }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace (ex);
+            // exceptions are thrown if module is uninstalled
+            catch (java.io.IOException ex) {
+                Logger.getLogger (IDESettings.class.getName ()).log (Level.WARNING, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger (IDESettings.class.getName ()).log (Level.WARNING, null, ex);
+            }
         }
+        return false;
     }
 
     /** Used in layer xml to register FactoryEditor. */

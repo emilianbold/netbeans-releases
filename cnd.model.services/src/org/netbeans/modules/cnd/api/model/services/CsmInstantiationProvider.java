@@ -51,11 +51,15 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -147,6 +151,16 @@ public abstract class CsmInstantiationProvider {
      * returns signature of template parameters
      */
     public abstract CharSequence getTemplateSignature(CsmTemplate template);
+
+    /**
+     * Returns class specialisations
+     *
+     * @param classifier - class
+     * @param contextFile - file
+     * @param contextOffset - offset
+     * @return
+     */
+    public abstract Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset);
     
     //
     // Implementation of the default provider
@@ -190,6 +204,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CharSequence getTemplateSignature(CsmTemplate template) {
             return ""; // NOI18N
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
         }
 
     }

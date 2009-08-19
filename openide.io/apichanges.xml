@@ -104,6 +104,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Color-printing">
+      <api name="io"/>
+      <summary>Adding API to have better control of text color and hyperlinks</summary>
+      <version major="1" minor="18"/>
+      <date day="24" month="7" year="2009"/>
+      <author login="t_h"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Adding class for color printing.
+        <code>
+            <a href="@TOP@/org/openide/windows/IOColorPrint.html">IOColorPrint</a>,
+        </code>
+        </p>
+      </description>
+      <class package="org.openide.windows" name="IOColorPrint"/>
+      <issue number="168898" />
+    </change>
+
     <change id="Color-control-prg-scrolling">
       <api name="io"/>
       <summary>Adding API to control output color and programmatical scrolling</summary>

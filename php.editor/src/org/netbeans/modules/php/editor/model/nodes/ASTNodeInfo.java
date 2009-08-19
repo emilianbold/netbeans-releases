@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
@@ -76,7 +77,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
-        VARIABLE, CONSTANT, FUNCTION,
+        VARIABLE, CONSTANT, FUNCTION,PARAMETER,
         INCLUDE, RETURN_MARKER}
 
     ASTNodeInfo(T node) {
@@ -241,7 +242,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         throw new IllegalStateException();
     }
 
-    private static String toName(ASTNode node) {
+    protected static String toName(ASTNode node) {
         if (node instanceof FunctionInvocation) {
             FunctionInvocation fi = (FunctionInvocation) node;
             return CodeUtils.extractFunctionName(fi);
@@ -279,11 +280,13 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toNameField(fieldAccess.getField());
         } else if (node instanceof ReturnStatement) {
             return "return";//NOI18N
+        } else if (node instanceof Reference) {
+            return toName(((Reference)node).getExpression());
         }
         throw new IllegalStateException(node.getClass().toString());
     }
 
-    private static OffsetRange toOffsetRange(ASTNode node) {
+    protected static OffsetRange toOffsetRange(ASTNode node) {
         if (node instanceof FunctionInvocation) {
             return toOffsetRange(((FunctionInvocation) node).getFunctionName().getName());
         } else if (node instanceof Variable) {
@@ -331,6 +334,8 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof ReturnStatement) {
             ReturnStatement returnStatement = (ReturnStatement) node;
             return new OffsetRange(returnStatement.getStartOffset(), returnStatement.getEndOffset());
+        } else if (node instanceof Reference) {
+            return toOffsetRange(((Reference)node).getExpression());
         }
         throw new IllegalStateException();
     }

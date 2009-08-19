@@ -81,7 +81,8 @@ public class ProviderUtil {
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
-    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
+    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider(Persistence.VERSION_2_0);
+    public static final Provider ECLIPSELINK_PROVIDER1_0 = new EclipseLinkProvider(Persistence.VERSION_1_0);
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
@@ -329,7 +330,7 @@ public class ProviderUtil {
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
         Properties properties = persistenceUnit.newProperties();
-        Map connectionProperties = provider.getConnectionPropertiesMap(connection);
+        Map connectionProperties = provider.getConnectionPropertiesMap(connection, version);
         for (Iterator it = connectionProperties.keySet().iterator(); it.hasNext();) {
             String propertyName = (String) it.next();
             Property property = properties.newProperty();
@@ -370,7 +371,8 @@ public class ProviderUtil {
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
         
-        Map<String, String> propertiesMap = provider.getConnectionPropertiesMap(connection);
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        Map<String, String> propertiesMap = provider.getConnectionPropertiesMap(connection, version);
         
         for (String name : propertiesMap.keySet()) {
             Property property = getProperty(properties, name);
@@ -454,10 +456,12 @@ public class ProviderUtil {
      */
     public static Provider getProvider(PersistenceUnit persistenceUnit){
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit ? Persistence.VERSION_1_0 : Persistence.VERSION_2_0;
+
         for (Provider each : getAllProviders()){
             if(each.getProviderClass().equals(persistenceUnit.getProvider())){
-                return each;
+                String provVersion = each.getVersion();
+                if(provVersion == null || (version.equals(provVersion)))return each;
             }
         }
         return DEFAULT_PROVIDER;
@@ -539,7 +543,8 @@ public class ProviderUtil {
      *
      */
     public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException{
-        PUDataObject pud = getPUDataObject(project);
+        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        PUDataObject pud = getPUDataObject(project, version);
         pud.addPersistenceUnit(persistenceUnit);
         pud.save();
     }
@@ -578,6 +583,7 @@ public class ProviderUtil {
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
      * 
      *@param project the project whose PUDataObject is to be get. Must not be null.
+     *@param  version if version is specified corresponding persistence.xml will be created, otherwise version will be determined from project classpath
      * 
      *@return <code>PUDataObject</code> associated with the given project or null 
      * if there is no such <code>PUDataObject</code>.
@@ -585,13 +591,13 @@ public class ProviderUtil {
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
      */
-    public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+    public static synchronized PUDataObject getPUDataObject(Project project, String version) throws InvalidPersistenceXmlException{
         Parameters.notNull("project", project); //NOI18N
         
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
             try {
-                puFileObject = createPersistenceDDFile(project);
+                puFileObject = createPersistenceDDFile(project, version);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -603,18 +609,38 @@ public class ProviderUtil {
     }
     
     /**
+     * Gets the PUDataObject associated with the given <code>project</code>. If there
+     * was no PUDataObject (i.e. no persistence.xml) in the project, a new one
+     * will be created and version will be determined based on project classpath. Use
+     * {@link #getDDFile} for testing whether a project has a persistence.xml file.
+     * It's not recommended to call this method if there is no PUDataObject yet, it's better o get version first and call with version
+     *
+     *@param project the project whose PUDataObject is to be get. Must not be null.
+     *
+     *@return <code>PUDataObject</code> associated with the given project or null
+     * if there is no such <code>PUDataObject</code>.
+     *
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
+     * invalid persitence.xml file.
+     */
+    public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+        return getPUDataObject(project, null);
+    }
+
+    /**
      * Creates a new FileObject representing file that defines
      * persistence units (<tt>persistence.xml</tt>). <i>Todo: move somewhere else?</i>
+     * @vers persistence version, if null will be determined from project classpath, if fails default will be 1.0
      * @return FileObject representing <tt>persistence.xml</tt>.
      */
-    private static FileObject createPersistenceDDFile(Project project) throws IOException {
+    private static FileObject createPersistenceDDFile(Project project, String vers) throws IOException {
         final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
         if (persistenceLocation == null) {
             return null;
         }
         final FileObject[] dd = new FileObject[1];
         //get max supported version
-        String ret=PersistenceUtils.getJPAVersion(project);
+        String ret=vers == null ? PersistenceUtils.getJPAVersion(project) : vers;
         final String version=ret!=null ? ret : Persistence.VERSION_1_0;
         // must create the file using AtomicAction, see #72058
         persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -665,7 +691,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
+            ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER,
             KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

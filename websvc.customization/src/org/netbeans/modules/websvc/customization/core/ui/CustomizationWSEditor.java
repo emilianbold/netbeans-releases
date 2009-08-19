@@ -107,6 +107,7 @@ public class CustomizationWSEditor implements WSEditor {
     }
 
     private void saveAndRefresh(final Node node, JaxWsModel jaxWsModel) {
+        if (wsTopComponent == null) return; // top component cannot be initialized for some reason - see error message from createWSEditorComponent()
         Collection<SaveableSectionInnerPanel> panels = wsTopComponent.getPanels();
         for (SaveableSectionInnerPanel panel : panels) {
             panel.save();

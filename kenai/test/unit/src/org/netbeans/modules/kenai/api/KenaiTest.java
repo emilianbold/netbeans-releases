@@ -211,6 +211,20 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     /**
+     * Test of getDescription method of class KenaiProject
+     */
+    public void testGetImageUrl() throws Exception {
+        System.out.println("testGetImageURL");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getImageUrl());
+        if (!prj.getImageUrl().equals("https://testkenai.com/images/defaultProjectImage.jpg")) {
+            fail("Image URL has changed.");
+        }
+    }
+
+    @Test
+    /**
      * Test of getWebLocation method of class KenaiProject
      */
     public void testGetWebLocation() throws Exception {
@@ -639,6 +653,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
         _suite.addTest(new KenaiTest("testGetProject"));
         _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetImageUrl"));
         _suite.addTest(new KenaiTest("testGetDisplayName"));
         _suite.addTest(new KenaiTest("testGetWebLocation"));
         _suite.addTest(new KenaiTest("testGetTags"));
@@ -650,7 +665,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
+//        _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }

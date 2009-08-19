@@ -5,7 +5,7 @@
   /* multiline comment */
 
         /**
-         * PHPDoc comment 
+         * PHPDoc comment @
          */
 
 ?>

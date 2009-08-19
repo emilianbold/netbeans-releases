@@ -47,7 +47,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -61,6 +66,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,16 +137,50 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         PersistenceUnit punit = null;
         PUDataObject pud = null;
         LOG.fine("Instantiating...");
+        //first add libraries if necessary
+        Library lib = null;
+        if (descriptor.isContainerManaged()) {
+            if (descriptor.isNonDefaultProviderEnabled()) {
+                String providerClass = descriptor.getNonDefaultProvider();
+                //Only add library for Hibernate in NB 6.5
+                if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){//NOI18N
+                    lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
+                    if (lib != null) {
+                        Util.addLibraryToProject(project, lib);
+                    }
+                }
+                else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
+                {
+                    //fix #170046
+                    //TODO: find some common approach what libraries to add and what do not need to be added
+                    lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
+                    if (lib != null) {
+                        Util.addLibraryToProject(project, lib);
+                    }
+                }
+                else
+                {
+                    lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+                }
+            }
+        } else {
+             lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+            if (lib != null){
+                Util.addLibraryToProject(project, lib);
+            }
+        }
+        //
+        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;
         try{
             LOG.fine("Retrieving PUDataObject");
-            pud = ProviderUtil.getPUDataObject(project);
+            pud = ProviderUtil.getPUDataObject(project, version);
         } catch (InvalidPersistenceXmlException ipx){
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml
             LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
             return Collections.emptySet();
        }
-        String version=pud.getPersistence().getVersion();
+        version=pud.getPersistence().getVersion();
         //
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
@@ -165,23 +205,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 String providerClass = descriptor.getNonDefaultProvider();
                 punit.setProvider(providerClass);
                 
-                //Only add library for Hibernate in NB 6.5
-                if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){
-                    Library lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N 
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
-                    }
-                }
             }
         } else {
             LOG.fine("Creating an application managed PU");
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
-            punit.setTransactionType("RESOURCE_LOCAL");
-            Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
-            if (lib != null){
-                Util.addLibraryToProject(project, lib);
-            }
         }
         
         // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>

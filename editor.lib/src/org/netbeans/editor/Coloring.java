@@ -774,14 +774,22 @@ public final class Coloring implements java.io.Serializable {
 
             if (coloring == null) {
                 Object [] fontObj = toFont(as);
+                Color foreColor = (Color) as.getAttribute(StyleConstants.Foreground);
+                // Deal StrikeThrough to be either Boolean or Color
+                Object strikeThrough = as.getAttribute(StyleConstants.StrikeThrough);
+                if (strikeThrough instanceof Boolean) {
+                    strikeThrough = Boolean.TRUE.equals(strikeThrough)
+                            ? foreColor
+                            : null;
+                }
 
                 coloring = new Coloring(
                     (Font) fontObj[0],
                     ((Integer) fontObj[1]).intValue(),
-                    (Color) as.getAttribute(StyleConstants.Foreground),
+                    foreColor,
                     (Color) as.getAttribute(StyleConstants.Background),
                     (Color) as.getAttribute(StyleConstants.Underline),
-                    (Color) as.getAttribute(StyleConstants.StrikeThrough),
+                    (Color) strikeThrough,
                     (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor),
                     (Color) as.getAttribute(EditorStyleConstants.TopBorderLineColor),
                     (Color) as.getAttribute(EditorStyleConstants.RightBorderLineColor),

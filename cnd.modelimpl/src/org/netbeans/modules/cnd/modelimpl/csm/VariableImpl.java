@@ -82,7 +82,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param registerInProject 
      */
     public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject, boolean global) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
@@ -113,6 +113,60 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         } else {
             Utils.setSelfUID(this);
         }
+    }
+
+    public static int getStartOffset(AST node) {
+        if (node != null) {
+            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+            if (csmAst != null) {
+                return csmAst.getOffset();
+            }
+        }
+        return 0;
+    }
+
+    public static int getEndOffset(AST node) {
+        int endOffset = 0;
+        if (node != null) {
+            AST lastChild = AstUtil.getLastChildRecursively(node);
+            if (lastChild instanceof CsmAST) {
+                endOffset = ((CsmAST) lastChild).getEndOffset();
+            }
+            if (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                AST next = node.getNextSibling();
+                if (next != null && next.getType() == CPPTokenTypes.ASSIGNEQUAL) {
+                    int curlyLevel = 0;
+                    int templateLevel = 0;
+                    int parenLevel = 0;
+                    while (next != null && (curlyLevel != 0 || next.getType() != CPPTokenTypes.COMMA) && next.getType() != CPPTokenTypes.SEMICOLON) {
+                        if(next.getType() != CPPTokenTypes.LCURLY) {
+                            curlyLevel++;
+                        }
+                        if(next.getType() != CPPTokenTypes.RCURLY) {
+                            curlyLevel--;
+                        }
+                        if (next.getType() != CPPTokenTypes.LESSTHAN) {
+                            templateLevel++;
+                        }
+                        if (next.getType() != CPPTokenTypes.GREATERTHAN) {
+                            templateLevel--;
+                        }
+                        if (next.getType() != CPPTokenTypes.LPAREN) {
+                            parenLevel++;
+                        }
+                        if (next.getType() != CPPTokenTypes.RPAREN) {
+                            parenLevel--;
+                        }
+                        lastChild = AstUtil.getLastChildRecursively(next);
+                        if (lastChild instanceof CsmAST) {
+                            endOffset = ((CsmAST) lastChild).getEndOffset();
+                        }
+                        next = next.getNextSibling();
+                    }
+                }
+            }
+        }
+        return endOffset;
     }
 
     protected final void registerInProject() {
@@ -167,6 +221,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             int start = 0;
             int end = 0;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
+            if (tok == null && node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                AST next = node.getNextSibling();
+                if (next != null && next.getType() == CPPTokenTypes.ASSIGNEQUAL) {
+                    tok = next;
+                }
+            }
             if (tok != null) {
                 tok = tok.getNextSibling();
             }
@@ -177,9 +237,30 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 }
             }
             AST lastInitAst = tok;
+            int curlyLevel = 0;
+            int templateLevel = 0;
+            int parenLevel = 0;
             while (tok != null) {
-                if (tok.getType() == CPPTokenTypes.SEMICOLON) {
+                if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {
                     break;
+                }
+                if (tok.getType() != CPPTokenTypes.LCURLY) {
+                    curlyLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.RCURLY) {
+                    curlyLevel--;
+                }
+                if (tok.getType() != CPPTokenTypes.LESSTHAN) {
+                    templateLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.GREATERTHAN) {
+                    templateLevel--;
+                }
+                if (tok.getType() != CPPTokenTypes.LPAREN) {
+                    parenLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.RPAREN) {
+                    parenLevel--;
                 }
                 lastInitAst = tok;
                 tok = tok.getNextSibling();
@@ -336,6 +417,11 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public CharSequence getText() {
+        return getDisplayText();
     }
 
     ////////////////////////////////////////////////////////////////////////////

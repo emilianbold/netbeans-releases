@@ -126,7 +126,12 @@ public class ResourcesHelper {
         String sample_jdbc = "jdbc/sample"; //NOI18N
         String sample_classname = "org.apache.derby.jdbc.ClientDataSource"; //NOI18N
         String sample_restype = "javax.sql.DataSource"; //NOI18N
-        String sample_props = "DatabaseName=sample:User=app:Password=app:PortNumber=1527:serverName=localhost:URL=jdbc:derby://localhost:1527/sample"; //NOI18N
+        String sample_props = "DatabaseName=sample" +
+                ":User=app" +
+                ":Password=app" +
+                ":PortNumber=1527" +
+                ":serverName=localhost" +
+                ":URL=jdbc\\:derby\\://localhost\\:1527/sample"; //NOI18N
         Map<String, ResourceDesc> jdbcsMap = commonSupport.getResourcesMap(GlassfishModule.JDBC_RESOURCE);
         if (!jdbcsMap.containsKey(sample_jdbc)) {
             CreateJDBCConnectionPoolCommand poolCmd = new CreateJDBCConnectionPoolCommand(sample_poolname, sample_classname, sample_restype, sample_props);
@@ -148,7 +153,8 @@ public class ResourcesHelper {
 
     public static final class CreateJDBCConnectionPoolCommand extends ServerCommand {
 
-       public CreateJDBCConnectionPoolCommand(final String name, final String classname, final String restype, final String properties) {
+        // FIXME any embedded colons in "properties" must be escaped with backslash
+        public CreateJDBCConnectionPoolCommand(final String name, final String classname, final String restype, final String properties) {
             super("create-jdbc-connection-pool"); // NOI18N
             StringBuilder cmd = new StringBuilder(128); // NOI18N
             if ((classname != null && classname.length() > 0) &&
@@ -156,7 +162,7 @@ public class ResourcesHelper {
                     (name != null && name.length() > 0)) {
                 cmd.append("datasourceclassname=" + classname);
                 cmd.append(PARAM_SEPARATOR + "restype=" + restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "properties=" + properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "jdbc_connection_pool_id" + "=");
                 cmd.append(name);
                 query = cmd.toString();
@@ -178,7 +184,8 @@ public class ResourcesHelper {
 
     public static final class CreateAdminObjectCommand extends ServerCommand {
 
-       public CreateAdminObjectCommand(final String name, final String raname, final String restype, final String properties) {
+        // FIXME any embedded colons in "properties" must be escaped with backslash
+        public CreateAdminObjectCommand(final String name, final String raname, final String restype, final String properties) {
             super("create-admin-object"); // NOI18N
             StringBuilder cmd = new StringBuilder(128); // NOI18N
             if ((name != null && name.length() > 0) &&
@@ -187,7 +194,7 @@ public class ResourcesHelper {
                 cmd.append("enabled=" + "true");
                 cmd.append(PARAM_SEPARATOR + "restype=" + restype); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "raname=" + restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "properties=" + raname); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "property=" + raname); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
                 cmd.append(name);
                 query = cmd.toString();
@@ -197,6 +204,7 @@ public class ResourcesHelper {
 
     public static final class CreateConnectorConnectionPoolCommand extends ServerCommand {
 
+        // FIXME any embedded colons in "properties" must be escaped with backslash
         public CreateConnectorConnectionPoolCommand(final String name, final String raname, final String conndefnname, final String poolname, final String properties) {
             super("create-connector-connection-pool"); // NOI18N
             StringBuilder cmd = new StringBuilder(128);
@@ -205,7 +213,7 @@ public class ResourcesHelper {
                     (conndefnname != null && conndefnname.length() > 0)) {
                 cmd.append("raname=" + raname); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "connectiondefinition=" + conndefnname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "properties=" + properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "poolname" + "=");
                 cmd.append(name);
                 query = cmd.toString();
@@ -222,7 +230,7 @@ public class ResourcesHelper {
                     (poolname != null && poolname.length() > 0)) {
                 cmd.append("enabled=" + "true");
                 cmd.append(PARAM_SEPARATOR + "poolname=" + poolname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "properties=" + properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
                 cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
                 cmd.append(name);
                 query = cmd.toString();

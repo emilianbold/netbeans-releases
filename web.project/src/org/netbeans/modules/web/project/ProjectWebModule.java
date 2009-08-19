@@ -138,24 +138,19 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getContextPath () {
-        if(getDeploymentDescriptor() == null) {
-            return null;
-        }
         try {
             return getConfigSupport().getWebContextRoot();
         } catch (ConfigurationException e) {
-            // TODO #95280: inform the user that the context root cannot be retrieved
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
     
     public void setContextPath (String path) {
-        if (getDeploymentDescriptor() != null) {
-            try {
-                getConfigSupport().setWebContextRoot(path);
-            } catch (ConfigurationException e) {
-                // TODO #95280: inform the user that the context root cannot be set
-            }
+        try {
+            getConfigSupport().setWebContextRoot(path);
+        } catch (ConfigurationException e) {
+            Exceptions.printStackTrace(e);
         }
     }
     

@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui;
 
 import java.io.File;
+import javax.swing.event.ChangeListener;
 
 /**
  * @author Tomas Mysik
@@ -55,4 +56,7 @@ public interface SourcesFolderProvider {
      * @return the name of the folder for sources.
      */
     String getSourcesFolderName();
+
+    void addChangeListener(ChangeListener listener);
+    void removeChangeListener(ChangeListener listener);
 }

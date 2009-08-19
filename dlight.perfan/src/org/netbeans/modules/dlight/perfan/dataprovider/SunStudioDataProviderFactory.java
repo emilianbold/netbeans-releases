@@ -65,6 +65,7 @@ public final class SunStudioDataProviderFactory implements DataProviderFactory {
                 dmsp.getScheme("model:table"), // NOI18N
                 dmsp.getScheme("model:functions"), // NOI18N
                 dmsp.getScheme("model:stack"), // NOI18N
+                dmsp.getScheme("model:dataraces"), // NOI18N
                 dmsp.getScheme("model:deadlocks"))); // NOI18N
         
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();

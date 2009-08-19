@@ -141,13 +141,20 @@ public class NbBundleTest extends TestCase {
     }
 
     public void testGetMessage() throws Exception {
-        ClassLoader l = fixedLoader("org/openide/util/Bundle.properties:k1=v1\nk2=v2 {0}", "org/openide/util/Bundle_ja.properties:k1=v1 ja");
+        ClassLoader l = fixedLoader(
+                "org/openide/util/Bundle.properties:" +
+                "k1=v1\n" +
+                "k2=v2 {0}\n" +
+                "k3=v3 {0} {1} {2} {3} {4}",
+                "org/openide/util/Bundle_ja.properties:" +
+                "k1=v1 ja");
         Class<?> c = l.loadClass(Dummy.class.getName());
         assertEquals(l, c.getClassLoader());
         assertEquals("v1", NbBundle.getMessage(c, "k1"));
         Locale.setDefault(Locale.JAPAN);
         assertEquals("v1 ja", NbBundle.getMessage(c, "k1"));
         assertEquals("v2 x", NbBundle.getMessage(c, "k2", "x"));
+        assertEquals("v3 a b c d e", NbBundle.getMessage(c, "k3", "a", "b", "c", "d", "e"));
     }
 
     static class Dummy {}

@@ -217,22 +217,24 @@ public class TokenContext {
     * itself as the first one and all its children.
     */
     public TokenContextPath[] getAllContextPaths() {
-        if (allContextPaths == null) {
-            ArrayList cpList = new ArrayList();
-            cpList.add(getContextPath());
+        synchronized (tokenIDList) {
+            if (allContextPaths == null) {
+                ArrayList cpList = new ArrayList();
+                cpList.add(getContextPath());
 
-            for (int i = 0; i < children.length; i++) {
-                TokenContextPath[] childPaths = children[i].getAllContextPaths();
-                for (int j = 0; j < childPaths.length; j++) {
-                    cpList.add(getContextPath(childPaths[j]));
+                for (int i = 0; i < children.length; i++) {
+                    TokenContextPath[] childPaths = children[i].getAllContextPaths();
+                    for (int j = 0; j < childPaths.length; j++) {
+                        cpList.add(getContextPath(childPaths[j]));
+                    }
                 }
+
+                allContextPaths = new TokenContextPath[cpList.size()];
+                cpList.toArray(allContextPaths);
             }
 
-            allContextPaths = new TokenContextPath[cpList.size()];
-            cpList.toArray(allContextPaths);
+            return allContextPaths;
         }
-
-        return allContextPaths;
     }
 
 }

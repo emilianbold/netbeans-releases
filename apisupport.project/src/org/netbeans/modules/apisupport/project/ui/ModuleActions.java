@@ -114,7 +114,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        if (!project.supportedTestTypes().isEmpty()) {
+        if (project.supportedTestTypes().contains("unit")) { // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
         }
         actions.add(null);
@@ -171,8 +171,8 @@ public final class ModuleActions implements ActionProvider {
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         globalCommands.put("profile", new String[] {"profile"}); // NOI18N
         globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
-        if (!project.supportedTestTypes().isEmpty()) {
-            globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test"}); // NOI18N
+        if (project.supportedTestTypes().contains("unit")) { // NOI18N
+            globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test-unit"}); // NOI18N
         }
         supportedActionsSet.addAll(globalCommands.keySet());
         supportedActionsSet.add(ActionProvider.COMMAND_COMPILE_SINGLE);

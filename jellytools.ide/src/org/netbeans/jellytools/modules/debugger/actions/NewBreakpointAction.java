@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools.modules.debugger.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
@@ -57,9 +59,14 @@ public class NewBreakpointAction extends ActionNoBlock {
     private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     // "Run|New Breakpoint..."
     private static final String mainMenuPath = runItem+"|"+newBreakpointItem;
-    
+
+    //Ctrl + Shift + F8
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+
     /** Creates new NewBreakpointAction instance. */
     public NewBreakpointAction() {
-        super(mainMenuPath, null, "org.netbeans.modules.debugger.ui.actions.AddBreakpointAction");
+        super(mainMenuPath, null, "org.netbeans.modules.debugger.ui.actions.AddBreakpointAction", keystroke);
     }
 }

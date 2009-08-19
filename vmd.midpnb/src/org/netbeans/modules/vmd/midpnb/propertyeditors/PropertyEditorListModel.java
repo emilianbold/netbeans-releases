@@ -223,7 +223,7 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                     myCustomEditor.setValue(value);
                 }
             });
-            
+
         }
         myRadioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -245,7 +245,7 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                         Integer index = -1;
                         List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
                         if (array != null) {
-                            index = array.size()-1;
+                            index = array.size() - 1;
                         }
                         if (index == myCustomEditor.getValue().size() - 1) {
                             return;
@@ -281,7 +281,7 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                                 if (currentIndex > myCustomEditor.getValue().size() - 1) {
                                     PropertyValue array_ = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
                                     if (array != null) {
-                                        ArraySupport.remove(component.get(),SVGListCD.PROP_ELEMENTS, child);
+                                        ArraySupport.remove(component.get(), SVGListCD.PROP_ELEMENTS, child);
                                     }
                                     component.get().getDocument().deleteComponent(child);
                                 }
@@ -299,15 +299,23 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                             return;
                         }
                         List<PropertyValue> array = arrayValue.getArray();
-                        for (PropertyValue value : array) {
-                            DesignComponent child = value.getComponent();
-                            if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
-                                continue;
+                        if (array != null) {
+                            for (PropertyValue value : array) {
+                                DesignComponent child = value.getComponent();
+                                if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
+                                    continue;
+                                }
+                                String string = (String) child.readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
+                                Integer childIndex = array.indexOf(value);
+                                if (string == null || !string.equals(myCustomEditor.getValue().get(childIndex))) {
+                                    child.writeProperty(SVGListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(myCustomEditor.getValue().get(childIndex)));
+                                }
                             }
-                            String string = (String) child.readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
-                            Integer childIndex = array.indexOf(value);
-                            if (string == null || !string.equals(myCustomEditor.getValue().get(childIndex))) {
-                                child.writeProperty(SVGListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(myCustomEditor.getValue().get(childIndex)));
+                        } else {
+                            PropertyValue model = PropertyValue.createEmptyArray(MidpTypes.TYPEID_JAVA_LANG_STRING);
+                            if (component != null) {
+                                DesignComponent c = component.get();
+                                c.writeProperty(PropertyEditorListModel.this.getPropertyNames().iterator().next(),  PropertyValue.createNull());
                             }
                         }
                     }
@@ -315,8 +323,8 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                 component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
 
                     public void run() {
-                         PropertyValue value = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
-                         PropertyEditorListModel.super.setValue(value);
+                        PropertyValue value = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                        PropertyEditorListModel.super.setValue(value);
                     }
                 });
             }

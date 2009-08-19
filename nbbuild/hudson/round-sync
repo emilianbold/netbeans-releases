@@ -3,8 +3,6 @@
 [ -n "$push_username" ] || exit 102
 [ -n "$push_password" ] || exit 103
 [ -n "$push_repo" ] || exit 104
-HGMERGE=merge
-export HGMERGE
 
 rollback() {
   EXIT="$?"

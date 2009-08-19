@@ -84,6 +84,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Basic j2eeserver configuration api support for V2 and V3 plugins
@@ -589,35 +590,39 @@ public abstract class GlassfishConfiguration implements
             }
         } else {
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
+                    "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: " + module.getType());
         }
         return contextRoot;
     }
 
-    public void setContextRoot(String contextRoot) throws ConfigurationException {
+    public void setContextRoot(final String contextRoot) throws ConfigurationException {
         if (J2eeModule.Type.WAR.equals(module.getType())) {
-            try {
-                FileObject primarySunDDFO = getSunDD(primarySunDD, true);
-                if (primarySunDDFO != null) {
-                    RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
-                    if (rootDD instanceof SunWebApp) {
-                        SunWebApp swa = (SunWebApp) rootDD;
-                        swa.setContextRoot(contextRoot);
-                        swa.write(primarySunDDFO);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        FileObject primarySunDDFO = getSunDD(primarySunDD, true);
+                        if (primarySunDDFO != null) {
+                            RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                            if (rootDD instanceof SunWebApp) {
+                                SunWebApp swa = (SunWebApp) rootDD;
+                                swa.setContextRoot(contextRoot);
+                                swa.write(primarySunDDFO);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        String defaultMessage = " trying set context-root in sun-web.xml";
+                        displayError(ex, defaultMessage);
+                    } catch (Exception ex) {
+                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        String defaultMessage = " trying set context-root in sun-web.xml";
+                        displayError(ex, defaultMessage);
                     }
                 }
-            } catch (IOException ex) {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                String defaultMessage = " trying set context-root in sun-web.xml";
-                displayError(ex, defaultMessage);
-            } catch (Exception ex) {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                String defaultMessage = " trying set context-root in sun-web.xml";
-                displayError(ex, defaultMessage);
-            }
+            });
         } else {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
+                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
         }
     }
 

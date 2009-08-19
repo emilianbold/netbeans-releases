@@ -199,7 +199,7 @@ public final class ClassIndexManager {
         }
     }
     
-    void removeRoot (final URL root) throws IOException {
+    public void removeRoot (final URL root) throws IOException {
         synchronized (internalLock) {
             ClassIndexImpl ci = this.instances.remove(root);
             if (ci != null) {

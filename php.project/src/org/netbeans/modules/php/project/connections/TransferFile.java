@@ -89,7 +89,7 @@ public final class TransferFile {
         this.timestamp = timestamp;
     }
 
-    private static TransferFile fromFile0(File file, String baseDirectory, boolean isDirectory) {
+    public static TransferFile fromFile(File file, String baseDirectory, boolean isDirectory) {
         assert file != null;
         assert baseDirectory != null;
 
@@ -110,7 +110,7 @@ public final class TransferFile {
      * Implementation for {@link File}.
      */
     public static TransferFile fromFile(File file, String baseDirectory) {
-        return fromFile0(file, baseDirectory, file.isDirectory());
+        return fromFile(file, baseDirectory, file.isDirectory());
     }
 
     /**
@@ -119,7 +119,7 @@ public final class TransferFile {
     public static TransferFile fromFileObject(FileObject fo, String baseDirectory) {
         assert fo != null;
 
-        return fromFile0(FileUtil.toFile(fo), baseDirectory, fo.isFolder());
+        return fromFile(FileUtil.toFile(fo), baseDirectory, fo.isFolder());
     }
 
     /**

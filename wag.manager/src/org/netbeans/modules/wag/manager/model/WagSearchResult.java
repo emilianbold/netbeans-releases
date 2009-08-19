@@ -41,36 +41,21 @@ package org.netbeans.modules.wag.manager.model;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.netbeans.modules.wag.manager.search.SearchEngine;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
-public class WagSearchResult implements Comparable<WagSearchResult> {
+public class WagSearchResult extends WagItems<WagService> implements Comparable<WagSearchResult> {
 
-    public enum State {
-
-        UNINITIALIZED, SEARCHING, FOUND
-    };
     public static final String PROP_NAME = "searchResult";
     private String query;
     private int maxResults;
     private int currentIndex;
-    private SortedSet<WagService> services;
-    private PropertyChangeSupport pps;
-    private State state;
-
 
     static {
         try {
@@ -78,7 +63,7 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
             PropertyDescriptor[] propertyDescriptors = info.getPropertyDescriptors();
             for (int i = 0; i < propertyDescriptors.length; ++i) {
                 PropertyDescriptor pd = propertyDescriptors[i];
-                if (pd.getName().equals("services") || pd.getName().equals("pps")) {    //NOI18N
+                if (pd.getName().equals("items") || pd.getName().equals("pps")) {    //NOI18N
                     pd.setValue("transient", Boolean.TRUE);
                 }
             }
@@ -88,20 +73,18 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
 
     }
 
-    public WagSearchResult() {
-        pps = new PropertyChangeSupport(this);
-        services = new TreeSet<WagService>();
-        state = State.UNINITIALIZED;
-    }
-
     public WagSearchResult(String query, int maxResults) {
-        this();
+        super();
         this.query = query;
         this.maxResults = maxResults;
     }
 
-    public State getState() {
-        return state;
+    public String getDisplayName() {
+        return getQuery();
+    }
+
+    public String getDescription() {
+        return getQuery();
     }
 
     public String getQuery() {
@@ -120,39 +103,7 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
         this.maxResults = maxResults;
     }
 
-    public Collection<WagService> getServices() {
-        return Collections.unmodifiableSortedSet(services);
-    }
-
-    public void addServices(Collection<WagService> servicesToAdd) {
-        SortedSet<WagService> old = new TreeSet<WagService>(services);
-        services.addAll(servicesToAdd);
-        fireChange(old, Collections.unmodifiableSortedSet(services));
-    }
-
-    public void removeServices(Collection<WagService> servicesToRemove) {
-        SortedSet<WagService> old = new TreeSet<WagService>(services);
-        services.removeAll(servicesToRemove);
-        fireChange(old, Collections.unmodifiableSortedSet(services));
-    }
-
-    public void refresh() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                State oldState = state;
-                services.clear();
-                state = State.SEARCHING;
-                fireChange(oldState, state);
-
-                oldState = state;
-                services.addAll(getSearchResult());
-                state = State.FOUND;
-                fireChange(oldState, state);
-            }
-        });
-
-    }
-
+  
     public void next() {
         currentIndex += maxResults;
         refresh();
@@ -168,21 +119,12 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
         refresh();
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pps.addPropertyChangeListener(l);
+    protected Collection<WagService> loadItems() {
+        return ZemblySession.getInstance().getSearchEngine().search(query, maxResults, currentIndex);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pps.removePropertyChangeListener(l);
-    }
-
-    protected void fireChange(Object old, Object neu) {
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, PROP_NAME, old, neu);
-        pps.firePropertyChange(pce);
-    }
-
-    private Collection<WagService> getSearchResult() {
-        return SearchEngine.getInstance().search(query, maxResults, currentIndex);
+    protected String getPropName() {
+        return PROP_NAME;
     }
 
     @Override

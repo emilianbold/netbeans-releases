@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion;
 
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 import org.openide.util.Lookup;
 
 /**
@@ -78,5 +79,15 @@ public class SvnKenaiSupport {
     public boolean showLogin () {
         return kenaiSupport.showLogin();
 }
+
+    public boolean isOnline(String user) {
+        return kenaiSupport.isUserOnline(user);
+}
+
+    public KenaiUser forName(String user) {
+        return kenaiSupport.forName(user);
+    }
+
+
 
 }

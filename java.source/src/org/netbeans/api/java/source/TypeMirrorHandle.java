@@ -126,7 +126,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * The unsupported {@link TykeKind kinds} are: {@link TypeKind#EXECUTABLE}, {@link TypeKind#OTHER},
      * and {@link TypeKind#PACKAGE}.
      * @return a new {@link TypeMirrorHandle}
-     * @throws {@link IllegalArgumentException} if the {@link TypeMirror} is of an unsupported
+     * @throws IllegalArgumentException if the {@link TypeMirror} is of an unsupported
      * {@link TypeKind}.
      */
     public static @NonNull <T extends TypeMirror> TypeMirrorHandle<T> create(@NonNull T tm) {

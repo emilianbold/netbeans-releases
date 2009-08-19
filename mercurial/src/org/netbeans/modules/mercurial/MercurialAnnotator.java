@@ -128,8 +128,8 @@ public class MercurialAnnotator extends VCSAnnotator {
                         FileInformation.STATUS_LOCAL_CHANGE |
                         FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
 
-    public static String ANNOTATION_STATUS      = "status"; // NOI18N
-    public static String ANNOTATION_FOLDER      = "folder"; // NOI18N
+    public static final String ANNOTATION_STATUS      = "status";       //NOI18N
+    public static final String ANNOTATION_FOLDER      = "folder";       //NOI18N
     public static final String PROP_ICON_BADGE_CHANGED = "event.badgeChanged"; //NOI18N
 
     public static String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
@@ -932,7 +932,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 return true;
             }
             modified = true;
-            allExcluded &= config.isExcludedFromCommit(modifiedFile.getAbsolutePath());
+            allExcluded = allExcluded && config.isExcludedFromCommit(modifiedFile.getAbsolutePath());
             return false;
         }
 

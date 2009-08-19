@@ -430,6 +430,9 @@ org.netbeans.modules.profiler.categories.CategoryBuilder
 
 org.netbeans.modules.profiler.actions.SelfSamplerAction
 
+# IZ 143060
+org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction
+
 # don't load nodes from services tab
 org.netbeans.modules.db.explorer.node.RootNode
 org.netbeans.modules.hudson.ui.nodes.HudsonRootNode
@@ -447,3 +450,10 @@ org.netbeans.modules.php.editor.palette.PHPPaletteCustomizerAction
 org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction
 org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction
 
+# IZ 167640
+javax.xml.transform.Transformer
+javax.xml.transform.TransformerFactory
+javax.xml.transform.stream.StreamResult
+javax.xml.xpath.XPath
+javax.xml.xpath.XPathExpression
+javax.xml.xpath.XPathFactory

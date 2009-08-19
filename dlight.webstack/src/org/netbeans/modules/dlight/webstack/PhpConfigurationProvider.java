@@ -72,7 +72,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
             new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N
             new Column("wtime", Double.class, getMessage("Column.WaitTime"), null)); // NOI18N
 
-    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns); // NOI18N
+    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns, null); // NOI18N
     CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata)); // NOI18N
     toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
 
@@ -90,7 +90,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
             new Column("class_name", String.class, getMessage("Column.ClassName"), null)); // NOI18N
 
 /// "`pgrep -x mysqld`"
-    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns); // NOI18N
+    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns, null); // NOI18N
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
             "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata)); // NOI18N
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N

@@ -42,10 +42,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
@@ -90,11 +90,7 @@ public class RunScript {
                     };
                 }
 
-                final ExecutionService service = ExecutionService.newService(
-                        getProcessBuilder(),
-                        getDescriptor(),
-                        getOutputTabTitle());
-                final Future<Integer> result = service.run();
+                final Future<Integer> result = PhpProgram.executeLater(getProcessBuilder(), getDescriptor(), getOutputTabTitle());
                 // #155251, #155741
 //                try {
 //                    result.get();
@@ -138,7 +134,7 @@ public class RunScript {
             encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(scriptFile));
         }
 
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.proxy(defaultProcessor, new InputProcessor() {
 
                 public void processInput(char[] chars) throws IOException {
@@ -146,11 +142,14 @@ public class RunScript {
                 }
 
                 public void reset() throws IOException {
+                    defaultProcessor.reset();
                 }
 
                 public void close() throws IOException {
                     getFileWriter().flush();
                     getFileWriter().close();
+
+                    defaultProcessor.close();
                 }
             });
         }

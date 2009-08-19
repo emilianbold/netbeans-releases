@@ -1052,7 +1052,7 @@ public class NbJiraIssue extends Issue {
         } else {
             String value = "";                                          //NOI18N
             if (a != null) {
-                ArrayList<String> attrs = new ArrayList(a.getValues());
+                ArrayList<String> attrs = new ArrayList<String>(a.getValues());
                 Collections.sort(attrs);
                 value += "" + attrs.size() + attrs.toString();          //NOI18N
             }

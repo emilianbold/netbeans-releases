@@ -67,7 +67,7 @@ public class RestServiceNode extends AbstractNode{
     }
     
     private RestServiceNode(Project project, RestServicesModel model,
-            RestServiceDescription desc, InstanceContent content) {
+            final RestServiceDescription desc, InstanceContent content) {
         super(new RestServiceChildren(project, model, desc.getName()), new AbstractLookup(content));
         this.project = project;
         this.serviceName = desc.getName();
@@ -75,7 +75,11 @@ public class RestServiceNode extends AbstractNode{
         this.className = desc.getClassName();
         
         content.add(this);
-        content.add(desc);
+        content.add(new ResourceUriProvider() {
+            public String getResourceUri() {
+                return desc.getUriTemplate();
+            }           
+        });
         content.add(project);
         content.add(OpenCookieFactory.create(project, className));
     }

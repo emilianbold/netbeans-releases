@@ -1,7 +1,7 @@
 <xsl:comment>savaje-run</xsl:comment>
 
     <target name="savaje-run" if="savaje-platform.trigger">
-        <sunEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.jvmargs}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
+        <sunEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.cmd.options}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
             <fileset dir="${{dist.dir}}">
                 <exclude name="javadoc/**"/>
             </fileset>

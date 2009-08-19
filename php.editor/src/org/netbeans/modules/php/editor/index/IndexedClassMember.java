@@ -39,11 +39,19 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Radek Matous
  */
-public class IndexedClassMember<E extends IndexedElement>  {
+public class IndexedClassMember<E extends IndexedElement>  implements ElementHandle {
     private final IndexedType type;
     private final E member;
     public IndexedClassMember(IndexedType type, E member) {
@@ -57,5 +65,37 @@ public class IndexedClassMember<E extends IndexedElement>  {
 
     public E getMember() {
         return member;
+    }
+
+    public FileObject getFileObject() {
+        return getMember().getFileObject();
+    }
+
+    public String getMimeType() {
+        return getMember().getMimeType();
+    }
+
+    public String getName() {
+        return getMember().getName();
+    }
+
+    public String getIn() {
+        return getMember().getIn();
+    }
+
+    public ElementKind getKind() {
+        return getMember().getKind();
+    }
+
+    public Set<Modifier> getModifiers() {
+        return getMember().getModifiers();
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        return getMember().signatureEquals(handle);
+    }
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return getMember().getOffsetRange(result);
     }
 }

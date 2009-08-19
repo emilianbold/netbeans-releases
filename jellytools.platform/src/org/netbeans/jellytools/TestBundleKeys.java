@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -59,10 +60,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class TestBundleKeys extends NbTestCase {
 
-    protected String keys;
-
-    protected static Properties props;
-
+    private static Properties props = new Properties();
 
     /**
      * Descendants implement this method to return a proper name.
@@ -80,16 +78,19 @@ public abstract class TestBundleKeys extends NbTestCase {
      */
     protected abstract ClassLoader getDescendantClassLoader();
 
-    
+
     public TestBundleKeys(String isBundleName) {
-        this(isBundleName, null);
-    }
-    /** Constructor required by JUnit.
-     * @param testName method name to be used as testcase
-     */
-    public TestBundleKeys(String isBundleName, String isKeys) {
         super(isBundleName);
-        this.keys=isKeys;
+    }
+    
+    protected static Properties getProperties(ClassLoader irClassLoader, String isPropertiesName)
+            throws IOException
+    {
+        if(props.isEmpty()){
+            props.load(irClassLoader.getResourceAsStream(isPropertiesName));
+        }
+
+        return props;
     }
 
     /**
@@ -99,29 +100,23 @@ public abstract class TestBundleKeys extends NbTestCase {
      */
     protected void runTest() throws Throwable {
 
-        if(keys == null) {
-            if(props == null){                
-                props=new Properties();
-                props.load(getDescendantClassLoader().getResourceAsStream(getPropertiesName()));               
-            }
-            keys = props.getProperty(getName());
-        }
+        String keys = getProperties(getDescendantClassLoader(), getPropertiesName()).getProperty(getName());
 
         ResourceBundle lrBundle=NbBundle.getBundle(getName());
 
-        String[] lrTokens = keys.split(",");
-        String lsMissing = "";
+        String[] lrTokens = keys.split(",");        
         int lnNumMissing = 0;
+        StringBuffer lrBufMissing = new StringBuffer();
         for (String lsKey : lrTokens)
         try {
             lrBundle.getObject(lsKey);
         } catch (MissingResourceException mre) {
-            lsMissing += lsKey + " ";
+            lrBufMissing.append(lsKey).append(" ");
             lnNumMissing++;
         }
         if (lnNumMissing > 0)
-            throw new AssertionFailedError("Missing "+String.valueOf(lnNumMissing)+" key(s): "+ lsMissing);
- 
+            throw new AssertionFailedError("Missing "+String.valueOf(lnNumMissing)+" key(s): "+ lrBufMissing.toString());
+
     }
 
     /**
@@ -136,9 +131,7 @@ public abstract class TestBundleKeys extends NbTestCase {
     {
         NbModuleSuite.Configuration lrConf = NbModuleSuite.createConfiguration(irClass);
         try {
-            props=new Properties();
-            props.load(irClass.getClassLoader().getResourceAsStream(isPropertiesName));
-            Set bundles=props.keySet();
+            Set bundles = getProperties(irClass.getClassLoader(), isPropertiesName).keySet();
             for(Object bundle : bundles) {
                 lrConf = lrConf.addTest((String) bundle);
             }

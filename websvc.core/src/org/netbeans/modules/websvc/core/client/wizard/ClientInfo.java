@@ -66,10 +66,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -145,8 +141,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private boolean retrieverFailed = false;
     private Project project;
     private int projectType;
-    private ListCellRenderer packageBoxRenderer;
-    private ListCellRenderer disabledPackageBoxRenderer;
 
     public ClientInfo(WebServiceClientWizardDescriptor panel) {
         descriptorPanel = panel;
@@ -160,8 +154,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
         jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[]{ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
-        packageBoxRenderer = PackageView.listRenderer();
-        disabledPackageBoxRenderer = new ClientPackageListCellRenderer();
         initUserComponents();
     }
 
@@ -185,7 +177,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jTxtLocalFilename = new javax.swing.JTextField();
         jLblPackageDescription = new javax.swing.JLabel();
         jLblProject = new javax.swing.JLabel();
-        jTxtProject = new javax.swing.JTextField();
+        jLblProjectName = new javax.swing.JLabel();
         jLblPackageName = new javax.swing.JLabel();
         jCbxPackageName = new javax.swing.JComboBox();
         jLblClientType = new javax.swing.JLabel();
@@ -308,7 +300,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jLblPackageDescription, gridBagConstraints);
 
-        jLblProject.setLabelFor(jTxtProject);
         org.openide.awt.Mnemonics.setLocalizedText(jLblProject, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -316,16 +307,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLblProject, gridBagConstraints);
-
-        jTxtProject.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
-        add(jTxtProject, gridBagConstraints);
-        jTxtProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "A11Y_Project")); // NOI18N
+        add(jLblProjectName, gridBagConstraints);
 
         jLblPackageName.setLabelFor(jCbxPackageName);
         org.openide.awt.Mnemonics.setLocalizedText(jLblPackageName, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_PackageName")); // NOI18N
@@ -441,20 +429,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jaxwsVersionHandler
     descriptorPanel.fireChangeEvent();
     String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-    
-     if(jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){ 
-            jCbxPackageName.setEditable(false);
-            jCbxPackageName.setEnabled(false);
-            jCbxPackageName.setRenderer(disabledPackageBoxRenderer);
+
+     if(jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){
             dispatchCB.setEnabled(true);
         }
         else{
-            jCbxPackageName.setEditable(true);
-            jCbxPackageName.setEnabled(true);
-            jCbxPackageName.setRenderer(packageBoxRenderer);
             dispatchCB.setEnabled(false);
         }
-    adjustPackageToolTip(getPackageName());
+    adjustPackageToolTip();
 }//GEN-LAST:event_jaxwsVersionHandler
 
     private void jBtnBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowse1ActionPerformed
@@ -538,11 +520,11 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel jLblPackageDescription;
     private javax.swing.JLabel jLblPackageName;
     private javax.swing.JLabel jLblProject;
+    private javax.swing.JLabel jLblProjectName;
     private javax.swing.JRadioButton jRbnFilesystem;
     private javax.swing.JRadioButton jRbnProject;
     private javax.swing.JRadioButton jRbnUrl;
     private javax.swing.JTextField jTxtLocalFilename;
-    private javax.swing.JTextField jTxtProject;
     private javax.swing.JTextField jTxtWsdlProject;
     private javax.swing.JTextField jTxtWsdlURL;
     // End of variables declaration//GEN-END:variables
@@ -733,23 +715,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             jLabelJaxVersion.setEnabled(false);
             jComboBoxJaxVersion.setEnabled(false);
         }
-        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
-            jCbxPackageName.setEditable(false);
-            jCbxPackageName.setEnabled(false);
-            jCbxPackageName.setRenderer(disabledPackageBoxRenderer );
-        }
-        else{
-            jCbxPackageName.setEditable(true);
-            jCbxPackageName.setEnabled(true);
+
+        jCbxPackageName.getEditor().setItem(project);
+        if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
             dispatchCB.setEnabled(false);
-            jCbxPackageName.setRenderer(packageBoxRenderer );
         }
+
         try {
             settingFields = true;
             
             Project p = Templates.getProject(d);
             
-            jTxtProject.setText(ProjectUtils.getInformation(p).getDisplayName());
+            jLblProjectName.setText(ProjectUtils.getInformation(p).getDisplayName());
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL));
             jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : ""); //NOI18N
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
@@ -757,13 +734,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             jCbxPackageName.setModel(getPackageModel(p));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-            if(Util.isJavaEE5orHigher(project) ||
+            if (Util.isJavaEE5orHigher(project) ||
                     (projectType == 0 && jaxwsVersion.equals(ClientWizardProperties.JAX_WS)) ){
-                if(pName == null){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
-                } else{
-                    jCbxPackageName.setToolTipText(null);
-                }
             } else{
                 jCbxPackageName.setToolTipText(null);
             }
@@ -822,14 +795,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
     }
     
-     private void adjustPackageToolTip(String pName){
+     private void adjustPackageToolTip (){
         String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-            if(jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){                   
-                if(pName == null || pName.trim().equals("")){
-                    jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
-                } else{
-                    jCbxPackageName.setToolTipText(null);
-                }
+            if (jaxwsVersion.equals(ClientWizardProperties.JAX_WS)) {
+                jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
             } else{
                 jCbxPackageName.setToolTipText(null);
             }
@@ -1438,30 +1407,5 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             
         return false;
     }
-    
-     private class ClientPackageListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            setOpaque(true);
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(NbBundle.getMessage(ClientInfo.class, "LBL_DEFAULT_PACKAGE"));
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name;  // NOI18N
-        }
-        
-    }
 }

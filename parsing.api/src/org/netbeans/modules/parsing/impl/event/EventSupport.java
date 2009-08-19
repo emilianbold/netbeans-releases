@@ -326,21 +326,28 @@ public final class EventSupport {
                             source = Source.create (document);
                     }
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
-                    }                   
+                        TaskProcessor.Request _request = request;
+                        request = null;
+                        EventSupport support = SourceAccessor.getINSTANCE ().getEventSupport (source);
+                        support.k24 = false;
+                        if (_request != null) {
+                            support.resetTask.schedule (TaskProcessor.reparseDelay);
+                            TaskProcessor.resetStateImplAsync (_request);
+                        }
+                    }
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
                 if (editor != null) {
                     editor.addCaretListener(this);
                     editor.addPropertyChangeListener(this);
                 }
-            }
-            final JTextComponent focused = EditorRegistry.focusedComponent();
-            if (focused != null) {
-                final Document doc = editor.getDocument();
-                final Source source = doc == null ? null : Source.create(doc);
-                if (source != null) {
-                    SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                final JTextComponent focused = EditorRegistry.focusedComponent();
+                if (focused != null) {
+                    final Document doc = editor.getDocument();
+                    final Source source = doc == null ? null : Source.create(doc);
+                    if (source != null) {
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
+                    }
                 }
             }
         }
@@ -348,8 +355,9 @@ public final class EventSupport {
         public void caretUpdate(final CaretEvent event) {
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != null) {
-                Document doc = lastEditor.getDocument();
-                if (doc != null) {
+                Document doc = lastEditor.getDocument ();
+                String mimeType = NbEditorUtilities.getMimeType (doc);
+                if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
                         SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, -1, -1);
@@ -370,7 +378,8 @@ public final class EventSupport {
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
                     if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                        assert this.request == null;
+                        if (this.request != null)
+                            TaskProcessor.resetStateImplAsync(this.request);
                         this.request = TaskProcessor.resetState(source, false, false);
                         SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
                     } else {

@@ -490,8 +490,8 @@ public class FormUtils
         if (o.getClass() == Font.class) {
             return o;
         }
-        // Issue 49973
-        if ((o.getClass() == TitledBorder.class) && Utilities.isMac()) {
+        // Issue 49973 & 169933
+        if (o.getClass() == TitledBorder.class) {
             TitledBorder border = (TitledBorder)o;
             return new TitledBorder(
                 border.getBorder(),
@@ -1768,7 +1768,7 @@ public class FormUtils
     }
 
     // helper method for getBeanInfo(Class)
-    private static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
+    static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
         if (mode == Introspector.IGNORE_IMMEDIATE_BEANINFO) {
             try {
                 return Introspector.getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);
