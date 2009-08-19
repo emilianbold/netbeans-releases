@@ -126,7 +126,10 @@ public final class EditorUtil {
         }
 
         LineCookie lineCookie = getLineCookie(fileObject);
-        assert lineCookie != null;
+        if (lineCookie == null) {
+            LOGGER.info("Can't find LineCookie for: " + fileObject);
+            return null;
+        }
         try {
             return lineCookie.getLineSet().getCurrent(lineNumber);
         } catch (IndexOutOfBoundsException ioobe) {
@@ -143,7 +146,7 @@ public final class EditorUtil {
                 result = dataObject.getCookie(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
-            LOGGER.log(Level.FINE, "Cannot find DataObject for: " + fo, e.getMessage());
+            LOGGER.log(Level.INFO, "Cannot find DataObject for: " + fo, e.getMessage());
         }
         return result;
     }
