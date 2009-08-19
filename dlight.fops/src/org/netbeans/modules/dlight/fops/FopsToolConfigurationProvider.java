@@ -55,10 +55,10 @@ import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class FopsToolConfigurationProvider implements DLightToolConfigurationProvider {
     private static final String ID = "dlight.tool.fops"; // NOI18N
+    private static final String FILE_COUNT_ID = "file-count"; // NOI18N
 
     private static final int INDICATOR_POSITION = 400;
 
@@ -92,6 +93,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         Column opColumn = new Column("operation", String.class, getMessage("Column.OpType"), null); // NOI18N
         Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
         Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
+        Column fileCountColumn = new Column("file_count", Long.class, getMessage("Column.FileCount"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
                 new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
@@ -99,6 +101,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
                 fileColumn,
                 sizeColumn,
+                fileCountColumn,
                 new Column("stack_id", Long.class, getMessage("Column.StackId"), null)); // NOI18N
 
         final DataTableMetadata dtraceFopsMetadata =
@@ -142,7 +145,9 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 Arrays.asList(
                         new GraphDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
                         new GraphDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToIOPlot(opColumn, sizeColumn));
+                new DataRowToIOPlot(opColumn, sizeColumn, fileCountColumn));
+        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
+                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0)))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
         indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
             public String render(int value) {
@@ -187,12 +192,15 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         private final String opColumn;
         private final String sizeColumn;
+        private final String fileCountColumn;
         private long reads;
         private long writes;
+        private long fileCount;
 
-        public DataRowToIOPlot(Column opColumn, Column sizeColumn) {
+        public DataRowToIOPlot(Column opColumn, Column sizeColumn, Column fileCountColumn) {
             this.opColumn = opColumn.getColumnName();
             this.sizeColumn = sizeColumn.getColumnName();
+            this.fileCountColumn = fileCountColumn.getColumnName();
         }
 
         public synchronized void addDataRow(DataRow row) {
@@ -205,11 +213,16 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                     writes += bytes;
                 }
             }
+            int newFileCount = DataUtil.toInt(row.getData(fileCountColumn), -1);
+            if (0 <= newFileCount) {
+                fileCount = newFileCount;
+            }
         }
 
         public synchronized void tick(float[] data, Map<String,String> details) {
             data[0] = writes;
             data[1] = reads;
+            details.put(FILE_COUNT_ID, String.valueOf(fileCount));
             writes = 0;
             reads = 0;
         }

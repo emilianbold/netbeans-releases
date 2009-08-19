@@ -1,11 +1,14 @@
 #!/usr/sbin/dtrace -s
 #pragma D option quiet
 
-/* Unique I/O session id */
+/* Unique I/O session id sequence */
 uint64_t sid;
 
-/* Maps file descriptor to session id. */
+/* Maps file descriptor to session id */
 int64_t fd2sid[int];
+
+/* Open file count */
+int64_t file_count;
 
 syscall::open*:entry,
 syscall::creat*:entry
@@ -20,7 +23,8 @@ syscall::creat*:return
 {
     this->sid = arg0? ++sid : 0;
     fd2sid[arg0] = this->sid;
-    printf("%d %s %d \"%s\" %d", timestamp, "open", this->sid, arg0? fds[arg0].fi_pathname : copyinstr(self->pathaddr), 0);
+    file_count = arg0? file_count + 1 : file_count;
+    printf("%d %s %d \"%s\" %d %d", timestamp, "open", this->sid, arg0? fds[arg0].fi_pathname : copyinstr(self->pathaddr), 0, file_count);
     ustack();
     printf("\n");
 
@@ -70,7 +74,8 @@ syscall::close*:entry
 syscall::close*:return
 /pid == $1 && self->sid/
 {
-    printf("%d %s %d \"%s\" %d", timestamp, "close", (signed int)self->sid, self->path, 0);
+    file_count = (self->sid == -self->fd-1)? file_count : file_count - 1;
+    printf("%d %s %d \"%s\" %d %d", timestamp, "close", (signed int)self->sid, self->path, 0, file_count);
     ustack();
     printf("\n");
 
@@ -82,6 +87,6 @@ syscall::close*:return
 
 tick-200ms, END
 {
-    printa("-1 %s %d \"%s\" %@d %k\n", @transfer);
+    printa("-1 %s %d \"%s\" %@d -1 %k\n", @transfer);
     trunc(@transfer);
 }
