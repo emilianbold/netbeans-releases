@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -58,7 +59,10 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
 import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,12 +71,14 @@ import org.openide.util.NbBundle;
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
 
     private ThreadDump descriptor;
+    private long startTime;
     private final MultipleCallStackPanel stackPanel;
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
 
-    ThreadStackVisualizer(ThreadDump descriptor) {
+    ThreadStackVisualizer(ThreadDump descriptor, long startTime) {
         this.descriptor = descriptor;
+        this.startTime = startTime;
         stackPanel = MultipleCallStackPanel.createInstance();
         setLayout(cardLayout);
         emptyPanel = new JPanel();
@@ -82,7 +88,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
             setEmptyContent();
         }else{
             setNonEmptyContent();
-        }        
+        }
     }
 
     private void setEmptyContent() {
@@ -103,7 +109,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private void setNonEmptyContent() {
         stackPanel.clean();
         //and now add all you need
-        final long time = descriptor.getTimestamp();
+        final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - startTime;
         String timeString = TimeLineUtils.getMillisValue(time);
         String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
         stackPanel.setRootVisible(rootName);
@@ -115,8 +121,19 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
             }
 
         }
-
         cardLayout.show(this, "stack");//NOI18N
+    }
+
+    void selectRootNode() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }, 500);
     }
 
     public String getDisplayName() {
@@ -125,8 +142,6 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
     }
-
-   
 
     public VisualizerConfiguration getVisualizerConfiguration() {
         return new VisualizerConfiguration() {
