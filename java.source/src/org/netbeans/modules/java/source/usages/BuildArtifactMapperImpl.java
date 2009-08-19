@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -144,14 +145,22 @@ public class BuildArtifactMapperImpl {
         
         for (FileObject file : sources[0]) {
             if (TaskCache.getDefault().isInError(file, true)) {
-                String runAnyway = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway");
-                String cancel = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_Cancel");
+                JButton btnRunAnyway = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(btnRunAnyway, org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway"));
+                btnRunAnyway.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSN_BTN_RunAnyway"));
+                btnRunAnyway.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSD_BTN_RunAnyway"));
+
+                JButton btnCancel = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(btnCancel, org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_Cancel"));
+                btnCancel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSN_BTN_Cancel"));
+                btnCancel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSD_BTN_Cancel"));
+
                 ContainsErrorsWarning panel = new ContainsErrorsWarning();
                 DialogDescriptor dd = new DialogDescriptor(panel,
                                                            NbBundle.getMessage(BuildArtifactMapperImpl.class, "TITLE_ContainsErrorsWarning"),
                                                            true,
-                                                           new Object[] {runAnyway, cancel},
-                                                           runAnyway,
+                                                           new Object[] {btnRunAnyway, btnCancel},
+                                                           btnRunAnyway,
                                                            DialogDescriptor.DEFAULT_ALIGN,
                                                            null,
                                                            null);
@@ -160,7 +169,7 @@ public class BuildArtifactMapperImpl {
                 
                 Object option = DialogDisplayer.getDefault().notify(dd);
                 
-                if (option == runAnyway) {
+                if (option == btnRunAnyway) {
                     pref.putBoolean(ASK_BEFORE_RUN_WITH_ERRORS, panel.getAskBeforeRunning());
 
                     return true;

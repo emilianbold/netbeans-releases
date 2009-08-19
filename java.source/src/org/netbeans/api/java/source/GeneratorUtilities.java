@@ -91,6 +91,8 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
@@ -134,6 +136,12 @@ public final class GeneratorUtilities {
         SourcePositions sp = null;
         try {
             Document doc = copy.getDocument();
+            if (doc == null) {
+                DataObject data = DataObject.find(copy.getFileObject());
+                EditorCookie cookie = data.getCookie(EditorCookie.class);
+                doc = cookie.openDocument();
+            }
+
             if (doc != null && doc instanceof GuardedDocument) {
                 gdoc = (GuardedDocument)doc;
                 sp = copy.getTrees().getSourcePositions();
