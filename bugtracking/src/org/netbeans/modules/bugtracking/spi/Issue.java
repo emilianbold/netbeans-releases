@@ -124,6 +124,15 @@ public abstract class Issue {
     }
 
     /**
+     * Returns this issues repository
+     * 
+     * @return
+     */
+    public Repository getRepository() {
+        return repository;
+    }
+
+    /**
      * Returns this issues display name
      * @return
      */
