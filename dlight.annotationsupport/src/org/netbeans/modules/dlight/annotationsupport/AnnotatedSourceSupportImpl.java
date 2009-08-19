@@ -46,11 +46,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -68,6 +74,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     private static boolean checkedLogging = checkLogging();
     private static boolean logginIsOn;
     private HashMap<String, FileAnnotationInfo> activeAnnotations = null;
+    private static String SPACES = "            ";  // NOI18N
 
     public AnnotatedSourceSupportImpl() {
         enableSourceFileTracking();
@@ -92,17 +99,32 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     }
                     LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo();
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
+                    lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     String annotation = "";
                     String tooltip = "";
+                    int col = 0;
                     for (Column column : metrics) {
+                        if (annotation.length() > 0) {
+                            annotation += " "; // NOI18N
+                            tooltip += " "; // NOI18N
+                        }
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
+                        String metricValString = metricVal.toString();
+                        if (col == 0 && metricValString.length() < 7) {
+                            metricValString = SPACES.substring(0, 7 - metricValString.length()) + metricValString;
+                        }
+                        if (col == 1 && metricValString.length() < 3) {
+                            metricValString = SPACES.substring(0, 3 - metricValString.length()) + metricValString;
+                        }
                         String metricUName = column.getColumnUName();
-                        annotation = annotation + metricVal + " "; // NOI18N
-                        tooltip = tooltip + metricUName + " "; // NOI18N
+                        annotation = annotation + metricValString;
+                        tooltip = tooltip + metricUName;
+                        col++;
                     }
                     lineAnnotationInfo.setAnnotation(annotation);
                     lineAnnotationInfo.setAnnotationToolTip(tooltip);
+                    fileAnnotationInfo.setTooltip(tooltip);
                     fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                 }
             }
@@ -115,7 +137,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private File activatedFile(Node node) {
-        DataObject dobj = (DataObject) node.getCookie(DataObject.class);
+        DataObject dobj = node.getCookie(DataObject.class);
         if (dobj != null) {
             FileObject fo = dobj.getPrimaryFile();
             return FileUtil.toFile(fo);
@@ -123,29 +145,59 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         return null;
     }
 
+    private JEditorPane activatedEditorPane(Node node) {
+        EditorCookie ec = node.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if (panes == null) {
+            ec.open();
+        }
+
+        panes = ec.getOpenedPanes();
+        if (panes == null) {
+            return null;
+        }
+        JEditorPane currentPane = panes[0];
+        return currentPane;
+    }
+
     private void annotateCurrentSourceFiles() {
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         if (nodes == null) {
             return;
         }
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             File file = activatedFile(node);
             if (file != null) {
-                String filePath = file.getAbsolutePath();
-                FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
-                if (fileAnnotationInfo != null && !fileAnnotationInfo.isAnnotated()) {
-                    log.fine("Annotating " + filePath + "\n"); // NOI18N)
-                    List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
-                    for (LineAnnotationInfo line : lines) {
-                        log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
-                    }
-                    fileAnnotationInfo.setAnnotated(true);
+                final String filePath = file.getAbsolutePath();
+                final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
+                if (fileAnnotationInfo != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (!fileAnnotationInfo.isAnnotated()) {
+                                // Calculate line numbers if only offset is known
+                                log.fine("Annotating " + filePath + "\n"); // NOI18N)
+                                List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
+                                for (LineAnnotationInfo line : lines) {
+                                    line.setLine(node);
+                                    log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + line.getAnnotationToolTip() + "]" + "\n"); // NOI18N)
+                                }
+                                fileAnnotationInfo.setAnnotated(true);
+                            }
+                            JEditorPane jEditorPane = activatedEditorPane(node);
+                            AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
+                        }
+                    });
                 }
             }
         }
     }
 
     class MyPropertyChangeListener implements PropertyChangeListener {
+
         public void propertyChange(PropertyChangeEvent evt) {
             annotateCurrentSourceFiles();
         }
@@ -212,6 +264,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     class FileAnnotationInfo {
 
         private String filePath;
+        private String tooltip;
         private List<LineAnnotationInfo> lineAnnotationInfo;
         private boolean annotated;
 
@@ -241,6 +294,15 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             return lineAnnotationInfo;
         }
 
+        public LineAnnotationInfo getLineAnnotationInfo(int line) {
+            for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+                if (lineInfo.getLine() == line) {
+                    return lineInfo;
+                }
+            }
+            return null;
+        }
+
         /**
          * @param lineAnnotationInfo the lineAnnotationInfo to set
          */
@@ -261,11 +323,26 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         public void setAnnotated(boolean annotated) {
             this.annotated = annotated;
         }
+
+        /**
+         * @return the tooltip
+         */
+        public String getTooltip() {
+            return tooltip;
+        }
+
+        /**
+         * @param tooltip the tooltip to set
+         */
+        public void setTooltip(String tooltip) {
+            this.tooltip = tooltip;
+        }
     }
 
     class LineAnnotationInfo {
 
         private int line;
+        private long offset;
         private String annotation;
         private String annotationToolTip;
 
@@ -274,6 +351,21 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
          */
         public int getLine() {
             return line;
+        }
+
+        public void setLine(Node node) {
+            int sourceLine = getLine();
+            if (sourceLine >= 0) {
+                return;
+            }
+            JEditorPane currentPane = activatedEditorPane(node);
+            try {
+                sourceLine = Utilities.getLineOffset((BaseDocument) currentPane.getDocument(), (int) offset);
+                sourceLine++;
+            } catch (BadLocationException ble) {
+                sourceLine = -1;
+            }
+            setLine(sourceLine);
         }
 
         /**
@@ -309,6 +401,20 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
          */
         public void setAnnotationToolTip(String annotationToolTip) {
             this.annotationToolTip = annotationToolTip;
+        }
+
+        /**
+         * @return the offset
+         */
+        public long getOffset() {
+            return offset;
+        }
+
+        /**
+         * @param offset the offset to set
+         */
+        public void setOffset(long offset) {
+            this.offset = offset;
         }
     }
 }
