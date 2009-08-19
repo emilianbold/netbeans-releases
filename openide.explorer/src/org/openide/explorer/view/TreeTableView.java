@@ -1319,7 +1319,7 @@ public class TreeTableView extends BeanTreeView {
 
         private class SortedNode extends FilterNode {
             public SortedNode (Node original) {
-                super (original, new SortedChildren (original));
+                super(original, original.isLeaf() ? Children.LEAF : new SortedChildren(original));
                 original2filter.put (original, this);
             }
             public Node getOriginalNode () {
@@ -1363,12 +1363,14 @@ public class TreeTableView extends BeanTreeView {
             }
 
             private void sortNodes() {
-                Node[] sortedNodes = original.getChildren().getNodes();
+                Node[] origNodes = original.getChildren().getNodes();
                 if (isSortingActive()) {
+                    Node[] sortedNodes = new Node[origNodes.length];
+                    System.arraycopy(origNodes, 0, sortedNodes, 0, origNodes.length);
                     Collections.sort(Arrays.asList(sortedNodes), getRowComparator());
                     setKeys(sortedNodes);
                 } else {
-                    setKeys(sortedNodes);
+                    setKeys(origNodes);
                 }
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,51 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.impl;
+package org.netbeans.modules.dlight.threadmap.storage;
 
-import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+//import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author masha
+ * @author Alexey Vladykin
  */
-public abstract class MultipleDTDCConfigurationAccessor {
+//@ServiceProvider(service = DataStorageFactory.class)
+public class ThreadMapDataStorageFactory implements DataStorageFactory<ThreadMapDataStorage> {
 
-    private static volatile MultipleDTDCConfigurationAccessor DEFAULT;
-
-    public static MultipleDTDCConfigurationAccessor getDefault() {
-        MultipleDTDCConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(MultipleDTDCConfiguration.class.getName(), true,
-                    MultipleDTDCConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-
-        return DEFAULT;
+    public Collection<DataStorageType> getStorageTypes() {
+        return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(ThreadMapDataStorage.THREAD_MAP_STORAGE_TYPE_ID));
     }
 
-    public static void setDefault(MultipleDTDCConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    public ThreadMapDataStorage createStorage() {
+        return new ThreadMapDataStorage();
     }
-
-    public MultipleDTDCConfigurationAccessor() {
-    }
-
-    public abstract String getID();
-
-    public abstract DTDCConfiguration getDTDCConfiguration(
-            MultipleDTDCConfiguration configuration);
-
-    public abstract String getOutputPrefix(
-            MultipleDTDCConfiguration configuration);
 }

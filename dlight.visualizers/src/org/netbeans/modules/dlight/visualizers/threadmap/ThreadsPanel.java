@@ -988,7 +988,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private void onClickAction(MouseEvent e) {
         int rowIndex = table.rowAtPoint(e.getPoint());
         if (rowIndex >= 0) {
-            int row = filteredDataToDataIndex.get(rowIndex).intValue();
+            final int row = filteredDataToDataIndex.get(rowIndex).intValue();
             TableColumnModel columnModel = table.getColumnModel();
             int viewColumn = columnModel.getColumnIndexAtX(e.getX());
             int col = table.convertColumnIndexToModel(viewColumn);
@@ -1007,14 +1007,19 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                                 showThreadsID.add(manager.getThreadData(i.intValue()).getThreadID());
                             }
                         }
-                        ThreadState state = threadData.getThreadStateAt(index);
+                        final ThreadState state = threadData.getThreadStateAt(index);
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
                         refreshUI();
                         if (detailsCallback != null) {
 //                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, threadData, showThreadsID, prefferedState,
 //                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
 //                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                            detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID());
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    ThreadStackVisualizer v = detailsCallback.showStack(state.getTimeStamp(), manager.getThreadData(row).getThreadID(), manager.getStartTime());
+                                    v.selectRootNode();
+                                }
+                            });
                         }
                     }
                 }
@@ -1209,7 +1214,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        public void showStack(long timestamp, long threadID);
+        public ThreadStackVisualizer showStack(long timestamp, long threadID, long startTime);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.security.acl.NotOwnerException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -70,11 +71,11 @@ public interface SolarisPrivilegesSupport {
     public List<String> getExecutionPrivileges();
 
     public void requestPrivileges(
-            List<String> requestedPrivileges,
+            Collection<String> requestedPrivileges,
             boolean askForPassword) throws NotOwnerException;
 
     public void requestPrivileges(
-            List<String> requestedPrivs,
+            Collection<String> requestedPrivs,
             String user, char[] passwd) throws NotOwnerException;
 
     /**
@@ -85,7 +86,7 @@ public interface SolarisPrivilegesSupport {
      * @return true if <tt>execEnv</tt> has all execution privileges listed in
      *         <tt>privs</tt>
      */
-    public boolean hasPrivileges(List<String> privs);
+    public boolean hasPrivileges(Collection<String> privs);
 
     /**
      * Returns {@link Action javax.swing.Action} that can be invoked in order
@@ -99,7 +100,7 @@ public interface SolarisPrivilegesSupport {
      *        to request needed execution privileges
      */
     public AsynchronousAction getRequestPrivilegesAction(
-            List<String> requestedPrivileges, Runnable onPrivilegesGranted);
+            Collection<String> requestedPrivileges, Runnable onPrivilegesGranted);
 
 
     /**

@@ -36,70 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.datacollector;
 
-package org.netbeans.jellytools.nodes;
-
-import java.awt.Point;
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.OutlineOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import java.net.URL;
+import java.util.Arrays;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
 /**
- *  Handles nodes of the Outline component.
- *
- * Warning: Do not use yet!! Incomplete, under development and most probably still buggy!
- *
- * @author Vojtech.Sigler@sun.com
+ * @author Alexey Vladykin
  */
-public class OutlineNode {
+public final class CpuSamplingSupport {
 
-    private OutlineOperator _outline;
-    private TreePath _treePath;
-
-    public OutlineNode(OutlineOperator irOutlineOp, TreePath irTreePath)
-    {
-        if (irOutlineOp == null)
-            throw new IllegalArgumentException("OutlineOperator argument cannot be null.");
-
-        if (irTreePath == null)
-            throw new IllegalArgumentException("TreePath argument cannot be null.");
-        
-        _outline = irOutlineOp;
-        _treePath = irTreePath;
+    private CpuSamplingSupport() {
     }
 
-    public OutlineNode(OutlineNode irParentNode, String isPath)
-    {
-        _outline = irParentNode.getOutline();
-        _treePath = getOutline().findPath(irParentNode.getTreePath(), isPath);
+    public static final URL CPU_SAMPLING_SCRIPT_URL =
+            CpuSamplingSupport.class.getResource("/org/netbeans/modules/dlight/core/stack/resources/calls.d"); // NOI18N
+
+    public static final Column TIMESTAMP_COLUMN =
+            new Column("time_stamp", Long.class, getMessage("CpuSampling.Column.time_stamp"), null); // NOI18N
+
+    public static final Column CPU_COLUMN =
+            new Column("cpu_id", Integer.class, getMessage("CpuSampling.Column.cpu_id"), null); // NOI18N
+
+    public static final Column THREAD_COLUMN =
+            new Column("thread_id", Integer.class, getMessage("CpuSampling.Column.thread_id"), null); // NOI18N
+
+    public static final Column MICROSTATE_COLUMN =
+            new Column("mstate", Integer.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
+
+    public static final Column DURATION_COLUMN =
+            new Column("duration", Integer.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
+
+    public static final Column STACK_COLUMN =
+            new Column("leaf_id", Integer.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
+
+    public static final DataTableMetadata CPU_SAMPLE_TABLE =
+            new DataTableMetadata("CallStack", // NOI18N
+            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN), null);
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CpuSamplingSupport.class, key);
     }
-
-    public OutlineOperator getOutline()
-    {
-        return _outline;
-    }
-
-    public TreePath getTreePath()
-    {
-        return _treePath;
-    }
-
-    public static TreePath findAndExpandPath(OutlineOperator irOOp, TreePath irTP)
-    {
-        return irTP;
-    }
-
-    public JPopupMenuOperator callPopup()
-    {
-        Point lrPopupPoint = getOutline().getLocationForPath(getTreePath());
-
-        //y is for row, x for column
-        return new JPopupMenuOperator(getOutline().callPopupOnCell(lrPopupPoint.y, lrPopupPoint.x));
-    }
-
-    public void expand()
-    {
-        getOutline().expandPath(getTreePath());
-    }
-
 }

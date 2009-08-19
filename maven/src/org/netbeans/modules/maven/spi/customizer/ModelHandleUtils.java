@@ -41,7 +41,9 @@ package org.netbeans.modules.maven.spi.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -87,8 +89,10 @@ public final class ModelHandleUtils {
         ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
         UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
         ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));
+        List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
+
         return CustomizerProviderImpl.ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(),
-                Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), null, null, project.getAuxProps());
+                Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), configs, null, project.getAuxProps());
     }
     
     //TODO deprecate in favour of o.n.m.maven.model.Utilities + ModelOperation?
