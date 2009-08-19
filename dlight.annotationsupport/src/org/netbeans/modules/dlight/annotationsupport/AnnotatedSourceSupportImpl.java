@@ -41,16 +41,15 @@ package org.netbeans.modules.dlight.annotationsupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
@@ -116,14 +115,33 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
                         String metricUName = column.getColumnUName();
                         fileAnnotationInfo.getColumnNames()[col] = metricUName;
-                        
+
                         col++;
                     }
                     fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                 }
             }
         }
-        annotateCurrentSourceFiles();
+
+        // Check current focused file in editor whether it should be annotated
+        final JTextComponent jEditorPane = EditorRegistry.lastFocusedComponent();
+        Object source = jEditorPane.getDocument().getProperty(Document.StreamDescriptionProperty);
+        if (source instanceof DataObject) {
+            FileObject fo = ((DataObject) source).getPrimaryFile();
+            File file = FileUtil.toFile(fo);
+            final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(file.getAbsolutePath());
+            if (fileAnnotationInfo != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (!fileAnnotationInfo.isAnnotated()) {
+                            fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                            fileAnnotationInfo.setAnnotated(true);
+                        }
+                        AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
+                    }
+                });
+            }
+        }
     }
 
     private void enableSourceFileTracking() {
@@ -170,17 +188,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             JEditorPane jEditorPane = activatedEditorPane(node);
                             if (!fileAnnotationInfo.isAnnotated()) {
                                 fileAnnotationInfo.setEditorPane(jEditorPane);
-                                // Calculate line numbers if only offset is known
-                                log.fine("Annotating " + filePath + "\n"); // NOI18N)
-                                List<LineAnnotationInfo> lines = fileAnnotationInfo.getLineAnnotationInfo();
-                                for (LineAnnotationInfo line : lines) {
-                                    //line.setLine(jEditorPane);
-                                    log.fine("  " + line.getLine() + ":" + line.getAnnotation() + " [" + fileAnnotationInfo.getTooltip() + "]" + "\n"); // NOI18N)
-                                }
                                 fileAnnotationInfo.setAnnotated(true);
                             }
                             AnnotationBarManager.showAnnotationBar(jEditorPane, fileAnnotationInfo);
@@ -255,5 +267,4 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
         return true;
     }
-
 }
