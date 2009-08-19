@@ -138,12 +138,13 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         PUDataObject pud = null;
         LOG.fine("Instantiating...");
         //first add libraries if necessary
+        Library lib = null;
         if (descriptor.isContainerManaged()) {
             if (descriptor.isNonDefaultProviderEnabled()) {
                 String providerClass = descriptor.getNonDefaultProvider();
                 //Only add library for Hibernate in NB 6.5
                 if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){//NOI18N
-                    Library lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
+                    lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
                     if (lib != null) {
                         Util.addLibraryToProject(project, lib);
                     }
@@ -152,29 +153,34 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 {
                     //fix #170046
                     //TODO: find some common approach what libraries to add and what do not need to be added
-                    Library lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
+                    lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
                     if (lib != null) {
                         Util.addLibraryToProject(project, lib);
                     }
                 }
+                else
+                {
+                    lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+                }
             }
         } else {
-             Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+             lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
             if (lib != null){
                 Util.addLibraryToProject(project, lib);
             }
         }
         //
+        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;
         try{
             LOG.fine("Retrieving PUDataObject");
-            pud = ProviderUtil.getPUDataObject(project);
+            pud = ProviderUtil.getPUDataObject(project, version);
         } catch (InvalidPersistenceXmlException ipx){
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml
             LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
             return Collections.emptySet();
        }
-        String version=pud.getPersistence().getVersion();
+        version=pud.getPersistence().getVersion();
         //
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
