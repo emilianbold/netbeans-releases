@@ -85,9 +85,9 @@ public class IndexingSupportTest extends NbTestCase {
     }
 
     public void testIndexingSupportInstances () throws Exception {
-        final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, false, null);
+        final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
         assertNotNull(ctx1);
-        final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null, false, false, false, false, null);
+        final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null, false, false, false, null);
         assertNotNull(ctx2);
 
         final IndexingSupport is1 = IndexingSupport.getInstance(ctx1);
@@ -101,7 +101,7 @@ public class IndexingSupportTest extends NbTestCase {
 
     public void testIndexingQuerySupport () throws Exception {
         // index
-        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, false, null);
+        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
         assertNotNull(ctx);
         final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
         final IndexingSupport is = IndexingSupport.getInstance(ctx);
