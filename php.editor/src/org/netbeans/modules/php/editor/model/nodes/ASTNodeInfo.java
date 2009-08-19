@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -73,7 +74,7 @@ public class ASTNodeInfo<T extends ASTNode> {
 
     public enum Kind {
 
-        NAMESPACE_DECLARATION, IFACE, CLASS, CLASS_INSTANCE_CREATION,
+        NAMESPACE_DECLARATION, USE_STATEMENT, IFACE, CLASS, CLASS_INSTANCE_CREATION,
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
@@ -112,6 +113,9 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
             return QualifiedName.create(instanceCreation.getClassName().getName());
+        } else if (node instanceof UseStatementPart) {
+            UseStatementPart statementPart = (UseStatementPart) node;
+            return QualifiedName.create(statementPart.getName());
         }
         String toName = toName(node);
         return QualifiedName.createUnqualifiedName(toName);
@@ -150,6 +154,8 @@ public class ASTNodeInfo<T extends ASTNode> {
                 return PhpKind.CONSTANT;
             case FUNCTION:
                 return PhpKind.FUNCTION;
+            case USE_STATEMENT:
+                return PhpKind.USE_STATEMENT;
         }
         throw new IllegalStateException();
     }
@@ -163,6 +169,10 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
     public static ASTNodeInfo<FieldAccess> create(FieldAccess fieldAccess) {
         return new ASTNodeInfo<FieldAccess>(fieldAccess);
+    }
+
+    public static ASTNodeInfo<UseStatementPart> create(UseStatementPart statementPart) {
+        return new ASTNodeInfo<UseStatementPart>(statementPart);
     }
 
     public static ASTNodeInfo<FunctionInvocation> create(FunctionInvocation functionInvocation) {
@@ -238,6 +248,8 @@ public class ASTNodeInfo<T extends ASTNode> {
             return Kind.FIELD;
         } else if (node instanceof ReturnStatement) {
             return Kind.RETURN_MARKER;
+        } else if (node instanceof UseStatementPart) {
+            return Kind.USE_STATEMENT;
         }
         throw new IllegalStateException();
     }
@@ -282,6 +294,8 @@ public class ASTNodeInfo<T extends ASTNode> {
             return "return";//NOI18N
         } else if (node instanceof Reference) {
             return toName(((Reference)node).getExpression());
+        } else if (node instanceof UseStatementPart) {
+            return toQualifiedName(node).toString();
         }
         throw new IllegalStateException(node.getClass().toString());
     }
@@ -336,6 +350,8 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(returnStatement.getStartOffset(), returnStatement.getEndOffset());
         } else if (node instanceof Reference) {
             return toOffsetRange(((Reference)node).getExpression());
+        } else if (node instanceof UseStatementPart) {
+            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
         throw new IllegalStateException();
     }
