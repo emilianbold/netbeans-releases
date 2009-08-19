@@ -803,7 +803,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             try {
                                 CustomIndexerFactory factory = info.getIndexerFactory();
                                 Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, false, null);
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
                                 factory.filesDirty(dirty, ctx);
                             } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, null, ex);
@@ -815,7 +815,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             try {
                                 EmbeddingIndexerFactory factory = info.getIndexerFactory();
                                 Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, false, null);
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
                                 factory.filesDirty(dirty, ctx);
                             } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, null, ex);
@@ -1172,14 +1172,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexers(null);
                 for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
                     CustomIndexerFactory factory = cifInfo.getIndexerFactory();
-                    Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, false, null);
+                    Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
                     factory.filesDeleted(ci.getIndexablesFor(null), ctx);
                 }
 
                 Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexers(null);
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                     EmbeddingIndexerFactory factory = eifInfo.getIndexerFactory();
-                    Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, false, null);
+                    Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
                     factory.filesDeleted(ci.getIndexablesFor(null), ctx);
                 }
             } finally {
@@ -1224,11 +1224,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         continue;
                     }
 
+                    final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                    transactionContexts.add(ctx);
                     boolean cifIsChanged = changedCifs != null && changedCifs.contains(cifInfo);
-                    boolean allFiles = cifIsChanged || resources == allResources;
+                    boolean forceReindex = !factory.scanStarted(ctx);
+                    boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, allFiles);
                     List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                     for(String mimeType : cifInfo.getMimeTypes()) {
-                        if (cifIsChanged && resources != allResources) {
+                        if ((cifIsChanged || forceReindex) && resources != allResources) {
                             if (allCi == null) {
                                 allCi = new ClusteredIndexables(allResources);
                             }
@@ -1243,10 +1248,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         return false;
                     }
 
-                    final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, allFiles, sourceForBinaryRoot, getShuttdownRequest());
-                    transactionContexts.add(ctx);
-
                     final CustomIndexer indexer = factory.createIndexer();
                     long tm1 = -1, tm2 = -1;
                     try {
@@ -1258,6 +1259,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     } catch (Throwable t) {
                         LOGGER.log(Level.WARNING, null, t);
                     }
+                    finally {
+                        factory.scanFinished(ctx);
+                    }
                     if (LOGGER.isLoggable(Level.FINE)) {
                         StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
                         LOGGER.fine("Indexing source root " + root + " using " + indexer
@@ -1268,21 +1272,29 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 // now process embedding indexers
                 boolean containsNewIndexers = false;
+                boolean forceReindex = false;
                 Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> changedEifs = allResources != null ? new HashSet<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>() : null;
                 Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = IndexerCache.getEifCache().getIndexersMap(changedEifs);
+                Map<EmbeddingIndexerFactory,Context> ctxToFinish = new HashMap<EmbeddingIndexerFactory, Context>();
                 if (allResources != null) {
                     for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : eifInfosMap.values()) {
                         for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                             if (changedEifs.contains(eifInfo)) {
                                 containsNewIndexers = true;
-                                break;
                             }
+                            EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
+                            final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, null);
+                            transactionContexts.add(context);
+                            if (!eif.scanStarted(context)) {
+                                forceReindex = true;
+                            }
+                            ctxToFinish.put(eif, context);
                         }
                     }
                 }
 
                 boolean useAllCi = false;
-                if (containsNewIndexers && resources != allResources) {
+                if ((containsNewIndexers||forceReindex) && resources != allResources) {
                     if (allCi == null) {
                         allCi = new ClusteredIndexables(allResources);
                     }
@@ -1311,6 +1323,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         LOGGER.fine("Indexing " + mimeType + " embeddables under " + root
                             + "; took " + (tm2 - tm1) + "ms"); //NOI18N
                     }
+                }
+
+                for (Map.Entry<EmbeddingIndexerFactory,Context> entry : ctxToFinish.entrySet()) {
+                    entry.getKey().scanFinished(entry.getValue());
                 }
 
                 return true;
@@ -1357,9 +1373,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 for(BinaryIndexerFactory f : factories) {
                     final Context ctx = SPIAccessor.getInstance().createContext(
-                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
-                            !isFolder || !isUpToDate, // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
+                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,                            
                             false, null);
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
+                            );
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1423,7 +1440,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                         if (pr != null) {
                                             final String indexerName = indexerFactory.getIndexerName();
                                             final int indexerVersion = indexerFactory.getIndexVersion();
-                                            final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
+                                            final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, sourceForBinaryRoot, null);
                                             transactionContexts.add(context);
 
                                             final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
@@ -1808,7 +1825,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                                     final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
                                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, false, false, true, sourceForBinaryRoot, getShuttdownRequest());
+                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, false, false, sourceForBinaryRoot, getShuttdownRequest());
+                                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
                                     transactionContexts.add(ctx);
 
                                     final CustomIndexer indexer = factory.createIndexer();
@@ -2361,7 +2379,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                     for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : infos) {
                         CustomIndexerFactory factory = info.getIndexerFactory();
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), false, sourceForBinaryRoot, null);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), sourceForBinaryRoot, null);
                         CustomIndexer indexer = factory.createIndexer();
 
                         if (LOGGER.isLoggable(Level.FINE)) {

@@ -575,6 +575,23 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static class Factory extends CustomIndexerFactory {
+
+
+        @Override
+        public boolean scanStarted(final Context context) {
+            try {
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+                return uq == null ? true : uq.getSourceAnalyser().isValid();
+            } catch (IOException ioe) {
+                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
+                return false;
+            }
+        }
+
+        @Override
+        public void scanFinished(final Context context) {
+            //Not needed now
+        }
         
         @Override
         public CustomIndexer createIndexer() {

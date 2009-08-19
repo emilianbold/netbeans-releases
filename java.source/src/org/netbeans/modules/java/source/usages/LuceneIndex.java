@@ -892,6 +892,9 @@ class LuceneIndex extends Index {
             } catch (java.io.IOException e) {
                 res = false;
                 clear();
+            } catch (RuntimeException e) {
+                res = false;
+                clear();
             }
         }
         return res;
