@@ -123,6 +123,14 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 if(current.id() != HTMLTokenId.TEXT) { //works only in plain text
                     return ;
                 }
+
+                //end tag autocompletion workaround - we do not want to see the palette items when user finished
+                //an open tag and the end tag autocompletion pops up
+                if(diff == 0 && htmlTs.movePrevious()) {
+                    if(htmlTs.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        return ;
+                    }
+                }
                 
                 String prefix = current.text().subSequence(0, diff).toString();
                 //preserve only non-ws part of the prefix at the end (text token can contain mix of ws and non-ws chars)
