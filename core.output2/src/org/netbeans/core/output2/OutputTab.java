@@ -48,7 +48,6 @@ import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
@@ -84,6 +83,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -387,13 +387,29 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             boolean matchCase = FindDialogPanel.matchCase();
             int[] sel = reversed ? out.getLines().rfind(pos, lastPattern, regExp, matchCase)
                     : out.getLines().find(pos, lastPattern, regExp, matchCase);
+            String appendMsg = null;
+            if (sel == null) {
+                sel = reversed ? out.getLines().rfind(out.getLines().getCharCount(), lastPattern, regExp, matchCase)
+                        : out.getLines().find(0, lastPattern, regExp, matchCase);
+                if (sel != null) {
+                    appendMsg = NbBundle.getMessage(OutputTab.class, reversed ? "MSG_SearchFromEnd" : "MSG_SearchFromBeg");
+                }
+            }
+            String msg;
             if (sel != null) {
                 getOutputPane().unlockScroll();
                 getOutputPane().setSelection(sel[0], sel[1]);
-                return true;
+                int line = out.getLines().getLineAt(sel[0]);
+                int col = sel[0] - out.getLines().getLineStart(line);
+                msg = NbBundle.getMessage(OutputTab.class, "MSG_Found", lastPattern, line + 1, col + 1);
+                if (appendMsg != null) {
+                    msg = msg + "; " + appendMsg;
+                }
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                msg = NbBundle.getMessage(OutputTab.class, "MSG_NotFound", lastPattern);
             }
+            StatusDisplayer.getDefault().setStatusText(msg);
+            return sel != null;
         }
         return false;
     }
