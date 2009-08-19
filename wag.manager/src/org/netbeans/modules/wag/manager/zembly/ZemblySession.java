@@ -100,6 +100,7 @@ public class ZemblySession {
             //userInfo = zemblyLogin("peter.liu@sun.com", "foobar");
             userInfo = new ZemblyUserInfo();
             userInfo.setUserid("914986440");
+            userInfo.setUsername("spunky");
         }
     }
 
