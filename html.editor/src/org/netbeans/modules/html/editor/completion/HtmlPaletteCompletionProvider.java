@@ -134,8 +134,9 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                         break;
                     }
                 }
-                prefix = prefix.substring(i, prefix.length());
-
+                if(i > 0) {
+                    prefix = prefix.substring(i, prefix.length());
+                }
                 //remember the start of the completion source expression for later removal
                 this.completionExpressionStartOffset = creationCaretOffset - prefix.length();
 
