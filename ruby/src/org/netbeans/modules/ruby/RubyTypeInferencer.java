@@ -171,6 +171,9 @@ public final class RubyTypeInferencer {
         Node root = knowledge.getRoot();
         AstPath path = new AstPath(root, selfNode);
         IScopingNode clazz = AstUtilities.findClassOrModule(path);
+        if (clazz == null) {
+            return null;
+        }
         return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
     }
 
