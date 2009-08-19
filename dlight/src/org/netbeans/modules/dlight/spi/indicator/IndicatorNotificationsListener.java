@@ -37,42 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo;
+package org.netbeans.modules.dlight.spi.indicator;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
-import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
- *
- * @author mt154047
+ * This interface should be implemented by the users who would like to get
+ * notifications from the infrastructure about changes of indicators (data).
+ * To attach listener to the current DLightSession you can use
+ * <pre>
+ *     DLigthManager.getDefault().getActiveSession().addIndicatorNotificationListener();
+ * </pre>
+ * @author Maria Tishkova
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider.class)
-public class CndPathMapperProvider implements PathMapperProvider{
+public interface IndicatorNotificationsListener {
+  /**
+     * Invoked when new data is occurred.
+     * @param data data added
+     */
+    void updated(List<DataRow> data);
 
-    public PathMapper getPathMapper(ExecutionEnvironment env) {
-         PathMap mapper = HostInfoProvider.getMapper(env);
-         return new PathMapperImpl(mapper);
-    }
-
-    private class PathMapperImpl implements PathMapper{
-        private final PathMap pathMap;
-
-        public PathMapperImpl(PathMap pathMap) {
-            this.pathMap = pathMap;
-        }
-
-        public String getRemotePath(String localPath) {
-            return pathMap.getRemotePath(localPath,true);
-        }
-
-        public String getLocalPath(String remotePath) {
-            return pathMap.getLocalPath(remotePath,true);
-        }
-
-    }
-
+    /**
+     * Resets to the initial state
+     */
+    void reset();
 }

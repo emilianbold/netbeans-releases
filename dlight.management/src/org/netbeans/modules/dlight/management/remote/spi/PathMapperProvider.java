@@ -37,11 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.management.remote.spi;
+
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Will keep configuration per session
+ * Path mapper provider information about path mapping if exists for the Execution enviroment
  */
-public final class DLightConfigurationStorage {
+public interface PathMapperProvider {
+
+    /**
+     * Returns PathMapper if exists
+     * @param env execution enviroment to get path mapper for
+     * @return path mapper info if exists, <code>null</code> otherwise
+     */
+    public PathMapper getPathMapper(ExecutionEnvironment env);
 
 }

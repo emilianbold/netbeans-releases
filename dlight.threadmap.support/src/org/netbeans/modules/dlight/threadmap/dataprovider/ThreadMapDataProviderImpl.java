@@ -41,8 +41,7 @@ package org.netbeans.modules.dlight.threadmap.dataprovider;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
@@ -67,11 +66,11 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return storage.queryThreadMapData(query);
     }
 
-    public ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
+    public ThreadDump getThreadDump(ThreadDumpQuery query){
         if (stackDataStorage == null) {
             return null;
         }
-        return stackDataStorage.getThreadDump(timestamp, threadInfo.getThreadId(), 1);
+        return stackDataStorage.getThreadDump(query);
     }
 
     public void attachTo(DataStorage storage) {
@@ -85,14 +84,5 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
-    public ThreadDump getStackTrace(long timestamp, long threadID) {
-        if (stackDataStorage == null) {
-            return null;
-        }
-        return stackDataStorage.getThreadDump(timestamp, threadID, 1);
-    }
-
-    public ThreadDump getStackTrace(long timestamp, long threadID, int threadstate) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
+ 
 }
