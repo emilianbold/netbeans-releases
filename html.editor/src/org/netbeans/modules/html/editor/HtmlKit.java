@@ -101,11 +101,11 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public HtmlKit() {
         this(HTML_MIME_TYPE);
-        NbReaderProvider.setupReaders();
     }
 
     public HtmlKit(String mimeType) {
         super();
+        NbReaderProvider.setupReaders();
     }
 
     @Override
