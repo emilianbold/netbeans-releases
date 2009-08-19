@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,66 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.impl;
+package org.netbeans.modules.dlight.core.stack.datacollector;
 
 import java.net.URL;
-import java.util.List;
+import java.util.Arrays;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author masha
+ * @author Alexey Vladykin
  */
-public abstract class DTDCConfigurationAccessor {
+public final class CpuSamplingSupport {
 
-    private static volatile DTDCConfigurationAccessor DEFAULT;
-
-    public static DTDCConfigurationAccessor getDefault() {
-        DTDCConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(DTDCConfiguration.class.getName(), true,
-                    DTDCConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    private CpuSamplingSupport() {
     }
 
-    public static void setDefault(DTDCConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    public static final URL CPU_SAMPLING_SCRIPT_URL =
+            CpuSamplingSupport.class.getResource("/org/netbeans/modules/dlight/core/stack/resources/calls.d"); // NOI18N
+
+    public static final Column TIMESTAMP_COLUMN =
+            new Column("time_stamp", Long.class, getMessage("CpuSampling.Column.time_stamp"), null); // NOI18N
+
+    public static final Column CPU_COLUMN =
+            new Column("cpu_id", Integer.class, getMessage("CpuSampling.Column.cpu_id"), null); // NOI18N
+
+    public static final Column THREAD_COLUMN =
+            new Column("thread_id", Integer.class, getMessage("CpuSampling.Column.thread_id"), null); // NOI18N
+
+    public static final Column MICROSTATE_COLUMN =
+            new Column("mstate", Integer.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
+
+    public static final Column DURATION_COLUMN =
+            new Column("duration", Integer.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
+
+    public static final Column STACK_COLUMN =
+            new Column("leaf_id", Integer.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
+
+    public static final DataTableMetadata CPU_SAMPLE_TABLE =
+            new DataTableMetadata("CallStack", // NOI18N
+            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN), null);
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(CpuSamplingSupport.class, key);
     }
-
-    public DTDCConfigurationAccessor() {
-    }
-
-    public abstract String getArgs(DTDCConfiguration conf);
-
-    public abstract List<DataTableMetadata> getDatatableMetadata(
-            DTDCConfiguration conf);
-
-    public abstract DtraceParser getParser(DTDCConfiguration conf);
-
-    public abstract List<String> getRequiredPrivileges(DTDCConfiguration conf);
-
-    public abstract URL getScriptUrl(DTDCConfiguration conf);
-
-    public abstract String getID();
-
-    public abstract boolean isStackSupportEnabled(DTDCConfiguration conf);
-
-    public abstract int getIndicatorFiringFactor(DTDCConfiguration conf);
-
-    public abstract boolean isStandalone(DTDCConfiguration conf);
-
-    public abstract String getOutputPrefix(DTDCConfiguration conf);
 }

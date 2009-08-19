@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.threadmap.dataprovider.ThreadMapDataProviderImpl;
+import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -64,7 +65,7 @@ public class ThreadMapDataProviderFactory implements DataProviderFactory {
 
     public ThreadMapDataProviderFactory() {
         supportedStorageTypes = new ArrayList<DataStorageType>(1);
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType("ThreadMapDataStorage")); //NOI18N
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(ThreadMapDataStorage.THREAD_MAP_STORAGE_TYPE_ID)); //NOI18N
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         providedSchemas = new ArrayList<DataModelScheme>(1);
         providedSchemas.add(DataModelSchemeProvider.getInstance().getScheme("model:threadmap")); //NOI18N
