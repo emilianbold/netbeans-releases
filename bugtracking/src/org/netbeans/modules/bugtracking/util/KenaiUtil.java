@@ -126,4 +126,21 @@ public class KenaiUtil {
         KenaiProject p = Kenai.getDefault().getProject(projectName);
         return p != null ? getKenaiBugtrackingRepository(p) : null;
     }
+
+    /**
+     * Returns a kenai {@link Repository} for the kenai project the with given vcs url
+     *
+     * @param url
+     * @return
+     */
+    public static Repository getKenaiRepository(String url) {
+        KenaiProject kp;
+        try {
+            kp = KenaiProject.forRepository(url);
+        } catch (KenaiException ex) {
+            return null;
+        }
+        return KenaiRepositories.getInstance().getRepository(kp);
+    }
+
 }
