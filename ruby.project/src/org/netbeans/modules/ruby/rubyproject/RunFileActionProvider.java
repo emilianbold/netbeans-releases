@@ -40,10 +40,8 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.awt.Dialog;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
@@ -70,10 +68,10 @@ import org.openide.util.lookup.ServiceProvider;
 public final class RunFileActionProvider implements ActionProvider {
 
     // store for one session
-    private static final Map<File, RunFileArgs> arguments = new HashMap<File, RunFileArgs>();
+    private static final Map<File, RunFileArgs> ARGS_FOR_FILE = new HashMap<File, RunFileArgs>();
 
     public String[] getSupportedActions() {
-        return new String[]{ActionProvider.COMMAND_RUN_SINGLE, /* not working yet - ActionProvider.COMMAND_DEBUG_SINGLE*/};
+        return new String[]{ActionProvider.COMMAND_RUN_SINGLE, ActionProvider.COMMAND_DEBUG_SINGLE};
     }
 
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
@@ -88,9 +86,10 @@ public final class RunFileActionProvider implements ActionProvider {
     }
 
     private void runFile(File f, boolean debug) {
-        RunFileArgs existing = arguments.get(f);
+        RunFileArgs existing = ARGS_FOR_FILE.get(f);
         if (existing != null && !existing.displayDialog) {
             doRun(f, existing, debug);
+            return;
         }
 
         Object[] options = new Object[]{
@@ -110,23 +109,19 @@ public final class RunFileActionProvider implements ActionProvider {
         dialog.setVisible(true);
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             RunFileArgs runFileArgs = panel.getArgs();
-            arguments.put(f, runFileArgs);
+            ARGS_FOR_FILE.put(f, runFileArgs);
             doRun(f, runFileArgs, debug);
         }
     }
 
     private void doRun(File f, RunFileArgs runFileArgs, boolean debug) {
         RubyExecutionDescriptor desc = new RubyExecutionDescriptor(runFileArgs.getPlatform(), f.getName(), f.getParentFile());
-        List<String> args = new ArrayList<String>();
-        args.add(f.getName());
         if (runFileArgs.getRunArgs() != null) {
-            for (String arg : Utilities.parseParameters(runFileArgs.getRunArgs())) {
-                args.add(arg);
-            }
+            desc.additionalArgs(Utilities.parseParameters(runFileArgs.getRunArgs()));
         }
-        desc.additionalArgs(args.toArray(new String[args.size()]));
         desc.jvmArguments(runFileArgs.getJvmArgs());
         desc.debug(debug);
+        desc.script(f.getAbsolutePath());
         RubyProcessCreator rpc = new RubyProcessCreator(desc);
         ExecutionService.newService(rpc, desc.toExecutionDescriptor(), f.getName()).run();
     }
@@ -148,6 +143,9 @@ public final class RunFileActionProvider implements ActionProvider {
         return true;
     }
 
+    /**
+     * Holds the args last given for running (file specific).
+     */
     static final class RunFileArgs {
 
         private final RubyPlatform platform;

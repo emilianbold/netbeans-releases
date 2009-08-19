@@ -73,7 +73,7 @@ final class RunFilePanel extends javax.swing.JPanel {
     }
 
     RunFileActionProvider.RunFileArgs getArgs() {
-        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(), getJvmArgs(), displayDialog.isSelected());
+        return new RunFileActionProvider.RunFileArgs(getPlatform(), getRunArgs(), getJvmArgs(), !displayDialog.isSelected());
     }
     
     private void initJvmArgs() {
