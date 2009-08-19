@@ -40,9 +40,15 @@
 package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -50,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
@@ -57,44 +64,33 @@ import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
 /**
  * Quick search toolbar component
  * @author Jan Becicka
+ * @author Tomas Stupka
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
 
-    QuickSearchPopup displayer;
-    Color origForeground;
-    private JPanel caller;
-    private Issue issue;
-    PropertyChangeSupport changeSupport;
-    private boolean ignoreCommandChanges = false;
+    private QuickSearchPopup displayer;
+    private Color origForeground;
+    private JPanel caller;    
+    private PropertyChangeSupport changeSupport;
 
     public static final String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed"; // NOI18N
 
     public QuickSearchComboBar(JPanel caller) {
         this.caller = caller;
-        displayer = new QuickSearchPopup(this);
         initComponents();
-        command.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent arg0) {
-                textChanged();
-            }
-            public void removeUpdate(DocumentEvent arg0) {
-                textChanged();
-            }
-            public void changedUpdate(DocumentEvent arg0) {
-                textChanged();
-            }
-            private void textChanged () {
-                if(ignoreCommandChanges) {
-                    return;
+        command.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if(value instanceof Issue) {
+                    Issue item = (Issue) value;
+                    value = IssueItem.getIssueDescription(item);
                 }
-                if (command.isFocusOwner()) {
-                    displayer.maybeEvaluate(command.getText());
-                }
-                setIssue(null);
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
+        command.setEditor(new ComboEditor(command.getEditor()));
+        displayer = new QuickSearchPopup(this);
     }
-
 
     @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -107,24 +103,20 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
     public Issue getIssue() {
-        return issue;
+        return (Issue) command.getEditor().getItem();
     }
 
     public void setRepository(Repository repo) {
         displayer.setRepository(repo);
+        Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
+        command.setModel(new DefaultComboBoxModel(issues.toArray(new Issue[issues.size()])));
+        command.setSelectedItem(null);
     }
 
     void setIssue(Issue issue) {
-        Issue oldIssue = this.issue;
-        this.issue = issue;
-        if(this.issue != null) {
-            ignoreCommandChanges = true;
-            command.setText(IssueItem.getIssueDescription(this.issue));
-            ignoreCommandChanges = false;
+        if(issue != null) {
+            command.getEditor().setItem(issue);
             displayer.setVisible(false);
-        }
-        if(oldIssue != null || this.issue != null) {
-            getChangeSupport().firePropertyChange(EVT_ISSUE_CHANGED, oldIssue, this.issue);
         }
     }
 
@@ -137,7 +129,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        command = new javax.swing.JTextField();
+        command = new javax.swing.JComboBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(200, 2147483647));
@@ -149,49 +141,24 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             }
         });
 
-        command.setText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.text")); // NOI18N
+        command.setEditable(true);
         command.setName("command"); // NOI18N
-        command.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                commandKeyPressed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(command, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+            .add(command, 0, 353, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(command, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
-
-        command.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.AccessibleContext.accessibleName")); // NOI18N
-        command.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
         displayer.setVisible(false);
     }//GEN-LAST:event_formFocusLost
-
-    private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
-        if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
-            displayer.selectNext();
-            evt.consume();
-        } else if (evt.getKeyCode() == KeyEvent.VK_UP) {
-            displayer.selectPrev();
-            evt.consume();
-        } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            evt.consume();
-            invokeSelectedItem();
-        } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
-            returnFocus();
-            displayer.clearModel();
-            evt.consume();
-        }
-    }//GEN-LAST:event_commandKeyPressed
 
     private void returnFocus () {
         displayer.setVisible(false);
@@ -233,14 +200,14 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             return;
         }
         // don't alter color if showing hint already
-        if (command.getForeground().equals(command.getDisabledTextColor())) {
+        if (command.getForeground().equals(((JTextField) command.getEditor().getEditorComponent()).getDisabledTextColor())) {
             return;
         }
         command.setForeground(areNoResults ? Color.RED : origForeground);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField command;
+    private javax.swing.JComboBox command;
     // End of variables declaration//GEN-END:variables
 
 
@@ -250,8 +217,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command.requestFocus();
     }
 
-    public JTextField getCommand() {
+    public Component getIssueComponent() {
         return command;
+    }
+
+    String getText() {
+        return ((JTextField)command.getEditor().getEditorComponent()).getText();
     }
 
     static Color getPopupBorderColor () {
@@ -268,5 +239,118 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         return getTextBackground();
     }
 
+    boolean isTextFieldFocusOwner() {
+        return command.getEditor().getEditorComponent().isFocusOwner();
+    }
+
+    private class ComboEditor implements ComboBoxEditor {
+        private final JTextField editor;
+        private Issue issue;
+        private boolean ignoreCommandChanges = false;
+        private final ComboBoxEditor delegate;
+
+        public ComboEditor(ComboBoxEditor delegate) {
+            this.delegate = delegate;
+            editor = (JTextField) delegate.getEditorComponent();
+            editor.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent arg0) {
+                    textChanged();
+                }
+                public void removeUpdate(DocumentEvent arg0) {
+                    textChanged();
+                }
+                public void changedUpdate(DocumentEvent arg0) {
+                    textChanged();
+                }
+                private void textChanged () {
+                    if(ignoreCommandChanges) {
+                        return;
+                    }
+                    if (isTextFieldFocusOwner()) {
+                        if(!editor.getText().equals("")) {
+                            command.hidePopup();
+                        }
+                        displayer.maybeEvaluate(editor.getText());
+                    }
+                    setItem(null, true);
+                }
+            });
+            editor.addKeyListener(new java.awt.event.KeyAdapter() {
+                @Override
+                public void keyPressed(java.awt.event.KeyEvent evt) {
+                    commandKeyPressed(evt);
+                }
+            });
+        }
+
+        public Component getEditorComponent() {
+            return editor;
+        }
+
+        private void setItem(Object anObject, boolean keepText) {
+            Issue oldIssue = issue;
+            if(anObject == null) {
+                issue = null;
+                if(!keepText) {
+                    editor.setText("");
+                }
+            } else if(anObject instanceof Issue) {
+                issue = (Issue) anObject;
+                ignoreCommandChanges = true;
+                if(!keepText) {
+                    editor.setText(IssueItem.getIssueDescription(issue));
+                }
+                ignoreCommandChanges = false;
+            }
+            if(oldIssue != null || issue != null) {
+                getChangeSupport().firePropertyChange(EVT_ISSUE_CHANGED, oldIssue, issue);
+            }
+        }
+
+        public void setItem(Object anObject) {
+            setItem(anObject, false);
+        }
+
+        public Object getItem() {
+            return issue;
+        }
+
+        public void selectAll() {
+            delegate.selectAll();
+        }
+
+        public void addActionListener(ActionListener l) {
+            delegate.addActionListener(l);
+        }
+
+        public void removeActionListener(ActionListener l) {
+            delegate.removeActionListener(l);
+        }
+
+        private void commandKeyPressed(java.awt.event.KeyEvent evt) {
+            if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
+                if(displayer.isVisible()) {
+                    displayer.selectNext();
+                    evt.consume();
+                }
+            } else if (evt.getKeyCode() == KeyEvent.VK_UP) {
+                if(displayer.isVisible()) {
+                    displayer.selectPrev();
+                    evt.consume();
+                }
+            } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(displayer.isVisible()) {
+                    evt.consume();
+                    invokeSelectedItem();
+                }
+            } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
+                if(displayer.isVisible()) {
+                    returnFocus();
+                    displayer.clearModel();
+                    evt.consume();
+                }
+            }
+        }
+    }
 
 }
