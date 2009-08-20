@@ -55,7 +55,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
 public class WagServiceNode extends AbstractNode {
 

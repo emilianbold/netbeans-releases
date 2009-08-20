@@ -9,6 +9,13 @@
                 </file>
             </folder>
             <folder name="xhtml">
+                <folder name="text">
+                        <folder name="html">
+                            <folder name="CodeGenerators">
+                                <file name="org-netbeans-modules-web-jsf-editor-JsfCodeGenerator$Factory.instance"/>
+                            </folder>
+                        </folder>
+                    </folder>
                 <file name="org-netbeans-modules-web-jsf-editor-JsfHtmlPaletteFolderProvider.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider"/>
                 </file>

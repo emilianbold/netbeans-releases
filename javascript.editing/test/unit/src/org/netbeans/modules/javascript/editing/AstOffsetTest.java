@@ -224,4 +224,8 @@ public class AstOffsetTest extends JsTestBase {
         SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_1_7);
         checkOffsets("testfiles/javascript17.js");
     }
+
+    public void testFunctionNameInQuote() throws Exception {
+        checkOffsets("testfiles/issue159083.js");
+    }
 }
