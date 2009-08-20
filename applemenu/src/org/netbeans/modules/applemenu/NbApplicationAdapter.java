@@ -45,12 +45,10 @@ import com.apple.eawt.*;
 
 import java.beans.Beans;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import javax.swing.Action;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
-import org.openide.actions.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataObject;
 
@@ -156,9 +154,7 @@ class NbApplicationAdapter implements ApplicationListener {
         if (fo != null && fo.isValid()) {
             try {
                 DataObject dob = DataObject.find (fo);
-                InstanceCookie ic = 
-                    (InstanceCookie) dob.getCookie(InstanceCookie.class);
-                
+                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
                 if (ic != null) {
                     Object instance = ic.instanceCreate();
                     if (instance instanceof Action) {
