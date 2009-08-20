@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyEditor;
@@ -75,6 +76,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,7 +104,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private Future task;
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
-
+    private final String iconColumnID;
+    private String resourceID;
     private final boolean dualPaneMode;
     private final DualPaneSupport dualPaneSupport;
 
@@ -119,12 +122,19 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         nodeRowColumnID = accessor.getRowNodeColumnName(configuration);
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
-        outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        iconColumnID = accessor.getIconColumnID(configuration);
+        if ( iconColumnID== null || configuration.getMetadata().getColumnByName(iconColumnID) == null){
+            outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());//do not display  icon
+        }
+
+        resourceID = iconColumnID == null ? null : accessor.getIconColumnID(configuration);
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property> result = new ArrayList<Property>();
+        List<Column> columns = new ArrayList<Column>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
+                columns.add(c);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     c.getColumnUName(), c.getColumnUName(), true, false) {
 
@@ -139,6 +149,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                 });
             }
         }
+        outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
         outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
@@ -435,6 +446,22 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         public DataRow getDataRow() {
             return dataRow;
         }
+
+        @Override
+        public Image getIcon(int type) {
+            //if tge icon is turn
+            if (iconColumnID == null){
+                return super.getIcon(type);
+            }
+            return ImageUtilities.loadImage(resourceID + "/" + dataRow.getStringValue(iconColumnID) +".png"); // NOI18N
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+
+
 
         @Override
         public String getDisplayName() {
