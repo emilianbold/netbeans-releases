@@ -471,7 +471,7 @@ public class BugzillaIssue extends Issue {
         return repository.getTaskRepository();
     }
 
-    BugzillaRepository getRepository() {
+    BugzillaRepository getBugzillaRepository() {
         return repository;
     }
 
@@ -628,7 +628,7 @@ public class BugzillaIssue extends Issue {
     }
 
     boolean canReassign() {
-        boolean oldRepository = (getRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        boolean oldRepository = (getBugzillaRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
         if (oldRepository) {
             TaskAttribute rta = data.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
@@ -835,7 +835,7 @@ public class BugzillaIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(id, td, this); // XXX
+            getBugzillaRepository().getIssueCache().setIssueData(id, td, this); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }

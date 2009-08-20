@@ -314,7 +314,8 @@ public class JsfElExpression extends ELExpression {
         return items;
     }
     
-    public List<CompletionItem> getListenerMethodCompletionItems(String beanType, 
+    public List<CompletionItem> /*getListenerMethodCompletionItems*/
+                                getMethodCompletionItems(String beanType, 
             int anchor)
     {
         JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType, anchor);
@@ -348,17 +349,28 @@ public class JsfElExpression extends ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.
                         getEnclosedElements()))
                 {
-                    if (isActionListenerMethod(method)) {
+                    /* EL 2.1 for JSF allows to call any method , not just action listener 
+                     * if (isActionListenerMethod(method)) {
+                      */
+                    // skip bean property accessors 
+                    if ( method.getSimpleName().toString().equals( 
+                            getExpressionSuffix(method)) )
+                    {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, "void");
+                                    methodName, anchor, method.getReturnType().toString());
 
                             completionItems.add(item);
                         }
                     }
                 }
             }
+        }
+        
+
+        public List<CompletionItem> getCompletionItems(){
+            return completionItems;
         }
         
         protected boolean isActionListenerMethod(ExecutableElement method){
@@ -375,9 +387,13 @@ public class JsfElExpression extends ELExpression {
             
             return isALMethod;
         }
-
-        public List<CompletionItem> getCompletionItems(){
-            return completionItems;
+        
+        protected boolean checkMethodParameters( ExecutableElement method ){
+            return true;
+        }
+        
+        protected boolean checkMethodReturnType( ExecutableElement method ){
+            return true;
         }
     }
 
@@ -438,32 +454,12 @@ public class JsfElExpression extends ELExpression {
             return success;
         }
 
-        /**
-         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
-         */
-        @Override
-        protected String getExpressionSuffix(ExecutableElement method){
-
-            if (method.getModifiers().contains(Modifier.PUBLIC)){
-                String methodName = method.getSimpleName().toString();
-
-                if (methodName.startsWith("get")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(3)) + 
-                        methodName.substring(4);
-                }
-
-                if (methodName.startsWith("is")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(2)) + 
-                        methodName.substring(3);
-                }
-
-                if (isDefferedExecution()){
-                    //  also return values for method expressions
-                    return methodName;
-                }
-            }
-
-            return null; // not a property accessor
+        protected boolean checkMethodParameters( ExecutableElement method ){
+            return true;
+        }
+        
+        protected boolean checkMethodReturnType( ExecutableElement method ){
+            return true;
         }
     }
 }

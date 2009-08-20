@@ -41,62 +41,48 @@ package org.netbeans.modules.wag.manager.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.wag.manager.actions.DeleteSearchAction;
-import org.netbeans.modules.wag.manager.actions.NextResultsAction;
-import org.netbeans.modules.wag.manager.actions.PreviousResultsAction;
-import org.netbeans.modules.wag.manager.actions.RefineSearchAction;
-import org.netbeans.modules.wag.manager.actions.RefreshSearchAction;
-import org.netbeans.modules.wag.manager.model.WagSearchResult;
-import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.model.WagItems;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
-public class WagSearchResultNode extends AbstractNode {
+public class WagItemsNode extends AbstractNode {
 
-    private WagSearchResult searchResult;
+    protected WagItems wagItems;
 
-    public WagSearchResultNode(WagSearchResult searchResult) {
-        this(searchResult, new InstanceContent());
+    public WagItemsNode(WagItems wagItems) {
+        this(wagItems, new InstanceContent());
     }
 
-    WagSearchResultNode(WagSearchResult searchResult, InstanceContent content) {
-        super(new WagSearchResultNodeChildren(searchResult), new AbstractLookup(content));
-        content.add(searchResult);
-        content.add(WagSearchResults.getInstance());
-        this.searchResult = searchResult;
+    WagItemsNode(WagItems wagItems, InstanceContent content) {
+        super(new WagItemsNodeChildren(wagItems), new AbstractLookup(content));
+        content.add(wagItems);
+        this.wagItems = wagItems;
     }
     
     @Override
     public String getName() {
-        return "wagSearchResultNode";
+        return "wagDomainsNode";
     }
     
     @Override
     public String getDisplayName() {
-        return searchResult.getQuery();
+        return wagItems.getDisplayName();
     }
     
     @Override
     public String getShortDescription() {
-        return "Search results for " + searchResult.getQuery();
+        return wagItems.getDescription();
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(RefineSearchAction.class),
-            SystemAction.get(NextResultsAction.class),
-            SystemAction.get(PreviousResultsAction.class),
-            SystemAction.get(RefreshSearchAction.class),
-            SystemAction.get(DeleteSearchAction.class)
-        };
+       return WagItemsNodeActionFactory.getInstance().getActions(wagItems.getClass());
     }
     
     static final java.awt.Image ICON =
@@ -104,12 +90,12 @@ public class WagSearchResultNode extends AbstractNode {
 
     static final java.awt.Image OPENED_ICON =
             ImageUtilities.loadImage( "org/netbeans/modules/wag/manager/resources/folder-open.png" ); //NOI18N
-    
+
     @Override
     public Image getIcon(int type){
         return ICON;
     }
-    
+
     @Override
     public Image getOpenedIcon(int type){
         return OPENED_ICON;

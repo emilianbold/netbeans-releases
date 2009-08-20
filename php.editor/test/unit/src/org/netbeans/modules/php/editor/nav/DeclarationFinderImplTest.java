@@ -66,6 +66,17 @@ public class DeclarationFinderImplTest extends TestBase {
         super.setUp();        
     }
 
+    public void testConstAccesInFldDecl() throws Exception {
+        String markTest = prepareTestFile(
+                "testfiles/constacces_in_flddecl.php",
+                "const FETCH_EAGER = 3;",
+                "const ^FETCH_EAGER = 3;",
+                "public $fetchMode = self::FETCH_EAGER;",
+                "public $fetchMode = self::FETCH_E|AGER;"
+                );
+        performTestSimpleFindDeclaration(-1, markTest);
+    }
+
     public void testParamVarPropInPhpDocTest() throws Exception {
         String markTest = prepareTestFile(
                 "testfiles/markphpdocTest.php",

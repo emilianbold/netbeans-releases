@@ -54,7 +54,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author nam
+ * @author peterliu
  */
 @ServicesTabNodeRegistration(
     position=215,
@@ -71,7 +71,6 @@ public class WagRootNode extends AbstractNode {
 
     WagRootNode(WagRootNodeChildren children, InstanceContent content) {
         super(children, new AbstractLookup(content));
-        content.add(WagSearchResults.getInstance());
     }
     
     @Override
