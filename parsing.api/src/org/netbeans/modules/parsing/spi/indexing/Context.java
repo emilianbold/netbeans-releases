@@ -241,6 +241,10 @@ public final class Context {
         return this.indexingSupport;
     }
 
+    void clearAttachedIndexingSupport() {
+        this.indexingSupport = null;
+    }
+
     void setAllFilesJob (final boolean allFilesJob) {
         this.allFilesJob = allFilesJob;
     }

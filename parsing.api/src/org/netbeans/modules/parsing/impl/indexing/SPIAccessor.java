@@ -86,6 +86,8 @@ public abstract class SPIAccessor {
     public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
 
     public abstract IndexingSupport context_getAttachedIndexingSupport(Context context);
+
+    public abstract void context_clearAttachedIndexingSupport(Context context);
     
     public abstract String getIndexerName (Context ctx);
 

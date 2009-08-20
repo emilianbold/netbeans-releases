@@ -217,6 +217,11 @@ public final class Indexable {
         }
 
         @Override
+        public void context_clearAttachedIndexingSupport(final Context context) {
+            context.clearAttachedIndexingSupport();
+        }
+
+        @Override
         public void setAllFilesJob(final Context context, final boolean allFilesJob) {
             context.setAllFilesJob(allFilesJob);
         }
