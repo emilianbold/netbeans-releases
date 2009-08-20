@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -131,7 +129,6 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         this.fileAnnotationInfo = fileAnnotationInfo;
         setToolTipText(fileAnnotationInfo.getTooltip());
         annotated = true;
-//    elementAnnotations = null;
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
@@ -140,7 +137,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
         int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 235, 255)); // thp: controls color of text hightligting block and lines
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), AnnotationSupport.getInstance().getHighlightColor()); // thp: controls color of text hightligting block and lines
             marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip()));
         }
 
@@ -153,7 +150,16 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
     public void unAnnotate() {
         annotated = false;
-//    elementAnnotations = null;
+
+        for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255));
+        }
+
+        List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(marks);
+        }
 
         doc.removeDocumentListener(this);
         textComponent.removeComponentListener(this);
@@ -278,7 +284,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            g.setColor(Color.MAGENTA);
+            g.setColor(AnnotationSupport.getInstance().getAnnotationColor());
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
 //    String annotation = "CPU 23s/";  // NOI18N

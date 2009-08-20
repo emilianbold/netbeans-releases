@@ -14,9 +14,6 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Status;
  * @author ak119685
  */
 public class AnnotationMark implements Mark {
-
-    private static final Color COLOR = Color.MAGENTA;//new Color(255, 0, 0);
-
     private final int line;
     private final String message;
 
@@ -34,7 +31,7 @@ public class AnnotationMark implements Mark {
     }
 
     public Color getEnhancedColor() {
-        return COLOR;
+        return AnnotationSupport.getInstance().getAnnotationColor();
     }
 
     public int getPriority() {
