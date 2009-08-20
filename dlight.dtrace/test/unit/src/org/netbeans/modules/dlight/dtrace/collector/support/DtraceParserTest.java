@@ -146,11 +146,6 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
         public List<FunctionMetric> getMetricsList() {
             fail("Parser is not expected to call this method");
             return null;

@@ -137,6 +137,10 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
             public TimeDuration getPrecision() {
                 return frequency;
             }
+
+            public boolean isSamplingMode() {
+                return false;
+            }
         };
 
         return result;
