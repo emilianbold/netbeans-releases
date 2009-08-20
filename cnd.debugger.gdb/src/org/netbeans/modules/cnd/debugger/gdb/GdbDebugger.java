@@ -1602,6 +1602,16 @@ public class GdbDebugger implements PropertyChangeListener {
     private void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
+        // we need to catch exit in any state
+        if (reason.equals("exited-signalled")) { // NOI18N
+            String signal = map.get("signal-name"); // NOI18N
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                    "ERR_ExitedFromSignal", signal))); // NOI18N
+            finish(false);
+            return;
+        }
+
         if (state == State.STARTING) {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
@@ -1701,14 +1711,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").free(); // NOI18N
                 GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
-            } else if (reason.equals("exited-signalled")) { // NOI18N
-                String signal = map.get("signal-name"); // NOI18N
-                if (signal != null) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                            "ERR_ExitedFromSignal", signal))); // NOI18N
-                    finish(false);
-                }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
                 lastStop = null;
                 updateCurrentCallStack();
