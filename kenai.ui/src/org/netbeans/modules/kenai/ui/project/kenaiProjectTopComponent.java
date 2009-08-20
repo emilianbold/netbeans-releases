@@ -83,7 +83,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private static kenaiProjectTopComponent inst = null;
     private KenaiProject instProj = null;
 
-    public kenaiProjectTopComponent() throws KenaiException {
+    public kenaiProjectTopComponent() {
         initComponents();
     }
 
@@ -95,6 +95,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         instProj = proj;
         addSpecificContent(proj);
         Kenai.getDefault().addPropertyChangeListener(this);
+    }
+
+    public static synchronized kenaiProjectTopComponent getDefault() {
+        if (inst == null) {
+            inst = new kenaiProjectTopComponent();
+        }
+        return inst;
     }
 
     /** This method is called from within the constructor to
