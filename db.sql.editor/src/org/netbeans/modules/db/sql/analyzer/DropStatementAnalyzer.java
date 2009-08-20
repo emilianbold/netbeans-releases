@@ -71,9 +71,12 @@ class DropStatementAnalyzer extends SQLStatementAnalyzer {
             switch (context) {
                 case START:
                     if (SQLStatementAnalyzer.isKeyword("DROP", seq)) { // NOI18N
-                        if (nextToken() && SQLStatementAnalyzer.isKeyword("TABLE", seq)) { // NOI18N
-                            moveToContext(Context.DROP_TABLE);
-                        }
+                        moveToContext(Context.DROP);
+                    }
+                    break;
+                case DROP:
+                    if (SQLStatementAnalyzer.isKeyword("TABLE", seq)) { // NOI18N
+                        moveToContext(Context.DROP_TABLE);
                     }
                     break;
                 case DROP_TABLE:

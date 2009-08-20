@@ -119,9 +119,11 @@ public class SQLStatement {
         // DELETE
         DELETE(200),
         // DROP TABLE
-        DROP_TABLE(300),
+        DROP(300),
+        DROP_TABLE(310),
         // INSERT
-        INSERT_INTO(400),
+        INSERT(400),
+        INSERT_INTO(410),
         COLUMNS(420),
         VALUES(430),
         // SELECT
