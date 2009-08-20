@@ -630,6 +630,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 });
             }
         }
+        updateTasklistButton();
         updateFieldStatuses();
         reloading = false;
     }
@@ -957,6 +958,22 @@ public class IssuePanel extends javax.swing.JPanel {
         return allowedStatuses;
     }
 
+    private void updateTasklistButton() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final boolean isInTasklist = false; // PENDING
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
+                                isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
+                        tasklistButton.setText(tasklistMessage);
+                        tasklistButton.setEnabled(true);
+                    }
+                });
+            }
+        });
+    }
+
     private void submitChange(final Runnable change, String progressMessage)  {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
         handle.start();
@@ -1062,6 +1079,7 @@ public class IssuePanel extends javax.swing.JPanel {
         logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         originalEstimatePanel = new javax.swing.JPanel();
         remainingEstimatePanel = new javax.swing.JPanel();
         timeSpentPanel = new javax.swing.JPanel();
@@ -1264,6 +1282,14 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
+        tasklistButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
+        tasklistButton.setEnabled(false);
+        tasklistButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tasklistButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout actionPanelLayout = new org.jdesktop.layout.GroupLayout(actionPanel);
         actionPanel.setLayout(actionPanelLayout);
         actionPanelLayout.setHorizontalGroup(
@@ -1280,7 +1306,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(reopenIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(reopenIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
@@ -1304,6 +1331,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(convertToSubtaskButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(logWorkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1865,6 +1894,10 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
+    private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
+        // PENDING
+    }//GEN-LAST:event_tasklistButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel actionLabel;
     private javax.swing.JPanel actionPanel;
@@ -1937,6 +1970,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel subtaskLabel;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
     private javax.swing.JTextField timeSpentField;
     private javax.swing.JLabel timeSpentLabel;
     private javax.swing.JPanel timeSpentPanel;
