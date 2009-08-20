@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,32 +34,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.subversion.operators.actions;
+package org.netbeans.modules.kenai.collab.chat;
 
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.modules.kenai.api.KenaiNotification;
+import org.jivesoftware.smack.packet.DefaultPacketExtension;
 
 /**
  *
- * @author peterpis
+ * @author Jan Becicka
  */
-public class RelocateAction extends ActionNoBlock {
+public class NotificationExtension extends DefaultPacketExtension {
 
-//    public static final String VERSIONING_ITEM = "Versioning";
+    private KenaiNotification notification;
+    public NotificationExtension(String elementName, String namespace, KenaiNotification n) {
+        super(elementName, namespace);
+        this.notification = n;
+    }
 
-    /** "Subversion" menu item. */
-    public static final String SVN_ITEM = "Subversion";
-
-    /** "Team" menu item. */
-    public static final String TEAM_ITEM = "Team";
-
-    /** "Relocate..." menu item. */
-    public static final String RELOCATE_ITEM = "Relocate...";
-
-    /** Creates a new instance of RelocateAction */
-    public RelocateAction() {
-        super(TEAM_ITEM + "|" + SVN_ITEM + "|" + RELOCATE_ITEM, null);
+    public KenaiNotification getNotification() {
+        return notification;
     }
 }

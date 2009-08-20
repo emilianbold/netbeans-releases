@@ -10,6 +10,8 @@
 package org.netbeans.test.subversion.main.commit;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
@@ -17,10 +19,12 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
@@ -29,6 +33,7 @@ import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -82,6 +87,10 @@ public class CommitUiTest extends JellyTestCase {
 
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+
+            System.out.println(TMP_PATH + File.separator + REPO_PATH +"  ,  "+ getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+
+
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
@@ -95,6 +104,7 @@ public class CommitUiTest extends JellyTestCase {
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
             ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            
             ftiso.setImportMessage("initial import");
             ftiso.next();
             Thread.sleep(1000);

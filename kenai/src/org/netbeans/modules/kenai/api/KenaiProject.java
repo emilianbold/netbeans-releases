@@ -65,6 +65,10 @@ public final class KenaiProject {
      */
     public static final String PROP_PROJECT_CHANGED = "project_change";
 
+    /**
+     * getNewValue returns instance of KenaiNotification
+     */
+    public static final String PROP_PROJECT_NOTIFICATION = "project_notification";
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -343,6 +347,16 @@ public final class KenaiProject {
      */
     public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    /**
+     * do not use this method. just implementation detail
+     * @param name
+     * @param oldValue
+     * @param newValue
+     */
+    public synchronized void firePropertyChange(String name, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
     }
 
     /**
