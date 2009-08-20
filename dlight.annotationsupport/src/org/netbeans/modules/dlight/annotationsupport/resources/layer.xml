@@ -10,8 +10,25 @@
         </folder>
         <folder name="UpToDateStatusProvider">
             <file name="org-netbeans-modules-dlight-annotationsupport-AnnotationMarkInstaller.instance"/>
-<!--                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.annotate.AnnotationMarkInstaller"/> -->
-<!--            </file> -->
         </folder>
     </folder>
+
+    <folder name="Actions">
+        <folder name="Profiler">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dlight.annotationsupport.resources.Bundle"/>
+            <file name="org-netbeans-modules-dlight-annotationsupport-ShowTextAnnotationsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.dlight.annotationsupport.ShowTextAnnotationsAction"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="View">
+            <file name="org-netbeans-modules-dlight-annotationsupport-ShowTextAnnotationsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Profiler/org-netbeans-modules-dlight-annotationsupport-ShowTextAnnotationsAction.instance"/>
+                <attr name="position" intvalue="1090"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>
