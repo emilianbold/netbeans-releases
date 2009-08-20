@@ -15,9 +15,11 @@ if [ ! -z $WORKSPACE ]; then
     #Clean obsolete sources first
     rm -rf $NB_ALL
     hg clone $WORKSPACE $NB_ALL
-    #Clone also javafx sources - XXX needs to be parametrized
-    cd $NB_ALL
-    hg clone http://hg.netbeans.org/javafx
+    if [ $RUNJAVAFX == 1 ]; then
+        #Clone also javafx sources - XXX needs to be parametrized
+        cd $NB_ALL
+        hg clone http://hg.netbeans.org/javafx
+    fi
 fi
 
 ###################################################################
