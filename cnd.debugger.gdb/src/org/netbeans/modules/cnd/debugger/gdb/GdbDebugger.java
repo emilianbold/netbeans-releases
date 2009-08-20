@@ -426,33 +426,34 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.break_insert_temporary("WinMain"); // NOI18N
                 }
                 gdb.data_list_register_names("");
-                try {
-                    String inRedir = "";
-                    if (ioProxy != null) {
-                        String inFile = ioProxy.getInFilename();
-                        String outFile = ioProxy.getOutFilename();
-                        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                            inFile = win2UnixPath(inFile);
-                            outFile = win2UnixPath(outFile);
-                        }
-                        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
-                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+
+                String inRedir = "";
+                if (ioProxy != null) {
+                    String inFile = ioProxy.getInFilename();
+                    String outFile = ioProxy.getOutFilename();
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                        inFile = win2UnixPath(inFile);
+                        outFile = win2UnixPath(outFile);
+                    }
+                    // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
+                    if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                        inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+                    } else {
+                        // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+                        String shell = HostInfoProvider.getEnv(execEnv).get("SHELL"); // NOI18N
+                        if (shell != null && shell.endsWith("csh")) { // NOI18N
+                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                         } else {
-                            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                            String shell = HostInfoProvider.getEnv(execEnv).get("SHELL"); // NOI18N
-                            if (shell != null && shell.endsWith("csh")) { // NOI18N
-                                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
-                            } else {
-                                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
-                            }
+                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
                         }
                     }
-                    gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    killSession();
                 }
+                // Exit if run failed
+                CommandBuffer cb = gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
+                if (cb.isError()) {
+                    throw new Exception(NbBundle.getMessage(GdbDebugger.class, "ERR_ApplicationFailed"));
+                }
+                
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     String msg = gdb.info_threads().getResponse(); // we get the PID from this...
                     int pos1 = msg.indexOf("* 1 thread "); // NOI18N
