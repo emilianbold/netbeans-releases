@@ -185,7 +185,7 @@ public class AddUseImportRule extends AbstractRule {
         }
 
         private void addImportHints(QualifiedName indexedName, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, NamespaceName node) {
-            final QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName);
+            final QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
             if (importName != null) {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
