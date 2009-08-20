@@ -3,6 +3,12 @@
 <#assign licenseLast = " */">
 <#include "../Licenses/license-${project.license}.txt">
 
+<#if classAnnotation??>
+import javax.faces.bean.ManagedBean;
+</#if>
+<#if scopeAnnotation??>
+import javax.faces.bean.${scopeAnnotation};
+</#if>
 <#if package?? && package != "">
 package ${package};
 
@@ -11,7 +17,12 @@ package ${package};
  *
  * @author ${user}
  */
-
+<#if classAnnotation??>
+${classAnnotation}
+</#if>
+<#if scopeAnnotation??>
+@${scopeAnnotation}
+</#if>
 public class ${name} {
 
     /** Creates a new instance of ${name} */

@@ -56,26 +56,53 @@ public interface ThreadState {
         // Short states list ...
 
         START_SHORT_LIST,
-        Running, // on cpu and runn
-        Sleeping, // sleep()
-        Waiting, // pthread_join, for example
-        Blocked, // on some mutex
+        Running(0, 1, 2), // on cpu and runn
+        Sleeping(3, 4, 5, 7), // sleep()
+        Waiting(8), // pthread_join, for example
+        Blocked(6), // on some mutex
         Stopped, // lwp_suspend()
         END_SHORT_LIST,
         // Long states list ...
         START_LONG_LIST,
-        RunningUser, // running in user mode
-        RunningSystemCall, // running in sys call or page fault
-        RunningOther, // running in other trap
-        SleepingUserTextPageFault, // asleep in user text page fault
-        SleepingUserDataPageFault, // asleep in user data page fault
-        SleepingKernelPageFault, // asleep in kernel page fault
-        SleepingUserLock, // asleep waiting for user-mode lock
-        SleepingOther, // asleep for any other reason
-        WaitingCPU, // waiting for CPU (latency)
-        ThreadStopped, // stopped (/proc, jobcontrol, lwp_suspend)
+        RunningUser(0), // running in user mode
+        RunningSystemCall(1), // running in sys call or page fault
+        RunningOther(2), // running in other trap
+        SleepingUserTextPageFault(3), // asleep in user text page fault
+        SleepingUserDataPageFault(4), // asleep in user data page fault
+        SleepingKernelPageFault(5), // asleep in kernel page fault
+        SleepingUserLock(6), // asleep waiting for user-mode lock
+        SleepingOther(7), // asleep for any other reason
+        WaitingCPU(8), // waiting for CPU (latency)
+        ThreadStopped(9), // stopped (/proc, jobcontrol, lwp_suspend)
         END_LONG_LIST,
-        ThreadFinished, // Thread is gone
+        ThreadFinished; // Thread is gone
+
+        private final int[] codes;
+
+        private MSAState(int... codes) {
+            this.codes = codes;
+        }
+
+        public boolean matches(int code) {
+            for (int x : codes) {
+                if (x == code) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static MSAState fromCode(int code, boolean full) {
+            int start = full? START_LONG_LIST.ordinal() : START_SHORT_LIST.ordinal();
+            int end = full? END_LONG_LIST.ordinal() : END_SHORT_LIST.ordinal();
+            for (int i = start; i < end; ++i) {
+                MSAState state = MSAState.values()[i];
+                if (state.matches(code)) {
+                    return state;
+                }
+            }
+            return null;
+        }
     }
 
     /**

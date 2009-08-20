@@ -67,6 +67,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
@@ -479,83 +480,69 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
         try {
 
-//          PreparedStatement st = sqlStorage.prepareStatement("SELECT * from CallStack"); // NOI18N
-//          ResultSet rs1 = st.executeQuery();
-//          ResultSetMetaData rsm= rs1.getMetaData();
-//          int columnsCount = rsm.getColumnCount();
-//          System.out.print("\nColumns   :"); // NOI18N
-//          for ( int i = 0 ; i < columnsCount; i++){
-//              System.out.print(" " + rsm.getColumnName(i + 1)); // NOI18N
-//          }
-//          while (rs1.next()){
-//              System.out.print("\nNew record :"); // NOI18N
-//            for (int i=0; i < columnsCount; i++){
-//                System.out.print(" " + rs1.getObject(i + 1)); // NOI18N
-//            }
-//          }
-
-            // First, we need ts of the thread threadID when it was in required state.
             PreparedStatement statement = sqlStorage.prepareStatement(
-                    "select max(time_stamp) from CallStack where " + // NOI18N
-     //               "thread_id = ? and time_stamp <= ? and mstate = ?"); // NOI18N
-                                   "thread_id = ? and time_stamp <= ? "); // NOI18N
-
+                    "SELECT mstate, MAX(time_stamp) FROM CallStack WHERE thread_id = ? and time_stamp <= ? GROUP BY mstate"); // NOI18N
             statement.setLong(1, query.getThreadID());
-            statement.setLong(2, query.getStartTime() - query.getThreadState().getTimeStamp());
-            //statement.setInt(3, threadState);
+            statement.setLong(2, query.getThreadState().getTimeStamp());
 
-            ResultSet rs = statement.executeQuery();
-            long ts = -1;
-
-            if (rs.next()) {
-                ts = rs.getLong(1);
+            ResultSet threadAndTimestampResult = statement.executeQuery();
+            int bestState = -1;
+            long bestTimestamp = -1;
+            while (threadAndTimestampResult.next()) {
+                int state = threadAndTimestampResult.getInt(1);
+                long timestamp = threadAndTimestampResult.getLong(2);
+                if ((query.getPreferredState().matches(state) && !query.getPreferredState().matches(bestState)) ||
+                        (query.getPreferredState().matches(state) || !query.getPreferredState().matches(bestState)) && bestTimestamp < timestamp) {
+                    bestState = state;
+                    bestTimestamp = timestamp;
+                }
             }
+            threadAndTimestampResult.close();
 
-            rs.close();
-
-            if (ts < 0) {
+            if (bestTimestamp < 0) {
                 // Means that no callstack found for this thread in this state
                 //System.out.println("No callstack found!!!");
-                return null;
+                return new ThreadDumpImpl(query.getThreadState().getTimeStamp());
             }
 
             //System.out.println("Nearest callstack found at " + ts);
 
-            result = new ThreadDumpImpl(ts);
+            result = new ThreadDumpImpl(bestTimestamp);
 
             // Next, get all times for all threads for alligned stacks (time <= ts)
             // select threadid, max(ts) from test where ts <= 6 group by threadid;
 
             statement = sqlStorage.prepareStatement(
-                    "select thread_id, max(time_stamp) from CallStack where " + // NOI18N
-                    "time_stamp <= ? group by thread_id"); // NOI18N
-
-            statement.setLong(1, ts);
-
-            rs = statement.executeQuery();
+                    "SELECT thread_id, MAX(time_stamp) FROM CallStack WHERE " + // NOI18N
+                    "time_stamp <= ? GROUP BY thread_id"); // NOI18N
+            statement.setLong(1, bestTimestamp);
+            threadAndTimestampResult = statement.executeQuery();
 
             HashMap<Integer, Long> idToTime = new HashMap<Integer, Long>();
 
-            while (rs.next()) {
-                int callStackThreadId = rs.getInt(1);
-                long callStackTimeStamp = rs.getLong(2);
-                idToTime.put(callStackThreadId, callStackTimeStamp);
+            while (threadAndTimestampResult.next()) {
+                int callStackThreadId = threadAndTimestampResult.getInt(1);
+                long callStackTimeStamp = threadAndTimestampResult.getLong(2);
+                if (query.getShowThreads().contains(callStackThreadId)) {
+                    idToTime.put(callStackThreadId, callStackTimeStamp);
+                }
             }
-            rs.close();
+            threadAndTimestampResult.close();
 
             //get leaf_id's
             for (Map.Entry<Integer, Long> entry : idToTime.entrySet()){
                 int thread_id = entry.getKey();
                 long t = entry.getValue();
-                statement = sqlStorage.prepareStatement("SELECT leaf_id from CallStack where thread_id= ? AND time_stamp = ?"); // NOI18N
+                statement = sqlStorage.prepareStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
                 statement.setInt(1, thread_id);
                 statement.setLong(2, t);
-                ResultSet set = statement.executeQuery();
-                if (set.next()) {
-                    int stackID  = set.getInt(1);
-                    result.addStack(new SnapshotImpl(this, thread_id, stackID));
+                ResultSet stackAndStateResult = statement.executeQuery();
+                if (stackAndStateResult.next()) {
+                    int stackID = stackAndStateResult.getInt(1);
+                    int mstate = stackAndStateResult.getInt(2);
+                    result.addStack(new SnapshotImpl(this, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
                 }
-                set.close();
+                stackAndStateResult.close();
             }
 
         } catch (SQLException ex) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor;
 
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.model.FileScope;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
+import org.netbeans.modules.web.jsf.api.palette.PaletteItemsProvider;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Radek Matous
- */
-abstract class ModelRule implements AstRule {
-    abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
+public class JsfCodeGenerator {
 
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+
+            JTextComponent component = context.lookup(JTextComponent.class);
+            List<CodeGenerator> generators = new ArrayList<CodeGenerator>();
+            for(PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
+                generators.add(new PaletteCodeGenerator(component, item));
+            }
+            return generators;
+        }
     }
 
-    public boolean getDefaultEnabled() {
-        return true;
-    }
+    private static class PaletteCodeGenerator implements CodeGenerator {
 
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
+        private JTextComponent component;
+        private PaletteItem item;
 
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+        public PaletteCodeGenerator(JTextComponent component, PaletteItem item) {
+            this.component = component;
+            this.item = item;
+        }
+
+        public String getDisplayName() {
+            return item.getDisplayName();
+        }
+
+        public void invoke() {
+            item.insert(component);
+        }
     }
 }

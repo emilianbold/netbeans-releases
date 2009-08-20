@@ -181,7 +181,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         if (e.getSource().equals(textPane)) {
             textPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             linkerSupport.computeBounds(textPane, 0);
-            linkerSupport.mouseMoved(e.getPoint(), cp, messageOffset);
+            linkerSupport.mouseMoved(e.getPoint(), textPane, messageOffset);
         }
         textPane.setToolTipText("");  // NOI18N
     }
@@ -261,7 +261,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                     }
                 }
                 if(l != null) {
-                    l.insertString(doc, hyperlinkStyle);
+                    l.insertString(doc, normalStyle);
                 } else {
                     doc.insertString(doc.getLength(), commitMessage, normalStyle);
                 }

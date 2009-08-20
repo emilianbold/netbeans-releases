@@ -103,6 +103,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -193,6 +195,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             modelBuilder.reset();
         }
     }
+
+    @Override
+    public void visit(UseStatementPart statementPart) {
+        ASTNodeInfo<UseStatementPart> info = ASTNodeInfo.create(statementPart);
+        modelBuilder.getCurrentNameSpace().createElement(info);
+        super.visit(statementPart);
+    }
+
 
     @Override
     public void visit(ClassDeclaration node) {

@@ -112,7 +112,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getCommand());
+        issueLabel.setLabelFor(qs.getIssueComponent());
 
         repositoryComboBox.setModel(new DefaultComboBoxModel(new Object[] {LOADING_REPOSITORIES}));
         repositoryComboBox.setRenderer(new DefaultListCellRenderer() {

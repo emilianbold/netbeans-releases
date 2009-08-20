@@ -79,6 +79,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -461,10 +462,14 @@ public class JiraRepository extends Repository {
                         return;
                     }
                     Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
-
-                    // XXX
-//                    GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(JiraRepository.this, ids, new IssuesCollector());
-//                    getExecutor().execute(cmd, false);
+                    for (String id : ids) {
+                        try {
+                            TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
+                            getIssueCache().setIssueData(id, data);
+                        } catch (IOException ex) {
+                            Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
+                        }
+                    }
                     scheduleIssueRefresh();
                 }
             });

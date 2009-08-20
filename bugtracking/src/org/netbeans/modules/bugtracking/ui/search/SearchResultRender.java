@@ -79,7 +79,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         PopupItem item = (PopupItem) value;
         String txt;
         if(item instanceof PopupItem.IssueItem) {
-            txt = ((IssueItem) item).highlite(combo.getCommand().getText(), item.getDisplayText());
+            txt = ((IssueItem) item).highlite(combo.getText(), item.getDisplayText());
         } else {
             txt = item.getDisplayText();
         }

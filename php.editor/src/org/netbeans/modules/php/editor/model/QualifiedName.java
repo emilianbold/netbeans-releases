@@ -40,11 +40,13 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -59,6 +61,100 @@ public class QualifiedName {
 
     private final QualifiedNameKind kind;
     private final LinkedList<String> segments;
+
+
+    public static QualifiedName getPreferredName(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Collection<QualifiedName> allNames = getAllNames(fullName, contextNamespace);
+        int segmentCount = Integer.MAX_VALUE;
+        QualifiedName retval = null;
+        for (QualifiedName qualifiedName : allNames) {
+            int size = qualifiedName.segments.size();
+            if (size < segmentCount) {
+                retval = qualifiedName;
+                segmentCount = size;
+            }
+        }
+        return retval;
+    }
+    public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelativeNames(fullName, contextNamespace));
+        namesProposals.add(fullName.toFullyQualified());
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativeNames(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace));
+        if (proposedName != null) {
+            namesProposals.add(proposedName);
+        }
+        for (UseElement useElement : declaredUses) {
+            proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()));
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+        }        
+        return namesProposals;
+    }
+
+    /**
+     * @return prefix name or null
+     */
+    public static QualifiedName getPrefix(QualifiedName fullName, final QualifiedName suffix) {
+        return getRemainingName(fullName, suffix, true);
+    }
+    /**
+     * @return suffix name or null
+     */
+    public static QualifiedName getSuffix(QualifiedName fullName, final QualifiedName prefix) {
+        return getRemainingName(fullName, prefix, false);
+    }
+
+    private static QualifiedName getRemainingName(QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired) {
+        QualifiedName retval = null;
+        List<String> fullSegments = new ArrayList<String>(fullName.getSegments());
+        List<String> fragmentSegments = new ArrayList<String>(fragmentName.getSegments());
+        if (prefixRequired) {
+            Collections.reverse(fullSegments);
+            Collections.reverse(fragmentSegments);
+        }
+        List<String> retvalSegments = new ArrayList<String>();
+        String lastEqualSegment = null;
+        for (int i = 0; i < fullSegments.size(); i++) {
+            String segment = fullSegments.get(i);
+            if (i < fragmentSegments.size()) {
+                lastEqualSegment = fragmentSegments.get(i);
+                if (segment.equalsIgnoreCase(lastEqualSegment)) {
+                    continue;
+                }
+            }
+            if (retvalSegments.isEmpty() && lastEqualSegment != null) {
+                retvalSegments.add(lastEqualSegment);
+            }
+            retvalSegments.add(segment);
+        }
+        if (retvalSegments.size() > 0) {
+            if (prefixRequired) {
+                Collections.reverse(retvalSegments);
+            }
+            retval = QualifiedName.create(false, retvalSegments);
+        }
+
+        if (retval != null) {
+            QualifiedName test = (prefixRequired) ? retval.toNamespaceName() : fragmentName.toNamespaceName();
+            LinkedList<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
+            for (String qnseg : qnSegments) {
+                test = test.append(qnseg);
+            }
+
+            if (fullName.equals(test)) {
+                return retval;
+            }
+        }
+
+        return null;
+    }
 
     public static QualifiedName createUnqualifiedNameInClassContext(Expression expression, ClassScope clsScope) {
         if (expression instanceof Identifier) {
