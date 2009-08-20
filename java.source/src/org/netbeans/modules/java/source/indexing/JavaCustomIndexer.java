@@ -579,13 +579,14 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
-            try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-                return uq == null ? true : uq.getSourceAnalyser().isValid();
-            } catch (IOException ioe) {
-                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
-                return false;
-            }
+//            try {
+//                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+//                return uq == null ? true : uq.getSourceAnalyser().isValid();
+//            } catch (IOException ioe) {
+//                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
+                return super.scanStarted(context);
+//            }
+
         }
 
         @Override

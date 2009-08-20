@@ -1232,7 +1232,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
                         transactionContexts.add(ctx);
                         boolean cifIsChanged = changedCifs != null && changedCifs.contains(cifInfo);
-                        boolean forceReindex = !factory.scanStarted(ctx);
+                        boolean forceReindex = !factory.scanStarted(ctx) && allResources != null;
                         boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
                         SPIAccessor.getInstance().setAllFilesJob(ctx, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
