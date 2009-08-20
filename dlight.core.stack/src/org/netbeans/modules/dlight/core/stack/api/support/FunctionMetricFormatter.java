@@ -36,20 +36,28 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+package org.netbeans.modules.dlight.core.stack.api.support;
 
-public interface ThreadMapData {
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
-    List<ThreadData> getThreadsData();
+/**
+ *
+ * @author mt154047
+ */
+public final class FunctionMetricFormatter {
 
-    TimeDuration getPrecision();
+    public static final String getFormattedValue(FunctionCallWithMetric functionCall, String metricID){
+        Object value = functionCall.getMetricValue(metricID);
+        PropertyEditor editor = value == null ? null : PropertyEditorManager.findEditor(value.getClass());
+        if (editor != null){
+            editor.setValue(value);
+            return editor.getAsText();
+        }      
+        return value + "";
+    }
 
-    /**
-     * 
-     * @return true if data contains only sampling probes
-     */
-    boolean isSamplingMode();
 }

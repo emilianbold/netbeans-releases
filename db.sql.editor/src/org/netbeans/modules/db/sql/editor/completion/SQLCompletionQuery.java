@@ -44,6 +44,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -68,7 +69,6 @@ import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
-import org.netbeans.modules.db.sql.analyzer.DropStatement;
 import org.netbeans.modules.db.sql.analyzer.TablesClause;
 import org.netbeans.modules.db.sql.analyzer.InsertStatement;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
@@ -106,6 +106,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private int anchorOffset = -1; // Relative to statement offset.
     private int substitutionOffset = 0; // Relative to statement offset.
     private SQLCompletionItems items;
+    /** Context in SQL statement. */
+    private Context context;
+    /** Recognized identifier (also incomplete) in SQL statement. */
+    private Identifier ident;
 
     public SQLCompletionQuery(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
@@ -163,14 +167,28 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoter = quoter;
         anchorOffset = -1;
         substitutionOffset = 0;
-        if (env == null) {
-            return null;
-        }
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
-        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-        if (statement == null) {
+        if (env.getTokenSequence().isEmpty()) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
             return items;
         }
+        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+        if (statement == null) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            return items;
+        }
+        context = statement.getContextAtOffset(env.getCaretOffset());
+        if (context == null) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            return items;
+        }
+        ident = findIdentifier();
+        if (ident == null) {
+            completeKeyword(context);
+            return items;
+        }
+        anchorOffset = ident.anchorOffset;
+        substitutionOffset = ident.substitutionOffset;
         SQLStatementKind kind = statement.getKind();
         switch (kind) {
             case SELECT:
@@ -194,18 +212,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
-        Context context = selectStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
         tablesClause = selectStatement.getTablesInEffect(env.getCaretOffset());
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
             case SELECT:
                 completeColumn(ident);
@@ -225,7 +232,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case ORDER:
             case GROUP:
-                // nothing to complete
+                completeKeyword(context);
                 break;
             default:
                 if (tablesClause != null) {
@@ -236,18 +243,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
-        Context context = insertStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
+            case INSERT:
+                completeKeyword(context);
+                break;
             case INSERT_INTO:
                 completeTable(ident);
                 break;
@@ -260,19 +259,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeDrop() {
-        DropStatement dropStatement = (DropStatement) statement;
-        Context context = dropStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
+            case DROP:
+                completeKeyword(context);
+                break;
             case DROP_TABLE:
                 completeTable(ident);
                 break;
@@ -282,18 +272,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeUpdate() {
         UpdateStatement updateStatement = (UpdateStatement) statement;
-        Context context = updateStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
         tablesClause = updateStatement.getTablesInEffect(env.getCaretOffset());
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
             case UPDATE:
                 completeTable(ident);
@@ -313,20 +292,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeDelete() {
         DeleteStatement deleteStatement = (DeleteStatement) statement;
-        Context context = deleteStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
         tablesClause = deleteStatement.getTablesInEffect(env.getCaretOffset());
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
             case DELETE:
+                completeKeyword(context);
+                completeTable(ident);
+                break;
             case FROM:
                 completeTable(ident);
                 break;
@@ -345,6 +316,69 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     completeColumnWithDefinedTable(ident);
                 }
         }
+    }
+
+    /** Adds keyword/s according to typed prefix and given context. */
+    private void completeKeyword(Context context) {
+        switch (context) {
+            case SELECT:
+                completeKeyword("FROM");  //NOI18N
+                break;
+            case DELETE:
+                completeKeyword("FROM");  //NOI18N
+                break;
+            case INSERT:
+                completeKeyword("INTO");  //NOI18N
+                break;
+            case INSERT_INTO:
+            case COLUMNS:
+                completeKeyword("VALUES");  //NOI18N
+                break;
+            case FROM:
+                completeKeyword("WHERE");  //NOI18N
+                // with join keywors
+                //completeKeyword("WHERE", "INNER", "OUTER", "LEFT", "JOIN", "ON");  //NOI18N
+                break;
+            case UPDATE:
+                completeKeyword("SET");  //NOI18N
+                // with join keywors
+                //completeKeyword("WHERE", "INNER", "OUTER", "LEFT", "JOIN", "ON");  //NOI18N
+                break;
+            case JOIN_CONDITION:
+                completeKeyword("WHERE");  //NOI18N
+                break;
+            case SET:
+                completeKeyword("WHERE");  //NOI18N
+                break;
+            case WHERE:
+                completeKeyword("GROUP", "ORDER");  //NOI18N
+                break;
+            case ORDER:
+            case GROUP:
+                completeKeyword("BY");  //NOI18N
+                break;
+            case GROUP_BY:
+                completeKeyword("HAVING");  //NOI18N
+                break;
+            case DROP:
+                completeKeyword("TABLE");  //NOI18N
+                break;
+            case DROP_TABLE:
+            case HAVING:
+            case ORDER_BY:
+            case VALUES:
+                // nothing to complete
+                break;
+        }
+    }
+
+    /** Adds listed keyword/s according to typed prefix. */
+    private void completeKeyword(String... keywords) {
+        Arrays.sort(keywords);
+        Symbol prefix = findPrefix();
+        substitutionOffset = prefix.substitutionOffset;
+        anchorOffset = substitutionOffset;
+        items.addKeywords(prefix.lastPrefix, substitutionOffset, keywords);
     }
 
     /** Adds columns, tables, schemas and catalogs according to given identifier. */
@@ -697,6 +731,41 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         return result;
     }
 
+    /** Returns part of token before cursor or entire token if at the end of it.
+     * Returns null prefix if token is comma or whitespace. Returned offset is
+     * caret offset if prefix is null, otherwise it is token offset. */
+    private Symbol findPrefix() {
+        TokenSequence<SQLTokenId> seq = env.getTokenSequence();
+        int caretOffset = env.getCaretOffset();
+        String prefix = null;
+        if (seq.move(caretOffset) > 0) {
+            // Not on token boundary.
+            if (!seq.moveNext() && !seq.movePrevious()) {
+                return new Symbol(null, caretOffset, caretOffset);
+            }
+        } else {
+            if (!seq.movePrevious()) {
+                return new Symbol(null, caretOffset, caretOffset);
+            }
+        }
+        switch (seq.token().id()) {
+            case WHITESPACE:
+            case COMMA:
+                return new Symbol(null, caretOffset, caretOffset);
+            default:
+                int offset = caretOffset - seq.offset();
+                if (offset > 0 && offset < seq.token().length()) {
+                    prefix = seq.token().text().subSequence(0, offset).toString();
+                } else {
+                    prefix = seq.token().text().toString();
+                }
+                return new Symbol(prefix, seq.offset(), seq.offset());
+        }
+    }
+
+    /** Finds valid identifier within SQL statement at cursor position.
+     * It handles fully qualified and quoted identifiers. Returns null if no
+     * valid identifier found. */
     private Identifier findIdentifier() {
         TokenSequence<SQLTokenId> seq = env.getTokenSequence();
         int caretOffset = env.getCaretOffset();
@@ -757,17 +826,34 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                     if (seq.movePrevious()) {
-                        // Cannot complete 'SELECT foo |'.
-                        if (seq.token().id() == SQLTokenId.IDENTIFIER) {
-                            return null;
-                        } else if (seq.token().id() == SQLTokenId.DOT) {
-                            // Process the dot in the main loop.
-                            seq.moveNext();
-                            continue main;
+                        switch (seq.token().id()) {
+                            case IDENTIFIER:  // Cannot complete 'SELECT foo |'.
+                            case INT_LITERAL:  // Cannot complete 'WHERE a = 1 |'.
+                            case DOUBLE_LITERAL:
+                            case STRING:
+                            case INCOMPLETE_STRING:
+                            case RPAREN:  // foo is not valid identifier in 'WHERE (a+b > c) foo'
+                                return null;
+                            case OPERATOR:  // foo is not valid identifier in 'SELECT * foo'
+                                if (seq.token().text().toString().equals("*")) {  //NOI18N
+                                    if (seq.movePrevious()) {
+                                        if (seq.movePrevious()) {
+                                            if (seq.token().text().toString().equalsIgnoreCase("SELECT")) {  //NOI18N
+                                                return null;
+                                            }
+                                            seq.moveNext();
+                                        }
+                                        seq.moveNext();
+                                    }
+                                }
+                                break;
+                            case DOT:
+                                // Process the dot in the main loop.
+                                seq.moveNext();
+                                continue main;
                         }
                     }
                     break main;
-
                 default:
                     break main;
             }
@@ -833,20 +919,28 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
-    private static final class Identifier {
+    private static class Symbol {
 
-        final QualIdent fullyTypedIdent;
         final String lastPrefix;
-        final boolean quoted;
         final int anchorOffset;
         final int substitutionOffset;
 
-        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted, int anchorOffset, int substitutionOffset) {
-            this.fullyTypedIdent = fullyTypedIdent;
+        private Symbol(String lastPrefix, int anchorOffset, int substitutionOffset) {
             this.lastPrefix = lastPrefix;
-            this.quoted = quoted;
             this.anchorOffset = anchorOffset;
             this.substitutionOffset = substitutionOffset;
+        }
+    }
+
+    private static final class Identifier extends Symbol {
+
+        final QualIdent fullyTypedIdent;
+        final boolean quoted;
+
+        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted, int anchorOffset, int substitutionOffset) {
+            super(lastPrefix, anchorOffset, substitutionOffset);
+            this.fullyTypedIdent = fullyTypedIdent;
+            this.quoted = quoted;
         }
     }
 }

@@ -47,27 +47,44 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Jan Lahoda
  */
 public abstract class ErrorHintsTestBase extends NbTestCase {
+
+    private File cache;
+    private FileObject cacheFO;
     
     public ErrorHintsTestBase(String name) {
         super(name);
@@ -83,7 +100,38 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         System.arraycopy(additionalLayers, 0, layers, 1, additionalLayers.length);
         layers[0] = "org/netbeans/modules/java/editor/resources/layer.xml";
         
-        SourceUtilsTestUtil.prepareTest(layers, new Object[] {JavaDataLoader.class});
+        SourceUtilsTestUtil.prepareTest(layers, new Object[]{
+                    JavaDataLoader.class,
+                    new MimeDataProvider() {
+
+                        public Lookup getLookup(MimePath mimePath) {
+                            return Lookups.fixed(new Object[]{
+                                        new JavaKit(), new JavacParserFactory(), new JavaCustomIndexer.Factory()});
+                        }
+                    },
+                    new LanguageProvider() {
+
+                        public Language<?> findLanguage(String mimePath) {
+                            return JavaTokenId.language();
+                        }
+
+                        public LanguageEmbedding<?> findLanguageEmbedding(Token<?> token,
+                                LanguagePath languagePath,
+                                InputAttributes inputAttributes) {
+                            return null;
+                        }
+                    }});
+        
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
+            cacheFO = FileUtil.toFileObject(cache);
+
+            cache.deleteOnExit();
+
+            IndexUtil.setCacheFolder(cache);
+
+            TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
+        }
     }
     
     private void prepareTest(String fileName, String code) throws Exception {
@@ -96,7 +144,6 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         sourceRoot = workFO.createFolder("src");
         
         FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
         
         FileObject data = FileUtil.createData(sourceRoot, fileName);
         File dataFile = FileUtil.toFile(data);
@@ -105,9 +152,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         TestUtilities.copyStringToFile(dataFile, code);
 
-//        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-//                    new JavaCustomIndexer.Factory()});
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, getExtraClassPathElements());
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO, getExtraClassPathElements());
         
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);

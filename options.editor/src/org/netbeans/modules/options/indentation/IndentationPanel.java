@@ -346,20 +346,18 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         setOpaque(false);
 
-        cbOverrideGlobalOptions.setText("Override Global Options");
-        cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbOverrideGlobalOptions, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Override_Global_Options")); // NOI18N
 
-        cbExpandTabsToSpaces.setText("Expand Tabs to Spaces");
-        cbExpandTabsToSpaces.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbExpandTabsToSpaces, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Expand_Tabs")); // NOI18N
 
         lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
-        org.openide.awt.Mnemonics.setLocalizedText(lNumberOfSpacesPerIndent, "Number of Spaces per &Indent:");
+        org.openide.awt.Mnemonics.setLocalizedText(lNumberOfSpacesPerIndent, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Indent")); // NOI18N
 
         lTabSize.setLabelFor(sTabSize);
-        org.openide.awt.Mnemonics.setLocalizedText(lTabSize, "&Tab Size:");
+        org.openide.awt.Mnemonics.setLocalizedText(lTabSize, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_TabSize")); // NOI18N
 
         lRightMargin.setLabelFor(sRightMargin);
-        org.openide.awt.Mnemonics.setLocalizedText(lRightMargin, "Right &Margin:");
+        org.openide.awt.Mnemonics.setLocalizedText(lRightMargin, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Right_Margin")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -369,7 +367,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1Layout.createSequentialGroup()
-                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                         .add(54, 54, 54))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -407,16 +405,26 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        sNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleDescription("Number of Spaces per Indent");
-        sTabSize.getAccessibleContext().setAccessibleDescription("Tab Size");
-        sRightMargin.getAccessibleContext().setAccessibleDescription("Right Margin");
+        cbExpandTabsToSpaces.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_Expand_Tabs")); // NOI18N
+        lNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Indent")); // NOI18N
+        lNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_Indent")); // NOI18N
+        sNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_sNumberOfSpacesPerIndent")); // NOI18N
+        sNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_sNumberOfSpacesPerIndent")); // NOI18N
+        lTabSize.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_TabSize")); // NOI18N
+        lTabSize.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_TabSize")); // NOI18N
+        sTabSize.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_sTabSize")); // NOI18N
+        sTabSize.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_sTabSize")); // NOI18N
+        lRightMargin.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Right_Margin")); // NOI18N
+        lRightMargin.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_Right_Margin")); // NOI18N
+        sRightMargin.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_sRightMargin")); // NOI18N
+        sRightMargin.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_sRightMargin")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(cbOverrideGlobalOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .add(cbOverrideGlobalOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .add(66, 66, 66))
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -427,6 +435,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        cbOverrideGlobalOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Override_Global_Options")); // NOI18N
+        cbOverrideGlobalOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_Override_Global_Options")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

@@ -85,12 +85,12 @@ public class QualifiedName {
     public static Collection<QualifiedName> getRelativeNames(QualifiedName fullName, NamespaceScope contextNamespace) {
         Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace));
+        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
         if (proposedName != null) {
             namesProposals.add(proposedName);
         }
         for (UseElement useElement : declaredUses) {
-            proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()));
+            proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
                 namesProposals.add(proposedName);
             }
@@ -101,17 +101,17 @@ public class QualifiedName {
     /**
      * @return prefix name or null
      */
-    public static QualifiedName getPrefix(QualifiedName fullName, final QualifiedName suffix) {
-        return getRemainingName(fullName, suffix, true);
+    public static QualifiedName getPrefix(QualifiedName fullName, final QualifiedName suffix, boolean isOverlapingRequired) {
+        return getRemainingName(fullName, suffix, true, isOverlapingRequired);
     }
     /**
      * @return suffix name or null
      */
-    public static QualifiedName getSuffix(QualifiedName fullName, final QualifiedName prefix) {
-        return getRemainingName(fullName, prefix, false);
+    public static QualifiedName getSuffix(QualifiedName fullName, final QualifiedName prefix, boolean isOverlapingRequired) {
+        return getRemainingName(fullName, prefix, false, isOverlapingRequired);
     }
 
-    private static QualifiedName getRemainingName(QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired) {
+    private static QualifiedName getRemainingName(QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {
         QualifiedName retval = null;
         List<String> fullSegments = new ArrayList<String>(fullName.getSegments());
         List<String> fragmentSegments = new ArrayList<String>(fragmentName.getSegments());
@@ -129,12 +129,15 @@ public class QualifiedName {
                     continue;
                 }
             }
-            if (retvalSegments.isEmpty() && lastEqualSegment != null) {
+            if (isOverlapingRequired && retvalSegments.isEmpty() && lastEqualSegment != null) {
                 retvalSegments.add(lastEqualSegment);
             }
             retvalSegments.add(segment);
         }
-        if (retvalSegments.size() > 0) {
+        if (isOverlapingRequired && retvalSegments.size() == 0 && lastEqualSegment != null) {
+            retvalSegments.add(lastEqualSegment);
+        }
+        if (retvalSegments.size() >= 0) {
             if (prefixRequired) {
                 Collections.reverse(retvalSegments);
             }
@@ -142,7 +145,10 @@ public class QualifiedName {
         }
 
         if (retval != null) {
-            QualifiedName test = (prefixRequired) ? retval.toNamespaceName() : fragmentName.toNamespaceName();
+            QualifiedName test = (prefixRequired) ? retval : fragmentName;
+            if (isOverlapingRequired) {
+                test = test.toNamespaceName();
+            }
             LinkedList<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
             for (String qnseg : qnSegments) {
                 test = test.append(qnseg);

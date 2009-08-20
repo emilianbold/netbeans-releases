@@ -80,8 +80,10 @@ public class SQLCompletionEnv {
         if (statement != null) {
             return new SQLCompletionEnv(statement.getText(), statement.getStartOffset(), caretOffset - statement.getStartOffset(),
                     new ScriptSubstitutionHandler(statement.getStartOffset()));
+        } else {
+            // empty script
+            return new SQLCompletionEnv("", 0, caretOffset, new ScriptSubstitutionHandler(0));  //NOI18N
         }
-        return null;
     }
 
     private SQLCompletionEnv(String statement, int statementOffset, int caretOffset, SubstitutionHandler substitutionHandler) {

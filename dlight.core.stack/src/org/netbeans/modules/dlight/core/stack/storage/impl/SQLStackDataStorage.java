@@ -196,29 +196,30 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         }
     }
 
-    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
-        try {
-            List<Long> result = new ArrayList<Long>();
-            PreparedStatement ps = sqlStorage.prepareStatement(
-                    "SELECT time_stamp FROM CallStack " + //NOI18N
-                    "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
-            ps.setMaxRows(1);
-            for (long time1 = startTime; time1 < endTime; time1 += interval) {
-                long time2 = Math.min(time1 + interval, endTime);
-                ps.setLong(1, time1);
-                ps.setLong(2, time2);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    result.add(rs.getLong(1));
-                }
-                rs.close();
-            }
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
+//  should be implemented at higher level using getThreadSnapshot()
+//    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
+//        try {
+//            List<Long> result = new ArrayList<Long>();
+//            PreparedStatement ps = sqlStorage.prepareStatement(
+//                    "SELECT time_stamp FROM CallStack " + //NOI18N
+//                    "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
+//            ps.setMaxRows(1);
+//            for (long time1 = startTime; time1 < endTime; time1 += interval) {
+//                long time2 = Math.min(time1 + interval, endTime);
+//                ps.setLong(1, time1);
+//                ps.setLong(2, time2);
+//                ResultSet rs = ps.executeQuery();
+//                if (rs.next()) {
+//                    result.add(rs.getLong(1));
+//                }
+//                rs.close();
+//            }
+//            return result;
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//            return Collections.emptyList();
+//        }
+//    }
 
     public List<FunctionMetric> getMetricsList() {
         return METRICS;

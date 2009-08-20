@@ -88,6 +88,7 @@ public class DropStatementAnalyzerTest extends NbTestCase {
         String sql = "drop table customer";
         DropStatement statement = doAnalyze(sql);
         assertNull(statement.getContextAtOffset(0));
+        assertEquals(Context.DROP, statement.getContextAtOffset(sql.indexOf("table")));
         assertEquals(Context.DROP_TABLE, statement.getContextAtOffset(sql.indexOf("customer")));
     }
 
