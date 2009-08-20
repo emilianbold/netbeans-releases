@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.dlight.annotationsupport;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
@@ -50,6 +52,8 @@ import java.util.prefs.Preferences;
  * @author thp
  */
 public final class AnnotationSupport {
+    private PropertyChangeSupport pcs = null;
+    private static AnnotationSupport annotationSupport = null;
     
     /**
      * Boolean property defining visibility of textual versioning annotations (aka Status Labels).
@@ -59,6 +63,14 @@ public final class AnnotationSupport {
     public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";
     
     private AnnotationSupport() {
+        pcs = new PropertyChangeSupport(this);
+    }
+
+    public static AnnotationSupport getInstance() {
+        if (annotationSupport == null) {
+            annotationSupport = new AnnotationSupport();
+        }
+        return annotationSupport;
     }
     
     /**
@@ -67,8 +79,40 @@ public final class AnnotationSupport {
      * @return Preferences node for Versioning modules
      * @see #PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE
      */
-    public static Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(AnnotationSupport.class);
     }
-        
+
+    public boolean getTextAnnotationVisible() {
+        return getPreferences().getBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, true);
+    }
+
+    public void setTextAnnotationVisible(boolean val) {
+        boolean oldVal = getTextAnnotationVisible();
+        if (oldVal != val) {
+            getPreferences().putBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, val);
+            firePropertyChange(PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, oldVal, val);
+        }
+    }
+    /**
+     *  Adds property change listener.
+     *  @param l new listener.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    /**
+     *  Removes property change listener.
+     *  @param l removed listener.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private void firePropertyChange(String name, Object oldValue, Object newValue) {
+        if (pcs != null) {
+            pcs.firePropertyChange(name, oldValue, newValue);
+        }
+    }
 }

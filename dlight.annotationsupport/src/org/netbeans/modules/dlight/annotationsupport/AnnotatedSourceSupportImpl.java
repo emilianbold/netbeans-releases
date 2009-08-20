@@ -74,14 +74,17 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     private static boolean checkedLogging = checkLogging();
     private static boolean logginIsOn;
     private HashMap<String, FileAnnotationInfo> activeAnnotations = null;
-    private static String SPACES = "            ";  // NOI18N
 
     public AnnotatedSourceSupportImpl() {
-        enableSourceFileTracking();
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new EditorFileChangeListener());
+        AnnotationSupport.getInstance().addPropertyChangeListener(new ProfilerPropertyChangeListener());
     }
 
     public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
         log(sourceFileInfoProvider, metrics, functionCalls);
+        if (!AnnotationSupport.getInstance().getTextAnnotationVisible()) {
+            return;
+        }
         if (activeAnnotations != null) {
             // un-annotate sources // FIXUP
         }
@@ -147,10 +150,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    private void enableSourceFileTracking() {
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new MyPropertyChangeListener());
-    }
-
     private File activatedFile(Node node) {
         DataObject dobj = node.getCookie(DataObject.class);
         if (dobj != null) {
@@ -180,6 +179,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private void annotateCurrentSourceFiles() {
+        if (!AnnotationSupport.getInstance().getTextAnnotationVisible()) {
+            return;
+        }
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         if (nodes == null) {
             return;
@@ -191,7 +193,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
                     SwingUtilities.invokeLater(new Runnable() {
-
                         public void run() {
                             JEditorPane jEditorPane = activatedEditorPane(node);
                             if (!fileAnnotationInfo.isAnnotated()) {
@@ -206,10 +207,42 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    class MyPropertyChangeListener implements PropertyChangeListener {
-
+    class EditorFileChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             annotateCurrentSourceFiles();
+        }
+    }
+
+
+    class ProfilerPropertyChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String prop = evt.getPropertyName();
+            if (prop.equals(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE)) {
+                boolean annotate = AnnotationSupport.getInstance().getTextAnnotationVisible();
+                if (annotate) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+                                if (fileAnnotationInfo.isAnnotated()) {
+                                    AnnotationBarManager.showAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane(), fileAnnotationInfo);
+                                }
+                            }
+                        }
+                    });
+                }
+                else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+                                if (fileAnnotationInfo.isAnnotated()) {
+                                    AnnotationBarManager.hideAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane());
+                                }
+                            }
+                        }
+                    });
+                }
+            }
         }
     }
 

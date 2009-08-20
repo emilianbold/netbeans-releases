@@ -84,7 +84,7 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
     }
     
     private void updateState() {
-        boolean tav = AnnotationSupport.getPreferences().getBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, true);
+        boolean tav = AnnotationSupport.getInstance().getTextAnnotationVisible();
         menuItems[0].setSelected(tav);
     }
     
@@ -111,7 +111,7 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
     }
 
     public void actionPerformed(ActionEvent e) {
-        boolean tav = AnnotationSupport.getPreferences().getBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
-        AnnotationSupport.getPreferences().putBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, !tav);
+        boolean tav = AnnotationSupport.getInstance().getTextAnnotationVisible();
+        AnnotationSupport.getInstance().setTextAnnotationVisible(!tav);
     }
 }

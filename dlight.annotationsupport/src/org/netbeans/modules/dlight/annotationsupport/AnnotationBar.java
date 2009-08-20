@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -131,7 +129,6 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         this.fileAnnotationInfo = fileAnnotationInfo;
         setToolTipText(fileAnnotationInfo.getTooltip());
         annotated = true;
-//    elementAnnotations = null;
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
@@ -153,7 +150,16 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
     public void unAnnotate() {
         annotated = false;
-//    elementAnnotations = null;
+
+        for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255));
+        }
+
+        List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
+        AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
+        if (amp != null) {
+            amp.setMarks(marks);
+        }
 
         doc.removeDocumentListener(this);
         textComponent.removeComponentListener(this);
