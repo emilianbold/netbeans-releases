@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.threadmap.storage;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;

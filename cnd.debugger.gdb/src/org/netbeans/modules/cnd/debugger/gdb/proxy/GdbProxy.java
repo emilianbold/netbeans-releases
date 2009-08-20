@@ -349,8 +349,8 @@ public class GdbProxy {
      *
      * @param programParameters - command line options for the program
      */
-    public void exec_run(String programParameters) {
-        engine.sendCommand("-exec-run " + programParameters); // NOI18N
+    public CommandBuffer exec_run(String programParameters) {
+        return engine.sendCommandEx("-exec-run " + programParameters); // NOI18N
     }
 
     /**

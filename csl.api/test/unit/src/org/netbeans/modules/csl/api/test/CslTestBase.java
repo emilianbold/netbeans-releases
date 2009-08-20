@@ -1489,8 +1489,7 @@ public abstract class CslTestBase extends NbTestCase {
                 factory.getIndexVersion(),
                 tifi,
                 false,
-                false,
-                false,
+                false,                
                 false,
                 null
         );
