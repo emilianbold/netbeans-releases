@@ -81,9 +81,12 @@ class InsertStatementAnalyzer extends SQLStatementAnalyzer {
             switch (context) {
                 case START:
                     if (SQLStatementAnalyzer.isKeyword ("INSERT", seq)) { // NOI18N
-                        if (nextToken() && SQLStatementAnalyzer.isKeyword("INTO", seq)) { // NOI18N
-                            moveToContext(Context.INSERT_INTO);
-                        }
+                        moveToContext(Context.INSERT);
+                    }
+                    break;
+                case INSERT:
+                    if (SQLStatementAnalyzer.isKeyword("INTO", seq)) { // NOI18N
+                        moveToContext(Context.INSERT_INTO);
                     }
                     break;
                 case INSERT_INTO:
