@@ -4916,4 +4916,22 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+
+    public void testIZ170649() {
+        setLoadDocumentText(
+                "switch (value) {\n" +
+                "  case Foo::BAR:\n" +
+                "      cout << \"Bar!\" << endl;\n" +
+                "    break;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ 170649: Wrong formatting in switch-case with namespace",
+                "switch (value) {\n" +
+                "    case Foo::BAR:\n" +
+                "        cout << \"Bar!\" << endl;\n" +
+                "        break;\n" +
+                "}\n"
+                );
+    }
 }

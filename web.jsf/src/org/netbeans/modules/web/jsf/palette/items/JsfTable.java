@@ -53,15 +53,17 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Pavel Buzek
  * @author Po-Ting Wu
  */
-public final class JsfTable extends EntityClass implements ActiveEditorDrop {
+public final class JsfTable extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
         "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
         "<h:form>\n <h1><h:outputText value=\"List\"/></h1>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
@@ -81,6 +83,14 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop {
     
     protected String getName() {
         return "Table"; // NOI18N
+    }
+
+    public void insert(JTextComponent component) {
+        handleTransfer(component);
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfTable");
     }
     
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {

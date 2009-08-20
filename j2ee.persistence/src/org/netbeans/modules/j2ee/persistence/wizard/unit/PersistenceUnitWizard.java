@@ -210,6 +210,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
             LOG.fine("Creating an application managed PU");
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
+            punit.setTransactionType("RESOURCE_LOCAL");
         }
         
         // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>

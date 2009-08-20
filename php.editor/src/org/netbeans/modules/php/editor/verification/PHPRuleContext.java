@@ -40,8 +40,10 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
@@ -52,4 +54,6 @@ class PHPRuleContext extends RuleContext {
     PHPVerificationVisitor.VariableStack variableStack;
     List<ASTNode> path;
     PHPIndex index;
+    @NullAllowed
+    FileScope fileScope;
 }

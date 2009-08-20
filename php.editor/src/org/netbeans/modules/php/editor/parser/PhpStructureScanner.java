@@ -58,7 +58,6 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.ClassMemberElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -75,6 +74,7 @@ import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.util.ImageUtilities;
@@ -110,7 +110,12 @@ public class PhpStructureScanner implements StructureScanner {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
             if (!nameScope.isDefaultNamespace()) {
                 items.add(new PHPNamespaceStructureItem(nameScope, namespaceChildren));
-            } 
+            }
+            Collection<? extends UseElement> declaredUses = nameScope.getDeclaredUses();
+            for (UseElement useElement : declaredUses) {
+                namespaceChildren.add(new PHPUseStructureItem(useElement));
+            }
+
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
                 List<StructureItem> variables = new ArrayList<StructureItem>();
@@ -479,6 +484,28 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public ElementKind getKind() {
             return ElementKind.MODULE;
+        }
+    }
+
+    private class PHPUseStructureItem extends PHPStructureItem {
+        public PHPUseStructureItem(UseElement elementHandle) {
+            super(elementHandle, null, "aaaa_use"); //NOI18N
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            UseElement useElement = (UseElement) getElementHandle();
+            if (useElement.getAliasName() != null) {
+                formatter.appendText(" as ");//NOI18N
+                formatter.appendText(useElement.getAliasName());
+            }
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.RULE;
         }
     }
 

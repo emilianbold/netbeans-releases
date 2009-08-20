@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.model.FileScope;
+package org.netbeans.modules.wag.manager.zembly;
 
 /**
  *
- * @author Radek Matous
+ * @author peterliu
  */
-abstract class ModelRule implements AstRule {
-    abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
+public class ZemblyUserInfo {
 
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
+    private String userid;
+    private String username;
+    private String key;
+    private String secret;
+
+    public ZemblyUserInfo() {
+
     }
 
-    public boolean getDefaultEnabled() {
-        return true;
+    public String getUserid() {
+        return userid;
     }
 
-    public boolean appliesTo(RuleContext context) {
-        return true;
+    public void setUserid(String userid) {
+        this.userid = userid;
     }
 
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+    public String getUsername() {
+        return username;
     }
+
+    public void setUsername (String username) {
+        this.username = username;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
+    public String toString() {
+        return "userid: " + userid + " username: " + username + " key: " + key +
+                " secret: " + secret;
+    }
+
 }

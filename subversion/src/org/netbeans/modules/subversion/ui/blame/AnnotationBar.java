@@ -796,20 +796,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         int texty = yBase + editorUI.getLineAscent();
         int textx = 2;
-        g.drawString(annotation, textx, texty);
-        if(isKenai() && al != null) {
-            KenaiUser ku = kenaiUsersMap.get(al.getAuthor());
-            if(ku != null) {
-                Icon icon = ku.getIcon();
-                g.drawImage(
-                        ImageUtilities.icon2Image(icon),
-                        textx + g.getFontMetrics(g.getFont()).stringWidth(annotation) + 2,
-                        texty - g.getFont().getSize(),
-                        icon.getIconWidth(),
-                        icon.getIconHeight(),
-                        component);
-            }
-        }
+        g.drawString(annotation, textx, texty);        
     }
 
     boolean isKenai() {

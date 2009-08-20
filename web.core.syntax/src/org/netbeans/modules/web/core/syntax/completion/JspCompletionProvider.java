@@ -45,12 +45,6 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -63,12 +57,9 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /** JSP completion provider implementation
  *
- * @author Marek.Fukala@Sun.COM
+ * @author mfukala@netbeans.org
  */
 public class JspCompletionProvider implements CompletionProvider {
-
-    public JspCompletionProvider() {
-    }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         int type = JspSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
@@ -169,16 +160,9 @@ public class JspCompletionProvider implements CompletionProvider {
 
         @Override
         protected void preQueryUpdate(JTextComponent component) {
-            int caretOffset = component.getCaretPosition();
-            Document doc = component.getDocument();
-            checkHideCompletion((BaseDocument) doc, caretOffset);
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            //weird, but in some situations null is passed from the framework. Seems to be a bug in active component handling
-            if (doc != null) {
-                checkHideCompletion((BaseDocument) doc, caretOffset);
-            }
             doQuery(resultSet, doc, caretOffset);
             resultSet.finish();
         }
@@ -186,37 +170,4 @@ public class JspCompletionProvider implements CompletionProvider {
         abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
     }
 
-    private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
-        //test whether we are just in text and eventually close the opened completion
-        //this is handy after end tag autocompletion when user doesn't complete the
-        //end tag and just types a text
-        int adjustedOffset = caretOffset == 0 ? 0 : caretOffset - 1;
-        doc.readLock();
-        try {
-            TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence<?> tokenSequence = JspSyntaxSupport.tokenSequence(
-                    tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
-            if (tokenSequence != null) {
-                tokenSequence.move(adjustedOffset);
-                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                    return; //no token found
-                }
-
-                Token<?> tokenItem = tokenSequence.token();
-                if (tokenSequence.embedded() == null &&
-                        tokenItem.id() == HTMLTokenId.TEXT &&
-                        !tokenItem.text().toString().startsWith("<") &&
-                        !tokenItem.text().toString().startsWith("&")) {
-                    hideCompletion();
-                }
-            }
-        } finally {
-            doc.readUnlock();
-        }
-    }
-
-    private static void hideCompletion() {
-        Completion.get().hideCompletion();
-        Completion.get().hideDocumentation();
-    }
 }

@@ -2940,7 +2940,7 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
       'checked':     "[@checked]",
       'disabled':    "[@disabled]",
       'enabled':     "[not(@disabled)]",
-      |>METHOD:'no<|t': function(m) {
+      '|>METHOD:not<|': function(m) {
         var e = m[6], p = |>CLASS:Selector<|.patterns,
             x = |>CLASS:Selector<|.xpath, le, v;
 
@@ -2958,25 +2958,25 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
         }
         return "[not(" + exclusion.join(" and ") + ")]";
       },
-      |>METHOD:'nth-chil<|d':      function(m) {
+      '|>METHOD:nth-child<|':      function(m) {
         return |>CLASS:Selector<|.xpath.pseudos.nth("(count(./preceding-sibling::*) + 1) ", m);
       },
-      |>METHOD:'nth-last-chil<|d': function(m) {
+      '|>METHOD:nth-last-child<|': function(m) {
         return |>CLASS:Selector<|.xpath.pseudos.nth("(count(./following-sibling::*) + 1) ", m);
       },
-      |>METHOD:'nth-of-typ<|e':    function(m) {
+      '|>METHOD:nth-of-type<|':    function(m) {
         return |>CLASS:Selector<|.xpath.pseudos.nth("position() ", m);
       },
-      |>METHOD:'nth-last-of-typ<|e': function(m) {
+      '|>METHOD:nth-last-of-type<|': function(m) {
         return |>CLASS:Selector<|.xpath.pseudos.nth("(last() + 1 - position()) ", m);
       },
-      |>METHOD:'first-of-typ<|e':  function(m) {
+      '|>METHOD:first-of-type<|':  function(m) {
         m[6] = "1"; return |>CLASS:Selector<|.xpath.pseudos['nth-of-type'](m);
       },
-      |>METHOD:'last-of-typ<|e':   function(m) {
+      '|>METHOD:last-of-type<|':   function(m) {
         m[6] = "1"; return |>CLASS:Selector<|.xpath.pseudos['nth-last-of-type'](m);
       },
-      |>METHOD:'only-of-typ<|e':   function(m) {
+      '|>METHOD:only-of-type<|':   function(m) {
         var p = |>CLASS:Selector<|.xpath.pseudos; return p['first-of-type'](m) + p['last-of-type'](m);
       },
       |>METHOD:nth<|: function(fragment, m) {
@@ -3241,46 +3241,46 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
   },
 
   pseudos: {
-    |>METHOD:'first-chil<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:first-child<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++) {
         if (|>CLASS:Selector<|.handlers.previousElementSibling(node)) continue;
           results.push(node);
       }
       return results;
     },
-    |>METHOD:'last-chil<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:last-child<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++) {
         if (|>CLASS:Selector<|.handlers.nextElementSibling(node)) continue;
           results.push(node);
       }
       return results;
     },
-    |>METHOD:'only-chil<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:only-child<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       var h = |>CLASS:Selector<|.handlers;
       for (var i = 0, results = [], node; node = nodes[i]; i++)
         if (!h.previousElementSibling(node) && !h.nextElementSibling(node))
           results.push(node);
       return results;
     },
-    |>METHOD:'nth-chil<|d':        function(nodes, formula, root) {
+    '|>METHOD:nth-child<|':        function(nodes, formula, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, formula, root);
     },
-    |>METHOD:'nth-last-chil<|d':   function(nodes, formula, root) {
+    '|>METHOD:nth-last-child<|':   function(nodes, formula, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, formula, root, true);
     },
-    |>METHOD:'nth-of-typ<|e':      function(nodes, formula, root) {
+    '|>METHOD:nth-of-type<|':      function(nodes, formula, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, formula, root, false, true);
     },
-    |>METHOD:'nth-last-of-typ<|e': function(nodes, formula, root) {
+    '|>METHOD:nth-last-of-type<|': function(nodes, formula, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, formula, root, true, true);
     },
-    |>METHOD:'first-of-typ<|e':    function(nodes, |>UNUSED:formula<|, root) {
+    '|>METHOD:first-of-type<|':    function(nodes, |>UNUSED:formula<|, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, "1", root, false, true);
     },
-    |>METHOD:'last-of-typ<|e':     function(nodes, |>UNUSED:formula<|, root) {
+    '|>METHOD:last-of-type<|':     function(nodes, |>UNUSED:formula<|, root) {
       return |>CLASS:Selector<|.pseudos.nth(nodes, "1", root, true, true);
     },
-    |>METHOD:'only-of-typ<|e':     function(nodes, formula, root) {
+    '|>METHOD:only-of-type<|':     function(nodes, formula, root) {
       var p = |>CLASS:Selector<|.pseudos;
       return p['last-of-type'](p['first-of-type'](nodes, formula, root), formula, root);
     },
@@ -3326,7 +3326,7 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
       return results;
     },
 
-    |>METHOD:'empt<|y': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:empty<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++) {
         // IE treats comments as element nodes
         if (node.tagName == '!' || (node.firstChild && !node.innerHTML.match(|>REGEXP:/^\s*$/<|))) continue;
@@ -3335,7 +3335,7 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
       return results;
     },
 
-    |>METHOD:'no<|t': function(nodes, selector, root) {
+    '|>METHOD:not<|': function(nodes, selector, root) {
       var h = |>CLASS:Selector<|.handlers, |>UNUSED:selectorType<|, |>UNUSED:m<|;
       var exclusions = new |>CLASS:Selector<|(selector).findElements(root);
       h.mark(exclusions);
@@ -3345,19 +3345,19 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
       return results;
     },
 
-    |>METHOD:'enable<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:enabled<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++)
         if (!node.disabled) results.push(node);
       return results;
     },
 
-    |>METHOD:'disable<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:disabled<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++)
         if (node.disabled) results.push(node);
       return results;
     },
 
-    |>METHOD:'checke<|d': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
+    '|>METHOD:checked<|': function(nodes, |>UNUSED:value<|, |>UNUSED:root<|) {
       for (var i = 0, results = [], node; node = nodes[i]; i++)
         if (node.checked) results.push(node);
       return results;
@@ -3365,13 +3365,13 @@ var |>CLASS:Selector<| = |>CLASS:Class<|.create({
   },
 
   operators: {
-    |>METHOD:'<|=':  function(nv, v) { return nv == v; },
-    |>METHOD:'!<|=': function(nv, v) { return nv != v; },
-    |>METHOD:'^<|=': function(nv, v) { return nv.startsWith(v); },
-    |>METHOD:'$<|=': function(nv, v) { return nv.endsWith(v); },
-    |>METHOD:'*<|=': function(nv, v) { return nv.include(v); },
-    |>METHOD:'~<|=': function(nv, v) { return (' ' + nv + ' ').include(' ' + v + ' '); },
-    |>METHOD:'|<|=': function(nv, v) { return ('-' + nv.toUpperCase() + '-').include('-' + v.toUpperCase() + '-'); }
+    '|>METHOD:=<|':  function(nv, v) { return nv == v; },
+    '|>METHOD:!=<|': function(nv, v) { return nv != v; },
+    '|>METHOD:^=<|': function(nv, v) { return nv.startsWith(v); },
+    '|>METHOD:$=<|': function(nv, v) { return nv.endsWith(v); },
+    '|>METHOD:*=<|': function(nv, v) { return nv.include(v); },
+    '|>METHOD:~=<|': function(nv, v) { return (' ' + nv + ' ').include(' ' + v + ' '); },
+    '|>METHOD:|=<|': function(nv, v) { return ('-' + nv.toUpperCase() + '-').include('-' + v.toUpperCase() + '-'); }
   },
 
   |>METHOD:matchElements<|: function(elements, expression) {

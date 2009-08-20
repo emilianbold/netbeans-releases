@@ -51,7 +51,7 @@ public final class ThreadDumpQuery {
     private final long threadID;
     private final ThreadState threadState;
     private final List<Integer> showThreads;
-    private final MSAState prefferedState;
+    private final MSAState preferredState;
     private final boolean isMSAMode;
     private final boolean isFullMode;
     private final long startTime;
@@ -67,11 +67,11 @@ public final class ThreadDumpQuery {
      * @param isFullMode
      * @param startTime start time
      */
-    public ThreadDumpQuery(long threadID, ThreadState threadState, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime){
+    public ThreadDumpQuery(long threadID, ThreadState threadState, List<Integer> showThreads, MSAState preferredState, boolean isMSAMode, boolean isFullMode, long startTime){
         this.threadID = threadID;
         this.threadState = threadState;
         this.showThreads = showThreads;
-        this.prefferedState = prefferedState;
+        this.preferredState = preferredState;
         this.isMSAMode = isMSAMode;
         this.isFullMode = isFullMode;
         this.startTime = startTime;
@@ -85,8 +85,8 @@ public final class ThreadDumpQuery {
         return isMSAMode;
     }
 
-    public MSAState getPrefferedState() {
-        return prefferedState;
+    public MSAState getPreferredState() {
+        return preferredState;
     }
 
     public List<Integer> getShowThreads() {
