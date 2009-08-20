@@ -253,6 +253,7 @@ public class PackageView {
      * the package view or tree view
      *
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE_MIGHT_IGNORE") // ClassNotFoundException
     private static final class RootNode extends FilterNode implements PropertyChangeListener {
         
         private SourceGroup sourceGroup;
