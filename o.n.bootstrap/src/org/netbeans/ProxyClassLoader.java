@@ -339,10 +339,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         name = stripInitialSlash(name);
 
         int last = name.lastIndexOf('/');
-        if (last == -1) {
-            printDefaultPackageWarning(name);
-        }
-
         String pkg = (last >= 0) ? name.substring(0, last).replace('/', '.') : "";
         String path = name.substring(0, last+1);
         
@@ -411,10 +407,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     public final synchronized Enumeration<URL> getResources(String name) throws IOException {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
-        if (slashIdx == -1) {
-            printDefaultPackageWarning(name);
-        }
-
         final String path = name.substring(0, slashIdx + 1);
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 
@@ -565,19 +557,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         return getPackages();
     }
 
-    /**
-     * #38368: Warn that the default package should not be used.
-     */
-    private static void printDefaultPackageWarning(String name) {
-        if (name.endsWith(".properties")) { // NOI18N
-            // log4j.properties and so on. Very common antipattern to dump these
-            // in CP root. Too late to be fixed in source library.
-            return;
-        }
-        LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see " +
-                "http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
-    }
-    
     /** Coalesce parent classloaders into an optimized set.
      * This means that all parents of the specified classloaders
      * are also added recursively, removing duplicates along the way.
