@@ -47,43 +47,39 @@ import java.util.List;
  */
 public class WagService implements Comparable<WagService> {
 
-    private String name;
-    private String path;
-    private String url;
+    private String displayName;
+    private String callableName;
+    private String uuid;
     private String description;
-    private boolean prependWeb;
+    private String url;
     private List<WagServiceParameter> parameters;
 
     public WagService() {
 
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDisplayName(String name) {
+        this.displayName = name;
     }
 
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setCallableName(String name) {
+        this.callableName = name;
     }
 
     public String getCallableName() {
-        return prependWeb ? "web." + name : name;
-    }
-    
-    public void setPath(String path) {
-        this.path = path;
+        return callableName;
     }
 
-    public String getPath() {
-        return path;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUrl() {
-        return url;
+    public String getUuid() {
+        return uuid;
     }
 
     public void setDescription(String desc) {
@@ -94,6 +90,14 @@ public class WagService implements Comparable<WagService> {
         return description;
     }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
     public void setParameters(List<WagServiceParameter> params) {
         this.parameters = params;
     }
@@ -101,20 +105,16 @@ public class WagService implements Comparable<WagService> {
     public List<WagServiceParameter> getParameters() {
         return parameters;
     }
-
-    public void setPrependWeb(boolean flag) {
-        this.prependWeb = flag;
-    }
-    
+   
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return uuid.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof WagService) {
-            return path.equals(((WagService) obj).getPath());
+            return uuid.equals(((WagService) obj).getUuid());
         }
 
         return false;
@@ -122,7 +122,7 @@ public class WagService implements Comparable<WagService> {
 
     @Override
     public String toString() {
-        return path + "(" + getParamString() + ")";
+        return callableName + "(" + getParamString() + ")";
     }
 
     private String getParamString() {
@@ -141,6 +141,6 @@ public class WagService implements Comparable<WagService> {
     }
 
     public int compareTo(WagService svc) {
-        return path.compareTo(svc.getPath());
+        return displayName.compareTo(svc.getDisplayName());
     }
 }

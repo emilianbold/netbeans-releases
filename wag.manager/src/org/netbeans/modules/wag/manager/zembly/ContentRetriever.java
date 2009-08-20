@@ -39,7 +39,6 @@
 package org.netbeans.modules.wag.manager.zembly;
 
 import com.zembly.gateway.client.Zembly;
-import com.zembly.oauth.api.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,13 +50,14 @@ import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagApi;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
  * @author peterliu
  */
 public class ContentRetriever {
-
+    private static final String BASE_URL = "http://zembly.com/things";      //NOI18N
     private static final String LIST_CONTENTS_URI = "platform.repository.ListContents"; //NOI18N
     private static final String ITEM_URI_PARAM = "itemURI";     //NOI18N
     private static final String APIS_ATTR = "apis";     //NOI18N
@@ -66,6 +66,7 @@ public class ContentRetriever {
     private static final String PATH_ATTR = "path";     //NOI18N
     private static final String PARAMETERS_ATTR = "parameters";     //NOI18N
     private static final String TYPE_ATTR = "type";     //NOI18N
+    private static final String UUID_ATTR = "uuid";     //NOI18N
     
     private Zembly zembly;
 
@@ -117,7 +118,7 @@ public class ContentRetriever {
         return Collections.emptyList();
     }
 
-    private Collection<WagService> parseServices(String data, String parentUri) {
+    private Collection<WagService> parseServices(String data, String parentPath) {
         try {
             Collection<WagService> services = new ArrayList<WagService>();
 
@@ -131,9 +132,14 @@ public class ContentRetriever {
                 WagService svc = new WagService();
                 services.add(svc);
                 String name = item.getString(NAME_ATTR);
-                svc.setName(name);
-                String uri = parentUri + "/" + name;
-                svc.setPath(uri);
+                svc.setDisplayName(name);
+                String path = parentPath + "/" + name;
+
+                // We derive the URL from the path instead of calling GetItemInfo.
+                svc.setUrl(BASE_URL + path);
+                svc.setCallableName(Utilities.convertToCallableName(path));
+
+                svc.setUuid(item.getString(UUID_ATTR));
 
                 JSONArray svcParams = item.getJSONArray(PARAMETERS_ATTR);
                 List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
