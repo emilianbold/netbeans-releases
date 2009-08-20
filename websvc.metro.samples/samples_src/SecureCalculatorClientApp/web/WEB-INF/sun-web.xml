@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN" "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,20 +41,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="websvc.metro.samples" default="netbeans" basedir=".">
-
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="jar" depends="zip-examples,projectized-common.jar"/>
-
-    <target name="zip-examples" depends="build-init">
-        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/websvc/metro/samples"/>
-        <mkdir dir="${examples}"/>
-        <zip basedir="samples_src/CalculatorApp"  destfile="${examples}/CalculatorApp.zip"/>
-        <zip basedir="samples_src/CalculatorClientApp"  destfile="${examples}/CalculatorClientApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorApp"  destfile="${examples}/SecureCalculatorApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorClientApp"  destfile="${examples}/SecureCalculatorClientApp.zip"/>
-    </target>
-
-</project>
-
+<sun-web-app error-url="">
+  <context-root>/SecureCalculatorClientApp</context-root>
+  <class-loader delegate="true"/>
+  <jsp-config>
+    <property name="keepgenerated" value="true">
+      <description>Keep a copy of the generated servlet class' java code.</description>
+    </property>
+  </jsp-config>
+</sun-web-app>
