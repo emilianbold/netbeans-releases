@@ -55,6 +55,8 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 
@@ -172,6 +174,11 @@ public class DtraceParserTest extends NbTestCase {
         }
 
         public ThreadDump getThreadDump(ThreadDumpQuery query) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
             fail("Parser is not expected to call this method");
             return null;
         }

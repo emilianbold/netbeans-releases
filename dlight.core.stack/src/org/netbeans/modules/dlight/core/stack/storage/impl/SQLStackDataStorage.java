@@ -67,6 +67,10 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery.ThreadFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery.TimeFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
@@ -474,6 +478,124 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
         }
         return select;
+    }
+
+    private static <T> T findInstanceOf(Collection<? super T> objects, Class<T> clazz) {
+        for (Object obj : objects) {
+            if (clazz.isAssignableFrom(obj.getClass())) {
+                return clazz.cast(obj);
+            }
+        }
+        return null;
+    }
+
+    private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
+        PreparedStatement s = sqlStorage.prepareStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        try {
+            s.setInt(1, threadId);
+            s.setLong(2, timestamp);
+            ResultSet rs = s.executeQuery();
+            try {
+                if (rs.next()) {
+                    return new SnapshotImpl(this, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
+                } else {
+                    return null;
+                }
+            } finally {
+                rs.close();
+            }
+        } finally {
+            //s.close(); // do not close! SQLStorage caches these prepared statements
+        }
+    }
+
+    public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
+        List<String> conditions = new ArrayList<String>(3);
+
+        ThreadFilter threadFilter = findInstanceOf(query.getFilters(), ThreadFilter.class);
+        if (threadFilter != null) {
+            StringBuilder where = new StringBuilder("thread_id IN ("); // NOI18N
+            boolean first = true;
+            for (int threadId : threadFilter.getThreadIds()) {
+                if (first) {
+                    first = false;
+                } else {
+                    where.append(','); // NOI18N
+                }
+                where.append(threadId);
+            }
+            where.append(')'); // NOI18N
+            conditions.add(where.toString());
+        }
+
+        TimeFilter timeFilter = findInstanceOf(query.getFilters(), TimeFilter.class);
+        if (timeFilter != null) {
+            if (0 <= timeFilter.getStartTime()) {
+                conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N
+            }
+            if (0 <= timeFilter.getEndTime()) {
+                conditions.add("time_stamp <= " + timeFilter.getEndTime()); // NOI18N
+            }
+        }
+
+        StringBuilder select = new StringBuilder("SELECT thread_id, "); // NOI18N
+        if (timeFilter != null) {
+            switch (timeFilter.getMode()) {
+                case FIRST:
+                    select.append("MIN(time_stamp) "); // NOI18N
+                    break;
+                case LAST:
+                    select.append("MAX(time_stamp) "); // NOI18N
+                    break;
+                default:
+                    select.append("time_stamp "); // NOI18N
+            }
+        } else {
+            select.append("time_stamp "); // NOI18N
+        }
+
+        select.append("FROM CallStack "); // NOI18N
+
+        if (!conditions.isEmpty()) {
+            select.append("WHERE "); // NOI18N
+            boolean first = true;
+            for (String condition : conditions) {
+                if (first) {
+                    first = false;
+                } else {
+                    select.append("AND "); // NOI18N
+                }
+                select.append(condition).append(' '); // NOI18N
+            }
+        }
+
+        if (timeFilter != null && timeFilter.getMode() != TimeFilter.Mode.ALL) {
+            select.append("GROUP BY thread_id"); // NOI18N
+        }
+
+        try {
+            List<ThreadSnapshot> snapshots = new ArrayList<ThreadSnapshot>();
+            PreparedStatement s = sqlStorage.prepareStatement(select.toString());
+            try {
+                ResultSet rs = s.executeQuery();
+                try {
+                    while (rs.next()) {
+                        ThreadSnapshot snapshot = fetchSnapshot(rs.getInt(1), rs.getLong(2), query.isFullMSA());
+                        if (snapshot != null) {
+                            snapshots.add(snapshot);
+                        }
+                    }
+                } finally {
+                    rs.close();
+                }
+
+            } finally {
+                // s.close(); // do not close! SQLStorage caches these prepared statements
+            }
+            return snapshots;
+        } catch (SQLException ex) {
+            return Collections.emptyList();
+        }
     }
 
     public ThreadDump getThreadDump(ThreadDumpQuery query) {

@@ -66,11 +66,25 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return storage.queryThreadMapData(query);
     }
 
-    public ThreadDump getThreadDump(ThreadDumpQuery query){
+    public ThreadDump getThreadDump(final ThreadDumpQuery query){
         if (stackDataStorage == null) {
             return null;
         }
         return stackDataStorage.getThreadDump(query);
+//      TODO: try the new getThreadSnapshots() method
+//        final long timestamp = query.getThreadState().getTimeStamp();
+//        final List<ThreadSnapshot> result = stackDataStorage.getThreadSnapshots(
+//                new ThreadSnapshotQuery(query.isFullMode(), new ThreadSnapshotQuery.ThreadFilter(query.getShowThreads()), new ThreadSnapshotQuery.TimeFilter(-1, timestamp, ThreadSnapshotQuery.TimeFilter.Mode.LAST)));
+//        return new ThreadDump() {
+//
+//            public long getTimestamp() {
+//                return timestamp;
+//            }
+//
+//            public List<ThreadSnapshot> getThreadStates() {
+//                return result;
+//            }
+//        };
     }
 
     public void attachTo(DataStorage storage) {

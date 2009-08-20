@@ -47,6 +47,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 
 /**
@@ -80,6 +82,8 @@ public interface StackDataStorage {//extends StackSupport {
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+
+    List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
 
     /**
      * Returns stack trace on the base of the query
