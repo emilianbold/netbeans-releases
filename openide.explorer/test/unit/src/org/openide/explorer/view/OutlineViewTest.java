@@ -259,7 +259,7 @@ public final class OutlineViewTest extends NbTestCase {
         }
     }
 
-    class TestNode extends AbstractNode {
+    static class TestNode extends AbstractNode {
 
         public TestNode (String name) {
             super (Children.LEAF);
