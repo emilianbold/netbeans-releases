@@ -41,15 +41,25 @@
 
 package org.netbeans.modules.web.jsf;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -69,7 +79,9 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
      *      1) The web module follows 2.5 servlet specification or higher
      *      2) The jc is defined as manage bean in a jsp configuration file.
      */
-    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+    public boolean isInjectionTarget(CompilationController controller, 
+            final TypeElement typeElement) 
+    {
         Parameters.notNull("controller", controller);
         Parameters.notNull("typeElement", typeElement);
         
@@ -77,7 +89,10 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
         WebModule webModule  = WebModule.getWebModule(controller.getFileObject());
         // Is the web modile 2.5 servlet spec or higher?
         if (webModule != null && !webModule.getJ2eePlatformVersion().equals(WebModule.J2EE_13_LEVEL)
-                && !webModule.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL)){
+                && !webModule.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL))
+        {
+            /*
+             * Old JSF model usage. Change code to merged model usage.
             // Get deployment desctriptor from the web module
             FileObject ddFileObject = webModule.getDeploymentDescriptor();
             if (ddFileObject != null){
@@ -97,6 +112,36 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
                             }
                         }
                     }
+                }
+            }*/
+            /**
+             * @author ads
+             */
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
+            if ( model != null ){
+                try {
+                return model.runReadAction( new MetadataModelAction<JsfModel, Boolean>() {
+
+                    public Boolean run( JsfModel metaModel ) throws Exception {
+                        List<FacesManagedBean> beans = metaModel.getElements(
+                                FacesManagedBean.class);
+                        for (FacesManagedBean managedBean : beans) {
+                            if (typeElement.getQualifiedName().contentEquals(
+                                    managedBean.getManagedBeanClass())) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+                }
+                catch(MetadataModelException e ){
+                    Logger.getLogger( JSFInjectionTargetQueryImplementation.class.
+                            getCanonicalName()).log( Level.WARNING, e.getMessage(), e );
+                }
+                catch(IOException e ){
+                    Logger.getLogger( JSFInjectionTargetQueryImplementation.class.
+                            getCanonicalName()).log( Level.WARNING, e.getMessage(), e );
                 }
             }
         }
