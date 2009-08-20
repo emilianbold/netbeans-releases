@@ -64,7 +64,7 @@ public class SpeedcrunchTestCase extends MakeProjectBase {
     @Test
     public void testSpeedcrunch(){
         // need QT4.3
-        performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", null);
+        performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", null, false);
     }
 }
 
