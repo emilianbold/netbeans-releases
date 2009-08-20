@@ -367,9 +367,6 @@ public final class TaskListProvider extends PushTaskScanner {
             }
             // validate issues
             for (Map.Entry<LazyIssue, IssueProvider> e : issuesToValidate.entrySet()) {
-                if (Thread.interrupted()) {
-                    return;
-                }
                 if (isIssueFromRepository(e.getKey(), repositoryUrls, allAssociatedRepositories)) {
                     if (LOG.isLoggable(Level.FINER)) {
                         LOG.log(Level.FINER, "RefreshTask.run: issue {0} is valid under current scope", e.getKey().getName()); //NOI18N
@@ -383,9 +380,6 @@ public final class TaskListProvider extends PushTaskScanner {
             LinkedList<Task> tasks = new LinkedList<Task>();
             for (Map.Entry<LazyIssue, IssueProvider> e : issuesToInclude.entrySet()) {
                 LazyIssue issue = e.getKey();
-                if (Thread.interrupted()) {
-                    return;
-                }
                 Task t;
                 synchronized (cachedTasks) {
                     if ((t = cachedTasks.get(issue)) == null    // task is not yet created
