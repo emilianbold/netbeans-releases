@@ -127,7 +127,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());//do not display  icon
         }
 
-        resourceID = iconColumnID == null ? null : accessor.getIconColumnID(configuration);
+        resourceID = iconColumnID == null ? null : accessor.getIconPath(configuration);
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property> result = new ArrayList<Property>();
         List<Column> columns = new ArrayList<Column>();

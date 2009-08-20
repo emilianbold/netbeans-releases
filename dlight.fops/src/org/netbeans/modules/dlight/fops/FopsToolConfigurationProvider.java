@@ -120,6 +120,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         Column openStackColumn = new Column("open_stack_id", Long.class, getMessage("Column.OpenStack"), null); // NOI18N
         Column closeStackColumn = new Column("close_stack_id", Long.class, getMessage("Column.CloseStack"), null); // NOI18N
+        Column statusColumn = new Column("status", String.class, getMessage("Column.Status"), null); // NOI18N
 
         DataTableMetadata detailsMetadata = new DataTableMetadata("iosummary", // NOI18N
                 Arrays.asList(
@@ -128,14 +129,16 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                         new Column("bytes_written", Long.class, getMessage("Column.BytesWritten"), null), // NOI18N
                         openStackColumn,
                         closeStackColumn,
-                        new Column("closed", Boolean.class, getMessage("Column.Closed"), null)), // NOI18N
-                "SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
+                        statusColumn),
+                "SELECT file, bytes_read, bytes_written, open_stack_id, close_stack_id, CASEWHEN(open_failed, 'err', CASEWHEN(open_seen AND NOT close_seen, 'warn', 'ok')) AS status FROM " + // NOI18N
+                "(SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read, " + // NOI18N
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
                 "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
                 "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
-                "BOOL_OR(operation='close') AS closed " + // NOI18N
-                "FROM fops GROUP BY sid, file " + // NOI18N
-                "ORDER BY closed ASC", // NOI18N
+                "BOOL_OR(operation='open') AS open_seen, " + // NOI18N
+                "BOOL_OR(operation='open' AND sid=0) AS open_failed, " + // NOI18N
+                "BOOL_OR(operation='close') AS close_seen " + // NOI18N
+                "FROM fops GROUP BY sid, file)", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
@@ -157,7 +160,8 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
-        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName()));
+        tableConfiguration.setHiddenColumnNames(Arrays.asList(openStackColumn.getColumnName(), closeStackColumn.getColumnName(), statusColumn.getColumnName()));
+        tableConfiguration.setNodeColumnIcon(statusColumn.getColumnName(), "org/netbeans/modules/dlight/fops/resources"); // NOI18N
         tableConfiguration.setEmptyAnalyzeMessage(getMessage("Details.EmptyAnalyze")); // NOI18N
         tableConfiguration.setEmptyRunningMessage(getMessage("Details.EmptyRunning")); // NOI18N
         tableConfiguration.setDualPaneMode(true);
