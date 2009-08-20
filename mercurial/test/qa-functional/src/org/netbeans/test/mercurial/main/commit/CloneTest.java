@@ -117,7 +117,7 @@ public class CloneTest extends JellyTestCase {
             TestKit.loadOpenProject(TestKit.PROJECT_NAME, getDataDir());
             String s = TestKit.getProjectAbsolutePath(TestKit.PROJECT_NAME);
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
-            nodeFile.performMenuActionNoBlock("Versioning|Clone -");
+            nodeFile.performMenuActionNoBlock("Team|Mercurial|Clone -");
             ndo = new NbDialogOperator("Clone Repository");
             bo = new JButtonOperator(ndo, "Clone");
             bo.push();
@@ -131,7 +131,7 @@ public class CloneTest extends JellyTestCase {
             log.addHandler(mh);
 
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
-            nodeFile.performMenuActionNoBlock("Versioning|Clone Other...");
+            nodeFile.performMenuActionNoBlock("Team|Mercurial|Clone Other...");
             ndo = new NbDialogOperator("Clone External Repository");
             tfo = new JTextFieldOperator(ndo);
             String repoPath = "file://" + s.replace(File.separatorChar, "/".toCharArray()[0]);
@@ -144,8 +144,8 @@ public class CloneTest extends JellyTestCase {
             System.out.println(tfo.getText() + TestKit.CLONE_SUF_1);
             bo = new JButtonOperator(ndo, "Finish");
             bo.push();
-            ndo = new NbDialogOperator("Clone Completed");
-            bo = new JButtonOperator(ndo, "Open");
+            ndo = new NbDialogOperator("Checkout Completed");
+            bo = new JButtonOperator(ndo, "Open Project");
             System.out.println(bo.getText());
             bo.push();
             outputTabName=repoPath;

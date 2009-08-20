@@ -110,6 +110,7 @@ public class RelocateTest extends JellyTestCase {
             
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 NewProjectWizardOperator.invoke().close();
+
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);

@@ -39,31 +39,113 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
- *
+ * Instant notification about project change on Kenai
  * @author Jan Becicka
  */
 public final class KenaiNotification {
-
     private Date stamp;
+    private KenaiService.Type type;
+    private URI uri;
+    private String author;
+    private String service;
+
+    private List<Modification> modifications;
 
     /**
-     * Get the value of stamp
+     * Creates new instance of notification. You probably don't need to create your own.
+     * Listen on KenaiProject#PROP_PROJECT_NOTIFICATION
      *
-     * @return the value of stamp
+     * @param stamp time stamp of change
+     * @param type type of change
+     * @param uri uri of change
+     * @param author author of change
+     * @param service service name
+     * @param modifications modifications in this change
+     */
+    public KenaiNotification(Date stamp, Type type, URI uri, String author, String service, List<Modification> modifications) {
+        this.stamp = stamp;
+        this.type = type;
+        this.uri = uri;
+        this.author = author;
+        this.service = service;
+        this.modifications = Collections.unmodifiableList(modifications);
+    }
+
+    /**
+     * getter for modifications
+     * @return unmodifiable list of modifications
+     */
+    public List<Modification> getModifications() {
+        return modifications;
+    }
+
+    /**
+     * getter for author of this change
+     * @return
+     */
+    public String getAuthor() {
+        return author;
+    }
+
+    /**
+     * getter for time stamp of this change
+     * @return
      */
     public Date getStamp() {
         return stamp;
     }
 
-    public static class Modification {
+    /**
+     * getter for service type
+     * @return
+     */
+    public KenaiService.Type getType() {
+        return type;
+    }
+
+    /**
+     * getter for source uri of this change
+     * @return
+     */
+    public URI getUri() {
+        return uri;
+    }
+
+    /**
+     * getter for name of the service
+     * @return
+     */
+    public String getServiceName() {
+        return service;
+    }
+
+    public static final class Modification {
 
         private String resource;
         private String id;
-        private String type;
+        private Type type;
 
+        /**
+         * Type of Modification
+         */
+        public static enum Type {
+            NEW,
+            CHANGE,
+            DELETE
+        }
+
+        public Modification(String resource, String id, Type type) {
+            this.resource = resource;
+            this.id = id;
+            this.type = type;
+        }
         /**
          * Get the value of resource
          *
@@ -78,7 +160,7 @@ public final class KenaiNotification {
          *
          * @return the value of type
          */
-        public String getType() {
+        public Type getType() {
             return type;
         }
 
@@ -90,8 +172,5 @@ public final class KenaiNotification {
         public String getId() {
             return id;
         }
-
     }
-
-
 }

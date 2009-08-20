@@ -324,10 +324,41 @@ public class Operator {
                          if (!silent && suspendedThread != null) {
                              resume = resume && suspendedThread.notifyToBeResumedNoFire();
                          }
-                         try {
-                            EventSetWrapper.resume(eventSet);
-                         } catch (IllegalThreadStateExceptionWrapper itex) {
-                             logger.throwing(Operator.class.getName(), "loop", itex);
+                         if (resume) {
+                             try {
+                                EventSetWrapper.resume(eventSet);
+                             } catch (IllegalThreadStateExceptionWrapper itex) {
+                                 logger.throwing(Operator.class.getName(), "loop", itex);
+                             }
+                             if (eventAccessLock != null) {
+                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                eventAccessLock.unlock();
+                                eventAccessLock = null;
+                             }
+                         } else {
+                             if (!silent && suspendedAll) {
+                                 //TODO: Not really all might be suspended!
+                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false);
+                                 if (eventAccessLock != null) {
+                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                    eventAccessLock.unlock();
+                                    eventAccessLock = null;
+                                 }
+                                 for (PropertyChangeEvent event : events) {
+                                     ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                                 }
+                             }
+                             if (!silent && suspendedThread != null) {
+                                 PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
+                                 if (eventAccessLock != null) {
+                                    logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                    eventAccessLock.unlock();
+                                    eventAccessLock = null;
+                                 }
+                                 if (event != null) {
+                                    suspendedThread.fireEvent(event);
+                                 }
+                             }
                          }
                          continue;
                      }
@@ -434,7 +465,7 @@ public class Operator {
                      if (!resume) { // notify about the suspend if not resumed.
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
-                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false);
+                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false);
                              if (eventAccessLock != null) {
                                 logger.finer("Write access lock RELEASED:"+eventAccessLock);
                                 eventAccessLock.unlock();
@@ -445,7 +476,7 @@ public class Operator {
                              }
                          }
                          if (!silent && suspendedThread != null) {
-                             PropertyChangeEvent event = suspendedThread.notifySuspended(false);
+                             PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
                              if (eventAccessLock != null) {
                                 logger.finer("Write access lock RELEASED:"+eventAccessLock);
                                 eventAccessLock.unlock();
