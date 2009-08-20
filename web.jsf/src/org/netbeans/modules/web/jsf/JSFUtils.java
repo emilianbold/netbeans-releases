@@ -154,9 +154,10 @@ public class JSFUtils {
             // obtain URLs of the jar file
             List <URL> urls = new ArrayList <URL> ();
             for (int i = 0; i < jars.length; i++) {
-                URL url = jars[i].toURL();
-                url = FileUtil.getArchiveRoot(url);
-                urls.add(url);
+                URL url = FileUtil.urlForArchiveOrDir(jars[i]);
+                if (url != null) {
+                    urls.add(url);
+                }
             }
 
             // create new library and regist in the Library Manager. 

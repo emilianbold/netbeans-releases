@@ -227,10 +227,10 @@
     <Component class="javax.swing.JSpinner" name="jSpinner1">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new SpinnerNumberModel(ol.getCount(), 0, Integer.MAX_VALUE, 1)" type="code"/>
+          <Connection code="new SpinnerNumberModelExt(ol.getCount(), 0, Integer.MAX_VALUE, 1)" type="code"/>
         </Property>
         <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new JSpinner.NumberEditor(jSpinner1, &quot;#&quot;)" type="code"/>
+          <Connection code="new NumberEditor(jSpinner1, &quot;#&quot;)" type="code"/>
         </Property>
         <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="new Integer(ol.getCount())" type="code"/>
