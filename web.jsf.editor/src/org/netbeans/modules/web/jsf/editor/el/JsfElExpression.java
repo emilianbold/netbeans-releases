@@ -42,8 +42,15 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import javax.swing.text.Document;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -51,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -69,10 +77,10 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -250,9 +258,13 @@ public class JsfElExpression extends ELExpression {
      * @return
      */
     public List <ResourceBundle> getJSFResourceBundles(WebModule webModule){
-        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(webModule);
-        ArrayList <ResourceBundle> bundles = new ArrayList<ResourceBundle>();
+        final ArrayList <ResourceBundle> bundles = new ArrayList<ResourceBundle>();
         
+        /*
+         *  Old usage of JSF XML model.
+         *  Switched to merged JSF model. 
+         * 
+        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(webModule);
         for (int i = 0; i < files.length; i++) {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], 
                     true).getRootComponent();
@@ -264,6 +276,37 @@ public class JsfElExpression extends ELExpression {
                 {
                     bundles.add(it.next());   
                 }
+            }
+        }*/
+        /**
+         * @author ads
+         */
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
+        if ( model != null ){
+            try {
+                model.runReadAction( new MetadataModelAction<JsfModel, Void>() {
+
+                public Void run( JsfModel metaModel ) throws Exception {
+                    List<Application> applications = metaModel.getElements(
+                            Application.class);
+                        for (Application application : applications) {
+                            Collection<ResourceBundle> resourceBundles = 
+                                application.getResourceBundles();
+                            for (Iterator<ResourceBundle> it = resourceBundles
+                                    .iterator(); it.hasNext();)
+                            {
+                                bundles.add(it.next());
+                            }
+                        }
+                    return null;
+                }
+            });
+            }
+            catch(MetadataModelException e ){
+                logger.log( Level.WARNING, e.getMessage(), e );
+            }
+            catch(IOException e ){
+                logger.log( Level.WARNING, e.getMessage(), e );
             }
         }
         return bundles;
