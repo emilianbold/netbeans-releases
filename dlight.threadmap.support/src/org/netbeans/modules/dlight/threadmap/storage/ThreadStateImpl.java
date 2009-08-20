@@ -85,10 +85,10 @@ public final class ThreadStateImpl implements ThreadState {
         size = count;
         stateIDs = new byte[size];
         statePercentage = new byte[size];
-
+        int factor = stat[0] * 10;
         for (int i = 0; i < size; i++) {
             stateIDs[i] = states[i];
-            statePercentage[i] = (byte) (stat[stateIDs[i]] / stat[0] / 10);
+            statePercentage[i] = (byte) ((stat[stateIDs[i]]+factor/2) / factor);
         }
 
         this.timestamp = timestamp;
@@ -130,9 +130,11 @@ public final class ThreadStateImpl implements ThreadState {
         buf.append("MSA " + timestamp); // NOI18N
         buf.append(" has " + size); // NOI18N
         buf.append(" states\n\tMSA:"); // NOI18N
-        buf.append(Arrays.toString(stateIDs));
-        buf.append("\n\tValues:"); // NOI18N
-        buf.append(Arrays.toString(statePercentage));
+        for(int i = 0; i < this.size(); i++) {
+            buf.append(" "); // NOI18N
+            buf.append(getMSAState(i, true));
+            buf.append("="+getState(i)); // NOI18N
+        }
         return buf.toString();
     }
 

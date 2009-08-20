@@ -128,7 +128,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
-                        items = elExpr.getListenerMethodCompletionItems(
+                        items = elExpr.getMethodCompletionItems(
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
                         break;
@@ -142,7 +142,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                             getPropertyCompletionItems(elExpr.getObjectClass(), 
                                     anchor);
                         complItems.addAll(ref_items);
-                        ref_items = elExpr.getListenerMethodCompletionItems(
+                        ref_items = elExpr.getMethodCompletionItems(
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(ref_items);
                         break;

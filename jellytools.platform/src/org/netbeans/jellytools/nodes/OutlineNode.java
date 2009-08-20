@@ -47,6 +47,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 /**
  *  Handles nodes of the Outline component.
  *
+ * Warning: Do not use yet!! Incomplete, under development and most probably still buggy!
+ *
  * @author Vojtech.Sigler@sun.com
  */
 public class OutlineNode {
@@ -66,9 +68,20 @@ public class OutlineNode {
         _treePath = irTreePath;
     }
 
+    public OutlineNode(OutlineNode irParentNode, String isPath)
+    {
+        _outline = irParentNode.getOutline();
+        _treePath = getOutline().findPath(irParentNode.getTreePath(), isPath);
+    }
+
     public OutlineOperator getOutline()
     {
         return _outline;
+    }
+
+    public TreePath getTreePath()
+    {
+        return _treePath;
     }
 
     public static TreePath findAndExpandPath(OutlineOperator irOOp, TreePath irTP)
@@ -78,15 +91,16 @@ public class OutlineNode {
 
     public JPopupMenuOperator callPopup()
     {
-        Point lrPopupPoint = _outline.getLocationForPath(_treePath);
+        Point lrPopupPoint = getOutline().getLocationForPath(getTreePath());
 
         //y is for row, x for column
-        return new JPopupMenuOperator(_outline.callPopupOnCell(lrPopupPoint.y, lrPopupPoint.x));
+        return new JPopupMenuOperator(getOutline().callPopupOnCell(lrPopupPoint.y, lrPopupPoint.x));
     }
 
     public void expand()
     {
-        _outline.expandPath(_treePath);
+        getOutline().expandPath(getTreePath());
+        getOutline().waitExpanded(getTreePath());        
     }
 
 }

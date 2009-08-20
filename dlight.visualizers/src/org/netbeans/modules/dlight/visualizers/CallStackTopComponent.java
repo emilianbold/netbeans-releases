@@ -136,6 +136,11 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
     }
 
     @Override
+    public boolean requestFocus(boolean temporary) {
+        return viewComponent.requestFocus(temporary);
+    }
+
+    @Override
     public void componentOpened() {
         // TODO add custom code on component opening
     }
@@ -185,7 +190,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         setName(toolName);
         setToolTipText(toolName);
         validate();
-        repaint();
+        //repaint();
     }
 
     public void addContent(String toolName, JComponent component) {

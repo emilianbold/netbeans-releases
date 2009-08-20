@@ -38,10 +38,13 @@
  */
 
 package org.netbeans.modules.maven.j2ee;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -84,6 +87,20 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "web-service-clients",  // NOI18N
                 "j2ee-types",           // NOI18N
     };
+
+    /**
+     * Supported template categories for Java EE 6 projects (full?).
+     */
+    private static final String[] EJB_TYPES_6 = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "web-services",         // NOI18N
+        "web-service-clients",  // NOI18N
+        "wsdl",                 // NOI18N
+        "j2ee-types"           // NOI18N
+    };
+
     
     private static final String[] EJB_PRIVILEGED_NAMES_4 = new String[] {
         
@@ -106,6 +123,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "Templates/WebServices/WebService",// NOI18N
                 "Templates/WebServices/WebServiceClient"// NOI18N
     };
+
+    private static final String[] EJB_PRIVILEGED_NAMES_6 = EJB_PRIVILEGED_NAMES_5;
     
     private static final String[] WEB_TYPES = new String[] {
                 "servlet-types",        // NOI18N
@@ -120,6 +139,22 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "web-services",         // NOI18N
                 "web-service-clients",  // NOI18N
     };
+
+    private static final String[] WEB_TYPES_6 = WEB_TYPES_5;
+
+    private static final String[] WEB_TYPES_EJB = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
+    };
+
+    private static final String[] WEB_TYPES_EJB_LITE = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
+    };
+
     
     private static final String[] WEB_PRIVILEGED_NAMES = new String[] {
                 "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
@@ -148,6 +183,17 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         "Templates/WebServices/RestServicesFromDatabase",  //NOI18N
         "Templates/Other/Folder"                   // NOI18N
     };
+
+    private static final String[] WEB_PRIVILEGED_NAMES_6 = WEB_PRIVILEGED_NAMES_5;
+    private static final String[] WEB_PRIVILEGED_NAMES_EE6_FULL = new String[] {
+        "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/Message"  // NOI18N
+    };
+
+    private static final String[] WEB_PRIVILEGED_NAMES_EE6_WEB = new String[] {
+        "Templates/J2EE/Session"  // NOI18N
+    };
+
     
     public String[] getRecommendedTypes() {
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
@@ -159,8 +205,12 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (EjbProjectConstants.JAVA_EE_5_LEVEL.equals(jar.getJ2eePlatformVersion())) {
+                Profile p = jar.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
                     return EJB_TYPES_5;
+                }
+                if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                    return EJB_TYPES_6;
                 }
             }
             return EJB_TYPES_4;
@@ -170,8 +220,22 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
             WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null && WebModule.JAVA_EE_5_LEVEL.equals(web.getJ2eePlatformVersion())) {
-                return WEB_TYPES_5;
+            if (web != null) {
+                Profile p = web.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
+                    return WEB_TYPES_5;
+                }
+                if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
+                    ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
+                    J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                    if (cap.isEjb31Supported()) {
+                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
+                    }
+                    if (cap.isEjb31LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
+                    }
+                    return toRet.toArray(new String[0]);
+                }
             }
             return WEB_TYPES;
         }
@@ -188,8 +252,12 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         if (NbMavenProject.TYPE_EJB.equals(packaging)) {
             EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
             if (jar != null) {
-                if (EjbProjectConstants.JAVA_EE_5_LEVEL.equals(jar.getJ2eePlatformVersion())) {
+                Profile p = jar.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
                     return EJB_PRIVILEGED_NAMES_5;
+                }
+                if (Profile.JAVA_EE_6_FULL.equals(p)) {
+                    return EJB_PRIVILEGED_NAMES_6;
                 }
             }
             return EJB_PRIVILEGED_NAMES_4;
@@ -199,13 +267,26 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
             WebModule web = WebModule.getWebModule(project.getProjectDirectory());
-            if (web != null && WebModule.JAVA_EE_5_LEVEL.equals(web.getJ2eePlatformVersion())) {
-                return WEB_PRIVILEGED_NAMES_5;
+            if (web != null) {
+                Profile p = web.getJ2eeProfile();
+                if (Profile.JAVA_EE_5.equals(p)) {
+                    return WEB_PRIVILEGED_NAMES_5;
+                }
+                if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
+                    ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
+                    J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                    if (cap.isEjb31Supported()) {
+                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
+                    }
+                    if (cap.isEjb31LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
+                    }
+                    return toRet.toArray(new String[0]);
+                }
             }
             return WEB_PRIVILEGED_NAMES;
         }
         
         return new String[0];
     }
-    
 }

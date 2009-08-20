@@ -185,11 +185,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             CommonTasksSupport.rmFile(executionEnvironment, remoteFile, err);
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
-            try {
-                filter.flush();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            filter.flush();
         } finally {
             if (zipFile != null & zipFile.exists()) {
                 if (!zipFile.delete()) {

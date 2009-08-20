@@ -89,20 +89,22 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public FileObject getWebXml() throws IOException {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml"); // NOI18N
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            } else {
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                if (wm != null) {
-                    FileObject webInf = wm.getWebInf();
-                    if (webInf != null) {
-                        return DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            FileObject ddFo = wm.getDeploymentDescriptor();
+            if (ddFo == null) {
+                FileObject webInf = wm.getWebInf();
+                if (webInf == null) {
+                    FileObject docBase = wm.getDocumentBase();
+                    if (docBase != null) {
+                        webInf = docBase.createFolder("WEB-INF"); //NOI18N
                     }
                 }
+                if (webInf != null) {
+                    ddFo = DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+                }
             }
+            return ddFo;
         }
         return null;
     }

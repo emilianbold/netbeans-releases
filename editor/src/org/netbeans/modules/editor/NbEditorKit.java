@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.font.FontRenderContext;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -92,6 +93,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Coloring;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.MimeTypeInitializer;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -926,7 +928,15 @@ public class NbEditorKit extends ExtKit implements Callable {
         ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
         //#159661: Pre-initialize annotationTypesFolder here
         AnnotationTypesFolder.getAnnotationTypesFolder();
-        ColoringMap.get(getContentType());
+
+        // initialize coloring map (#69232)
+        ColoringMap cmap = ColoringMap.get(getContentType());
+
+        // initialize fonts (#170423)
+        Coloring defaultColoring = cmap.getMap().get("default"); //NOI18N
+        if (defaultColoring != null) {
+            defaultColoring.getFont().getMaxCharBounds(new FontRenderContext(null, true, true));
+        }
 
         return null;
     }

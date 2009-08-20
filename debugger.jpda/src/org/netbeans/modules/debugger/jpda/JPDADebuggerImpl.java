@@ -1290,7 +1290,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
     * Performs stop action.
     */
-    public void setStoppedState (ThreadReference thread) {
+    public void setStoppedState (ThreadReference thread, boolean stoppedAll) {
         PropertyChangeEvent evt;
         accessLock.readLock().lock();
         try {
@@ -1298,7 +1298,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // the current thread only
             JPDAThread c = getCurrentThread();
             JPDAThread t = getThread (thread);
-            if (c != null && c != t && c.isSuspended()) {
+            if (!stoppedAll && c != null && c != t && c.isSuspended()) {
                 // We already have a suspended current thread, do not switch in that case.
                 return ;
             }

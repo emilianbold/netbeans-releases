@@ -42,11 +42,14 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.openide.util.NbBundle;
 
@@ -107,6 +110,15 @@ public class CheckPHPVersionRule extends PHPRule {
     @Override
     public void visit(UseStatement statement) {
         createWarning(statement);
+    }
+
+    @Override
+    public void visit(NamespaceName namespaceName) {
+
+        QualifiedName qname = QualifiedName.create(namespaceName);
+        if (qname.getKind() != QualifiedNameKind.UNQUALIFIED){
+            createWarning(namespaceName);
+        }
     }
     
     private void createWarning(ASTNode node){

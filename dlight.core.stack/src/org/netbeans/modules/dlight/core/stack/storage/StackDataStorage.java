@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.storage;
 
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -45,6 +46,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 
 /**
@@ -54,6 +56,8 @@ public interface StackDataStorage {//extends StackSupport {
 
     public static final String STACK_DATA_STORAGE_TYPE_ID = "stack"; //NOI18N
     public static final String STACK_METADATA_VIEW_NAME = "DtraceStack"; //NOI18N
+    public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
+            FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
 
     /**
      * Submits new stack (sample) to the storage.
@@ -78,15 +82,10 @@ public interface StackDataStorage {//extends StackSupport {
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+    
     /**
-     * Returns stack trace (stacks for all threads) for the moment of timestamp
-     * (i.e. all returned callstacks will be with timestamp &lt;= than the
-     * passed one). Also the state of the thread with id == threadID will be
-     * threadState.
-     *
-     * @param threadID
-     * @param timestamp
-     * @return
+     * Returns stack trace on the base of the query
+     
      */
-    ThreadDump getThreadDump(long timestamp, long threadID, int threadState);
+    ThreadDump getThreadDump(ThreadDumpQuery query);
 }

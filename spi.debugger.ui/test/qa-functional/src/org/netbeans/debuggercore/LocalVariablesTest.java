@@ -51,6 +51,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -143,13 +144,15 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     protected void expandNodes() {
         Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
-        TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this").expand();
+        
+        OutlineOperator lrOutlineOp = new OutlineOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        
+        OutlineNode lrThisNode = lrOutlineOp.getRootNode("this");
+        lrThisNode.expand();
         //Utilities.sleep(500);
-        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static").expand();
+        new OutlineNode(lrThisNode, "Static").expand();
         //Utilities.sleep(500);
-        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Inherited").expand();
+        new OutlineNode(lrThisNode, "Inherited").expand();
         //Utilities.sleep(500);
     }
     

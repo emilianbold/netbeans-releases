@@ -70,7 +70,11 @@ public class TimestampAndSharabilityFilter extends SharabilityFilter {
         return accept;
     }
 
-    public void flush() throws IOException {
+    public void flush() {
         timeStamps.flush();
+    }
+
+    public void dropTimestamp(File file) {
+        timeStamps.dropTimeStamp(file);
     }
 }

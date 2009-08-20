@@ -58,6 +58,9 @@ import org.netbeans.swing.outline.OutlineModel;
  *  An operator to handle org.netbeans.swing.outline.Outline component used
  * e.g. in debugger views.
  *
+ *
+ * Warning: Do not use yet!! Incomplete, under development and most probably still buggy!
+ *
  * @author Vojtech.Sigler@sun.com
  */
 public class OutlineOperator extends JTableOperator {
@@ -96,15 +99,22 @@ public class OutlineOperator extends JTableOperator {
         return -1;
     }
 
-    public OutlineNode getRootNode(String isName)
-    {
-        return getRootNode(isName, 0);
-    }
-
-    public OutlineNode getRootNode(final String isName, final int inIndex)
+    public TreePath findNextPathElement(final TreePath irParentPath, final String isName, final int inIndex)
     {
         final Outline lrOutline = getOutline();
 
+        if (!isExpanded(irParentPath))
+            expandPath(irParentPath);
+        
+        //create a list of rows we will search in
+        int lnRowSpan = lrOutline.getOutlineModel().getChildCount(irParentPath.getLastPathComponent());
+        int lnStartRow = getRowForPath(irParentPath) + 1;
+        int[] lrRowsToSearch = new int[lnRowSpan];
+        for (int i = 0; i < lnRowSpan; i++)
+        {
+            lrRowsToSearch[i] = lnStartRow + i;
+        }
+        
         TreePath lrTreePath;
         Timeouts lrTimes = getTimeouts().cloneThis();
 
@@ -114,7 +124,9 @@ public class OutlineOperator extends JTableOperator {
         {
             Waiter lrWaiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object anObject) {
-                    Point lrFindPoint = findCell(isName, null, new int[]{getTreeColumnIndex()}, inIndex);
+                    int[] lrRows = (int[]) anObject;
+
+                    Point lrFindPoint = findCell(isName, lrRows, new int[]{getTreeColumnIndex()}, inIndex);
 
                     //no cell found
                     if (lrFindPoint.equals(new Point(-1,-1)))
@@ -123,25 +135,71 @@ public class OutlineOperator extends JTableOperator {
                     //y is row, x is not important since we're asking for a row in the tree
                     TreePath lrPath = lrOutline.getLayoutCache().getPathForRow(lrFindPoint.y);
 
-                    //cell found, but it is not a root node
-                    if (lrPath.getPathCount() > 2)
+                    //cell found, but it is not on the level we're looking for
+                    if (lrPath.getPathCount() > irParentPath.getPathCount() + 1)
                         return null;
 
                     return lrPath;
                 }
                 public String getDescription() {
-                    return("Root tree node cell with name '" + isName + "' not present.");
+                    return("Tree node cell with name '" + isName + "' present.");
                 }
             });
 
             lrWaiter.setTimeouts(lrTimes);
-            lrTreePath = (TreePath)lrWaiter.waitAction(null);
+            lrTreePath = (TreePath)lrWaiter.waitAction(lrRowsToSearch);
         }
         catch (InterruptedException e) {
         throw new JemmyException("Interrupted.", e);
         }
 
-        return new OutlineNode(this, lrTreePath);
+        return lrTreePath;
+    }
+
+    public TreePath findNextPathElement(TreePath irParentPath, String isName)
+    {
+        return findNextPathElement(irParentPath, isName, 0);
+    }
+
+    public OutlineNode getRootNode(String isName)
+    {
+        return getRootNode(isName, 0);
+    }
+
+    public OutlineNode getRootNode(final String isName, final int inIndex)
+    {
+        TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
+
+        return new OutlineNode(this, findNextPathElement(lrParentPath, isName, inIndex));
+    }
+
+    public TreePath findPath(TreePath irParentPath, String isPath)
+    {
+        int lnDelimIndex = isPath.indexOf("|");        
+
+        if (lnDelimIndex > -1)
+        {
+            TreePath lrFoundPath = findNextPathElement(irParentPath, isPath.substring(0, lnDelimIndex));
+            return findPath(lrFoundPath, isPath.substring(lnDelimIndex + 1));
+        }
+
+        return findNextPathElement(irParentPath, isPath);
+    }
+
+    public void waitExpanded(final TreePath irTP)
+    {
+         if(irTP != null) {            
+            waitState(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(isExpanded(irTP));
+                    }
+                    public String getDescription() {
+                        return("Has \"" + irTP.toString() + "\" path expanded");
+                    }
+                });
+        } else {
+            throw(new JemmyException("No such path: null"));
+        }
     }
 
     public void expandPath(final TreePath irTP)
@@ -180,19 +238,20 @@ public class OutlineOperator extends JTableOperator {
         return (lnY == -1) ? new Point(-1, -1) : new Point(lnX, lnY);
     }
 
-    public int getRowForPath(final TreePath irTreePath)
-    {
-        TreePath lrPath = irTreePath;
+    public int getRowForPath(TreePath irTreePath)
+    {        
+        if (irTreePath.getParentPath() == null)
+            return getVisibleRootModifier();
 
-        if (!getOutline().isExpanded(irTreePath.getParentPath()))
+        if (!getOutline().isExpanded(irTreePath.getParentPath())) 
             expandPath(irTreePath.getParentPath());
 
-        int lnRow = getVisibleRootModifier() - 1;
+        int lnRow = -1;
 
-        while (lrPath.getParentPath() != null)
+        while (irTreePath.getParentPath() != null)
         {
-            lnRow += 1 + getPrecedingSiblingsRowSpan(lrPath);
-            lrPath = lrPath.getParentPath();
+            lnRow += 1 + getPrecedingSiblingsRowSpan(irTreePath);
+            irTreePath = irTreePath.getParentPath();
         }
 
         return lnRow;
@@ -211,7 +270,7 @@ public class OutlineOperator extends JTableOperator {
 
         int lnIndex = lrModel.getIndexOfChild(lrParent.getLastPathComponent(), lrLast);
 
-        for (int i = lnIndex; i >= 0; --i)
+        for (int i = lnIndex - 1; i >= 0; i--)
         {
             Object lrSibling = lrModel.getChild(lrParent.getLastPathComponent(), i);
             lnRowSpan += getRowSpanOfLastElement(irTreePath.pathByAddingChild(lrSibling));

@@ -82,7 +82,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getSeveritySortKey(String severity) {
-        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -94,7 +94,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getPrioritySortKey(String priority) {
-        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -106,7 +106,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getResolutionSortKey(String resolution) {
-        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }

@@ -123,11 +123,13 @@ class RfsSyncWorker extends ZipSyncWorker {
 
         @Override
         public boolean acceptImpl(File file) {
-//            if (remoteControllerPath == null) {
-//                return super.acceptImpl(file);
-//            } else {
-                return true;
-//            }
+            return super.acceptImpl(file);
         }
+
+        @Override
+        public void flush() {
+            // do nothing, since fake (empty) fies were sent!
+        }
+
     }
 }

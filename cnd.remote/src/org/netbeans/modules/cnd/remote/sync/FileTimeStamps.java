@@ -102,17 +102,27 @@ public class FileTimeStamps {
         data.put(getFileKey(file), Long.toString(file.lastModified()));
     }
 
+    public void dropTimeStamp(File file) {
+        data.put(getFileKey(file), Long.MIN_VALUE);
+    }
+
     private String getFileKey(File file) {
         return file.getAbsolutePath();
     }
 
-    public void flush() throws IOException {
+    public void flush()  {
         File dir = dataFile.getParentFile();
         if (!dir.exists()) {
             dir.mkdirs(); // no ret value check - the code below will throw exception
         }
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
-        data.store(os, null);
-        os.close();
+        try {
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
+            data.store(os, null);
+            os.close();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            dataFile.delete();
+        }
     }
 }

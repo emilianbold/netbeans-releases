@@ -341,7 +341,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-init-executables">
-        <property name="module.executable.files" value="[NOTHING]"/><!-- fallback -->
+        <property name="nbm.executable.files" value="[NOTHING]"/><!-- fallback -->
         <fileset dir="${cluster}" id="module.executable.files" includes="${nbm.executable.files}"/>
     </target>
 

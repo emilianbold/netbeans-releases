@@ -371,8 +371,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
             FileObject webBuildBase = getJ2eeModule().getContentDirectory();
             if (webBuildBase != null) {
                 // project was built
-                FileObject destinationFolder = webBuildBase.getFileObject("WEB-INF/classes"); //NOI18N
-                FileObject destFile = ensureDestinationFileExists(destinationFolder, path, fo.isFolder());
+                FileObject destFile = ensureDestinationFileExists(webBuildBase, "WEB-INF/classes/" + path, fo.isFolder());
                 File fil = FileUtil.toFile(destFile);
                 copySrcToDest(fo, destFile);
                 fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));

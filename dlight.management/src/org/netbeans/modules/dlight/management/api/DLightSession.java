@@ -68,9 +68,11 @@ import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
@@ -89,6 +91,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
     private List<SessionStateListener> sessionStateListeners = null;
+    private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
     private List<DataCollector> collectors = null;
@@ -348,6 +351,30 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
+    public final void addIndicatorNotificationListener(IndicatorNotificationsListener l){
+        if (l == null){
+            return;
+        }
+        if (!indicatorNotificationListeners.contains(l)){
+            indicatorNotificationListeners.add(l);
+        }
+    }
+
+    /**
+     * On the next run you will not get any notification.
+     * But you will still get them during the current session execution
+     * @param l
+     * @return
+     */
+    public final boolean removeIndicatorNotificationListener(IndicatorNotificationsListener l){
+        if (l == null){
+            return false;
+        }
+        //it is still not enouph, if user just want to stop getting notification
+        //we do not provide such mechanism right now
+        return indicatorNotificationListeners.remove(l);
+    }
+
     private boolean prepareContext(ExecutionContext context) {
         final DLightTarget target = context.getTarget();
 
@@ -417,7 +444,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         } else {
                             idproviders.add(idp);
                         }
-
+                        //now subscribe listeners
+                        for (IndicatorNotificationsListener l : indicatorNotificationListeners){
+                            IndicatorDataProviderAccessor.getDefault().addIndicatorDataProviderListener(idp, l);
+                        }
                         idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
@@ -459,15 +489,15 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
-                DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
+                Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                     context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
                 }
 
-                if (storage != null) {
+                if (currentStorages != null && !currentStorages.isEmpty()) {
 
-                    toolCollector.init(storage, target);
+                    toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
 
                     if (toolCollector instanceof IndicatorDataProvider) {
@@ -479,8 +509,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         storages = new ArrayList<DataStorage>();
                     }
 
-                    if (!storages.contains(storage)) {
-                        storages.add(storage);
+                    for (DataStorage storage : currentStorages.values()) {
+                        if (!storages.contains(storage)) {
+                            storages.add(storage);
+                        }
                     }
 
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {

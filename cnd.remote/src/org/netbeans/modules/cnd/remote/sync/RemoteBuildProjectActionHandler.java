@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -80,7 +81,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionEvent pae;
     private ProjectActionEvent[] paes;
     private ExecutionEnvironment execEnv;
-    private static final boolean allAtOnce = false;
 
     private File localDir;
     private PrintWriter out;
@@ -88,6 +88,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private File privProjectStorageDir;
     private String remoteDir;
 
+    private NativeProcess remoteControllerProcess = null;
+    
     /* package-local */
     RemoteBuildProjectActionHandler() {
     }
@@ -119,6 +121,20 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
+    private void remoteControllerCleanup() {
+        // nobody calls this concurrently => no synchronization
+        if (remoteControllerProcess != null) {
+            remoteControllerProcess.destroy();
+            // until #170502 is fixed
+            try {
+                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
+            } catch (IOException e) {
+                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
+            }
+            remoteControllerProcess = null;
+        }
+    }
+
     private void initRfs() throws IOException, InterruptedException, ExecutionException {
 
         final Env env = pae.getProfile().getEnvironment();
@@ -129,21 +145,25 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        //TODO: replace as soon as setup is written
+        // nobody calls this concurrently => no synchronization
+        remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
-        NativeProcess remoteControllerProcess = pb.call();
+        remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
         final InputStream rcStream = remoteControllerProcess.getInputStream();
-        LocalController localController = new LocalController(
+        RfsLocalController localController = new RfsLocalController(
                 execEnv, localDir,  remoteDir, rcStream,
-                remoteControllerProcess.getOutputStream(), err);
+                remoteControllerProcess.getOutputStream(), err, privProjectStorageDir);
         // read port
         String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
         String port;
         if (line != null && line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
+        } else if (line == null) {
+            int rc = remoteControllerProcess.waitFor();
+            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null); // NOI18N
         } else {
             String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
             System.err.printf(message); // NOI18N
@@ -181,7 +201,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     }
 
     private void shutdownRfs() {
-        
+        remoteControllerCleanup();
     }
 
     @Override
@@ -224,8 +244,11 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage()));
+                String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
+                io.getErr().printf("%s\n", message); // NOI18N
+                io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+                err.printf("%s\n", message); // NOI18N
             }
         }
     }
@@ -252,98 +275,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
-
-    private static class LocalController implements Runnable {
-
-        private final BufferedReader requestReader;
-        private final PrintStream responseStream;
-        private final String remoteDir;
-        private final File localDir;
-        private final ExecutionEnvironment execEnv;
-        private final PrintWriter err;
-
-        private static final Logger logger = Logger.getLogger("cnd.remote.logger"); //NOI18N
-
-        private final Set<String> processedFiles = new HashSet<String>();
-
-        public LocalController(ExecutionEnvironment executionEnvironment,
-                File localDir, String remoteDir,
-                InputStream requestStream, OutputStream responseStream,
-                PrintWriter err) {
-            this.execEnv = executionEnvironment;
-            this.localDir = localDir;
-            this.remoteDir = remoteDir;
-            this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
-            this.responseStream = new PrintStream(responseStream);
-            this.err = err;
-        }
-
-        private void respond_ok() {
-            responseStream.printf("1\n"); // NOI18N
-            responseStream.flush();
-        }
-        private void respond_err(String tail) {
-            responseStream.printf("0 %s\n", tail); // NOI18N
-            responseStream.flush();
-        }
-
-        public void run() {
-            long totalCopyingTime = 0;
-            while (true) {
-                try {
-                    String request = requestReader.readLine();
-                    String remoteFile = request;
-                    logger.finest("LC: REQ " + request);
-                    if (request == null) {
-                        break;
-                    }
-                    if (processedFiles.contains(remoteFile)) {
-                        logger.info("RC asks for file " + remoteFile + " again?!");
-                        respond_ok();
-                        continue;
-                    } else {
-                        processedFiles.add(remoteFile);
-                    }
-                    if (remoteFile.startsWith(remoteDir)) {
-                        File localFile =  new File(localDir, remoteFile.substring(remoteDir.length()));
-                        if (localFile.exists() && !localFile.isDirectory() && !allAtOnce) {
-                            logger.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
-                            long fileTime = System.currentTimeMillis();
-                            Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(),
-                                    execEnv, remoteFile, 0777, err);
-                            try {
-                                int rc = task.get();
-                                fileTime = System.currentTimeMillis() - fileTime;
-                                totalCopyingTime += fileTime;
-                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n",
-                                        localFile, remoteFile, rc, fileTime, totalCopyingTime);
-                                if (rc == 0) {
-                                    respond_ok();
-                                } else {
-                                    respond_err("1"); // NOI18N
-                                }
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                                break;
-                            } catch (ExecutionException ex) {
-                                Exceptions.printStackTrace(ex);
-                                respond_err("2 execution exception\n"); // NOI18N
-                            } finally {
-                                responseStream.flush();
-                            }
-                        } else {
-                            respond_ok();
-                        }
-                    } else {
-                        respond_ok();
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex); //TODO: error processing
-                }
-            }
-        }
-
     }
 
 }

@@ -39,6 +39,7 @@
 
 package org.netbeans.jellytools;
 
+import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
@@ -69,7 +70,7 @@ public class OutlineOperatorTest extends JellyTestCase {
     }
 
     public static final String[] tests = new String[] {
-                "testFindComponent" };
+                "testNodes" };
 
     /** Method used for explicit testsuite definition
      * @return  created suite
@@ -150,18 +151,23 @@ public class OutlineOperatorTest extends JellyTestCase {
 
     }
 
-    public void testFindComponent() throws Exception
+    public void testNodes() throws Exception
     {
         TopComponentOperator tco = new TopComponentOperator(
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
 
+        Thread.sleep(5000);
         OutlineOperator lrOVO = new OutlineOperator(tco);
 
-        OutlineNode node = lrOVO.getRootNode("test");
+        lrOVO.getRootNode("test").expand();
 
-        node.callPopup();
+        lrOVO.getRootNode("test", 1).expand();
 
-        Thread.sleep(10000);
+        OutlineNode node = lrOVO.getRootNode("test", 2);
+
+        OutlineNode newNode = new OutlineNode(node, "test");
+
+        newNode.callPopup();
 
     }
 }

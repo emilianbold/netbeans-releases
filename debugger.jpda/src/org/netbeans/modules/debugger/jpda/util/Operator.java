@@ -472,14 +472,7 @@ public class Operator {
                             if (session != null) {
                                 DebuggerManager.getDebuggerManager().setCurrentSession(session);
                             }
-                            ThreadReference tref = null;
-                            for (Event e: eventSet) {
-                                tref = getEventThread(e);
-                                if (tref != null) {
-                                    break;
-                                }
-                            }
-                            if (tref != null) debugger.setStoppedState (tref);
+                            if (thref != null) debugger.setStoppedState (thref, suspendedAll);
                          }
                      }
 
