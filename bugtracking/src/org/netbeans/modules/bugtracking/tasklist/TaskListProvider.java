@@ -67,6 +67,7 @@ import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -98,6 +99,7 @@ public final class TaskListProvider extends PushTaskScanner {
      */
     private final WeakHashMap<IssueProvider.LazyIssue, Task> cachedTasks;
     private final WeakHashMap<IssueProvider, Set<IssueProvider.LazyIssue> > cachedIssues;
+    private final WeakSet<IssueProvider.LazyIssue> validatedIssues;
     /**
      * Set of providers whose issues need to be validated. Validate means test if they belong to the current tasklist scope.
      */
@@ -113,6 +115,7 @@ public final class TaskListProvider extends PushTaskScanner {
         cachedTasks = new WeakHashMap<IssueProvider.LazyIssue, Task>(10);
         cachedIssues = new WeakHashMap<IssueProvider, Set<IssueProvider.LazyIssue>>(5);
         providersToValidate = new HashSet<IssueProvider>(5);
+        validatedIssues = new WeakSet<LazyIssue>(10);
     }
 
     public static synchronized TaskListProvider getInstance() {
@@ -340,14 +343,17 @@ public final class TaskListProvider extends PushTaskScanner {
                         }
                     } else {
                         for (LazyIssue issue : e.getValue()) {
-                            issuesToInclude.put(issue, e.getKey());
+                            if (validatedIssues.contains(issue) && !issuesToValidate.containsKey(issue)) {
+                                issuesToInclude.put(issue, e.getKey());
+                            } else {
+                                issuesToValidate.put(issue, e.getKey());
+                            }
                         }
                     }
                 }
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.log(Level.FINER, "RefreshTask.run: issues to validate: {0}", issuesToValidate); //NOI18N
                 }
-                TaskListProvider.this.providersToValidate.clear();
             }
             List<String> repositoryUrls = getRepositoriesFor(scope);
             // if the issue's repository is not among allAssociatedRepositories, then it is probably not associated yet
@@ -396,6 +402,9 @@ public final class TaskListProvider extends PushTaskScanner {
             synchronized(cachedIssues) {
                 openTaskList = TaskListProvider.this.openTaskList;
                 TaskListProvider.this.openTaskList = false;
+                TaskListProvider.this.providersToValidate.clear();
+                validatedIssues.clear();
+                validatedIssues.addAll(issuesToInclude.keySet());
             }
             callback.setTasks(tasks);
             lastScope = new WeakReference<TaskScanningScope>(scope);
