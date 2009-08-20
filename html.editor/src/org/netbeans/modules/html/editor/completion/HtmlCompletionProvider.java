@@ -185,7 +185,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    private static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
+    static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
         final BaseDocument doc = (BaseDocument) document;
         switch (typedText.charAt(typedText.length() - 1)) {
             case '/':
