@@ -1603,7 +1603,7 @@ public class GdbDebugger implements PropertyChangeListener {
         String reason = map.get("reason"); // NOI18N
 
         // we need to catch exit in any state
-        if (reason.equals("exited-signalled")) { // NOI18N
+        if ("exited-signalled".equals(reason)) { // NOI18N
             String signal = map.get("signal-name"); // NOI18N
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
