@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,8 +71,10 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.util.ImageUtilities;
@@ -107,10 +110,21 @@ public class PhpStructureScanner implements StructureScanner {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
             if (!nameScope.isDefaultNamespace()) {
                 items.add(new PHPNamespaceStructureItem(nameScope, namespaceChildren));
-            } 
+            }
+            Collection<? extends UseElement> declaredUses = nameScope.getDeclaredUses();
+            for (UseElement useElement : declaredUses) {
+                namespaceChildren.add(new PHPUseStructureItem(useElement));
+            }
+
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
-                namespaceChildren.add(new PHPFunctionStructureItem(fnc));
+                List<StructureItem> variables = new ArrayList<StructureItem>();
+                namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
+                //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
+                /*Collection<? extends VariableName> declaredVariables = fnc.getDeclaredVariables();
+                for (VariableName variableName : declaredVariables) {
+                    variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                }*/
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
             for (ConstantElement constant : declaredConstants) {
@@ -126,11 +140,19 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
                 for (MethodScope method : declaredMethods) {
+                    List<StructureItem> variables = new ArrayList<StructureItem>();
                     if (method.isConstructor()) {
-                        children.add(new PHPConstructorStructureItem(method));
+                        children.add(new PHPConstructorStructureItem(method, variables));
                     } else {
-                        children.add(new PHPMethodStructureItem(method));
+                        children.add(new PHPMethodStructureItem(method, variables));
                     }
+                    //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
+                    /*Collection<? extends VariableName> declaredVariables = method.getDeclaredVariables();
+                    for (VariableName variableName : declaredVariables) {
+                        if (!variableName.representsThis()) {
+                            variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                        }
+                    }*/
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {
@@ -139,8 +161,8 @@ public class PhpStructureScanner implements StructureScanner {
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
                     Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
-                    for (FieldElement filed : declaredFields) {
-                        children.add(new PHPSimpleStructureItem(filed, "field"));//NOI18N
+                    for (FieldElement field : declaredFields) {
+                        children.add(new PHPFieldStructureItem(field));//NOI18N
                     }
                 }
             }
@@ -355,19 +377,23 @@ public class PhpStructureScanner implements StructureScanner {
                 for (Parameter formalParameter : parameters) {
                     String name = formalParameter.getName();
 
-                    String type = null;
-                    if (formalParameter.getType() != null) {
-                        type = formalParameter.getType().getName();
-                    }
+                    List<QualifiedName> types = formalParameter.getTypes();
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
 
                         }
 
-                        if (type != null) {
+                        if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            formatter.appendText(type);
+                            for (Iterator<QualifiedName> it = types.iterator(); it.hasNext();) {
+                                QualifiedName qualifiedName = it.next();
+                                formatter.appendText(qualifiedName.toName().toString());
+                                if (it.hasNext()) {
+                                    formatter.appendText("|");//NOI18N
+                                }
+                                
+                            }
                             formatter.appendText(" ");   //NOI18N
 
                             formatter.appendHtml(CLOSE_FONT);
@@ -396,6 +422,38 @@ public class PhpStructureScanner implements StructureScanner {
         }
     }
 
+    private class PHPFieldStructureItem extends PHPSimpleStructureItem {
+        public PHPFieldStructureItem(ModelElement elementHandle) {
+            super(elementHandle, "field");//NOI18N
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            ElementHandle elementHandle = getElementHandle();
+            formatter.appendText(elementHandle.getName());
+            if (elementHandle instanceof FieldElement) {
+                final FieldElement fieldElement = (FieldElement) elementHandle;
+                Collection<? extends TypeScope> types = fieldElement.getTypes(fieldElement.getOffset());
+                StringBuilder sb = null;
+                if (!types.isEmpty()) {
+                    formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                    for (TypeScope type : types) {
+                        if (sb == null) {
+                            sb = new StringBuilder();
+                        } else {
+                            sb.append(", ");//NOI18N
+                        }
+                        sb.append(type.getName());
+
+                    }
+                    formatter.appendText(sb.toString());
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+            }
+            return formatter.getText();
+        }
+
+    }
     private class PHPSimpleStructureItem extends PHPStructureItem {
 
         private String simpleText;
@@ -426,6 +484,28 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public ElementKind getKind() {
             return ElementKind.MODULE;
+        }
+    }
+
+    private class PHPUseStructureItem extends PHPStructureItem {
+        public PHPUseStructureItem(UseElement elementHandle) {
+            super(elementHandle, null, "aaaa_use"); //NOI18N
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            UseElement useElement = (UseElement) getElementHandle();
+            if (useElement.getAliasName() != null) {
+                formatter.appendText(" as ");//NOI18N
+                formatter.appendText(useElement.getAliasName());
+            }
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.RULE;
         }
     }
 
@@ -461,8 +541,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPFunctionStructureItem extends PHPStructureItem {
 
-        public PHPFunctionStructureItem(FunctionScope elementHandle) {
-            super(elementHandle, null, "fn"); //NOI18N
+        public PHPFunctionStructureItem(FunctionScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "fn"); //NOI18N
         }
 
         public FunctionScope getFunctionScope() {
@@ -479,8 +559,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPMethodStructureItem extends PHPStructureItem {
 
-        public PHPMethodStructureItem(MethodScope elementHandle) {
-            super(elementHandle, null, "fn"); //NOI18N
+        public PHPMethodStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "fn"); //NOI18N
         }
 
         public MethodScope getMethodScope() {
@@ -492,6 +572,7 @@ public class PhpStructureScanner implements StructureScanner {
                 appendFunctionDescription(getMethodScope(), formatter);
                 return formatter.getText();
         }
+
 
     }
 
@@ -530,8 +611,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
-        public PHPConstructorStructureItem(MethodScope elementHandle) {
-            super(elementHandle, null, "con");
+        public PHPConstructorStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "con");
         }
 
         @Override

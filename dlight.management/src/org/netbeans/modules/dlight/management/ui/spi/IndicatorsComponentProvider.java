@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.ui.spi;
 
+import java.util.Collection;
+import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.openide.util.Lookup;
 
 /**
@@ -58,8 +60,12 @@ public final class IndicatorsComponentProvider {
     return instance;
   }
 
-  public IndicatorComponentDelegator getIndicatorComponentListener() {
+  public DLightSessionListener getIndicatorComponentListener() {
     IndicatorComponentDelegator factory = Lookup.getDefault().lookup(IndicatorComponentDelegator.class);
     return factory;
+  }
+
+  public Collection<? extends DLightSessionListener> getIndicatorComponentListeners() {
+    return  Lookup.getDefault().lookupAll(IndicatorComponentDelegator.class);
   }
 }

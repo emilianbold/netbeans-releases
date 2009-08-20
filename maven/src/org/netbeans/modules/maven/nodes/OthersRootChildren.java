@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.nodes;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Icon;
 import org.apache.maven.model.Resource;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -60,6 +62,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,12 +104,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     
     private void regenerateKeys() {
         List<SourceGroup> list = new ArrayList<SourceGroup>();
-        Sources srcs = project.getLookup().lookup(Sources.class);
-        if (srcs == null) {
-            throw new IllegalStateException("need Sources instance in lookup"); //NOI18N
-        }
-        SourceGroup[] resgroup = srcs.getSourceGroups(test ? MavenSourcesImpl.TYPE_TEST_OTHER  
-                                                           : MavenSourcesImpl.TYPE_OTHER);
+        SourceGroup[] resgroup = getSourceGroups();
         Set<FileObject> files = new HashSet<FileObject>();
         for (int i = 0; i < resgroup.length; i++) {
             list.add(resgroup[i]);
@@ -117,13 +115,28 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         ((OthersRootNode)getNode()).setFiles(files);
     }
     
+    private SourceGroup[] getSourceGroups() {
+        Sources srcs = project.getLookup().lookup(Sources.class);
+        if (srcs == null) {
+            throw new IllegalStateException("need Sources instance in lookup"); //NOI18N
+        }
+        return  srcs.getSourceGroups(test ? MavenSourcesImpl.TYPE_TEST_OTHER  
+                                                           : MavenSourcesImpl.TYPE_OTHER);
+    }
+
+    void doRefresh() {
+        for (SourceGroup sg : getSourceGroups()) {
+            super.refreshKey(sg);
+        }
+    }
+    
     
     protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
         DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
         if (grp instanceof MavenSourcesImpl.OtherGroup) {
             MavenSourcesImpl.OtherGroup resgrp = (MavenSourcesImpl.OtherGroup)grp;
-            if (resgrp.getResource() != null) {
+            if (resgrp.getResource() != null && OthersRootNode.showAsPackages()) {
                 toReturn[0] = new OGFilterNode(PackageView.createPackageView(grp), resgrp);
             } else {
                 Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);
@@ -168,6 +181,32 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
                 return  NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource5", FileUtil.getFileDisplayName(group.getRootFolder()));
              }
         }
+
+        @Override
+        public String getDisplayName() {
+            if (group.getResource() != null) {
+                return group.getDisplayName();
+            } else {
+                return super.getDisplayName();
+            }
+        }
+
+        public @Override Image getIcon(int type) {
+            return computeIcon( false, type );
+        }
+        
+        public @Override Image getOpenedIcon(int type) {
+            return computeIcon( true, type );
+        }
+        private Image computeIcon( boolean opened, int type ) {
+            if (group.getResource() != null) {
+                Icon icon = group.getIcon( opened );
+                return ImageUtilities.icon2Image(icon);
+            } else {
+                return super.getIcon(type);
+            }
+        }
+
     }
    
 }

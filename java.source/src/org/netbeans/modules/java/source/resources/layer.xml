@@ -262,6 +262,9 @@ made subject to such option by the copyright holder.
                 <file name="JavaIndexer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory"/>
                 </file>
+                <file name="SourcePathCheck.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.classpath.SourcePathCheck$Factory"/>
+                </file>
             </folder>
         </folder>
         <folder name="application">

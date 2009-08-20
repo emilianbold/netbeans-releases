@@ -79,6 +79,7 @@ public class FolderInstanceTaskOrderTest extends NbTestCase {
         err.info("setUp over: " + getName());
     }
 
+    @RandomlyFails // NB-Core-Build #3078
     public void testReorderingOfExecutionTasksIsOK() throws Exception {
         String[] names = {
             "folder/"

@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -66,9 +67,13 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
+    UseElementImpl createElement(ASTNodeInfo<UseStatementPart> node) {
+        UseElementImpl retval = new UseElementImpl(this, node);
+        return retval;
+    }
 
     FunctionScopeImpl createElement(Program program, FunctionDeclaration node) {
-        FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(node),
+        FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(program, node),
                 VariousUtils.getReturnTypeFromPHPDoc(program, node));
         return retval;
     }
@@ -121,6 +126,13 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
+    public Collection<? extends UseElement> getDeclaredUses() {
+        return filter(getElements(), new ElementFilter() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.USE_STATEMENT);
+            }
+        });
+    }
 
     @SuppressWarnings("unchecked")
     public Collection<? extends TypeScope> getDeclaredTypes() {
@@ -177,4 +189,5 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         sb.append(namespaceName).append(";");//NOI18N
         return sb.toString();
     }
+
 }

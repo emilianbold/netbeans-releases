@@ -112,9 +112,11 @@ ${WINSYSBEHAVIOR}
         // TODO store your settings
     }
     Object readProperties(java.util.Properties p) {
-        ${TEMPLATENAME}TopComponent singleton = ${TEMPLATENAME}TopComponent.getDefault();
-        singleton.readPropertiesImpl(p);
-        return singleton;
+        if (instance == null) {
+            instance = this;
+        }
+        instance.readPropertiesImpl(p);
+        return instance;
     }
 
     private void readPropertiesImpl(java.util.Properties p) {

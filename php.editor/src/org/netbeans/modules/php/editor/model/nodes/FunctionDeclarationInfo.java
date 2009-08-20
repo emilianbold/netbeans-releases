@@ -40,27 +40,38 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  *
  * @author Radek Matous
  */
 public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
-    protected FunctionDeclarationInfo(FunctionDeclaration node) {
+    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+    protected FunctionDeclarationInfo(Program program, FunctionDeclaration node) {
         super(node);
+        if (program != null) {
+            paramDocTypes = VariousUtils.getParamTypesFromPHPDoc(program, node);
+        }
     }
 
     public static FunctionDeclarationInfo create(FunctionDeclaration functionDeclaration) {
-        return new FunctionDeclarationInfo(functionDeclaration);
+        return new FunctionDeclarationInfo(null, functionDeclaration);
     }
+    public static FunctionDeclarationInfo create(Program program,FunctionDeclaration functionDeclaration) {
+        return new FunctionDeclarationInfo(program, functionDeclaration);
+    }
+
 
     @Override
     public Kind getKind() {
@@ -89,11 +100,8 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
         List<Parameter> retval = new ArrayList<Parameter>();
         List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
-            String name = CodeUtils.getParamDisplayName(formalParameter);
-            String defVal = CodeUtils.getParamDefaultValue(formalParameter);
-            if (name != null) {
-                retval.add(new ParameterImpl(name, defVal));
-            }
+            FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
+            retval.add(parameterInfo.toParameter());
         }
         return retval;
     }

@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -179,7 +179,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
 
     public static String expandMacro(GdbDebugger debugger, String expr) {
-        CallStackFrame csf = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame csf = debugger.getCurrentCallStackFrame();
         if (csf != null) {
             Document doc = csf.getDocument();
             if (doc != null) {

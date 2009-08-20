@@ -274,4 +274,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#167547 : 100% CPU core usage with C++ project
         performTest("iz167547.cc");
     }
+    
+    public void testIZ166165() throws Exception {
+        // IZ#166165 : Unresolved extern enum declaration
+        performTest("iz166165.cc");
+    }
 }

@@ -59,8 +59,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.ErrorManager;
@@ -71,8 +72,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -81,7 +80,7 @@ import org.xml.sax.SAXException;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class LibrariesStorage extends FileChangeAdapter
-implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
+implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     private static final String NB_HOME_PROPERTY = "netbeans.home";  //NOI18N
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
@@ -149,6 +148,10 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
         // configure parser       
         libraries = new HashMap<String,LibraryImplementation>();
         librariesByFileNames = new HashMap<String,LibraryImplementation>();
+        //We are in unit test with no storage
+        if (storage == null) {
+            return;
+        }
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
@@ -200,23 +203,17 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
     private synchronized void initStorage () {
         if (!initialized) {
             if (this.storage == null) {
-                this.storage = createStorage();
-                if (storage == null) {
-                    // Storage broken. May happen e.g. inside unit tests.
-                    libraries = Collections.emptyMap();
-                    librariesByFileNames = Collections.emptyMap();
-                    initialized = true;
-                    return;
-                }
-            }            
-            this.loadFromStorage();            
-            this.storage.addFileChangeListener (this);
-            LibraryTypeRegistry.getDefault().addTaskListener(this);
-            initialized = true;
-        } else {
-            if (!ProjectManager.mutex().isReadAccess() && !ProjectManager.mutex().isWriteAccess()) {
-                LibraryTypeRegistry.getDefault().waitFinished();
+                this.storage = createStorage();                
+            }                                    
+            if (storage != null) {
+                this.storage.addFileChangeListener (this);
             }
+            LibraryTypeRegistry.getDefault().addChangeListener(this);
+            initialized = true;
+        }
+        //For the first time or a new LibraryTypeProvider has been enabled
+        if (libraries == null || LibraryTypeRegistry.getDefault().hasChanged()) {
+            this.loadFromStorage();
         }
     }
 
@@ -317,7 +314,7 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
      */
     public final synchronized LibraryImplementation[] getLibraries() {
         this.initStorage();
-        assert this.storage != null : "Storage is not initialized";
+        assert this.storage != null : "Storage is not initialized";        
         return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
     } // end getLibraries
 
@@ -380,7 +377,7 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 else {
-                    synchronized (this) {
+                    synchronized (this) {                        
                         this.libraries.put (impl.getName(), impl);
                         this.librariesByFileNames.put (fo.getPath(), impl);
                     }
@@ -409,7 +406,7 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
     public void fileDeleted(FileEvent fe) {
         String fileName = fe.getFile().getPath();
         LibraryImplementation impl;
-        synchronized (this) {
+        synchronized (this) {            
             impl = this.librariesByFileNames.remove(fileName);
             if (impl != null) {
                 this.libraries.remove (impl.getName());
@@ -567,15 +564,7 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
         return sb.toString();
     }
 
-    public void taskFinished(Task task) {
-        if (initialized) {
-            HashMap<String, LibraryImplementation> clone;
-            clone = new HashMap<String,LibraryImplementation>(libraries);
-            loadFromStorage();
-            if (!clone.equals(libraries)) {
-                fireLibrariesChanged();
-            }
-        }
+    public void stateChanged(ChangeEvent e) {        
+        fireLibrariesChanged();
     }
-
 }

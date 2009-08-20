@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -67,6 +68,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -334,7 +336,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnectionHintLabel.setText(" "); // NOI18N
             return;
         }
-        remoteConnectionHintLabel.setText(configuration.getUrl(uploadDirectoryTextField.getText()));
+        remoteConnectionHintLabel.setText(configuration.getUrl(RunAsValidator.sanitizeUploadDirectory(uploadDirectoryTextField.getText(), true)));
     }
 
     /** This method is called from within the constructor to
@@ -520,7 +522,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+        Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -546,6 +548,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         public FieldUpdater(String propName, JLabel label, JTextField field) {
             super(propName, label, field);
+        }
+
+        @Override
+        protected String getPropValue() {
+            String value = super.getPropValue();
+            if (getPropName().equals(RunConfigurationPanel.REMOTE_DIRECTORY)) {
+                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+            }
+            return value;
         }
 
         protected final String getDefaultValue() {

@@ -70,6 +70,13 @@ public class CreateEnumConstantTest extends ErrorHintsTestBase {
                 "CreateEnumConstant:EE:test.Test.Name:test.Test.Name",
                 "package test; public class Test {enum Name { A, B, C, EE; } static {Name n = Name.EE;}}");
     }
+
+    public void testEnumCreationOnProperPlaceWithFieldPresent() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {enum Name { A, B, C; private int i; } static {Name n = Name.|EE;}}",
+                "CreateEnumConstant:EE:test.Test.Name:test.Test.Name",
+                "package test; public class Test {enum Name { A, B, C, EE; private int i; } static {Name n = Name.EE;}}");
+    }
     
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

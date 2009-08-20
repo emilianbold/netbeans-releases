@@ -126,21 +126,21 @@ public class Utilities {
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
-        assert task != null;
-        assert source != null;
+        Parameters.notNull ("task", task);
+        Parameters.notNull ("source", source);
         SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
         TaskProcessor.addPhaseCompletionTasks (Collections.<SchedulerTask>singleton (task), cache, true, null);
     }
     
     public static void removeParserResultTask (final ParserResultTask<?> task, final Source source) {
-        assert task != null;
-        assert source != null;
+        Parameters.notNull ("task", task);
+        Parameters.notNull ("source", source);
         TaskProcessor.removePhaseCompletionTasks(Collections.singleton(task), source);
     }
     
     public static void rescheduleTask (final ParserResultTask<?> task, final Source source) {
-        assert task != null;
-        assert source != null;
+        Parameters.notNull ("task", task);
+        Parameters.notNull ("source", source);
         TaskProcessor.rescheduleTasks (Collections.<SchedulerTask>singleton (task), source, null);
     }
 }

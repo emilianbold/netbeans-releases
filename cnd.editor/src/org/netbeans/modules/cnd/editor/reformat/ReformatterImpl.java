@@ -1560,6 +1560,13 @@ public class ReformatterImpl {
                 braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                 return;
             }
+            p2 = ts.lookPreviousLineImportant(CppTokenId.CASE);
+            if (p2 != null && p2.id() == CASE) {
+                // TODO use flase?
+                spaceBefore(previous, false);
+                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                return;
+            }
             if (ts.isQuestionColumn()) {
                 spaceBefore(previous, codeStyle.spaceAroundTernaryOps());
                 spaceAfter(current, codeStyle.spaceAroundTernaryOps());

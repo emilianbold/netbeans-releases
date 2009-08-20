@@ -73,6 +73,7 @@ import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  * Design support for beans binding.
@@ -255,6 +256,15 @@ public class BindingDesignSupport {
         }
         List<PropertyDescriptor> specialPds = getSpecialBindingDescriptors(beanClass);
         Map<String,PropertyDescriptor> pathToDesc = new HashMap<String,PropertyDescriptor>();
+        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+            try {
+                for (PropertyDescriptor pd : FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors()) {
+                    pathToDesc.put(pd.getName(), pd);
+                }
+            } catch (IntrospectionException iex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iex.getMessage(), iex);
+            }
+        }
         for (PropertyDescriptor pd : pds) {
             pathToDesc.put(pd.getName(), pd);
         }

@@ -64,6 +64,19 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        System.setProperty("CslJar", "true");
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("CslJar", "false");
+    }
+
+
+    @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(JsClassPathProvider.BOOT_CP, JsClassPathProvider.getBootClassPath());
     }

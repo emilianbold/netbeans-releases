@@ -51,6 +51,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -58,33 +59,37 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.ProjectNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class ProjectFolder extends JPanel implements ActionListener, DocumentListener {
+public class ProjectFolder extends JPanel implements ActionListener, DocumentListener, ChangeListener {
     private static final long serialVersionUID = 7976754658427748L;
-    private static final Font BOLD_FONT = new JTextArea().getFont().deriveFont(Font.BOLD);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ProjectNameProvider projectNameProvider;
+    private final SourcesFolderProvider sourcesFolderProvider;
 
-    public ProjectFolder(ProjectNameProvider projectNameProvider) {
+    public ProjectFolder(ProjectNameProvider projectNameProvider, SourcesFolderProvider sourcesFolderProvider) {
         this.projectNameProvider = projectNameProvider;
+        this.sourcesFolderProvider = sourcesFolderProvider;
+
         initComponents();
 
         init();
-        projectFolderTextArea.setFont(BOLD_FONT);
         setWarning(false);
     }
 
     private void init() {
         projectFolderCheckBox.addActionListener(this);
         projectFolderTextField.getDocument().addDocumentListener(this);
+        sourcesFolderProvider.addChangeListener(this);
     }
 
     void addProjectFolderListener(ChangeListener listener) {
@@ -121,12 +126,14 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     }
 
     private void setWarning(boolean enabled) {
-        if (enabled) {
-            projectFolderScrollPane.getViewport().add(projectFolderTextArea);
-        } else {
-            projectFolderScrollPane.getViewport().remove(projectFolderTextArea);
-        }
-        projectFolderScrollPane.repaint();
+        projectFolderScrollPane.setVisible(enabled && isProjectDifferentFromSources());
+    }
+
+    // #169784
+    private boolean isProjectDifferentFromSources() {
+        File sources = FileUtil.normalizeFile(sourcesFolderProvider.getSourcesFolder());
+        File project = FileUtil.normalizeFile(new File(getProjectFolder()));
+        return !Utils.subdirectories(sources.getAbsolutePath(), project.getAbsolutePath());
     }
 
     /** This method is called from within the constructor to
@@ -138,15 +145,13 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+
         projectFolderCheckBox = new JCheckBox();
         projectFolderLabel = new JLabel();
         projectFolderTextField = new JTextField();
         projectFolderBrowseButton = new JButton();
         projectFolderScrollPane = new JScrollPane();
         projectFolderTextArea = new JTextArea();
-
-        setFocusTraversalPolicy(null);
-
 
         Mnemonics.setLocalizedText(projectFolderCheckBox, NbBundle.getMessage(ProjectFolder.class, "LBL_SeparateProjectFolder")); // NOI18N
         projectFolderLabel.setLabelFor(projectFolderTextField);
@@ -167,6 +172,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
 
         projectFolderTextArea.setBackground(UIManager.getDefaults().getColor("Label.background"));
         projectFolderTextArea.setEditable(false);
+        projectFolderTextArea.setFont(projectFolderTextArea.getFont().deriveFont(projectFolderTextArea.getFont().getStyle() | Font.BOLD));
         projectFolderTextArea.setLineWrap(true);
         projectFolderTextArea.setText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
         projectFolderTextArea.setToolTipText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
@@ -261,5 +267,9 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
 
     private void processUpdate() {
         changeSupport.fireChange();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        setState(projectFolderCheckBox.isSelected());
     }
 }

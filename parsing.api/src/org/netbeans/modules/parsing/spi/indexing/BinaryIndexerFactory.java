@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.net.URL;
+
 /**
  *
  * @author vita
@@ -50,6 +52,16 @@ public abstract class BinaryIndexerFactory {
      * @return an indexer
      */
     public abstract BinaryIndexer createIndexer();
+
+    /**
+     * Called by indexing infrastructure to notify indexer that roots were deregistered,
+     * for example the project owning these roots was closed. The indexer may free memory caches
+     * for given roots or do any other clean up.
+     *
+     * @param removedRoots the iterable of removed roots
+     * @since 1.19
+     */
+    public abstract void rootsRemoved (Iterable<? extends URL> removedRoots);
 
     /**
      * Return the name of this indexer. This name should be unique because GSF

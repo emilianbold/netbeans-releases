@@ -47,11 +47,12 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -98,11 +99,14 @@ public class ThreadMapVisualizer extends JPanel implements
 
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
-            public void showStack(ThreadStackVisualizer visualizer) {
+            public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getThreadDump(query), startTime);
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();
                 tc.requestVisible();
+                tc.requestFocus(true);
+                return visualizer;
             }
         });
 

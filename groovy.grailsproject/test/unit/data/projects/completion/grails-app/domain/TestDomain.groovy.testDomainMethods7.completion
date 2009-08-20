@@ -8,7 +8,7 @@ METHOD     find(String)                    [PROTECTE  Object
 METHOD     find(String, Collection)        [PROTECTE  Object
 METHOD     find(String, Map)               [PROTECTE  Object
 METHOD     findAll()                       [PROTECTE  List
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findAll(Object)                 [PROTECTE  List
 METHOD     findAll(String)                 [PROTECTE  List
 METHOD     findAll(String, Collection)     [PROTECTE  List
@@ -31,7 +31,7 @@ METHOD     findByName...                   [PROTECTE  Object
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
-METHOD     findIndexValues(int, Closure)              List
+METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     findWhere(Map)                  [PROTECTE  Object

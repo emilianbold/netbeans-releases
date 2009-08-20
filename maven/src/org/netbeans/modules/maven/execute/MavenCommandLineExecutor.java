@@ -286,8 +286,19 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.isUpdateSnapshots()) {
             toRet.add("--update-snapshots");//NOI18N
         }
-
-
+        boolean react = false;
+        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE) {
+            toRet.add("--also-make");
+            react = true;
+        }
+        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE_DEPENDENTS) {
+            toRet.add("--also-make-dependents");
+            react = true;
+        }
+        if (react) {
+            toRet.add("--projects");
+            toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+        }
 
         String opts = MavenSettings.getDefault().getDefaultOptions();
         if (opts != null) {

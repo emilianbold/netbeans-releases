@@ -58,8 +58,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -75,22 +73,18 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
  * @author Ondrej Vrabec
  */
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener {
-
-    /**
-     * Full displayed message
-     */
-    private String message;
-    /**
-     * Original commit message
-     */
-    private String commitMessage;
     /**
      * Parent caller
      */
@@ -101,19 +95,14 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      * Start of the commit message inside the full displayed message
      */
     private int messageOffset;
-    /**
-     * Positions of links in the commit message, for fast access
-     */
-    private Linker positions[];
-    /**
-     * Positions of links in the commit message
-     */
-    private LinkedList<Linker> linkers;
+
+    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
 
     /**
      * Currently showing popup
      */
     private Popup popup;
+    private TooltipContentPanel cp;
 
     public TooltipWindow(AnnotationBar master, final AnnotateLine al) {
         this.annotateLine = al;
@@ -121,7 +110,6 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     }
 
     public void show(Point location) {
-        prepareMessage();
         Rectangle screenBounds = null;
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gds = ge.getScreenDevices();
@@ -132,9 +120,9 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 break;
             }
         }
-        
+
         // showing the popup tooltip
-        TooltipContentPanel cp = new TooltipContentPanel(master.getTextComponent());
+        cp = new TooltipContentPanel(master.getTextComponent());
         popup = PopupFactory.getSharedInstance().getPopup(SwingUtilities.windowForComponent(master.getTextComponent()),
                 cp, (int)location.getX(), (int)location.getY());
         popup.show();
@@ -145,49 +133,6 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         if (event.getID() == MouseEvent.MOUSE_PRESSED || event.getID() == KeyEvent.KEY_PRESSED) {
             onClick(event);
         }
-    }
-
-    /**
-     * Delegates the click to the hyperlink provider.
-     * @param l
-     */
-    private void click(Linker l) {
-        l.provider.onClick(master.getCurrentFile(), commitMessage, l.startOffset, l.endOffset);
-    }
-
-    /**
-     * Returns a linker behind the current mouse position
-     * @param p
-     * @return linker behind the current mouse position, or <code>null</code> if no linker is found
-     */
-    private Linker getLinkerInPosition (Point p) {
-        Linker retval = null;
-        int offset = textPane.viewToModel(p) - messageOffset;
-        if (offset > -1) {
-            retval = getLinkerInPosition(offset);
-        }
-        return retval;
-    }
-
-    /**
-     * Returns a linker behind the offset in the <strong>commit message</strong> not the <strong>displayed message</strong>.
-     * @param p
-     * @return linker behind the current mouse position, or <code>null</code> if no linker is found
-     */
-    private Linker getLinkerInPosition (int offset) {
-        Linker l = null;
-        if (offset < positions.length) {
-            l = positions[offset];
-        }
-        return l;
-    }
-
-    /**
-     *
-     * @return all linkers behind the commit message as an unmodifiableList
-     */
-    private List<Linker> getLinkers () {
-        return Collections.unmodifiableList(linkers);
     }
 
     private void onClick(AWTEvent event) {
@@ -226,71 +171,23 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         popup = null;
     }
 
-    /**
-     * Prepares the displayed message and populates linkers list
-     */
-    private void prepareMessage() {
-        commitMessage = annotateLine.getCommitMessage();
-        StringBuilder sb = new StringBuilder(100);
-        sb.append(annotateLine.getRevision()).append(":").append(annotateLine.getId()).append(" - ") // NOI18N
-                .append(annotateLine.getAuthor());
-        if (annotateLine.getDate() != null) {
-            sb.append(" ").append(DateFormat.getDateInstance().format(annotateLine.getDate())); // NOI18N
-        }
-        positions = new Linker[commitMessage.length()];
-        linkers = new LinkedList<Linker>();
-        List<HyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
-        for (HyperlinkProvider hp : providers) {
-            int[] spans = hp.getSpans(commitMessage);
-            if (spans == null) {
-                break;
-            }
-            int maxIndex = spans.length;
-            if ((maxIndex & 1) != 0) {
-                // cut to even count
-                --maxIndex;
-            }
-            for (int i = 0; i < maxIndex;) {
-                Linker l = new Linker();
-                l.startOffset = spans[i++];
-                l.endOffset = spans[i++];
-                l.provider = hp;
-                for (int j = l.startOffset; j < l.endOffset; ++j) {
-                    // add linker reference to all relevant positions in the commit message
-                    positions[j] = l;
-                }
-                // and add the linker to the list
-                linkers.add(l);
-            }
-        }
-
-        messageOffset = sb.toString().length() + 1;
-        sb.append("\n").append(commitMessage);
-        message = sb.toString();
-    }
-
     public void mouseDragged(MouseEvent e) {
         // not interested
     }
 
     public void mouseMoved(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
-            Linker l = null;
-            if ((l = getLinkerInPosition(e.getPoint())) != null) {
-                textPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                textPane.setToolTipText(l.provider.getTooltip(commitMessage, l.startOffset, l.endOffset));
-                return;
-            }
             textPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            linkerSupport.computeBounds(textPane, 0);
+            linkerSupport.mouseMoved(e.getPoint(), textPane, messageOffset);
         }
         textPane.setToolTipText("");  // NOI18N
     }
 
     public void mouseClicked(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
-            Linker l = getLinkerInPosition(e.getPoint());
-            if (l != null) {
-                click(l);
+            linkerSupport.computeBounds(textPane, 0);
+            if(linkerSupport.mouseClicked(e.getPoint(), 0)) {
                 shutdown(); // close this window
             }
         }
@@ -315,68 +212,95 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     private class TooltipContentPanel extends JComponent {
 
         public TooltipContentPanel(JTextComponent parentPane) {
-            textPane = new JTextPane();
-            textPane.setText(message);
+            try {
+                textPane = new JTextPane();
+                StyledDocument doc = (StyledDocument) textPane.getDocument();
 
-            StyledDocument doc = (StyledDocument) textPane.getDocument();
+                Style normalStyle = textPane.getStyle("normal");
+                Style hyperlinkStyle = textPane.addStyle("hyperlink", normalStyle);
+                StyleConstants.setForeground(hyperlinkStyle, Color.BLUE);
+                StyleConstants.setUnderline(hyperlinkStyle, true);
 
-            Style normalStyle = textPane.getStyle("normal"); // NOI18N
-            Style hyperlinkStyle = textPane.addStyle("hyperlink", normalStyle); // NOI18N
-            StyleConstants.setForeground(hyperlinkStyle, Color.BLUE);
-            StyleConstants.setUnderline(hyperlinkStyle, true);
+                Style authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
+                StyleConstants.setForeground(authorStyle, Color.BLUE);
 
-            textPane.setDocument(doc);
-            textPane.setEditable(false);
-            Color color = new Color(233, 241, 255);
-            textPane.setBackground(color);
+                // revision
+                doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle);
 
-            Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
-            int lineCount = rootElement.getElementCount();
-            int height = textPane.getFontMetrics(textPane.getFont()).getHeight() * (lineCount + 1);
-
-            List<Linker> linkers = getLinkers();
-            for (Linker l : linkers) {
-                doc.setCharacterAttributes(messageOffset + l.startOffset, l.endOffset - l.startOffset, hyperlinkStyle, true);
-            }
-
-            int maxWidth = 0;
-            for (int line = 0; line < lineCount; line++) {
-                Element lineElement = rootElement.getElement(line);
-                String text = null;
-                try {
-                    text = doc.getText(lineElement.getStartOffset(), lineElement.getEndOffset() - lineElement.getStartOffset());
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
+                // author
+                String author = annotateLine.getAuthor();
+                Linker l = linkerSupport.getLinker(AuthorLinker.class, 0);
+                if(master.isKenai()) {
+                    KenaiUser kenaiUser = master.getKenaiUser(author);
+                    if(kenaiUser != null) {
+                        l = new AuthorLinker(kenaiUser, authorStyle, doc, author);
+                        linkerSupport.add(l, 0);
+                    }
                 }
-                int lineLength = textPane.getFontMetrics(textPane.getFont()).stringWidth(text);
-                if (lineLength > maxWidth) {
-                    maxWidth = lineLength;
+                if(l != null) {
+                    l.insertString(doc, authorStyle);
+                } else {
+                    doc.insertString(doc.getLength(), author, normalStyle);
                 }
+
+                // date
+                doc.insertString(doc.getLength(), " ", normalStyle);
+                doc.insertString(doc.getLength(), DateFormat.getDateInstance().format(annotateLine.getDate()), normalStyle);
+                doc.insertString(doc.getLength(), "\n", normalStyle);
+
+                // commit msg
+                String commitMessage = annotateLine.getCommitMessage();
+                List<HyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
+                for (HyperlinkProvider hp : providers) {
+                    l = IssueLinker.create(hp, hyperlinkStyle, master.getRepositoryRoot(), doc, commitMessage);
+                    if (l != null) {
+                        linkerSupport.add(l, 0);
+                        break;
+                    }
+                }
+                if(l != null) {
+                    l.insertString(doc, normalStyle);
+                } else {
+                    doc.insertString(doc.getLength(), commitMessage, normalStyle);
+                }
+
+                textPane.setDocument(doc);
+                textPane.setEditable(false);
+                Color color = new Color(233, 241, 255);
+                textPane.setBackground(color);
+                Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
+                int lineCount = rootElement.getElementCount();
+                int height = textPane.getFontMetrics(textPane.getFont()).getHeight() * (lineCount + 1);
+                int maxWidth = 0;
+                for (int line = 0; line < lineCount; line++) {
+                    Element lineElement = rootElement.getElement(line);
+                    String text = null;
+                    try {
+                        text = doc.getText(lineElement.getStartOffset(), lineElement.getEndOffset() - lineElement.getStartOffset());
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                    int lineLength = textPane.getFontMetrics(textPane.getFont()).stringWidth(text);
+                    if (lineLength > maxWidth) {
+                        maxWidth = lineLength;
+                    }
+                }
+                if (maxWidth < 50) {
+                    maxWidth = 50;
+                }
+                textPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
+                if (!textPane.isEditable()) {
+                    textPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$");
+                }
+                textPane.addMouseListener(TooltipWindow.this);
+                textPane.addMouseMotionListener(TooltipWindow.this);
+                JScrollPane jsp = new JScrollPane(textPane);
+                jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
+                setLayout(new BorderLayout());
+                add(jsp);
+            } catch (BadLocationException ex) {
+
             }
-
-            if (maxWidth < 50) {
-                maxWidth = 50;   // too thin component causes repaint problems
-            }
-            textPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
-
-            if (!textPane.isEditable()) {
-                textPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
-            }
-
-            textPane.addMouseListener(TooltipWindow.this);
-            textPane.addMouseMotionListener(TooltipWindow.this);
-
-            JScrollPane jsp = new JScrollPane(textPane);
-            jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
-
-            setLayout(new BorderLayout());
-            add(jsp);
         }
-    }
-
-    private class Linker {
-        private int startOffset;
-        private int endOffset;
-        private HyperlinkProvider provider;
     }
 }

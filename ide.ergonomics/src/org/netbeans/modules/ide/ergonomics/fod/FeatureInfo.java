@@ -214,6 +214,14 @@ public final class FeatureInfo {
                     if (data.hasFile(s)) {
                         FeatureProjectFactory.LOG.log(Level.FINER, "    found", s);
                         if (data.isDeepCheck() && required[1] != null) {
+                            if (!(required[1] instanceof XPathExpression)) {
+                                try {
+                                    required[1] = XPathFactory.newInstance().newXPath().compile((String) required[1]);
+                                } catch (XPathExpressionException ex) {
+                                    FoDFileSystem.LOG.log(Level.WARNING, "Cannot parse " + required[1], ex);
+                                    continue;
+                                }
+                            }
                             XPathExpression e = (XPathExpression)required[1];
                             Document content = data.dom(s);
                             try {
@@ -304,12 +312,7 @@ public final class FeatureInfo {
         nbproject.put(prjType, clazz);
     }
     final void projectFile(String file, String xpath, String clazz) throws XPathExpressionException {
-        XPathExpression e = null;
-        if (xpath != null) {
-            e = XPathFactory.newInstance().newXPath().compile(xpath);
-        }
-
-        files.put(new Object[] { file, e }, clazz);
+        files.put(new Object[] { file, xpath }, clazz);
     }
     static Map<String,String> nbprojectTypes() {
         Map<String,String> map = new HashMap<String, String>();

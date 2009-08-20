@@ -52,17 +52,24 @@ import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
  * @author Tomas Stupka
  */
 public class FormatPanel extends javax.swing.JPanel {
-    private final Format defaultFormat;
+    private final Format defaultIssueInfoTemplate;
+    private final Format defaultRevisionTemplate;
 
     /** Creates new form FormatPanel */
-    FormatPanel(Format format, Format defaultFormat) {
+    FormatPanel(Format revisionTemplate, Format defaultRevisionTemplate, Format issueInfoTemplate, Format defaultIssueInfoTemplate) {
         initComponents();
-        setFormat(format);
-        this.defaultFormat = defaultFormat;
+        this.defaultIssueInfoTemplate = defaultIssueInfoTemplate;
+        this.defaultRevisionTemplate = defaultRevisionTemplate;
+        setRevisionTemplate(revisionTemplate);
+        setIssueInfoTemplate(issueInfoTemplate);
     }
 
-    Format getFormat() {
-        return new Format(aboveRadio.isSelected(), jTextArea1.getText());
+    Format getCommitFormat() {
+        return new Format(aboveCommitRadio.isSelected(), issueInfoTextArea.getText());
+    }
+
+    Format getIssueFormat() {
+        return new Format(false, revisionTextArea.getText());
     }
 
     /** This method is called from within the constructor to
@@ -75,44 +82,67 @@ public class FormatPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        issueInfoTextArea = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
-        aboveRadio = new javax.swing.JRadioButton();
-        beloveRadio = new javax.swing.JRadioButton();
-        resetButton = new javax.swing.JButton();
+        aboveCommitRadio = new javax.swing.JRadioButton();
+        belowCommitRadio = new javax.swing.JRadioButton();
+        resetCommitButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        revisionTextArea = new javax.swing.JTextArea();
+        resetIssueButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
 
-        jLabel1.setLabelFor(jTextArea1);
+        jLabel1.setLabelFor(issueInfoTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13));
-        jTextArea1.setRows(5);
-        jTextArea1.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.toolTipText")); // NOI18N
-        jScrollPane1.setViewportView(jTextArea1);
-        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.AccessibleContext.accessibleDescription")); // NOI18N
+        issueInfoTextArea.setColumns(20);
+        issueInfoTextArea.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        issueInfoTextArea.setRows(5);
+        issueInfoTextArea.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.issueInfoTextArea.toolTipText")); // NOI18N
+        jScrollPane1.setViewportView(issueInfoTextArea);
+        issueInfoTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel2.text")); // NOI18N
 
-        buttonGroup1.add(aboveRadio);
-        org.openide.awt.Mnemonics.setLocalizedText(aboveRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.text")); // NOI18N
+        buttonGroup1.add(aboveCommitRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(aboveCommitRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveCommitRadio.text")); // NOI18N
 
-        buttonGroup1.add(beloveRadio);
-        beloveRadio.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(beloveRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.text")); // NOI18N
-        beloveRadio.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(belowCommitRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(belowCommitRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.belowCommitRadio.text")); // NOI18N
+        belowCommitRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                beloveRadioActionPerformed(evt);
+                belowCommitRadioActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(resetButton, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.resetButton.text")); // NOI18N
-        resetButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(resetCommitButton, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.resetCommitButton.text")); // NOI18N
+        resetCommitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resetButtonActionPerformed(evt);
+                resetCommitButtonActionPerformed(evt);
             }
         });
+
+        jLabel3.setLabelFor(issueInfoTextArea);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel3.text")); // NOI18N
+
+        revisionTextArea.setColumns(20);
+        revisionTextArea.setFont(new java.awt.Font("Monospaced", 0, 13));
+        revisionTextArea.setRows(5);
+        revisionTextArea.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.revisionTextArea.toolTipText")); // NOI18N
+        jScrollPane2.setViewportView(revisionTextArea);
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetIssueButton, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.resetIssueButton.text")); // NOI18N
+        resetIssueButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetIssueButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -122,69 +152,97 @@ public class FormatPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addContainerGap(514, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(beloveRadio)
-                            .add(aboveRadio))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 169, Short.MAX_VALUE)
-                        .add(resetButton)
-                        .add(20, 20, 20))))
+                            .add(aboveCommitRadio)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(resetCommitButton)
+                                .add(belowCommitRadio)))
+                        .add(89, 89, 89)
+                        .add(resetIssueButton))
+                    .add(jLabel4)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jLabel3, 0, 0, Short.MAX_VALUE)
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
+                .add(20, 20, 20)
+                .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(resetButton)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(resetIssueButton)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel2)
-                            .add(aboveRadio))
+                            .add(aboveCommitRadio))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(beloveRadio)))
-                .addContainerGap())
+                        .add(belowCommitRadio)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(resetCommitButton)))
+                .add(33, 33, 33))
         );
 
-        aboveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
-        beloveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.AccessibleContext.accessibleDescription")); // NOI18N
-        resetButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        aboveCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        belowCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        resetCommitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void beloveRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_beloveRadioActionPerformed
+    private void belowCommitRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_belowCommitRadioActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_beloveRadioActionPerformed
+    }//GEN-LAST:event_belowCommitRadioActionPerformed
 
-    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
-        setFormat(defaultFormat);
-    }//GEN-LAST:event_resetButtonActionPerformed
+    private void resetCommitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetCommitButtonActionPerformed
+        setRevisionTemplate(defaultRevisionTemplate);
+    }//GEN-LAST:event_resetCommitButtonActionPerformed
+
+    private void resetIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetIssueButtonActionPerformed
+        setIssueInfoTemplate(defaultIssueInfoTemplate);
+    }//GEN-LAST:event_resetIssueButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton aboveRadio;
-    private javax.swing.JRadioButton beloveRadio;
+    private javax.swing.JRadioButton aboveCommitRadio;
+    private javax.swing.JRadioButton belowCommitRadio;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.JTextArea issueInfoTextArea;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JButton resetButton;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JButton resetCommitButton;
+    private javax.swing.JButton resetIssueButton;
+    private javax.swing.JTextArea revisionTextArea;
     // End of variables declaration//GEN-END:variables
 
-    private void setFormat(Format format) {
-        jTextArea1.setText(format.getFormat());
-        aboveRadio.setSelected(format.isAbove());
+    private void setRevisionTemplate(Format format) {
+        revisionTextArea.setText(format.getFormat());
+    }
+
+    private void setIssueInfoTemplate(Format format) {
+        issueInfoTextArea.setText(format.getFormat());
+        aboveCommitRadio.setSelected(format.isAbove());
+        belowCommitRadio.setSelected(!format.isAbove());
     }
 
 }

@@ -53,6 +53,6 @@ public class PkgConfigTestCase extends MakeProjectBase {
 
     @Test
     public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null, false);
     }
 }

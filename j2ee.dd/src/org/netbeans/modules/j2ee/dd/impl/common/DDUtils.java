@@ -145,6 +145,8 @@ public class DDUtils {
                 return org.netbeans.modules.j2ee.dd.impl.client.model_1_4.ApplicationClient.createGraph(is);
             } else if (AppClient.VERSION_5_0.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.client.model_5_0.ApplicationClient.createGraph(is);
+            } else if (AppClient.VERSION_6_0.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.client.model_6_0.ApplicationClient.createGraph(is);
             }
         } catch (RuntimeException ex) {
             throw new SAXException(ex);

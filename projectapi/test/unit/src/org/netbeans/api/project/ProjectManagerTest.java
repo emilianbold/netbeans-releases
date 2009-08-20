@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
@@ -106,7 +105,6 @@ public class ProjectManagerTest extends NbTestCase {
         MockLookup.setInstances(TestUtil.testProjectFactory());
         pm = ProjectManager.getDefault();
         pm.reset();
-        TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
     }
     
     @Override
@@ -353,67 +351,6 @@ public class ProjectManagerTest extends NbTestCase {
         assertEquals("p1 still recognized as a project", proj1, pm.findProject(p1));
     }
 
-    @RandomlyFails // NB-Core-Build #1082, 1089
-    public void testLoadExceptionWithConcurrentLoad() throws Exception {
-        TestUtil.BROKEN_PROJECT_LOAD_LOCK = new Object();
-        final Object GOING = new Object();
-        // Enter from one thread and start to load a broken project, but then pause.
-        synchronized (GOING) {
-            new Thread("initial load") {
-                @Override
-                public void run() {
-                    try {
-                        synchronized (GOING) {
-                            GOING.notify();
-                        }
-                        pm.findProject(badproject);
-                        assert false : "Should not have loaded project successfully #1";
-                    } catch (IOException e) {
-                        // Right.
-                    }
-                }
-            }.start();
-            GOING.wait();
-        }
-        // Now #1 should be waiting on BROKEN_PROJECT_LOAD_LOCK.
-        Object previousLoadLock = TestUtil.BROKEN_PROJECT_LOAD_LOCK;
-        TestUtil.BROKEN_PROJECT_LOAD_LOCK = null; // don't block second load
-        // In another thread, start to try to load the same project.
-        //System.err.println("midpoint");
-        synchronized (GOING) {
-            final boolean[] FINISHED_2 = new boolean[1];
-            new Thread("parallel load") {
-                @Override
-                public void run() {
-                    synchronized (GOING) {
-                        GOING.notify();
-                    }
-                    try {
-                        pm.findProject(badproject);
-                        assert false : "Should not have loaded project successfully #2";
-                    } catch (IOException e) {
-                        // Right.
-                        FINISHED_2[0] = true;
-                    }
-                    synchronized (GOING) {
-                        GOING.notify();
-                    }
-                }
-            }.start();
-            // Make sure #2 is running.
-            GOING.wait();
-            // XXX race condition here - what if we continue in main thr before pm.fP is called in #2??
-            assertFalse("not yet finished #2", FINISHED_2[0]);
-            // Now let #1 continue.
-            synchronized (previousLoadLock) {
-                previousLoadLock.notify();
-            }
-            // And wait (a reasonable amount of time) for #2 to exit.
-            GOING.wait(9999);
-            assertTrue("finished #2 without deadlock", FINISHED_2[0]);
-        }
-    }
-    
     public void testNotifyDeleted() throws Exception {
         FileObject p1 = scratch.createFolder("p1");
         FileObject p1TestProject = p1.createFolder("testproject");

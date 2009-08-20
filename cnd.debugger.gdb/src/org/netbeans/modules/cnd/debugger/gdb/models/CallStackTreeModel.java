@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -79,8 +79,8 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-	    List<CallStackFrame> stack = debugger.getCallStack();
-            return stack.toArray(new CallStackFrame[stack.size()]);
+	    List<GdbCallStackFrame> stack = debugger.getCallStack();
+            return stack.toArray(new GdbCallStackFrame[stack.size()]);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -115,7 +115,7 @@ public class CallStackTreeModel implements TreeModel {
         if (node.equals(ROOT)) {
 	    return false;
 	}
-        if (node instanceof CallStackFrame) {
+        if (node instanceof GdbCallStackFrame) {
 	    return true;
 	}
         throw new UnknownTypeException(node);

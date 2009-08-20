@@ -38,9 +38,6 @@
  */
 package org.netbeans.modules.dlight.core.stack.api;
 
-import org.netbeans.modules.dlight.api.stack.Function;
-import org.netbeans.modules.dlight.api.stack.FunctionCall;
-
 /**
  * Function Call with metrics for function.
  * As an example: you have the following

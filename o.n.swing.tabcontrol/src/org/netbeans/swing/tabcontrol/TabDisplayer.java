@@ -62,6 +62,11 @@ import java.util.List;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleSelection;
 import javax.swing.event.ChangeListener;
+import org.netbeans.swing.tabcontrol.plaf.AbstractTabCellRenderer;
+import org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.BasicTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.TabCellRenderer;
+import org.netbeans.swing.tabcontrol.plaf.TabState;
 import org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI;
@@ -469,10 +474,25 @@ public final class TabDisplayer extends JComponent implements Accessible {
             }
             int index = getUI().tabForCoordinate(p);
             if (index != -1) {
-                return getModel().getTab(index).tip;
+                return getTooltipForTab( index );
             }
         }
         return super.getToolTipText(event);
+    }
+
+    private String getTooltipForTab( int tabIndex ) {
+        if( TYPE_EDITOR == getType() ) {
+           if( getUI() instanceof BasicTabDisplayerUI ) {
+               BasicTabDisplayerUI basicUI = (BasicTabDisplayerUI)getUI();
+               TabCellRenderer cellRenderer = basicUI.getTabCellRenderer(tabIndex);
+               if( cellRenderer instanceof AbstractTabCellRenderer ) {
+                   if( (((AbstractTabCellRenderer)cellRenderer).getState() & TabState.CLOSE_BUTTON_ARMED) != 0 ) {
+                       return org.openide.util.NbBundle.getMessage(TabDisplayer.class, "TT_TabDisplayer_Close");
+                   }
+               }
+           }
+        }
+        return getModel().getTab(tabIndex).tip;
     }
 
     /** Make a tab visible.  In the case of scrolling UIs, a tab is not

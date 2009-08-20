@@ -90,7 +90,8 @@ import org.xml.sax.SAXException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>, Jirka Rechtacek <jrechtacek@netbeans.org>
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
-public class FeatureProjectFactory implements ProjectFactory, PropertyChangeListener {
+public class FeatureProjectFactory
+implements ProjectFactory, PropertyChangeListener, Runnable {
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.ide.ergonomics.projects"); // NOI18N
 
     public FeatureProjectFactory() {
@@ -252,56 +253,56 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
+    public void run() {
+        final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
+        FeatureInfo f = null;
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            Data d = new Data(p.getProjectDirectory(), true);
+            for (FeatureInfo info : FeatureManager.features()) {
+                switch (info.isProject(d)) {
+                    case 0:
+                        break;
+                    case 1:
+                        f = info;
+                        break;
+                    case 2:
+                        f = info;
+                        additional.add(info);
+                        break;
+                    default:
+                        assert false;
+                }
+            }
+        }
+        if (f != null && !additional.isEmpty()) {
+            final FeatureInfo finalF = f;
+            final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
+
+            boolean success = false;
+            FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
+            FindComponentModules findModules = new FindComponentModules(finalF, addF);
+            Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
+            Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
+            if (toInstall != null && !toInstall.isEmpty()) {
+                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
+                installer.getInstallTask().waitFinished();
+                success = true;
+            } else if (toEnable != null && !toEnable.isEmpty()) {
+                ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
+                enabler.getEnableTask().waitFinished();
+                success = true;
+            } else if (toEnable == null || toInstall == null) {
+                success = true;
+            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
+                success = true;
+            }
+        }
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
-            FeatureInfo f = null;
-            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                Data d = new Data(p.getProjectDirectory(), true);
-
-                for (FeatureInfo info : FeatureManager.features()) {
-                    switch (info.isProject(d)) {
-                        case 0: break;
-                        case 1: 
-                            f = info;
-                            break;
-                        case 2:
-                            f = info;
-                            additional.add(info);
-                            break;
-                        default: assert false;
-                    }
-                }
-            }
-
-            if (f != null && !additional.isEmpty()) {
-                final FeatureInfo finalF = f;
-                final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
-                class Enable implements Runnable {
-                    private boolean success;
-                    public void run() {
-                        FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
-                        FindComponentModules findModules = new FindComponentModules(finalF, addF);
-                        Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
-                        Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
-                        if (toInstall != null && !toInstall.isEmpty()) {
-                            ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                            installer.getInstallTask().waitFinished();
-                            success = true;
-                        } else if (toEnable != null && !toEnable.isEmpty()) {
-                            ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
-                            enabler.getEnableTask().waitFinished();
-                            success = true;
-                        } else if (toEnable == null || toInstall == null) {
-                            success = true;
-                        } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                            success = true;
-                        }
-                    }
-                }
-                Enable en = new Enable();
-                RequestProcessor.getDefault ().post (en, 0, Thread.NORM_PRIORITY).waitFinished ();
-            }
+            RequestProcessor.Task t = FeatureManager.getInstance().create(this);
+            t.schedule(0);
         }
     }
 
@@ -383,7 +384,9 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                 if (state == null) {
                     return;
                 }
-                RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
+                RequestProcessor.Task t = FeatureManager.getInstance().create(this);
+                t.schedule(0);
+                t.waitFinished ();
                 if (error == null) {
                     switchToReal();
                     // make sure support for projects we depend on are also enabled

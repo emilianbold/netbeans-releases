@@ -39,7 +39,6 @@
 
 package org.netbeans.core.browser.api;
 
-import org.netbeans.core.browser.ApiAccessor;
 import org.openide.util.Lookup;
 
 /**
@@ -48,10 +47,6 @@ import org.openide.util.Lookup;
  * @author S. Aubrecht
  */
 public abstract class EmbeddedBrowserFactory {
-
-    static {
-        ApiAccessor.DEFAULT = new ApiAccessorImpl();
-    }
 
     /**
      * @return The one and only instance.

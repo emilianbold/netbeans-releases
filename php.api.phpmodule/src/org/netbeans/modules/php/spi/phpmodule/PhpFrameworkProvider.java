@@ -42,6 +42,7 @@ package org.netbeans.modules.php.spi.phpmodule;
 import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -139,24 +140,35 @@ public abstract class PhpFrameworkProvider {
     public abstract PhpModuleProperties getPhpModuleProperties(PhpModule phpModule);
 
     /**
-     * Creates a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
+     * Get a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
      * and the given PHP module.
      *
      * @param  phpModule the PHP module which actions are going to be extended
      * @return a new PHP module actions extender, can be <code>null</code> if the framework doesn't support
      *         extending of actions
-     * @since 1.4
+     * @since 1.11
      */
-    public abstract PhpModuleActionsExtender createActionsExtender(PhpModule phpModule);
+    public abstract PhpModuleActionsExtender getActionsExtender(PhpModule phpModule);
 
     /**
-     * Creates a {@link PhpModuleVisibilityExtender PHP module visibility extender} for this framework
+     * Get a {@link PhpModuleIgnoredFilesExtender PHP module ignored files extender} for this framework
      * and the given PHP module.
      *
-     * @param  phpModule the PHP module which visibility is going to be extended
-     * @return a new PHP module visibility extender, can be <code>null</code> if the framework doesn't need
+     * @param  phpModule the PHP module which ignored files are going to be extended
+     * @return PHP module ignored files extender, can be <code>null</code> if the framework doesn't need
      *         to recommend to hide any files or folders
-     * @since 1.4
+     * @since 1.12
      */
-    public abstract PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule);
+    public abstract PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule);
+
+    /**
+     * Get a {@link FrameworkCommandSupport framework command support} for this framework
+     * and the given PHP module.
+     *
+     * @param  phpModule the PHP module for which framework command support is to be gotten
+     * @return framework command support, can be <code>null</code> if the framework doesn't support
+     *         running external commands
+     * @since 1.11
+     */
+    public abstract FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule);
 }

@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 
@@ -69,14 +70,23 @@ public abstract class Provider {
     private final String providerClass;
     
     private final Set vendorSpecificProperties;
+    private final String version;
     
     
     /**
      * Creates a new instance of Provider
      */
     protected Provider(String providerClass) {
+        this(providerClass, null);
+    }
+
+    /**
+     * Creates a new instance of Provider
+     */
+    protected Provider(String providerClass, String version) {
         assert !(null == providerClass || "".equals(providerClass.trim())) : "Provider class must be given!";
         this.providerClass = providerClass;
+        this.version = version;
         this.vendorSpecificProperties = initPropertyNames();
     }
     
@@ -87,6 +97,27 @@ public abstract class Provider {
      */
     public final String getProviderClass(){
         return this.providerClass;
+    }
+
+    public boolean isOnClassPath(ClassPath cp)
+    {
+        String classRelativePath = getProviderClass().replace('.', '/') + ".class"; //NOI18N
+        boolean ret = cp.findResource(classRelativePath) != null;
+        if(ret && version != null)
+        {
+            if(Persistence.VERSION_2_0.equals(version)){
+                ret &= cp.findResource("javax/persistence/criteria/JoinType.class") != null;
+            }
+            else if(Persistence.VERSION_1_0.equals(version)){
+                ret &= cp.findResource("javax/persistence/Entity.class") != null && cp.findResource("javax/persistence/criteria/JoinType.class") == null;
+            }
+        }
+        return ret;
+    }
+
+    protected String getVersion()
+    {
+        return version;
     }
     
     private Set initPropertyNames(){
@@ -139,24 +170,32 @@ public abstract class Provider {
     }
     
     /**
-     * @return name of the property representing JDBC URL.
+     * @return names of the property representing JDBC URL, map version-property name
      */
-    public abstract String getJdbcUrl();
+    public String getJdbcUrl() {
+        return "javax.persistence.jdbc.url";
+    }
     
     /**
      * @return name of the property representing JDBC driver.
      */
-    public abstract String getJdbcDriver();
+    public String getJdbcDriver() {
+        return "javax.persistence.jdbc.driver";
+    }
     
     /**
      * @return name of the property representing JDBC user name.
      */
-    public abstract String getJdbcUsername();
+    public String getJdbcUsername() {
+        return "javax.persistence.jdbc.user";
+    }
     
     /**
      * @return name of the property representing JDBC password.
      */
-    public abstract String getJdbcPassword();
+    public String getJdbcPassword() {
+        return "javax.persistence.jdbc.password";
+    }
     
     /**
      * @return name of the property representing table generation strategy.
@@ -189,10 +228,11 @@ public abstract class Provider {
      * database connection's properties. If given connection was null, will
      * return a map containing keys (names) of properties but empty Strings as values.
      * @param connection
+     * @version isn't used yt, may need to be removed
      * @return Map (key String representing name of the property, value String
      *  representing value of the property).
      */
-    public final Map<String, String> getConnectionPropertiesMap(DatabaseConnection connection){
+    public final Map<String, String> getConnectionPropertiesMap(DatabaseConnection connection, String version){
         Map<String, String> result = new HashMap<String, String>();
         result.put(getJdbcDriver(), connection != null ? connection.getDriverClass() : "");
         result.put(getJdbcUrl(), connection != null ? connection.getDatabaseURL() : "");
@@ -211,20 +251,24 @@ public abstract class Provider {
         return getTableGenerationPropertyName() != null && !"".equals(getTableGenerationPropertyName().trim());
     }
     
+    @Override
     public String toString() {
         return getDisplayName();
     }
     
+    @Override
     public int hashCode() {
         return providerClass.hashCode();
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Provider)){
             return false;
         }
         Provider that = (Provider) obj;
-        return getClass().equals(that.getClass()) && providerClass.equals(that.providerClass);
+        boolean sameVersion = (getVersion()!=null && getVersion().equals(that.getVersion())) || (getVersion()==null && that.getVersion()==null);
+        return getClass().equals(that.getClass()) && providerClass.equals(that.providerClass) && sameVersion;
     }
     
     

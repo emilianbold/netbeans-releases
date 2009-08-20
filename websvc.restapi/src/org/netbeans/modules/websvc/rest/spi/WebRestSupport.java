@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -88,20 +89,22 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public FileObject getWebXml() throws IOException {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml"); // NOI18N
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            } else {
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                if (wm != null) {
-                    FileObject webInf = wm.getWebInf();
-                    if (webInf != null) {
-                        return DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            FileObject ddFo = wm.getDeploymentDescriptor();
+            if (ddFo == null) {
+                FileObject webInf = wm.getWebInf();
+                if (webInf == null) {
+                    FileObject docBase = wm.getDocumentBase();
+                    if (docBase != null) {
+                        webInf = docBase.createFolder("WEB-INF"); //NOI18N
                     }
                 }
+                if (webInf != null) {
+                    ddFo = DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+                }
             }
+            return ddFo;
         }
         return null;
     }
@@ -157,7 +160,11 @@ public abstract class WebRestSupport extends RestSupport {
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping");
                 sm.setServletName(adaptorServlet.getServletName());
-                sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                if (sm instanceof ServletMapping25) {
+                    ((ServletMapping25)sm).addUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                } else {
+                    sm.setUrlPattern(REST_SERVLET_ADAPTOR_MAPPING);
+                }
                 webApp.addServletMapping(sm);
                 needsSave = true;
             }

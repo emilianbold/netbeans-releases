@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.actions.SystemAction;
 
@@ -227,7 +228,7 @@ public class MultiFileSystem extends FileSystem {
     /** The name of the filesystem.
     */
     public String getDisplayName() {
-        return getString("CTL_MultiFileSystem");
+        return NbBundle.getMessage(MultiFileSystem.class, "CTL_MultiFileSystem");
     }
 
     /** Root of the filesystem.
@@ -441,7 +442,7 @@ public class MultiFileSystem extends FileSystem {
     protected FileSystem createWritableOn(String name)
     throws IOException {
         if (isReadOnly()) {
-            FSException.io("EXC_FSisRO", getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(MultiFileSystem.class, "EXC_FSisRO", getDisplayName()));
         }
 
         return systems[WRITE_SYSTEM_INDEX];

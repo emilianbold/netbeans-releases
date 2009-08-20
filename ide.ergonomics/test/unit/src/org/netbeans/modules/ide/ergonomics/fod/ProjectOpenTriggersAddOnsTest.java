@@ -226,6 +226,8 @@ public class ProjectOpenTriggersAddOnsTest extends NbTestCase implements Propert
         assertNotNull("Test factory2 in project", p.getLookup().lookup(TestFactory2.class));
         OpenProjects.getDefault().open(new Project[] { p }, false);
 
+        FeatureManager.getInstance().waitFinished();
+
         assertTrue("Autoupdate remains enabled", au.isEnabled());
         assertTrue("Favorites is enabled too", fav.isEnabled());
     }

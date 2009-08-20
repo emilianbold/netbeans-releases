@@ -38,19 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.core.syntax.completion;
 
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -61,190 +55,119 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
-
 /** JSP completion provider implementation
  *
- * @author Marek.Fukala@Sun.COM
+ * @author mfukala@netbeans.org
  */
 public class JspCompletionProvider implements CompletionProvider {
-    
-    public JspCompletionProvider() {}
-    
+
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         int type = JspSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
-        if(type == ExtSyntaxSupport.COMPLETION_POPUP) {
+        if (type == ExtSyntaxSupport.COMPLETION_POPUP) {
             return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
-        } else return 0;
+        } else {
+            return 0;
+        }
     }
-    
+
     public CompletionTask createTask(int type, JTextComponent component) {
         if ((type & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
-            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
+            return new AsyncCompletionTask(new Query(), component);
         } else if (type == DOCUMENTATION_QUERY_TYPE) {
             return new AsyncCompletionTask(new DocQuery(null), component);
         }
         return null;
     }
-    
+
     public static class Query extends AbstractQuery {
-        
+
         private JTextComponent component;
-        
-        Query(int caretOffset) {
-        }
-        
+
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-        
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+
+        protected void doQuery(CompletionResultSet resultSet, Document doc,
+                int caretOffset) {
+            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
             JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
 
             resultSet.addAllItems(jspResultSet.getItems());
             resultSet.setAnchorOffset(jspResultSet.getAnchor());
         }
-        
     }
-    
+
     public static class DocQuery extends AbstractQuery {
-        
+
         private JTextComponent component;
         private JspCompletionItem item;
-        
-        public  DocQuery(JspCompletionItem item) {
+
+        public DocQuery(JspCompletionItem item) {
             this.item = item;
         }
-        
+
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-        
+
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if(item != null) {
+            if (item != null) {
                 //this instance created from jsp completion item
-                if(item.hasHelp()) {
+                if (item.hasHelp()) {
                     resultSet.setDocumentation(new DocItem(item));
                 }
             } else {
                 //called directly by infrastructure - run query
-                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
                 JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
-                resultSet.addAllItems(jspResultSet.getItems());
-                resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                if (jspResultSet.getItems().size() > 0) {
+                    resultSet.setDocumentation(new DocItem((JspCompletionItem) jspResultSet.getItems().get(0)));
+                    resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                }
+
             }
-            
-            
-            
-//            CompletionQuery.Result res = queryImpl(component, caretOffset);
-//            if(item == null) {
-//                if(res != null) {
-//                    List result = res.getData();
-//                    if(result != null && result.size() > 0) {
-//                        Object resultObj = result.get(0);
-//                        if(resultObj instanceof JspCompletionItem) {
-//                            item = (JspCompletionItem)resultObj;
-//                        } else if(resultObj instanceof HTMLResultItem) {
-//                            HTMLResultItem htmlItem = (HTMLResultItem)resultObj;
-//                            if(htmlItem != null && htmlItem.getHelpID() != null) {
-//                                resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
-//                                resultSet.setTitle(res.getTitle());
-//                                return ;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            if(item != null &&
-//                    !(item instanceof JspCompletionItem2.ELItem) &&
-//                    (item.getHelp() != null || item.getHelpURL() != null)) {
-//                resultSet.setDocumentation(new DocItem(item));
-//                if(res != null) {
-//                    resultSet.setTitle(res.getTitle());
-//                }
-//            }
-//        }
         }
     }
-    
+
     private static class DocItem implements CompletionDocumentation {
-        
+
         private JspCompletionItem ri;
-        
+
         public DocItem(JspCompletionItem ri) {
             this.ri = ri;
         }
-        
+
         public String getText() {
             return ri.getHelp();
         }
-        
+
         public URL getURL() {
             return ri.getHelpURL();
         }
-        
+
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }
-        
+
         public Action getGotoSourceAction() {
             return null;
         }
     }
- 
-    
-        public static abstract class AbstractQuery extends AsyncCompletionQuery {
-        
+
+    public static abstract class AbstractQuery extends AsyncCompletionQuery {
+
         @Override
         protected void preQueryUpdate(JTextComponent component) {
-            int caretOffset = component.getCaretPosition();
-            Document doc = component.getDocument();
-            checkHideCompletion((BaseDocument)doc, caretOffset);
         }
-        
+
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            //weird, but in some situations null is passed from the framework. Seems to be a bug in active component handling
-            if(doc != null) {
-                checkHideCompletion((BaseDocument)doc, caretOffset);
-            }
             doQuery(resultSet, doc, caretOffset);
             resultSet.finish();
         }
-        
+
         abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
-        
     }
-    
-    private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
-        //test whether we are just in text and eventually close the opened completion
-        //this is handy after end tag autocompletion when user doesn't complete the
-        //end tag and just types a text
-        int adjustedOffset = caretOffset == 0 ? 0 : caretOffset - 1;
-        doc.readLock();
-        try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
-            if(tokenSequence != null) {
-                tokenSequence.move(adjustedOffset);
-                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                    return; //no token found
-                }
-                
-                Token tokenItem = tokenSequence.token();
-                if(tokenSequence.embedded() == null && tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
-                    hideCompletion();
-                }
-            }
-        } finally {
-            doc.readUnlock();
-        }
-    }
-    
-    private static void hideCompletion() {
-        Completion.get().hideCompletion();
-        Completion.get().hideDocumentation();
-    }
-    
+
 }

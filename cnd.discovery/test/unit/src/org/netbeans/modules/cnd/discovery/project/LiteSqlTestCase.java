@@ -61,6 +61,6 @@ public class LiteSqlTestCase extends MakeProjectBase {
             // do anybody know how to make litesql on windows?
             return;
         }
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz", null);
+        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz", null, false);
     }
 }

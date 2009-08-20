@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.common.breakpoints;
 
 import java.util.EventObject;
-import org.netbeans.modules.cnd.debugger.common.CndDebugger;
 
 /**
  * CndBreakpoint event notification.
@@ -64,7 +63,7 @@ public final class CndBreakpointEvent extends EventObject {
     
     private int             conditionResult = CONDITION_FAILED;
     private Throwable       conditionException = null;
-    private CndDebugger	    debugger;
+    private Object          debugger;
     private boolean         resume = false;
     
 
@@ -78,7 +77,7 @@ public final class CndBreakpointEvent extends EventObject {
      * @param conditionResult   a result of condition
      * @param variable          a context variable
      */
-    public CndBreakpointEvent(CndBreakpoint sourceBreakpoint, CndDebugger debugger,  int conditionResult) {
+    public CndBreakpointEvent(CndBreakpoint sourceBreakpoint, Object debugger,  int conditionResult) {
         super(sourceBreakpoint);
         this.conditionResult = conditionResult;
         this.debugger = debugger;
@@ -92,7 +91,7 @@ public final class CndBreakpointEvent extends EventObject {
      * @param debugger          a debugger this
      * @param variable          a context variable
      */
-    public CndBreakpointEvent(CndBreakpoint sourceBreakpoint, CndDebugger debugger, Throwable conditionException) {
+    public CndBreakpointEvent(CndBreakpoint sourceBreakpoint, Object debugger, Throwable conditionException) {
         super(sourceBreakpoint);
         this.conditionResult = CONDITION_FAILED;
         this.conditionException = conditionException;
@@ -122,7 +121,7 @@ public final class CndBreakpointEvent extends EventObject {
      * 
      * @return CndDebugger instance this breakpoint has been reached in
      */
-    public CndDebugger getDebugger() {
+    public Object getDebugger() {
         return debugger;
     }
     

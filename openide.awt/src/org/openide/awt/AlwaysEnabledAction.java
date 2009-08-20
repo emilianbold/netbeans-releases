@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.netbeans.modules.openide.util.ActionsBridge;
 import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.util.ContextAwareAction;
@@ -138,8 +136,9 @@ implements PropertyChangeListener, ContextAwareAction {
                 return null;
             }
         }
-
-        return extractCommonAttribute(map, this, name);
+        Object o = extractCommonAttribute(map, this, name);
+        // cf. #137709 JG18:
+        return o != null ? o : super.getValue(name);
     }
 
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
@@ -185,16 +184,9 @@ implements PropertyChangeListener, ContextAwareAction {
         if ("noIconInMenu".equals(name)) { // NOI18N
             return fo == null ? null : fo.get("noIconInMenu"); // NOI18N
         }
-        if (Action.ACCELERATOR_KEY.equals(name)) {
-            Keymap map = Lookup.getDefault().lookup(Keymap.class);
-            if (map != null) {
-                KeyStroke[] arr = map.getKeyStrokesForAction(action);
-                return arr.length > 0 ? arr[0] : null;
-            }
-        }
         // Delegate query to other properties to "fo" ignoring special properties
         if (!"delegate".equals(name) && !"instanceCreate".equals(name)) {
-            return fo.get(name);
+            return fo == null ? null : fo.get(name);
         }
 
         return null;
@@ -227,7 +219,10 @@ implements PropertyChangeListener, ContextAwareAction {
         return false;
     }
 
-
+    @Override
+    public String toString() {
+        return "AlwaysEnabledAction[" + getValue(Action.NAME) + "]"; // NOI18N
+    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == delegate) {

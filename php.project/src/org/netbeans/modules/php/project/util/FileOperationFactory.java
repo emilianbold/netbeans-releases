@@ -39,7 +39,8 @@
 package org.netbeans.modules.php.project.util;
 
 import java.util.concurrent.Callable;
-import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -47,14 +48,23 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 abstract class FileOperationFactory {
+    protected final PhpProject project;
+    private final PhpVisibilityQuery phpVisibilityQuery;
+
+    public FileOperationFactory(PhpProject project) {
+        assert project != null;
+        this.project = project;
+        phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+    }
+
     abstract Callable<Boolean> createCopyHandler(FileObject source);
     abstract Callable<Boolean> createDeleteHandler(FileObject source);
     abstract Callable<Boolean> createInitHandler(FileObject source);
     abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
     abstract void invalidate();
 
-    protected static final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
-        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && VisibilityQuery.getDefault().isVisible(source);
+    protected final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
+        return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && phpVisibilityQuery.isVisible(source);
     }
     static boolean isNbProjectMetadata(FileObject fo) {
         final String metadataName = "nbproject";//NOI18N

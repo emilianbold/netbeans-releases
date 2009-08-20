@@ -212,12 +212,12 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
         return inputVisible;
     }
     
-    public final void setInputVisible (boolean val) {
+    public void setInputVisible(boolean val) {
         if (val == isInputVisible()) {
             return;
         }
         inputVisible = val;
-        this.outputPane.textView.setEditable(val);
+        outputPane.textView.setEditable(val);
         validate();
         getOutputPane().ensureCaretPosition();
     }

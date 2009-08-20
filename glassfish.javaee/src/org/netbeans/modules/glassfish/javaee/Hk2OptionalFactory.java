@@ -80,8 +80,9 @@ import org.openide.util.NbPreferences;
  * @author vince kraemer
  */
 public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
-    private DeploymentFactory df;
-    private ServerUtilities commonUtilities;
+    
+    private final DeploymentFactory df;
+    private final ServerUtilities commonUtilities;
 
     protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su) {
         this.df = df;
@@ -105,8 +106,14 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     }
     
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
-        return dm instanceof Hk2DeploymentManager ?
-                new FastDeploy((Hk2DeploymentManager) dm) : null;
+        IncrementalDeployment result = null;
+        if(dm instanceof Hk2DeploymentManager) {
+            Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+            if(hk2dm.isLocal()) {
+                result = new FastDeploy(hk2dm);
+            }
+        }
+        return result;
     }
     
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
@@ -116,8 +123,8 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         FindJSPServlet retVal = null;
         try {
             Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
-            if (hk2dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null) {
-                retVal = new FindJSPServletImpl((Hk2DeploymentManager) dm, this);
+            if(!hk2dm.getCommonServerSupport().isRemote()) {
+                retVal = new FindJSPServletImpl(hk2dm, this);
             }
         } catch (ClassCastException cce) {
             Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N

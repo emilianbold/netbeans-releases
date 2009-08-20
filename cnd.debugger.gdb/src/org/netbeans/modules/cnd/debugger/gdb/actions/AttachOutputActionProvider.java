@@ -110,7 +110,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             }
 
             try {
-                GdbDebugger.attach(pid, info);
+                GdbDebugger.attach(pid, info, (event.getConfiguration()).getDevelopmentHost().getExecutionEnvironment());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

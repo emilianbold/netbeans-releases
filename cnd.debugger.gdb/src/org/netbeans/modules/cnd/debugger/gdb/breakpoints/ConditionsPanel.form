@@ -65,7 +65,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="spCondition = WatchPanel.createScrollableLineEditor(tfCondition);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="spCondition = ContextBindingSupport.createScrollableLineEditor(tfCondition);"/>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
       <Constraints>

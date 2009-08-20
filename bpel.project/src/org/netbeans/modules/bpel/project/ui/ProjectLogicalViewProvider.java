@@ -207,7 +207,7 @@ public class ProjectLogicalViewProvider implements LogicalViewProvider {
 
         public IcanLogicalViewRootNode(Children children) {
             super(children, createLookup(project));
-            setIconBaseWithExtension("org/netbeans/modules/bpel/project/ui/resources/projectIcon.gif"); // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/bpel/project/resources/bpelProject.png"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;

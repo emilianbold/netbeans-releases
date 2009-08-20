@@ -251,6 +251,7 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                         propertyPanel = new PropertyPanel(cookie.instanceCreate(), 
                                 pd.getName(), PropertyPanel.PREF_CUSTOM_EDITOR);
                         propertyPanelID = "PROPERTY_PANEL_" + propertyPanelIDCounter++;
+                        propertyPanel.setChangeImmediate(false);
                         break;
                     }
                     

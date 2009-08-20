@@ -50,15 +50,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -93,8 +88,6 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
     
     @Override
     protected void setUp() throws Exception {
-        MockServices.setServices(MockKeymap.class);
-
         lookup = Lookup.EMPTY;
         lookupProxy = Lookups.proxy(this);
         
@@ -513,29 +506,6 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
 
         String n = (String)action.getValue(Action.NAME);
         assertEquals("Open", n);
-    }
-    
-    public void testShareAcceleratorKey() {
-        FileObject folder;
-        folder = FileUtil.getConfigFile("actions/support/test");
-        assertNotNull("testing layer is loaded: ", folder);
-
-        FileObject fo = folder.getFileObject("testContext.instance");
-        
-        Object obj = fo.getAttribute("instanceCreate");
-        if (!(obj instanceof ContextAwareAction)) {
-            fail("Shall create an action: " + obj);
-        }
-        ContextAwareAction caa = (ContextAwareAction)obj;
-        Action tmp = caa.createContextAwareInstance(Lookup.EMPTY);
-
-        KeyStroke ks = org.openide.util.Utilities.stringToKey("C-1");
-        
-        Keymap map = Lookup.getDefault().lookup(Keymap.class);
-        assertNotNull("There is a keymap", map);
-        map.addActionForKeyStroke(ks, caa);
-        assertEquals("Changes accelerator for the action", ks, caa.getValue(Action.ACCELERATOR_KEY));
-        assertEquals("Also Propagated", ks, tmp.getValue(Action.ACCELERATOR_KEY));
     }
     
     public void testBasicUsageWithEnabler() throws Exception {

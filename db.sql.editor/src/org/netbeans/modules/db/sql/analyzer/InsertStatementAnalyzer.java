@@ -40,92 +40,63 @@ package org.netbeans.modules.db.sql.analyzer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.db.sql.analyzer.InsertStatement.InsertContext;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class InsertStatementAnalyzer {
+class InsertStatementAnalyzer extends SQLStatementAnalyzer {
 
-    private final TokenSequence<SQLTokenId> seq;
-    private final boolean detectKind;
-    private final Quoter quoter;
     private final List<String> columns = new ArrayList<String> ();
     private final List<String> values = new ArrayList<String> ();
     private QualIdent table = null;
-    private final SortedMap<Integer, InsertContext> offset2Context = new TreeMap<Integer, InsertContext> ();
-    private int startOffset;
-    private State state = State.START;
 
     public static InsertStatement analyze (TokenSequence<SQLTokenId> seq, Quoter quoter) {
-        InsertStatementAnalyzer sa = doParse (seq, quoter, false);
-        if (sa == null ||  ! sa.state.isAfter (State.START)) {
+        seq.moveStart();
+        if (!seq.moveNext()) {
             return null;
         }
-        return new InsertStatement (SQLStatementKind.INSERT,
-                sa.startOffset, seq.offset () + seq.token ().length (),
-                sa.getTable (),
-                Collections.unmodifiableList (sa.columns),
-                Collections.unmodifiableList (sa.values),
+        InsertStatementAnalyzer sa = new InsertStatementAnalyzer(seq, quoter);
+        sa.parse();
+        return new InsertStatement(
+                sa.startOffset, seq.offset() + seq.token().length(),
+                sa.getTable(),
+                Collections.unmodifiableList(sa.columns),
+                Collections.unmodifiableList(sa.values),
                 sa.offset2Context);
     }
 
-    private static InsertStatementAnalyzer doParse (TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
-        seq.moveStart ();
-        if ( ! seq.moveNext ()) {
-            return null;
-        }
-        InsertStatementAnalyzer sa = new InsertStatementAnalyzer (seq, quoter, detectKind);
-        sa.parse ();
-        return sa;
-    }
-
-    private InsertStatementAnalyzer (TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
-        this.seq = seq;
-        this.quoter = quoter;
-        this.detectKind = detectKind;
+    private InsertStatementAnalyzer (TokenSequence<SQLTokenId> seq, Quoter quoter) {
+        super(seq, quoter);
     }
 
     private void parse () {
         startOffset = seq.offset ();
         do {
-            switch (state) {
+            switch (context) {
                 case START:
                     if (SQLStatementAnalyzer.isKeyword ("INSERT", seq)) { // NOI18N
-                        moveToState (State.INSERT);
-                        if (detectKind) {
-                            return;
+                        if (nextToken() && SQLStatementAnalyzer.isKeyword("INTO", seq)) { // NOI18N
+                            moveToContext(Context.INSERT_INTO);
                         }
                     }
                     break;
-                case INSERT:
-                    if (SQLStatementAnalyzer.isKeyword ("INTO", seq)) { // NOI18N
-                        moveToState (State.INTO);
-                        if (detectKind) {
-                            return;
-                        }
-                    }
-                    break;
-                case INTO:
+                case INSERT_INTO:
                     switch (seq.token ().id ()) {
                         case IDENTIFIER:
-                            table = parseIntoTable ();
+                            table = parseIdentifier();
                             break;
                         case LPAREN:
-                            moveToState (State.COLUMNS);
+                            moveToContext(Context.COLUMNS);
                             break;
                         case KEYWORD:
-                            if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {
-                                moveToState (State.VALUES);
+                            if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {  //NOI18N
+                                moveToContext(Context.VALUES);
                             }
                             break;
                     }
@@ -139,12 +110,12 @@ public class InsertStatementAnalyzer {
                             }
                             break;
                         case KEYWORD:
-                            if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {
-                                moveToState (State.VALUES);
+                            if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {  //NOI18N
+                                moveToContext(Context.VALUES);
                             }
                             break;
                         case RPAREN:
-                            moveToState (State.VALUES);
+                            moveToContext(Context.VALUES);
                             break;
                     }
                     break;
@@ -173,7 +144,7 @@ public class InsertStatementAnalyzer {
                 case COMMA:
                     continue;
                 case RPAREN:
-                    moveToState (State.VALUES);
+                    moveToContext(Context.VALUES);
                     return parts;
                 default:
                     parts.add (getUnquotedIdentifier ());
@@ -182,94 +153,7 @@ public class InsertStatementAnalyzer {
         return parts;
     }
 
-    private QualIdent parseIntoTable () {
-        List<String> parts = new ArrayList<String> ();
-        parts.add (getUnquotedIdentifier ());
-        boolean afterDot = false;
-        main:
-        while (nextToken ()) {
-            switch (seq.token ().id ()) {
-                case DOT:
-                    afterDot = true;
-                    break;
-                case IDENTIFIER:
-                    if (afterDot) {
-                        afterDot = false;
-                        parts.add (getUnquotedIdentifier ());
-                    }
-                    break;
-                default:
-                    seq.movePrevious ();
-                    break main;
-            }
-        }
-        // Remove empty quoted identifiers, like in '"FOO".""."BAR"'.
-        // Actually, the example above would obviously be an invalid identifier,
-        // but safer and simpler to be forgiving.
-        for (Iterator<String> i = parts.iterator (); i.hasNext ();) {
-            if (i.next ().length () == 0) {
-                i.remove ();
-            }
-        }
-        if ( ! parts.isEmpty ()) {
-            return new QualIdent (parts);
-        }
-        return null;
-    }
-
-    private boolean nextToken () {
-        boolean move;
-        skip:
-        while (move = seq.moveNext ()) {
-            switch (seq.token ().id ()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
-                default:
-                    break skip;
-            }
-        }
-        return move;
-    }
-
     private QualIdent getTable () {
         return table;
-    }
-
-    private void moveToState (State state) {
-        this.state = state;
-        InsertContext context = state.getContext ();
-        if (context != null) {
-            offset2Context.put (seq.offset () + seq.token ().length (), context);
-        }
-    }
-
-    private String getUnquotedIdentifier () {
-        return quoter.unquote (seq.token ().text ().toString ());
-    }
-
-    private enum State {
-
-        START (0, null),
-        INSERT (1, InsertContext.INSERT),
-        INTO (2, InsertContext.INTO),
-        COLUMNS (3, InsertContext.COLUMNS),
-        VALUES (4, InsertContext.VALUES);
-        private final int order;
-        private final InsertContext context;
-
-        private State (int order, InsertContext context) {
-            this.order = order;
-            this.context = context;
-        }
-
-        public boolean isAfter (State state) {
-            return this.order >= state.order;
-        }
-
-        public InsertContext getContext () {
-            return context;
-        }
     }
 }

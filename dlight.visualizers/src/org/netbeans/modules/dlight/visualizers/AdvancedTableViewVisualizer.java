@@ -103,6 +103,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private final Object queryLock = new Object();
     private final Object uiLock = new Object();
 
+    private final boolean dualPaneMode;
+    private final DualPaneSupport dualPaneSupport;
+
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
@@ -117,9 +120,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property> result = new ArrayList<Property>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
-            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName)) {
+            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     c.getColumnUName(), c.getColumnUName(), true, false) {
@@ -138,6 +142,23 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
+        this.dualPaneMode = accessor.isDualPaneMode(configuration);
+        if (dualPaneMode) {
+            this.dualPaneSupport = DualPaneSupport.forExplorerManager(
+                    this, this.explorerManager,
+                    accessor.getDetailsRenderer(configuration),
+                    new DualPaneSupport.DataAdapter<Node, DataRow>() {
+                        public DataRow convert(Node obj) {
+                            if (obj instanceof DataRowNode) {
+                                return ((DataRowNode)obj).getDataRow();
+                            } else {
+                                return null;
+                            }
+                        }
+                    });
+        } else {
+            this.dualPaneSupport = null;
+        }
     }
 
     public ExplorerManager getExplorerManager() {
@@ -323,7 +344,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     public JComponent getComponent() {
-        return this;
+        return dualPaneMode? dualPaneSupport : this;
     }
 
     public void timerStopped() {

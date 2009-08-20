@@ -59,8 +59,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 public class NodeUtils {
 
     /** Test cut */
-    public static void testClipboard(final Object clipboard1) {
-        final Object clipboard2 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+    public static void testClipboard(final Object clipboard1) {        
         Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
                     Object clipboard2 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);

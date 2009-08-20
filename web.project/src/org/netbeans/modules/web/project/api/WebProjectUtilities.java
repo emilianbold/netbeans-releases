@@ -56,6 +56,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -825,6 +828,13 @@ public class WebProjectUtilities {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
 
+            // set j2ee.platform.embeddableejb.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
+                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
+                ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                        Utils.toClasspathString(ejbClasspath));
+            }
+
             // set j2ee.platform.wscompile.classpath
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
                 File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
@@ -832,18 +842,15 @@ public class WebProjectUtilities {
                         Utils.toClasspathString(wsClasspath));
             }
 
-            // set j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsgen.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
+            // set j2ee.platform.wsimport.classpath, j2ee.platform.wsgen.classpath
+            WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+            if (wsStack != null) {
+                WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT); // the same as for WSGEN
+                if (wsTool!= null && wsTool.getLibraries().length > 0) {
+                    String librariesList = Utils.toClasspathString(wsTool.getLibraries());
+                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
+                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
+                }
             }
             
             if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
@@ -887,6 +894,8 @@ public class WebProjectUtilities {
         // TODO constants
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                 "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "embeddableejb" + "}"); //NOI18N
         ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
                 "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
         ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,

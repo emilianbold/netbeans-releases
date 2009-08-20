@@ -190,6 +190,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         StringBuffer all = new StringBuffer();
         // this call waits for list of libraries to be refreshhed
         Library[] allLibraries = LibraryManager.getDefault().getLibraries();
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (String p : ps) {
             // evaluate given property and tokenize it
             
@@ -230,7 +231,6 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             
             // test that resolved variable based property points to an existing file
-            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String path = ep.getProperty(p);
             if (path != null) {
                 for (String v : PropertyUtils.tokenizePath(path)) {
@@ -282,7 +282,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else if (key.startsWith("file.reference")) {    //NOI18N
                 File f = getFile(helper, evaluator, value);
-                String unevaluatedValue = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(key);
+                String unevaluatedValue = ep.getProperty(key);
                 boolean alreadyChecked = unevaluatedValue != null ? unevaluatedValue.startsWith("${var.") : false; // NOI18N
                 if (f.exists() || all.indexOf(value) == -1 || alreadyChecked) { // NOI18N
                     continue;
@@ -294,7 +294,6 @@ public class BrokenReferencesModel extends AbstractListModel {
         //Check for libbraries with broken classpath content
         Set<String> usedLibraries = new HashSet<String>();
         Pattern libPattern = Pattern.compile("\\$\\{(libs\\.[-._a-zA-Z0-9]+\\.classpath)\\}"); //NOI18N
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (String p : ps) {
             String propertyValue = ep.getProperty(p);
             if (propertyValue != null) {
@@ -535,7 +534,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
         }
 
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (o == this) {
                 return true;
             }
@@ -546,7 +545,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             return (this.type == or.type && this.ID.equals(or.ID));
         }
         
-        public int hashCode() {
+        public @Override int hashCode() {
             int result = 7*type;
             result = 31*result + ID.hashCode();
             return result;

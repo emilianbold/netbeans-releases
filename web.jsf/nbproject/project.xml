@@ -445,13 +445,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -701,12 +694,13 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
-                <friend>org.netbeans.modules.web.facelets</friend>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
                 <package>org.netbeans.modules.web.jsf.api.metamodel</package>
+                <package>org.netbeans.modules.web.jsf.api.palette</package>
             </friend-packages>
         </data>
     </configuration>

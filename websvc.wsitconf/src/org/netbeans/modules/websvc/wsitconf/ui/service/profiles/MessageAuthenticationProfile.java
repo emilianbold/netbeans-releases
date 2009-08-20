@@ -217,8 +217,13 @@ public class MessageAuthenticationProfile extends ProfileBase
                 securityPolicyModelHelper.enableIncludeTimestamp(tb, true);
                 asmh.setAlgorithmSuite(tb, ComboConstants.BASIC128);
 
-                stmh.setSupportingTokens(p, 
-                        ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                    stmh.setSupportingTokens(p,
+                            ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    stmh.setSupportingTokens(p,
+                            ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
                 
                 WssElement wss = securityPolicyModelHelper.enableWss(bp, true);
 //                securityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
@@ -238,7 +243,11 @@ public class MessageAuthenticationProfile extends ProfileBase
             }
         } else {
             SecurityTokensModelHelper.removeSupportingTokens(component);
-            stmh.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);            
+            if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+                stmh.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            } else {
+                stmh.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+            }
         }
     }
     

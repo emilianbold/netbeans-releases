@@ -424,11 +424,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerStateListener);
         stopIfStartedByIde();        
         // close the server io window
-        InputOutput io = UISupport.getServerIO(url);
-        if (io != null && !io.isClosed()) {
-            io.closeInputOutput();
+        if (getUrl() != null) {
+            InputOutput io = UISupport.getServerIO(url);
+            if (io != null && !io.isClosed()) {
+                io.closeInputOutput();
+            }
+            ServerRegistry.getInstance().removeServerInstance(getUrl());
+        } else {
+            LOGGER.log(Level.WARNING, "Trying to remove {0}, but url is null", server != null ? server.getShortName() : null);
         }
-        ServerRegistry.getInstance().removeServerInstance(getUrl());
     }
     
     /** Stop the server if it has been started from within the IDE, do nothing otherwise */

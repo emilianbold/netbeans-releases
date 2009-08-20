@@ -51,12 +51,14 @@
             <friend-packages>
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>org.netbeans.modules.asm</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
@@ -76,7 +78,6 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
-                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.support</package>
                 <package>org.netbeans.modules.cnd.utils</package>

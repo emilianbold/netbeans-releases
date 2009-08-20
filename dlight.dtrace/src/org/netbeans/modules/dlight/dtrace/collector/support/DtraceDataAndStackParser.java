@@ -50,8 +50,6 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -129,6 +127,10 @@ final class DtraceDataAndStackParser extends DtraceParser {
         isProfiler = metadata.getName().equals("CallStack"); // NOI18N
     }
 
+    /*package*/ void setStackDataStorage(StackDataStorage stackStorage) {
+        this.sds = stackStorage;
+    }
+
     /** override of you need more smart data processing  */
     protected List<String> processDataLine(String line) {
         return super.parse(line, colCount - 1);
@@ -166,8 +168,6 @@ final class DtraceDataAndStackParser extends DtraceParser {
             case IN_STACK:
                 if (line.length() > 0) {
                     //TODO:error-processing
-                    DLightLogger.assertTrue(Character.isWhitespace(line.charAt(0)),
-                            "Stack row should start with ' '"); // NOI18N
                     line = line.trim();
                     if (isProfiler || !line.startsWith("libc.so.")) { //NOI18N
                         currStack.add(line);
@@ -175,9 +175,6 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     return null;
                 } else {
                     Collections.reverse(currStack);
-                    if (sds == null) {
-                        sds = findStackStorage();
-                    }
                     int stackId = sds == null? -1 : sds.putStack(currStack, currSampleDuration);
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
@@ -187,11 +184,5 @@ final class DtraceDataAndStackParser extends DtraceParser {
                 }
         }
         return null;
-    }
-
-    private static final StackDataStorage findStackStorage() {
-        return (StackDataStorage) DataStorageManager.getInstance().
-                getDataStorage(DataStorageTypeFactory.getInstance().
-                getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
     }
 }

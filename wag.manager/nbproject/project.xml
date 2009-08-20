@@ -134,7 +134,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.wag.codegen</friend>
+                <friend>org.netbeans.modules.wag.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.wag.codegen.java</friend>
+                <friend>org.netbeans.modules.wag.codegen.php</friend>
                 <friend>org.netbeans.modules.wag.kit</friend>
                 <package>org.netbeans.modules.wag.manager.model</package>
                 <package>org.netbeans.modules.wag.manager.spi</package>

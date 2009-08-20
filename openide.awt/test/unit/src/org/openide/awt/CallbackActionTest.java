@@ -44,12 +44,9 @@ package org.openide.awt;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -79,11 +76,6 @@ public class CallbackActionTest extends NbTestCase {
     protected void setUp() throws Exception {
         folder = FileUtil.getConfigFile("actions/support/test");
         assertNotNull("testing layer is loaded: ", folder);
-        MockServices.setServices(MockKeymap.class);
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
     }
     
     public void testKeyMustBeProvided() {
@@ -165,20 +157,6 @@ public class CallbackActionTest extends NbTestCase {
         assertEquals("and have the same hash", a.hashCode(), a2.hashCode());
     }
     
-    public void testShareAcceleratorKey() {
-        InstanceContent ic = new InstanceContent();
-        ContextAwareAction a = callback("somekey", null, new AbstractLookup(ic), false);
-        Action a2 = a.createContextAwareInstance(Lookup.EMPTY);
-
-        KeyStroke ks = org.openide.util.Utilities.stringToKey("C-1");
-        
-        Keymap map = Lookup.getDefault().lookup(Keymap.class);
-        assertNotNull("There is a keymap", map);
-        map.addActionForKeyStroke(ks, a);
-        assertEquals("Changes accelerator for the action", ks, a.getValue(Action.ACCELERATOR_KEY));
-        assertEquals("Also Propagated", ks, a2.getValue(Action.ACCELERATOR_KEY));
-    }
-
     static ContextAwareAction callback(String key, AbstractAction fallAction, Lookup al, boolean b) {
         return GeneralAction.callback(key, fallAction, al, b, false);
     }

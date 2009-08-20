@@ -140,7 +140,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     
     protected String getPropertyName() {
         Object selectedItem = panel.getComboName().getSelectedObjects()[0];
-        if (selectedItem != null) {
+        if (selectedItem == null) {
             return panel.getComboName().getEditor().getItem().toString().trim();
         } else {
             return selectedItem.toString().trim();

@@ -62,9 +62,11 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,7 +74,7 @@ import org.openide.text.ActiveEditorDrop;
  * @author Po-Ting Wu
  * @author mbohm
  */
-public final class JsfForm extends EntityClass implements ActiveEditorDrop {
+public final class JsfForm extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
         "<h:form>\n",
         "<h2>Detail</h2>\n <h:form>\n<h:panelGrid columns=\"2\">\n",
@@ -91,6 +93,14 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop {
     
     protected String getName() {
         return "Form"; // NOI18N
+    }
+
+    public void insert(JTextComponent component) {
+        handleTransfer(component);
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfForm");
     }
     
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
@@ -427,4 +437,6 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop {
             }
         }
     }
+
+
 }

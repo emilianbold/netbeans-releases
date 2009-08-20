@@ -63,7 +63,6 @@ public class LazyLookupProvidersTest extends NbTestCase {
 
     public void testLazyProviders() throws Exception {
         TrackingLoader l = new TrackingLoader();
-        Thread.currentThread().setContextClassLoader(l);
         MockLookup.setInstances(l);
         l.assertLoadedClasses();
         Lookup all = LookupProviderSupport.createCompositeLookup(Lookups.fixed("hello"), "Projects/x/Lookup");
@@ -131,7 +130,6 @@ public class LazyLookupProvidersTest extends NbTestCase {
 
     public void testMultiplyImplementedService() throws Exception {
         TrackingLoader l = new TrackingLoader();
-        Thread.currentThread().setContextClassLoader(l);
         MockLookup.setInstances(l);
         l.assertLoadedClasses();
         Lookup all = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "Projects/y/Lookup");

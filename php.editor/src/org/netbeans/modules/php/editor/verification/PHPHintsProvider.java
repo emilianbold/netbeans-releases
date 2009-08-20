@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -65,116 +66,58 @@ import org.openide.filesystems.FileObject;
 public class PHPHintsProvider implements HintsProvider {
     public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
     public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
-    public static final String MODEL_HINTS = "model"; //NOI18N
-    public static final String INTRODUCE_HINT = "introduce.hint"; //NOI18N
+    public static final String DEFAULT_LINE_HINTS = "default.line.hints"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
+    enum Kind {HINT, SUGGESTION, SELECTION, ERROR};
 
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
-        long startTime = 0;
-        
-        if (LOGGER.isLoggable(Level.FINE)){
-            startTime = Calendar.getInstance().getTimeInMillis();
-        }
+        long startTime = (LOGGER.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        ParserResult info = context.parserResult;
         
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
-        ParserResult info = context.parserResult;
-        List<? extends AstRule> modelHints = allHints.get(MODEL_HINTS);
+        List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
         if (modelHints != null) {
+            PHPRuleContext ruleContext = (PHPRuleContext) context;
             FileScope modelScope = ModelFactory.getModel(info).getFileScope();
+            ruleContext.index = PHPIndex.get(context.parserResult);
+            ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
-                if (astRule instanceof ModelRule) {
-                    if (mgr.isEnabled(astRule)) {
-                        ModelRule modelRule = (ModelRule) astRule;
-                        modelRule.check(modelScope, context, hints);
+                if (mgr.isEnabled(astRule)) {
+                    if (astRule instanceof AbstractRule) {
+                        AbstractRule icm = (AbstractRule) astRule;
+                        icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
                     }
                 }
             }
         }
-        
-        Collection<PHPRule> firstPassHints = new ArrayList<PHPRule>();
-        
-        for (Object obj : allHints.get(FIRST_PASS_HINTS)){
-            if (obj instanceof PHPRule) {
-                PHPRule rule = (PHPRule) obj;
-                
-                if (mgr.isEnabled(rule)){
-                    firstPassHints.add(rule);
-                    
-                    if (rule instanceof PHPRuleWithPreferences) {
-                        PHPRuleWithPreferences ruleWithPrefs = (PHPRuleWithPreferences) rule;
-                        ruleWithPrefs.setPreferences(mgr.getPreferences(rule));
-                    }
-                }
-            }
-        }
-        
-        // A temp workaround for performance problems with hints accessing the VarStack.
-        boolean maintainVarStack = false;
-        
-        
-        for (List<? extends Rule.AstRule> list : allHints.values()) {
-            for (Rule.AstRule obj : list) {
-                if (obj instanceof VarStackReadingRule){
-                    VarStackReadingRule rule = (VarStackReadingRule)obj;
-                    
-                    if (mgr.isEnabled(rule)) {
-                        maintainVarStack = true;
-                        LOGGER.fine(rule.getClass().getName() + " is enabled, turning on the VarStack");
-                        break;
-                    }
-                }
-            }
-        }
-        // end of the workaround
 
-        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, firstPassHints, maintainVarStack);
-        
-        @SuppressWarnings("unchecked")
-        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        computeExperimentalHints(context, allHints, mgr, hints);
 
-        if (phpParseResult.getProgram() != null) {
-            phpParseResult.getProgram().accept(visitor);
-        }
-
-        hints.addAll(visitor.getResult());
-
-        List<? extends Rule.AstRule> secondPass = allHints.get(SECOND_PASS_HINTS);
-        
-        if (secondPass != null && secondPass.size() > 0) {
-            assert secondPass.size() == 1;
-            UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
-            
-            if (mgr.isEnabled(unusedVariableRule)){
-                unusedVariableRule.check((PHPRuleContext) context, hints);
-            }
-        }
-        
-        if (LOGGER.isLoggable(Level.FINE)){
+        if (LOGGER.isLoggable(Level.FINE)) {
             long execTime = Calendar.getInstance().getTimeInMillis() - startTime;
             FileObject fobj = info.getSnapshot().getSource().getFileObject();
-            
-            LOGGER.fine(String.format("Computing PHP hints for %s.%s took %d ms", //NOI18N
-                    fobj.getName(), fobj.getExt(), execTime));
+            LOGGER.fine(String.format("Computing PHP hints for %s.%s took %d ms", fobj.getName(), fobj.getExt(), execTime));
         }
     }
 
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(true, context);
-        List<? extends AstRule> modelHints = allHints.get(INTRODUCE_HINT);
+        List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
         if (modelHints != null) {
+            PHPRuleContext ruleContext = (PHPRuleContext) context;
+            ParserResult info = context.parserResult;
+            FileScope modelScope = ModelFactory.getModel(info).getFileScope();
+            ruleContext.index = PHPIndex.get(context.parserResult);
+            ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
-                    if (astRule instanceof AssignVariableHint) {
-                        AssignVariableHint introduceFix = (AssignVariableHint) astRule;
-                        introduceFix.check(context, suggestions);
-                    } else if (astRule instanceof IntroduceHint) {
-                        IntroduceHint icm = (IntroduceHint) astRule;
-                        icm.check(context, suggestions);
+                    if (astRule instanceof AbstractRule) {
+                        AbstractRule icm = (AbstractRule) astRule;
+                        icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
                     }
                 }
             }
         }
-        
     }
 
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
@@ -199,6 +142,52 @@ public class PHPHintsProvider implements HintsProvider {
 
     public RuleContext createRuleContext() {
         return new PHPRuleContext();
+    }
+
+    private void computeExperimentalHints(RuleContext context, Map<?, List<? extends AstRule>> allHints, HintsManager mgr, List<Hint> hints) {
+        Collection<PHPRule> firstPassHints = new ArrayList<PHPRule>();
+        for (Object obj : allHints.get(FIRST_PASS_HINTS)) {
+            if (obj instanceof PHPRule) {
+                PHPRule rule = (PHPRule) obj;
+                if (mgr.isEnabled(rule)) {
+                    firstPassHints.add(rule);
+                    if (rule instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences ruleWithPrefs = (PHPRuleWithPreferences) rule;
+                        ruleWithPrefs.setPreferences(mgr.getPreferences(rule));
+                    }
+                }
+            }
+        }
+        // A temp workaround for performance problems with hints accessing the VarStack.
+        boolean maintainVarStack = false;
+        for (List<? extends Rule.AstRule> list : allHints.values()) {
+            for (Rule.AstRule obj : list) {
+                if (obj instanceof VarStackReadingRule) {
+                    VarStackReadingRule rule = (VarStackReadingRule) obj;
+                    if (mgr.isEnabled(rule)) {
+                        maintainVarStack = true;
+                        LOGGER.fine(rule.getClass().getName() + " is enabled, turning on the VarStack");
+                        break;
+                    }
+                }
+            }
+        }
+        // end of the workaround
+        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext) context, firstPassHints, maintainVarStack);
+        @SuppressWarnings(value = "unchecked")
+        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        if (phpParseResult.getProgram() != null) {
+            phpParseResult.getProgram().accept(visitor);
+        }
+        hints.addAll(visitor.getResult());
+        List<? extends Rule.AstRule> secondPass = allHints.get(SECOND_PASS_HINTS);
+        if (secondPass != null && secondPass.size() > 0) {
+            assert secondPass.size() == 1;
+            UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
+            if (mgr.isEnabled(unusedVariableRule)) {
+                unusedVariableRule.check((PHPRuleContext) context, hints);
+            }
+        }
     }
 //
 //    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<org.netbeans.modules.csl.api.Error> unhandled) {

@@ -2229,7 +2229,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     }
                 // else continue, it was (...) ? (...) : (...)
                 // break;
-                case QUESTION:
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case DOXYGEN_LINE_COMMENT:
@@ -2238,6 +2237,41 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case SEMICOLON:
                 case LBRACE:
                 case RBRACE:
+
+                // Operators
+                case QUESTION:
+                case STAR:
+                case AMP:
+                case GT:
+                case LT:
+                case EQ:
+                case PLUSEQ:
+                case MINUSEQ:
+                case STAREQ:
+                case SLASHEQ:
+                case AMPEQ:
+                case BAREQ:
+                case CARETEQ:
+                case PERCENTEQ:
+                case LTLTEQ:
+                case GTGTEQ:
+                case LTEQ:
+                case GTEQ:
+                case EQEQ:
+                case NOTEQ:
+                case AMPAMP:
+                case BARBAR:
+                case LTLT:
+                case SLASH:
+                case BAR:
+                case CARET:
+                case PERCENT:
+                case GTGT:
+                case PLUSPLUS:
+                case MINUSMINUS:
+                case PLUS:
+                case MINUS:
+                case NOT:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                             bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;

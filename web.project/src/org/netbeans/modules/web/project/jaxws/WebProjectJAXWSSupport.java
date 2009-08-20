@@ -53,6 +53,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -65,7 +66,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectWebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
@@ -170,6 +170,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         }
     }
     
+    @Override
     protected void addServletElement(Project project, String wsName, String serviceImpl) throws IOException {
         WebApp webApp = getWebApp();
         if(webApp != null) {
@@ -288,7 +289,11 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      * Returns the directory that contains the deployment descriptor in the project
      */
     public FileObject getDeploymentDescriptorFolder() {
-        return this.getWebInf();
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if(webModule != null) {
+            return webModule.getWebInf();
+        }
+        return null;
     }
     
     private WebApp getWebApp() {
@@ -317,25 +322,23 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         return false;
     }
     
-    public FileObject getDeploymentDescriptor() {
-        FileObject webInfFo = getWebInf();
-        if (webInfFo==null) {
-            if (isProjectOpened()) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"), // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE));
+    private FileObject getDeploymentDescriptor() throws IOException {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            FileObject ddFo = webModule.getDeploymentDescriptor();
+            if (ddFo == null) {
+                FileObject webInfFo = webModule.getWebInf();
+                if (webInfFo != null) {
+                    ddFo = DDHelper.createWebXml(webModule.getJ2eeProfile(), webInfFo);
+                }
             }
+            return ddFo;
+        } else {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfCorrupted"), // NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
-        return getWebInf().getFileObject(ProjectWebModule.FILE_DD);
-    }
-    
-    public FileObject getWebInf() {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if(webModule != null){
-            return webModule.getWebInf();
-        }
-        return null;
     }
     
     protected void addJaxwsArtifacts(Project project, String wsName, String serviceImpl) throws Exception {

@@ -224,23 +224,23 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                 cachelogger.setLevel(Level.OFF); // #166199
                 try {
                     o = ic.instanceCreate();
-                } finally {
-                    fslogger.setLevel(fsLevel);
-                    cachelogger.setLevel(cacheLevel);
-                }
-                if (o instanceof Action) {
-                    String name = (String) ((Action) o).getValue(Action.NAME);
-                    if (name != null) {
-                        return Actions.cutAmpersand(name);
+                    if (o instanceof Action) {
+                        String name = (String) ((Action) o).getValue(Action.NAME);
+                        if (name != null) {
+                            return Actions.cutAmpersand(name);
+                        } else {
+                            return toStringOf(o);
+                        }
+                    } else if (o instanceof Presenter.Menu) {
+                        return ((Presenter.Menu) o).getMenuPresenter().getText();
+                    } else if (o instanceof JSeparator) {
+                        return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
                     } else {
                         return toStringOf(o);
                     }
-                } else if (o instanceof Presenter.Menu) {
-                    return ((Presenter.Menu) o).getMenuPresenter().getText();
-                } else if (o instanceof JSeparator) {
-                    return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
-                } else {
-                    return toStringOf(o);
+                } finally {
+                    fslogger.setLevel(fsLevel);
+                    cachelogger.setLevel(cacheLevel);
                 }
             }
         } catch (Exception e) {

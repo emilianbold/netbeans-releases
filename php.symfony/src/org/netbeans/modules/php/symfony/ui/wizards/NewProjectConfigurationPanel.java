@@ -83,6 +83,8 @@ public class NewProjectConfigurationPanel extends JPanel {
 
     public NewProjectConfigurationPanel() {
         initComponents();
+        // work around - keep the label on the right side
+        optionsLabel.setMaximumSize(optionsLabel.getPreferredSize());
 
         frontendParamsTextField.setText(DEFAULT_PARAMS);
         backendParamsTextField.setText(DEFAULT_PARAMS);

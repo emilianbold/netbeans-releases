@@ -163,6 +163,11 @@ public class RepositoryUpdater2Test extends NbTestCase {
             public @Override void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             }
 
+            @Override
+            public void rootsRemoved (final Iterable<? extends URL> rr) {
+
+            }
+
             public @Override void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             }
 
@@ -514,6 +519,11 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
+
         }
 
         @Override

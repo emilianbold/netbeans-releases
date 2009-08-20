@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.bugtracking.bridge.kenai;
 
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.PasswordAuthentication;
+import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
@@ -49,7 +56,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
 public class VCSKenaiSupportImpl extends VCSKenaiSupport {
-
+    private Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.kenai.VCSKenaiSupport");  // NOI18N
     @Override
     public boolean isKenai(String url) {
         return KenaiUtil.isKenai(url);
@@ -71,7 +78,78 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     }
 
     @Override
+    public void setFirmAssociations(File[] files, String url) {
+        Repository repo = KenaiUtil.getKenaiRepository(url);
+        if(repo == null) {
+            LOG.warning("No issue tracker available for the given vcs url " + url);         // NOI18N
+            return;
+        }
+        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, repo);
+    }
+
+
+    @Override
     public boolean isLogged () {
         return KenaiUtil.isLoggedIn();
+    }
+
+    @Override
+    public KenaiUser forName(String user) {
+        org.netbeans.modules.kenai.ui.spi.KenaiUser kenaiUser =
+                org.netbeans.modules.kenai.ui.spi.KenaiUser.forName(user);
+        if(kenaiUser == null) {
+            return null;
+        } else {
+            return new KenaiUserImpl(kenaiUser);
+}
+    }
+
+    @Override
+    public boolean isUserOnline(String user) {
+        return org.netbeans.modules.kenai.ui.spi.KenaiUser.isOnline(user);
+    }
+
+    private class KenaiUserImpl extends KenaiUser {
+        org.netbeans.modules.kenai.ui.spi.KenaiUser delegate;
+
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUser delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void startChat() {
+            delegate.startChat();
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public boolean isOnline() {
+            return delegate.isOnline();
+        }
+
+        @Override
+        public String getUser() {
+            return delegate.getUser();
+        }
+
+        @Override
+        public Icon getIcon() {
+            return delegate.getIcon();
+        }
+
+        @Override
+        public JLabel createUserWidget() {
+            return delegate.createUserWidget();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
     }
 }

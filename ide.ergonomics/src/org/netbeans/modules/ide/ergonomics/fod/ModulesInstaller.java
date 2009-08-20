@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -149,7 +150,7 @@ public class ModulesInstaller {
     
     private RequestProcessor.Task createInstallTask () {
         assert installTask == null || installTask.isFinished () : "The Install Task cannot be started nor scheduled.";
-        installTask = RequestProcessor.getDefault ().create (doInstall);
+        installTask = FeatureManager.getInstance().create(doInstall);
         return installTask;
     }
     
@@ -279,14 +280,13 @@ public class ModulesInstaller {
 
     private void waitToModuleLoaded () {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot be called in EQ.";
-        RequestProcessor.Task waitTask = RequestProcessor.getDefault ().create (new Runnable () {
-            public void run () {
-            }
-        });
         for (UpdateElement m : modules4install) {
-           while (! m.isEnabled ()) {
-               waitTask.schedule (100);
-               waitTask.waitFinished ();
+           while (!m.isEnabled()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
            }
         }
         

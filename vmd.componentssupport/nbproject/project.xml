@@ -26,7 +26,9 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.apisupport.project</code-name-base>
                     <build-prerequisite/>
-                    <compile-dependency/>
+                    <compile-dependency>
+                        <specification-version>1.23</specification-version>
+		        </compile-dependency>
                     <run-dependency>
                         <specification-version>1.23</specification-version>
                     </run-dependency>

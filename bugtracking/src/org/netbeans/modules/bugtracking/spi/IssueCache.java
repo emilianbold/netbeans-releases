@@ -199,7 +199,8 @@ public abstract class IssueCache<T> {
 
     public Issue getIssue(String id) {
         synchronized(CACHE_LOCK) {
-            return getCache().get(id).issue;
+            IssueEntry entry = getCache().get(id);
+            return (entry == null) ? null : entry.issue;
         }
     }
 
@@ -227,6 +228,10 @@ public abstract class IssueCache<T> {
                 BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public long getQueryTimestamp(String name) {
+        return IssueStorage.getInstance().getQueryTimestamp(nameSpace, name);
     }
 
     public List<String> readQueryIssues(String name) {

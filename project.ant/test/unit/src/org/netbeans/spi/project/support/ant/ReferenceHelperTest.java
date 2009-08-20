@@ -47,7 +47,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -68,7 +67,6 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
@@ -974,23 +972,18 @@ public class ReferenceHelperTest extends NbTestCase {
     }
     
     private void writeProperties(FileObject prop, String[] keys, String[] values) throws Exception {
-	EditableProperties p = new EditableProperties(false);
-	
-	for (int cntr = 0; cntr < keys.length; cntr++) {
-	    p.setProperty(keys[cntr], values[cntr]);
-	}
-	
-	FileLock lock = prop.lock();
-	try {
-	    OutputStream os = prop.getOutputStream(lock);
-	    try {
-		p.store(os);
-	    } finally {
-		os.close();
-	    }
-	} finally {
-	    lock.releaseLock();
-	}
+        EditableProperties p = new EditableProperties(false);
+
+        for (int cntr = 0; cntr < keys.length; cntr++) {
+            p.setProperty(keys[cntr], values[cntr]);
+        }
+
+        OutputStream os = prop.getOutputStream();
+        try {
+            p.store(os);
+        } finally {
+            os.close();
+        }
     }
     
     public void testFixReferences() throws Exception {

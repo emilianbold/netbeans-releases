@@ -95,7 +95,7 @@ public class ElementsService {
 	    prev = e;
 	    e = e.getEnclosingElement();
 	}
-	return (TypeElement)prev;
+	return prev instanceof TypeElement ? (TypeElement) prev : null;
     }
 
     /** 

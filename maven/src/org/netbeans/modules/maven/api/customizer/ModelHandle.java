@@ -91,7 +91,7 @@ public final class ModelHandle {
     private boolean modModel = false;
     private boolean modConfig = false;
     private Configuration active;
-    private boolean enabled = false;
+    private boolean enabled = true;
     
     static {
         AccessorImpl impl = new AccessorImpl();
@@ -320,11 +320,18 @@ public final class ModelHandle {
     public static NetbeansActionMapping getActiveMapping(String action, Project project) {
         return ActionToGoalUtils.getActiveMapping(action, project, null);
     }
-    
+
+    /**
+     * @deprecated will not set the value, configurations are always enbled now.
+     * @param bool
+     */
     public void setConfigurationsEnabled(boolean bool) {
-        enabled = bool;
+        enabled = true;
     }
     
+    /**
+     * @deprecated configurations are always enbled now.
+     */
     public boolean isConfigurationsEnabled() {
         return enabled;
     }

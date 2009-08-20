@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import java.util.Collection;
+import java.net.URL;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -64,6 +64,16 @@ public abstract class EmbeddingIndexerFactory {
      * @since 1.18
      */
     public abstract void filesDeleted (Iterable<? extends Indexable> deleted, Context context);
+
+    /**
+     * Called by indexing infrastructure to notify indexer that roots were deregistered,
+     * for example the project owning these roots was closed. The indexer may free memory caches
+     * for given roots or do any other clean up.
+     *
+     * @param removedRoots the iterable of removed roots
+     * @since 1.19
+     */
+    public abstract void rootsRemoved (Iterable<? extends URL> removedRoots);
     
     /**
      * Called by indexing infrastructure to notify indexer that a file was modified and so its

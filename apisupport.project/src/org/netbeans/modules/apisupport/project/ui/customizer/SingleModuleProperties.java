@@ -222,8 +222,8 @@ public final class SingleModuleProperties extends ModuleProperties {
         requiredTokensListModel = null;
         projectXMLManager = null;
         if (isSuiteComponent()) {
-            assert getSuiteDirectory() != null;
-            ModuleList.refreshModuleListForRoot(getSuiteDirectory());
+            if (getSuiteDirectory() != null)
+                ModuleList.refreshModuleListForRoot(getSuiteDirectory());
         } else if (isStandalone()) {
             ModuleList.refreshModuleListForRoot(getProjectDirectoryFile());
         }

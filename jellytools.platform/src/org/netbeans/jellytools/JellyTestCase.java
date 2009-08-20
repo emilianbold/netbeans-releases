@@ -309,7 +309,7 @@ public class JellyTestCase extends NbTestCase {
     
     /** private variable for holding state whether test was finished
      */
-    private static boolean testStatus = true;
+    private boolean testStatus = true;
     
     /** Checks whether previus test finished correctly and
      *  sets test status to 'not finished' state
@@ -335,6 +335,54 @@ public class JellyTestCase extends NbTestCase {
     }
     
     private Vector openedProjects = null;
+
+    /**
+     * Waits for the initial scanning to be finished. This should be better than
+     * the original solution, but will fail anyway if IDE cluster is not present.
+     *
+     * @throws ClassNotFoundException
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    public void waitScanFinished()
+    {
+        try {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null)
+            {
+                l = getClass().getClassLoader();
+            }
+            Class<?> repositoryUpdaterClass = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater", true, l);
+            final Object repositoryUpdater = repositoryUpdaterClass.getMethod("getDefault").invoke(null);
+
+            final Method isScanInProgressMethod = repositoryUpdaterClass.getMethod("isScanInProgress");
+
+            Waiter waiter = new Waiter(new Waitable() {
+                public Object actionProduced(Object anObject) {
+                    Boolean result;
+                    try {
+                        result = (Boolean) isScanInProgressMethod.invoke(repositoryUpdater);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new JemmyException("Error during waiting for the end of scanning: ", e);
+                    }
+                    return result ? null : Boolean.TRUE;
+                }
+                public String getDescription() {
+                    return("Waiting for scanning to finish.");
+                }
+            });
+
+            Timeouts timeouts = waiter.getTimeouts();
+            timeouts.setTimeout("Waiter.WaitingTime", 600000); //set timeout for 10 minutes
+            waiter.waitAction(null);
+        }
+        catch (Exception e) {
+            throw new JemmyException("Waiting for end of scanning failed.", e);
+        }
+    }
 
     /**
      * Open projects.
@@ -383,13 +431,8 @@ public class JellyTestCase extends NbTestCase {
             Method openMethod = openProjectsClass.getMethod("open", new Class[]{projectsArray.getClass(), Boolean.TYPE});
             openMethod.invoke(openProjectsInstance, projectsArray, false);
             openedProjects.addAll(newProjects);
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            if (l == null) {
-                l = getClass().getClassLoader();
-            }
-//            SourceUtils.waitScanFinished();
-            Class<?> sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
-            sourceUtils.getMethod("waitScanFinished").invoke(null);
+            
+            waitScanFinished();
         } catch (IllegalAccessException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
@@ -409,19 +452,6 @@ public class JellyTestCase extends NbTestCase {
      */
     public void openDataProjects(String... projects) throws IOException {
         
-        //TODO: find a better solution!!! THIS ONE IS TEMPORARY
-        //wait for the main window to be fully loaded
-        //otherwise the openProjects method may fail/freeze
-        //apparently it helps when an action is performed before calling openProjects()
-        new org.netbeans.jellytools.actions.Action(Bundle.getStringTrimmed(
-            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e)
-        {}
-
         String[] fullPaths = new String[projects.length];
         for (int i = 0; i < projects.length; i++) {
             fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];            
@@ -525,7 +555,7 @@ public class JellyTestCase extends NbTestCase {
 
     private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
         sb.append(indent).append("Thread ").append(t.getName()).append('\n');
-        indent = indent.concat("  ");
+        
         for (StackTraceElement e : data.get(t)) {
             sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
                     .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");

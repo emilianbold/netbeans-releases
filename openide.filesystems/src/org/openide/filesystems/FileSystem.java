@@ -49,11 +49,9 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /** Interface that provides basic information about a virtual
@@ -723,49 +721,6 @@ public abstract class FileSystem implements Serializable {
     * semantics regardless of whether and when this method is called.
     */
     public void removeNotify() {
-    }
-
-    /** Getter for the resource string
-    * @param s the resource name
-    * @return the resource
-    */
-    static String getString(String s) {
-        /*This call to getBundle should ensure that currentClassLoader is not used to load resources from.
-         This should prevent from deadlock, that occured: one waits for FileObject and has resource,
-         second one waits for resource and has FileObject*/
-        return NbBundle.getBundle(
-            "org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()
-        ).getString(s);
-    }
-
-    /** Creates message for given string property with one parameter.
-    * @param s resource name
-    * @param obj the parameter to the message
-    * @return the string for that text
-    */
-    static String getString(String s, Object obj) {
-        return MessageFormat.format(getString(s), new Object[] { obj });
-    }
-
-    /** Creates message for given string property with two parameters.
-    * @param s resource name
-    * @param obj1 the parameter to the message
-    * @param obj2 the parameter to the message
-    * @return the string for that text
-    */
-    static String getString(String s, Object obj1, Object obj2) {
-        return MessageFormat.format(getString(s), new Object[] { obj1, obj2 });
-    }
-
-    /** Creates message for given string property with three parameters.
-    * @param s resource name
-    * @param obj1 the parameter to the message
-    * @param obj2 the parameter to the message
-    * @param obj3 the parameter to the message
-    * @return the string for that text
-    */
-    static String getString(String s, Object obj1, Object obj2, Object obj3) {
-        return MessageFormat.format(getString(s), new Object[] { obj1, obj2, obj3 });
     }
 
     /** getter for Repository

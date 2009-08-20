@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -71,7 +71,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform(Object[] nodes) {
-                makeCurrent((CallStackFrame) nodes [0]);
+                makeCurrent((GdbCallStackFrame) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE);
@@ -84,7 +84,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform(Object[] nodes) {
-                popToHere((CallStackFrame) nodes[0]);
+                popToHere((GdbCallStackFrame) nodes[0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -100,7 +100,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) {
 	    return new Action[0];
 	}
-        if (!(node instanceof CallStackFrame)) {
+        if (!(node instanceof GdbCallStackFrame)) {
 	    throw new UnknownTypeException(node);
 	}
         
@@ -111,8 +111,8 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) {
 	    return;
 	}
-        if (node instanceof CallStackFrame) {
-            makeCurrent((CallStackFrame) node);
+        if (node instanceof GdbCallStackFrame) {
+            makeCurrent((GdbCallStackFrame) node);
             return;
         }
         throw new UnknownTypeException(node);
@@ -124,7 +124,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     public void removeModelListener(ModelListener l) {
     }
 
-    private void popToHere(final CallStackFrame frame) {
+    private void popToHere(final GdbCallStackFrame frame) {
         if (!frame.isValid()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_InvalidCallStackFrame"))); // NOI18N
@@ -135,7 +135,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         }
     }
     
-    private void makeCurrent(final CallStackFrame frame) {
+    private void makeCurrent(final GdbCallStackFrame frame) {
         if (debugger.getCurrentCallStackFrame() != frame) {
             if (frame.isValid()) {
                 frame.makeCurrent();

@@ -77,7 +77,6 @@ import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
  * Implementation of the MapperModelFactory for the BPEL mapper.
@@ -123,8 +122,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
   
     protected EditorExtensionProcessor editorExtProcessor;
     
-    protected CachingSchemaSearchVisitor mCachingSchemaSearchVisitor;
-
     protected MapperTcContext currentMapperTcContext;
     protected BpelDesignContext currentBpelDesignContext;   
     
@@ -142,15 +139,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     }
 
     public MapperModel constructModel() {
-        mCachingSchemaSearchVisitor = new CachingSchemaSearchVisitor();
-        try {
-            return constructModelImpl();
-        } finally {
-            mCachingSchemaSearchVisitor = null;
-        }
-    }
-    
-    public MapperModel constructModelImpl () {
         //
         Mapper mapper = currentMapperTcContext.getMapper();
         BpelChangeProcessor changeProcessor = new BpelChangeProcessor(
@@ -318,10 +306,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         return null;
     }
 
-    public CachingSchemaSearchVisitor getCachingSchemaSearchVisitor() {
-        return mCachingSchemaSearchVisitor;
-    }
-    
     private void addCopyGraph(Copy copy, BpelMapperModel newMapperModel, 
             BpelEditorExtensions extList) {
         //
@@ -483,10 +467,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         try {
             XPathModel newXPathModel = BpelXPathModelFactory.create(
                     contextEntity, castList, pseudoComps);
-            //
-            // Specify the Caching visitor for optimization!
-            newXPathModel.setCachingSchemaSearchVisitor(
-                    mCachingSchemaSearchVisitor);
             //
             // NOT NEED to specify schema context because of an 
             // expression with variable is implied here. 

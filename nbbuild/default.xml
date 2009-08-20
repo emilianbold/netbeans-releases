@@ -150,7 +150,7 @@ made subject to such option by the copyright holder.
     <property name="cluster.path.final" refid="cluster.path.id"/>
   </target>
   
-  <target name="set-buildnumber" unless="buildnumber">
+  <target name="-do-set-buildnumber" unless="buildnumber">
     <tstamp>
     	<format property="buildstamp" pattern="yyMMdd"/>
     </tstamp>
@@ -167,6 +167,8 @@ made subject to such option by the copyright holder.
     </condition>
     <property name="buildnumber" value="${buildstamp}"/>
     <echo message="${buildnumber}"/>
+  </target>
+  <target name="set-buildnumber" depends="-do-set-buildnumber">
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
   </target>

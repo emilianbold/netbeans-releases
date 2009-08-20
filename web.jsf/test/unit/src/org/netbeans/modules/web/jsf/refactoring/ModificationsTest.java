@@ -45,7 +45,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.refactoring.Modifications.Difference;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;

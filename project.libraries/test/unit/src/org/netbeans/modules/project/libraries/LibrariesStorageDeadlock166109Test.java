@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.project.libraries;
 
-import java.beans.Customizer;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
@@ -49,11 +48,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestEntityCatalog;
 import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex.Action;
 import org.openide.util.test.MockLookup;
 

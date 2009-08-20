@@ -153,6 +153,15 @@ public final class KenaiProject {
     }
 
     /**
+     * Url of the image of this project
+     * @return project picture
+     */
+    public synchronized String getImageUrl() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        return data.image;
+    }
+
+    /**
      * @return tags separated by space
      *
      */

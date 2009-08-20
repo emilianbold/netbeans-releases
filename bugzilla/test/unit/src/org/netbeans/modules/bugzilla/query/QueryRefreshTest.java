@@ -95,7 +95,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, ts, false);
+        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, false, false, true);
         ts = System.currentTimeMillis();
         h.waitUntilDone();
 
@@ -119,7 +119,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, ts, false);
+        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, true, false, true);
         ts = System.currentTimeMillis();
         h.waitUntilDone();
         QueryTestUtil.selectTestProject(q);

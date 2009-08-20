@@ -101,9 +101,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
-    static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
+    static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"}; //NOI18N
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
     private static final String FACADE_SUFFIX = "Facade"; //NOI18N
+    private static final String CONTROLLER_SUFFIX = "Controller";  //NOI18N
+    private static final String CONVERTER_SUFFIX = "Converter";  //NOI18N
+    private static final String JAVA_EXT = "java"; //NOI18N
   
     private transient WebModuleExtender wme;
     
@@ -232,13 +235,13 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         String utilPackage = controllerPkg == null || controllerPkg.length() == 0 ? UTIL_FOLDER_NAME : controllerPkg + "." + UTIL_FOLDER_NAME;
         for (int i = 0; i < UTIL_CLASS_NAMES.length; i++){
-            if (utilFolder.getFileObject(UTIL_CLASS_NAMES[i], "java") == null) {
-                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", UTIL_CLASS_NAMES[i] + ".java"); //NOI18N
+            if (utilFolder.getFileObject(UTIL_CLASS_NAMES[i], JAVA_EXT) == null) {
+                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", UTIL_CLASS_NAMES[i] + "."+JAVA_EXT); //NOI18N
                 progressContributor.progress(progressMsg, progressIndex++);
                 progressPanel.setText(progressMsg);
                 String content = JpaControllerUtil.readResource(PersistenceClientIterator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + UTIL_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
                 content = content.replaceAll("__PACKAGE__", utilPackage);
-                FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES[i] + ".java");//NOI18N
+                FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES[i] + "."+JAVA_EXT);//NOI18N
                 String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, target);
                 JpaControllerUtil.createFile(target, content, projectEncoding);  //NOI18N
             }
@@ -257,14 +260,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
             String simpleClassName = JpaControllerUtil.simpleClassName(entityClass);
-            String simpleControllerNameBase = simpleClassName + "Controller"; //NOI18N
+            String simpleControllerNameBase = simpleClassName + CONTROLLER_SUFFIX;
             String simpleControllerName = simpleControllerNameBase;
-            while (targetFolder.getFileObject(simpleControllerName, "java") != null && nameAttemptIndices[i] < 1000) {
+            while (targetFolder.getFileObject(simpleControllerName, JAVA_EXT) != null && nameAttemptIndices[i] < 1000) {
                 simpleControllerName = simpleControllerNameBase + ++nameAttemptIndices[i];
             }
-            String simpleConverterName = simpleClassName + "Converter" + (nameAttemptIndices[i] == 0 ? "" : nameAttemptIndices[i]);
+            String simpleConverterName = simpleClassName + CONVERTER_SUFFIX + (nameAttemptIndices[i] == 0 ? "" : nameAttemptIndices[i]);
             int converterNameAttemptIndex = 1;
-            while (targetFolder.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
+            while (targetFolder.getFileObject(simpleConverterName, JAVA_EXT) != null && converterNameAttemptIndex < 1000) {
                 simpleConverterName += "_" + converterNameAttemptIndex++;
             }
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
@@ -297,7 +300,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
             String simpleJpaControllerName = simpleClassName + (genSessionBean ? FACADE_SUFFIX : "JpaController"); //NOI18N
-            FileObject jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, "java");
+            FileObject jpaControllerFileObject = jpaControllerPackageFileObject.getFileObject(simpleJpaControllerName, JAVA_EXT);
             JSFClientGenerator.generateJSFPages(progressContributor, progressPanel, project, entityClass, jsfFolder, firstLower, controllerPkg, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities, ajaxify, jpaControllerPkg, jpaControllerFileObject, converterFileObjects[i], genSessionBean, progressIndex);
             progressIndex += JSFClientGenerator.PROGRESS_STEP_COUNT;
         }

@@ -88,9 +88,9 @@ public class ServerLocationManager  {
             }
             String installRoot = f.getAbsolutePath();
             //if we are only 8.1 set the necessary property there:
-            if(!isGlassFish(f)){
-                System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot);
-            }
+//            if(!isGlassFish(f)){
+//                System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot);
+//            }
             
             FileObject bridgesDir = FileUtil.getConfigFile(JAR_BRIGDES_DEFINITION_LAYER);
             FileObject[] ch =new  FileObject[0];
@@ -143,6 +143,8 @@ public class ServerLocationManager  {
 	    f = new File(installRoot+"/lib/jaxrpc-impl.jar");//NOI18N
 	    loader.addURL(f);
 	    
+	    f = new File(installRoot+"/lib/appserver-deployment-client.jar");//NOI18N
+	    loader.addURL(f);
 	    
 	} catch (Exception ex2) {
 	    throw new Exception(ex2.getLocalizedMessage());
