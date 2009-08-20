@@ -133,7 +133,6 @@ public final class TaskListProvider extends PushTaskScanner {
                 // tasklist initialization
                 for (IssueProvider provider : Lookup.getDefault().lookupAll(IssueProvider.class)) {
                     LOG.finer("TaskListProvider.setScope: waking up " + provider.getClass().getName()); //NOI18N
-                    provider.wakeUp();
                 }
                 providersInitialized = true;
             }

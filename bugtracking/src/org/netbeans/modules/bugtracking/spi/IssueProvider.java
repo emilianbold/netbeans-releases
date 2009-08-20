@@ -52,12 +52,6 @@ import org.netbeans.modules.bugtracking.tasklist.TaskListProvider;
 public abstract class IssueProvider {
 
     /**
-     * This method is called upon the initialization of the tasklist. So you need to implement this to
-     * display issues in the tasklist after IDE starts.
-     */
-    public abstract void wakeUp ();
-
-    /**
      * Adds issues to the task list.
      * @param openTaskList also opens the TaskList top component if set to <code>true</code>
      * @param issuesToAdd issues to add
