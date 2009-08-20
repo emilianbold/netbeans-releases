@@ -493,8 +493,6 @@ public class Outline extends ETable {
     }
     
     public boolean isExpanded (TreePath path) {
-        if( !isRootVisible() && null == path.getParentPath() )
-            return true;
         return getTreePathSupport().isExpanded(path);
     }
     

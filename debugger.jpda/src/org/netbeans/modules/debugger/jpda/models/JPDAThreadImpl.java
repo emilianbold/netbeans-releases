@@ -127,6 +127,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
 
     private static Logger logger = Logger.getLogger(JPDAThreadImpl.class.getName()); // NOI18N
+    private static Logger loggerS = Logger.getLogger(JPDAThreadImpl.class.getName()+".suspend"); // NOI18N
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
@@ -646,6 +647,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             logger.fine("  write lock acquired, is suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
             if (!isSuspended ()) {
                 if (suspendedNoFire) {
+                    loggerS.fine("["+threadName+"]: suspend(): SETTING suspendRequested = "+true);
                     // We were suspended just to process something, thus we do not want to be resumed then
                     suspendRequested = true;
                     return ;
@@ -849,6 +851,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         //System.err.println("notifyToBeResumed("+getName()+")");
         logger.fine("notifyToBeResumedNoFire("+getName()+")");
         accessLock.writeLock().lock();
+        loggerS.fine("["+threadName+"]: "+"notifyToBeResumedNoFire() suspended = "+suspended+", suspendRequested = "+suspendRequested);
         try {
             logger.fine("   suspendRequested = "+suspendRequested);
             if (suspendRequested) {
@@ -887,7 +890,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 suspendedToFire = Boolean.FALSE;
                 methodInvokingDisabledUntilResumed = false;
             }
-            suspendedNoFire = false;
+            if (resumed) {
+                suspendedNoFire = false;
+            }
         } finally {
             accessLock.writeLock().unlock();
         }
@@ -918,21 +923,34 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
     
     public void notifySuspended() {
-        notifySuspended(true);
+        notifySuspended(true, false);
     }
 
     public void notifySuspendedNoFire() {
         //notifySuspended(false);
         // Keep the thread look like running until we get a firing notification
         accessLock.writeLock().lock();
+        loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount);
+        if (suspended && suspendCount > 0) {
+            loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
+            suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
+        }
         suspendedNoFire = true;
+        loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
         accessLock.writeLock().unlock();
     }
 
-    public PropertyChangeEvent notifySuspended(boolean doFire) {
+    public PropertyChangeEvent notifySuspended(boolean doFire, boolean explicitelyPaused) {
+        loggerS.fine("["+threadName+"]: "+"notifySuspended(doFire = "+doFire+", explicitelyPaused = "+explicitelyPaused+")");
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
         try {
+            loggerS.fine("["+threadName+"]: (notifySuspended() BEGIN) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
+            if (explicitelyPaused && !suspended && suspendedNoFire) {
+                suspendRequested = true;
+                loggerS.fine("["+threadName+"]: suspendRequested = "+suspendRequested);
+                return null;
+            }
             try {
                 suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
             } catch (IllegalThreadStateExceptionWrapper ex) {
@@ -949,7 +967,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
                 suspendedNoFire = false;
-                suspendRequested = false; // Regularly suspended now
                 suspendedToFire = Boolean.TRUE;
                 if (doFire) {
                     try {
@@ -961,6 +978,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     }
                 }
             }
+            loggerS.fine("["+threadName+"]: (notifySuspended() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
         } finally {
             accessLock.writeLock().unlock();
         }
@@ -999,6 +1017,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         accessLock.writeLock().lock();
         try {
             logger.fine("Invoking a method in thread "+threadName);
+            loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
             if (methodInvokingDisabledUntilResumed) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
@@ -1049,6 +1068,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             watcherToDestroy = watcher;
             watcher = new SingleThreadWatcher(this);
         } finally {
+            loggerS.fine("["+threadName+"]: unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
             accessLock.writeLock().unlock();
         }
         if (watcherToDestroy != null) {
@@ -1067,6 +1087,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
             // We need to suspend the thread immediately so that it does not continue after the invoke has finished.
             logger.fine("Method invoke done in thread "+threadName);
+            loggerS.fine("["+threadName+"]: Method invoke done, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested+", unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
             if (resumedToFinishMethodInvocation) {
                 try {
                     ThreadReferenceWrapper.suspend(threadReference);

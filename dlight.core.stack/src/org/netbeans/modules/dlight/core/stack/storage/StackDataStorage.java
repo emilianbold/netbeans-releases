@@ -71,8 +71,6 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionCall> getCallStack(int stackId);
 
-    List<Long> getPeriodicStacks(long startTime, long endTime, long interval);
-
     List<FunctionMetric> getMetricsList();
 
     List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
@@ -82,10 +80,10 @@ public interface StackDataStorage {//extends StackSupport {
     List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
-    
+
     /**
      * Returns stack trace on the base of the query
-     
+
      */
     ThreadDump getThreadDump(ThreadDumpQuery query);
 }

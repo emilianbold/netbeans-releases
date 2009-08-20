@@ -46,9 +46,9 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
-    <change id="Document.findRecentEditorPane">
+    <change id="NbDocument.findRecentEditorPane">
         <api name="text"/>
-        <summary>Add Document.findRecentEditorPane</summary>
+        <summary>Add NbDocument.findRecentEditorPane</summary>
         <version major="6" minor="24"/>
         <date day="12" month="8" year="2009"/>
         <author login="mslama"/>

@@ -387,6 +387,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
+                <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>

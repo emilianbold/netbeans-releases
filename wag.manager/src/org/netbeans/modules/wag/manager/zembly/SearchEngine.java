@@ -41,8 +41,6 @@ package org.netbeans.modules.wag.manager.zembly;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -70,12 +68,12 @@ public class SearchEngine {
     private static final String ITEMS_ATTR = "items";
     private static final String PATH_ATTR = "path";
     private static final String NAME_ATTR = "name";
+    private static final String UUID_ATTR = "uuid";
     private static final String URL_ATTR = "url";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
-    private static final String JAVA_SERVICE_CONTENT_TYPE = "application/java";
-  
+ 
     private Zembly zembly;
 
     public SearchEngine(Zembly zembly) {
@@ -114,18 +112,20 @@ public class SearchEngine {
 
                 WagService svc = new WagService();
                 services.add(svc);
-                svc.setName(item.getString(NAME_ATTR));
-                String uri = item.getString(PATH_ATTR);
-                svc.setPath(uri);
+
+                String name = item.getString(NAME_ATTR);
+                svc.setDisplayName(name);
 
                 String contentType = item.getString(CONTENT_TYPE_ATTR);
-
                 if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
-                    svc.setPrependWeb(true);
+                    name += "web.";
                 }
+                svc.setCallableName(name);
+                
+                svc.setUuid(item.getString(UUID_ATTR));
 
                 params.clear();
-                params.add(Parameter.create(ITEM_URI_PARAM, uri));
+                params.add(Parameter.create(ITEM_URI_PARAM, item.getString(PATH_ATTR)));
                 params.add(Parameter.create(VERSION_PARAM, "latest"));
                 String result = zembly.callService(GET_ITEM_INFO_URI, params);
                 //System.out.println("result = " + result);
@@ -136,6 +136,7 @@ public class SearchEngine {
                 JSONArray svcParams = info.getJSONArray(PARAMETERS_ATTR);
                 List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
                 svc.setParameters(wagParams);
+
                 for (int j = 0; j < svcParams.length(); j++) {
                     JSONObject p = svcParams.getJSONObject(j);
                     WagServiceParameter wp = new WagServiceParameter();

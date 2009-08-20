@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricFormatter;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -106,7 +107,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     for (Column column : metrics) {
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
-                        String metricValString = metricVal.toString();
+                        String metricValString = FunctionMetricFormatter.getFormattedValue(functionCall, metricId);
                         lineAnnotationInfo.getColumns()[col] = metricValString;
                         int metricValLength = metricValString.length();
                         if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {

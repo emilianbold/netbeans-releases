@@ -80,12 +80,14 @@ public abstract class SPIAccessor {
 
     public abstract  Context createContext (final FileObject indexFolder, final URL rootURL,
             String indexerName, int indexerVersion, IndexFactoryImpl factory,
-            boolean followUpJob, boolean checkForEditorModifications, boolean allFilesJob,
+            boolean followUpJob, boolean checkForEditorModifications,
             boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException;
 
     public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
 
     public abstract IndexingSupport context_getAttachedIndexingSupport(Context context);
+
+    public abstract void context_clearAttachedIndexingSupport(Context context);
     
     public abstract String getIndexerName (Context ctx);
 
@@ -100,5 +102,7 @@ public abstract class SPIAccessor {
     public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
 
     public abstract void index (EmbeddingIndexer indexer, Indexable indexable, Parser.Result parserResult, Context ctx);
+
+    public abstract void setAllFilesJob (Context context, boolean allFilesJob);
 
 }

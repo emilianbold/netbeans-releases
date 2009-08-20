@@ -892,6 +892,9 @@ class LuceneIndex extends Index {
             } catch (java.io.IOException e) {
                 res = false;
                 clear();
+            } catch (RuntimeException e) {
+                res = false;
+                clear();
             }
         }
         return res;
@@ -904,13 +907,15 @@ class LuceneIndex extends Index {
         try {
             final String[] content = this.directory.list();
             boolean dirty = false;
-            for (String file : content) {
-                try {
-                    directory.deleteFile(file);
-                } catch (IOException e) {
-                    //Some temporary files
-                    if (directory.fileExists(file)) {
-                        dirty = true;
+            if (content != null) {
+                for (String file : content) {
+                    try {
+                        directory.deleteFile(file);
+                    } catch (IOException e) {
+                        //Some temporary files
+                        if (directory.fileExists(file)) {
+                            dirty = true;
+                        }
                     }
                 }
             }

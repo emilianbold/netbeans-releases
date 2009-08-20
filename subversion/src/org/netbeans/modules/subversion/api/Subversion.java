@@ -55,6 +55,7 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -320,6 +321,9 @@ public class Subversion {
             SvnUtils.refreshParents(localFolder);
             getSubversion().getStatusCache().refreshRecursively(localFolder);
         }
+
+        SvnKenaiSupport.getInstance().setFirmAssociations(new File[]{localFolder}, repositoryUrl);
+
     }
 
     /**

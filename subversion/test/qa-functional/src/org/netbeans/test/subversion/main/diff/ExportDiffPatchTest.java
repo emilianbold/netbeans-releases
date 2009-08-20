@@ -26,6 +26,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -154,19 +155,29 @@ public class ExportDiffPatchTest extends JellyTestCase {
             mh = new MessageHandler("Exporting");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
+            node.performMenuActionNoBlock("Team|Subversion|Export Diff Patch...");
             //Operator.setDefaultStringComparator(oldOperator);
             
-            nbdialog = new NbDialogOperator("Export Diff");
-            JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
-            JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);
+            nbdialog = new NbDialogOperator("Export Diff Patch");
+            JButtonOperator btn = new JButtonOperator(nbdialog, "OK");
+
+
+            JRadioButtonOperator rbtno = new JRadioButtonOperator(nbdialog, "Save as File");
+            rbtno.push();
+
+            JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 2);
+
             String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch";
             File file = new File(patchFile);
-            tf.setText(file.getCanonicalFile().toString());
+            tf.setText(file.getCanonicalFile().toString()); 
+
             btn.push();
 
             TestKit.waitText(mh);
             new EventTool().waitNoEvent(3000);
+
+
+            System.out.println("After refresh");
 
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = br.readLine();
