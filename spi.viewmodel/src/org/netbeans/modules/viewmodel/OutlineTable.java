@@ -387,7 +387,7 @@ ExplorerManager.Provider, PropertyChangeListener {
 
         // Sort of hack(?) After close/open of the view the table becomes empty,
         // it looks like the root node stays unexpanded for some reason.
-        treeTable.expandNode(rootNode);
+        //treeTable.expandNode(rootNode);
     }
     
     public ExplorerManager getExplorerManager () {
