@@ -234,6 +234,7 @@ public class SvnClientFactory {
     private boolean setupJavaHl () {
 
         String jhlInitFile = System.getProperty("netbeans.user") + "/config/svn/jhlinit";
+        System.out.println("jhlInitFile: "+jhlInitFile);
         File initFile = new File(jhlInitFile);
 
         if(checkJavahlCrash(initFile)) {
