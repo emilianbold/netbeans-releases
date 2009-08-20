@@ -246,7 +246,7 @@ public final class TaskListProvider extends PushTaskScanner {
                             // openning the real issue in it's top component
                             issue.open();
                         } else {
-                            LOG.log(Level.WARNING, "null issue returned for {0}", lazyIssue.getName()); //NOI18N
+                            LOG.log(Level.FINE, "null issue returned for {0}", lazyIssue.getName()); //NOI18N
                         }
                     }
                 });

@@ -153,7 +153,7 @@ public abstract class IssueProvider {
 
         /**
          * Implement this to load and return the real issue.
-         * @return the real issue.
+         * @return the real issue or null
          */
         public abstract Issue getIssue ();
 
