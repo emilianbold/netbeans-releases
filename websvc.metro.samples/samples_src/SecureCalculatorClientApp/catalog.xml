@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,20 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="websvc.metro.samples" default="netbeans" basedir=".">
-
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="jar" depends="zip-examples,projectized-common.jar"/>
-
-    <target name="zip-examples" depends="build-init">
-        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/websvc/metro/samples"/>
-        <mkdir dir="${examples}"/>
-        <zip basedir="samples_src/CalculatorApp"  destfile="${examples}/CalculatorApp.zip"/>
-        <zip basedir="samples_src/CalculatorClientApp"  destfile="${examples}/CalculatorClientApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorApp"  destfile="${examples}/SecureCalculatorApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorClientApp"  destfile="${examples}/SecureCalculatorClientApp.zip"/>
-    </target>
-
-</project>
-
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?wsdl" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.wsdl"/>
+    <system systemId="http://localhost:8080/SecureCalculatorApp/CalculatorWSService?xsd=1" uri="src/conf/xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.xsd_1.xsd"/>
+    <nextCatalog catalog="nbproject/private/cache/retriever/catalog.xml"/>
+</catalog>

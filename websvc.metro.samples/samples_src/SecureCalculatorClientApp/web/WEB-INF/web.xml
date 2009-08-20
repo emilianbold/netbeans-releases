@@ -40,20 +40,21 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="websvc.metro.samples" default="netbeans" basedir=".">
-
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="jar" depends="zip-examples,projectized-common.jar"/>
-
-    <target name="zip-examples" depends="build-init">
-        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/websvc/metro/samples"/>
-        <mkdir dir="${examples}"/>
-        <zip basedir="samples_src/CalculatorApp"  destfile="${examples}/CalculatorApp.zip"/>
-        <zip basedir="samples_src/CalculatorClientApp"  destfile="${examples}/CalculatorClientApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorApp"  destfile="${examples}/SecureCalculatorApp.zip"/>
-        <zip basedir="samples_src/SecureCalculatorClientApp"  destfile="${examples}/SecureCalculatorClientApp.zip"/>
-    </target>
-
-</project>
-
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>ClientServlet</servlet-name>
+        <servlet-class>org.me.calculator.client.ClientServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ClientServlet</servlet-name>
+        <url-pattern>/ClientServlet</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+        </welcome-file-list>
+    </web-app>
