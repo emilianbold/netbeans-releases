@@ -1195,11 +1195,6 @@ public class GdbDebugger implements PropertyChangeListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                     "ERR_NoDebuggingSymbolsFound"))); // NOI18N
             finish(false);
-        } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                    "ERR_UnknownTargetException"))); // NOI18N
-            finish(false);
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
                 msg.startsWith("welcome to change it and") || // NOI18N
