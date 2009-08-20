@@ -136,9 +136,9 @@ public final class KenaiNotification {
          * Type of Modification
          */
         public static enum Type {
-            ADD,
+            NEW,
             CHANGE,
-            REMOVE
+            DELETE
         }
 
         public Modification(String resource, String id, Type type) {
