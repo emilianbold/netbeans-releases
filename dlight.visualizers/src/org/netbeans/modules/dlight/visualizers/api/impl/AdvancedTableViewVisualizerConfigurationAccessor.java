@@ -94,4 +94,9 @@ public abstract class AdvancedTableViewVisualizerConfigurationAccessor {
     public abstract boolean isDualPaneMode(AdvancedTableViewVisualizerConfiguration configuration);
 
     public abstract Renderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration);
+    
+    public abstract String getIconColumnID(AdvancedTableViewVisualizerConfiguration configuration);
+
+    public abstract String getIconPath(AdvancedTableViewVisualizerConfiguration configuration);
+
 }

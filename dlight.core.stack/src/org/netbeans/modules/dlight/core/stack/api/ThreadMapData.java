@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.core.stack.api;
 
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.ThreadData;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
 public interface ThreadMapData {
@@ -47,4 +46,10 @@ public interface ThreadMapData {
     List<ThreadData> getThreadsData();
 
     TimeDuration getPrecision();
+
+    /**
+     * 
+     * @return true if data contains only sampling probes
+     */
+    boolean isSamplingMode();
 }
