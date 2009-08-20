@@ -68,6 +68,7 @@ public class RepositoryStepOperator extends WizardOperator {
      */
     public RepositoryStepOperator() {
         super(""); //NO I18N
+        //Repository
         stepsWaitSelectedValue("Repository");
     }
     private JLabelOperator _lblSteps;
@@ -131,7 +132,7 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "Proxy Configuration..." JButton in this dialog.
      * @return JButtonOperator
      */
-    public JButtonOperator btProxyConfiguration() {
+public JButtonOperator btProxyConfiguration() {
         if (_btProxyConfiguration == null) {
             _btProxyConfiguration = new JButtonOperator(this, "Proxy Configuration...");
         }

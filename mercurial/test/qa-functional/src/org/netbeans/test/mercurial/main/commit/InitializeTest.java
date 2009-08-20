@@ -123,31 +123,34 @@ public class InitializeTest extends JellyTestCase {
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             new EventTool().waitNoEvent(1000);
 
-            MessageHandler mh = new MessageHandler("Initializing");
+            MessageHandler mh ;//= new MessageHandler("Initializing");
             TestKit.TIME_OUT = 25;
-            log.addHandler(mh);
+   //         log.addHandler(mh);
 
-            MessageHandler mh2 = new MessageHandler("Adding");
-            log.addHandler(mh2);
+//            MessageHandler mh2 = new MessageHandler("Adding");
+//            log.addHandler(mh2);
 
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
             nodeFile.performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
             System.out.println(s);
-
-            TestKit.waitText(mh);
-            TestKit.waitText(mh2);
+            System.out.println("tady1");
+  //          TestKit.waitText(mh);
+//            TestKit.waitText(mh2);
 
             new EventTool().waitNoEvent(1000);
 
-            mh = new MessageHandler("Refreshing");
+//            mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
-            log.addHandler(mh);
+//            log.addHandler(mh);
             nodeFile.performPopupAction("Mercurial|Status");
 
-            TestKit.waitText(mh);
+//            TestKit.waitText(mh);
 
             new EventTool().waitNoEvent(1000);
             VersioningOperator vo = VersioningOperator.invoke();
+
+            System.out.println("tady2");
+
             table = vo.tabFiles();
             assertEquals("Wrong row count of table.", 8, table.getRowCount());
             start = System.currentTimeMillis();
