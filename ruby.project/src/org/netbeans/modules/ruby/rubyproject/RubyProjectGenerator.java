@@ -158,6 +158,7 @@ public final class RubyProjectGenerator {
         } catch (MutexException me) {
             ErrorManager.getDefault().notify(me);
         }
+        RakeSupport.refreshTasks(project);
         return helper;
     }
 
