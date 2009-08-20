@@ -5,7 +5,6 @@
 package org.netbeans.modules.dlight.annotationsupport;
 
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
 
@@ -31,6 +30,9 @@ public class AnnotationBarManager implements SideBarFactory {
   }
 
   public static AnnotationBar showAnnotationBar(JTextComponent target, FileAnnotationInfo fileAnnotationInfo) {
+    if (!AnnotationSupport.getInstance().getTextAnnotationVisible()) {
+        return null;
+    }
     AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
     assert ab != null : "#58828 reappeared!"; // NOI18N
     ab.annotate(fileAnnotationInfo);

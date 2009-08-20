@@ -82,9 +82,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
     public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
         log(sourceFileInfoProvider, metrics, functionCalls);
-        if (!AnnotationSupport.getInstance().getTextAnnotationVisible()) {
-            return;
-        }
         if (activeAnnotations != null) {
             // un-annotate sources // FIXUP
         }
@@ -179,9 +176,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     private void annotateCurrentSourceFiles() {
-        if (!AnnotationSupport.getInstance().getTextAnnotationVisible()) {
-            return;
-        }
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         if (nodes == null) {
             return;
