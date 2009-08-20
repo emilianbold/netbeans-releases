@@ -338,7 +338,7 @@ public class CommentsTest extends GeneratorTest {
     }
     
     // issue #100829
-    public void testCopyMethodWithCommments() throws Exception {
+    public void DISABLEtestCopyMethodWithCommments() throws Exception {
         testFile = new File(getWorkDir(), "Origin.java");
         TestUtilities.copyStringToFile(testFile, 
             "public class Origin {\n" +
