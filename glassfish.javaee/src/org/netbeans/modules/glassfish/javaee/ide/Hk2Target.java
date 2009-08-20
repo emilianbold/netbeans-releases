@@ -48,19 +48,21 @@ import javax.enterprise.deploy.spi.Target;
  * @author Ludo
  */
 public class Hk2Target implements Target {
+
+    private final String displayName;
+    private final String uri;
     
-    private String uri;
-    
-    public Hk2Target( String uri) {
-        this.uri=uri;
+    public Hk2Target(String displayName, String uri) {
+        this.displayName = displayName;
+        this.uri = uri;
     }
     
     public String getName() {
-        return "GlassFish v3 Prelude";
+        return displayName;
     }
 
     public String getDescription() {
-        return "GlassFish v3 Prelude Application server, the hundred K kernel...";
+        return displayName;
     }
     
     public String getServerUri () {

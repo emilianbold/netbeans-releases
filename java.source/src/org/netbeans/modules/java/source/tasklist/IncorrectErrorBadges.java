@@ -96,14 +96,25 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
         }
         
         try {
+            boolean containsError = false;
             for (Diagnostic d : info.getDiagnostics()) {
                 if (d.getKind() == Kind.ERROR) {
                     LOG.log(Level.FINE, "File contains errors: {0}", info.getFileObject());
-                    return ;
+                    containsError = true;
+                    break;
                 }
             }
-            
+
             final FileObject file = info.getFileObject();
+            boolean hasErrorBadge = TaskCache.getDefault().isInError(file, false);
+            if (hasErrorBadge) {
+                LOG.log(Level.FINE, "TaskCache.isInError: {0}", info.getFileObject());
+            }
+
+            if (containsError == hasErrorBadge) {
+                return;
+            }
+            
             DataObject d = DataObject.find(file);
 
             if (d.isModified()) {
@@ -111,10 +122,6 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
                 return;
             }
 
-            if (!TaskCache.getDefault().isInError(file, false)) {
-                LOG.log(Level.FINE, "No TaskCache.isInError: {0}", info.getFileObject());
-                return ;
-            }
             
             if (invocationCount == 1) {
                 timestamp = file.lastModified().getTime();

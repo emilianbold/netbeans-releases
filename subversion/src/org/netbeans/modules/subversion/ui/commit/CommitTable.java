@@ -212,6 +212,10 @@ public class CommitTable implements AncestorListener, TableModelListener {
         setDefaultColumnSizes();
     }
 
+    /**
+     * Note that each node should have it's values initialized
+     * @param nodes
+     */
     public void setNodes(SvnFileNode[] nodes) {
         tableModel.setNodes(nodes);
     }

@@ -43,22 +43,46 @@ import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.jira.JiraConfig;
 
 /**
  *
  * @author Tomas Stupka
+ * @author Jan Stola
  */
-public class PriorityRenderer extends DefaultListCellRenderer {
+public class PriorityRenderer extends DefaultListCellRenderer implements TableCellRenderer {
+
+    private Object valueToRender(Object value) {
+        if (value instanceof Priority) {
+            return ((Priority)value).getName();
+        }
+        return value;
+    }
+
+    private void setPriorityIcon(JLabel label, Object value) {
+        if (value instanceof Priority) {
+            label.setIcon(JiraConfig.getInstance().getPriorityIcon(((Priority)value).getId()));
+        }
+    }
+
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if(value instanceof Priority) {
-            Priority priority = (Priority) value;
-            JLabel renderer = (JLabel) super.getListCellRendererComponent(list, priority, index, isSelected, cellHasFocus);
-            renderer.setIcon(JiraConfig.getInstance().getPriorityIcon(priority.getId()));
-            return renderer;
+        JLabel label = (JLabel) super.getListCellRendererComponent(list, valueToRender(value), index, isSelected, cellHasFocus);
+        setPriorityIcon(label, value);
+        return label;
+    }
+
+    private DefaultTableCellRenderer tableCellRenderer;
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (tableCellRenderer == null) {
+            tableCellRenderer = new DefaultTableCellRenderer();
         }
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        JLabel label = (JLabel)tableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        setPriorityIcon(label, value);
+        return label;
     }
 }

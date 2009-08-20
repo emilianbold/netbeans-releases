@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
+import org.netbeans.modules.cnd.remote.support.UploadTestCase;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
@@ -91,6 +92,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
         this("Remote Development", // NOI18N
              MappingsTestCase.class,
              TransportTestCase.class,
+             UploadTestCase.class,
              RemoteUtilTestCase.class,
              ServerListTestCase.class,
              ZipSyncWorkerTestCase.class,

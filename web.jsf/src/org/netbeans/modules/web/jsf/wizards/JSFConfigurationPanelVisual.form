@@ -58,28 +58,28 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rbNoneLibrary" pref="459" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" pref="433" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="289" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="255" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="213" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="213" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="146" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="146" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="rbNewLibrary" alignment="1" pref="459" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="433" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lVersion" alignment="1" pref="437" max="32767" attributes="0"/>
-                                  <Component id="lDirectory" alignment="0" pref="437" max="32767" attributes="0"/>
+                                  <Component id="lVersion" alignment="1" pref="411" max="32767" attributes="0"/>
+                                  <Component id="lDirectory" alignment="0" pref="411" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -90,7 +90,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="16" max="32767" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -277,8 +277,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tServletName" alignment="0" pref="314" max="32767" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="314" max="32767" attributes="0"/>
+                                  <Component id="tServletName" alignment="0" pref="291" max="32767" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="291" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">

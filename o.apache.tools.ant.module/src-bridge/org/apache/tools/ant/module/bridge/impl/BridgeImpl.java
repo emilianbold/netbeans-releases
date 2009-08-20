@@ -336,7 +336,7 @@ public class BridgeImpl implements BridgeInterface {
         return ok;
     }
 
-    private static final RequestProcessor.Task refreshFilesystemsTask = RequestProcessor.getDefault().create(new Runnable() {
+    private static final RequestProcessor.Task refreshFilesystemsTask = new RequestProcessor("post-Ant file refresh").create(new Runnable() {
         public void run() {
             Logger.getLogger(BridgeImpl.class.getName()).log(Level.FINE, "Refreshing filesystems");
             FileUtil.refreshAll(); 

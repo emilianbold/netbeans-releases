@@ -43,21 +43,21 @@ package org.netbeans.modules.wag.manager.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.wag.manager.model.WagSearchResult;
+import org.netbeans.modules.wag.manager.model.WagDomains;
+import org.netbeans.modules.wag.manager.model.WagDomains.DomainType;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.model.WagUserServices;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 public class WagRootNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
-    private WagSearchResults searchResults;
+    private enum Keys {
+        ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, SEARCH
+    };
 
     public WagRootNodeChildren() {
-        searchResults = WagSearchResults.getInstance();
-        searchResults.addPropertyChangeListener(WeakListeners.propertyChange(this, searchResults));
     }
 
     @Override
@@ -67,15 +67,15 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == searchResults) {
-            updateKeys();
-        }
+        updateKeys();
     }
 
     protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        Collection<WagSearchResult> results = searchResults.getResults();
-        keys.addAll(results);
+        keys.add(Keys.ALL_DOMAINS);
+        keys.add(Keys.YOUR_DOMAINS);
+        keys.add(Keys.YOUR_SERVICES);
+        keys.add(Keys.SEARCH);
         setKeys(keys);
     }
 
@@ -87,8 +87,17 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
     }
 
     protected Node[] createNodes(Object key) {
-        if (key instanceof WagSearchResult) {
-            return new Node[] {new WagSearchResultNode((WagSearchResult) key)};
+        if (key instanceof Keys) {
+            switch ((Keys) key) {
+                case ALL_DOMAINS:
+                    return new Node[] {new WagItemsNode(new WagDomains(DomainType.ALL_DOMAINS))};
+                case YOUR_DOMAINS:
+                    return new Node[] {new WagItemsNode(new WagDomains(DomainType.YOUR_DOMAINS))};
+                case YOUR_SERVICES:
+                    return new Node[] {new WagItemsNode(new WagUserServices())};
+                case SEARCH:
+                    return new Node[] {new WagItemsNode(new WagSearchResults())};
+             }
         }
         return new Node[0];
     }

@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
@@ -50,13 +52,14 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 class ParameterImpl implements Parameter {
     private String name;
     private String defaultValue;
-    ParameterImpl(String name) {
-        this(name, null);
-    }
+    private List<QualifiedName> types;
+    private OffsetRange range;
 
-    ParameterImpl(String name, String defaultValue) {
+    ParameterImpl(String name, String defaultValue, List<QualifiedName> types, OffsetRange range) {
         this.name = name;
         this.defaultValue = defaultValue;
+        this.types = types;
+        this.range = range;
     }
 
     @NonNull
@@ -73,8 +76,11 @@ class ParameterImpl implements Parameter {
         return defaultValue == null;
     }
 
-    //TODO: not implemented yet
-    public TypeScope getType() {
-        return null;
+    public List<QualifiedName> getTypes() {
+        return types;
+    }
+
+    public OffsetRange getOffsetRange() {
+        return range;
     }
 }

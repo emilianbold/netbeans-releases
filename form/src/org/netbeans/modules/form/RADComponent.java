@@ -63,6 +63,7 @@ import org.openide.util.datatransfer.NewType;
 
 import org.netbeans.modules.form.codestructure.*;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -1200,12 +1201,37 @@ public class RADComponent {
         Map<Object,List<RADProperty>> otherProps = new TreeMap<Object,List<RADProperty>>();
         List<RADProperty> actionProps = new LinkedList<RADProperty>();
 
-        Object[] propsCats = FormUtils.getPropertiesCategoryClsf(
-                                 beanClass, getBeanInfo().getBeanDescriptor());
+        Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, getBeanInfo().getBeanDescriptor());
+        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
+        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+            try {
+                Object[] newPropsCats = new Object[propsCats.length+2*props.length];
+                for (int i=0; i<props.length; i++) {
+                    PropertyDescriptor pd = props[i];
+                    newPropsCats[2*i] = pd.getName();
+                    Object cat = FormUtils.PROP_NORMAL;
+                    if (pd.isPreferred()) {
+                        cat = FormUtils.PROP_PREFERRED;
+                    }
+                    if (pd.isExpert()) {
+                        cat = FormUtils.PROP_EXPERT;
+                    }
+                    if (pd.isHidden()) {
+                        cat = FormUtils.PROP_HIDDEN;
+                    }
+                    newPropsCats[2*i+1] = cat;
+                }
+                System.arraycopy(propsCats, 0, newPropsCats, 2*props.length, propsCats.length);
+                propsCats = newPropsCats;
+                props = FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors();
+            } catch (IntrospectionException iex) {
+                iex.printStackTrace();
+            }
+        }
+
         Object[] propsAccess = FormUtils.getPropertiesAccessClsf(beanClass);
         Object[] propParentChildDepClsf = FormUtils.getPropertiesParentChildDepsClsf(beanClass);
 
-        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
             boolean action = (pd.getValue("action") != null); // NOI18N

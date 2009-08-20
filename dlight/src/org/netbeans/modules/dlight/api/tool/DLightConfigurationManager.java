@@ -83,7 +83,7 @@ public final class DLightConfigurationManager {
     return null;
   }
   
-  List<DLightConfiguration> getDLightConfigurations(){
+  public List<DLightConfiguration> getDLightConfigurations(){
     List<DLightConfiguration> result = new ArrayList<DLightConfiguration>();
     FileObject configurationsFolder = getToolsFSRoot();
 
@@ -112,6 +112,13 @@ public final class DLightConfigurationManager {
       return DLightConfiguration.createDefault();
     }
     return tools.get(0);
+  }
+
+  /**
+   * This method returns the default configuration (all tools)
+   */
+  public final DLightConfiguration getDefaultConfiguration() {
+      return DLightConfiguration.createDefault();
   }
 
   /**

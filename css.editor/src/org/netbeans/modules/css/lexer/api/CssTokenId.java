@@ -66,7 +66,7 @@ public enum CssTokenId implements TokenId {
 
     /* Defined categories:
      * -------------------
-     * default
+     * others
      * brace
      * separator
      * hash
@@ -82,7 +82,7 @@ public enum CssTokenId implements TokenId {
      * comment
      */
     
-    EOF("default"),
+    EOF("others"),
     S("whitespace"),
     COMMENT("comment"),
     MSE("ms_expression"),
@@ -105,7 +105,7 @@ public enum CssTokenId implements TokenId {
     RROUND("brace"),
     URL("url"),
     URI("url"),
-    GENERATED("default"),
+    GENERATED("others"),
     CDO("whitespace"),
     CDC("whitespace"),
     INCLUDES("operator"),
@@ -136,31 +136,31 @@ public enum CssTokenId implements TokenId {
     DIMEN("number"),
     PERCENTAGE("number"),
     NUMBER("number"),
-    RGB("default"),
+    RGB("others"),
     FUNCTION("function"),
     IDENT("identifier"),
-    NAME("default"),
+    NAME("others"),
     NUM("number"),
-    UNICODERANGE("default"),
-    RANGE("default"),
-    Q16("default"),
-    Q15("default"),
-    Q14("default"),
-    Q13("default"),
-    Q12("default"),
-    Q11("default"),
-    NMSTART("default"),
-    NMCHAR("default"),
-    SELECTOR_NMSTART("default"),
-    SELECTOR_NMCHAR("default"),
+    UNICODERANGE("others"),
+    RANGE("others"),
+    Q16("others"),
+    Q15("others"),
+    Q14("others"),
+    Q13("others"),
+    Q12("others"),
+    Q11("others"),
+    NMSTART("others"),
+    NMCHAR("others"),
+    SELECTOR_NMSTART("others"),
+    SELECTOR_NMCHAR("others"),
     STRING1("string"),
     STRING2("string"),
-    NONASCII("default"),
-    ESCAPE("default"),
-    NL("default"),
-    UNICODE("default"),
-    HNUM("default"),
-    H("default"),
+    NONASCII("others"),
+    ESCAPE("others"),
+    NL("others"),
+    UNICODE("others"),
+    HNUM("others"),
+    H("others"),
     UNKNOWN("unknown"); //NOI18N 
     
     

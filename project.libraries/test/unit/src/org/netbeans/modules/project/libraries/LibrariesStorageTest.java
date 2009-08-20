@@ -415,7 +415,23 @@ public class LibrariesStorageTest extends NbTestCase {
         
         public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
             this.support.removePropertyChangeListener(l);
-        }                
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 31;
+            hash = hash*17 + (name == null ? 0 : name.hashCode());
+            return hash;
+        }
+
+        @Override
+        public boolean equals (final Object other) {
+            if (other instanceof TestLibrary) {
+                final TestLibrary otherLib = (TestLibrary) other;
+                return name == null ? otherLib.name == null : name.equals(otherLib.name);
+            }
+            return false;
+        }
     }
     
 }

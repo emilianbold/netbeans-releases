@@ -64,16 +64,16 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public final class HtmlLexer implements Lexer<HTMLTokenId> {
-    
+
     private static final Logger LOGGER = Logger.getLogger(HtmlLexer.class.getName());
     private static final boolean LOG = Boolean.getBoolean("j2ee_lexer_debug"); //NOI18N
-    
+
     private static final int EOF = LexerInput.EOF;
-    
+
     private final LexerInput input;
-    
+
     private final TokenFactory<HTMLTokenId> tokenFactory;
-    
+
     class CompoundState {
         private int lexerState;
         private int lexerSubState;
@@ -93,12 +93,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         public String toString() {
            // return "state=" + (lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState) + "," + attributeName.toString();
            int state = lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
-           return Integer.toString(state) 
+           return Integer.toString(state)
                    + (jsAttributeName != null ? "," + jsAttributeName.toString() : "")
                    + (cssAttributeName != null ? "," + cssAttributeName.toString() : "");
         }
     }
-    
+
     public Object state() {
         if (jsAttributeName != null || cssAttributeName != null) {
             return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, jsAttributeName, cssAttributeName);
@@ -106,13 +106,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             return lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
         }
     }
-    
+
     //script and style tag names
     private static final String SCRIPT = "script";
     private static final String STYLE = "style";
 
     private static final String STYLE_ATTR = "style";
-    
+
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
      * this will be overwritten with state, which originated transition to
@@ -122,15 +122,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private int lexerState    = INIT;
     private String jsAttributeName;
     private String cssAttributeName;
-    
+
     /** indicated whether we are in a script */
     private int lexerEmbeddingState = INIT;
-    
+
     // internal 'in script' state. 'scriptState' internal state is set to it when the
     // analyzer goes into a script tag body
     private static final int ISI_SCRIPT = 1;
     private static final int ISI_STYLE = 2;
-    
+
     // Internal states
     private static final int INIT = 0;
     private static final int ISI_TEXT = 1;    // Plain text between tags
@@ -167,20 +167,17 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISA_REF_X = 32;    //
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     private static final int ISI_TAG_SLASH = 34; //after slash in html tag
-    
+
     private static final int ISI_SCRIPT_CONTENT = 35; //after <script> tags closing symbol '>' - the tag content
     private static final int ISI_SCRIPT_CONTENT_AFTER_LT = 36; //after < in script content
     private static final int ISI_SCRIPT_CONTENT_ENDTAG = 37; //after </ in script content
-    
+
     private static final int ISI_STYLE_CONTENT = 38; //after <style> tags closing symbol '>' - the tag content
     private static final int ISI_STYLE_CONTENT_AFTER_LT = 39; //after < in style content
     private static final int ISI_STYLE_CONTENT_ENDTAG = 40; //after </ in style content
-    
+
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
-    private static final int ISI_EL_DELIMITER = 42; //after $ or # in text
-    private static final int ISI_EL = 44; //inside EL but before }
-        
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -202,11 +199,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         EVENT_HANDLER_NAMES.add("onreset"); // NOI18N
         EVENT_HANDLER_NAMES.add("onselect"); // NOI18N
         EVENT_HANDLER_NAMES.add("onchange"); // NOI18N
-        
+
         // IMPORTANT - if you add any that DON'T start with "o" here,
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
-    
+
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
@@ -232,16 +229,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
         }
     }
-    
+
     private final boolean isAZ( int character ) {
         return( (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') );
     }
-    
+
     private final boolean isName( int character ) {
         return Character.isLetterOrDigit(character) ||
                 character == '-' || character == '_' || character == '.' || character == ':';
     }
-    
+
     /**
      * Resolves if given char is whitespace in terms of HTML4.0 specs
      * According to specs, following characters are treated as whitespace:
@@ -250,7 +247,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
      * Carriage return - <CODE>'\u000D'</CODE> and Line feed - <CODE>'\u000A'</CODE>
      * CR's are included for completenes only, they should never appear in document
      */
-    
+
     private final boolean isWS( int character ) {
         return Character.isWhitespace(character);
     }
@@ -278,7 +275,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
         return false;
     }
-    
+
     private boolean followsCloseTag(CharSequence closeTagName) {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence //substract the first read character
@@ -296,7 +293,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     (actChar == EOF)) { // EOL or not alpha
                 //end of tagname
                 CharSequence tagName = input.readText().subSequence(prev_read, prev_read + read - 1);
-                
+
                 input.backup(read); //put the lookahead text back to the buffer
 
                 if(equals(closeTagName, tagName, true, true)) {
@@ -304,19 +301,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return true;
                     }
                 }
-                
+
                 return false;
             }
         }
     }
-    
-    
+
+
     public Token<HTMLTokenId> nextToken() {
         int actChar;
-        
+
         while (true) {
             actChar = input.read();
-            
+
             if (actChar == EOF) {
                 if(input.readLengthEOF() == 1) {
                     return null; //just EOL is read
@@ -327,8 +324,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     break;
                 }
             }
-            
-            
+
+
             //System.out.println("HTMLSyntax: parseToken tokenOffset=" + tokenOffset + ", actChar='" + actChar + "', offset=" + offset + ", state=" + getStateName(state) +
             //      ", stopOffset=" + stopOffset + ", lastBuffer=" + lastBuffer);
             switch( lexerState ) {
@@ -341,16 +338,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISA_REF;
                             lexerSubState = ISI_TEXT;
                             break;
-                        case '#':
-                        case '$':
-                            lexerState = ISI_EL_DELIMITER;
-                            break;
                         default:
                             lexerState = ISI_TEXT;
                             break;
                     }
                     break;
-                    
+
                 case ISI_TEXT:        // DONE
                     switch( actChar ) {
                         case '<':
@@ -361,50 +354,20 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                 return token(HTMLTokenId.TEXT);
                             }
                             break;
-                        case '#':
-                        case '$':
-                            lexerState = ISI_EL_DELIMITER;
-                            break;
                     }
                     break;
-
-                case ISI_EL_DELIMITER:
-                    if(actChar == '{') {
-                        //found beginning of EL
-                        if(input.readLength() > 2) {
-                            input.backup(2); //backup ${
-                            lexerState = INIT;
-                            return token(HTMLTokenId.TEXT);
-                        } else {
-                            //no text before, we can switch to EL
-                            lexerState = ISI_EL;
-                            break;
-                        }
-                    } else {
-                        lexerState = ISI_TEXT;
-                    }
-                    break;
-
-                case ISI_EL:
-                    if(actChar == '}') {
-                        //end of EL
-                        lexerState = INIT;
-                        return token(HTMLTokenId.TEXT);
-                    } else {
-                        break;
-                    }
 
                 case ISI_ERROR:      // DONE
                     lexerState = INIT;
                     return token(HTMLTokenId.ERROR);
-                    
+
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
                     if( isAZ( actChar ) ) {   // <'a..Z'
                         lexerState = ISI_TAG;
                         if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                             input.backup(1);
                             return token(HTMLTokenId.TAG_OPEN_SYMBOL);
-                        } 
+                        }
                         break;
                     }
                     switch( actChar ) {
@@ -417,13 +380,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         case '!':
                             lexerState = ISA_SGML_ESCAPE;
                             break;
-                        default:               
+                        default:
                             input.backup(1);
                             lexerState = ISI_TEXT;
                             break;
                     }
                     break;
-                    
+
                 case ISA_SLASH:        // DONE
                     if( isAZ( actChar ) ) {   // </'a..Z'
                         lexerState = ISI_ENDTAG;
@@ -439,7 +402,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_ENDTAG:        // DONE
                     if( isName( actChar ) ) break;    // Still in endtag identifier, eat next char
                     lexerState = ISP_ENDTAG_X;
@@ -448,8 +411,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.TAG_CLOSE);
                     }
                     break;
-                    
-                    
+
+
                 case ISP_ENDTAG_X:      // DONE
                     if( isWS( actChar ) ) {
                         lexerState = ISP_ENDTAG_WS;
@@ -469,7 +432,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISP_ENDTAG_WS:      // DONE
                     if( isWS( actChar ) ) break;  // eat all WS
                     lexerState = ISP_ENDTAG_X;
@@ -478,15 +441,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.WS);
                     }
                     break;
-                    
-                    
+
+
                 case ISI_TAG:        // DONE
                     if( isName( actChar ) ) break;    // Still in tag identifier, eat next char
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
                         //test if the tagname is SCRIPT
-                        
+
                         if(equals(SCRIPT, input.readText(), true, true)) {
                             lexerEmbeddingState = ISI_SCRIPT;
                         }
@@ -496,7 +459,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.TAG_OPEN);
                     }
                     break;
-                    
+
                 case ISP_TAG_X:     // DONE
                     if( isWS( actChar ) ) {
                         lexerState = ISP_TAG_WS;
@@ -534,7 +497,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISP_TAG_WS:        // DONE
                     if( isWS( actChar ) ) break;    // eat all WS
                     lexerState = ISP_TAG_X;
@@ -542,7 +505,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         input.backup(1);
                         return token(HTMLTokenId.WS);
                     }
-                    
+
                 case ISI_TAG_SLASH:
                     switch( actChar ) {
                         case '>':
@@ -555,8 +518,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
-                case ISI_SCRIPT_CONTENT:   
+
+                case ISI_SCRIPT_CONTENT:
                     switch( actChar ) {
                         case '<' :
                             lexerState = ISI_SCRIPT_CONTENT_AFTER_LT;
@@ -565,7 +528,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_SCRIPT_CONTENT_AFTER_LT:
                     if (actChar == '/') {
                         if (followsCloseTag(SCRIPT)) {
@@ -583,8 +546,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     lexerState = ISI_SCRIPT_CONTENT;
                     break;
-                    
-                case ISI_STYLE_CONTENT:   
+
+                case ISI_STYLE_CONTENT:
                     switch( actChar ) {
                         case '<' :
                             lexerState = ISI_STYLE_CONTENT_AFTER_LT;
@@ -593,7 +556,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_STYLE_CONTENT_AFTER_LT:
                     if (actChar == '/') {
                         if (followsCloseTag(STYLE)) {
@@ -622,7 +585,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.ARGUMENT);
                     }
                     break;
-                    
+
                 case ISP_ARG_X:
                     if( isWS( actChar ) ) {
                         lexerState = ISP_ARG_WS;
@@ -651,7 +614,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISP_ARG_WS:
                     if( isWS( actChar ) ) break;    // Eat all WhiteSpace
                     lexerState = ISP_ARG_X;
@@ -660,7 +623,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.WS);
                     }
                     break;
-                    
+
                 case ISP_EQ:
                     if( isWS( actChar ) ) {
                         lexerState = ISP_EQ_WS;
@@ -683,7 +646,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISP_EQ_WS:
                     if( isWS( actChar ) ) break;    // Consume all WS
                     lexerState = ISP_EQ;
@@ -692,8 +655,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.WS);
                     }
                     break;
-                    
-                    
+
+
                 case ISI_VAL:
                     if( !isWS( actChar )
                     && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
@@ -713,7 +676,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.VALUE);
                     }
                     break;
-                    
+
                 case ISI_VAL_QUOT:
                     switch( actChar ) {
                         case '\'':
@@ -729,11 +692,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             }
                             cssAttributeName = null;
                             return token(HTMLTokenId.VALUE);
-                            
+
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
 //                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
 //                        Should be removed once the issue is fixed.
-//                            
+//
 //                        case '&':
 //                            if( input.readLength() == 1 ) {
 //                                lexerSubState = lexerState;
@@ -747,7 +710,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 //                            }
                     }
                     break;  // else simply consume next char of VALUE
-                    
+
                 case ISI_VAL_DQUOT:
                     switch( actChar ) {
                         case '"':
@@ -767,7 +730,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 //                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
 //                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
 //                        Should be removed once the issue is fixed.
-//                            
+//
 //                        case '&':
 //                            if( input.readLength() == 1 ) {
 //                                lexerSubState = lexerState;
@@ -781,9 +744,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 //                            }
                     }
                     break;  // else simply consume next char of VALUE
-                    
-                    
-                    
+
+
+
                 case ISA_SGML_ESCAPE:       // DONE
                     if( isAZ(actChar) ) {
                         lexerState = ISI_SGML_DECL;
@@ -799,7 +762,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             continue;
                     }
                     break;
-                    
+
                 case ISA_SGML_DASH:       // DONE
                     switch( actChar ) {
                         case '-':
@@ -811,7 +774,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             continue;
                     }
                     break;
-                    
+
                 case ISI_HTML_COMMENT:        // DONE
                     switch( actChar ) {
                         case '-':
@@ -824,7 +787,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             return token(HTMLTokenId.BLOCK_COMMENT);
                     }
                     break;
-                    
+
                 case ISA_HTML_COMMENT_DASH:
                     switch( actChar ) {
                         case '-':
@@ -835,7 +798,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             continue;
                     }
                     break;
-                    
+
                 case ISI_HTML_COMMENT_WS:       // DONE
                     switch( actChar ) {
                         case '>':
@@ -847,7 +810,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISI_SGML_DECL:
                     if(Character.isWhitespace(actChar)) {
                         lexerState = ISI_SGML_DECL_WS;
@@ -867,10 +830,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                 lexerState = INIT;
                                 return token(HTMLTokenId.DECLARATION);
                             }
-                        
+
                     }
                     break;
-                    
+
                 case ISI_SGML_DECL_WS:
                     if(actChar == '-') {
                             if( input.readLength() == 1 ) {
@@ -888,7 +851,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.WS);
                     }
                     break;
-                    
+
                 case ISA_SGML_DECL_DASH:
                     if( actChar == '-' ) {
                         lexerState = ISI_SGML_COMMENT;
@@ -898,7 +861,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         input.backup(1);
                         continue;
                     }
-                    
+
                 case ISI_SGML_COMMENT:
                     switch( actChar ) {
                         case '-':
@@ -906,7 +869,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                     }
                     break;
-                    
+
                 case ISA_SGML_COMMENT_DASH:
                     if( actChar == '-' ) {
                         lexerState = ISI_SGML_DECL;
@@ -916,8 +879,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         input.backup(1);
                         continue;
                     }
-                    
-                    
+
+
                 case ISA_REF:
                     if( isAZ( actChar ) ) {
                         lexerState = ISI_REF_NAME;
@@ -930,7 +893,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     lexerState = lexerSubState;
                     input.backup(1);
                     continue;
-                    
+
                 case ISI_REF_NAME:
                     if( isName( actChar ) ) break;
                     lexerState = lexerSubState;
@@ -941,7 +904,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.CHARACTER);
                     }
                     break;
-                    
+
                 case ISA_REF_HASH:
                     if( actChar >= '0' && actChar <= '9' ) {
                         lexerState = ISI_REF_DEC;
@@ -958,7 +921,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     lexerState = lexerSubState;
                     input.backup(1);
                     continue;
-                    
+
                 case ISI_REF_DEC:
                     if( actChar >= '0' && actChar <= '9' ) break;
                     lexerState = lexerSubState;
@@ -968,7 +931,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.CHARACTER);
                     }
                     break;
-                    
+
                 case ISA_REF_X:
                     if( (actChar >= '0' && actChar <= '9') ||
                             (actChar >= 'a' && actChar <= 'f') ||
@@ -983,7 +946,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         return token(HTMLTokenId.ERROR);       // error on previous "&#x" sequence
                     }
                     break;
-                    
+
                 case ISI_REF_HEX:
                     if( (actChar >= '0' && actChar <= '9') ||
                             (actChar >= 'a' && actChar <= 'f') ||
@@ -998,7 +961,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     break;
             }
         } // end of while(offset...)
-        
+
         /** At this stage there's no more text in the scanned buffer.
          * Scanner first checks whether this is completely the last
          * available buffer.
@@ -1015,20 +978,18 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
-            case ISI_EL_DELIMITER:
-            case ISI_EL:
                 return token(HTMLTokenId.TEXT);
-                
+
             case ISA_REF:
             case ISA_REF_HASH:
                 if( lexerSubState == ISI_TEXT ) return token(HTMLTokenId.TEXT);
                 else return token(HTMLTokenId.VALUE);
-                
+
             case ISI_HTML_COMMENT:
             case ISA_HTML_COMMENT_DASH:
             case ISI_HTML_COMMENT_WS:
                 return token(HTMLTokenId.BLOCK_COMMENT);
-                
+
             case ISI_TAG:
                 lexerState = ISP_TAG_X;
                 //test if the tagname is SCRIPT
@@ -1041,25 +1002,25 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 return token(HTMLTokenId.TAG_OPEN);
             case ISI_ENDTAG:
                 return token(HTMLTokenId.TAG_CLOSE);
-                
+
             case ISI_ARG:
                 return token(HTMLTokenId.ARGUMENT);
-                
+
             case ISI_ERROR:
                 return token(HTMLTokenId.ERROR);
-                
+
             case ISP_ARG_WS:
             case ISP_TAG_WS:
             case ISP_ENDTAG_WS:
             case ISP_EQ_WS:
                 return token(HTMLTokenId.WS);
-                
+
             case ISP_ARG_X:
             case ISP_TAG_X:
             case ISP_ENDTAG_X:
             case ISP_EQ:
                 return token(HTMLTokenId.WS);
-                
+
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
@@ -1070,16 +1031,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     return token(HTMLTokenId.VALUE_CSS);
                 }
                 return token(HTMLTokenId.VALUE);
-                
+
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
-            case ISI_SGML_DECL_WS:  
+            case ISI_SGML_DECL_WS:
                 return token(HTMLTokenId.DECLARATION);
-                
+
             case ISI_SGML_COMMENT:
             case ISA_SGML_COMMENT_DASH:
                 return token(HTMLTokenId.SGML_COMMENT);
-                
+
             case ISI_REF_NAME:
             case ISI_REF_DEC:
             case ISA_REF_X:
@@ -1093,19 +1054,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_STYLE_CONTENT_ENDTAG:
             case ISI_STYLE_CONTENT_AFTER_LT:
                 return token(HTMLTokenId.STYLE);
-                
-                
+
+
         }
-        
+
         assert input.readLength() == 0 : "Returning null even if some chars still needs to be tokenized! " +
             "lexer state=" + lexerState + "; " +
-            "lexer substate=" + lexerSubState + "; " + 
+            "lexer substate=" + lexerSubState + "; " +
             "lexer embedding state=" + lexerEmbeddingState + "; " +
             "readtext='" + input.readText() + "'";
-   
+
         return null;
     }
-    
+
     private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
         if(LOG) {
             if(input.readLength() == 0) {
@@ -1115,10 +1076,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
         return tokenFactory.createToken(tokenId);
     }
-    
+
     public void release() {
     }
-    
+
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() */
     private boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
         if (text1.length() != text2.length()) {

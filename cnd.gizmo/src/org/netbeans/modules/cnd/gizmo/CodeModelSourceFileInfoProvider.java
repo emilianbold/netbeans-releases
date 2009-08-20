@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;

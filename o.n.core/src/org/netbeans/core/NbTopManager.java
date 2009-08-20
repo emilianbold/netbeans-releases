@@ -235,6 +235,18 @@ public abstract class NbTopManager {
                 }
             });
         }
+
+        @Override
+        public void showURLExternal(final URL u) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    if (htmlViewer == null) {
+                        htmlViewer = new NbBrowser();
+                    }
+                    htmlViewer.showUrlExternal(u);
+                }
+            });
+        }
     }
 
 
@@ -587,6 +599,7 @@ public abstract class NbTopManager {
     public static class NbBrowser {
         
         private HtmlBrowserComponent brComp;
+        private HtmlBrowserComponent externalBrowser;
         private PreferenceChangeListener idePCL;
         private static Lookup.Result factoryResult;
         
@@ -615,6 +628,12 @@ public abstract class NbTopManager {
                 brComp = new HtmlBrowserComponent(browser, true, true);
                 brComp.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
             }
+            browser = IDESettings.getExternalWWWBrowser();
+            if (browser == null) {
+                //external browser is not available, fallback to swingbrowser
+                browser = new SwingBrowser();
+            }
+            externalBrowser = new HtmlBrowserComponent(browser, true, true);
             setListener();
         }
 
@@ -643,6 +662,14 @@ public abstract class NbTopManager {
          */
         private void showUrl(URL url) {
             brComp.setURLAndOpen(url);
+        }
+
+        /**
+         * Show URL in an external browser.
+         * @param url URL to show
+         */
+        private void showUrlExternal(URL url) {
+            externalBrowser.setURLAndOpen(url);
         }
 
         /**

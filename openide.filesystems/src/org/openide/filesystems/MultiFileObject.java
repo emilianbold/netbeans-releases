@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.openide.util.NbBundle;
 
 /** Implementation of the file object for multi file system.
 *
@@ -661,11 +662,13 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     */
     private MfLock testLock(FileLock l) throws java.io.IOException {
         if (lock == null) {
-            FSException.io("EXC_InvalidLock", l, getPath(), getMultiFileSystem().getDisplayName(), lock); // NOI18N
+            throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_InvalidLock",
+                    l, getPath(), getMultiFileSystem().getDisplayName(), lock));
         }
 
         if (lock.get() != l) {
-            FSException.io("EXC_InvalidLock", l, getPath(), getMultiFileSystem().getDisplayName(), lock.get()); // NOI18N                
+            throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_InvalidLock",
+                    l, getPath(), getMultiFileSystem().getDisplayName(), lock.get()));
         }
 
         return (MfLock) l;
@@ -985,21 +988,21 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 MultiFileSystem fs = getMultiFileSystem();
 
                 if (fs.isReadOnly()) {
-                    FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
                 }
 
                 if (isReadOnly()) {
-                    FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
                 }
 
                 String fullName = getPath() + PATH_SEP + name;
 
                 if (!isFolder()) {
-                    FSException.io("EXC_FoNotFolder", name, getPath(), fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FoNotFolder", name, getPath(), fs.getDisplayName()));
                 }
 
                 if (this.getFileObject(name) != null) {
-                    FSException.io("EXC_FolderAlreadyExist", name, fs.getDisplayName(), getPath()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FolderAlreadyExist", name, fs.getDisplayName(), getPath()));
                 }
 
                 FileSystem simple = fs.createWritableOn(fullName);
@@ -1018,9 +1021,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 if (fo == null) {
                     // system error
-                    throw new FileStateInvalidException(
-                        FileSystem.getString("EXC_ApplicationCreateError", getPath(), name)
-                    );
+                    throw new FileStateInvalidException(NbBundle.getMessage(MultiFileObject.class, "EXC_ApplicationCreateError", getPath(), name));
                 }
 
                 FileObject[] chlds = fo.getChildren();
@@ -1060,21 +1061,21 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 MultiFileSystem fs = getMultiFileSystem();
 
                 if (fs.isReadOnly()) {
-                    FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
                 }
 
                 if (isReadOnly()) {
-                    FSException.io("EXC_FisRO", name, fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
                 }
 
                 String n = "".equals(ext) ? name : (name + EXT_SEP + ext); // NOI18N
 
                 if (!isFolder()) {
-                    FSException.io("EXC_FoNotFolder", n, getPath(), fs.getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FoNotFolder", n, getPath(), fs.getDisplayName()));
                 }
 
                 if (this.getFileObject(name, ext) != null) {
-                    FSException.io("EXC_DataAlreadyExist", n, fs.getDisplayName(), getPath()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_DataAlreadyExist", n, fs.getDisplayName(), getPath()));
                 }
 
                 String fullName = getPath() + PATH_SEP + n;
@@ -1095,9 +1096,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 if (fo == null) {
                     // system error
-                    throw new FileStateInvalidException(
-                        FileSystem.getString("EXC_ApplicationCreateError", getPath(), n)
-                    );
+                    throw new FileStateInvalidException(NbBundle.getMessage(MultiFileObject.class, "EXC_ApplicationCreateError", getPath(), n));
                 }
 
                 if (hasListeners()) {
@@ -1127,7 +1126,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         MultiFileSystem fs = getMultiFileSystem();
 
         if (parent == null) {
-            FSException.io("EXC_CannotRenameRoot", fs.getDisplayName()); // NOI18N
+            throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRenameRoot", fs.getDisplayName()));
         }
 
         try {
@@ -1146,11 +1145,12 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 String oldFullName = getPath();
 
                 if (isReadOnly()) {
-                    FSException.io("EXC_CannotRename", getPath(), getMultiFileSystem().getDisplayName(), newFullName); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRename",
+                            getPath(), getMultiFileSystem().getDisplayName(), newFullName));
                 }
 
                 if (getFileSystem().isReadOnly()) {
-                    FSException.io("EXC_FSisRO", getMultiFileSystem().getDisplayName()); // NOI18N
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FSisRO", getMultiFileSystem().getDisplayName()));
                 }
 
                 String on = getName();
@@ -1232,8 +1232,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     */
     void handleDelete(FileLock lock) throws IOException {
         if (parent == null) {
-            FSException.io("EXC_CannotDeleteRoot", getMultiFileSystem().getDisplayName() // NOI18N
-            );
+            throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotDeleteRoot", getMultiFileSystem().getDisplayName()));
         }
 
         MultiFileSystem fs = getMultiFileSystem();
@@ -1302,8 +1301,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             fs.beginAtomicAction();
 
             if (parent == null) {
-                FSException.io("EXC_CannotDeleteRoot", fs.getDisplayName() // NOI18N
-                );
+                throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotDeleteRoot", fs.getDisplayName()));
             }
 
             MfLock lck = testLock(lock);
@@ -1312,7 +1310,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileSystem simple = fs.createWritableOn(getPath());
 
             if (fs.isReadOnly()) {
-                FSException.io("EXC_FSisRO", fs.getDisplayName()); // NOI18N
+                throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FSisRO", fs.getDisplayName()));
             }
 
             if ((l == null) && (leader.getFileSystem() != simple)) {

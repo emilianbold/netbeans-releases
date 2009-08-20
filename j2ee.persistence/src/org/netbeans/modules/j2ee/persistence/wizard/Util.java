@@ -297,7 +297,22 @@ public class Util {
             createPUButton.setEnabled(false);
         }
         Object result = DialogDisplayer.getDefault().notify(nd);
-        String version=PersistenceUtils.getJPAVersion(project);
+        //add necessary libraries before pu creation
+        Library lib = null;
+        if (result == createPUButton) {
+            if (isContainerManaged) {
+                //TODO: may be require to add some libraries also.
+                PersistenceUnitWizardPanelDS puDS = (PersistenceUnitWizardPanelDS) panel;
+                lib = PersistenceLibrarySupport.getLibrary(puDS.getSelectedProvider());
+            } else {
+                PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
+                lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
+                if (lib != null){
+                    addLibraryToProject(project, lib);
+                }
+            }
+        }
+        String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
         if (result == createPUButton) {
             PersistenceUnit punit = null;
             if(Persistence.VERSION_2_0.equals(version))
@@ -327,10 +342,6 @@ public class Util {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(),version);
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
-                Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
-                if (lib != null){
-                    addLibraryToProject(project, lib);
-                }
             }
             punit.setName(panel.getPersistenceUnitName());
             ProviderUtil.setTableGeneration(punit, panel.getTableGeneration(), project);
@@ -362,7 +373,8 @@ public class Util {
         if (punit == null){
             return false;
         }
-        PUDataObject pud = ProviderUtil.getPUDataObject(project);
+        String version = punit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;
+        PUDataObject pud = ProviderUtil.getPUDataObject(project, version);
         if (pud == null) {
             return false;
         }

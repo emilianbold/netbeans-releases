@@ -423,10 +423,10 @@ public class ProfilesPanel extends javax.swing.JPanel {
 
     private static class XMLFileFilter extends javax.swing.filechooser.FileFilter {
 
-        public boolean accept(File file) {
-            if (file.isDirectory())
-                return false;
-
+        public boolean accept(File file) {            
+            if (file.isDirectory()) 
+                return true;
+            
             if(file.getAbsolutePath().endsWith(".xml")) {
                 return true;
             } else {

@@ -615,7 +615,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             if (roots != null) {
                 for (FileObject root : roots) {
                     ClassPath cp = pwm.getClassPathProvider().findClassPath(root, ClassPath.COMPILE);
-                    cp.addPropertyChangeListener(cpListener);
+                    if (cp != null) {
+                        cp.removePropertyChangeListener(cpListener);
+                        cp.addPropertyChangeListener(cpListener);
+                    }
                 }
             }
         }

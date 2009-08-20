@@ -42,7 +42,6 @@
 package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
-import javax.swing.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;

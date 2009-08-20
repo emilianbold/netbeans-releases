@@ -100,10 +100,10 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
 
-        if (isAddIssueSelected()) {
+        if (isLinkSelected()) {
             String msg = context.getMessage();
 
-            Format format = VCSHooksConfig.getInstance().getHgIssueFormat();
+            Format format = VCSHooksConfig.getInstance().getHgIssueInfoTemplate();
             String formatString = format.getFormat();
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
@@ -133,9 +133,7 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public void afterCommit(HgHookContext context) {
-        VCSHooksConfig.getInstance().setHgAddMsg(isAddCommentSelected());
-        VCSHooksConfig.getInstance().setHgAddIssue(isAddIssueSelected());
-        VCSHooksConfig.getInstance().setHgAddRev(isAddRevisionSelected());
+        VCSHooksConfig.getInstance().setHgLink(isLinkSelected());
         VCSHooksConfig.getInstance().setHgResolve(isResolveSelected());
         VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
 
@@ -147,8 +145,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg afterCommit start for " + file);                // NOI18N
 
-        if (!isAddCommentSelected() &&
-            !isAddRevisionSelected() &&
+        if (!isLinkSelected() &&
             !isResolveSelected())
         {
             LOG.log(Level.FINER, " nothing to do in hg afterCommit for " + file);   // NOI18N
@@ -161,17 +158,14 @@ public class HgHookImpl extends HgHook {
             return;
         }
 
-        String msg = context.getMessage();
-        if(!isAddCommentSelected() || msg == null || msg.trim().equals("")) { // NOI18N
-            msg = null;
-        }
-        if(isAddRevisionSelected()) {
+        String msg = null;
+        if(isLinkSelected()) {
             String author = context.getLogEntries()[0].getAuthor();
             String changeset = context.getLogEntries()[0].getChangeset();
             Date date = context.getLogEntries()[0].getDate();
             String message = context.getLogEntries()[0].getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getHgCommentFormat().getFormat();
+            String formatString = VCSHooksConfig.getInstance().getHgRevisionTemplate().getFormat();
             formatString = formatString.replaceAll("\\{changeset\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{author\\}",    "\\{1\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{date\\}",      "\\{2\\}");           // NOI18N
@@ -254,23 +248,15 @@ public class HgHookImpl extends HgHook {
         }
         
         panel = new HookPanel();
-        panel.addCommentCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddMsg());
-        panel.addIssueCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddIssue());
-        panel.addRevisionCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddRev());
         panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getHgResolve());
         boolean commit = VCSHooksConfig.getInstance().getHgAfterCommit();
         panel.commitRadioButton.setSelected(commit);
         panel.pushRadioButton.setSelected(!commit);
         
         RepositorySelector.setup(panel, referenceFile);
-        panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
+        panel.changeFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onShowRevisionFormat();
-            }
-        });
-        panel.changeIssueFormatButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onShowIssueFormat();
+                onShowFormat();
             }
         });
         return panel;
@@ -281,30 +267,21 @@ public class HgHookImpl extends HgHook {
         return name;
     }
 
-    private void onShowRevisionFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat(), VCSHooksConfig.getDefaultHgFormat());
+    private void onShowFormat() {
+        FormatPanel p = 
+                new FormatPanel(
+                    VCSHooksConfig.getInstance().getHgRevisionTemplate(),
+                    VCSHooksConfig.getDefaultHgRevisionTemplate(),
+                    VCSHooksConfig.getInstance().getHgIssueInfoTemplate(),
+                    VCSHooksConfig.getDefaultIssueInfoTemplate());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
+            VCSHooksConfig.getInstance().setHgRevisionTemplate(p.getIssueFormat());
+            VCSHooksConfig.getInstance().setHgIssueInfoTemplate(p.getCommitFormat());
         }
     }
 
-    private void onShowIssueFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat(), VCSHooksConfig.getDefaultIssueFormat());
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
-        }
-    }
-
-    private boolean isAddCommentSelected() {
-        return (panel != null) && panel.addCommentCheckBox.isSelected();
-    }
-
-    private boolean isAddIssueSelected() {
-        return (panel != null) && panel.addIssueCheckBox.isSelected();
-    }
-
-    private boolean isAddRevisionSelected() {
-        return (panel != null) && panel.addRevisionCheckBox.isSelected();
+    private boolean isLinkSelected() {
+        return (panel != null) && panel.linkCheckBox.isSelected();
     }
 
     private boolean isResolveSelected() {

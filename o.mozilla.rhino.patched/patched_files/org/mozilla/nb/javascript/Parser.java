@@ -3352,6 +3352,12 @@ Node pn = null;
                         plainProperty(elems, property);
                         // <netbeans>
                         if (elems.size() > 0) {
+                            //Names of the class properties can be in '' and then
+                            // the start of the possition doesn't match the string token.
+                            // see issue #159083
+                            if (tt == Token.STRING) {
+                                nameStart++;
+                            }
                             Node rhs = (Node) elems.get(elems.size()-1);
                             Node objLitName = new Node.LabelledNode(s, rhs);
                             objLitName.setSourceBounds(nameStart, nameStart + s.length());

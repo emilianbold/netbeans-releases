@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -87,7 +88,8 @@ class ModelElementFactory {
     static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context) {
         String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), 
                 nodeInfo.getOriginalNode().getFunction());
-        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo);        
+
+        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo);
         return method;
     }
 

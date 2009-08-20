@@ -147,13 +147,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         Splash.getInstance().increment(10);
         StartLog.logProgress ("Timer initialized"); // NOI18N
 
-        // -----------------------------------------------------------------------------------------------------
-        // 13. Initialize Shortcuts
-        ShortcutsFolder.initShortcuts();
-        Splash.getInstance().increment(1);
-        StartLog.logProgress ("Shortcuts initialized"); // NOI18N
-
-
     // -----------------------------------------------------------------------------------------------------
     // 14. Open main window
         StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_WindowShowInit"));

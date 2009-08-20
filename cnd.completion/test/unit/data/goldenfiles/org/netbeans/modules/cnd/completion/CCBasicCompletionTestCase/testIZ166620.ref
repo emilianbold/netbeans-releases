@@ -1,0 +1,11 @@
+i int
+length int
+A
+B
+C
+In_Macro
+iz166620_foo() void
+globInt int
+checkZero() void
+globFoo() void
+main(int argc, char** argv) int

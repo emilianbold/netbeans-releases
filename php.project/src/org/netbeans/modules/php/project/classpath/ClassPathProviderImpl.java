@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
@@ -81,6 +83,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         TEST
     }
 
+    private final PhpProject project;
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
@@ -93,17 +96,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sources, SourceRoots tests, SourceRoots selenium) {
-        assert helper != null;
-        assert evaluator != null;
+    public ClassPathProviderImpl(PhpProject project, SourceRoots sources, SourceRoots tests, SourceRoots selenium) {
+        assert project != null;
         assert sources != null;
         assert tests != null;
         assert selenium != null;
 
-        this.helper = helper;
+        this.project = project;
+        this.helper = project.getHelper();
         projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert projectDirectory != null;
-        this.evaluator = evaluator;
+        this.evaluator = ProjectPropertiesSupport.getPropertyEvaluator(project);
         this.sources = sources;
         this.tests = tests;
         this.selenium = selenium;
@@ -221,7 +224,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 synchronized (cache) {
                     cp = cache.get(ClassPathCache.SOURCE);
                     if (cp == null) {
-                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(sources));
+                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources));
                         cache.put(ClassPathCache.SOURCE, cp);
                     }
                 }
@@ -231,9 +234,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                     cp = cache.get(ClassPathCache.TEST);
                     if (cp == null) {
                         // return both because people expect such behaviour (in CC e.g.)
-                        ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(tests));
-                        ClassPath seleniumCp = ClassPathFactory.createClassPath(new SourcePathImplementation(selenium));
-                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(sources));
+                        ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, tests));
+                        ClassPath seleniumCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, selenium));
+                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources));
                         cp = ClassPathSupport.createProxyClassPath(testsCp, seleniumCp, sourcesCp);
                         cache.put(ClassPathCache.TEST, cp);
                     }

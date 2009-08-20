@@ -273,8 +273,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             moduleCh.setComparator(MODULES_COMPARATOR);
             for (ModuleEntry entry : ml.getAllEntries()) {
                 moduleCh.add(new Node[] { new BinaryModuleNode(entry, ci.isEnabled()) });
+                extraBinaryModules.add(entry);
             }
-            extraBinaryModules.addAll(ml.getAllEntries());
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }

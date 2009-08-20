@@ -250,6 +250,16 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                     Util.addLibraryToProject(project, lib);
                 }
             }
+            else if(providerClass.equals("org.eclipse.persistence.jpa.PersistenceProvider"))//NOI18N
+            {
+                //fix #170046
+                //TODO: find some common approach what libraries to add and what do not need to be added
+                Library lib =  LibraryManager.getDefault().getLibrary("eclipselink"); //NOI18N
+                if (lib != null) {
+                    Util.addLibraryToProject(project, lib);
+                }
+            }
+
 
             try {
                 ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wiz));

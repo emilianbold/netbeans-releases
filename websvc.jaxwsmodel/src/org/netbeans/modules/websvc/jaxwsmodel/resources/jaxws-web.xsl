@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
 
             <xsl:comment>
                 ===================
-                JAX-WS WSIMPORT SECTION
+                JAX-WS WSGEN SECTION
                 ===================
             </xsl:comment>
 
@@ -106,7 +106,12 @@ made subject to such option by the copyright holder.
             </xsl:if>
             <!-- END: Invoke wsgen if web service is not JSR 109 -->
 
-
+            <xsl:comment>
+                ===================
+                JAX-WS WSIMPORT SECTION
+                ===================
+            </xsl:comment>
+            
             <!-- wsimport task initialization -->
             <xsl:if test="/*/*/*/jaxws:wsdl-url">
                 <xsl:variable name="isJSR109">
@@ -138,12 +143,9 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init">
                     <mkdir dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>
-                    <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace"/>
                     <xsl:variable name="isService_var" select="false()"/>
                     <xsl:call-template name="invokeWsimport">
                         <xsl:with-param name="isService" select="$isService_var"/>
-                        <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                        <xsl:with-param name="packageName" select="$package_name"/>
                         <xsl:with-param name="wsName" select="$wsname" />
                         <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                         <xsl:with-param name="Catalog" select="$catalog"/>
@@ -173,12 +175,9 @@ made subject to such option by the copyright holder.
                     <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init">
                         <mkdir dir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}"/>
-                        <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace" />
                         <xsl:variable name="isService_var" select="true()"/>
                         <xsl:call-template name="invokeWsimport">
                             <xsl:with-param name="isService" select="$isService_var"/>
-                            <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                            <xsl:with-param name="packageName" select="$package_name"/>
                             <xsl:with-param name="wsName" select="$wsname" />
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                             <xsl:with-param name="Catalog" select="$catalog"/>
@@ -234,8 +233,6 @@ made subject to such option by the copyright holder.
 
     <!-- invokeWsimport template -->
     <xsl:template name="invokeWsimport">
-        <xsl:param name="forceReplace"/>
-        <xsl:param name="packageName"/>
         <xsl:param name="isService" />
         <xsl:param name="wsName" />
         <xsl:param name="wsdlUrl"/>
@@ -265,9 +262,6 @@ made subject to such option by the copyright holder.
             <!-- setting wsimport attributes -->
             <xsl:attribute name="sourcedestdir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
             <xsl:attribute name="destdir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
-            <xsl:if test="$forceReplace">
-                <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
-            </xsl:if>
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
             <xsl:if test="$wsimportoptions">

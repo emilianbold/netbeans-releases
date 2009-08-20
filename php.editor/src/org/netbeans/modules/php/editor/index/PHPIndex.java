@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -95,7 +96,7 @@ public class PHPIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE ,PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
 
     private final QuerySupport index;
 
@@ -136,8 +137,7 @@ public class PHPIndex {
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
         findClasses(result, nameKind, prefix, classes);
-        //TODO: for some reason doesn't work - check
-        //findInterfaces(result, nameKind, prefix, interfaces);
+        findInterfaces(result, nameKind, prefix, interfaces);
         findTopVariables(result, nameKind, prefix, vars);
         elements.addAll(functions);
         elements.addAll(constants);
@@ -402,9 +402,11 @@ public class PHPIndex {
         return clusterUrl;
     }
 
-    /** returns constnats of a class. */
-    public Collection<IndexedClassMember<IndexedConstant>> getAllTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
-        Map<String, IndexedClassMember<IndexedConstant>> constants = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+    public Collection<IndexedClassMember<IndexedConstant>> getAllTypeConstants(
+         PHPParseResult context   ,QualifiedName qualifiedTypeName  ,String name    ,QuerySupport     .Kind kind) {
+        final NamespaceIndexFilter namespaceFilter = new NamespaceIndexFilter(qualifiedTypeName.toString());
+        final String typeName = namespaceFilter.getName();
+        Collection<IndexedClassMember<IndexedConstant>> collectedConstants = new ArrayList<IndexedClassMember<IndexedConstant>>();
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Collection<IndexedType> types = getTypeAncestors(context, typeName);
         if (currentFile != null) {
@@ -412,20 +414,34 @@ public class PHPIndex {
             types = preferTypeElementsFromCurrentFile(currentFile, types);
         }
         for (IndexedType type : types) {
-            for (IndexedClassMember<IndexedConstant> classMember : getTypeConstants(context, type, name, kind)) {
-                IndexedConstant const0 = classMember.getMember();
-                String constantName = const0.getName();
-                if (!constants.containsKey(constantName) || type.getName().equals(typeName)) {
-                    constants.put(constantName, classMember);
-                }
+            collectedConstants.addAll(getTypeConstants(context, type, name, kind));
+        }
+        collectedConstants =
+                qualifiedTypeName.getKind().isUnqualified() ? collectedConstants : namespaceFilter.filter(collectedConstants, true);
+
+        Map<String, IndexedClassMember<IndexedConstant>> retval = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+
+        for (IndexedClassMember<IndexedConstant> classMember : collectedConstants) {
+            IndexedConstant constant = classMember.getMember();
+            IndexedType type = classMember.getType();
+            String methodName = constant.getName();
+            if (!retval.containsKey(methodName) || type.getName().equals(typeName)) {
+                retval.put(methodName, classMember);
             }
-        }        
-        return constants.values();
+        }
+        return retval.values();
     }
 
-    /** returns all methods of a class or an interface. */
-    public Collection<IndexedClassMember<IndexedFunction>> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedClassMember<IndexedFunction>> methods = new TreeMap<String, IndexedClassMember<IndexedFunction>>();
+    /** returns constnats of a class. */
+    public Collection<IndexedClassMember<IndexedConstant>> getAllTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
+        return getAllTypeConstants(context, QualifiedName.create(typeName), name, kind);
+    }
+
+    public Collection<IndexedClassMember<IndexedFunction>> getAllMethods(PHPParseResult context, QualifiedName qualifiedTypeName, String name, QuerySupport.Kind kind, int attrMask) {
+        final NamespaceIndexFilter namespaceFilter = new NamespaceIndexFilter(qualifiedTypeName.toString());
+        final String typeName = namespaceFilter.getName();
+        String fqn = qualifiedTypeName.toFullyQualified().toString();
+        Collection<IndexedClassMember<IndexedFunction>> collectedMethods = new ArrayList<IndexedClassMember<IndexedFunction>>();
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Collection<IndexedType> types = getTypeAncestors(context, typeName);
         if (currentFile != null) {
@@ -434,41 +450,62 @@ public class PHPIndex {
         }
         for (IndexedType type : types) {
             int mask = type.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedClassMember<IndexedFunction> classMember : getMethods(context, type, name, kind, mask)) {
-                IndexedFunction method = classMember.getMember();
-                String methodName = method.getName();
-                if (!methods.containsKey(methodName) || type.getName().equals(typeName)) {
-                    methods.put(methodName, classMember);
-                }
+            collectedMethods.addAll(getMethods(context, type, name, kind, mask));
+        }
+        collectedMethods =
+                qualifiedTypeName.getKind().isUnqualified()? collectedMethods : namespaceFilter.filter(collectedMethods, true);
+
+        Map<String, IndexedClassMember<IndexedFunction>> retval = new TreeMap<String, IndexedClassMember<IndexedFunction>>();
+
+        for (IndexedClassMember<IndexedFunction> classMember : collectedMethods) {
+            IndexedFunction method = classMember.getMember();
+            IndexedType type = classMember.getType();
+            String methodName = method.getName();
+            if (!retval.containsKey(methodName) || type.getFullyQualifiedName().equalsIgnoreCase(fqn)) {
+                retval.put(methodName, classMember);
             }
-        }        
-        return methods.values();
+        }
+        return retval.values();
     }
 
-    /** returns all fields of a class or an interface. */
-    public Collection<IndexedClassMember<IndexedConstant>> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedClassMember<IndexedConstant>> fields = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+    /** returns all methods of a class or an interface. */
+    public Collection<IndexedClassMember<IndexedFunction>> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        return getAllMethods(context, QualifiedName.create(typeName) , name, kind, attrMask);
+    }
+
+    public Collection<IndexedClassMember<IndexedConstant>> getAllFields(PHPParseResult context, QualifiedName qualifiedTypeName, String name, QuerySupport.Kind kind, int attrMask) {
+        final NamespaceIndexFilter namespaceFilter = new NamespaceIndexFilter(qualifiedTypeName.toString());
+        final String typeName = namespaceFilter.getName();
+        Collection<IndexedClassMember<IndexedConstant>> collectedFields = new ArrayList<IndexedClassMember<IndexedConstant>>();
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Collection<IndexedType> types = getClassAncestors(context, typeName);
         if (currentFile != null) {
             // #147730 - prefer the current file
             types = preferTypeElementsFromCurrentFile(currentFile, types);
         }
-
         for (IndexedType type : types) {
-            if (type instanceof IndexedInterface) {
-                continue;//interface can't contain fields
-            }
             int mask = type.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedClassMember<IndexedConstant> classMember: getFields(context, type, name, kind, mask)) {
-                IndexedConstant field = classMember.getMember();
-                String fieldName = field.getName();
-                if (!fields.containsKey(fieldName) || type.getName().equals(typeName)) {
-                    fields.put(fieldName, classMember);
-                }
+            collectedFields.addAll(getFields(context, type, name, kind, mask));
+        }
+        collectedFields =
+                qualifiedTypeName.getKind().isUnqualified()? collectedFields : namespaceFilter.filter(collectedFields, true);
+
+        Map<String, IndexedClassMember<IndexedConstant>> retval = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+
+        for (IndexedClassMember<IndexedConstant> classMember : collectedFields) {
+            IndexedConstant field = classMember.getMember();
+            IndexedType type = classMember.getType();
+            String methodName = field.getName();
+            if (!retval.containsKey(methodName) || type.getName().equals(typeName)) {
+                retval.put(methodName, classMember);
             }
         }
-        return fields.values();
+        return retval.values();
+    }
+
+    /** returns all fields of a class or an interface. */
+    public Collection<IndexedClassMember<IndexedConstant>> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        return getAllFields(context, QualifiedName.create(typeName), name, kind, attrMask);
     }
 
     public static <T extends IndexedElement> Collection<T> toMembers(final Collection<? extends IndexedClassMember<T>> classMembers) {
@@ -494,11 +531,11 @@ public class PHPIndex {
             assert indexedElement instanceof IndexedClass || indexedElement instanceof IndexedInterface;
             FileObject fo = indexedElement.getFileObject();
             if (fo != null && fo.equals(preferedFo)) {
-                typeNamesForCurrentFile.add(indexedElement.getName());
+                typeNamesForCurrentFile.add(indexedElement.getFullyQualifiedName());
             }
         }
         for (T indexedElement : all) {
-            if (typeNamesForCurrentFile.contains(indexedElement.getName())) {
+            if (typeNamesForCurrentFile.contains(indexedElement.getFullyQualifiedName())) {
                 FileObject fo = indexedElement.getFileObject();
                 if (fo == null || fo.equals(preferedFo)) {
                     retval.add(indexedElement);

@@ -300,27 +300,36 @@ public class RepositoryController extends BugtrackingController implements Docum
                 panel.validateLabel.setVisible(true);
                 panel.enableFields(false);
                 panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
-                try {                    
+                try {
+                    String name = getName();
+                    String url = getUrl();
+                    String user = getUser();
+                    String httpUser = getHttpUser();
                     TaskRepository taskRepo = JiraRepository.createTaskRepository(
-                            getName(),
-                            getUrl(),
-                            getUser(),
+                            name,
+                            url,
+                            user,
                             getPassword(),
                             getHttpUser(),
                             getHttpPassword());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
-                    repository.getExecutor().execute(cmd, false, false, true);
+                    repository.getExecutor().execute(cmd, false, false, false);
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
-                            Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
+                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
+                                               Level.WARNING, name, url, user, httpUser);
                             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
                         } else {
                             errorMessage = cmd.getErrorMessage();
+                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
+                                               Level.WARNING, name, url, user, httpUser);                        
                         }
                         validateError = true;
                         fireDataChanged();
                     } else {
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
+                                           Level.INFO, name, url, user, httpUser);
                         panel.connectionLabel.setVisible(true);
                     }
                 } finally {
@@ -329,6 +338,10 @@ public class RepositoryController extends BugtrackingController implements Docum
                     panel.validateLabel.setVisible(false);
                     handle.finish();
                 }
+            }
+
+            private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
+                Jira.LOG.log(level, msg, new Object[] {name, url, user, httpUser});
             }
         });
         task[0].schedule(0);

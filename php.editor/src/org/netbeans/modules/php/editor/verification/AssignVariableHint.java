@@ -41,9 +41,6 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
@@ -53,8 +50,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -74,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public class AssignVariableHint implements AstRule {
+public class AssignVariableHint extends AbstractRule {
 
     public String getId() {
         return "assign.variable.hint"; //NOI18N
@@ -88,36 +83,22 @@ public class AssignVariableHint implements AstRule {
         return NbBundle.getMessage(AssignVariableHint.class, "AssignVariableHintDisplayName");//NOI18N
     }
 
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
     @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
-    }
-
-    void check(RuleContext context, List<Hint> hints) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
         int lineBegin = -1;
         int lineEnd = -1;
         try {
-            lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+            lineBegin = context.caretOffset > 0 ? Utilities.getRowStart(context.doc, context.caretOffset) : -1;
+            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, context.caretOffset) : -1;
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(doc, lineBegin, lineEnd);
+        if (lineBegin != -1 && lineEnd != -1 && context.caretOffset > lineBegin) {
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -126,19 +107,6 @@ public class AssignVariableHint implements AstRule {
                         Collections.<HintFix>singletonList(variableFix), 500));
             }
         }
-    }
-
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.INTRODUCE_HINT);
-    }
-
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    public boolean appliesTo(RuleContext context) {
-        return true;
     }
 
     private class IntroduceFixVisitor extends DefaultVisitor {

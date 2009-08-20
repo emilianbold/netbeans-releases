@@ -4,5 +4,5 @@ OpenIDE-Module: org.netbeans.modules.dlight.threadmap.support
 OpenIDE-Module-Layer: org/netbeans/modules/dlight/threadmap/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/threadmap/support/Bundle.properties
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.threadmap.support.impl.ThreadMapDataProviderFactory
+OpenIDE-Module-Provides: org.netbeans.module.dlight.threads.dataprovider.ThreadMapDataProvider
 

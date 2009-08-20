@@ -86,7 +86,7 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  *
  * @param <T> configuration indicator can be built on the base of
  */
-public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener, ChangeListener {
+public abstract class Indicator<T extends IndicatorConfiguration> implements DLightTargetListener, ChangeListener, IndicatorNotificationsListener {
 
     private static final int PADDING = 2;
     private final Object lock = new Object();
@@ -105,6 +105,19 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
     private List<VisualizerConfiguration> visualizerConfigurations;
 
+    protected final void notifyListeners(String  vcID){
+        for (VisualizerConfiguration vc : visualizerConfigurations){
+            if (vc.getID().equals(vcID)){
+                notifyListeners(vc);
+            }
+        }
+    }
+
+    private void notifyListeners(VisualizerConfiguration vc){
+        for (IndicatorActionListener l : listeners) {
+            l.openVisualizerForIndicator(this, vc);
+        }
+    }
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
             l.mouseClickedOnIndicator(this);
@@ -287,7 +300,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.toolName = toolName;
     }
 
-    List<VisualizerConfiguration> getVisualizerConfigurations() {
+    final List<VisualizerConfiguration> getVisualizerConfigurations() {
         return visualizerConfigurations;
     }
 
@@ -300,17 +313,6 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     void removeIndicatorActionListener(IndicatorActionListener l) {
         listeners.remove(l);
     }
-
-    /**
-     * Invoked when new data is occurred.
-     * @param data data added
-     */
-    public abstract void updated(List<DataRow> data);
-
-    /**
-     * Resets to the initial state
-     */
-    public abstract void reset();
 
     /**
      * Returns indicator metadata

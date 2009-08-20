@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
 
 public class EditablePropertiesTest extends NbTestCase {
@@ -133,6 +134,30 @@ public class EditablePropertiesTest extends NbTestCase {
         dest = getWorkDirPath()+File.separatorChar+"new3.properties";
         saveProperties(ep3, dest);
         assertFile("Saved cloned properties must be the same as original one", filenameOfTestProperties(), dest, (String)null);
+    }
+
+    public void testCopyOnWriteClonability() throws Exception {
+        EditableProperties ep1 = new EditableProperties(true);
+        ep1.setProperty("k1", "v1");
+        EditableProperties ep2 = ep1.cloneProperties();
+        ep2.setProperty("k2", "v2");
+        EditableProperties ep3 = ep2.cloneProperties();
+        ep1.setProperty("k4", "v4");
+        ep2.setProperty("k2", "v2a");
+        Iterator<Map.Entry<String,String>> it = ep3.entrySet().iterator();
+        it.next().setValue("v1b");
+        it.next();
+        it.remove();
+        ep3.setProperty("k3", "v3");
+        assertEquals("{k1=v1, k4=v4}", ep1.toString());
+        assertEquals("{k1=v1, k2=v2a}", ep2.toString());
+        assertEquals("{k1=v1b, k3=v3}", ep3.toString());
+        ep1 = new EditableProperties(true);
+        ep1.setProperty("k", "v1");
+        ep2 = ep1.cloneProperties();
+        ep2.entrySet().iterator().next().setValue("v2");
+        assertEquals("{k=v1}", ep1.toString());
+        assertEquals("{k=v2}", ep2.toString());
     }
 
     // test that array values are stored correctly
@@ -251,6 +276,32 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("!@#$%^&*\\(){}\\", ep.getProperty("_@!#$%^\\"));
         assertEquals("d\nnewline\nd\nend", ep.getProperty("_d\nd"));
         assertEquals(umlaut+umlaut, ep.getProperty("_umlaut"));
+    }
+
+    public void testMetaCharacters() throws Exception {
+        testRoundTrip("foo=bar", "v");
+        testRoundTrip("foo:bar", "v");
+        testRoundTrip("#foobar", "v");
+        testRoundTrip("foo#bar", "v");
+        testRoundTrip("foobar#", "v");
+        testRoundTrip("foobar", "#v");
+        testRoundTrip("foobar", "v#");
+        testRoundTrip(" #foo", " #bar");
+        testRoundTrip(" foo bar ", "v");
+        testRoundTrip("foobar", " v ");
+        testRoundTrip("= : # \\\n", "= : # \\\n");
+    }
+    private void testRoundTrip(String key, String value) throws Exception {
+        EditableProperties ep = new EditableProperties(false);
+        ep.setProperty(key, value);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ep.store(baos);
+        ep = new EditableProperties(false);
+        ep.load(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals(baos.toString(), Collections.singletonMap(key, value), ep);
+        Properties p = new Properties();
+        p.load(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals(baos.toString(), Collections.singletonMap(key, value), p);
     }
     
     // test that iterator implementation is OK

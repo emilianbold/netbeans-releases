@@ -84,8 +84,8 @@ public class PhpUnitCoverageLogParser extends DefaultHandler {
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
             LOGGER.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            assert false;
+        } catch (Throwable ex) {
+            LOGGER.log(Level.WARNING, null, ex);
         } finally {
             try {
                 reader.close();

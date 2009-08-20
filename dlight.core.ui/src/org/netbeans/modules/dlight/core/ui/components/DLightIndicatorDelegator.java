@@ -17,7 +17,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = IndicatorComponentDelegator.class, position=100)
+//@ServiceProvider(service = IndicatorComponentDelegator.class, position=10000)
 public final class DLightIndicatorDelegator implements IndicatorComponentDelegator{
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {

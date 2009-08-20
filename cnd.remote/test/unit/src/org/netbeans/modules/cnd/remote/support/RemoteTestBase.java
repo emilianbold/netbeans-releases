@@ -43,19 +43,25 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.windows.IOProvider;
 
 /**
  * A common base class for remote "unit" tests
@@ -64,6 +70,9 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected final Logger log = Logger.getLogger("cnd.remote.logger");
+
+    protected final static String successLine = "BUILD SUCCESSFUL";
+    protected final static String failureLine = "BUILD FAILED";
 
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
@@ -90,6 +99,43 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
         assertTrue(ok);
         tcm.applyChanges();
+    }
+
+    protected void buildProject(MakeProject makeProject) throws InterruptedException, IllegalArgumentException {
+
+        final CountDownLatch done = new CountDownLatch(1);
+        final AtomicInteger build_rc = new AtomicInteger(-1);
+        IOProvider iop = IOProvider.getDefault();
+        assert iop instanceof CndTestIOProvider;
+        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+
+            public void linePrinted(String line) {
+                if (line != null) {
+                    if (line.startsWith(successLine)) {
+                        build_rc.set(0);
+                        done.countDown();
+                    } else if (line.startsWith(failureLine)) {
+                        // message is:
+                        // BUILD FAILED (exit value 1, total time: 326ms)
+                        int rc = -1;
+                        String[] tokens = line.split("[ ,]");
+                        if (tokens.length > 4) {
+                            try {
+                                rc = Integer.parseInt(tokens[4]);
+                            } catch (NumberFormatException nfe) {
+                                nfe.printStackTrace();
+                            }
+                        }
+                        build_rc.set(rc);
+                        done.countDown();
+                    }
+                }
+            }
+        });
+        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+        makeActionProvider.invokeAction("build", null);
+        done.await();
+        assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
     public static class FakeCompilerSet extends CompilerSet {

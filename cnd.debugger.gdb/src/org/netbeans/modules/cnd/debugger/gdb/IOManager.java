@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;

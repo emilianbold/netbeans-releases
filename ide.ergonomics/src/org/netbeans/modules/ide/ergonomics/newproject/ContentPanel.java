@@ -47,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.openide.util.RequestProcessor;
 
 public final class ContentPanel extends JPanel {
@@ -68,11 +69,11 @@ public final class ContentPanel extends JPanel {
     @Override
     public void addNotify () {
         super.addNotify ();
-        RequestProcessor.getDefault ().post(new Runnable () {
+        FeatureManager.getInstance().create(new Runnable () {
             public void run () {
                 firePropertyChange (FINDING_MODULES, null, Boolean.TRUE);
             }
-        }, 200);
+        }).schedule(200);
     }
 
     private void doReplaceComponents (JComponent... comps) {

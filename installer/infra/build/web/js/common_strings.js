@@ -72,3 +72,12 @@ BUNDLE_LONG_NAMES[5] = "All";
 
 var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/67/relnotes.html";
 var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/67/install.html";
+
+var LEGAL_INFO_HEADER = "Important Legal Information:";
+
+var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
+var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
+
+var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {0} code is available under a <a href=\"{1}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{2}\">details about the components in NetBeans</a> and the licenses under which they are covered. Read the <a href=\"{3}\">License Notice</a>.";
+
+var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";

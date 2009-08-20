@@ -215,15 +215,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
                         js.runUserActionTask(new Task<CompilationController>() {
                             public void run (final CompilationController controller) {
                                 try {                            
-                                    ClassIndexManager.getDefault().writeLock(
+                                    ClassIndexManager.getDefault().takeWriteLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
                                                 controller.toPhase(Phase.RESOLVED);
                                                 final SourceAnalyser sa = getSourceAnalyser();
-                                                long st = System.currentTimeMillis();
                                                 sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
                                                 ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                long et = System.currentTimeMillis();
                                                 return null;
                                             }
                                     });

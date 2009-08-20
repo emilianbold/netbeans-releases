@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
@@ -87,7 +89,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private DefaultMutableTreeNode focusedTreeNode = null;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
-        super(configuration, dataProvider);
+        super(configuration, (TreeTableDataProvider)dataProvider);
         this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;

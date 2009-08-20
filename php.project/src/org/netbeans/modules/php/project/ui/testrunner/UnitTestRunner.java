@@ -58,7 +58,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -126,9 +125,7 @@ public final class UnitTestRunner {
 
         if (allTests) {
             // custom suite?
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-            assert phpUnit != null : "PHPUnit must be set";
-            File customSuite = phpUnit.getCustomSuite(project);
+            File customSuite = PhpUnit.getCustomSuite(project);
             if (customSuite != null) {
                 MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_CustomSuiteUsed", customSuite.getAbsolutePath()), false);
                 MANAGER.displayOutput(testSession, "", false); // NOI18N

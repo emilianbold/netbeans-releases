@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.impl;
 
+import java.net.URL;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -84,11 +85,15 @@ public abstract class DTDCConfigurationAccessor {
 
     public abstract List<String> getRequiredPrivileges(DTDCConfiguration conf);
 
-    public abstract String getScriptPath(DTDCConfiguration conf);
+    public abstract URL getScriptUrl(DTDCConfiguration conf);
 
     public abstract String getID();
 
     public abstract boolean isStackSupportEnabled(DTDCConfiguration conf);
 
     public abstract int getIndicatorFiringFactor(DTDCConfiguration conf);
+
+    public abstract boolean isStandalone(DTDCConfiguration conf);
+
+    public abstract String getOutputPrefix(DTDCConfiguration conf);
 }

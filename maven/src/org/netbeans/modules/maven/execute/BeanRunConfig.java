@@ -84,6 +84,7 @@ public class BeanRunConfig implements RunConfig {
     private MavenProject mp;
     private RunConfig preexecution;
     private String preactionname;
+    private ReactorStyle reactor = ReactorStyle.NONE;
     
     /** Creates a new instance of BeanRunConfig */
     public BeanRunConfig() {
@@ -103,6 +104,7 @@ public class BeanRunConfig implements RunConfig {
         setShowDebug(parent.isShowDebug());
         setShowError(parent.isShowError());
         setUpdateSnapshots(parent.isUpdateSnapshots());
+        setReactorStyle(parent.getReactorStyle());
     }
 
     public final File getExecutionDirectory() {
@@ -360,6 +362,14 @@ public class BeanRunConfig implements RunConfig {
     public String getPreExecutionActionName() {
         //not worth inheriting I guess.
         return preactionname;
+    }
+
+    public ReactorStyle getReactorStyle() {
+        return reactor;
+    }
+
+    public void setReactorStyle(ReactorStyle style) {
+        reactor = style;
     }
 }
 

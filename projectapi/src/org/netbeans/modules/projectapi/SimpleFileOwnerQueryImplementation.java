@@ -62,11 +62,9 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
@@ -77,6 +75,7 @@ import org.openide.util.WeakSet;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=100)
 public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImplementation {
+    private static final Logger LOG = Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName());
     
     /** Do nothing */
     public SimpleFileOwnerQueryImplementation() {}
@@ -130,7 +129,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 } catch (IOException e) {
                     // There is a project here, but we cannot load it...
                     if (warnedAboutBrokenProjects.add(f)) { // #60416
-                        Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
+                        LOG.log(Level.FINE, "Cannot load project.", e); //NOI18N
                     }
                     return null;
                 }
@@ -160,7 +159,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                             return p;
                         } catch (IOException e) {
                             // There is a project there, but we cannot load it...
-                            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
+                            LOG.log(Level.FINE, "Cannot load project.", e); //NOI18N
                             return null;
                         }
                     }
@@ -179,7 +178,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                         return p;
                     } catch (IOException e) {
                         // There is a project there, but we cannot load it...
-                        Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
+                        LOG.log(Level.FINE, "Cannot load project.", e); //NOI18N
                         return null;
                     }
                 }
@@ -213,12 +212,12 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 deserializedExternalOwners.put(i, URLMapper.findFileObject(u));
             }
         } catch (Exception ex) {
-            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         }
         try {
             NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
         } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
     
@@ -233,7 +232,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                }
             }
         } catch (Exception ex) {
-            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         }
         
     }

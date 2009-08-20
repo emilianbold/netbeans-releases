@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven.j2ee.ejb;
 
-import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;

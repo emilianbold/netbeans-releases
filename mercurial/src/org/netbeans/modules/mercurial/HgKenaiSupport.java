@@ -43,6 +43,7 @@ import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 import org.openide.util.Lookup;
 
 /**
@@ -86,5 +87,14 @@ public class HgKenaiSupport {
         queriedUrls.add(url);
         return kenaiSupport.getPasswordAuthentication();
     }
+
+    public boolean isUserOnline(String user) {
+        return kenaiSupport.isUserOnline(user);
+    }
+
+    public KenaiUser forName(String user) {
+        return kenaiSupport.forName(user);
+    }
+
 
 }

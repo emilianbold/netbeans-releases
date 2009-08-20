@@ -48,12 +48,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.CloneableTopComponent;
@@ -78,7 +80,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Creates new html browser with toolbar and status line.
     */
     public HtmlBrowserComponent() {
-        this (true, true);
+        this (true, false);
     }
 
     /**
@@ -90,7 +92,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     private HtmlBrowserComponent(boolean toolbar, boolean statusLine, URL url) {
         this (IDESettings.getWWWBrowser(), toolbar, statusLine);
-        urlToLoad = url;
+        urlToLoad = null == url ? null : url.toExternalForm();
     }
     /**
     * Creates new html browser.
@@ -119,10 +121,15 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     }
     
     public void propertyChange (PropertyChangeEvent e) {
-        if (!HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ())) return;
-        String title = browserComponent.getBrowserImpl().getTitle ();
-        if ((title == null) || (title.length () < 1)) return;
-        setToolTipText(title);
+        if( HtmlBrowser.Impl.PROP_STATUS_MESSAGE.equals(e.getPropertyName()) ) {
+            StatusDisplayer.getDefault().setStatusText(browserComponent.getBrowserImpl().getStatusMessage());
+            return;
+        } else if( HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ()) ) {
+            String title = browserComponent.getBrowserImpl().getTitle();
+            if ((title == null) || (title.length () < 1))
+                return;
+            setToolTipText(title);
+        }
     }    
     
     /** always open this top component in our special mode, if
@@ -194,11 +201,10 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
                 setEnableLocation(enableLocation);
                 setToolbarVisible(toolbarVisible);
                 setStatusLineVisible(statusVisible);
-                if( null != strUrlToLoad ) {
-                    setURL(strUrlToLoad);
-                } else if( null != urlToLoad ) {
+                if( null != urlToLoad ) {
                     setURL(urlToLoad);
                 }
+                urlToLoad = null;
             }
         });
     }
@@ -208,7 +214,8 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         if( null != browserComponent ) {
             toolbarVisible = isToolbarVisible();
             statusVisible = isStatusLineVisible();
-            urlToLoad = browserComponent.getBrowserImpl().getURL();
+            URL url = browserComponent.getBrowserImpl().getURL();
+            urlToLoad = null == url ? null : url.toExternalForm();
             browserComponent.getBrowserImpl().removePropertyChangeListener(this);
             browserComponent.getBrowserImpl().dispose();
         }
@@ -228,7 +235,6 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     // public methods ....................................................................................
 
-    private String strUrlToLoad = null;
     /**
     * Sets new URL.
     *
@@ -236,13 +242,13 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     */
     public void setURL (String str) {
         if( null == browserComponent ) {
-            strUrlToLoad = str;
+            urlToLoad = str;
             return;
         }
         browserComponent.setURL (str);
     }
 
-    private URL urlToLoad;
+    private String urlToLoad;
 
     /**
     * Sets new URL.
@@ -251,7 +257,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     */
     public void setURL (final URL url) {
         if( null == browserComponent ) {
-            urlToLoad = url;
+            urlToLoad = null == url ? null : url.toExternalForm();
             return;
         }
         browserComponent.setURL (url);
@@ -261,8 +267,16 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     * Gets current document url.
     */
     public final URL getDocumentURL () {
-        if( null == browserComponent )
-            return urlToLoad;
+        if( null == browserComponent ) {
+            URL url = null;
+            if( null != urlToLoad ) {
+                try {
+                    url = new URL(urlToLoad);
+                } catch( MalformedURLException ex ) {
+                }
+            }
+            return url;
+        }
         return browserComponent.getDocumentURL ();
     }
 
@@ -291,7 +305,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         browserComponent.setEnableLocation (b);
     }
 
-    private boolean statusVisible = true;
+    private boolean statusVisible = false;
     /**
     * Gets status line state.
     */

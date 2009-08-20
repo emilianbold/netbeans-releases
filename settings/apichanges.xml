@@ -119,6 +119,19 @@ is the proper place.
         </description>
         <issue number="155962"/>
     </change>
+    <change id="convert.as.javabean">
+        <api name="settings_spi"/>
+        <summary>@ConvertAsJavaBean annotation</summary>
+        <version major="1" minor="20"/>
+        <date day="7" month="8" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="compatible"/>
+        <description>
+            Easy way to use JavaBean's archiver for persistence of objects.
+        </description>
+        <class package="org.netbeans.api.settings" name="ConvertAsJavaBean"/>
+        <issue number="169620"/>
+    </change>
     <change id="convertor.propertyannotation">
         <api name="settings_spi"/>
         <summary>@ConvertAsProperties annotation</summary>

@@ -91,7 +91,7 @@ public class PasteActionTest extends JellyTestCase {
     private static final String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
     private static Node sample1Node;
     private static final String SAMPLE_FILE = "properties.properties";  //NOI18N
-    private static final String PASTED_FILE = "properties1.properties";  //NOI18N
+    private static final String PASTED_FILE = "properties_1.properties";  //NOI18N
     
     public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N

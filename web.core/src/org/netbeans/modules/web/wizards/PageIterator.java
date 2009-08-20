@@ -91,6 +91,10 @@ public class PageIterator implements TemplateWizard.Iterator {
         return new PageIterator(FileType.JSP);
     }
 
+    public static PageIterator createJsfIterator() {
+        return new PageIterator(FileType.JSF);
+    }
+
     public static PageIterator createTagIterator() {
         return new PageIterator(FileType.TAG);
     }
@@ -118,7 +122,7 @@ public class PageIterator implements TemplateWizard.Iterator {
     // You should define what panels you want to use here:
     protected WizardDescriptor.Panel[] createPanels(Project project) {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
-        if (fileType.equals(FileType.JSP)) {
+        if (fileType.equals(FileType.JSP)||fileType.equals(FileType.JSF)) {
             sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -191,7 +195,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         
         Map<String, Object> wizardProps = new HashMap<String, Object>();
 
-        if (FileType.JSP.equals(fileType)) {
+        if (FileType.JSP.equals(fileType) || FileType.JSF.equals(fileType)) {
             if (panel.isSegment()) {
                 if (panel.isXml()) {
                     template = templateParent.getFileObject("JSPFX", "jspf"); //NOI18N

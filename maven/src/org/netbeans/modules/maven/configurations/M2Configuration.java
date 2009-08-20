@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
@@ -70,13 +71,14 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return new M2Configuration(DEFAULT, prj);
     }
     
-    private String id;
+    private final String id;
     private List<String> profiles;
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
     static final String FILENAME_SUFFIX = ".xml"; //NOI18N
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
+    private final Properties properties = new Properties();
     
     public M2Configuration(String id, NbMavenProjectImpl proj) {
         this.id = id;
@@ -101,6 +103,10 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     
     public List<String> getActivatedProfiles() {
         return profiles;
+    }
+
+    public Properties getProperties() {
+        return properties;
     }
     
     

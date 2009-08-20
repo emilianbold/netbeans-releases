@@ -486,7 +486,7 @@ public class StartTask extends BasicTask<OperationState> {
                                 ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
-                        int debugPort = 8787;
+                        int debugPort = 9009;
                         // calculate the port and save it.
                         ServerSocket t = null;
                         try {

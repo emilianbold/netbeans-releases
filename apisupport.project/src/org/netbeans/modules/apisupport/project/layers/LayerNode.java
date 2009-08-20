@@ -222,17 +222,14 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
      * Add badging support to the plain layer.
      */
     private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer, final String rootLabel, final FileSystem highlighted) {
-        class BadgingMergedFileSystem extends MultiFileSystem {
-            private final BadgingSupport status;
+        class BadgingMergedFileSystem extends LayerFileSystem {
             public BadgingMergedFileSystem() {
-                super(new FileSystem[] {base});
-                status = new BadgingSupport(this);
+                super(new FileSystem[] {base}, cp);
                 status.addFileStatusListener(new FileStatusListener() {
                     public void annotationChanged(FileStatusEvent ev) {
                         fireFileStatusChanged(ev);
                     }
                 });
-                status.setClasspath(cp);
                 // XXX loc/branding suffix?
                 addFileChangeListener(new FileChangeListener() { // #65564
                     private void fire() {

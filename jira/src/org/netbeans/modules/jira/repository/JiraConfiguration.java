@@ -139,7 +139,9 @@ public class JiraConfiguration extends JiraClientCache {
         for (Resolution resolution : data.resolutions) {
             data.resolutionsById.put(resolution.getId(), resolution);
         }
-        data.issueTypes = client.getIssueTypes(nullProgressMonitor);
+        IssueType[] issueTypes = client.getIssueTypes(nullProgressMonitor);
+        IssueType[] subTaskTypes = client.getSubTaskIssueTypes(nullProgressMonitor);
+        data.issueTypes = mergeIssueTypes(issueTypes, subTaskTypes);
         data.issueTypesById = new HashMap<String, IssueType>(data.issueTypes.length);
         for (IssueType type : data.issueTypes) {
             data.issueTypesById.put(type.getId(), type);
@@ -369,13 +371,25 @@ public class JiraConfiguration extends JiraClientCache {
         initProject(project);
     }
 
+    private static IssueType[] mergeIssueTypes(IssueType[] issueTypes, IssueType[] subTaskTypes) {
+        IssueType[] allIssueTypes = new IssueType[issueTypes.length+subTaskTypes.length];
+        System.arraycopy(issueTypes, 0, allIssueTypes, 0, issueTypes.length);
+        System.arraycopy(subTaskTypes, 0, allIssueTypes, issueTypes.length, subTaskTypes.length);
+        // Sub-task types returned by JIRA connector are not marked as sub-tasks!
+        for (IssueType type: subTaskTypes) {
+            type.setSubTaskType(true);
+        }
+        return allIssueTypes;
+    }
+
     protected void initProject(final Project project) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
-                project.setIssueTypes(issueTypes);
+                IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
+                project.setIssueTypes(mergeIssueTypes(issueTypes, subTaskTypes));
 
                 Component[] components = client.getComponents(project.getKey(), new NullProgressMonitor());
                 project.setComponents(components);

@@ -96,11 +96,6 @@ public class RestartAction extends NodeAction {
     }
     
     private static boolean enableImpl(final GlassfishModule commonSupport) {
-        // !PW FIXME remote servers?
-//        if(!commonSupport.canStartServer()) {
-//            return false;
-//        }
-        
         ServerState state = commonSupport.getServerState();
         if(state != ServerState.RUNNING
                 // !PW FIXME support other states - debugging, profiling, etc.
@@ -110,8 +105,9 @@ public class RestartAction extends NodeAction {
                 ) {
             return false;
         }
-        return true &&
-                null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
+        
+        // FIXME can support restart remote V3 servers (but not prelude or preview)
+        return !commonSupport.isRemote();
     }
 
     public HelpCtx getHelpCtx() {

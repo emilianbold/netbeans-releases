@@ -60,9 +60,7 @@ import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
@@ -117,6 +115,8 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
      * and saving
      */
     private static String defaulEncoding = "UTF-8"; // NOI18N
+
+    private final DocumentListener DOCUMENT_LISTENER;
     
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
@@ -124,18 +124,41 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         if ((data!=null) && (data instanceof JspDataObject)) {
             setMIMEType(JspLoader.getMimeType((JspDataObject)data));
         }
+
+        // create document listener
+        DOCUMENT_LISTENER = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { change(e); }
+            public void changedUpdate(DocumentEvent e) { }
+            public void removeUpdate(DocumentEvent e) { change(e); }
+
+            private void change(DocumentEvent e) {
+                restartTimer(false);
+                TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
+                if (sup != null) {
+                    sup.setDocumentDirty(true);
+                }
+            }
+        };
+
         initialize();
     }
     
+    @Override
     public boolean close() {
-        //cancel waiting parsing task if there is any
-        //this is largely a workaround for issue #50926
-        TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
-        if(sup != null) {
-            sup.cancelParsingTask();
+        boolean closed = super.close();
+        if (closed) {
+            //cancel waiting parsing task if there is any
+            //this is largely a workaround for issue #50926
+            TagLibParseSupport sup = (TagLibParseSupport) getDataObject().getCookie(TagLibParseSupport.class);
+            if (sup != null) {
+                sup.cancelParsingTask();
+            }
+
+            //remove document listener
+            getDocument().removeDocumentListener(DOCUMENT_LISTENER);
         }
-        
-        return super.close();
+
+        return closed;
     }
     
     private void initialize() {
@@ -155,32 +178,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         timer.setInitialDelay(AUTO_PARSING_DELAY);
         timer.setRepeats(false);
         
-        // create document listener
-        final DocumentListener docListener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { change(e); }
-            public void changedUpdate(DocumentEvent e) { }
-            public void removeUpdate(DocumentEvent e) { change(e); }
-            
-            private void change(DocumentEvent e) {
-                restartTimer(false);
-                TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
-                if (sup != null) {
-                    sup.setDocumentDirty(true);
-                }
-            }
-        };
-        
-        // add change listener
-        addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent evt) {
-                if (isDocumentLoaded()) {
-                    if (getDocument() != null) {
-                        getDocument().addDocumentListener(docListener);
-                    }
-                }
-            }
-        });
-    
         encoding = null;
 
         WebModule webModule = getWebModule(getDataObject().getPrimaryFile());
@@ -245,6 +242,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         super.loadFromStreamToKit(doc, stream, kit);
     }
     
+    @Override
     public void open(){
         ((JspDataObject)getDataObject()).updateFileEncoding(false);
         encoding = ((JspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
@@ -264,8 +262,11 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         
         // #120530 - make sure parsing task is started
         restartTimer(false);
-    }
-    
+
+        //add document listener to the opened document
+        getDocument().addDocumentListener(DOCUMENT_LISTENER);
+    }  
+
     /** Notify about the editor closing.
      */
     protected void notifyClose() {}
@@ -278,6 +279,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         }
     }
     
+    @Override
     protected boolean notifyModified() {
         boolean notify = super.notifyModified();
         if (!notify) {
@@ -301,6 +303,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     /** Called when the document becomes unmodified.
      * Here, removing the save cookie from the object and marking it unmodified.
      */
+    @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         JspDataObject obj = (JspDataObject)getDataObject();
@@ -381,6 +384,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link BaseJspEditor} for this support
      */
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new BaseJspEditor(this);
     }

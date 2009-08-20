@@ -50,6 +50,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
@@ -63,7 +64,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 
 
@@ -73,7 +73,17 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class ExceptionBreakpointsTest extends JellyTestCase {
 
-    //MainWindowOperator.StatusTextTracer stt = null;
+    private static String[] tests = new String[] {
+        "testExceptionBreakpointCreation",
+        "testExceptionBreakpointFunctionality",
+        "testExceptionBreakpointMatchClasses",
+        "testExceptionBreakpointExcludeClasses",
+        "testExceptionBreakpointHitCount",
+        "testConditionalExceptionBreakpoint" 
+    };
+
+    private static boolean initialized = false;
+
     /**
      *
      * @param name
@@ -95,25 +105,23 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExceptionBreakpointsTest.class).addTest(
-                    "testExceptionBreakpointCreation",
-                    "testExceptionBreakpointFunctionality",
-                    "testExceptionBreakpointMatchClasses",
-                    "testExceptionBreakpointExcludeClasses",
-                    "testExceptionBreakpointHitCount",
-                    "testConditionalExceptionBreakpoint" 
-                )
-            .enableModules(".*").clusters(".*"));
+        return createModuleTest(ExceptionBreakpointsTest.class, tests);
     }
 
     /**
      *
      */
     @Override
-    public void setUp() throws IOException {
-        openDataProjects(Utilities.testProjectName);
+    public void setUp() throws IOException {        
         System.out.println("########  " + getName() + "  ####### ");
+        if (!initialized)
+        {
+            openDataProjects(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            Utilities.cleanBuildTestProject();
+            initialized = true;
+        }
     }
 
     /**
@@ -131,9 +139,7 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      */
     public void testExceptionBreakpointCreation() throws Throwable {
         try {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
+            
             EditorOperator eo = new EditorOperator("MemoryView.java");
             try {
                 eo.clickMouse(50,50,1);

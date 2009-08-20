@@ -42,7 +42,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.configurations.ConfigurationProviderEnabler;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -61,18 +60,14 @@ public class J2seLookupProvider implements LookupProvider {
     
     public Lookup createAdditionalLookup(Lookup baseLookup) {
         NbMavenProjectImpl project = baseLookup.lookup(NbMavenProjectImpl.class);
-        ConfigurationProviderEnabler config = baseLookup.lookup(ConfigurationProviderEnabler.class);
         assert project != null;
-        assert config != null;
 //        // if there's more items later, just do a proxy..
         InstanceContent ic = new InstanceContent();
-        //sort of hack.. the base lookup is static list, need instance content
-        // from somewhere, why not here?
-        config.setInstanceContent(ic);
         Provider prov = new Provider(project, ic);
         return prov;
     }
     
+    @SuppressWarnings("serial")
     public static class Provider extends AbstractLookup implements  PropertyChangeListener {
         private NbMavenProjectImpl project;
         private InstanceContent content;

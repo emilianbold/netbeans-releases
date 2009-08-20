@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.modules.cnd.debugger.common.utils.GeneralUtils;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbErrorException;
@@ -568,7 +569,7 @@ public abstract class AbstractVariable implements LocalVariable {
         String fullname = getFullName(false);
         String t2 = t.substring(0, t.length() - 1);
         int max_fields = t2.startsWith("char *") ? 20 : 10; // NOI18N
-        int maxIndexLog = GdbUtils.log10(max_fields-1);
+        int maxIndexLog = GeneralUtils.log10(max_fields-1);
 
         while (max_fields-- > 0) {
             String v = getDebugger().requestValue(fullname + '[' + i + ']');
@@ -666,7 +667,7 @@ public abstract class AbstractVariable implements LocalVariable {
         int pos;
         boolean truncated = false;
 
-        int maxIndexLog = GdbUtils.log10(size-1);
+        int maxIndexLog = GeneralUtils.log10(size-1);
 
         while (idx < value.length()) {
             if (value.substring(idx).startsWith("\\\"")) { // NOI18N
@@ -833,7 +834,7 @@ public abstract class AbstractVariable implements LocalVariable {
             parseCharArray(this, getName(), type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
-            int maxIndexLog = GdbUtils.log10(size-1);
+            int maxIndexLog = GeneralUtils.log10(size-1);
             for (int i = 0; i < size && vstart != -1; i++) {
                 int vend;
                 if (value.charAt(vstart) == '{') {
@@ -853,10 +854,10 @@ public abstract class AbstractVariable implements LocalVariable {
     }
 
     private static String getIndexStr(int maxIndexLog, int index, String postfix) {
-        int num0 = maxIndexLog - GdbUtils.log10(index);
+        int num0 = maxIndexLog - GeneralUtils.log10(index);
         String data = index + postfix;
         if (num0 > 0) {
-            data = GdbUtils.zeros(num0) + data;
+            data = GeneralUtils.zeros(num0) + data;
         }
         return "[" + data + "]"; // NOI18N
     }

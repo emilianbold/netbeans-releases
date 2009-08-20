@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
-
 /**
  *
  * @author mt154047
  */
 public interface DLightSessionInternalReference {
-    DLightSessionContext getSessionContext();
 }

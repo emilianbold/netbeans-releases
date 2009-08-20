@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
  * @author tomslot
  */
 public class PHPDOCCodeCompletion {
-
+    private static final String TAG_PREFIX = "@";
     private static final String TAGS[] = new String[]{
         "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
         "filesource", "global", "ignore", "internal", "license", "link", "method", "name", "package",
@@ -150,12 +150,13 @@ public class PHPDOCCodeCompletion {
             PHPCompletionItem.CompletionRequest request) {
         
         
-        if (!(request.prefix.length() == 0 || request.prefix.startsWith("@"))){
+        if (!request.prefix.startsWith("@")){
             return;
         }
-        
-        String prefix = request.prefix.length() == 0 ? request.prefix : request.prefix.substring(1);
-        
+
+        String prefix = request.prefix.startsWith(TAG_PREFIX) ?
+            request.prefix.substring(1) : request.prefix;
+
         for (String tag : TAGS){
             if (tag.startsWith(prefix)){
                 PHPDOCCodeCompletionItem item = new PHPDOCCodeCompletionItem(request, tag);
@@ -207,7 +208,7 @@ public class PHPDOCCodeCompletion {
         }
 
         public String getName() {
-            return "@" + tag; //NOI18N
+            return TAG_PREFIX + tag; //NOI18N
         }
 
         public String getInsertPrefix() {

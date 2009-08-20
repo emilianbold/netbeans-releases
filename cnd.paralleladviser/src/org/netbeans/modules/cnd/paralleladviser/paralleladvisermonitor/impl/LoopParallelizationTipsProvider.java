@@ -53,6 +53,7 @@ package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 
@@ -64,7 +65,12 @@ import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
 public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
 
-    private final static Collection<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
+    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
+    private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
+    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
+    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
+
+    private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
 
     public static void addTip(LoopParallelizationAdvice tip) {
         for (LoopParallelizationAdvice advice : tips) {
@@ -81,7 +87,21 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
     }
 
     public Collection<Advice> getTips() {
-        return new ArrayList<Advice>(tips);
+        if(representationType == REPRESENTATION_TYPE_SEPARATE_TIPS) {
+            return new ArrayList<Advice>(tips);
+        } else if (representationType == REPRESENTATION_TYPE_ALL_TIPS_IN_ONE) {
+            ArrayList<Advice> arrayList = new ArrayList<Advice>();
+            if(!tips.isEmpty()) {
+                arrayList.add(new LoopsParallelizationAdvice(tips));
+            }
+            return arrayList;
+        } else {
+            ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
+            if(!arrayList.isEmpty()) {
+                arrayList.add(new LoopParallelizationCommonAdvice());
+            }
+            return arrayList;
+        }
     }
 
 }

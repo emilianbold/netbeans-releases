@@ -45,7 +45,9 @@ package org.netbeans.modules.db.sql.analyzer;
  */
 public enum SQLStatementKind {
 
+    DELETE,
     DROP,
     INSERT,
-    SELECT
+    SELECT,
+    UPDATE
 }

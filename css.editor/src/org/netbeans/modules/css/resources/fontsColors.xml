@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
      * comment
      -->
     
-    <fontcolor name="default" default="default"/>
+    <fontcolor name="others" default="default"/>
     <fontcolor name="brace" default="separator"/>
     <fontcolor name="separator" default="separator"/>
     <fontcolor name="hash" default="number"/>

@@ -125,6 +125,15 @@ public class PHPFormatter implements Formatter {
     }
 
     private boolean lineUnformattable(BaseDocument doc, int offset) throws BadLocationException {
+        Token<? extends PHPTokenId> firstTokenInLine = LexUtilities.getToken(doc, offset);
+        if (firstTokenInLine.id() == PHPTokenId.PHP_LINE_COMMENT){
+            // do not modify indent for line comments starting
+            // right at the beginning of the line cos they were
+            // most likely created using Ctrl+/
+            // see issue #162586
+            return true;
+        }
+
         // TODO: Handle arrays better
         // %w(January February March April May June July
         //    August September October November December)

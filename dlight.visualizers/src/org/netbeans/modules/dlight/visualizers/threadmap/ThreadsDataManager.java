@@ -46,9 +46,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.core.stack.api.ThreadData;
+import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -232,9 +232,9 @@ public class ThreadsDataManager {
             Integer number = IdToNumber.get(col.getThreadID());
             if (number == null) {
                 // this is dead thread
-                if (col.isAlive()){
-                   closeThread(col, monitoredDataInterval);
-                }
+                //if (col.isAlive()){
+                //   closeThread(col, monitoredDataInterval);
+                //}
             } else {
                 ThreadState lastState = col.getThreadStateAt(col.size()-1);
                 int newData = number.intValue();
@@ -244,11 +244,9 @@ public class ThreadsDataManager {
                     ThreadState newState = states.get(j);
                     if (newState.getTimeStamp() > lastState.getTimeStamp()) {
                         if (lastTimeStamp == -1) {
-                            if (!col.isAlive()) {
-                                // remove stop mark
-                                col.removeStopMark();
-                                System.out.println("Reopen thread line "+col.getName()); // NOI18N
-                            }
+                            //if (!col.isAlive()) {
+                            //    reopenThread(col);
+                            //}
                         }
                         col.add(newState);
                         lastTimeStamp = newState.getTimeStamp();
@@ -256,9 +254,9 @@ public class ThreadsDataManager {
                     col.updateStackProvider(monitoredData.getStackProvider(newData));
                 }
                 if (lastTimeStamp == -1) {
-                    if (col.isAlive()){
-                        closeThread(col, monitoredData.getTimeStampInterval());
-                    }
+                    //if (col.isAlive()){
+                    //    closeThread(col, monitoredData.getTimeStampInterval());
+                    //}
                 }
                 IdToNumber.remove(col.getThreadID());
             }
@@ -280,7 +278,13 @@ public class ThreadsDataManager {
         }
     }
 
-    void closeThread(ThreadStateColumnImpl col, int interval){
+    private void reopenThread(ThreadStateColumnImpl col){
+        System.out.println("Reopen thread line "+col.getName()); // NOI18N
+        // remove stop mark
+        col.removeStopMark();
+    }
+
+    private void closeThread(ThreadStateColumnImpl col, int interval){
         final long endTimeStamp = col.getThreadStateAt(col.size()-1).getTimeStamp() + interval;
         System.out.println("Close thread line "+col.getName()); // NOI18N
         col.add(new ThreadState(){

@@ -75,9 +75,11 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -123,21 +125,30 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     static {
         final File install = NbPlatform.defaultPlatformLocation();
         if (install != null) {
-            ProjectManager.mutex().postWriteRequest(new Runnable() {
+            class Init implements Runnable {
                 public void run() {
-                    EditableProperties p = PropertyUtils.getGlobalProperties();
-                    String installS = install.getAbsolutePath();
-                    p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
-                    if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
-                        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
-                    }
-                    try {
-                        PropertyUtils.putGlobalProperties(p);
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    if (ProjectManager.mutex().isWriteAccess()) {
+                        EditableProperties p = PropertyUtils.getGlobalProperties();
+                        String installS = install.getAbsolutePath();
+                        p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
+                        if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
+                            p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                        }
+                        try {
+                            PropertyUtils.putGlobalProperties(p);
+                        } catch (IOException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                    } else {
+                        ProjectManager.mutex().postWriteRequest(this);
                     }
                 }
-            });
+            }
+            try {
+                RequestProcessor.getDefault().post(new Init()).waitFinished(1000);
+            } catch (InterruptedException ex) {
+                // OK
+            }
         }
     }
     

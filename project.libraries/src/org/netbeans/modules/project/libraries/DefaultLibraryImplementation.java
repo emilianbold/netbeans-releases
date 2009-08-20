@@ -143,6 +143,24 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return "DefaultLibraryImplementation[" + name + "]"; // NOI18N
     }
 
+    @Override
+    public boolean equals (final Object other) {
+        if (other instanceof DefaultLibraryImplementation) {
+            final DefaultLibraryImplementation otherLib = (DefaultLibraryImplementation) other;
+            return (name == null ? otherLib.name == null : name.equals(otherLib.name)) &&
+                   (libraryType == null ? otherLib.libraryType == null : libraryType.equals(otherLib.libraryType));
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 31;
+        hash = hash*17 + (name == null? 0 : name.hashCode());
+        hash = hash*17 + (libraryType == null ? 0 : libraryType.hashCode());
+        return hash;
+    }
+
     private void firePropertyChange (String propName, Object oldValue, Object newValue) {
         List<PropertyChangeListener> ls;
         synchronized (this) {

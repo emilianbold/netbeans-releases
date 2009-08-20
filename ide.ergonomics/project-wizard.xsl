@@ -205,7 +205,14 @@
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
-                    <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
+                <attr name="originalDefinition">
+                    <xsl:attribute name="stringvalue">
+                        <xsl:call-template name="fullpath">
+                            <xsl:with-param name="file" select="."/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </attr>
+                <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
             </xsl:element>
         </xsl:if>
     </xsl:template>
@@ -213,7 +220,18 @@
     <xsl:template match="attr" mode="j2ee-server-types">
         <xsl:copy-of select="."/>
     </xsl:template>
-    
+
+    <xsl:template name="fullpath" mode="j2ee-server-types">
+        <xsl:param name="file"/>
+        <xsl:if test="$file/../@name">
+            <xsl:call-template name="fullpath">
+                <xsl:with-param name="file" select="$file/.."/>
+            </xsl:call-template>
+            <xsl:text>/</xsl:text>
+        </xsl:if>
+        <xsl:value-of select="$file/@name"/>
+    </xsl:template>
+
     <!-- actions -->
     <xsl:template match="file" mode="actions">
         <xsl:element name="file">

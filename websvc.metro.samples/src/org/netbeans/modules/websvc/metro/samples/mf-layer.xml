@@ -51,11 +51,11 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/metroSamplesCategory.html"/>
                     -->
                     <attr name="position" intvalue="250"/>
-                    <file name="SecureCalculator" url="pkg/SecureCalculator.txt">
+                    <file name="SecureCalculator">
                         <attr name="position" intvalue="300"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="needsdefaults" boolvalue="true"/>
-                        <attr name="files" stringvalue="pkg/SecureCalculatorApp.zip,pkg/SecureCalculatorClientApp.zip"/>
+                        <attr name="files" stringvalue="SecureCalculatorApp.zip,SecureCalculatorClientApp.zip"/>
                         <attr name="replaceport" stringvalue="SecureCalculatorClientApp/src/java/org/me/calculator/client/ClientServlet.java"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/SecureCalculator.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
@@ -63,11 +63,11 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.metro.samples.WebSampleProjectIterator"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
-                    <file name="Calculator" url="pkg/Calculator.txt">
+                    <file name="Calculator">
                         <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="needsdefaults" boolvalue="true"/>
-                        <attr name="files" stringvalue="pkg/CalculatorApp.zip,pkg/CalculatorClientApp.zip"/>
+                        <attr name="files" stringvalue="CalculatorApp.zip,CalculatorClientApp.zip"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/Calculator.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>

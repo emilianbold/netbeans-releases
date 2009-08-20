@@ -386,7 +386,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      */
     public boolean isRedeploySupported() {
-        return true;
+        return isLocal();
     }
 
     /**
@@ -430,7 +430,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         InstanceProperties ip = getInstanceProperties();
         String serverUri = constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
                 ip.getProperty(GlassfishModule.HTTPPORT_ATTR), null);
-        Hk2Target target = new Hk2Target(serverUri);
+        String name = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
+        Hk2Target target = new Hk2Target(name, serverUri);
         Hk2Target targets[] = {target};
         return targets;
     }
@@ -526,6 +527,15 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return builder.toString();
     }
 
+    public boolean isLocal() {
+        boolean result = true;
+        GlassfishModule commonSupport = getCommonServerSupport();
+        if(commonSupport != null && commonSupport.isRemote()) {
+            result = false;
+        }
+        return result;
+    }
+
 //    class UpdateContextRoot implements ProgressListener {
 //        private MonitorProgressObject returnProgress;
 //        private Hk2TargetModuleID moduleId;
@@ -535,9 +545,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
 //            this.moduleId = moduleId;
 //        }
 //
-//            public void handleProgressEvent(ProgressEvent arg0) {
-//                if (arg0.getDeploymentStatus().isCompleted()) {
-//                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+//            public void handleProgressEvent(ProgressEvent event) {
+//                if (event.getDeploymentStatus().isCompleted()) {
+//                    returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
 //                    // let's update the context-root
 //                    //
 //                    RequestProcessor.getDefault().post(new Runnable() {
@@ -568,10 +578,10 @@ public class Hk2DeploymentManager implements DeploymentManager {
 //                            }
 //                        }
 //                    });
-//                } else if (arg0.getDeploymentStatus().isFailed()) {
+//                } else if (event.getDeploymentStatus().isFailed()) {
 //                    returnProgress.operationStateChanged(OperationState.FAILED, "failed to update the moduleid");
 //                } else {
-//                    returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+//                    returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
 //                }
 //            }
 //

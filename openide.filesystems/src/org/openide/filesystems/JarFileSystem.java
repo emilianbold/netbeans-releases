@@ -71,6 +71,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -257,19 +258,19 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         if (aRoot == null) {
-            FSException.io("EXC_NotValidFile", aRoot); // NOI18N        
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidFile", aRoot));
         }
 
         if (!aRoot.exists()) {
-            FSException.io("EXC_FileNotExists", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_FileNotExists", aRoot.getAbsolutePath()));
         }
 
         if (!aRoot.canRead()) {
-            FSException.io("EXC_CanntRead", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CanntRead", aRoot.getAbsolutePath()));
         }
 
         if (!aRoot.isFile()) {
-            FSException.io("EXC_NotValidFile", aRoot.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidFile", aRoot.getAbsolutePath()));
         }
 
         String s;
@@ -282,7 +283,7 @@ public class JarFileSystem extends AbstractFileSystem {
             tempJar = new JarFile(s);
             LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
         } catch (ZipException e) {
-            FSException.io("EXC_NotValidJarFile2", e.getLocalizedMessage(), s); // NOI18N
+            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
         }
 
         synchronized (closeSync) {
@@ -368,7 +369,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * @return user presentable name of the filesystem
     */
     public String getDisplayName() {
-        return (root != null) ? root.getAbsolutePath() : getString("JAR_UnknownJar");
+        return root != null ? root.getAbsolutePath() : NbBundle.getMessage(JarFileSystem.class, "JAR_UnknownJar");
     }
 
     /** This filesystem is read-only.
@@ -602,7 +603,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected void lock(String name) throws IOException {
-        FSException.io("EXC_CannotLock", name, getDisplayName(), name); // NOI18N
+        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock", name, getDisplayName(), name));
     }
 
     protected void unlock(String name) {
@@ -827,7 +828,7 @@ public class JarFileSystem extends AbstractFileSystem {
                             uniqueEntries.add(entry);
                         } else {
                             if (!duplicateReported) {
-                                LOGGER.warning(getString("EXC_DuplicateEntries", getJarFile(), name));  //NOI18N
+                                LOGGER.warning("Duplicate entries in " + getJarFile() + ": " + name + "; please report to JAR creator.");
                                 // report just once
                                 duplicateReported = true;
                             }

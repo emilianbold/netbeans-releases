@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
@@ -62,17 +63,20 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration>
         implements DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
 
-    private final Collection<Indicator> listeners = new ArrayList<Indicator>();
+    static {
+        IndicatorDataProviderAccessor.setDefault(new IndicatorDataProviderAccessorImpl());
+    }
+    private final Collection<IndicatorNotificationsListener> notificationListeners = new ArrayList<IndicatorNotificationsListener>();
     private ServiceInfoDataStorage serviceInfoDataStorage;
 
-    private void addIndicatorDataProviderListener(Indicator l) {
-        if (!listeners.contains(l)) {
-            listeners.add(l);
+    private final void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        if (!notificationListeners.contains(l)) {
+            notificationListeners.add(l);
         }
     }
 
-    private void removeIndicatorDataProviderListener(Indicator l) {
-        listeners.remove(l);
+    private final boolean removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        return notificationListeners.remove(l);
     }
 
     /**
@@ -110,6 +114,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         return false;
     }
 
+  
+
     /**
      * Use this method to unsubscribe from this data provider
      * @param indicator indicator to unsubscribe
@@ -119,14 +125,14 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     protected final void resetIndicators() {
-        for (Indicator l : listeners) {
+        for (IndicatorNotificationsListener l : notificationListeners) {
             l.reset();
         }
 
     }
 
     protected final void notifyIndicators(List<DataRow> data) {
-        for (Indicator<?> l : listeners) {
+        for (IndicatorNotificationsListener l : notificationListeners) {
             l.updated(data);
         }
     }
@@ -160,5 +166,19 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
      */
     protected final ServiceInfoDataStorage getServiceInfoDataStorage() {
         return serviceInfoDataStorage;
+    }
+
+    private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor{
+
+        @Override
+        public void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+            provider.addIndicatorDataProviderListener(l);
+        }
+
+        @Override
+        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+            return provider.removeIndicatorDataProviderListener(l);
+        }
+
     }
 }

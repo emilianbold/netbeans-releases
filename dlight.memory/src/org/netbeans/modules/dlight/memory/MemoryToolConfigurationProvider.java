@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +57,6 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
@@ -88,7 +88,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
     private static final int BINARY_ORDER = 1024;
     private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
+    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
 
     private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
     private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
@@ -128,10 +128,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
-        MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
-        toolConfiguration.addDataCollectorConfiguration(mdcc);
+        DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();
+        toolConfiguration.addDataCollectorConfiguration(dcc);
         // it's an indicator data provider as well!
-        toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
+        toolConfiguration.addIndicatorDataProviderConfiguration(dtcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
                 initDtraceIndicatorDataProviderConfiguration());
         toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
@@ -146,17 +146,17 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         return new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.MEMORY);
     }
 
-    private MultipleDTDCConfiguration initDtraceDataCollectorConfiguration() {
+    private DTDCConfiguration initDtraceDataCollectorConfiguration() {
 
         DTDCConfiguration dataCollectorConfiguration =
-                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata));
+                new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata));
 
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
         dataCollectorConfiguration.setStackSupportEnabled(true);
+        dataCollectorConfiguration.setOutputPrefix("mem:"); // NOI18N
 
-        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
-        return mdc;
+        return dataCollectorConfiguration;
     }
 
     private IndicatorDataProviderConfiguration initSunStudioIndicatorDataProviderConfiguration() {
@@ -167,18 +167,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private IndicatorDataProviderConfiguration initDtraceIndicatorDataProviderConfiguration() {
 
         DTDCConfiguration dataCollectorConfiguration =
-                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
+                new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         dataCollectorConfiguration.setScriptArgs(" -DNOSTACK"); // NOI18N
         dataCollectorConfiguration.setStackSupportEnabled(true); // true
+        dataCollectorConfiguration.setOutputPrefix("mem:"); // NOI18N
 
-        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
-        return mdc;
+        return dataCollectorConfiguration;
 
     }
 
-    private String getScriptFile() {
-        return Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d"); // NOI18N
+    private URL getScriptUrl() {
+        return getClass().getResource("resources/mem.d"); // NOI18N
     }
 
     private LLDataCollectorConfiguration initLLDataCollectorConfiguration() {
@@ -199,7 +199,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), 1024, // NOI18N
+                loc("indicator.title"), BINARY_ORDER, // NOI18N
                 Arrays.asList(
                     new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
                 new DataRowToMemoryPlot(indicatorColumns));
@@ -302,15 +302,15 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static String formatValue(long value) {
         double dbl = value;
         int i = 0;
-        while (BINARY_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
             dbl /= BINARY_ORDER;
             ++i;
         }
-        if (DECIMAL_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
             dbl /= BINARY_ORDER;
             ++i;
         }
         NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
-        return nf.format(dbl) + SIFFIXES[i];
+        return nf.format(dbl) + SUFFIXES[i];
     }
 }

@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -71,7 +72,8 @@ import org.openide.util.lookup.InstanceContent;
 public final class FeatureManager
 implements PropertyChangeListener, LookupListener {
     private static FeatureManager INSTANCE;
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
+    private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("FoD Processor"); // NOI18N
     private final Lookup.Result<ModuleInfo> result;
     private final ChangeSupport support;
     private Set<String> enabledCnbs = Collections.emptySet();
@@ -89,6 +91,11 @@ implements PropertyChangeListener, LookupListener {
         }
         return INSTANCE;
     }
+    
+    public RequestProcessor.Task create(Runnable r) {
+        return RP.create(r);
+    }
+
 
     static void logUI(String msg, Object... params) {
         LogRecord rec = new LogRecord(Level.FINE, msg);
@@ -267,6 +274,14 @@ implements PropertyChangeListener, LookupListener {
         }
         support.fireChange();
         FoDFileSystem.LOG.fine("FeatureManager change delivered"); // NOI18N
+    }
+
+    /** Useful for testing */
+    public final void waitFinished() {
+        RP.post(new Runnable() {
+            public void run() {
+            }
+        }).waitFinished();
     }
 
 }

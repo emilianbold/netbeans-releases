@@ -353,23 +353,45 @@ public class FileInformation implements Serializable {
         return "Text: " + status + " " + getStatusText(status); // NOI18N
     }
 
+    /**
+     * Modifies counter's current value.
+     * @param counterType type of counter (modified, new, deleted, ...)
+     * @param value difference to be added
+     * @param directChild if set to true then also direct counter will be modified. This type of counter is used for flat folders (e.g. packages),
+     * when we don't want to annotate them if changes are made deep in their file tree.
+     * @return true if the most importatnt counter has changed (this signals an event should be fired for this file)
+     */
     boolean addToCounter (int counterType, int value, boolean directChild) {
         assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
         boolean importantCounterChanged = false;
-        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) {
+        if (counterType >=0 && counterType <= COUNTER_MAX_INDEX) { // counter type OK
             synchronized (counters) {
                 int mostImportantCounter = getMostImportantCounter(false, Collections.EMPTY_SET);
                 counters[counterType] += value;
                 if (directChild) {
                     counters[counterType + 1 + COUNTER_MAX_INDEX] += value;
                 }
-                assert counters[counterType] >= 0;
+                if (counters[counterType] < 0) {
+                    Mercurial.LOG.warning("addToCounter: negative counter value: " + counterType + "=" + counters[counterType]); //NOI18N
+                }
+                boolean assertEnabled = false;
+                assert assertEnabled = true;
+                if (assertEnabled && counters[counterType] < 0) {
+                    throw new IllegalArgumentException("Negative counter value"); //NOI18N
+                }
                 importantCounterChanged = mostImportantCounter != getMostImportantCounter(false, Collections.EMPTY_SET);
             }
         }
         return importantCounterChanged;
     }
 
+    /**
+     * Returns counter's current value
+     * XXX rename to getCounterValue
+     * @param counterType
+     * @param onlyDirectChildren if set to true, only counter for direct children will be returned
+     * @return
+     */
     int getCounter (int counterType, boolean onlyDirectChildren) {
         assert counterType >=0 && counterType <= COUNTER_MAX_INDEX;
         int counterValue = -1;
@@ -381,6 +403,14 @@ public class FileInformation implements Serializable {
         return counterValue;
     }
 
+    /**
+     * Compares the given counter and the most important counter for this instance and returns the more important of them.
+     * @param counter
+     * @param onlyDirectChildren
+     * @param exclusions excluded files which will be subtracted from the most important counter of this instance
+     * (remember exclusions from commit?)
+     * @return
+     */
     int getMoreImportantCounter (int counter, boolean onlyDirectChildren, Set<FileInformation> exclusions) {
         int mostImportantCounter;
         synchronized (counters) {
@@ -413,6 +443,7 @@ public class FileInformation implements Serializable {
         int counterBase = onlyDirectChildren ? COUNTER_MAX_INDEX + 1 : 0;
         int exclusionsConflicted = 0;
         int exclusionsModified = 0;
+        // count all exclusions
         for (FileInformation info : exclusions) {
             if ((info.getStatus() & STATUS_VERSIONED_CONFLICT) != 0) {
                 ++exclusionsConflicted;
@@ -425,6 +456,7 @@ public class FileInformation implements Serializable {
                 ++exclusionsModified;
             }
         }
+        // select the most important counter (with exclusions subtracted)
         if (counters[counterBase + COUNTER_CONFLICTED_FILES] - exclusionsConflicted > 0) {
             mostImportantCounter = COUNTER_CONFLICTED_FILES;
         } else if (counters[counterBase + COUNTER_DELETED_FILES]

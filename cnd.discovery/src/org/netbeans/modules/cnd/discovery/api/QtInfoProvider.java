@@ -119,7 +119,7 @@ public abstract class QtInfoProvider {
                     list.add(baseDir + File.separator + "QtSql"); // NOI18N
                 }
                 if (qmakeConfiguration.isSvgEnabled().getValue()) {
-                    list.add(baseDir + File.separator + "QtSvq"); // NOI18N
+                    list.add(baseDir + File.separator + "QtSvg"); // NOI18N
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
                     list.add(baseDir + File.separator + "QtXml"); // NOI18N

@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOPosition;
@@ -271,7 +272,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (lookup == null) {
             ioTab = new IOTabImpl();
             ioColors = new IOColorsImpl();
-            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl());
+            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl(), new IOColorPrintImpl());
         }
         return lookup;
     }
@@ -485,7 +486,18 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, true);
+                out.print(text, listener, important, color, false, true);
+            }
+        }
+    }
+
+    private class IOColorPrintImpl extends IOColorPrint {
+
+        @Override
+        protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
+            OutWriter out = out();
+            if (out != null) {
+                out.print(text, listener, important, color, false, false);
             }
         }
     }

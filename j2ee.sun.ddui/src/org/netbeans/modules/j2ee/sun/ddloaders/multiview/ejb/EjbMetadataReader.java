@@ -79,33 +79,34 @@ public class EjbMetadataReader implements MetadataModelAction<EjbJarMetadata, Ma
      */
     private static Map<String, Object> genProperties(EjbJar ejbJar) {
         Map<String, Object> data = new HashMap<String, Object>();
-        EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-        if(eb != null) {
-            Session [] sessionBeans = eb.getSession();
-            if(sessionBeans != null) {
-                for(Session session: sessionBeans) {
-                    String ejbName = session.getEjbName();
-                    if(Utils.notEmpty(ejbName)) {
-                        Map<String, Object> sessionMap = new HashMap<String, Object>();
-                        data.put(ejbName, sessionMap);
-                        sessionMap.put(DDBinding.PROP_NAME, ejbName);
-                        
-                        String sessionType = session.getSessionType();
-                        if(sessionType != null && sessionType.length() > 0) {
-                            sessionMap.put(DDBinding.PROP_SESSION_TYPE, sessionType);
+        if(ejbJar != null) {
+            EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
+            if(eb != null) {
+                Session [] sessionBeans = eb.getSession();
+                if(sessionBeans != null) {
+                    for(Session session: sessionBeans) {
+                        String ejbName = session.getEjbName();
+                        if(Utils.notEmpty(ejbName)) {
+                            Map<String, Object> sessionMap = new HashMap<String, Object>();
+                            data.put(ejbName, sessionMap);
+                            sessionMap.put(DDBinding.PROP_NAME, ejbName);
+
+                            String sessionType = session.getSessionType();
+                            if(sessionType != null && sessionType.length() > 0) {
+                                sessionMap.put(DDBinding.PROP_SESSION_TYPE, sessionType);
+                            }
                         }
                     }
                 }
-            }
-            MessageDriven [] messageBeans = eb.getMessageDriven();
-            if(messageBeans != null) {
-                for(MessageDriven message: messageBeans) {
-                    String ejbName = message.getEjbName();
-                    if(Utils.notEmpty(ejbName)) {
-                        Map<String, Object> messageMap = new HashMap<String, Object>();
-                        data.put(ejbName, messageMap);
-                        messageMap.put(DDBinding.PROP_NAME, ejbName);
-                        
+                MessageDriven [] messageBeans = eb.getMessageDriven();
+                if(messageBeans != null) {
+                    for(MessageDriven message: messageBeans) {
+                        String ejbName = message.getEjbName();
+                        if(Utils.notEmpty(ejbName)) {
+                            Map<String, Object> messageMap = new HashMap<String, Object>();
+                            data.put(ejbName, messageMap);
+                            messageMap.put(DDBinding.PROP_NAME, ejbName);
+
 //                        ActivationConfig config = message.getActivationConfig();
 //                        if(config != null) {
 //                            ActivationConfigProperty [] properties = config.getActivationConfigProperty();
@@ -119,21 +120,22 @@ public class EjbMetadataReader implements MetadataModelAction<EjbJarMetadata, Ma
 //                                }
 //                            }
 //                        }
+                        }
                     }
                 }
-            }
-            Entity [] entityBeans = eb.getEntity();
-            if(entityBeans != null) {
-                for(Entity entity: entityBeans) {
-                    String ejbName = entity.getEjbName();
-                    if(Utils.notEmpty(ejbName)) {
-                        Map<String, Object> entityMap = new HashMap<String, Object>();
-                        data.put(ejbName, entityMap);
-                        entityMap.put(DDBinding.PROP_NAME, ejbName);
-                        
-                        String persistenceType = entity.getPersistenceType();
-                        if(persistenceType != null && persistenceType.length() > 0) {
-                            entityMap.put(DDBinding.PROP_PERSISTENCE_TYPE, persistenceType);
+                Entity [] entityBeans = eb.getEntity();
+                if(entityBeans != null) {
+                    for(Entity entity: entityBeans) {
+                        String ejbName = entity.getEjbName();
+                        if(Utils.notEmpty(ejbName)) {
+                            Map<String, Object> entityMap = new HashMap<String, Object>();
+                            data.put(ejbName, entityMap);
+                            entityMap.put(DDBinding.PROP_NAME, ejbName);
+
+                            String persistenceType = entity.getPersistenceType();
+                            if(persistenceType != null && persistenceType.length() > 0) {
+                                entityMap.put(DDBinding.PROP_PERSISTENCE_TYPE, persistenceType);
+                            }
                         }
                     }
                 }

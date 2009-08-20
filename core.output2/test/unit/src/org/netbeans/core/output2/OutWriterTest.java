@@ -80,17 +80,17 @@ public class OutWriterTest extends NbTestCase {
         
         assertTrue ("First line position should be 0 but is " + pos, pos == 0);
         
-        int expectedPosition = first.length() + OutWriter.lineSeparator.length();
+        int expectedPosition = first.length() + OutWriter.LINE_SEPARATOR.length();
         pos = ow.getLines().getLineStart(1);
         
         assertTrue ("Second line position should be length of first (" + first.length() + ") + line " +
-            "separator length (" + OutWriter.lineSeparator.length() + "), which should be " + 
+            "separator length (" + OutWriter.LINE_SEPARATOR.length() + "), which should be " +
             expectedPosition + " but is " + pos, 
             pos == expectedPosition);
          
         
         pos = ow.getLines().getLineStart (2);
-        int targetPos = first.length() + second.length() + 2 * OutWriter.lineSeparator.length();
+        int targetPos = first.length() + second.length() + 2 * OutWriter.LINE_SEPARATOR.length();
         
         assertTrue ("Third line position should be " + targetPos + " but is " + pos, pos == targetPos);
     }
@@ -116,7 +116,7 @@ public class OutWriterTest extends NbTestCase {
         
         assertTrue (ow.getLines().getLineCount() == 3);
 
-        int targetLength = first.length() + second.length() + 2 * OutWriter.lineSeparator.length();
+        int targetLength = first.length() + second.length() + 2 * OutWriter.LINE_SEPARATOR.length();
 
         assertTrue ( 
             "After printing strings with length " + first.length() + " and " + 
@@ -127,7 +127,7 @@ public class OutWriterTest extends NbTestCase {
         ow.println (third);
         
         targetLength = first.length() + second.length() + third.length() + 
-            (3 *  OutWriter.lineSeparator.length());
+            (3 *  OutWriter.LINE_SEPARATOR.length());
         
         assertTrue ("Length should be " + targetLength + " but position is "
             + ow.getLines().getCharCount(), targetLength == ow.getLines().getCharCount());
@@ -163,9 +163,9 @@ public class OutWriterTest extends NbTestCase {
             ioe.printStackTrace();
             fail (ioe.getMessage());
         }
-        String firstExpected = first + OutWriter.lineSeparator;
-        String secondExpected = second + OutWriter.lineSeparator;
-        String thirdExpected = third + OutWriter.lineSeparator;
+        String firstExpected = first + OutWriter.LINE_SEPARATOR;
+        String secondExpected = second + OutWriter.LINE_SEPARATOR;
+        String thirdExpected = third + OutWriter.LINE_SEPARATOR;
         
         assertEquals("First string should be \"" + firstExpected + "\" but was \"" + firstBack + "\"",
             firstBack, firstExpected);
@@ -200,7 +200,7 @@ public class OutWriterTest extends NbTestCase {
             " not " + line,
             line == 0);
         
-        line = ow.getLines().getLineAt (first.length() + OutWriter.lineSeparator.length() +
+        line = ow.getLines().getLineAt (first.length() + OutWriter.LINE_SEPARATOR.length() +
             (second.length() / 2));
         
         assertTrue ("Position halfway through line 1 should map to line 1, not " +
@@ -366,7 +366,7 @@ public class OutWriterTest extends NbTestCase {
             ow.println(first);
             ow.flush();
             
-            String firstExpected = first + OutWriter.lineSeparator;
+            String firstExpected = first + OutWriter.LINE_SEPARATOR;
             String firstReceived = ow.getLines().getLine(0);
             
             assertEquals ("First line should be \"" + firstExpected + "\" but was \"" + firstReceived + "\"", firstExpected, firstReceived);
@@ -415,7 +415,7 @@ public class OutWriterTest extends NbTestCase {
             ow.flush();
             assertEquals(2, ow.getLines().getLineCount());
             String firstReceived = ow.getLines().getLine(0);
-            assertEquals ("xyz" + OutWriter.lineSeparator, firstReceived);
+            assertEquals ("xyz" + OutWriter.LINE_SEPARATOR, firstReceived);
         
             ow = new OutWriter();
             ow.println("firstline");
@@ -424,7 +424,7 @@ public class OutWriterTest extends NbTestCase {
             ow.flush();
             assertEquals(3, ow.getLines().getLineCount());
             firstReceived = ow.getLines().getLine(1);
-            assertEquals ("xyz" + OutWriter.lineSeparator, firstReceived);
+            assertEquals ("xyz" + OutWriter.LINE_SEPARATOR, firstReceived);
             
             ow = new OutWriter();
             ow.println("firstline");
@@ -434,31 +434,31 @@ public class OutWriterTest extends NbTestCase {
             ow.flush();
             assertEquals(3, ow.getLines().getLineCount());
             firstReceived = ow.getLines().getLine(1);
-            assertEquals ("xyzxyz-end" + OutWriter.lineSeparator, firstReceived);
+            assertEquals ("xyzxyz-end" + OutWriter.LINE_SEPARATOR, firstReceived);
             
             ow = new OutWriter();
             ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n', 'A'});
             ow.flush();
             assertEquals(3, ow.getLines().getLineCount());
-            assertEquals("xy" + '\n', ow.getLines().getLine(0));
-            assertEquals("zzz" + '\n', ow.getLines().getLine(1));
+            assertEquals("xy" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(0));
+            assertEquals("zzz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(1));
             assertEquals("A", ow.getLines().getLine(2));
             
             ow = new OutWriter();
             ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n'});
             ow.flush();
             assertEquals(3, ow.getLines().getLineCount());
-            assertEquals("xy" + '\n', ow.getLines().getLine(0));
-            assertEquals("zzz" + '\n', ow.getLines().getLine(1));
+            assertEquals("xy" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(0));
+            assertEquals("zzz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(1));
             
             ow = new OutWriter();
             ow.write(new char[] {'\n', '\n', '\n', 'z', 'z', 'z', '\n'});
             ow.flush();
             assertEquals(5, ow.getLines().getLineCount());
-            assertEquals("\n", ow.getLines().getLine(0));
-            assertEquals("\n", ow.getLines().getLine(1));
-            assertEquals("\n", ow.getLines().getLine(2));
-            assertEquals("zzz" + "\n", ow.getLines().getLine(3));
+            assertEquals(OutWriter.LINE_SEPARATOR, ow.getLines().getLine(0));
+            assertEquals(OutWriter.LINE_SEPARATOR, ow.getLines().getLine(1));
+            assertEquals(OutWriter.LINE_SEPARATOR, ow.getLines().getLine(2));
+            assertEquals("zzz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(3));
             
             
         } catch (Exception e) {
@@ -480,7 +480,7 @@ public class OutWriterTest extends NbTestCase {
             ow.write('z');
             assertEquals ("xyz", ow.getLines().getLine(0));
             ow.println();
-            assertEquals ("xyz" + OutWriter.lineSeparator, ow.getLines().getLine(0));
+            assertEquals ("xyz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(0));
             ow.write('a');
             assertEquals(2, ow.getLines().getLineCount());
             assertEquals ("a", ow.getLines().getLine(1));
@@ -489,14 +489,14 @@ public class OutWriterTest extends NbTestCase {
             ow = new OutWriter();
             ow.write(new char[] { 'x', 'y', 'z', '\n', 'A'});
             assertEquals(2, ow.getLines().getLineCount());
-            assertEquals ("xyz" + '\n', ow.getLines().getLine(0));
+            assertEquals ("xyz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(0));
             assertEquals ("A", ow.getLines().getLine(1));
             ow.write('B');
             assertEquals(2, ow.getLines().getLineCount());
             assertEquals ("AB", ow.getLines().getLine(1));
             ow.println("CD");
             assertEquals(3, ow.getLines().getLineCount());
-            assertEquals ("ABCD" + OutWriter.lineSeparator, ow.getLines().getLine(1));
+            assertEquals ("ABCD" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(1));
             
         } catch (Exception e) {
             e.printStackTrace();

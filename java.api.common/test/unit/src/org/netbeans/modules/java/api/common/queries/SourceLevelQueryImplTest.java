@@ -41,7 +41,9 @@ package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.SocketPermission;
 import java.net.URL;
+import java.security.Permission;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -74,6 +76,21 @@ import org.openide.util.test.MockLookup;
  * @author Tomas Mysik
  */
 public class SourceLevelQueryImplTest extends NbTestCase {
+
+    static {
+        System.setSecurityManager(new SecurityManager() {
+            public @Override void checkPermission(Permission perm) {
+                if (perm instanceof SocketPermission) {
+                    throw new SecurityException();
+                }
+            }
+            public @Override void checkPermission(Permission perm, Object context) {
+                if (perm instanceof SocketPermission) {
+                    throw new SecurityException();
+                }
+            }
+        });
+    }
 
     private static final String JAVAC_SOURCE = "1.2";
     private static final String DEFAULT_JAVAC_SOURCE = "17.2";

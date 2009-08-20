@@ -51,6 +51,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -69,20 +70,23 @@ public class SelectedNodesScheduler extends Scheduler {
     }
     
     private void refresh () {
-        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        if (nodes.length == 1) {
-            final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
-            if (dataObject != null && dataObject.isValid()) {
-                final FileObject fileObject = dataObject.getPrimaryFile ();
-                if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType()))
-                source = Source.create (fileObject);
-                if (source != null) {
-                    schedule (source, new SchedulerEvent (this) {});
-                    return;
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+                if (nodes.length == 1) {
+                    final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
+                    if (dataObject != null && dataObject.isValid()) {
+                        final FileObject fileObject = dataObject.getPrimaryFile ();
+                        if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType()))
+                        source = Source.create (fileObject);
+                        if (source != null) {
+                            schedule (source, new SchedulerEvent (this) {});
+                            return;
+                        }
+                    }
                 }
             }
-        }
-        //schedule (null, null);
+        });
     }
     
     @Override

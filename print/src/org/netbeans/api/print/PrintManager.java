@@ -65,8 +65,8 @@ import org.netbeans.spi.print.PrintProvider;
  * client property. See example:
  *
  * <blockquote><pre>
- * public class CustomComponent extends javax.swing.JComponent {
- *   public CustomComponent() {
+ * public class MyComponent extends javax.swing.JComponent {
+ *   public MyComponent() {
  *     ...
  *     putClientProperty("print.printable", Boolean.TRUE); // NOI18N
  *   }
@@ -104,7 +104,7 @@ import org.netbeans.spi.print.PrintProvider;
  * How to put the Print action on custom Swing tool bar:
  *
  * <blockquote><pre>
- * public class CustomComponent extends JComponent {
+ * public class MyComponent extends javax.swing.JComponent {
  *   ...
  *   JToolBar toolbar = new JToolBar();
  *   // print

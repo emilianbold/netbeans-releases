@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -68,12 +69,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,10 +85,14 @@ import org.openide.util.NbBundle;
  */
 public class CollectionRemove extends AbstractHint {
 
+    private static final String  SUPPRESS_WARNING_KEY = "element-type-mismatch";
+            static final String  WARN_FOR_CASTABLE_KEY = "warn-for-castable";
+            static final boolean WARN_FOR_CASTABLE_DEFAULT = true;
+    
     private final AtomicBoolean cancel = new AtomicBoolean();
     
     public CollectionRemove() {
-        super(true, true, HintSeverity.WARNING, "collection-remove"); //NOI18N
+        super(true, true, HintSeverity.WARNING, SUPPRESS_WARNING_KEY, "collection-remove"); //NOI18N
     }
 
     @Override
@@ -182,6 +189,10 @@ public class CollectionRemove extends AbstractHint {
 
                     if (compatibleTypes(info, actualParam,designedType)) {
                         warningKey = "HINT_SuspiciousCall"; //NOI18N
+
+                        if (!getPreferences(null).getBoolean(WARN_FOR_CASTABLE_KEY, WARN_FOR_CASTABLE_DEFAULT)) {
+                            continue;
+                        }
                     } else {
                         warningKey = "HINT_SuspiciousCallIncompatibleTypes"; //NOI18N
                     }
@@ -196,8 +207,9 @@ public class CollectionRemove extends AbstractHint {
 
                     int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), mit);
                     int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), mit);
+                    List<Fix> fixes = FixFactory.createSuppressWarnings(info, tp, SUPPRESS_WARNING_KEY);
 
-                    result.add(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), warning, info.getFileObject(), start, end));
+                    result.add(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), warning, fixes, info.getFileObject(), start, end));
                 }
             }
         }
@@ -273,6 +285,11 @@ public class CollectionRemove extends AbstractHint {
 
     public void cancel() {
         cancel.set(true);
+    }
+
+    @Override
+    public JComponent getCustomizer(final Preferences node) {
+        return new CollectionRemoveCustomizer(node);
     }
 
     private static final Iterable<MappingDefinition> MAPPINGS = Arrays.asList(

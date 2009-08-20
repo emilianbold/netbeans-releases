@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
@@ -102,8 +103,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
                 }
 
                 //TODO: not implemented yet
-                public TypeScope getType() {
-                    return null;
+                public List<QualifiedName> getTypes() {
+                    return Collections.emptyList();
+                }
+
+                public OffsetRange getOffsetRange() {
+                    return new OffsetRange(element.getOffset(), element.getOffset()+paramName.length());
                 }
             });
 
@@ -193,12 +198,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
             }
         });
     }
-  public VariableNameImpl createElement(Variable node) {
+    public VariableNameImpl createElement(Variable node) {
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
     }
-
+        
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();

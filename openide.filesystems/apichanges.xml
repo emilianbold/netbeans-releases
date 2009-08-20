@@ -46,7 +46,25 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
-        <change id="FileObject.asText">
+         <change id="add-fallback-content-to-sfs">
+            <api name="filesystems"/>
+            <summary>Allow modules to dynamically add/remove layer content</summary>
+            <version major="7" minor="23"/>
+            <date day="12" month="8" year="2009"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    One can provide <q>fallback</q>
+                    <a href="@TOP@/architecture-summary.html#answer-arch-usecases">content of system filesystem</a> by
+                    returning <code>Boolean.TRUE</code> from call
+                    to <code>fs.getRoot().getAttribute("fallback")</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="Repository"/>
+            <issue number="169892"/>
+        </change>
+       <change id="FileObject.asText">
             <api name="filesystems"/>
             <summary>Read files with asText(), asBytes() and asLines()</summary>
             <version major="7" minor="21"/>

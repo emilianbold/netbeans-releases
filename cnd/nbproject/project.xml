@@ -409,6 +409,7 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd</package>
                 <package>org.netbeans.modules.cnd.actions</package>
                 <package>org.netbeans.modules.cnd.api.compilers</package>

@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class ProjectActionEvent {
@@ -78,8 +79,13 @@ public class ProjectActionEvent {
     private MakeConfiguration configuration;
     private RunProfile profile;
     private boolean wait;
+    private final Lookup context;
 
     public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
+        this(project, type, tabName, executable, configuration, profile, wait, Lookup.EMPTY);
+    }
+
+    public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait, Lookup context) {
         this.project = project;
         this.type = type;
 	this.tabName = tabName;
@@ -87,10 +93,16 @@ public class ProjectActionEvent {
 	this.configuration = configuration;
 	this.profile = profile;
 	this.wait = wait;
+        this.context = context;
+
     }
     
     public Project getProject() {
         return project;
+    }
+
+    public final Lookup getContext(){
+        return context;
     }
     
     public Type getType() {

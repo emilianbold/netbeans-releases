@@ -97,7 +97,7 @@ public class ModulesActivator {
     
     private RequestProcessor.Task createEnableTask () {
         assert enableTask == null || enableTask.isFinished () : "The Enable Task cannot be started nor scheduled.";
-        enableTask = RequestProcessor.getDefault ().create (doEnable);
+        enableTask = FeatureManager.getInstance().create (doEnable);
         return enableTask;
     }
     

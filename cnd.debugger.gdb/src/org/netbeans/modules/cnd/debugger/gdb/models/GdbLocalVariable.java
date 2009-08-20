@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
@@ -67,7 +67,7 @@ public class GdbLocalVariable extends AbstractVariable implements LocalVariable,
         this.name = name;
         this.type = getDebugger().requestWhatis(name);
         String expr = name;
-        if (CallStackFrame.enableMacros && !GdbWatchVariable.disableMacros) {
+        if (GdbCallStackFrame.enableMacros && !GdbWatchVariable.disableMacros) {
             expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
         }
         value = getDebugger().requestValue(expr);

@@ -266,7 +266,7 @@ public final class Source {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link Source} should be created
      * @return a new {@link Source}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
+     * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static Source create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
@@ -290,7 +290,7 @@ public final class Source {
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link Source} should be created
      * @return a new {@link Source}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
+     * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static Source create(final ClasspathInfo cpInfo, final FileObject... files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
@@ -312,7 +312,7 @@ public final class Source {
      *
      * @param fileObject for which the {@link Source} should be found/created.
      * @return {@link Source} or null
-     * @throws {@link IllegalArgumentException} if fileObject is null
+     * @throws IllegalArgumentException if fileObject is null
      */
     public static Source forFileObject(FileObject fileObject) throws IllegalArgumentException {
         if (fileObject == null) {
@@ -343,7 +343,7 @@ public final class Source {
      *
      * @param doc {@link Document} for which the {@link Source} should be found/created.
      * @return {@link Source} or null
-     * @throws {@link IllegalArgumentException} if doc is null
+     * @throws IllegalArgumentException if doc is null
      */
     public static Source forDocument(Document doc) throws IllegalArgumentException {
         if (doc == null) {

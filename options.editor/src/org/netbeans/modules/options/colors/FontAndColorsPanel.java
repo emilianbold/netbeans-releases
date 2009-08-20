@@ -250,10 +250,9 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
             il.setInputText (currentProfile);
             DialogDisplayer.getDefault ().notify (il);
             if (il.getValue () == NotifyDescriptor.OK_OPTION) {
-                String newScheme = il.getInputText ();
-                Iterator it = colorModel.getProfiles ().iterator ();
-                while (it.hasNext ())
-                    if (newScheme.equals (it.next ())) {
+                String newScheme = il.getInputText ();                
+                for (int i = 0; i < cbProfile.getItemCount(); i++)                 
+                    if (newScheme.equals (cbProfile.getItemAt(i))) {
                         Message md = new Message (
                             loc ("CTL_Duplicate_Profile_Name"),        // NOI18N
                             Message.ERROR_MESSAGE

@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.net.PasswordAuthentication;
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -103,5 +105,25 @@ public class KenaiUtil {
      */
     public static boolean showLogin() {
         return UIUtils.showLogin();
+    }
+    
+    /**
+     * Returns a kenai repository for a given kenai project
+     * @param project kenai project
+     * @return null if no repository exists for the given project
+     */
+    public static Repository getKenaiBugtrackingRepository( KenaiProject project) {
+        return KenaiRepositories.getInstance().getRepository(project);
+    }
+
+    /**
+     * Returns a kenai repository for a given kenai project's name
+     * @param projectName kenai project name
+     * @throws KenaiException
+     * @return null if no repository exists for the given project's name
+     */
+    public static Repository getKenaiBugtrackingRepository (String projectName) throws KenaiException {
+        KenaiProject p = Kenai.getDefault().getProject(projectName);
+        return p != null ? getKenaiBugtrackingRepository(p) : null;
     }
 }

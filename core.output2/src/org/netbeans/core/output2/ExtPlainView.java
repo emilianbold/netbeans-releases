@@ -60,8 +60,8 @@ import javax.swing.text.Position.Bias;
  */
 class ExtPlainView extends PlainView {
     private final Segment SEGMENT = new Segment(); 
-    private final int MAXLINELEN = 4096;
-    private final String lineTooLong = org.openide.util.NbBundle.getMessage(ExtPlainView.class, "MSG_LINE_TOO_LONG");
+    private static final int MAX_LINE_LENGTH = 4096;
+    private static final String LINE_TOO_LONG_MSG = org.openide.util.NbBundle.getMessage(ExtPlainView.class, "MSG_LINE_TOO_LONG");
 
     /** set antialiasing hints when it's requested. */
     private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
@@ -98,57 +98,56 @@ class ExtPlainView extends PlainView {
     Segment getSegment() {
         return SwingUtilities.isEventDispatchThread() ? SEGMENT : new Segment(); 
     }
-    
-    @Override
-    protected int drawSelectedText(Graphics g, int x,
-                                   int y, int p0, int p1) throws BadLocationException {
-                                       
+
+    private int drawText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
         Document doc = getDocument();
-        if (doc instanceof OutputDocument) {                                         
+        if (doc instanceof OutputDocument) {
             Segment s = getSegment();
             if (!getText(p0, p1 - p0, s)) {
                 return x;
             }
+            int end = p0 + s.count;
             Lines lines = ((OutputDocument) doc).getLines();
             int line = lines.getLineAt(p0);
-            g.setColor(lines.getColorForLine(line));
-            int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (lines.isHyperlink(line)) {
-                //#47263 - start hyperlink underline at first
-                //non-whitespace character
-                underline(g, s, x, p0, y);
+            int lineOffset = lines.getLineStart(line);
+            LineInfo info = lines.getLineInfo(line);
+
+            for (LineInfo.Segment ls : info.getLineSegments()) {
+                if (lineOffset + ls.getEnd() <= p0) {
+                    continue;
+                }
+                g.setColor(ls.getColor());
+                s.count = Math.min(lineOffset + ls.getEnd() - p0, end - p0);
+                if (s.count == 0) {
+                    return x;
+                }
+//                if (!getText(p0, Math.min(end, p1) - p0, s)) {
+//                    return x;
+//                }
+                int nx = Utilities.drawTabbedText(s, x, y, g, this, p0);
+                if (ls.getListener() != null) {
+                    underline(g, s, x, p0, y);
+                }
+                x = nx;
+                p0 += s.count;
+                s.offset += s.count;
             }
-            return ret;
+            return x;
         } else {
-            return super.drawUnselectedText (g, x, y, p0, p1);
+            return super.drawUnselectedText(g, x, y, p0, p1);
         }
     }
 
-    
     @Override
-    protected int drawUnselectedText(Graphics g, int x, int y, 
-                                     int p0, int p1) throws BadLocationException {
-        Document doc = getDocument();
-        if (doc instanceof OutputDocument) {                                         
-            Segment s = getSegment();
-            if (!getText(p0, p1 - p0, s)) {
-                return x;
-            }
-            Lines lines = ((OutputDocument) doc).getLines();
-            int line = lines.getLineAt(p0);
-            g.setColor(lines.getColorForLine(line));
-            int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (lines.isHyperlink(line)) {
-                //#47263 - start hyperlink underline at first
-                //non-whitespace character
-                underline(g, s, x, p0, y);
-            }
-            return ret;
-        } else {
-            return super.drawUnselectedText (g, x, y, p0, p1);
-        }
+    protected int drawSelectedText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
+        return drawText(g, x, y, p0, p1);
     }
-    
+
+    @Override
+    protected int drawUnselectedText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
+        return drawText(g, x, y, p0, p1);
+    }
+
     /*
      * gets text from document with respect with MAXLINELEN
      * if line is too long the end of line is replaced by lineTooLong
@@ -160,44 +159,30 @@ class ExtPlainView extends PlainView {
         Element lineElem = elem.getElement(lineIndex);
         int lineStart = lineElem.getStartOffset();
         int lineLength = lineElem.getEndOffset() - 1 - lineStart;
-        int newLen = Math.min(length, lineStart + MAXLINELEN - offset);
+        int newLen = Math.min(length, lineStart + MAX_LINE_LENGTH - offset);
         if (newLen <= 0) {
             txt.count = 0;
             return false;
         }
         doc.getText(offset, newLen, txt);
-        if (lineLength > MAXLINELEN && offset + length > lineStart + MAXLINELEN - lineTooLong.length()) {
-            int diff = offset - (lineStart + MAXLINELEN - lineTooLong.length());
+        if (lineLength > MAX_LINE_LENGTH && offset + length > lineStart + MAX_LINE_LENGTH - LINE_TOO_LONG_MSG.length()) {
+            int diff = offset - (lineStart + MAX_LINE_LENGTH - LINE_TOO_LONG_MSG.length());
             int strPos = diff < 0 ? 0 : diff;
             int txtPos = diff < 0 ? -diff : 0;
-            for (int i = strPos; i < lineTooLong.length(); i++) {
+            for (int i = strPos; i < LINE_TOO_LONG_MSG.length(); i++) {
                 if (txtPos + i - strPos >= txt.array.length) {
                     break;
                 }
-                txt.array[txtPos + i - strPos] = lineTooLong.charAt(i);
+                txt.array[txtPos + i - strPos] = LINE_TOO_LONG_MSG.charAt(i);
             }
         }
         return true;
     }
 
     private void underline(Graphics g, Segment s, int x, int p0, int y) {
-        char[] txt = s.array;
-        int n = s.offset + s.count;
-        int wsCount = 0;
-        for (int i = s.offset; i < n; i++) {
-            if (Character.isWhitespace(txt[i])) {
-                wsCount++;
-            } else {
-                break;
-            }
-        }
-
-        int lineLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0);
-        s.offset += wsCount;
-        s.count -= wsCount;
-        int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0 + wsCount);
-        int underlineShift = (int) g.getFontMetrics().getDescent() - 1;
-        g.drawLine(x + lineLen - textLen, y + underlineShift, x + lineLen, y + underlineShift);
+        int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0);
+        int underlineShift = g.getFontMetrics().getDescent() - 1;
+        g.drawLine(x, y + underlineShift, x + textLen, y + underlineShift);
     }
 
     @Override
@@ -425,7 +410,7 @@ class ExtPlainView extends PlainView {
                     int linePos = pos - lineStart;
                     Element el = elem.getElement(lineIndex - 1);
                     pos = el.getStartOffset();
-                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - pos - 1), linePos);
+                    pos += Math.min(Math.min(MAX_LINE_LENGTH, el.getEndOffset() - pos - 1), linePos);
                 }
                 break;
             case SOUTH:
@@ -435,23 +420,23 @@ class ExtPlainView extends PlainView {
                     int linePos = pos - lineStart;
                     Element el = elem.getElement(lineIndex + 1);
                     pos = el.getStartOffset();
-                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - pos - 1), linePos);
+                    pos += Math.min(Math.min(MAX_LINE_LENGTH, el.getEndOffset() - pos - 1), linePos);
                 }
                 break;
             case WEST:
                 pos = Math.max(0, pos - 1);
                 lineIndex = elem.getElementIndex(pos);
                 lineStart = elem.getElement(lineIndex).getStartOffset();
-                if (pos - lineStart > MAXLINELEN) {
-                    pos = lineStart + MAXLINELEN;
+                if (pos - lineStart > MAX_LINE_LENGTH) {
+                    pos = lineStart + MAX_LINE_LENGTH;
                 }
                 break;
             case EAST:
                 pos = Math.min(pos + 1, elem.getEndOffset() - 1);
                 lineIndex = elem.getElementIndex(pos);
                 lineStart = elem.getElement(lineIndex).getStartOffset();
-                if (pos - lineStart > MAXLINELEN) {
-                    pos = (elem.getElementCount() > lineIndex + 1) ? elem.getElement(lineIndex + 1).getStartOffset() : lineStart + MAXLINELEN;
+                if (pos - lineStart > MAX_LINE_LENGTH) {
+                    pos = (elem.getElementCount() > lineIndex + 1) ? elem.getElement(lineIndex + 1).getStartOffset() : lineStart + MAX_LINE_LENGTH;
                 }                
                 break;
             default:

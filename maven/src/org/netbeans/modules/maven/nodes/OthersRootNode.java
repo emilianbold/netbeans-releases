@@ -41,11 +41,17 @@ package org.netbeans.modules.maven.nodes;
 
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import org.netbeans.modules.maven.LogicalViewProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.ErrorManager;
@@ -54,7 +60,11 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -63,6 +73,8 @@ import org.openide.util.lookup.Lookups;
  */
 class OthersRootNode extends AnnotatedAbstractNode {
     private FileObject file;
+    private static final String SHOW_AS_PACKAGES = "show.as.packages"; //NOI18N
+    private static final String PREF_RESOURCES_UI = "org/netbeans/modules/maven/resources/ui"; //NOI18N
     
     OthersRootNode(NbMavenProjectImpl mavproject, boolean testResource, FileObject fo) {
         super(new OthersRootChildren(mavproject, testResource), Lookups.fixed(fo, DataFolder.findFolder(fo), new ChildDelegateFind()));
@@ -78,6 +90,8 @@ class OthersRootNode extends AnnotatedAbstractNode {
             List<Action> supers = Arrays.asList(super.getActions(context));
             List<Action> lst = new ArrayList<Action>(supers.size() + 5);
             lst.addAll(supers);
+            lst.add(new ShowAsPackagesAction());
+
             Action[] retValue = new Action[lst.size()];
             retValue = lst.toArray(retValue);
             return retValue;
@@ -133,6 +147,40 @@ class OthersRootNode extends AnnotatedAbstractNode {
          return super.getHtmlDisplayName();
     }
 
+    static boolean showAsPackages() {
+        Preferences prefs = NbPreferences.root().node(PREF_RESOURCES_UI); //NOI18N
+        boolean b = prefs.getBoolean(SHOW_AS_PACKAGES, true); //NOI18N
+        return b;
+    }
+
+
+    @SuppressWarnings("serial")
+    private class ShowAsPackagesAction extends AbstractAction implements Presenter.Popup {
+
+        public ShowAsPackagesAction() {
+            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowAsPackages");
+            putValue(Action.NAME, s);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            boolean b = showAsPackages();
+            Preferences prefs = NbPreferences.root().node(PREF_RESOURCES_UI); //NOI18N
+            prefs.putBoolean(SHOW_AS_PACKAGES, !b); //NOI18N
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            ((OthersRootChildren)getChildren()).doRefresh();
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
+            mi.setSelected(showAsPackages());
+            return mi;
+        }
+
+    }
 
     static class ChildDelegateFind implements LogicalViewProviderImpl.FindDelegate {
         public Node[] getDelegates(Node current) {
