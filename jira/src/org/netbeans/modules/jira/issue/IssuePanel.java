@@ -381,6 +381,7 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateFieldNew.setVisible(isNew);
         originalEstimateHint.setVisible(isNew);
         logWorkButton2.setVisible(!isNew);
+        subtaskLabel.setVisible(!isNew);
 
         createSubtaskButton.setVisible(false);
         convertToSubtaskButton.setVisible(false);
