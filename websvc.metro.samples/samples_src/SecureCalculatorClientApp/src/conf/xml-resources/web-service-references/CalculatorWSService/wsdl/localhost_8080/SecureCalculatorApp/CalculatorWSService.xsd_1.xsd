@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.2-hudson-182-RC1. --><xs:schema xmlns:tns="http://calculator.me.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://calculator.me.org/">
+
+<xs:element name="add" type="tns:add"></xs:element>
+
+<xs:element name="addResponse" type="tns:addResponse"></xs:element>
+
+<xs:complexType name="add">
+<xs:sequence>
+<xs:element name="i" type="xs:int"></xs:element>
+<xs:element name="j" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="addResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>
