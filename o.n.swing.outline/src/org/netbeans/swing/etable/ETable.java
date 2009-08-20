@@ -2006,6 +2006,7 @@ public class ETable extends JTable {
             if ((resColumn == null) && (me.getClickCount() == 1)) {
                 // ok, do the sorting
                 int column = columnAtPoint(me.getPoint());
+                if (column < 0) return ;
                 TableColumnModel tcm = getColumnModel();
                 if (tcm instanceof ETableColumnModel) {
                     ETableColumnModel etcm = (ETableColumnModel)tcm;
