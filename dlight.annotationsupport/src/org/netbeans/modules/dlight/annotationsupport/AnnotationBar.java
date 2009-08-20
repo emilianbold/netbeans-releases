@@ -137,7 +137,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
         int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 235, 255)); // thp: controls color of text hightligting block and lines
+            setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), AnnotationSupport.getInstance().getHighlightColor()); // thp: controls color of text hightligting block and lines
             marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, fileAnnotationInfo.getTooltip()));
         }
 
@@ -284,7 +284,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            g.setColor(Color.MAGENTA);
+            g.setColor(AnnotationSupport.getInstance().getAnnotationColor());
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
 //    String annotation = "CPU 23s/";  // NOI18N

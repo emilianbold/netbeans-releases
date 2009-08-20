@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.dlight.annotationsupport;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.openide.util.NbPreferences;
@@ -55,12 +56,10 @@ public final class AnnotationSupport {
     private PropertyChangeSupport pcs = null;
     private static AnnotationSupport annotationSupport = null;
     
-    /**
-     * Boolean property defining visibility of textual versioning annotations (aka Status Labels).
-     * 
-     * @see #getPreferences()
-     */
     public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";
+
+    private static final Color COLOR_ANNOTATION = Color.MAGENTA;
+    private static final Color COLOR_HIGHLIGHT = new Color(255, 235, 255);
     
     private AnnotationSupport() {
         pcs = new PropertyChangeSupport(this);
@@ -94,6 +93,15 @@ public final class AnnotationSupport {
             firePropertyChange(PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, oldVal, val);
         }
     }
+
+    public Color getAnnotationColor() {
+        return COLOR_ANNOTATION;
+    }
+
+    public Color getHighlightColor() {
+        return COLOR_HIGHLIGHT;
+    }
+
     /**
      *  Adds property change listener.
      *  @param l new listener.
