@@ -230,6 +230,9 @@ public class ReconfigureProject {
             if (isSunCompiler) {
                 buf.append(" -DCMAKE_C_COMPILER=cc"); // NOI18N
                 buf.append(" -DCMAKE_CXX_COMPILER=CC"); // NOI18N
+            } else {
+                buf.append(" -DCMAKE_C_COMPILER=gcc"); // NOI18N
+                buf.append(" -DCMAKE_CXX_COMPILER=g++"); // NOI18N
             }
             buf.append(" -DCMAKE_C_FLAGS_DEBUG="+cCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
@@ -239,6 +242,8 @@ public class ReconfigureProject {
                 buf.append(" QMAKE_CC=cc"); // NOI18N
                 buf.append(" QMAKE_CXX=CC"); // NOI18N
             } else {
+                buf.append(" QMAKE_CC=gcc"); // NOI18N
+                buf.append(" QMAKE_CXX=g++"); // NOI18N
                 buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
                 buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
             }
@@ -246,6 +251,9 @@ public class ReconfigureProject {
             if (isSunCompiler) {
                 buf.append(" CC=cc"); // NOI18N
                 buf.append(" CXX=CC"); // NOI18N
+            } else {
+                buf.append(" CC=gcc"); // NOI18N
+                buf.append(" CXX=g++"); // NOI18N
             }
             buf.append(" CFLAGS="+cCompilerFlags); // NOI18N
             buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
