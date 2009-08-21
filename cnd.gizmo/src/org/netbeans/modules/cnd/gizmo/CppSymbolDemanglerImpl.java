@@ -38,19 +38,16 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -60,10 +57,9 @@ import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
 
 /**
  * @author mt154047
@@ -133,8 +129,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
 
         if (demangledName == null) {
-            List<String> list = new ArrayList<String>(1);
-            list.add(mangledName);
+            List<String> list = Arrays.asList(mangledName);
             demangleImpl(list);
             demangledName = list.get(0);
             synchronized (demangledCache) {
@@ -170,7 +165,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
 
         if (!missedNames.isEmpty()) {
-            demangleImpl(missedNames);
+            splitAndDemangle(missedNames);
             synchronized (demangledCache) {
                 for (int i = 0; i < missedNames.size(); ++i) {
                     int idx = missedIdxs.get(i);
@@ -203,13 +198,13 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         return functionName;
     }
 
-    private void demangleImpl(List<String> mangledNames) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable(demanglerTool);
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true);
-
-        final List<String> demangledNames = new ArrayList<String>();
-
+    /**
+     * Splits mangled names list into chunks to avoid command line overflow.
+     * Invokes {@link #demangleImpl(List)} for each chunk.
+     *
+     * @param mangledNames
+     */
+    private void splitAndDemangle(List<String> mangledNames) {
         ListIterator<String> it = mangledNames.listIterator();
         while (it.hasNext()) {
 
@@ -218,66 +213,47 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
             while (it.hasNext() && cmdlineLength < MAX_CMDLINE_LENGTH) {
                 String name = it.next();
                 cmdlineLength += name.length() + 3; // space and quotes
-                it.set(name);
             }
             int endIdx = it.nextIndex();
 
             List<String> mangledNamesSublist = mangledNames.subList(startIdx, endIdx);
-            npb = npb.setArguments(mangledNamesSublist.toArray(new String[mangledNamesSublist.size()]));
-            descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-
-                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.bridge(new DemanglerLineProcessor(demangledNames));
-                }
-            });
-
-            ExecutionService execService = ExecutionService.newService(
-                    npb, descriptor, "Batch demangling"); // NOI18N
-            Future<Integer> res = execService.run();
-            try {
-                res.get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            if (mangledNamesSublist.size() == demangledNames.size()) {
-                for (int i = 0; i < mangledNamesSublist.size(); ++i) {
-                    mangledNamesSublist.set(i, demangledNames.get(i));
-                }
-            }
-            demangledNames.clear();
+            demangleImpl(mangledNamesSublist);
         }
     }
 
-    private class DemanglerLineProcessor implements LineProcessor {
+    private void demangleImpl(List<String> mangledNames) {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(demanglerTool);
+        npb = npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
 
-        private final List<String> output;
-
-        public DemanglerLineProcessor(List<String> output) {
-            this.output = output;
-        }
-
-        @Override
-        public void processLine(String line) {
-            if (0 < line.length()) {
-                if (cppCompiler == CPPCompiler.SS) {
-                    int eqPos = line.indexOf(EQUALS_EQUALS);
-                    if (0 <= eqPos) {
-                        line = line.substring(eqPos + EQUALS_EQUALS.length());
+        try {
+            NativeProcess np = npb.call();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(np.getInputStream()));
+            try {
+                ListIterator<String> it = mangledNames.listIterator();
+                while (it.hasNext()) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
                     }
+                    if (line.length() == 0) {
+                        continue;
+                    }
+
+                    it.next();
+                    if (cppCompiler == CPPCompiler.SS) {
+                        int eqPos = line.indexOf(EQUALS_EQUALS);
+                        if (0 <= eqPos) {
+                            line = line.substring(eqPos + EQUALS_EQUALS.length());
+                        }
+                    }
+                    it.set(line);
                 }
-                output.add(line);
+            } finally {
+                reader.close();
             }
-        }
-
-        public void reset() {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void close() {
-            //throw new UnsupportedOperationException("Not supported yet.");
+        } catch (IOException ex) {
+            // hide it
         }
     }
 
