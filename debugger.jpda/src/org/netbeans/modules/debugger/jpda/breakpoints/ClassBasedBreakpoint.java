@@ -276,6 +276,10 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         List<ReferenceType> loadedClasses = null;
         while (i.hasNext ()) {
             ReferenceType referenceType = (ReferenceType) i.next ();
+            if (!ReferenceTypeWrapper.isPrepared0(referenceType)) {
+                // Ignore not prepared classes, we should receive ClassPrepareEvent later.
+                continue;
+            }
 //                if (verbose)
 //                    System.out.println("B     cls: " + referenceType);
             try {
