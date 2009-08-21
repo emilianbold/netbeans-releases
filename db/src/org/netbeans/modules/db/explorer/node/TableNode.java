@@ -47,6 +47,7 @@ import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -157,9 +158,11 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
 
             command.setObjectOwner(schemaName);
             command.execute();
-        } catch (Exception e) {
+        } catch (DDLException e) {
             Logger.getLogger(TableNode.class.getName()).log(Level.INFO, e + " while deleting table " + getName());
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
