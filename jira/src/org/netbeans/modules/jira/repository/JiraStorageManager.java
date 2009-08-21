@@ -89,7 +89,7 @@ public class JiraStorageManager {
      * @param query
      */
     void putQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().put(getQueryKey(repository.getDisplayName(), query.getDisplayName()), new JiraQueryData(query));
+        getCachedQueries().put(getQueryKey(repository.getID(), query.getDisplayName()), new JiraQueryData(query));
     }
 
     private JiraQuery createQuery(JiraRepository repository, JiraQueryData data) {
@@ -113,7 +113,7 @@ public class JiraStorageManager {
      * @param queryName
      */
     void removeQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().remove(getQueryKey(repository.getDisplayName(), query.getDisplayName()));
+        getCachedQueries().remove(getQueryKey(repository.getID(), query.getDisplayName()));
     }
 
      /**
@@ -124,7 +124,7 @@ public class JiraStorageManager {
     HashSet<Query> getQueries (JiraRepository repository) {
         HashSet<Query> queries = new HashSet<Query>(10);
         for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
-            if (e.getKey().startsWith(repository.getDisplayName() + QUERY_DELIMITER)) {
+            if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));
             }
         }

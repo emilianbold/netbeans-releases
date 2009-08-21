@@ -110,13 +110,15 @@ public class JiraRepository extends Repository {
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
+    private String id;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public JiraRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+    public JiraRepository(String repoID, String repoName, String url, String user, String password, String httpUser, String httpPassword) {
         this();
+        id = repoID;
         name = repoName;
         if(user == null) {
             user = "";                                                          // NOI18N
@@ -126,6 +128,14 @@ public class JiraRepository extends Repository {
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
         Jira.getInstance().addRepository(this);
+    }
+
+    @Override
+    public String getID() {
+        if(id == null) {
+            id = name + System.currentTimeMillis();
+        }
+        return id;
     }
 
     public Query createQuery() {

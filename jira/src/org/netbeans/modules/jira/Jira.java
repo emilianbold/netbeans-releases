@@ -126,7 +126,7 @@ public class Jira {
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
                 getStoredRepositories().add(repository);
-                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+                JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
             BugtrackingRuntime
                     .getInstance()
@@ -138,7 +138,7 @@ public class Jira {
     public void removeRepository(JiraRepository repository) {
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            JiraConfig.getInstance().removeRepository(repository.getDisplayName());
+            JiraConfig.getInstance().removeRepository(repository.getID());
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
