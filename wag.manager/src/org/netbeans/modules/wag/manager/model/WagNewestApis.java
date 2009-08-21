@@ -36,74 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.wag.manager.model;
 
 import java.util.Collection;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author peterliu
  */
-public class WagDomain extends WagItems<WagApi> implements Comparable<WagDomain>  {
+public class WagNewestApis extends WagItems<WagApi> {
 
-    private static final String PROP_NAME = "domain";  //NOI18N
-
-    private String name;
-    private String path;
-
-    public WagDomain(String name, String path) {
-        super();
-        this.name = name;
-        this.path = path;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
-    }
+    public static final String PROP_NAME = "newestApis";  //NOI18N
 
     public String getDisplayName() {
-        return getName();
+        return NbBundle.getMessage(WagNewestApis.class, "Newest_Apis");
     }
 
     public String getDescription() {
-        return getPath();
-    }
-
-    protected Collection<WagApi> loadItems() {
-        return ZemblySession.getInstance().getContentRetriever().getApis(path);
+        return NbBundle.getMessage(WagNewestApis.class, "Newest_Apis_Desc");
     }
 
     protected String getPropName() {
         return PROP_NAME;
     }
-
-    @Override
-    public String toString() {
-        return "name: " + name + " path: " + path;
+    
+    protected Collection<WagApi> loadItems() {
+        return ZemblySession.getInstance().getRankingRetriever().getNewestApis();
     }
-
-     @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof WagDomain) {
-            return name.equals(((WagDomain) obj).getName());
-        }
-
-        return false;
-    }
-
-    public int compareTo(WagDomain result) {
-        return name.compareTo(result.getName());
-    }
-
 }

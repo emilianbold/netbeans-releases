@@ -46,6 +46,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.wag.manager.model.WagDomains;
 import org.netbeans.modules.wag.manager.model.WagDomains.DomainType;
+import org.netbeans.modules.wag.manager.model.WagNewestApis;
+import org.netbeans.modules.wag.manager.model.WagRankedServices;
+import org.netbeans.modules.wag.manager.model.WagRankedServices.RankingType;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.netbeans.modules.wag.manager.model.WagUserServices;
 import org.openide.nodes.Children;
@@ -54,7 +57,8 @@ import org.openide.nodes.Node;
 public class WagRootNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
     private enum Keys {
-        ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, SEARCH
+        ALL_DOMAINS, YOUR_DOMAINS, YOUR_SERVICES, MOST_USED_SERVICES,
+        HIGHEST_RATED_SERVICES, NEWEST_APIS, SEARCH
     };
 
     public WagRootNodeChildren() {
@@ -74,6 +78,9 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
         ArrayList<Object> keys = new ArrayList<Object>();
         keys.add(Keys.ALL_DOMAINS);
         keys.add(Keys.YOUR_DOMAINS);
+        keys.add(Keys.MOST_USED_SERVICES);
+        keys.add(Keys.HIGHEST_RATED_SERVICES);
+        keys.add(Keys.NEWEST_APIS);
         keys.add(Keys.YOUR_SERVICES);
         keys.add(Keys.SEARCH);
         setKeys(keys);
@@ -95,6 +102,12 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
                     return new Node[] {new WagItemsNode(new WagDomains(DomainType.YOUR_DOMAINS))};
                 case YOUR_SERVICES:
                     return new Node[] {new WagItemsNode(new WagUserServices())};
+                case MOST_USED_SERVICES:
+                    return new Node[] {new WagItemsNode(new WagRankedServices(RankingType.MOST_USED))};
+                case HIGHEST_RATED_SERVICES:
+                    return new Node[] {new WagItemsNode(new WagRankedServices(RankingType.HIGHEST_RATED))};
+                case NEWEST_APIS:
+                    return new Node[] {new WagItemsNode(new WagNewestApis())};
                 case SEARCH:
                     return new Node[] {new WagItemsNode(new WagSearchResults())};
              }
