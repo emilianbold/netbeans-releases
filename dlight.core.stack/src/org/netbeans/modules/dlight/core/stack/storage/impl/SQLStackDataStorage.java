@@ -239,12 +239,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String funcName = rs.getString(2);
-                if (demangler != null) {
-                    funcName = demangler.demangle(funcName);
-                }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
             }
             rs.close();
+            demangle(result);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -262,12 +260,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String funcName = rs.getString(2);
-                if (demangler != null) {
-                    funcName = demangler.demangle(funcName);
-                }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
             }
             rs.close();
+            demangle(result);
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -277,7 +273,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
-            List<String> funcNames = new ArrayList<String>();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             PreparedStatement select = sqlStorage.prepareStatement(
                     "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
@@ -289,19 +284,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
                 String name = rs.getString(2);
-                funcNames.add(name);
                 funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
             }
             rs.close();
 
-            if (demangler != null) {
-                funcNames = demangler.demangle(funcNames);
-                if (funcNames.size() == funcList.size()) {
-                    for (int i = 0; i < funcList.size(); ++i) {
-                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
-                    }
-                }
-            }
+            demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
@@ -320,7 +307,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             String functionColumnName = functionDescription.getNameColumn();
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
-            List<String> funcNames = new ArrayList<String>();
             List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             PreparedStatement select = sqlStorage.prepareStatement(metadata.getViewStatement());
             ResultSet rs = select.executeQuery();
@@ -338,19 +324,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                     }
                 }
                 String funcName = rs.getString(functionColumnName);
-                funcNames.add(funcName);
                 funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
             }
             rs.close();
 
-            if (demangler != null) {
-                funcNames = demangler.demangle(funcNames);
-                if (funcNames.size() == funcList.size()) {
-                    for (int i = 0; i < funcList.size(); ++i) {
-                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
-                    }
-                }
-            }
+            demangle(funcList);
 
             return funcList;
         } catch (SQLException ex) {
@@ -688,15 +666,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
 
                 ResultSet rs = ps.executeQuery();
                 try {
-                    while (rs.next()) {
+                    if (rs.next()) {
                         String funcName = rs.getString(5);
-                        if (demangler != null) {
-                            funcName = demangler.demangle(funcName);
-                        }
                         FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName);
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
-                        break;
                     }
                 } finally {
                     rs.close();
@@ -704,8 +678,22 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             }
         } catch (SQLException ex) {
         }
+        demangle(result);
         Collections.reverse(result);
         return result;
+    }
+
+    private void demangle(List<? extends FunctionCall> calls) {
+        if (demangler != null) {
+            List<String> mangled = new ArrayList<String>(calls.size());
+            for (FunctionCall call : calls) {
+                mangled.add(call.getFunction().getName());
+            }
+            List<String> demangled = demangler.demangle(mangled);
+            for (int i = 0; i < calls.size(); ++i) {
+                ((FunctionImpl) calls.get(i).getFunction()).setName(demangled.get(i));
+            }
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////////////
