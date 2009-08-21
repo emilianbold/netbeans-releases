@@ -385,9 +385,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
-                <package>org.netbeans.modules.html.editor</package>
-                <package>org.netbeans.modules.html.editor.completion</package>
-                <package>org.netbeans.modules.html.editor.gsf.api</package>
+                <package>org.netbeans.modules.html.editor.api</package>
+                <package>org.netbeans.modules.html.editor.api.completion</package>
+                <package>org.netbeans.modules.html.editor.api.gsf</package>
             </friend-packages>
         </data>
     </configuration>

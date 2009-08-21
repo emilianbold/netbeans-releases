@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.gsf.api;
+package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
