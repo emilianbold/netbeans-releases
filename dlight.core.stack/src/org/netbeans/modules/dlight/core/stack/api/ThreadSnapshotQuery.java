@@ -73,14 +73,19 @@ public final class ThreadSnapshotQuery {
 
     public static final class ThreadFilter implements Filter {
 
-        private final Set<Long> threadIds;
+        private final Set<Integer> threadIds;
 
-        public ThreadFilter(Collection<Long> threadIds) {
-            this.threadIds = Collections.unmodifiableSet(new HashSet<Long>(threadIds));
+        public ThreadFilter(Collection<Integer> threadIds) {
+            this.threadIds = Collections.unmodifiableSet(new HashSet<Integer>(threadIds));
         }
 
-        public Set<Long> getThreadIds() {
+        public Set<Integer> getThreadIds() {
             return threadIds;
+        }
+
+        @Override
+        public String toString() {
+            return "thread_id in " + threadIds.toString(); // NOI18N
         }
     }
 
@@ -96,6 +101,10 @@ public final class ThreadSnapshotQuery {
             this.mode = mode;
         }
 
+        public long getStartTime() {
+            return startTime;
+        }
+
         public long getEndTime() {
             return endTime;
         }
@@ -104,14 +113,15 @@ public final class ThreadSnapshotQuery {
             return mode;
         }
 
-        public long getStartTime() {
-            return startTime;
-        }
-
         public static enum Mode {
             ALL,
             FIRST,
             LAST
+        }
+
+        @Override
+        public String toString() {
+            return mode.toString() + " with " + startTime + " <= timestamp <= " + endTime; // NOI18N
         }
     }
 }

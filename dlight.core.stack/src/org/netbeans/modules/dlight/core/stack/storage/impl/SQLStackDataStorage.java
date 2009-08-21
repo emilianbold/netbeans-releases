@@ -516,7 +516,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
         if (threadFilter != null) {
             StringBuilder where = new StringBuilder("thread_id IN ("); // NOI18N
             boolean first = true;
-            for (long threadId : threadFilter.getThreadIds()) {
+            for (int threadId : threadFilter.getThreadIds()) {
                 if (first) {
                     first = false;
                 } else {

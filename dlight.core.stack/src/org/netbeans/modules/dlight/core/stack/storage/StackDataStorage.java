@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -83,7 +84,7 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
 
-    List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
+    Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
 
     /**
      * Returns stack trace on the base of the query
