@@ -41,6 +41,8 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
@@ -57,6 +59,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
@@ -154,7 +158,8 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             command.setObjectOwner(schemaName);
             command.execute();
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(TableNode.class.getName()).log(Level.INFO, e + " while deleting table " + getName());
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
