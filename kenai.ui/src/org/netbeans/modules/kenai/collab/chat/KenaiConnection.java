@@ -118,7 +118,9 @@ public class KenaiConnection implements PropertyChangeListener {
     public static synchronized KenaiConnection getDefault() {
         if (instance == null) {
             instance = new KenaiConnection();
-            ProviderManager.getInstance().addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
+            ProviderManager providerManager = ProviderManager.getInstance();
+            providerManager.addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
+            providerManager.addExtensionProvider("notification", "jabber:client", new NotificationExtensionProvider());
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
@@ -296,6 +298,19 @@ public class KenaiConnection implements PropertyChangeListener {
             synchronized (KenaiConnection.this) {
                 final Message msg = (Message) packet;
                 final String name = StringUtils.parseName(msg.getFrom());
+                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", "jabber:client");
+                if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
+                    final String name2 = msg.getFrom().substring(0, msg.getFrom().indexOf('@'));
+                    post(new Runnable() {
+                        public void run() {
+                            try {
+                                Kenai.getDefault().getProject(name2).firePropertyChange(KenaiProject.PROP_PROJECT_NOTIFICATION, null, ne);
+                            } catch (KenaiException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                }
                 final LinkedList<Message> thisQ = groupMessageQueue.get(name);
                 thisQ.add(msg);
                 final PacketListener listener = groupListeners.get(name);

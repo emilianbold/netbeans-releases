@@ -45,10 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.netbeans.modules.wag.manager.model.WagDomain;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 
@@ -70,12 +68,11 @@ public class UserServiceRetriever {
     private static final String ITEMS_ATTR = "items";   //NOI18N
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
-    private static final String CONTENT_TYPE_ATTR = "contentType";
-    private static final String URL_ATTR = "url";
+    private static final String UUID_ATTR = "uuid";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
-    private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
-
+    private static final String URL_ATTR = "url";
+ 
     private Zembly zembly;
 
     public UserServiceRetriever(Zembly zembly) {
@@ -85,6 +82,8 @@ public class UserServiceRetriever {
     public Collection<WagService> getYourServices() {
         try {
             String userid = ZemblySession.getInstance().getUserInfo().getUserid();
+            String username = ZemblySession.getInstance().getUserInfo().getUsername();
+
             String result = zembly.callService(GET_USER_OWNED_ITEMS_URI,
                     new String[][]{
                         {USERID_PARAM, userid},
@@ -93,7 +92,7 @@ public class UserServiceRetriever {
                     });
             System.out.println("your domains: " + result);
 
-            return parseYourServices(result);
+            return parseYourServices(result, username);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -101,7 +100,7 @@ public class UserServiceRetriever {
         return Collections.emptyList();
     }
 
-    private Collection<WagService> parseYourServices(String data) {
+    private Collection<WagService> parseYourServices(String data, String username) {
         try {
             Collection<WagService> services = new ArrayList<WagService>();
             Collection<Parameter> params = new ArrayList<Parameter>();
@@ -115,15 +114,11 @@ public class UserServiceRetriever {
 
                 WagService svc = new WagService();
                 services.add(svc);
-                svc.setName(item.getString(NAME_ATTR));
+                String name = item.getString(NAME_ATTR);
+                svc.setDisplayName(name);
+                svc.setCallableName(username + "." + name);
                 String uri = item.getString(PATH_ATTR);
-                svc.setPath(uri);
-
-                String contentType = item.getString(CONTENT_TYPE_ATTR);
-
-                if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
-                    svc.setPrependWeb(true);
-                }
+                svc.setUuid(item.getString(UUID_ATTR));
 
                 params.clear();
                 params.add(Parameter.create(ITEM_URI_PARAM, uri));
@@ -144,6 +139,8 @@ public class UserServiceRetriever {
                     wp.setType(p.getString(TYPE_ATTR));
                     wagParams.add(wp);
                 }
+
+                System.out.println("service: " + svc);
             }
 
 

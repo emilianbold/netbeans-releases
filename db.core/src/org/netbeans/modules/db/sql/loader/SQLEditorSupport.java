@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -142,6 +142,7 @@ public class SQLEditorSupport extends DataEditorSupport
         setMIMEType(MIME_TYPE);
     }
     
+    @Override
     protected boolean notifyModified () {
         if (!super.notifyModified()) 
             return false;
@@ -159,6 +160,7 @@ public class SQLEditorSupport extends DataEditorSupport
         return true;
     }
 
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
 
@@ -171,6 +173,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageToolTip() {
         if (isConsole()) {
             return getDataObject().getPrimaryFile().getName();
@@ -179,6 +182,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageName() {
         if (!isValid()) return ""; // NOI18N
         
@@ -190,6 +194,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageHtmlName() {
         if (!isValid()) return ""; // NOI18N
         
@@ -207,6 +212,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected void notifyClosed() {
         super.notifyClosed();
         
@@ -222,6 +228,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected boolean canClose() {
         if (isConsole()) {
             return true;
@@ -238,10 +245,12 @@ public class SQLEditorSupport extends DataEditorSupport
         return getDataObject().isValid();
     }
     
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new SQLCloneableEditor(this);
     }
     
+    @Override
     protected Component wrapEditorComponent(Component editor) {
         JPanel container = new JPanel(new BorderLayout());
         container.setName(EDITOR_CONTAINER); // NOI18N
@@ -249,11 +258,13 @@ public class SQLEditorSupport extends DataEditorSupport
         return container;
     }
     
+    @Override
     public void open() {
         SQLCoreUILogger.logEditorOpened();
         super.open();
     }
     
+    @Override
     public void edit() {
         SQLCoreUILogger.logEditorOpened();
         super.edit();
@@ -267,7 +278,7 @@ public class SQLEditorSupport extends DataEditorSupport
         sqlPropChangeSupport.removePropertyChangeListener(listener);
     }
     
-    synchronized DatabaseConnection getDatabaseConnection() {
+    synchronized DatabaseConnection getActiveDatabaseConnection() {
         return dbconn;
     }
     
@@ -276,6 +287,10 @@ public class SQLEditorSupport extends DataEditorSupport
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_DATABASE_CONNECTION, null, null);
     }
     
+    public DatabaseConnection getDatabaseConnection() {
+        return dbconn;
+    }
+
     public void execute() {
         Document doc = getDocument();
         if (doc == null) {
@@ -320,14 +335,14 @@ public class SQLEditorSupport extends DataEditorSupport
      * have to be delimited by \n.
      */
     void execute(String sql, int startOffset, int endOffset) {
-        DatabaseConnection dbconn;
+        DatabaseConnection conn;
         synchronized (this) {
-            dbconn = this.dbconn;
+            conn = this.dbconn;
         }
-        if (dbconn == null) {
+        if (conn == null) {
             return;
         }
-        SQLExecutor executor = new SQLExecutor(this, dbconn, sql, startOffset, endOffset);
+        SQLExecutor executor = new SQLExecutor(this, conn, sql, startOffset, endOffset);
         RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
@@ -416,7 +431,7 @@ public class SQLEditorSupport extends DataEditorSupport
             logger.close();
         }
     }
-    
+
     private final static class SQLExecutor implements Runnable, Cancellable {
         
         private final SQLEditorSupport parent;
@@ -569,6 +584,7 @@ public class SQLEditorSupport extends DataEditorSupport
             return fileLock;
         }
 
+        @Override
         public void markModified() throws IOException {
             if (findSQLEditorSupport().isConsole()) {
                 modified = true;
@@ -577,6 +593,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public void unmarkModified() {
             if (findSQLEditorSupport().isConsole()) {
                 modified = false;
@@ -588,6 +605,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public boolean isModified() {
             if (findSQLEditorSupport().isConsole()) {
                 return modified;
@@ -596,12 +614,13 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return findSQLEditorSupport();
         }
 
         private SQLEditorSupport findSQLEditorSupport() {
-            return (SQLEditorSupport)getDataObject().getCookie(SQLEditorSupport.class);
+            return getDataObject().getCookie(SQLEditorSupport.class);
         }
     }
 }

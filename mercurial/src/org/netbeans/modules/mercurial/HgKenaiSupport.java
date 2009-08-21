@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.mercurial;
 
+import java.io.File;
 import java.net.PasswordAuthentication;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,6 +72,10 @@ public class HgKenaiSupport {
         return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
+    public void setFirmAssociations(File[] files, String url) {
+        kenaiSupport.setFirmAssociations(files, url);
+    }
+    
     public boolean isLoggedIntoKenai () {
         return kenaiSupport != null && kenaiSupport.isLogged();
     }

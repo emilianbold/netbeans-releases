@@ -95,10 +95,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
 
     /* Determines how to paint renderer */
     private Boolean flat;
-    private final List<Column> metrics;
+    private final List<Column> columns;
 
-    public FunctionsListSheetCell(List<Column> metrics) {
-        this.metrics = metrics;
+    public FunctionsListSheetCell(List<Column> columns) {
+        this.columns = columns;
         setFlat(false);
     }
 
@@ -301,8 +301,8 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         if (property != null) {
             JComponent propPanel = null;
 
-            if (column > 0 && (metrics.get(column - 1).getColumnClass() == Time.class ||
-                    metrics.get(column - 1).getColumnClass().getSuperclass() == Number.class)) {
+            if (column > 0 && (columns.get(column - 1).getColumnClass() == Time.class ||
+                    columns.get(column - 1).getColumnClass().getSuperclass() == Number.class)) {
                 try {
                     propPanel = getNumberRenderer(property, n, hasFocus);
                 } catch (IllegalAccessException ex) {
@@ -737,8 +737,8 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
 
         private Outline outline;
 
-        public OutlineSheetCell(Outline outline, List<Column> metrics) {
-            super(metrics);
+        public OutlineSheetCell(Outline outline, List<Column> columns) {
+            super(columns);
             this.outline = outline;
         }
 

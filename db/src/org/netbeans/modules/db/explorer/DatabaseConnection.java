@@ -906,7 +906,9 @@ public class DatabaseConnection implements DBConnection {
                 break;
             }
         }
-        assert databasesNode != null;
+        if (databasesNode == null) {
+            return ;
+        }
         children = databasesNode.getChildren().getNodes();
         for (Node node : children) {
             if (node.getName().equals(getName())) {

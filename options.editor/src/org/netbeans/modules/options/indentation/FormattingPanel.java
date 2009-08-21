@@ -258,7 +258,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(optionsPanelLayout.createSequentialGroup()
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(categoryLabel)
@@ -283,10 +283,14 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
                     .add(categoryLabel)
                     .add(categoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
+                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
         );
 
+        languageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Language")); // NOI18N
+        languageCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.languageCombo.AccessibleContext.accessibleName")); // NOI18N
         languageCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.languageCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Category")); // NOI18N
+        categoryCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.categoryCombo.AccessibleContext.accessibleName")); // NOI18N
         categoryCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.categoryCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -304,6 +308,8 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         previewPanel.add(previewLabel, gridBagConstraints);
+        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
 
         previewScrollPane.setDoubleBuffered(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -311,6 +317,8 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         previewPanel.add(previewScrollPane, gridBagConstraints);
+        previewScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
+        previewScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

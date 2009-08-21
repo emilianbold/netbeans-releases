@@ -707,6 +707,110 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
+
+    public void testScanStartScanFinishedCalled() throws Exception {
+        indexerFactory.scanStartedFor.clear();
+        indexerFactory.scanFinishedFor.clear();
+        eindexerFactory.scanStartedFor.clear();
+        eindexerFactory.scanFinishedFor.clear();
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.scanStartedFor.size());
+        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanStartedFor.get(0));
+        assertEquals(1, indexerFactory.scanFinishedFor.size());
+        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanFinishedFor.get(0));
+        assertEquals(1, eindexerFactory.scanStartedFor.size());
+        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanStartedFor.get(0));
+        assertEquals(1, eindexerFactory.scanFinishedFor.size());
+        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanFinishedFor.get(0));
+
+
+        indexerFactory.scanStartedFor.clear();
+        indexerFactory.scanFinishedFor.clear();
+        eindexerFactory.scanStartedFor.clear();
+        eindexerFactory.scanFinishedFor.clear();
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
+        mcpi1.addResource(srcRoot1);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(1, indexerFactory.scanStartedFor.size());
+        assertEquals(srcRoot1.getURL(), indexerFactory.scanStartedFor.get(0));
+        assertEquals(1, indexerFactory.scanFinishedFor.size());
+        assertEquals(srcRoot1.getURL(), indexerFactory.scanFinishedFor.get(0));
+        assertEquals(1, eindexerFactory.scanStartedFor.size());
+        assertEquals(srcRoot1.getURL(), eindexerFactory.scanStartedFor.get(0));
+        assertEquals(1, eindexerFactory.scanFinishedFor.size());
+        assertEquals(srcRoot1.getURL(), eindexerFactory.scanFinishedFor.get(0));
+
+
+
+        indexerFactory.scanStartedFor.clear();
+        indexerFactory.scanFinishedFor.clear();
+        eindexerFactory.scanStartedFor.clear();
+        eindexerFactory.scanFinishedFor.clear();
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
+        //Give RU a time for refresh - nothing to wait for
+        Thread.sleep(2000);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+        assertEquals(0, eindexerFactory.indexer.getIndexCount());
+        assertEquals(0, indexerFactory.scanStartedFor.size());
+        assertEquals(0, indexerFactory.scanFinishedFor.size());
+        assertEquals(0, eindexerFactory.scanStartedFor.size());
+        assertEquals(0, eindexerFactory.scanFinishedFor.size());
+
+        handler.reset();
+        indexerFactory.scanStartedFor.clear();
+        indexerFactory.scanFinishedFor.clear();
+        eindexerFactory.scanStartedFor.clear();
+        eindexerFactory.scanFinishedFor.clear();
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(2, handler.getSources().size());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(2, indexerFactory.scanStartedFor.size());
+        assertEquals(srcRoot1.getURL(), indexerFactory.scanStartedFor.get(0));
+        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanStartedFor.get(1));
+        assertEquals(2, indexerFactory.scanFinishedFor.size());
+        assertEquals(srcRoot1.getURL(), indexerFactory.scanFinishedFor.get(0));
+        assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanFinishedFor.get(1));
+        assertEquals(2, eindexerFactory.scanStartedFor.size());
+        assertEquals(srcRoot1.getURL(), eindexerFactory.scanStartedFor.get(0));
+        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanStartedFor.get(1));
+        assertEquals(2, eindexerFactory.scanFinishedFor.size());
+        assertEquals(srcRoot1.getURL(), eindexerFactory.scanFinishedFor.get(0));
+        assertEquals(srcRootWithFiles1.getURL(), eindexerFactory.scanFinishedFor.get(1));        
+    }
+
     public static class TestHandler extends Handler {
 
         public static enum Type {BATCH, DELETE, FILELIST};
@@ -1152,6 +1256,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     private static class FooIndexerFactory extends CustomIndexerFactory {
 
+        final List<URL> scanStartedFor = new LinkedList<URL>();
+        final List<URL> scanFinishedFor = new LinkedList<URL>();
+
         private final FooIndexer indexer = new FooIndexer();
 
         @Override
@@ -1199,6 +1306,17 @@ public class RepositoryUpdaterTest extends NbTestCase {
         @Override
         public boolean supportsEmbeddedIndexers() {
             return false;
+        }
+
+        @Override
+        public boolean scanStarted(final Context ctx) {
+            scanStartedFor.add(ctx.getRootURI());
+            return true;
+        }
+
+        @Override
+        public void scanFinished(final Context ctx) {
+            scanFinishedFor.add(ctx.getRootURI());
         }
     }
 
@@ -1269,6 +1387,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         private EmbIndexer indexer = new EmbIndexer ();
 
+        final List<URL> scanStartedFor = new LinkedList<URL>();
+        final List<URL> scanFinishedFor = new LinkedList<URL>();
+
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
             return indexer;
@@ -1309,6 +1430,17 @@ public class RepositoryUpdaterTest extends NbTestCase {
                     indexer.dirtyFilesLatch.countDown();
                 }
             }
+        }
+
+        @Override
+        public boolean scanStarted(final Context ctx) {
+            scanStartedFor.add(ctx.getRootURI());
+            return true;
+        }
+
+        @Override
+        public void scanFinished(final Context ctx) {
+            scanFinishedFor.add(ctx.getRootURI());
         }
     }
 

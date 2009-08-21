@@ -19,7 +19,7 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
      * Creates new ProxyConfigurationOperator that can handle it.
      */
     public ProxyConfigurationOperator() {
-        super("Proxy Configuration");
+        super("Options");
     }
 
     private JRadioButtonOperator _rbUseSystemProxySettings;
@@ -49,7 +49,7 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbUseSystemProxySettings() {
         if (_rbUseSystemProxySettings==null) {
-            _rbUseSystemProxySettings = new JRadioButtonOperator(this, "Use NetBeans Proxy Settings");
+            _rbUseSystemProxySettings = new JRadioButtonOperator(this, "Use System Proxy Settings");
         }
         return _rbUseSystemProxySettings;
     }
@@ -59,27 +59,27 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbNoProxyDirectConnection() {
         if (_rbNoProxyDirectConnection==null) {
-            _rbNoProxyDirectConnection = new JRadioButtonOperator(this, "No Proxy (direct connection)");
+            _rbNoProxyDirectConnection = new JRadioButtonOperator(this, "No Proxy");
         }
         return _rbNoProxyDirectConnection;
     }
 
     /** Tries to find "HTTP Proxy" JRadioButton in this dialog.
-     * @return JRadioButtonOperator
+     * @return JRadioButtonOperator HTTP Proxy
      */
     public JRadioButtonOperator rbHTTPProxy() {
         if (_rbHTTPProxy==null) {
-            _rbHTTPProxy = new JRadioButtonOperator(this, "HTTP Proxy");
+            _rbHTTPProxy = new JRadioButtonOperator(this, "Manual Proxy Settings");
         }
         return _rbHTTPProxy;
     }
 
     /** Tries to find "Proxy Host:" JLabel in this dialog.
-     * @return JLabelOperator
+     * @return JLabelOperator Proxy Host
      */
     public JLabelOperator lblProxyHost() {
         if (_lblProxyHost==null) {
-            _lblProxyHost = new JLabelOperator(this, "Proxy Host:");
+            _lblProxyHost = new JLabelOperator(this, "HTTP Proxy:");
         }
         return _lblProxyHost;
     }
@@ -345,11 +345,11 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
         txtProxyHost();
         lblPort();
         txtPort();
-        cbProxyServerRequiresLogin();
-        lblName();
-        txtName();
-        lblPassword();
-        txtPassword();
+//        cbProxyServerRequiresLogin();
+//        lblName();
+//        txtName();
+//        lblPassword();
+//        txtPassword();
         btOK();
         btCancel();
         btHelp();

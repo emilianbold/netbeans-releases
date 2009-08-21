@@ -426,33 +426,34 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.break_insert_temporary("WinMain"); // NOI18N
                 }
                 gdb.data_list_register_names("");
-                try {
-                    String inRedir = "";
-                    if (ioProxy != null) {
-                        String inFile = ioProxy.getInFilename();
-                        String outFile = ioProxy.getOutFilename();
-                        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                            inFile = win2UnixPath(inFile);
-                            outFile = win2UnixPath(outFile);
-                        }
-                        // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
-                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+
+                String inRedir = "";
+                if (ioProxy != null) {
+                    String inFile = ioProxy.getInFilename();
+                    String outFile = ioProxy.getOutFilename();
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                        inFile = win2UnixPath(inFile);
+                        outFile = win2UnixPath(outFile);
+                    }
+                    // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
+                    if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                        inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+                    } else {
+                        // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+                        String shell = HostInfoProvider.getEnv(execEnv).get("SHELL"); // NOI18N
+                        if (shell != null && shell.endsWith("csh")) { // NOI18N
+                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                         } else {
-                            // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                            String shell = HostInfoProvider.getEnv(execEnv).get("SHELL"); // NOI18N
-                            if (shell != null && shell.endsWith("csh")) { // NOI18N
-                                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
-                            } else {
-                                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
-                            }
+                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
                         }
                     }
-                    gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    killSession();
                 }
+                // Exit if run failed
+                CommandBuffer cb = gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
+                if (cb.isError()) {
+                    throw new Exception(NbBundle.getMessage(GdbDebugger.class, "ERR_ApplicationFailed"));
+                }
+                
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     String msg = gdb.info_threads().getResponse(); // we get the PID from this...
                     int pos1 = msg.indexOf("* 1 thread "); // NOI18N
@@ -1194,11 +1195,6 @@ public class GdbDebugger implements PropertyChangeListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                     "ERR_NoDebuggingSymbolsFound"))); // NOI18N
             finish(false);
-        } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                    "ERR_UnknownTargetException"))); // NOI18N
-            finish(false);
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
                 msg.startsWith("welcome to change it and") || // NOI18N
@@ -1602,6 +1598,16 @@ public class GdbDebugger implements PropertyChangeListener {
     private void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
+        // we need to catch exit in any state
+        if ("exited-signalled".equals(reason)) { // NOI18N
+            String signal = map.get("signal-name"); // NOI18N
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                    "ERR_ExitedFromSignal", signal))); // NOI18N
+            finish(false);
+            return;
+        }
+
         if (state == State.STARTING) {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
@@ -1701,14 +1707,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").free(); // NOI18N
                 GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
-            } else if (reason.equals("exited-signalled")) { // NOI18N
-                String signal = map.get("signal-name"); // NOI18N
-                if (signal != null) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                            "ERR_ExitedFromSignal", signal))); // NOI18N
-                    finish(false);
-                }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
                 lastStop = null;
                 updateCurrentCallStack();

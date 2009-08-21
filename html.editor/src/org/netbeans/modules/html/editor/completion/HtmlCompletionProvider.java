@@ -93,7 +93,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         return task;
     }
 
-    static class Query extends AbstractQuery {
+    private static class Query extends AbstractQuery {
 
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
@@ -109,7 +109,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    public static class DocQuery extends AbstractQuery {
+    static class DocQuery extends AbstractQuery {
 
         private CompletionItem item;
 
@@ -138,7 +138,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    public static abstract class AbstractQuery extends AsyncCompletionQuery {
+    private static abstract class AbstractQuery extends AsyncCompletionQuery {
 
         @Override
         protected void prepareQuery(JTextComponent component) {
@@ -185,7 +185,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    public static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
+    static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
         final BaseDocument doc = (BaseDocument) document;
         switch (typedText.charAt(typedText.length() - 1)) {
             case '/':
@@ -255,7 +255,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         Completion.get().hideDocumentation();
     }
 
-    public static class LinkDocItem implements CompletionDocumentation {
+    private static class LinkDocItem implements CompletionDocumentation {
 
         private URL url;
 
@@ -287,7 +287,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    public static class DocItem implements CompletionDocumentation {
+    private static class DocItem implements CompletionDocumentation {
 
         HtmlCompletionItem item;
 
