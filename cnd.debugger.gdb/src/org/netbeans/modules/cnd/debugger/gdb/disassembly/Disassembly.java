@@ -60,10 +60,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
@@ -142,7 +142,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         Dialog dialog = null;
 
-        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
@@ -336,15 +336,15 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public List<RegisterValue> getRegisterValues() {
-        List<RegisterValue> res = new ArrayList<RegisterValue>();
+    public List<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue> getRegisterValues() {
+        List<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue> res = new ArrayList<org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue>();
         for (Integer idx : regValues.keySet()) {
             String name = regNames.get(idx);
             if (name == null) {
                 log.severe("Unknown register: " + idx); // NOI18N
                 name = String.valueOf(idx);
             }
-            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
+            res.add(new org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -392,7 +392,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (!opened) {
             return;
         }
-        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        GdbCallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }

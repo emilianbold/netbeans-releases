@@ -600,7 +600,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         private final JFileChooser chooser;
         private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
-        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private final RequestProcessor.Task task = Hacks.RP.create(this);
         private File lookingForIcon;
 
         public ProjectFileView(JFileChooser chooser) {

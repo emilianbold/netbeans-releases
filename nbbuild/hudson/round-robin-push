@@ -80,8 +80,6 @@ fi
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
-HGMERGE=merge
-export HGMERGE
 
 BASETIP=`hg id -i | tr -d "+"`
 trap rollback EXIT

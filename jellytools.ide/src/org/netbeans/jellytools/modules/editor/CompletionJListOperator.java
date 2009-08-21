@@ -107,7 +107,7 @@ public class CompletionJListOperator extends JListOperator {
 
     private static List getCompletionItems(JList compJList)
             throws Exception {
-        ListModel model = (ListModel) compJList.getModel();
+        //ListModel model = (ListModel) compJList.getModel();
         // dump items to List
         CompletionJListOperator oper = new CompletionJListOperator(compJList);
         int size = oper.getModelSize();

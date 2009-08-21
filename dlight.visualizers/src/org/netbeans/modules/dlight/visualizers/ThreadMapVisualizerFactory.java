@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;

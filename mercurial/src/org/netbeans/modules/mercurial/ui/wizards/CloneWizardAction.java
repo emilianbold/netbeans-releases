@@ -50,6 +50,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import java.io.File;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
@@ -95,7 +96,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
             final HgURL pullPath = (HgURL) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
             final HgURL pushPath = (HgURL) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N
             File cloneFile = new File(directory, cloneName);
-            CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath);
+            CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault().getShowCloneCompleted());
         }
     }
     

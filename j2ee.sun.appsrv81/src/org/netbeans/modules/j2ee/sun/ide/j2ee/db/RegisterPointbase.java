@@ -434,7 +434,7 @@ public class RegisterPointbase implements DatabaseRuntime {
         //System.out.println("can start!!!");
         
         // only can start if already installed
-        return System.getProperty("com.sun.aas.installRoot") != null;
+        return appServerInstallationDirectory != null;
     }
     
     /**

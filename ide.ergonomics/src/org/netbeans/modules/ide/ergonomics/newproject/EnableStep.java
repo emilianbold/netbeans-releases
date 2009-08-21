@@ -57,12 +57,14 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -149,7 +151,8 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         assert templateO != null && templateO instanceof FileObject : templateO + " is not null and instanceof FileObject.";
         FileObject templateFO = (FileObject) templateO;
         FeatureInfo info = FoDFileSystem.getInstance().whichProvides(templateFO);
-        RequestProcessor.getDefault ().post (doEnable (info));
+        RequestProcessor.Task t = FeatureManager.getInstance().create(doEnable(info));
+        t.schedule(0);
     }
 
     public void storeSettings (WizardDescriptor settings) {
@@ -245,12 +248,16 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
             o + " is not null and instanceof FileObject";
         final String templateResource = ((FileObject) o).getPath ();
         fo = null;
-        while (fo == null) {
-            RequestProcessor.getDefault ().post (new Runnable () {
-               public void run () {
-                   fo = FileUtil.getConfigFile(templateResource);
-               } 
-            }, 100).waitFinished ();
+        for (;;) {
+           fo = FileUtil.getConfigFile(templateResource);
+           if (fo != null) {
+               break;
+           }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         WizardDescriptor.InstantiatingIterator iterator = readWizard(fo);
         iterator.initialize (wd);

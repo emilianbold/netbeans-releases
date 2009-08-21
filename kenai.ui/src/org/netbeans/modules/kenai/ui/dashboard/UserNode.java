@@ -53,6 +53,7 @@ import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,7 +94,7 @@ public class UserNode extends LeafNode {
             lblUser = new TreeLabel();
             lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_OpeningProjects")); //NOI18N
             btnOpenProject = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
-            btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new AbstractAction() { //NOI18N
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/refresh.png", true), new AbstractAction() { //NOI18N
                 public void actionPerformed(ActionEvent e) {
                     DashboardImpl.getInstance().refreshProjects();
                 }

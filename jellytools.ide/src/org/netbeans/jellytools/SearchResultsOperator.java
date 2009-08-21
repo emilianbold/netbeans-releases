@@ -66,9 +66,7 @@ public class SearchResultsOperator extends TopComponentOperator {
     private static final long SEARCH_TIME = 600000;
 
     private static final String TITLE = Bundle.getString("org.netbeans.modules.search.Bundle",
-                                                         "TITLE_SEARCH_RESULTS");
-    /** Used to temporary store default comparator */
-    private static StringComparator oldComparator;
+                                                         "TITLE_SEARCH_RESULTS");    
     private JButtonOperator _btStop;
     private JButtonOperator _btShowDetails;
     private JButtonOperator _btModifySearch;

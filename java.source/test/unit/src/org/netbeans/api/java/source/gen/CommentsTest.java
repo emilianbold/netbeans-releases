@@ -73,7 +73,7 @@ public class CommentsTest extends GeneratorTest {
         return suite;
     }
 
-    public void DISABLEtestAddStatement() throws Exception {
+    public void testAddStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +

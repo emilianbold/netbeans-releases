@@ -57,7 +57,6 @@ import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -265,36 +264,31 @@ public class AntProjectHelperTest extends NbTestCase {
         pev.addPropertyChangeListener(l);
         FileObject buildProperties = scratch.getFileObject("userdir/build.properties");
         assertNotNull("have build.properties", buildProperties);
-        FileLock lock = buildProperties.lock();
-        OutputStream os = buildProperties.getOutputStream(lock);
+        OutputStream os = buildProperties.getOutputStream();
         Properties p = new Properties();
         p.setProperty("global.prop", "value5a");
         p.setProperty("global.prop.2", "globalvalue2");
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("global.prop", "global.prop.2");
         assertEquals("global.prop is correct", "value5a", pev.getProperty("global.prop"));
         assertEquals("global.prop.2 is correct", "globalvalue2", pev.getProperty("global.prop.2"));
         // #42147: try modifying project.properties and private.properties on disk.
         FileObject projectProperties = projdir.getFileObject("nbproject/project.properties");
         assertNotNull("have project.properties", projectProperties);
-        lock = projectProperties.lock();
-        os = projectProperties.getOutputStream(lock);
+        os = projectProperties.getOutputStream();
         p = new Properties();
         p.setProperty("overridden.prop", "value3a"); // different, but won't matter
         p.setProperty("shared.prop", "value1a"); // changed
         p.setProperty("derived.prop", "${private.prop}:${shared.prop}:${undefined.prop}"); // same literally
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("shared.prop", "derived.prop");
         assertEquals("shared.prop is correct", "value1a", pev.getProperty("shared.prop"));
         assertEquals("derived.prop correct", "value2:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
         FileObject privateProperties = projdir.getFileObject("nbproject/private/private.properties");
         assertNotNull("have private.properties", privateProperties);
-        lock = privateProperties.lock();
-        os = privateProperties.getOutputStream(lock);
+        os = privateProperties.getOutputStream();
         p = new Properties();
         p.setProperty("private.prop", "value2a"); // changed
         p.setProperty("overridden.prop", "value4"); // same
@@ -302,7 +296,6 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("user.properties.file", "../userdir/build.properties"); // same
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("private.prop", "derived.prop");
         assertEquals("private.prop is correct", "value2a", pev.getProperty("private.prop"));
         assertEquals("derived.prop correct", "value2a:value1a:${undefined.prop}", pev.getProperty("derived.prop"));
@@ -313,27 +306,22 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("derived.prop is gone", null, pev.getProperty("derived.prop"));
         // Now recreate it.
         projectProperties = projdir.getFileObject("nbproject").createData("project.properties");
-        lock = projectProperties.lock();
-        os = projectProperties.getOutputStream(lock);
+        os = projectProperties.getOutputStream();
         p = new Properties();
         p.setProperty("derived.prop", "${private.prop}:${shared.prop}:${undefined.prop.2}"); // restoring w/ changes
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("derived.prop");
         assertEquals("derived.prop is back", "value2a:${shared.prop}:${undefined.prop.2}", pev.getProperty("derived.prop"));
         // #44213 cont'd: change user.properties.file and make sure the new definitions are read
         FileObject buildProperties2 = scratch.getFileObject("userdir").createData("build2.properties");
-        lock = buildProperties2.lock();
-        os = buildProperties2.getOutputStream(lock);
+        os = buildProperties2.getOutputStream();
         p = new Properties();
         p.setProperty("global.prop", "value5b"); // modified
         p.setProperty("global.prop.2", "globalvalue2"); // same
         p.store(os, null);
         os.close();
-        lock.releaseLock();
-        lock = privateProperties.lock();
-        os = privateProperties.getOutputStream(lock);
+        os = privateProperties.getOutputStream();
         p = new Properties();
         p.setProperty("private.prop", "value2a"); // same
         p.setProperty("overridden.prop", "value4"); // same
@@ -341,18 +329,15 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("user.properties.file", "../userdir/build2.properties"); // changed
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("user.properties.file", "global.prop");
         assertEquals("user.properties.file is correct", "../userdir/build2.properties", pev.getProperty("user.properties.file"));
         assertEquals("global.prop is correct", "value5b", pev.getProperty("global.prop"));
-        lock = buildProperties2.lock();
-        os = buildProperties2.getOutputStream(lock);
+        os = buildProperties2.getOutputStream();
         p = new Properties();
         p.setProperty("global.prop", "value5b"); // same
         // no global.prop.2
         p.store(os, null);
         os.close();
-        lock.releaseLock();
         l.assertEvents("global.prop.2");
         assertEquals("global.prop.2 is gone", null, pev.getProperty("global.prop.2"));
         // XXX try eval when user.properties.file is not defined (tricky, need to preset netbeans.user)

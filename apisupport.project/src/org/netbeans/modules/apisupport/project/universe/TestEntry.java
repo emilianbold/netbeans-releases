@@ -115,7 +115,11 @@ public final class TestEntry {
     /** Get root folder of binary tests distribution.
      */
     public File getTestDistRoot() {
-        return getJarFile().getParentFile().getParentFile().getParentFile().getParentFile();
+        File ret = getJarFile();
+        for (int i = 0; i < 4 && ret != null; i++) {
+            ret = ret.getParentFile();
+        }
+        return ret;
     }
     
     /** Get source dir with tests.
@@ -125,8 +129,10 @@ public final class TestEntry {
         String nborgPath = getNetBeansOrgPath();
         if (nborgPath != null) {
             return new File(getNBRoot(),nborgPath).toURI().toURL(); 
-        } 
+        }
         File prjDir = getTestDistRoot();
+        if (prjDir == null)
+            return null;
         // find parent when dir was not created
         while(!prjDir.exists()) {
             prjDir = prjDir.getParentFile();
@@ -158,6 +164,8 @@ public final class TestEntry {
     
     File getNBRoot() {
         File rootDir = getTestDistRoot();
+        if (rootDir == null)
+            return null;
         String path = rootDir.getAbsolutePath().replace(File.separatorChar,'/');
         File nbroot = null;
         // hardcoded location of testdistribution relatively to nb source root

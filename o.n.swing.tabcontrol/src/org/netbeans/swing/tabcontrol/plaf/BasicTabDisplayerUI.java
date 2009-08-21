@@ -203,8 +203,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     /**
      * Get the cell renderer for a given tab.  The default implementation simply
      * returns the renderer created by createDefaultRenderer().
+     * @param tab
+     * @return 
      */
-    protected TabCellRenderer getTabCellRenderer(int tab) {
+    public TabCellRenderer getTabCellRenderer(int tab) {
         return defaultRenderer;
     }
 

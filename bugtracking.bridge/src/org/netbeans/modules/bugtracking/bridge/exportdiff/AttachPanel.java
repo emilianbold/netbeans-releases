@@ -66,7 +66,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         this.issueListener = issueListener;
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getCommand());
+        issueLabel.setLabelFor(qs.getIssueComponent());
     }
 
     void init(Repository[] repos, Repository toSelect) {

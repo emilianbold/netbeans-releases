@@ -96,7 +96,7 @@ public class QueryRefreshTest extends NbTestCase {
         JiraRepository repo = JiraTestUtil.getRepository();
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter(summary, true, true, true, true));
-        final JiraQuery jq = new JiraQuery( queryName, repo, fd, true);
+        final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
         assertEquals(0,jq.getIssues().length);
 
         LogHandler lh = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH);
@@ -117,7 +117,7 @@ public class QueryRefreshTest extends NbTestCase {
         JiraRepository repo = JiraTestUtil.getRepository();
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
-        final JiraQuery jq = new JiraQuery( queryName, repo, fd, true);
+        final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
 //        selectTestProject(jq);
         assertEquals(0, jq.getIssues().length);
         jq.refresh(); // refresh the query - so it won't be refreshed via first time open

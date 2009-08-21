@@ -15,7 +15,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="configSep" alignment="1" pref="614" max="32767" attributes="0"/>
+          <Component id="configSep" alignment="1" pref="651" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="rubyPlatformLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -36,12 +36,11 @@
                   </Group>
               </Group>
           </Group>
-          <Component id="mainPanel" alignment="1" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="encodingLabel" pref="80" max="32767" attributes="1"/>
+                      <Component id="encodingLabel" pref="99" max="32767" attributes="1"/>
                       <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -52,12 +51,13 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="rakeHelpLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                   <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                      <Component id="encoding" alignment="0" pref="446" max="32767" attributes="1"/>
-                      <Component id="rakeTextField" alignment="0" pref="446" max="32767" attributes="1"/>
+                      <Component id="encoding" alignment="0" pref="464" max="32767" attributes="1"/>
+                      <Component id="rakeTextField" alignment="0" pref="464" max="32767" attributes="1"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="mainPanel" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -78,8 +78,8 @@
               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               <Component id="configSep" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="mainPanel" min="-2" pref="168" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="mainPanel" pref="180" max="32767" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="encodingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="encoding" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -91,7 +91,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="rakeHelpLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -212,19 +212,19 @@
                       </Group>
                       <Component id="railsEnvLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="serverArgsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="serverArgsField" pref="504" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="urlHelpLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
-                      <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                          <Component id="railsEnvCombo" alignment="0" pref="458" max="32767" attributes="0"/>
-                          <Component id="serverComboBox" pref="458" max="32767" attributes="0"/>
-                          <Component id="portField" alignment="0" pref="458" max="32767" attributes="1"/>
-                          <Component id="urlTextField" alignment="0" pref="458" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="railsEnvCombo" alignment="0" pref="504" max="32767" attributes="0"/>
+                      <Component id="serverComboBox" pref="504" max="32767" attributes="0"/>
+                      <Component id="portField" alignment="0" pref="504" max="32767" attributes="1"/>
+                      <Component id="urlTextField" alignment="0" pref="504" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -254,7 +254,12 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="urlHelpLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="serverArgsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="serverArgsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -346,6 +351,26 @@
               <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/customizer/Bundle.properties" key="LBL_CustomizeRun_URL_Help" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="serverArgsLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="serverArgsField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/customizer/Bundle.properties" key="ServerArguments" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/customizer/Bundle.properties" key="AD_ServerArguments" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/customizer/Bundle.properties" key="AD_ServerArguments" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="serverArgsField">
         </Component>
       </SubComponents>
     </Container>

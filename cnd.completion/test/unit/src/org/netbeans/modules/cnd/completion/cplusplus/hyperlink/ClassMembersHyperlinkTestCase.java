@@ -860,6 +860,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz104945.cc", 26, 20, "iz104945.cc", 7, 5);
     }
 
+    public void testIZ165597() throws Exception {
+        // IZ#165597 : Parsing of struct field initializations fails
+        performTest("iz165597.cc", 8, 10, "iz165597.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

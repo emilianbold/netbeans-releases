@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Sheet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -70,7 +71,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory {
+    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
 
         public GdbCustomizerNode(String name, String displayName) {
 	    super(name, displayName, null);
@@ -105,6 +106,10 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
         public ProjectActionHandler createHandler() {
             return new GdbActionHandler();
+        }
+
+        public String getFamily() {
+            return "GNU"; //NOI18N
         }
     }
 }

@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ProjectFactory;
@@ -178,18 +179,11 @@ public final class TestUtil {
         ((TestProject)p).state.notifyDeleted();
     }
     
-    /**
-     * If set to something non-null, loading a broken project will wait for
-     * notification on this monitor before throwing an exception.
-     * @see ProjectManagerTest#testLoadExceptionWithConcurrentLoad
-     */
-    public static Object BROKEN_PROJECT_LOAD_LOCK = null;
-    
     /**If non-null, use the value as the Lookup for newly created projects.
      * 
      */
     public static Lookup LOOKUP = null;
-    
+
     private static final class TestProjectFactory implements ProjectFactory {
         
         TestProjectFactory() {}
@@ -205,15 +199,6 @@ public final class TestUtil {
             FileObject testproject = projectDirectory.getFileObject("testproject");
             if (testproject != null && testproject.isFolder()) {
                 if (testproject.getFileObject("broken") != null) {
-                    if (BROKEN_PROJECT_LOAD_LOCK != null) {
-                        synchronized (BROKEN_PROJECT_LOAD_LOCK) {
-                            try {
-                                BROKEN_PROJECT_LOAD_LOCK.wait();
-                            } catch (InterruptedException e) {
-                                assert false : e;
-                            }
-                        }
-                    }
                     throw new IOException("Load failed of " + projectDirectory);
                 } else {
                     return new TestProject(projectDirectory, LOOKUP != null ? LOOKUP : Lookup.EMPTY, state);

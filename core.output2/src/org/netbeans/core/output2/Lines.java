@@ -45,7 +45,7 @@ import org.openide.windows.OutputListener;
 
 import javax.swing.event.ChangeListener;
 import java.io.IOException;
-import java.util.regex.Matcher;
+import java.util.Collection;
 import org.openide.windows.IOColors;
 
 /**
@@ -57,7 +57,7 @@ public interface Lines {
      * Get an array of all line numbers which have associated OutputListeners
      * @return an array of line numbers
      */
-    int[] allListenerLines();
+    int[] getLinesWithListeners();
 
     /**
      * Get the length, in characters, of a given line index
@@ -90,20 +90,18 @@ public interface Lines {
     int getLineCount();
 
     /**
-     * Get the output listener associated with this line
-     *
+     * Get the output listeners associated with this line
      * @param line A line number
-     * @return An OutputListener, as passed to OutputWriter.println(), or null if no listener
-     *  is associated with this line
+     * @return Collection of OutputListeners associated with this line
      */
-    OutputListener getListenerForLine (int line);
+    Collection<OutputListener> getListenersForLine(int line);
 
     /**
-     * Get color for specified line
+     * Get informations for line
      * @param line A line number
-     * @return Color for specified line (explicitly set or default)
+     * @return LineInfo for specified line
      */
-    Color getColorForLine(int line);
+    LineInfo getLineInfo(int line);
 
     /**
      * Sets default colors
@@ -111,6 +109,13 @@ public interface Lines {
      * @param color color
      */
     void setDefColor(IOColors.OutputType type, Color color);
+
+    /**
+     * Gets default color
+     * @param type output type
+     * @return corresponding Color
+     */
+    Color getDefColor(IOColors.OutputType type);
 
     /**
      * Get the index of the first line which has a listener
@@ -122,18 +127,23 @@ public interface Lines {
      * Get the index of the first line which has an important listener
      * @return A line number, or -1 if there are no important listeners
      */
-    
     int firstImportantListenerLine();
-    
-    boolean isImportantHyperlink(int line);
 
     /**
-     * Get the nearest listener to the passed line index
-     * @param line A line number
-     * @param backward If it should search up the text
-     * @return A line number, or -1
+     * Check whether specified line contains important listener
+     * @param line line to be checked
+     * @return true if this line contains important listener
      */
-    int nearestListenerLine (int line, boolean backward);
+    boolean isImportantLine(int line);
+
+    /**
+     *
+     * @param startSearchPos starting position for searching
+     * @param backward direction of searching
+     * @param range [startPos, endPosition] of listener
+     * @return nearest listener to specified startSearchPosition
+     */
+    OutputListener nearestListener(int startSearchPos, boolean backward, int[] range);
 
     /**
      * Get the length of the longest line in the storage
@@ -178,17 +188,27 @@ public interface Lines {
     String getLine (int idx) throws IOException;
 
     /**
-     * Determine if there are any hyperlinked lines (lines with associated output listeners)
+     * Determine if there are any lines with associated output listeners
      * @return True if there are any listeners
      */
-    boolean hasHyperlinks();
+    boolean hasListeners();
 
     /**
-     * Determine if this line has an associated OutputListener
-     * @param line A line number
-     * @return If it has a listener
+     * Get listener on specified position
+     * @param pos position where look for listener
+     * @param range if hyperlink exists on specified position [start position,
+     * end position] is returned in this array (may be null)
+     * @return listener (hyperlink) on specified position or null
      */
-     boolean isHyperlink (int line);
+     OutputListener getListener(int pos, int[] range);
+
+     /**
+      * Check if listener exists on specified position
+      * @param start start position of listener
+      * @param end end position of listener
+      * @return true if listener exists on specified position
+      */
+     boolean isListener(int start, int end);
 
     /**
      * Count the total number of characters in the stored text
@@ -261,14 +281,6 @@ public interface Lines {
      * @return [start, end] position of match
      */
     public int[] rfind(int start, String pattern, boolean regExp, boolean matchCase);
-
-    /**
-     * Indicates a line was written to the stderr, not stdout
-     *
-     * @param line A line number
-     * @return True if it was written to stderr
-     */
-    boolean isErr(int line);
 
     /**
      * Acquire a read lock - while held, other threads cannot modify this Lines object.

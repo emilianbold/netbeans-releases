@@ -42,7 +42,6 @@
 package org.netbeans.editor;
 
 import java.util.HashMap;
-import java.util.ArrayList;
 
 /**
 * Immutable and 'interned' wrapper holding
@@ -66,7 +65,7 @@ public final class TokenContextPath {
     private static final HashMap registry = new HashMap(199);
 
     /** Contexts contained in this context-path. */
-    private TokenContext[] contexts;
+    private final TokenContext[] contexts;
 
     /** Path for context-array without the last member. */
     private TokenContextPath parent;

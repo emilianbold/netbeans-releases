@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -60,6 +62,8 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -69,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -77,6 +82,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
@@ -141,6 +147,33 @@ public class VariousUtils {
         return getTypeFromPHPDoc(root, field, PHPDocTag.Type.VAR);
     }
 
+
+    public static Map<String,List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
+        Map<String,List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
+        Comment comment = Utils.getCommentForNode(root, node);
+
+        if (comment instanceof PHPDocBlock) {
+            PHPDocBlock phpDoc = (PHPDocBlock) comment;
+
+            for (PHPDocTag tag : phpDoc.getTags()) {
+                if (tag.getKind() == PHPDocTag.Type.PARAM) {
+                    String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
+
+                    if (parts.length > 1) {
+                        String[] typeNames = parts[0].split("\\|", 2);
+                        List<QualifiedName> types = new ArrayList<QualifiedName>();
+                        for (String tName : typeNames) {
+                            types.add(QualifiedName.create(tName));
+                        }
+                        String name = parts[1].split("\\s+", 2)[0];
+                        retval.put(name, types);
+                    }
+                }
+            }
+        }
+        return retval;
+    }
+
     public static String getTypeFromPHPDoc(Program root, ASTNode node, PHPDocTag.Type tagType) {
         Comment comment = Utils.getCommentForNode(root, node);
 
@@ -176,7 +209,13 @@ public class VariousUtils {
         }
         if (expression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
-            return CodeUtils.extractClassName(classInstanceCreation.getClassName());
+            final ClassName className = classInstanceCreation.getClassName();
+            Expression name = className.getName();
+            if (name instanceof NamespaceName) {
+                QualifiedName qn = QualifiedName.create(name);
+                return qn.toString();
+            }
+            return CodeUtils.extractClassName(className);
         } else if (expression instanceof ArrayCreation) {
             return "array"; //NOI18N
         } else if (expression instanceof VariableBase) {
@@ -215,7 +254,13 @@ public class VariousUtils {
                 } else {
                     if (operation == null) {
                         assert i == 0;
-                        recentTypes = CachingSupport.getClasses(frag,topScope);
+                        NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
+                        QualifiedNameKind kind = filter.getKind();
+                        String query = kind.isUnqualified() ? frag : filter.getName();
+                        recentTypes = CachingSupport.getClasses(query,topScope);
+                        if (!kind.isUnqualified()) {
+                            recentTypes = filter.filterModelElements(recentTypes, true);
+                        }
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
@@ -251,7 +296,14 @@ public class VariousUtils {
                                     parent = true;
                                 }
                             }
+                            NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
+                            QualifiedNameKind kind = filter.getKind();
+                            String query = kind.isUnqualified() ? frag : filter.getName();
+                            recentTypes = CachingSupport.getClasses(query, topScope);
                             List<? extends ClassScope> classes = CachingSupport.getClasses(clsName, topScope);
+                            if (!kind.isUnqualified()) {
+                                classes = filter.filterModelElements(classes, true);
+                            }
                             for (ClassScope cls : classes) {
                                 if (parent) {
                                     cls = ModelUtils.getFirst(cls.getSuperClasses());
@@ -279,13 +331,13 @@ public class VariousUtils {
                             VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                             if (var != null) {
                                 boolean added = recursionDetection.add(var.getName());
-                                if (added) {
-                                    try {
+                                try {
+                                    if (added) {
                                         newRecentTypes.addAll(var.getTypes(offset));
-                                    } finally {
-                                        recursionDetection.remove(var.getName());
                                     }
-                                } 
+                                } finally {
+                                    recursionDetection.remove(var.getName());
+                                }
                             }
                         }
                         recentTypes = newRecentTypes;
@@ -314,7 +366,15 @@ public class VariousUtils {
                 }
             }
         } else if (semiTypeName != null ) {
-            return new ArrayList<TypeScope>(CachingSupport.getTypes(semiTypeName, topScope));
+            NamespaceIndexFilter filter = new NamespaceIndexFilter(semiTypeName);
+            QualifiedName qn = QualifiedName.create(semiTypeName);
+            final QualifiedNameKind kind = qn.getKind();
+            final String query = kind.isUnqualified() ? semiTypeName : filter.getName();
+            List<? extends TypeScope> retval = new ArrayList<TypeScope>(CachingSupport.getTypes( query, topScope));
+            if (!kind.isUnqualified()) {
+                retval = filter.filterModelElements(retval, true);
+            }
+            return retval;
         }
        
         return recentTypes;
@@ -694,6 +754,16 @@ public class VariousUtils {
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
                         //TODO: maybe rather introduce its own State for self, parent
+                        if (isNamespaceSeparator(token)) {
+                            if (tokenSequence.movePrevious()) {
+                                metaAll.insert(0, token.text().toString());
+                                token = tokenSequence.token();
+                                if (isString(token)) {
+                                    metaAll.insert(0, token.text().toString());
+                                    break;
+                                }
+                            }
+                        }
                         state = State.STOP;
                         break;
                 }
@@ -773,6 +843,9 @@ public class VariousUtils {
 
     private static boolean isReference(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_OBJECT_OPERATOR);
+    }
+    private static boolean isNamespaceSeparator(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_NS_SEPARATOR);
     }
 
     private static boolean isWhiteSpace(Token<PHPTokenId> token) {

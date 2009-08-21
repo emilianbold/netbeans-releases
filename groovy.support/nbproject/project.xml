@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.debugger</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -60,14 +69,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -92,6 +93,14 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -242,6 +251,7 @@
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.groovy.grails</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.groovy.griffon</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <package>org.netbeans.modules.groovy.support.api</package>
                 <package>org.netbeans.modules.groovy.support.spi</package>

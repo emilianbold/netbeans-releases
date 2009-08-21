@@ -45,14 +45,9 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-
 import org.netbeans.modules.form.ComponentInspector;
-
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
 
 /** Opens Inspector (Component Inspector) TopComponent.
  *
@@ -64,7 +59,6 @@ public class InspectorAction extends AbstractAction {
         putValue(NAME, NbBundle.getMessage(InspectorAction.class, "CTL_InspectorAction"));
         putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/inspector.png", false)); // NOI18N
     }
-
 
     /** Opens component inspector (Form structure) component. */
     public void actionPerformed(ActionEvent evt) {

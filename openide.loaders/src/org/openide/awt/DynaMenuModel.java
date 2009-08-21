@@ -51,12 +51,12 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -76,7 +76,7 @@ class DynaMenuModel {
         actionToMenuMap = new HashMap<DynamicMenuContent, JComponent[]>();
     }
     
-    public void loadSubmenu(List cInstances, JMenu m) {
+    public void loadSubmenu(List<Object> cInstances, JMenu m, Map<Object,FileObject> cookiesToFiles) {
         // clear first - refresh the menu's content
         boolean addSeparator = false;
         Icon curIcon = null;
@@ -85,6 +85,9 @@ class DynaMenuModel {
         actionToMenuMap.clear();
         while (it.hasNext()) {
             Object obj = it.next();
+            if (obj instanceof Action) {
+                Toolbar.setAccelerator((Action) obj, cookiesToFiles.get(obj));
+            }
             if (obj instanceof Presenter.Menu) {
                 // does this still apply??
                 obj = ((Presenter.Menu)obj).getMenuPresenter();

@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * An implementation of ClassPathProvider for running tests. Includes <tt>toplink-essentials.jar</tt> that contains
+ * An implementation of ClassPathProvider for running tests. Includes <tt>eclipselink jars</tt> that contains
  * <code>javax.persistence.*</code> stuff. 
  *
  * @author Erno Mononen
@@ -70,8 +70,8 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         }
         if (ClassPath.COMPILE.equals(type)){
             try {
-                URL toplinkJarUrl = Class.forName("javax.persistence.EntityManager").getProtectionDomain().getCodeSource().getLocation();
-                return ClassPathSupport.createClassPath(new URL[]{FileUtil.getArchiveRoot(toplinkJarUrl)});
+                URL eclipselinkJarUrl = Class.forName("javax.persistence.EntityManager").getProtectionDomain().getCodeSource().getLocation();
+                return ClassPathSupport.createClassPath(new URL[]{FileUtil.getArchiveRoot(eclipselinkJarUrl)});
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }

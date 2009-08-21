@@ -11,8 +11,6 @@ package org.netbeans.modules.maven.execute.model.io.xpp3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.text.DateFormat;
-import java.util.Locale;
 import hidden.org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
@@ -103,100 +101,7 @@ public class NetbeansBuildActionXpp3Reader {
         return 0;
     } //-- char getCharacterValue(String, String, XmlPullParser) 
 
-    /**
-     * Method getDateValue.
-     * 
-     * @param s
-     * @param parser
-     * @param dateFormat
-     * @param attribute
-     * @throws XmlPullParserException
-     * @return java.util.Date
-     */
-    public java.util.Date getDateValue(String s, String attribute, String dateFormat, XmlPullParser parser)
-        throws XmlPullParserException
-    {
-        if ( s != null )
-        {
-            if ( dateFormat == null )
-            {
-                return new java.util.Date( Long.valueOf( s ).longValue() );
-            }
-            else
-            {
-                DateFormat dateParser = new java.text.SimpleDateFormat( dateFormat, Locale.US );
-                try
-                {
-                    return dateParser.parse( s );
-                }
-                catch ( java.text.ParseException e )
-                {
-                    throw new XmlPullParserException( e.getMessage() );
-                }
-            }
-        }
-        return null;
-    } //-- java.util.Date getDateValue(String, String, String, XmlPullParser) 
 
-    /**
-     * Method getDoubleValue.
-     * 
-     * @param s
-     * @param strict
-     * @param parser
-     * @param attribute
-     * @throws XmlPullParserException
-     * @return double
-     */
-    public double getDoubleValue(String s, String attribute, XmlPullParser parser, boolean strict)
-        throws XmlPullParserException
-    {
-        if ( s != null )
-        {
-            try
-            {
-                return Double.valueOf( s ).doubleValue();
-            }
-            catch ( NumberFormatException e )
-            {
-                if ( strict )
-                {
-                    throw new XmlPullParserException( "Unable to parse element '" + attribute + "', must be a floating point number", parser, null );
-                }
-            }
-        }
-        return 0;
-    } //-- double getDoubleValue(String, String, XmlPullParser, boolean) 
-
-    /**
-     * Method getFloatValue.
-     * 
-     * @param s
-     * @param strict
-     * @param parser
-     * @param attribute
-     * @throws XmlPullParserException
-     * @return float
-     */
-    public float getFloatValue(String s, String attribute, XmlPullParser parser, boolean strict)
-        throws XmlPullParserException
-    {
-        if ( s != null )
-        {
-            try
-            {
-                return Float.valueOf( s ).floatValue();
-            }
-            catch ( NumberFormatException e )
-            {
-                if ( strict )
-                {
-                    throw new XmlPullParserException( "Unable to parse element '" + attribute + "', must be a floating point number", parser, null );
-                }
-            }
-        }
-        return 0;
-    } //-- float getFloatValue(String, String, XmlPullParser, boolean) 
 
     /**
      * Method getIntegerValue.
@@ -258,58 +163,7 @@ public class NetbeansBuildActionXpp3Reader {
         return 0;
     } //-- long getLongValue(String, String, XmlPullParser, boolean) 
 
-    /**
-     * Method getRequiredAttributeValue.
-     * 
-     * @param s
-     * @param strict
-     * @param parser
-     * @param attribute
-     * @throws XmlPullParserException
-     * @return String
-     */
-    public String getRequiredAttributeValue(String s, String attribute, XmlPullParser parser, boolean strict)
-        throws XmlPullParserException
-    {
-        if ( s == null )
-        {
-            if ( strict )
-            {
-                throw new XmlPullParserException( "Missing required value for attribute '" + attribute + "'", parser, null );
-            }
-        }
-        return s;
-    } //-- String getRequiredAttributeValue(String, String, XmlPullParser, boolean) 
 
-    /**
-     * Method getShortValue.
-     * 
-     * @param s
-     * @param strict
-     * @param parser
-     * @param attribute
-     * @throws XmlPullParserException
-     * @return short
-     */
-    public short getShortValue(String s, String attribute, XmlPullParser parser, boolean strict)
-        throws XmlPullParserException
-    {
-        if ( s != null )
-        {
-            try
-            {
-                return Short.valueOf( s ).shortValue();
-            }
-            catch ( NumberFormatException e )
-            {
-                if ( strict )
-                {
-                    throw new XmlPullParserException( "Unable to parse element '" + attribute + "', must be a short integer", parser, null );
-                }
-            }
-        }
-        return 0;
-    } //-- short getShortValue(String, String, XmlPullParser, boolean) 
 
     /**
      * Method getTrimmedValue.
@@ -423,6 +277,15 @@ public class NetbeansBuildActionXpp3Reader {
                 }
                 parsed.add( "basedir" );
                 netbeansActionMapping.setBasedir( getTrimmedValue( parser.nextText()) );
+            }
+            else if ( parser.getName().equals( "reactor" )  )
+            {
+                if ( parsed.contains( "reactor" ) )
+                {
+                    throw new XmlPullParserException( "Duplicated tag: '" + parser.getName() + "'", parser, null );
+                }
+                parsed.add( "reactor" );
+                netbeansActionMapping.setReactor( getTrimmedValue( parser.nextText()) );
             }
             else if ( parser.getName().equals( "preAction" )  )
             {

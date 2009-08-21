@@ -47,6 +47,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
@@ -64,7 +65,9 @@ public class JsTypeAnalyzerTest extends JsTestBase {
     private JsTypeAnalyzer getAnalyzer(String file, final String caretLine, final boolean findMethod) throws Exception {
         FileObject fo = getTestFile(file);
         Source source = Source.create(fo);
-
+        
+        RepositoryUpdater.getDefault().start(true);
+        
         final int caretOffset;
         if (caretLine != null) {
             caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);

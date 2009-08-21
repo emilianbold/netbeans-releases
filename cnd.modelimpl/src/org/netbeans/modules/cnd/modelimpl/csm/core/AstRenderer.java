@@ -1714,7 +1714,11 @@ public class AstRenderer {
                 int type = first.getType();
                 if (isExpression(type)) {
                     return new ConditionExpressionImpl(first, file, scope);
-                } else if (type == CPPTokenTypes.CSM_TYPE_BUILTIN || type == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                } else if (type == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                        type == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+                        type == CPPTokenTypes.LITERAL_struct ||
+                        type == CPPTokenTypes.LITERAL_class ||
+                        type == CPPTokenTypes.LITERAL_union) {
                     return new ConditionDeclarationImpl(ast, file, scope);
                 }
             }

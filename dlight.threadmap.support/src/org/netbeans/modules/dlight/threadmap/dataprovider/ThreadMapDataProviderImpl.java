@@ -38,17 +38,21 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
+import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
+import org.netbeans.modules.dlight.core.stack.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
+    private StackDataStorage stackDataStorage;
     private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
@@ -62,7 +66,23 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return storage.queryThreadMapData(query);
     }
 
-    public ThreadDump getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    public ThreadDump getThreadDump(ThreadDumpQuery query){
+        if (stackDataStorage == null) {
+            return null;
+        }
+        return stackDataStorage.getThreadDump(query);
     }
+
+    public void attachTo(DataStorage storage) {
+        if (storage instanceof StackDataStorage) {
+            stackDataStorage = (StackDataStorage) storage;
+        } else {
+            stackDataStorage = null;
+        }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+    }
+
+ 
 }

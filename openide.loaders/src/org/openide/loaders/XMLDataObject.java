@@ -248,11 +248,7 @@ public class XMLDataObject extends MultiDataObject {
     */
     @Override
     protected Node createNodeDelegate () {
-        XMLNode xn = new XMLNode (this);
-        // netbeans.core.nodes.description
-        xn.setShortDescription (NbBundle.getMessage ( 
-                                        XMLDataObject.class, "HINT_XMLDataObject")); // NOI18N
-        return xn;
+        return new XMLNode(this);
     }
 
 

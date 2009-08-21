@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -141,7 +142,7 @@ class CreateEnumConstant implements Fix {
                 int pos = 0;
                 for (Iterator<? extends Tree> it = members.iterator(); it.hasNext();) {
                     Tree t = it.next();
-                    if (t.getKind() == Kind.VARIABLE) {
+                    if (t.getKind() == Kind.VARIABLE && info.getTreeUtilities().isEnumConstant((VariableTree)t) ) {
                         pos = members.indexOf(t);
                     }
                 }

@@ -51,17 +51,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.api.stack.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
-import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,7 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 /**
  *
  */
-public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage {
+public class DerbyDataStorage extends SQLDataStorage {
 
     private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
     private static final String SQL_QUERY_DELIMETER = "";
@@ -80,8 +73,8 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private static boolean driverLoaded = false;
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private SQLStackStorage stackStorage;
     private String dbURL;
+    private final List<DataTableMetadata> tableMetadatas;
 
     static {
         String tempDir = null;
@@ -138,28 +131,22 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
 
     private void initStorageTypes() {
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DerbyDataStorageFactory.DERBY_DATA_STORAGE_TYPE));
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        //supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
     private DerbyDataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
-        try {
-            initStorageTypes();
-            stackStorage = new SQLStackStorage(this);
-            connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
+        this.tableMetadatas = new ArrayList<DataTableMetadata>();
+        initStorageTypes();
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     }
 
     @Override
     public boolean shutdown() {
         //remove folder
-        boolean result = stackStorage.shutdown() && super.shutdown();
+        boolean result = super.shutdown();
         String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));//NOI18N
         //and now get number
         result = result && Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)); // NOI18N
@@ -185,79 +172,88 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
 
     @Override
-    public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
-            if (tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
-                if (!tables.containsKey(STACK_METADATA_VIEW_NAME)) {
-                    tables.put(STACK_METADATA_VIEW_NAME, tdmd);
-                }
-                continue;
-            }
-            if (!createTable(tdmd)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public int putStack(List<CharSequence> stack, long sampleDuration) {
-        return stackStorage.putStack(stack, sampleDuration);
-    }
-
-    public void flush() {
-        try {
-            stackStorage.flush();
-        } catch (InterruptedException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            this.tableMetadatas.add(tdmd);
+//            if (tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
+//                if (!tables.containsKey(STACK_METADATA_VIEW_NAME)) {
+//                    tables.put(STACK_METADATA_VIEW_NAME, tdmd);
+//                }
+//                continue;
+//            }
+            createTable(tdmd);
         }
     }
 
-    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
-        try {
-            return stackStorage.getPeriodicStacks(startTime, endTime, interval);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            return null;
-        }
-    }
+//    public int putStack(List<CharSequence> stack, long sampleDuration) {
+//        return stackStorage.putStack(stack, sampleDuration);
+//    }
+//
+//    public List<FunctionCall> getCallStack(int stackId) {
+//        return stackStorage.getStack(stackId);
+//    }
 
-    public List<FunctionMetric> getMetricsList() {
-        return stackStorage.getMetricsList();
-    }
+//    public void flush() {
+//        try {
+//            stackStorage.flush();
+//        } catch (InterruptedException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//        }
+//    }
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
-        try {
-            return stackStorage.getCallers(path, aggregate);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            return new ArrayList<FunctionCallWithMetric>();
-        }
-    }
-
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
-        try {
-            return stackStorage.getCallees(path, aggregate);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            return new ArrayList<FunctionCallWithMetric>();
-        }
-    }
-
-    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
-        return stackStorage.getHotSpotFunctions(metric, limit);
-    }
+//    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
+//        try {
+//            return stackStorage.getPeriodicStacks(startTime, endTime, interval);
+//        } catch (SQLException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
+//
+//    public List<FunctionMetric> getMetricsList() {
+//        return stackStorage.getMetricsList();
+//    }
+//
+//    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
+//        try {
+//            return stackStorage.getCallers(path, aggregate);
+//        } catch (SQLException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            return new ArrayList<FunctionCallWithMetric>();
+//        }
+//    }
+//
+//    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+//        try {
+//            return stackStorage.getCallees(path, aggregate);
+//        } catch (SQLException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//            return new ArrayList<FunctionCallWithMetric>();
+//        }
+//    }
+//
+//    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
+//        return stackStorage.getHotSpotFunctions(metric, limit);
+//    }
 
     @Override
     protected String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
 
-    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
-        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
+//    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+//        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
+//    }
+//
+//    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
+//        return stackStorage.getThreadDump(timestamp, threadID, threadState);
+//    }
+
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
     }
 
-    public ThreadDump getThreadDump(long timestamp, int threadID, int threadState) {
-        return stackStorage.getThreadDump(timestamp, threadID, threadState);
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
     }
 }

@@ -94,7 +94,7 @@ public class JiraStorageManager {
 
     private JiraQuery createQuery(JiraRepository repository, JiraQueryData data) {
         assert data != null;
-        return new JiraQuery(data.getQueryName(), repository, data.getFilterDefinition(), data.getLastRefresh());
+        return new JiraQuery(data.getQueryName(), repository, data.getFilterDefinition());
     }
 
     private HashMap<String, JiraQueryData> getCachedQueries () {

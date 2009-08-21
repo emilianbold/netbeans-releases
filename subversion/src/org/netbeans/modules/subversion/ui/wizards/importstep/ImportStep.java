@@ -163,7 +163,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
 
     public String getImportMessage() {
-        return importPanel.messageTextArea.getText();
+        return SvnUtils.fixLineEndings(importPanel.messageTextArea.getText());
     }
 
     public void setup(RepositoryFile repositoryFile) {

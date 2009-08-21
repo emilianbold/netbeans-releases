@@ -24,14 +24,12 @@ import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
@@ -316,28 +314,19 @@ public class XPathUtils {
     public static List<SchemaCompHolder> getChildren(
             XPathModel xPathModel, XPathSchemaContext parentContext,
             SchemaComponent parent, String soughtName, 
-            String soughtNamespace, boolean isAttribute, 
-            CachingSchemaSearchVisitor cachingVisitor) {
+            String soughtNamespace, boolean isAttribute) {
         List<SchemaComponent> found = null;
         boolean hasAny = false;
         boolean hasAnyAttribute = false;
         ArrayList<SchemaCompHolder> result = new ArrayList<SchemaCompHolder>();
         //
-        if (cachingVisitor != null) {
-            cachingVisitor.lookForSubcomponent(parentContext,
-                    parent, soughtName, soughtNamespace, isAttribute);
-            found = cachingVisitor.getFound();
-            hasAny = cachingVisitor.hasAny();
-            hasAnyAttribute = cachingVisitor.hasAnyAttribute();
-        } else {
-            FindChildrenSchemaVisitor visitor = 
-                    new FindChildrenSchemaVisitor(parentContext, 
-                    soughtName, soughtNamespace, isAttribute);
-            visitor.lookForSubcomponent(parent);
-            found = visitor.getFound();
-            hasAny = visitor.hasAny();
-            hasAnyAttribute = visitor.hasAnyAttribute();
-        }
+        FindChildrenSchemaVisitor visitor =
+                new FindChildrenSchemaVisitor(parentContext,
+                soughtName, soughtNamespace, isAttribute);
+        visitor.lookForSubcomponent(parent);
+        found = visitor.getFound();
+        hasAny = visitor.hasAny();
+        hasAnyAttribute = visitor.hasAnyAttribute();
         //
         if (found == null || found.isEmpty()) {
             //

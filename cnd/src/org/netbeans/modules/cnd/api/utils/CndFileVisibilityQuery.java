@@ -36,10 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -51,14 +53,11 @@ import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 
-public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, ChangeListener {
+public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, ChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
-
     private static CndFileVisibilityQuery INSTANCE = new CndFileVisibilityQuery();
-
     private Pattern acceptedFilesPattern = null;
-
     private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(o|so|a|dll|dylib|lib|lo|la|Po|Plo)$"; // NOI18N
     private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
 
@@ -69,7 +68,7 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
         MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(this);
     }
 
-    public static CndFileVisibilityQuery getDefault(){
+    public static CndFileVisibilityQuery getDefault() {
         return INSTANCE;
     }
 
@@ -86,19 +85,19 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
         return isVisible(file.getName());
     }
 
-
     boolean isVisible(final String fileName) {
         Pattern pattern = getAcceptedFilesPattern();
         return (pattern != null) ? pattern.matcher(fileName).find() : true;
     }
 
-    public boolean isIgnored(File file){
+    public boolean isIgnored(File file) {
         return isIgnored(file.getName());
     }
 
     public boolean isIgnored(String fileName) {
         return ignoredFilesPattern.matcher(fileName).find();
     }
+
     /**
      * Add a listener to changes.
      * @param l a listener to add
@@ -123,29 +122,31 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
         }
     }
 
-    private Set<String> getAcceptedFilesExtensions() {
-        Set<String> suffixes = createExtensionSet();
-        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
-        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
-        suffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+    private List<Collection<String>> getAcceptedFilesExtensions() {
+        List<Collection<String>> suffixes = new ArrayList<Collection<String>>();
+        suffixes.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         return suffixes;
     }
 
     private Pattern getAcceptedFilesPattern() {
         if (acceptedFilesPattern == null) {
-            Set<String> acceptedFileExtensions = getAcceptedFilesExtensions();
-            StringBuilder pat = new  StringBuilder();
-            for (String s : acceptedFileExtensions) {
-                if (pat.length() > 0) {
-                    pat.append('|');
+            List<Collection<String>> acceptedFileExtensions = getAcceptedFilesExtensions();
+            StringBuilder pat = new StringBuilder();
+            for (Collection<String> col : acceptedFileExtensions) {
+                for (String s : col) {
+                    if (pat.length() > 0) {
+                        pat.append('|');
+                    }
+                    if (s.indexOf('+') >= 0) {
+                        s = s.replace("+", "\\+"); // NOI18N
+                    }
+                    pat.append(s);
                 }
-                if (s.indexOf('+') >= 0) {
-                    s = s.replace("+", "\\+"); // NOI18N
-                }
-                pat.append(s);
+                String ignoredFiles = ".*\\.(" + pat.toString() + ")$"; //NOI18N;
+                acceptedFilesPattern = Pattern.compile(ignoredFiles);
             }
-            String ignoredFiles = ".*\\.(" + pat.toString() + ")$"; //NOI18N;
-            acceptedFilesPattern = Pattern.compile(ignoredFiles);
         }
         return acceptedFilesPattern;
     }

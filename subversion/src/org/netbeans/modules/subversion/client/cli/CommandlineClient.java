@@ -533,9 +533,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
     
     public InputStream getContent(SVNUrl url, SVNRevision rev) throws SVNClientException {
-        CatCommand cmd = new CatCommand(url, rev);
-        exec(cmd);
-        return cmd.getOutput();
+        return getContent(url, rev, null);
     }
 
     public InputStream getContent(File file, SVNRevision rev) throws SVNClientException {
@@ -619,7 +617,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd));
+        return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd, null));
     }
 
     public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {        
@@ -1033,8 +1031,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public InputStream getContent(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public InputStream getContent(SVNUrl url, SVNRevision rev, SVNRevision pegRevision) throws SVNClientException {
+        CatCommand cmd = new CatCommand(url, rev, pegRevision);
+        exec(cmd);
+        return cmd.getOutput();
     }
 
     public void diff(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, File arg4, int arg5, boolean arg6, boolean arg7, boolean arg8) throws SVNClientException {

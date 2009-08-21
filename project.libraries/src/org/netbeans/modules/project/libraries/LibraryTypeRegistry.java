@@ -40,97 +40,84 @@
  */
 package org.netbeans.modules.project.libraries;
 
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderInstance;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
-public final class LibraryTypeRegistry extends FolderInstance {
+public final class LibraryTypeRegistry {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
-    private static FileObject findProvidersFolder() {
-        FileObject folder = FileUtil.getConfigFile(REGISTRY);
-        if (folder == null) {
-            // #50391 - maybe we are turning this module off?
-            try {
-                folder = FileUtil.createFolder(FileUtil.getConfigRoot(), REGISTRY);
-            } catch (IOException e) {
-                // Hmm, what to do?
-                throw (IllegalStateException) new IllegalStateException("Cannot make folder " + REGISTRY + ": " + e).initCause(e);
-            }
-        }
-        return folder;
-    }
     
-    private static Reference<LibraryTypeRegistry> instance;
+    private static LibraryTypeRegistry instance;
+
+    private final Lookup.Result<LibraryTypeProvider> result;
+    private final ChangeSupport changeSupport;
+    private volatile Set<? extends LibraryTypeProvider> usedLibraryTypes;
 
     private LibraryTypeRegistry () {
-        super(DataFolder.findFolder(findProvidersFolder()));
+        this.changeSupport = new ChangeSupport(this);
+        final Lookup lookup = Lookups.forPath(REGISTRY);
+        assert lookup != null;
+        result = lookup.lookupResult(LibraryTypeProvider.class);
+        result.addLookupListener(new LookupListener() {
+            public void resultChanged(LookupEvent ev) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     public LibraryTypeProvider[] getLibraryTypeProviders () {
-        try {
-            return (LibraryTypeProvider[]) this.instanceCreate ();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-        catch (ClassNotFoundException cnf) {
-            ErrorManager.getDefault().notify(cnf);
-        }
-        return new LibraryTypeProvider[0];
+        assert result != null;
+        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();        
+        return instances.toArray(new LibraryTypeProvider[instances.size()]);
     }
 
     public LibraryTypeProvider getLibraryTypeProvider (String libraryType) {
         assert libraryType != null;
-        try {
-            LibraryTypeProvider[] providers = (LibraryTypeProvider[]) this.instanceCreate ();
-            for (int i = 0; i < providers.length; i++) {
-                if (libraryType.equals(providers[i].getLibraryType()))
-                    return providers[i];
+        final LibraryTypeProvider[] providers = getLibraryTypeProviders();
+        for (LibraryTypeProvider provider : providers) {
+            if (libraryType.equals(provider.getLibraryType())) {
+                return provider;
             }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify (ioe);
-        }
-        catch (ClassNotFoundException cnfe) {
-            ErrorManager.getDefault().notify (cnfe);
         }
         return null;
     }
 
-
-    protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
-        List<LibraryTypeProvider> installers = new ArrayList<LibraryTypeProvider>(cookies.length);
-        for (InstanceCookie cake : cookies) {
-            LibraryTypeProvider o = null;
-            try {
-                if (cake instanceof InstanceCookie.Of && !(((InstanceCookie.Of)cake).instanceOf(LibraryTypeProvider.class)))
-                    continue;
-                o = (LibraryTypeProvider) cake.instanceCreate();
-            } catch (IOException ex) {
-            } catch (ClassNotFoundException ex) {
-            }
-            if (o != null)
-                installers.add(o);
+    public boolean hasChanged() {
+        final Set<? extends  LibraryTypeProvider> oldTP = usedLibraryTypes;
+        final LibraryTypeProvider[] providers = getLibraryTypeProviders();
+        final Map<LibraryTypeProvider,LibraryTypeProvider> newTP = new IdentityHashMap<LibraryTypeProvider,LibraryTypeProvider>();
+        for (LibraryTypeProvider provider : providers) {
+            newTP.put(provider, provider);
         }
-        return installers.toArray(new LibraryTypeProvider[installers.size()]);
+        usedLibraryTypes = newTP.keySet();
+        return oldTP == null || !oldTP.equals(newTP.keySet());
     }
 
+    public void addChangeListener (final ChangeListener listener) {
+        assert listener != null;
+        this.changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener (final ChangeListener listener) {
+        assert listener != null;
+        this.changeSupport.removeChangeListener(listener);
+    }
+    
 
     public static synchronized LibraryTypeRegistry getDefault () {
-        LibraryTypeRegistry regs = null;
-        if (instance == null || (regs = instance.get()) == null) {
-            regs = new LibraryTypeRegistry();
-            instance = new SoftReference<LibraryTypeRegistry>(regs);
+        if (instance == null) {
+            instance = new LibraryTypeRegistry();
         }
-        return regs;
+        return instance;
     }
 
 }

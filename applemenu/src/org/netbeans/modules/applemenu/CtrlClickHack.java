@@ -43,24 +43,54 @@ package org.netbeans.modules.applemenu;
 
 import java.awt.AWTEvent;
 import java.awt.event.AWTEventListener;
+import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import javax.swing.text.JTextComponent;
 
 /**
  * hack for issue #67799, on macosx with single button mouse,
  * make Ctrl-Click work as right click on multiselections
- * @author ttran
+ *
+ * Also handles issue #90371 - on Macintosh, JTextComponents
+ * are never sent focus lost events, resulting in multiple
+ * blinking carets.  Hack tracks last known JTextComponent
+ * and sets its cursor to invisible if any other component 
+ * gains focus (on Mac OS, getOppositeComponent() 
+ * frequently returns null when coming from a JTextComponent)
+ *
+ * @author ttran, Tim Boudreau
  */
 public class CtrlClickHack implements AWTEventListener {
-
-    /** Creates a new instance of CtrlClickHack */
-    public CtrlClickHack() {
-    }
+    private Reference<JTextComponent> lastFocusedTextComponent = null;
 
     public void eventDispatched(AWTEvent e) {
-        if (! (e instanceof MouseEvent)) {
+        if (!(e instanceof MouseEvent) && !(e instanceof FocusEvent)) {
+            return;
+        }
+        if (e instanceof FocusEvent) {
+            FocusEvent fe = (FocusEvent) e;
+            if (fe.getID() == FocusEvent.FOCUS_GAINED) {
+                if (fe.getOppositeComponent() instanceof JTextComponent) {
+                    JTextComponent jtc = (JTextComponent) fe.getOppositeComponent();
+                    jtc.getCaret().setVisible(false);
+                } else {
+                    JTextComponent jtc = lastFocusedTextComponent == null ? null :
+                        lastFocusedTextComponent.get();
+                    if (jtc != null) {
+                        jtc.getCaret().setVisible(false);
+                    }
+                }
+                if (fe.getComponent() instanceof JTextComponent) {
+                    JTextComponent jtc = (JTextComponent) fe.getComponent();
+                    lastFocusedTextComponent = new WeakReference<JTextComponent>(jtc);
+                    jtc.getCaret().setVisible(true);
+                }
+            }
             return;
         }
         MouseEvent evt = (MouseEvent) e;

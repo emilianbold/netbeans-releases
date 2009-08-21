@@ -71,10 +71,10 @@ public class UpdateContextRoot implements ProgressListener {
         this.needToDo = needToDo;
     }
 
-    public void handleProgressEvent(ProgressEvent arg0) {
-        if (arg0.getDeploymentStatus().isCompleted()) {
+    public void handleProgressEvent(ProgressEvent event) {
+        if (event.getDeploymentStatus().isCompleted()) {
             if (needToDo) {
-                returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
                 // let's update the context-root
                 //
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -85,7 +85,7 @@ public class UpdateContextRoot implements ProgressListener {
                         //   to use a different get pattern,
                         GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
                         Future<OperationState> result =
-                                ((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
+                                si.getBasicNode().getLookup().lookup(GlassfishModule.class).execute(gpc);
                         try {
                             if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                                 Map<String, String> retVal = gpc.getData();
@@ -110,12 +110,12 @@ public class UpdateContextRoot implements ProgressListener {
                     }
                 });
             } else {
-                returnProgress.operationStateChanged(OperationState.COMPLETED, arg0.getDeploymentStatus().getMessage());
+                returnProgress.operationStateChanged(OperationState.COMPLETED, event.getDeploymentStatus().getMessage());
             }
-        }else if (arg0.getDeploymentStatus().isFailed()) {
-            returnProgress.operationStateChanged(OperationState.FAILED, arg0.getDeploymentStatus().getMessage());
+        }else if (event.getDeploymentStatus().isFailed()) {
+            returnProgress.operationStateChanged(OperationState.FAILED, event.getDeploymentStatus().getMessage());
         } else {
-            returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+            returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
         }
     }
 }

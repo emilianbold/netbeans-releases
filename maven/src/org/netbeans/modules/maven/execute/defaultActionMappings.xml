@@ -57,12 +57,10 @@ made subject to such option by the copyright holder.
             <packaging>*</packaging>
         </packagings>
         <goals>
-            <goal>reactor:make</goal>
+            <goal>install</goal>
         </goals>
+        <reactor>also-make</reactor>
         <basedir>../</basedir>
-        <properties>
-            <make.artifacts>${groupId}:${artifactId}</make.artifacts>
-        </properties>
     </action>
     <action>
         <actionName>clean</actionName>

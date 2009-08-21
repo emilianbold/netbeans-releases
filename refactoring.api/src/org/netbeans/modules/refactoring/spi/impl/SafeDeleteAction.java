@@ -41,7 +41,6 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
@@ -51,7 +50,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExtendedDelete;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -78,10 +76,12 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         }
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -90,6 +90,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         return ActionsImplementationFactory.canDelete(context); 
     }
     
+    @Override
     protected Lookup getLookup(Node[] n) {
         Lookup l = super.getLookup(n);
         if (regularDelete) {
@@ -107,7 +108,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     
     private boolean regularDelete = false;
     public boolean delete(final Node[] nodes) {
-        if (enable(nodes)) {
+        if (nodes.length < 2 && enable(nodes)) {
             if (java.awt.EventQueue.isDispatchThread()) {
                 regularDelete = true;
                 performAction(nodes);

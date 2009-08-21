@@ -42,7 +42,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
@@ -61,7 +60,6 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
     public H2DataStorageFactory() {
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 

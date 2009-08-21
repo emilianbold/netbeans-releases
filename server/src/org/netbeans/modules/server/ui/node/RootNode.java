@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,6 +74,8 @@ import org.openide.util.lookup.Lookups;
 public final class RootNode extends AbstractNode {
 
     private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(RootNode.class.getName());
 
     private static RootNode node;
 
@@ -247,6 +251,26 @@ public final class RootNode extends AbstractNode {
     private static class InstanceComparator implements Comparator<ServerInstance>, Serializable {
 
         public int compare(ServerInstance o1, ServerInstance o2) {
+            boolean firstNull = false;
+            boolean secondNull = false;
+
+            if (o1.getDisplayName() == null) {
+                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o1);
+                firstNull = true;
+            }
+            if (o2.getDisplayName() == null) {
+                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o2);
+                secondNull = true;
+            }
+
+            if (firstNull && secondNull) {
+                return 0;
+            } else if (firstNull && !secondNull) {
+                return -1;
+            } else if (!firstNull && secondNull) {
+                return 1;
+            }
+
             return o1.getDisplayName().compareTo(o2.getDisplayName());
         }
 

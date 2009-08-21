@@ -44,7 +44,6 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -73,7 +72,6 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
-import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -152,6 +150,10 @@ public final class ModuleList {
      */
     public static ModuleList getModuleList(File basedir) throws IOException {
         return getModuleList(basedir, null);
+    }
+
+    private static File getClusterPropertiesFile(File nbroot) {
+        return new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
     }
 
     /**
@@ -393,7 +395,7 @@ public final class ModuleList {
                 logCacheIgnored(MSG_FAILURE, root, nbantextJar);
                 return null;
             }
-            final ClassLoader loader = new URLClassLoader(new URL[] {nbantextJar.toURL()}, ClassLoader.getSystemClassLoader());
+            final ClassLoader loader = new URLClassLoader(new URL[] {nbantextJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
             InputStream is = new FileInputStream(scanCache);
             try {
                 ObjectInput oi = new ObjectInputStream(is) {
@@ -462,7 +464,8 @@ public final class ModuleList {
             }
         }
         if (clusterList == null) {
-            throw new IOException("No ${nb.clusters.list} found in " + root); // NOI18N
+            throw new IOException("Neither ${clusters.list} nor ${cluster.config} + ${clusters.config.<cfg>.list} found in "    // NOI18N
+                    + getClusterPropertiesFile(root));
         }
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
@@ -725,9 +728,9 @@ public final class ModuleList {
                 File cd = ci.getClusterDir();
                 // null nbdestdir for external clusters
                 ModuleList ml = findOrCreateModuleListFromCluster(cd, ci.isPlatformCluster() ? cd.getParentFile() : null, ci);
-                for (ModuleEntry e : ml.getAllEntriesSoft()) {
+//                for (ModuleEntry e : ml.getAllEntriesSoft()) {
 //                    if (e.)
-                }
+//                }
                 lists.add(ml);
             }
         }
@@ -1230,7 +1233,7 @@ public final class ModuleList {
         synchronized (clusterPropertiesFiles) {
             clusterDefs = clusterPropertiesFiles.get(nbroot);
             if (clusterDefs == null) {
-                PropertyProvider pp = loadPropertiesFile(new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties")); // NOI18N
+                PropertyProvider pp = loadPropertiesFile(getClusterPropertiesFile(nbroot)); // NOI18N
                 PropertyEvaluator clusterEval = PropertyUtils.sequentialPropertyEvaluator(
                         PropertyUtils.fixedPropertyProvider(Collections.<String, String>emptyMap()), pp);
                 clusterDefs = clusterEval.getProperties();

@@ -38,9 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.html;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -75,6 +74,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
@@ -82,8 +82,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
-
-
 
 /**
  * Editor support for HTML data objects.
@@ -94,39 +92,37 @@ import org.openide.windows.CloneableOpenSupport;
  * @see org.openide.text.DataEditorSupportH
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
-    
+
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
-
     // only to be ever user from unit tests:
     public static boolean showConfirmationDialog = true;
-    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
      * It also invokes beforeSave() method on the HtmlDataObject to give it
      * a chance to eg. reflect changes in 'charset' attribute
      * */
-    
     private final SaveCookie saveCookie = new SaveCookie() {
 
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
             try {
                 saveDocument();
-            }catch(UserCancelException uce) {
+            } catch (UserCancelException uce) {
                 //just ignore
             }
         }
     };
-    
+
     /** Constructor. */
     HtmlEditorSupport(HtmlDataObject obj) {
         super(obj, new Environment(obj));
-        
-        setMIMEType("text/html"); // NOI18N
+
+        //set the FileObject's mimetype - text/html or text/xhtml
+        setMIMEType(obj.getPrimaryFile().getMIMEType());
     }
-    
-    @Override 
+
+    @Override
     public void saveDocument() throws IOException {
         updateEncoding();
         super.saveDocument();
@@ -148,7 +144,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 nd.setValue(NotifyDescriptor.NO_OPTION);
                 DialogDisplayer.getDefault().notify(nd);
                 if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                        throw new UserCancelException();
+                    throw new UserCancelException();
                 }
             } else {
                 finalEncoding = encoding;
@@ -160,7 +156,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 nd.setValue(NotifyDescriptor.NO_OPTION);
                 DialogDisplayer.getDefault().notify(nd);
                 if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                        throw new UserCancelException();
+                    throw new UserCancelException();
                 } else {
                     finalEncoding = UTF_8_ENCODING;
                 }
@@ -173,94 +169,95 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         //so setting the FEQ result to document property
         getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
     }
-    
+
     @Override
     public void open() {
-        String encoding = ((HtmlDataObject)getDataObject()).getFileEncoding();
+        String encoding = ((HtmlDataObject) getDataObject()).getFileEncoding();
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
         if (encoding != null && !isSupportedEncoding(encoding) && showConfirmationDialog) {
 //            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
 //                feqEncoding = UTF_8_ENCODING;
 //            }
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage (HtmlEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
-                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                                    encoding,
-                                    feqEncoding} ), 
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE);
+                    NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        encoding,
+                        feqEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
-            if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
                 return; // do not open the file
             }
         }
-        
+
 //        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
 //            feqEncoding = UTF_8_ENCODING;
 //        }
-        
+
         super.open();
     }
-    
+
     /**
      * @inheritDoc
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        final Charset c = Charset.forName((String)doc.getProperty(DOCUMENT_SAVE_ENCODING));
-        final Writer w = new OutputStreamWriter (stream, c);
+        final Charset c = Charset.forName((String) doc.getProperty(DOCUMENT_SAVE_ENCODING));
+        final Writer w = new OutputStreamWriter(stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
         } finally {
             w.close();
         }
     }
-    
+
     /**
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
     protected boolean notifyModified() {
-        if (!super.notifyModified())
+        if (!super.notifyModified()) {
             return false;
-        
+        }
+
         addSaveCookie();
-        
+
         return true;
     }
-    
+
     /** Overrides superclass method. Adds removing of save cookie. */
     protected void notifyUnmodified() {
         super.notifyUnmodified();
-        
+
         removeSaveCookie();
     }
-    
+
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
-        HtmlDataObject obj = (HtmlDataObject)getDataObject();
-        
+        HtmlDataObject obj = (HtmlDataObject) getDataObject();
+
         // Adds save cookie to the data object.
-        if(obj.getCookie(SaveCookie.class) == null) {
+        if (obj.getCookie(SaveCookie.class) == null) {
             obj.getCookieSet0().add(saveCookie);
             obj.setModified(true);
         }
     }
-    
+
     /** Helper method. Removes save cookie from the data object. */
     private void removeSaveCookie() {
-        HtmlDataObject obj = (HtmlDataObject)getDataObject();
-        
+        HtmlDataObject obj = (HtmlDataObject) getDataObject();
+
         // Remove save cookie from the data object.
         Cookie cookie = obj.getCookie(SaveCookie.class);
-        
-        if(cookie != null && cookie.equals(saveCookie)) {
+
+        if (cookie != null && cookie.equals(saveCookie)) {
             obj.getCookieSet0().remove(saveCookie);
             obj.setModified(false);
         }
     }
-    
+
     private String getDocumentText() {
         String text = "";
         try {
@@ -273,7 +270,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
         return text;
     }
-    
+
     private boolean canDecodeFile(FileObject fo, String encoding) {
         CharsetDecoder decoder = Charset.forName(encoding).newDecoder().onUnmappableCharacter(CodingErrorAction.REPORT).onMalformedInput(CodingErrorAction.REPORT);
         try {
@@ -295,103 +292,99 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
         return false;
     }
-    
+
     private boolean canEncode(String docText, String encoding) {
         CharsetEncoder encoder = Charset.forName(encoding).newEncoder();
         return encoder.canEncode(docText);
     }
-    
-    private boolean isSupportedEncoding(String encoding){
+
+    private boolean isSupportedEncoding(String encoding) {
         boolean supported;
-        try{
+        try {
             supported = java.nio.charset.Charset.isSupported(encoding);
-        } catch (java.nio.charset.IllegalCharsetNameException e){
+        } catch (java.nio.charset.IllegalCharsetNameException e) {
             supported = false;
         }
         return supported;
     }
-    
+
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
-        
+
         private static final long serialVersionUID = 3035543168452715818L;
-        
+
         /** Constructor. */
         public Environment(HtmlDataObject obj) {
             super(obj);
         }
-        
-        
+
         /** Implements abstract superclass method. */
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
-        
+
         /** Implements abstract superclass method.*/
         protected FileLock takeLock() throws IOException {
-            return ((HtmlDataObject)getDataObject()).getPrimaryEntry().takeLock();
+            return ((HtmlDataObject) getDataObject()).getPrimaryEntry().takeLock();
         }
-        
+
         /**
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (HtmlEditorSupport)getDataObject().getCookie(HtmlEditorSupport.class);
+            return (HtmlEditorSupport) getDataObject().getCookie(HtmlEditorSupport.class);
         }
     } // End of nested Environment class.
-    
-    
+
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link HtmlEditor} for this support
      */
     protected CloneableEditor createCloneableEditor() {
         return new HtmlEditor(this);
     }
-    
+
     public static class HtmlEditor extends CloneableEditor {
-        
+
         public HtmlEditor() {
         }
-        
+
         void associatePalette(HtmlEditorSupport s) {
             DataObject dataObject = s.getDataObject();
-            if(!dataObject.isValid()) {
-                return ;
+            if (!dataObject.isValid()) {
+                return;
             }
-            
-            Node nodes[] = { dataObject.getNodeDelegate() };
+
+            Node nodes[] = {dataObject.getNodeDelegate()};
             InstanceContent instanceContent = new InstanceContent();
-            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
+            associateLookup(new ProxyLookup(new Lookup[]{new AbstractLookup(instanceContent), nodes[0].getLookup()}));
             instanceContent.add(getActionMap());
-            
+
             setActivatedNodes(nodes);
             if (dataObject instanceof HtmlDataObject) {
+                PaletteController pc;
                 try {
-                    PaletteController pc = HtmlPaletteFactory.getPalette();
+                    pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());
                     instanceContent.add(pc);
-                } catch (IOException ioe) {
-                    //TODO exception handling
-                    ioe.printStackTrace();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
-        
+
         /** Creates new editor */
         public HtmlEditor(HtmlEditorSupport s) {
             super(s);
             initialize();
         }
-        
+
         private void initialize() {
-            associatePalette((HtmlEditorSupport)cloneableEditorSupport());
+            associatePalette((HtmlEditorSupport) cloneableEditorSupport());
         }
-        
+
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             initialize();
         }
-        
     }
-    
 }

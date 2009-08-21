@@ -98,7 +98,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         ServerWrapper bestServer = null;
         String[] sIDs = Deployment.getDefault().getServerInstanceIDs(
                             Collections.singleton(J2eeModule.Type.WAR),
-                            Profile.JAVA_EE_5,
+                            Profile.JAVA_EE_6_FULL,
                             new String[] {J2eePlatform.TOOL_JSR109});
         for (String serverInstanceID : sIDs) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);

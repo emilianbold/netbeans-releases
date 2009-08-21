@@ -68,7 +68,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
             new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
             new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
             new Column("time", Double.class, getMessage("Column.ExecutionTime"), null)); // NOI18N
-    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns); // NOI18N
+    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns, null); // NOI18N
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
             "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata)); // NOI18N
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N

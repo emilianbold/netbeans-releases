@@ -114,9 +114,11 @@ public abstract class EntityClass {
         boolean accept = entityClassCustomizer.showDialog();
         if (accept) {
             try {
-                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
-                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
-                
+
+                //marek: not necessary since the default prefixes are hardcoded in the palette item impls
+//                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
+//                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
+//
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());

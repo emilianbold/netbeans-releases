@@ -126,7 +126,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     */
     public synchronized void setRootDirectory(File r) throws PropertyVetoException, IOException {
         if (!r.exists() || r.isFile()) {
-            FSException.io("EXC_RootNotExist", r.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_RootNotExist", r.getAbsolutePath()));
         }
 
         String oldDisplayName = getDisplayName();
@@ -208,19 +208,17 @@ public class LocalFileSystem extends AbstractFileSystem {
         File f = getFile(name);
 
         if (name.equals("")) { // NOI18N
-            FSException.io("EXC_CannotCreateF", new Object[] { f.getName(), getDisplayName(), f.getAbsolutePath() }); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotCreateF", f.getName(), getDisplayName(), f.getAbsolutePath()));
         }
 
         if (f.exists()) {
-            FSException.io(
-                "EXC_FolderAlreadyExist", new Object[] { f.getName(), getDisplayName(), f.getAbsolutePath() }
-            ); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_FolderAlreadyExist", f.getName(), getDisplayName(), f.getAbsolutePath()));
         }
 
         boolean b = createRecursiveFolder(f);
 
         if (!b) {
-            FSException.io("EXC_CannotCreateF", new Object[] { f.getName(), getDisplayName(), f.getAbsolutePath() }); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotCreateF", f.getName(), getDisplayName(), f.getAbsolutePath()));
         }
     }
 
@@ -271,10 +269,7 @@ public class LocalFileSystem extends AbstractFileSystem {
             isError = isError ? true : (!f.exists());
 
             if (isError) {
-                Object[] msgParams;
-                msgParams = new Object[] { f.getName(), getDisplayName(), f.getAbsolutePath() };
-
-                annotationMsg = NbBundle.getMessage(LocalFileSystem.class, "EXC_DataAlreadyExist", msgParams); //NOI18N
+                annotationMsg = NbBundle.getMessage(LocalFileSystem.class, "EXC_DataAlreadyExist", f.getName(), getDisplayName(), f.getAbsolutePath());
                 creationException = new SyncFailedException(annotationMsg);
             }
         } catch (IOException iex) {
@@ -296,7 +291,7 @@ public class LocalFileSystem extends AbstractFileSystem {
 
         // #7086 - (nf.exists() && !nf.equals(of)) instead of nf.exists() - fix for Win32
         if ((nf.exists() && !nf.equals(of)) || !of.renameTo(nf)) {
-            FSException.io("EXC_CannotRename", oldName, getDisplayName(), newName); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotRename", oldName, getDisplayName(), newName));
         }
     }
 
@@ -305,7 +300,7 @@ public class LocalFileSystem extends AbstractFileSystem {
 
         if (deleteFile(file) != SUCCESS) {
             if (file.exists()) {
-                FSException.io("EXC_CannotDelete", name, getDisplayName(), file.getAbsolutePath()); // NOI18N
+                throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotDelete", name, getDisplayName(), file.getAbsolutePath()));
             } else {
                 /** When file externaly deleted and fo.delete () is called before
                  periodical refresh */
@@ -319,7 +314,7 @@ public class LocalFileSystem extends AbstractFileSystem {
                     thisFo.refresh();
 
                     if (thisFo.isValid()) {
-                        FSException.io("EXC_CannotDelete", name, getDisplayName(), file.getAbsolutePath()); // NOI18N
+                        throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotDelete", name, getDisplayName(), file.getAbsolutePath()));
                     }
                 }
             }
@@ -463,7 +458,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         File file = getFile(name);
 
         if ((!file.canWrite() && file.exists()) || isReadOnly()) {
-            FSException.io("EXC_CannotLock", name, getDisplayName(), file.getAbsolutePath()); // NOI18N
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotLock", name, getDisplayName(), file.getAbsolutePath()));
         }
     }
 

@@ -137,7 +137,7 @@ public final class TreePathHandle {
      * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
      * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
      * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
-     * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
+     * @throws IllegalArgumentException when this {@link TreePathHandle} is not created for a source
      * represented by the compilationInfo.
      */                                                                                                                                                                                                                        
     public TreePath resolve (final CompilationInfo compilationInfo) throws IllegalArgumentException {
@@ -370,7 +370,7 @@ public final class TreePathHandle {
          * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
          * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
          * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
-         * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
+         * @throws IllegalArgumentException when this {@link TreePathHandle} is not created for a source
          * represented by the compilationInfo.
          */
         public TreePath resolve(final CompilationInfo compilationInfo) throws IllegalArgumentException {

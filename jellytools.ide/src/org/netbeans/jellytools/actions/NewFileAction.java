@@ -69,10 +69,14 @@ public class NewFileAction extends ActionNoBlock {
     private  static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
                                             + "|"
                                             + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewFileAction_Name");
+
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_MASK);
     
     /** Creates new NewFileAction instance. */
     public NewFileAction() {
-        super(menuPath, popupPath + "|" + popupSubPath, "org.netbeans.modules.project.ui.actions.NewFile");
+        super(menuPath, popupPath + "|" + popupSubPath, "org.netbeans.modules.project.ui.actions.NewFile", keystroke);
     }
 
     /** Create new NewFileAction instance with name of template for

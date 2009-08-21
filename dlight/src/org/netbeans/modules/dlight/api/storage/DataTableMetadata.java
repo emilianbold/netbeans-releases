@@ -180,6 +180,31 @@ public final class DataTableMetadata {
         return sb.toString();
     }
 
+    public boolean isProvidedBy(List<DataTableMetadata> list) {
+        if (sourceTables != null) {
+            for (DataTableMetadata tableWeSearch : sourceTables) {
+                boolean found = false;
+                for (DataTableMetadata tableWeHave : list) {
+                    if (tableWeSearch.getName().equals(tableWeHave.getName())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // here sourceTables == null
+        for (DataTableMetadata md : list) {
+            if (md.getName().equals(this.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Column description 
      */

@@ -69,7 +69,6 @@ import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -273,19 +272,11 @@ public final class AntBuildExtender {
                     
                     editableProps.setProperty(propName, propValue.toString());
                     
-                    OutputStream os = null;
-                    FileLock lock = null;
+                    OutputStream os = projPropsFO.getOutputStream();
                     try {
-                        lock = projPropsFO.lock();
-                        os = projPropsFO.getOutputStream(lock);
                         editableProps.store(os);
                     } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
+                        os.close();
                     }
                     return null;
                 }

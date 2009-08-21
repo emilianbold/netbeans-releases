@@ -316,8 +316,7 @@ public class OptionsOperator extends NbDialogOperator {
      * level definition marks.
      * @param value String value to be choosed in the combobox.
      */
-    protected void editLevel(int rowIndex, int colIndex, String value) {
-        Point pnt = treeTable().getPointToClick(rowIndex, colIndex);
+    protected void editLevel(int rowIndex, int colIndex, String value) {        
         treeTable().clickOnCell(rowIndex, colIndex);
         JComboBoxOperator combo = new JComboBoxOperator(treeTable());
         getTimeouts().sleep("OptionsOperator.BeforeEditingTimeout");

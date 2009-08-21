@@ -39,4 +39,6 @@ public interface HttpMethod extends RestMethodDescription {
     
     public String getProduceMime();
     
+    public String getPath();
+    
 }

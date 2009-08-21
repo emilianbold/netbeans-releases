@@ -66,8 +66,7 @@ public class Hk2ServerInstanceDescriptor implements ServerInstanceDescriptor {
     }
 
     public boolean isLocal() {
-        // XXX update when we support remote servers
-        return true;
+        return !commonSupport.isRemote();
     }
 
 }

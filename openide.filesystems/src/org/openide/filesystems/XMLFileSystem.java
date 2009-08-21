@@ -793,7 +793,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         }
 
         public void lock(String name) throws IOException {
-            FSException.io("EXC_CannotLock", name, fs.getDisplayName(), name); // NOI18N
+            throw new FSException(NbBundle.getMessage(XMLFileSystem.class, "EXC_CannotLock", name, fs.getDisplayName(), name));
         }
 
         public void unlock(String name) {

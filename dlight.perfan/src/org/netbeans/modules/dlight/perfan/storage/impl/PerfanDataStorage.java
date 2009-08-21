@@ -41,18 +41,17 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.api.stack.Datarace;
-import org.netbeans.modules.dlight.api.stack.Deadlock;
+import org.netbeans.module.dlight.threads.api.Datarace;
+import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -60,24 +59,17 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
-public final class PerfanDataStorage extends DataStorage {
+public final class PerfanDataStorage implements DataStorage {
 
     private final static Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
-    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
     private ErprintSession er_print;
     private String experimentDirectory = null;
     private ExecutionEnvironment env;
+    private final List<DataTableMetadata> tableMetadatas;
 
     public PerfanDataStorage() {
         super();
-    }
-
-    public final Map<String, String> getInfo() {
-        return serviceInfoMap;
-    }
-
-    public final String getValue(String name) {
-        return serviceInfoMap.get(name);
+        tableMetadatas = new ArrayList<DataTableMetadata>();
     }
 
     @Override
@@ -91,10 +83,6 @@ public final class PerfanDataStorage extends DataStorage {
             return writer.toString().trim().equals("");
         }
         return true;
-    }
-
-    public final String put(String name, String value) {
-        return serviceInfoMap.put(name, value);
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome,
@@ -165,7 +153,7 @@ public final class PerfanDataStorage extends DataStorage {
         return result;
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCallWithMetric functionCall) {
+    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall) {
         FunctionStatistic result = null;
 
         try {
@@ -226,9 +214,17 @@ public final class PerfanDataStorage extends DataStorage {
         return PerfanDataStorageFactory.supportedTypes;
     }
 
+    public boolean supportsType(DataStorageType storageType) {
+        return getStorageTypes().contains(storageType);
+    }
+
+    public boolean hasData(DataTableMetadata data) {
+        return data.isProvidedBy(tableMetadatas);
+    }
+
     @Override
-    protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
-        return true;
+    public void createTables(List<DataTableMetadata> tableMetadatas) {
+        this.tableMetadatas.addAll(tableMetadatas);
     }
 
     @Override

@@ -271,16 +271,11 @@ final class ProjectProperties {
                                         try {
                                             runSaveAA(new AtomicAction() {
                                                 public void run() throws IOException {
-                                                    FileLock lock = _f.lock();
+                                                    OutputStream os = _f.getOutputStream();
                                                     try {
-                                                        OutputStream os = _f.getOutputStream(lock);
-                                                        try {
-                                                            os.write(data);
-                                                        } finally {
-                                                            os.close();
-                                                        }
+                                                        os.write(data);
                                                     } finally {
-                                                        lock.releaseLock();
+                                                        os.close();
                                                     }
                                                     helper.maybeCallPendingHook();
                                                 }
@@ -404,13 +399,12 @@ final class ProjectProperties {
             diskChange(fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            diskChange(fe);
-        }
-
         public void fileDeleted(FileEvent fe) {
             diskChange(fe);
         }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {}
+
     }
 
     /**

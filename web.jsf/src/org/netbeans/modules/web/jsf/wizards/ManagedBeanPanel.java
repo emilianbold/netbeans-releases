@@ -123,7 +123,13 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         getComponent();
         return component.valid(wizard);
     }
-    
+
+    public boolean isAddBeanToConfig() {
+        if (component == null) {
+            return false;
+        }
+        return component.isAddBeanToConfig();
+    }
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
     
     public final void addChangeListener(ChangeListener l) {

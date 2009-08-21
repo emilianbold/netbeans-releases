@@ -207,7 +207,7 @@ public class EditorOperator extends TopComponentOperator {
         Boolean isOpened = (Boolean)new QueueTool().invokeSmoothly(
                     new QueueTool.QueueAction("isOpened") { // NOI18N
                         public Object launch() {
-                            return new Boolean(((TopComponent)tc).isOpened());
+                            return Boolean.valueOf(((TopComponent)tc).isOpened());
                         }
                     }
         );
@@ -604,7 +604,7 @@ public class EditorOperator extends TopComponentOperator {
                     Class annotationsClass = Class.forName("org.netbeans.editor.Annotations");
                     Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[]{int.class});
                     getLineAnnotationsMethod.setAccessible(true);
-                    Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[]{new Integer(lineNumber - 1)});
+                    Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[]{ Integer.valueOf(lineNumber - 1)});
                     if (lineAnnotations != null) {
                         result = getAnnotations(lineAnnotations);
                     }

@@ -43,6 +43,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -78,8 +79,16 @@ public class Util {
      * @return the canonical path of the newly-created file or null if the operation failed
      */
     public static String copyResource(Class clazz, String resourceFileName) {
+        return copyResource(clazz.getClassLoader().getResource(resourceFileName));
+    }
+
+    public static String copyResource(URL resourceUrl) {
+        if (resourceUrl == null) {
+            return null;
+        }
+
         try {
-            InputStream is = clazz.getClassLoader().getResourceAsStream(resourceFileName);
+            InputStream is = resourceUrl.openStream();
 
             if (is == null) {
                 return null;
@@ -91,14 +100,14 @@ public class Util {
                 return null;
             }
 
-            String prefix = "_dlight_" + getBriefName(resourceFileName); // NOI18N
+            String prefix = "_dlight_" + getBriefName(resourceUrl); // NOI18N
             String tmpDirBase = hostInfo.getTempDir();
 
             if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
                 tmpDirBase = WindowsSupport.getInstance().convertToWindowsPath(tmpDirBase);
             }
 
-            File result_file = File.createTempFile(prefix, ".d", new File(tmpDirBase));//NOI18N
+            File result_file = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
             result_file.deleteOnExit();
 
             OutputStream os = new FileOutputStream(result_file);
@@ -109,16 +118,16 @@ public class Util {
             return result_file.getCanonicalPath();
         } catch (IOException ex) {
             log.info("copyResource failed: " + ex.getMessage()); // NOI18N
+        }catch(NullPointerException ex1){
+            return null;
         }
         return null;
-
     }
 
-    private static String getBriefName(String resourceFileName) {
-        int pos = resourceFileName.lastIndexOf('.');
-        String result = (pos > 0) ? resourceFileName.substring(0, pos) : resourceFileName;
-        pos = resourceFileName.lastIndexOf('/');
-        result = (pos >= 0) ? resourceFileName.substring(pos + 1) : resourceFileName;
+    public static String getBriefName(URL resourceUrl) {
+        String result = resourceUrl.getFile();
+        int pos = result.lastIndexOf('/');
+        result = (pos >= 0) ? result.substring(pos + 1) : result;
         return result;
     }
 

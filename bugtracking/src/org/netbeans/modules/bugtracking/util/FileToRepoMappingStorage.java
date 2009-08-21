@@ -41,7 +41,11 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -96,6 +100,25 @@ class FileToRepoMappingStorage {
 
     public Repository getLooselyAssociatedRepository(File file) {
         return getAssociatedRepository(file, LOOSE_ASSOCIATION);
+    }
+
+    public Collection<String> getAllFirmlyAssociatedUrls() {
+        HashSet<String> associatedUrls = new HashSet<String>(10);
+        try {
+            Preferences prefs = getPreferences();
+            String[] keys = prefs.keys();
+            for (String key : keys) {
+                if (key.startsWith(REPOSITORY_FOR_FILE_PREFIX)) { // found an association
+                    String value = prefs.get(key, null);
+                    if (value != null && value.length() > 0 && value.charAt(0) == '!') { // found a firm association
+                        associatedUrls.add(value.substring(1));
+                    }
+                }
+            }
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+        return associatedUrls;
     }
 
     private Repository getAssociatedRepository(File file, Boolean reqAssociationType) {

@@ -42,10 +42,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -56,7 +52,6 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -181,15 +176,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setError(getMessage("ERR_No_Platform"));
             return false;
         }
-        Set<ModuleEntry> entries = platform.getModules();
-        Collection<String> modules = new HashSet<String>(Arrays.asList(NewProjectIterator.MODULES));
-        
-        for (ModuleEntry me : entries) {
-            modules.remove(me.getCodeNameBase());
-        }
-        if (modules.size() > 0) {
-            setError(getMessage("ERR_Missing_Modules"));
-            return false;
+        for (String module : NewProjectIterator.MODULES) {
+            if (platform.getModule(module) == null) {
+                setError(getMessage("ERR_Missing_Modules"));
+                return false;
+            }
         }
         return true;
     }

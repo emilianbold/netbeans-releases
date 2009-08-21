@@ -43,19 +43,27 @@ package org.netbeans.modules.web.core.syntax.completion;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
+import org.netbeans.modules.web.core.syntax.completion.ELFunctions.Function;
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
+import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -63,6 +71,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 /** Expression Language completion provider implementation
  *
  * @author Marek.Fukala@Sun.COM
+ * @author ads
  */
 public class ElCompletionProvider implements CompletionProvider {
 
@@ -72,17 +81,42 @@ public class ElCompletionProvider implements CompletionProvider {
     //generic autoquerty impl - works for JSP, xhtml etc...
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence ts = th.tokenSequence();
-        int diff = ts.move(component.getCaretPosition());
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        int offset = component.getCaretPosition();
+        return isAfterElDelimiter(th, offset) || 
+            checkElCompletionOpen(th, offset) ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
+
+    }
+
+    private boolean isAfterElDelimiter(TokenHierarchy<Document> th, int offset) {
+        TokenSequence<?> ts = th.tokenSequence();
+        int diff = ts.move(offset);
         if (ts.moveNext()) {
             CharSequence image = ts.token().text();
-            if (diff == 2 && (image.charAt(0) == '$' || image.charAt(0) == '#') && image.charAt(1) == '{') {
+            if (diff == 2 && (image.charAt(0) == '$' || image.charAt(0) == '#') 
+                    && image.charAt(1) == '{') 
+            {
                 //popup completion
-                return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
+                return true;
             }
         }
-        return 0;
+        return false;
+    }
+
+    private boolean checkElCompletionOpen(TokenHierarchy<Document> th, int offset) {
+        List<TokenSequence<?>> tsl = th.embeddedTokenSequences(offset, true);
+        for(TokenSequence<?> ts : tsl) {
+            if(ts.language() == ELTokenId.language()) {
+                ts.move(offset);
+                if(ts.movePrevious()) {
+                    if(ts.token().id() == ELTokenId.DOT) {
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+        return false;
     }
 
     public CompletionTask createTask(int type, JTextComponent component) {
@@ -103,11 +137,10 @@ public class ElCompletionProvider implements CompletionProvider {
             this.component = component;
         }
 
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+        protected void doQuery(CompletionResultSet resultSet, Document doc, 
+                int caretOffset) 
+        {
             queryEL(resultSet, component, caretOffset);
-            resultSet.addAllItems(jspResultSet.getItems());
-            resultSet.setAnchorOffset(jspResultSet.getAnchor());
         }
 
     }
@@ -126,7 +159,9 @@ public class ElCompletionProvider implements CompletionProvider {
             this.component = component;
         }
 
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void doQuery(CompletionResultSet resultSet, Document doc, 
+                int caretOffset) 
+        {
             if (item != null) {
                 //this instance created from jsp completion item
                 if (item.hasHelp()) {
@@ -134,10 +169,7 @@ public class ElCompletionProvider implements CompletionProvider {
                 }
             } else {
                 //called directly by infrastructure - run query
-                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
                 queryEL(resultSet, component, caretOffset);
-                resultSet.addAllItems(jspResultSet.getItems());
-                resultSet.setAnchorOffset(jspResultSet.getAnchor());
             }
 
 
@@ -171,26 +203,37 @@ public class ElCompletionProvider implements CompletionProvider {
 
     public static abstract class AbstractQuery extends AsyncCompletionQuery {
 
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void query(CompletionResultSet resultSet, Document doc, 
+                int caretOffset) 
+        {
             doQuery(resultSet, doc, caretOffset);
             resultSet.finish();
         }
 
-        abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
+        abstract void doQuery(CompletionResultSet resultSet, Document doc, 
+                int caretOffset);
 
          /** Gets a list of completion items for EL */
-        protected void queryEL(CompletionResultSet result, JTextComponent component, int offset) {
+        protected void queryEL(CompletionResultSet result, 
+                JTextComponent component, int offset) 
+        {
             BaseDocument doc = (BaseDocument) component.getDocument();
             JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
 
             boolean queryingJsp = JspUtils.isJspDocument(doc);
-            ELExpression elExpr = new ELExpression(sup);
+            JspELExpression elExpr = new JspELExpression(sup);
+            int parseType = elExpr.parse(offset); //this initializes the expression
+            int anchor = offset - elExpr.getReplace().length();
+            result.setAnchorOffset(anchor);
 
-            switch (elExpr.parse(offset)) {
+            switch (parseType) {
                 case ELExpression.EL_START:
                     // implicit objects
-                    for (ELImplicitObjects.ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) {
-                        result.addItem(ElCompletionItem.createELImplicitObject(implOb.getName(), offset - elExpr.getReplace().length(), implOb.getType()));
+                    for (ELImplicitObject implOb : 
+                        ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) 
+                    {
+                        result.addItem(ElCompletionItem.createELImplicitObject(
+                                implOb.getName(), anchor, implOb.getType()));
                     }
 
                     if (queryingJsp) {
@@ -199,15 +242,17 @@ public class ElCompletionProvider implements CompletionProvider {
                         if (beans != null) {
                             for (int i = 0; i < beans.length; i++) {
                                 if (beans[i].getId().startsWith(elExpr.getReplace())) {
-                                    result.addItem(ElCompletionItem.createELBean(beans[i].getId(), offset - elExpr.getReplace().length(), beans[i].getClassName()));
+                                    result.addItem(ElCompletionItem.createELBean(
+                                            beans[i].getId(), anchor, beans[i].getClassName()));
                                 }
                             }
                         }
                         //Functions
-                        List functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
-                        Iterator iter = functions.iterator();
+                        List<Function> functions = 
+                            ELFunctions.getFunctions(sup, elExpr.getReplace());
+                        Iterator<Function> iter = functions.iterator();
                         while (iter.hasNext()) {
-                            ELFunctions.Function fun = (ELFunctions.Function) iter.next();
+                            Function fun = iter.next();
                             result.addItem(ElCompletionItem.createELFunction(
                                     fun.getName(),
                                     offset - elExpr.getReplace().length(),
@@ -219,11 +264,11 @@ public class ElCompletionProvider implements CompletionProvider {
                     break;
                 case ELExpression.EL_BEAN:
                 case ELExpression.EL_IMPLICIT:
-
-                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), offset - elExpr.getReplace().length());
+                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(
+                            elExpr.getObjectClass(), anchor);
                     result.addAllItems(items);
-
                     break;
+                    
             }
         }
     }

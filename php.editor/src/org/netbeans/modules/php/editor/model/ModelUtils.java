@@ -49,6 +49,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
 
@@ -58,6 +60,12 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
 
     private ModelUtils() {
+    }
+
+    public static NamespaceScope getNamespaceScope(NamespaceDeclaration currenNamespace, FileScope fileScope) {
+        NamespaceDeclarationInfo ndi = currenNamespace != null ? NamespaceDeclarationInfo.create(currenNamespace) : null;
+        NamespaceScope currentScope = ndi != null ? ModelUtils.getFirst(ModelUtils.filter(fileScope.getDeclaredNamespaces(), ndi.getName())) : fileScope.getDefaultDeclaredNamespace();
+        return currentScope;
     }
 
     public static Collection<? extends TypeScope> getDeclaredTypes(FileScope fileScope) {
@@ -174,6 +182,29 @@ public class ModelUtils {
     @CheckForNull
     public static <T extends ModelElement> T getLast(List<? extends T> all) {
         return all.size() > 0 ? all.get(all.size()-1) : null;
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final QuerySupport.Kind nameKind, final QualifiedName qualifiedName) {
+        final QualifiedNameKind kind = qualifiedName.getKind();
+        final String name = qualifiedName.toName().toString();
+        final String namespaceName = qualifiedName.toNamespaceName().toString();
+        return filter(allElements, new ElementFilter<T>() {
+            public boolean isAccepted(T element) {
+                if (nameKindMatch(element.getName(), nameKind, name)) {
+                    switch(kind) {
+                        case QUALIFIED:
+                            //TODO: not implemented yet behaves like UNQUALIFIED for now
+                        case UNQUALIFIED:
+                            return true;
+                        case FULLYQUALIFIED:
+                            return nameKindMatch(element.getNamespaceName().toString(), nameKind, namespaceName);
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     @NonNull

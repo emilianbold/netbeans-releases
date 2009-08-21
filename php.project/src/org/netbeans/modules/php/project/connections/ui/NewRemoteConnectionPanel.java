@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.php.project.connections.ui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -50,15 +47,16 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -71,12 +69,12 @@ public class NewRemoteConnectionPanel extends JPanel {
 
     private final ConfigManager configManager;
     private DialogDescriptor descriptor;
+    private NotificationLineSupport notificationLineSupport;
 
     public NewRemoteConnectionPanel(ConfigManager configManager) {
         this.configManager = configManager;
         initComponents();
 
-        errorLabel.setText(" "); // NOI18N
         connectionTypeComboBox.setModel(new DefaultComboBoxModel(new Vector<String>(RemoteConnections.get().getRemoteConnectionTypes())));
 
         registerListeners();
@@ -91,6 +89,8 @@ public class NewRemoteConnectionPanel extends JPanel {
                 DialogDescriptor.OK_OPTION,
                 null);
         descriptor.setValid(false);
+        notificationLineSupport = descriptor.createNotificationLineSupport();
+        notificationLineSupport.setInformationMessage(NbBundle.getMessage(NewRemoteConnectionPanel.class, "TXT_ProvideConnectionName"));
 
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
     }
@@ -146,12 +146,16 @@ public class NewRemoteConnectionPanel extends JPanel {
     }
 
     private void setError(String msg) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-        errorLabel.setText(msg);
-
         assert descriptor != null;
-        descriptor.setValid(msg == null);
+        assert notificationLineSupport != null;
+
+        if (StringUtils.hasText(msg)) {
+            notificationLineSupport.setErrorMessage(msg);
+            descriptor.setValid(false);
+        } else {
+            notificationLineSupport.clearMessages();
+            descriptor.setValid(true);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -167,35 +171,6 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionNameTextField = new JTextField();
         connectionTypeLabel = new JLabel();
         connectionTypeComboBox = new JComboBox();
-        errorLabel = new JLabel();
-
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return connectionNameTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return connectionNameTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return connectionTypeComboBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  connectionNameTextField){
-                    return connectionTypeComboBox;
-                }
-                return connectionNameTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  connectionTypeComboBox){
-                    return connectionNameTextField;
-                }
-                return connectionTypeComboBox;//end getComponentBefore
-
-            }}
-        );
 
         connectionNameLabel.setLabelFor(connectionNameTextField);
 
@@ -204,9 +179,7 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionNameTextField.setText(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameTextField.text")); // NOI18N
         connectionTypeLabel.setLabelFor(connectionTypeComboBox);
 
-
         Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text"));
-        Mnemonics.setLocalizedText(errorLabel, "dummy");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
@@ -215,15 +188,12 @@ public class NewRemoteConnectionPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(errorLabel)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(connectionNameLabel)
-                            .add(connectionTypeLabel))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(connectionTypeComboBox, 0, 221, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, connectionNameTextField, GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))))
+                    .add(connectionNameLabel)
+                    .add(connectionTypeLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                    .add(connectionTypeComboBox, 0, 221, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, connectionNameTextField, GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -237,8 +207,6 @@ public class NewRemoteConnectionPanel extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(connectionTypeLabel)
                     .add(connectionTypeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(errorLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -250,8 +218,6 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionTypeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         connectionTypeComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeComboBox.AccessibleContext.accessibleName")); // NOI18N
         connectionTypeComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -262,7 +228,6 @@ public class NewRemoteConnectionPanel extends JPanel {
     private JTextField connectionNameTextField;
     private JComboBox connectionTypeComboBox;
     private JLabel connectionTypeLabel;
-    private JLabel errorLabel;
     // End of variables declaration//GEN-END:variables
 
 }

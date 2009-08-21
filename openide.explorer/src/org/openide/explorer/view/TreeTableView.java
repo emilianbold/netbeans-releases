@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
+import org.openide.nodes.NodeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
@@ -57,11 +58,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 
@@ -1319,14 +1320,51 @@ public class TreeTableView extends BeanTreeView {
 
         private class SortedNode extends FilterNode {
             public SortedNode (Node original) {
-                super (original, new SortedChildren (original));
+                super(original, original.isLeaf() ? Children.LEAF : new SortedChildren(original));
                 original2filter.put (original, this);
             }
             public Node getOriginalNode () {
                 return super.getOriginal ();
             }
+
+            @Override
+            protected NodeListener createNodeListener() {
+                return new FilterNode.NodeAdapter(this) {
+
+                    @Override
+                    protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
+                        super.propertyChange(fn, ev);
+                        if (ev.getPropertyName().equals(Node.PROP_LEAF)) {
+                            final org.openide.nodes.Children[] newChildren = new org.openide.nodes.Children[1];
+                            Children.MUTEX.readAccess(new Runnable() {
+
+                                public void run() {
+                                    boolean origIsLeaf = getOriginal().isLeaf();
+                                    boolean thisIsLeaf = isLeaf();
+                                    if (origIsLeaf && !thisIsLeaf) {
+                                        newChildren[0] = Children.LEAF;
+                                    } else if (!origIsLeaf && thisIsLeaf) {
+                                        newChildren[0] = new SortedChildren(getOriginal());
+                                    }
+                                }
+                            });
+
+                            if (newChildren[0] != null) {
+                                Children.MUTEX.postWriteRequest(
+                                        new Runnable() {
+
+                                            public void run() {
+                                                setChildren(newChildren[0]);
+                                            }
+                                        }
+                                );
+                            }
+                        }
+                    }
+                };
+            }
         }
-        
+
         private class SortedChildren extends FilterNode.Children {
             public SortedChildren (Node n) {
                 super (n);
@@ -1362,19 +1400,17 @@ public class TreeTableView extends BeanTreeView {
                 sortNodes ();
             }
 
-            private void sortNodes () {
-                Node [] originalNodes = original.getChildren ().getNodes ();
-                if (isSortingActive ()) {
-                    Collection<Node> sortedNodes = new TreeSet<Node> (getRowComparator ());
-                    for (Node n : originalNodes) {
-                        sortedNodes.add (n);
-                    }
-                    setKeys (sortedNodes.toArray (new Node[0]));
+            private void sortNodes() {
+                Node[] origNodes = original.getChildren().getNodes();
+                if (isSortingActive()) {
+                    Node[] sortedNodes = new Node[origNodes.length];
+                    System.arraycopy(origNodes, 0, sortedNodes, 0, origNodes.length);
+                    Collections.sort(Arrays.asList(sortedNodes), getRowComparator());
+                    setKeys(sortedNodes);
                 } else {
-                    setKeys (originalNodes);
+                    setKeys(origNodes);
                 }
             }
-
         }
 
         void setNoSorting() {

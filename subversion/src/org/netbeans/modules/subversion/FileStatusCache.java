@@ -52,9 +52,13 @@ import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.WeakSet;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -125,7 +129,8 @@ public class FileStatusCache {
     private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
     private final Set<File> filesToRefresh = new HashSet<File>();
     private RequestProcessor.Task refreshTask;
-    
+    private final FileLabelCache labelsCache;
+
     FileStatusCache() {
         this.svn = Subversion.getInstance();
         cacheProvider = new DiskMapTurboProvider();
@@ -149,6 +154,7 @@ public class FileStatusCache {
                 }
             }
         });
+        labelsCache = new FileLabelCache(this);
     }
 
     // --- Public interface -------------------------------------------------
@@ -317,7 +323,7 @@ public class FileStatusCache {
      * @param recursively if true all children are also refreshed
      */
     public void refreshAsync(final boolean recursively, final File... files) {
-        if (files.length == 0) {
+        if (files == null || files.length == 0) {
             return;
         }
         rp.post(new Runnable() {
@@ -589,7 +595,7 @@ public class FileStatusCache {
     }
         
     // --- Private methods ---------------------------------------------------
-
+    private final Set<File> plannedForRecursiveScan = new WeakSet(50);
     private Map<File, FileInformation> getScannedFiles(File dir) {
         Map<File, FileInformation> files;
 
@@ -612,12 +618,30 @@ public class FileStatusCache {
         // scan and populate cache with results
 
         dir = FileUtil.normalizeFile(dir);
+        // recursive scan for unexplored folders
+        boolean recursiveScanEnabled = !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")); //NOI18N - leave option to disable the recursive scan
+        if (recursiveScanEnabled) {
+            // do not scan dir's children twice. It can happen that the same folder gets to this point more than once due to getScannedFile recursive nature
+            // 1. if dir is unknown
+            // 2. scanFolder(dir) > createMissingEntry(dir's child) > getStatus(dir) > getScannedFiles(dir) again and before turno.writeEntry(dir) is called
+            File f = new File(dir.getAbsolutePath()); // do not add directly dir so the set doesn't get too big (references to dir are kept outside of this method - e.g. in turbo)
+            synchronized (plannedForRecursiveScan) {
+                recursiveScanEnabled = !plannedForRecursiveScan.contains(f) && plannedForRecursiveScan.add(f); // this will return false if dir is already there
+            }
+        }
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = files.get(file);
+            // recursive scan for unexplored folders: run refresh on children if necessary
+            if (recursiveScanEnabled                                        // scan is allowed and dir is not yet planned
+                    && (info.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored files
+                    && file.isDirectory()                                   // scan only folders
+                    && turbo.readEntry(file, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
+                refreshAsync(file.listFiles());
+            }
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
             }
@@ -892,6 +916,7 @@ public class FileStatusCache {
     }
     
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
+        getLabelsCache().remove(file); // remove info from label cache, it could change
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
@@ -917,8 +942,8 @@ public class FileStatusCache {
 
     public void logCompleted(String message) {
         // boring ISVNNotifyListener event
-    }       
-        
+    }
+
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         public Set<Entry<File, FileInformation>> entrySet() {
             return Collections.emptySet();
@@ -1013,5 +1038,245 @@ public class FileStatusCache {
         public boolean isFileExternal() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-    }    
+    }
+
+    public FileLabelCache getLabelsCache () {
+        return labelsCache;
+    }
+
+    /**
+     * Cache of information needed for name annotations, caching such information prevents from running status commands in AWT
+     */
+    public static class FileLabelCache {
+        private static final Logger LABELS_CACHE_LOG = Logger.getLogger("org.netbeans.modules.subversion.FileLabelsCache"); //NOI18N
+        private final LinkedHashMap<File, FileLabelInfo> fileLabels;
+        private static final long VALID_LABEL_PERIOD = 20000; // 20 seconds
+        private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", ""); //NOI18N
+        private final Set<File> filesForLabelRefresh = new HashSet<File>();
+        private final RequestProcessor.Task labelInfoRefreshTask;
+        private boolean mimeTypeFlag;
+        private final FileStatusCache master;
+
+        private FileLabelCache(FileStatusCache master) {
+            this.master = master;
+            labelInfoRefreshTask = master.rp.create(new LabelInfoRefreshTask());
+            fileLabels = new LinkedHashMap<File, FileLabelInfo>(100);
+        }
+
+        public void flushFileLabels(File... files) {
+            synchronized (fileLabels) {
+                for (File f : files) {
+                    if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                        LABELS_CACHE_LOG.fine("Removing from cache: " + f.getAbsolutePath()); //NOI18N
+                    }
+                    fileLabels.remove(f);
+                }
+            }
+        }
+
+        void setMimeTypeFlag(boolean flag) {
+            this.mimeTypeFlag = flag;
+        }
+
+        /**
+         * Returns a not null cache item.
+         * @param file
+         * @param mimeTypeFlag mime label is needed?
+         * @return a cache item or a fake one if the original is null or invalid
+         */
+        FileLabelInfo getLabelInfo(File file, boolean mimeTypeFlag) {
+            FileLabelInfo labelInfo;
+            boolean refreshInfo = false;
+            synchronized (fileLabels) {
+                labelInfo = fileLabels.get(file);
+                if (labelInfo == null || !labelInfo.isValid(mimeTypeFlag, true)) {
+                    if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                        if (labelInfo == null && LABELS_CACHE_LOG.isLoggable(Level.FINER)) {
+                            LABELS_CACHE_LOG.finer("No item in cache for : " + file.getAbsolutePath()); //NOI18N
+                        } else if (labelInfo != null) {
+                            LABELS_CACHE_LOG.fine("Too old item in cache for : " + file.getAbsolutePath()); //NOI18N
+                        }
+                    }
+                    fileLabels.remove(file);
+                    labelInfo = FAKE_LABEL_INFO;
+                    refreshInfo = true;
+                }
+            }
+            if (refreshInfo) {
+                scheduleLabelRefresh(file);
+            }
+            return labelInfo;
+        }
+
+        /**
+         * schedules file's label info refresh
+         * @param file
+         */
+        private void scheduleLabelRefresh(File file) {
+            synchronized (filesForLabelRefresh) {
+                filesForLabelRefresh.add(file);
+            }
+            labelInfoRefreshTask.schedule(200);
+        }
+
+        private void remove(File file) {
+            synchronized (fileLabels) {
+                fileLabels.remove(file);
+            }
+        }
+
+        private class LabelInfoRefreshTask extends Task {
+
+            @Override
+            public void run() {
+                Set<File> filesToRefresh;
+                synchronized (filesForLabelRefresh) {
+                    // pick up files for refresh
+                    filesToRefresh = new HashSet<File>(filesForLabelRefresh);
+                    filesForLabelRefresh.clear();
+                }
+                if (!filesToRefresh.isEmpty()) {
+                    File[] files = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                    try {
+                        SvnClient client = Subversion.getInstance().getClient(false);
+                        // get status for all files
+                        ISVNStatus[] statuses = client.getStatus(files);
+                        // labels are accummulated in a temporary map so their timestamp can be later set to a more accurate value
+                        // initialization for many files can be time-consuming and labels initialized in first cycles can grow old even before
+                        // their annotations are refreshed through refreshAnnotations()
+                        HashMap<File, FileLabelInfo> labels = new HashMap<File, FileLabelInfo>(filesToRefresh.size());
+                        for (ISVNStatus status : statuses) {
+                            File file = status.getFile();
+                            SVNRevision rev = status.getRevision();
+                            String revisionString, stickyString, binaryString = null;
+                            revisionString = rev != null && !"-1".equals(rev.toString()) ? rev.toString() : ""; //NOI18N
+                            if (mimeTypeFlag) {
+                                // call svn prop command only when really needed
+                                FileInformation fi = master.getCachedStatus(file);
+                                if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
+                                    binaryString = getMimeType(client, file);
+                                } else {
+                                    binaryString = "";                  //NOI18N
+                                }
+                            }
+                            // copy name
+                            if (status != null && status.getUrl() != null) {
+                                stickyString = SvnUtils.getCopy(status.getUrl());
+                            } else {
+                                // slower
+                                stickyString = SvnUtils.getCopy(file);
+                            }
+                            labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString));
+                        }
+                        synchronized (fileLabels) {
+                            for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
+                                e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
+                                fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
+                                fileLabels.put(e.getKey(), e.getValue());
+                            }
+                        }
+                    } catch (SVNClientException ex) {
+                        LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting status and info for " + filesToRefresh.toString());
+                        LABELS_CACHE_LOG.log(Level.INFO, null, ex);
+                    }
+                    Subversion.getInstance().refreshAnnotations(files);
+                    synchronized (fileLabels) {
+                        if (fileLabels.size() > 50) {
+                            if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                                LABELS_CACHE_LOG.fine("Cache contains : " + fileLabels.size() + " entries before a cleanup"); //NOI18N
+                            }
+                            for (Iterator<File> it = fileLabels.keySet().iterator(); it.hasNext();) {
+                                File f = it.next();
+                                if (!fileLabels.get(f).isValid(mimeTypeFlag, false)) {
+                                    it.remove();
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                                LABELS_CACHE_LOG.fine("Cache contains : " + fileLabels.size() + " entries after a cleanup"); //NOI18N
+                            }
+                        }
+                    }
+                }
+            }
+
+            private String getMimeType(SvnClient client, File file) {
+                try {
+                    ISVNProperty prop = client.propertyGet(file, ISVNProperty.MIME_TYPE);
+                    if (prop != null) {
+                        String mime = prop.getValue();
+                        return mime != null ? mime : "";                //NOI18N
+                    }
+                } catch (SVNClientException ex) {
+                    if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
+                        LABELS_CACHE_LOG.log(Level.FINE, null, ex);
+                    }
+                    return "";                                          //NOI18N
+                }
+                return "";                                              //NOI18N
+            }
+
+        }
+
+        /**
+         * File label cache item
+         */
+        static class FileLabelInfo {
+
+            private final String revisionString;
+            private final String binaryString;
+            private final String stickyString;
+            private boolean pickedUp;
+            private long timestamp;
+
+            private FileLabelInfo(String revisionString, String binaryString, String stickyString) {
+                this.revisionString = revisionString;
+                this.binaryString = binaryString;
+                this.stickyString = stickyString;
+                updateTimestamp();
+            }
+
+            private void updateTimestamp() {
+                this.timestamp = System.currentTimeMillis();
+            }
+
+            /**
+             *
+             * @param mimeFlag if set to true, binaryString will be checked for being set
+             * @param checkFirstAccess first access to this info is always valid,
+             * so the oldness will be checked only when this is false or the info has already been accessed for the first time
+             * @return
+             */
+            private boolean isValid(boolean mimeFlag, boolean checkFirstAccess) {
+                long diff = System.currentTimeMillis() - timestamp;
+                boolean valid = (checkFirstAccess && !pickedUp && (pickedUp = true)) || (diff <= VALID_LABEL_PERIOD);
+                return valid && (!mimeFlag || binaryString != null);
+
+            }
+
+            /**
+             * Returns a not null String with revision number, empty for unknown revisions
+             * @return
+             */
+            String getRevisionString() {
+                return revisionString != null ? revisionString : "";        //NOI18N
+            }
+
+            /*
+             * Returns a not null String, empty for not binary files
+             */
+            String getBinaryString() {
+                return binaryString != null ? binaryString : "";            //NOI18N
+            }
+
+            /**
+             * returns a not null String denoting a copy name
+             * @return
+             */
+            String getStickyString() {
+                return stickyString != null ? stickyString : "";            //NOI18N
+            }
+        }
+    }
 }

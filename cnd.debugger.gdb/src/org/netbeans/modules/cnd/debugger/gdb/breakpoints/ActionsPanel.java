@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JPanel;
@@ -54,10 +55,10 @@ import org.openide.util.NbBundle;
  */
 public class ActionsPanel extends JPanel implements ItemListener {
     
-    private GdbBreakpoint  breakpoint;
+    private CndBreakpoint  breakpoint;
     
     /** Creates new form LineBreakpointPanel */
-    public ActionsPanel(GdbBreakpoint b) {
+    public ActionsPanel(CndBreakpoint b) {
         breakpoint = b;
         initComponents();
         
@@ -67,17 +68,17 @@ public class ActionsPanel extends JPanel implements ItemListener {
         tfThreadID.setText(b.getThreadID());
         
         switch (b.getSuspend()) {
-        case GdbBreakpoint.SUSPEND_NONE:
+        case CndBreakpoint.SUSPEND_NONE:
             cbSuspend.setSelectedIndex(0);
             tfThreadID.setEnabled(false);
             lThreadID.setEnabled(false);
             break;
-        case GdbBreakpoint.SUSPEND_THREAD:
+        case CndBreakpoint.SUSPEND_THREAD:
             cbSuspend.setSelectedIndex(1);
             tfThreadID.setEnabled(true);
             lThreadID.setEnabled(true);
             break;
-        case GdbBreakpoint.SUSPEND_ALL:
+        case CndBreakpoint.SUSPEND_ALL:
         default:
             cbSuspend.setSelectedIndex(2);
             tfThreadID.setEnabled(false);
@@ -102,13 +103,13 @@ public class ActionsPanel extends JPanel implements ItemListener {
         
         switch (cbSuspend.getSelectedIndex()) {
         case 0:
-            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_NONE);
+            breakpoint.setSuspend(CndBreakpoint.SUSPEND_NONE);
             break;
         case 1:
-            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_THREAD, tfThreadID.getText());
+            breakpoint.setSuspend(CndBreakpoint.SUSPEND_THREAD, tfThreadID.getText());
             break;
         case 2:
-            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_ALL);
+            breakpoint.setSuspend(CndBreakpoint.SUSPEND_ALL);
             break;
         }
     }
@@ -116,8 +117,8 @@ public class ActionsPanel extends JPanel implements ItemListener {
     public void itemStateChanged(ItemEvent ev) {
         if (ev.getStateChange() == ItemEvent.SELECTED && ev.getSource() == cbSuspend) {
             int idx = cbSuspend.getSelectedIndex();
-            tfThreadID.setEnabled(idx == GdbBreakpoint.SUSPEND_THREAD);
-            lThreadID.setEnabled(idx == GdbBreakpoint.SUSPEND_THREAD);
+            tfThreadID.setEnabled(idx == CndBreakpoint.SUSPEND_THREAD);
+            lThreadID.setEnabled(idx == CndBreakpoint.SUSPEND_THREAD);
         }
     }
     

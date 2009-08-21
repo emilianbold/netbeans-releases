@@ -67,7 +67,18 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
+    private static final boolean USE_SFTP = getBoolean("cnd.sftp", true);
+
     private CommonTasksSupport() {
+    }
+
+    /** TODO: move it to some common place within nativeexecution */
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
     }
 
     /**
@@ -94,6 +105,10 @@ public final class CommonTasksSupport {
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
             final int mask, final Writer error) {
+
+        if  (USE_SFTP) {
+            return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error);
+        }
 
         Callable<Integer> uploadTask = new Callable<Integer>() {
 
@@ -297,14 +312,14 @@ public final class CommonTasksSupport {
      *
      * @param execEnv  execution environment of the process
      * @param pid  pid of the process
-     * @param signal  signal number
+     * @param signal  signal name, e.g. "KILL", "USR1"
      * @param error  if not <tt>null</tt> and some error occurs,
      *        an error message will be written to this <tt>Writer</tt>
      * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
      *         of the signal task. <tt>0</tt> means success, any other value
      *         means failure.
      */
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, int signal, final Writer error) {
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, int pid, String signal, final Writer error) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
 
         boolean isWindows = false;
@@ -322,10 +337,10 @@ public final class CommonTasksSupport {
 
         if (isWindows) {
             npb.setExecutable(hostInfo.getShell()).setArguments(
-                    "-c", "kill", String.valueOf(-signal), String.valueOf(pid)); // NOI18N
+                    "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
         } else {
             npb.setExecutable("/bin/kill").setArguments( // NOI18N
-                    String.valueOf(-signal), String.valueOf(pid));
+                    "-s", signal, String.valueOf(pid)); // NOI18N
         }
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(

@@ -112,7 +112,7 @@ public class NewWebFreeFormSrcFoldersStepOperator extends WizardOperator{
             String sourceLevel = Bundle.getStringTrimmed(
                     "org.netbeans.modules.java.freeform.ui.Bundle",
                     "LBL_SourceFoldersPanel_jLabel3");
-            _lblSourceLevel = new JLabelOperator(this, "Source Level:");
+            _lblSourceLevel = new JLabelOperator(this, sourceLevel);
         }
         return _lblSourceLevel;
     }

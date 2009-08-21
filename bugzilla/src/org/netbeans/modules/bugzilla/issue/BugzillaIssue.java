@@ -53,13 +53,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Tomas Stupka
+ * @author Jan Stola
  */
 public class BugzillaIssue extends Issue {
 
@@ -470,7 +471,7 @@ public class BugzillaIssue extends Issue {
         return repository.getTaskRepository();
     }
 
-    BugzillaRepository getRepository() {
+    BugzillaRepository getBugzillaRepository() {
         return repository;
     }
 
@@ -609,11 +610,8 @@ public class BugzillaIssue extends Issue {
             setOperation(BugzillaOperation.resolve);
             TaskAttribute rta = data.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
-            assert ta != null;
-            if(ta != null) {
+            if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
                 ta.setValue(resolution);
-            } else {
-                Bugzilla.LOG.warning("Can't set resolve operation for issue " + getID()); // NOI18N
             }
         }
     }
@@ -627,6 +625,17 @@ public class BugzillaIssue extends Issue {
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
         ta.setValue(id);
+    }
+
+    boolean canReassign() {
+        boolean oldRepository = (getBugzillaRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        if (oldRepository) {
+            TaskAttribute rta = data.getRoot();
+            TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
+            return (ta != null);
+        } else {
+            return true;
+        }
     }
 
     void reassign(String user) {
@@ -826,7 +835,7 @@ public class BugzillaIssue extends Issue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(id, td, this); // XXX
+            getBugzillaRepository().getIssueCache().setIssueData(id, td, this); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -865,7 +874,8 @@ public class BugzillaIssue extends Issue {
 
     class Comment {
         private final Date when;
-        private final String who;
+        private final String author;
+        private final String authorName;
         private final Long number;
         private final String text;
 
@@ -881,15 +891,13 @@ public class BugzillaIssue extends Issue {
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
-            String author = null;
-            if(authorAttr != null) {
-                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
-                author = nameAttr != null ? nameAttr.getValue() : null;
-            }
-            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { // NOI18N
+            if (authorAttr != null) {
                 author = authorAttr.getValue();
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                author = authorName = null;
             }
-            who = author;
             String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
             number = n != null ? Long.parseLong(n) : null;
             text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
@@ -907,8 +915,12 @@ public class BugzillaIssue extends Issue {
             return when;
         }
 
-        public String getWho() {
-            return who;
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getAuthorName() {
+            return authorName;
         }
     }
 

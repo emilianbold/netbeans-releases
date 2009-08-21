@@ -55,7 +55,7 @@ import java.io.IOException;
  */
 class ErrWriter extends OutputWriter {
     private OutWriter wrapped;
-    private NbWriter parent;
+    private final NbWriter parent;
     /** Creates a new instance of ErrWriter */
     ErrWriter(OutWriter wrapped, NbWriter parent) {
         super (new OutWriter.DummyWriter());
@@ -75,12 +75,9 @@ class ErrWriter extends OutputWriter {
     @Override
     public void println(String s, OutputListener l, boolean important) throws java.io.IOException {
         closed = false;
-        synchronized (wrapped) {
-            wrapped.println(s, l, important);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        wrapped.print(s, l, important, null, true, true);
     }
-    
+
     public void reset() throws IOException {
         Logger.getAnonymousLogger().warning("Do not call reset() on the error io," +
         " only on the output IO.  Reset on the error io does nothing.");
@@ -112,174 +109,102 @@ class ErrWriter extends OutputWriter {
     
     @Override
     public void write(int c) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.write(c);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(String.valueOf(c), false);
     }
-    
+
     @Override
     public void write(char buf[], int off, int len) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.write(buf, off, len);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(new OutWriter.CharArrayWrapper(buf, off, len), false);
     }
-    
+
     @Override
     public void write(String s, int off, int len) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.write(s, off, len);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(s.substring(off, off + len), false);
     }
-    
+
     @Override
     public void println(boolean x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println (x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(x ? "true" : "false", true);
     }
 
     @Override
-    public void println(int x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+    public void println(int i) {
+        print(String.valueOf(i), true);
     }
-    
+
     @Override
-    public void println(char x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+    public void println(char c) {
+        print(String.valueOf(c), true);
     }
-    
+
     @Override
-    public void println(long x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+    public void println(long l) {
+        print(String.valueOf(l), true);
     }
-    
+
     @Override
     public void println(float x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
-    }
-    
-    @Override
-    public void println(double x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
-    }
-    
-    @Override
-    public void println(char x[]) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
-    }
-    
-    @Override
-    public void println(String x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
-    }
-    
-    @Override
-    public void println(Object x) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.println(x);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(String.valueOf(x), true);
     }
 
     @Override
-    public void print(char[] s) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(s);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+    public void println(double x) {
+        print(String.valueOf(x), true);
+    }
+
+    @Override
+    public void println(char buf[]) {
+        print(new OutWriter.CharArrayWrapper(buf), true);
+    }
+
+    @Override
+    public void println(String s) {
+        print(s, true);
+    }
+
+    @Override
+    public void println(Object x) {
+        print(String.valueOf(x), true);
+    }
+
+    @Override
+    public void print(char[] buf) {
+        print(new OutWriter.CharArrayWrapper(buf), false);
     }
 
     @Override
     public void print(Object obj) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(obj);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(String.valueOf(obj), false);
     }
 
     @Override
     public void print(char c) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(c);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(String.valueOf(c), false);
     }
 
     @Override
     public void print(int i) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(i);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(String.valueOf(i), false);
     }
 
     @Override
     public void print(String s) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(s);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(s, false);
     }
 
     @Override
     public void print(boolean b) {
-        closed = false;
-        synchronized (wrapped) {
-            wrapped.print(b);
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        print(b ? "true" : "false", false);
     }
-    
+
     @Override
     public void println() {
         closed = false;
-        synchronized (wrapped) {
-            wrapped.println();
-            ((AbstractLines) wrapped.getLines()).markErr();
-        }
+        wrapped.println();
     }
 
-    
+    private void print(CharSequence s, boolean addLineSep) {
+        closed = false;
+        wrapped.print(s, null, false, null, true, addLineSep);
+    }
 }

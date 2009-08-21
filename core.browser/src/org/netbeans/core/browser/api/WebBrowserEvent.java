@@ -75,9 +75,6 @@ public abstract class WebBrowserEvent {
 
 
 
-    WebBrowserEvent() {
-    }
-
     /**
      * @return Event type.
      */
@@ -108,14 +105,4 @@ public abstract class WebBrowserEvent {
      * Has no effect for other event types.
      */
     public abstract void cancel();
-    
-    abstract boolean isCancelled();
-
-    static WebBrowserEvent create( int type, WebBrowser source, String url  ) {
-        return new WebBrowserEventImpl(type, source, url);
-    }
-
-    static WebBrowserEvent create( int type, WebBrowser source, AWTEvent event, Node node ) {
-        return new WebBrowserEventImpl(type, source, event, node);
-    }
 }

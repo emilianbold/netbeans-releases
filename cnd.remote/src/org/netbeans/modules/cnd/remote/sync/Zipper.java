@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
@@ -102,7 +103,7 @@ public class Zipper {
             return;
         }
         count++;
-        FileInputStream in = new FileInputStream(file);
+        InputStream in = getFileInputStream(file);
         // Add ZIP entry to output stream.
         String name = (base == null) ? file.getName() : base + '/' + file.getName();
         //System.err.printf("Zipping %s\n", name);
@@ -115,5 +116,9 @@ public class Zipper {
         // Complete the entry
         out.closeEntry();
         in.close();
+    }
+
+    protected InputStream getFileInputStream(File file) throws FileNotFoundException {
+        return new FileInputStream(file);
     }
 }

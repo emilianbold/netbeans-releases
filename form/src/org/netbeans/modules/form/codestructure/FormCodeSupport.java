@@ -42,7 +42,6 @@
 package org.netbeans.modules.form.codestructure;
 
 import java.beans.PropertyEditor;
-import java.lang.reflect.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
 

@@ -80,6 +80,9 @@ public final class DLightTHAToolConfigurationProvider
         DeadlockVisualizerConfiguration deadlockVisualizerConfiguration = new DeadlockVisualizerConfiguration();
         indicatorConfiguration.addVisualizerConfiguration(deadlockVisualizerConfiguration);
 
+        RacesVisualizerConfiguration dataracesVisualizerConfiguration = new RacesVisualizerConfiguration();
+        indicatorConfiguration.addVisualizerConfiguration(dataracesVisualizerConfiguration);
+
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
 
         return toolConfiguration;

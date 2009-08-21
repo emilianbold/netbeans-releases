@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.spi.commands;
 
 /**
+ * <b>Warning:</b> Subclasses should not hold strong reference
+ * to {@link org.netbeans.modules.php.api.phpmodule.PhpModule PHP module}.
  * @author Petr Hejl, Tomas Mysik
  */
 public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {

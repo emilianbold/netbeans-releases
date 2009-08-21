@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,13 +59,15 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
+import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,13 +96,28 @@ public class PHPTypeSearcher implements IndexSearcher {
         if (index != null) {
             String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
             query = query.toLowerCase();
-            addClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            addInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            //TODO: missing iface members
-            addClassMembers(index, stripDollar(query), Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            addFunctions(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            addConstants(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            addTpLevelVariables(index, appendDollar(query), Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            final Collection<IndexedElement> classes = getClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX);
+            for (IndexedElement indexedElement : classes) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            final Collection<IndexedElement> interfaces = getInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX);
+            for (IndexedElement indexedElement : interfaces) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            final Collection<IndexedElement> functions = getFunctions(index, query, Kind.CASE_INSENSITIVE_PREFIX);
+            for (IndexedElement indexedElement : functions) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            for (IndexedElement indexedElement : getConstants(index, query, Kind.CASE_INSENSITIVE_PREFIX)) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            for (IndexedElement indexedElement : getTopLevelVariables(index, appendDollar(query), Kind.CASE_INSENSITIVE_PREFIX)) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            for (IndexedClassMember indexedClassMember : getClassMembers(index, stripDollar(query), Kind.CASE_INSENSITIVE_PREFIX)) {
+                result.add(new PHPTypeDescriptor(indexedClassMember.getMember(),
+                        indexedClassMember.getType(), helper));
+            }
         }
         if (regexpKinds.contains(kind)) {
             //handles wildcards and camelCases
@@ -130,12 +150,27 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.<String>emptySet()));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
+        NamespaceIndexFilter<IndexedElement> namespaceFilter = new NamespaceIndexFilter<IndexedElement>(textForQuery);
+        QualifiedNameKind qnk = namespaceFilter.getKind();
         if (index != null) {
-            String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
-            addClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
-            addInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : namespaceFilter.getName();
+            Collection<IndexedElement> classes = getClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX);
+            if (!qnk.isUnqualified()) {
+                //after typing a\b\ lists all types in namespace a\b
+                classes = namespaceFilter.filter(classes);
+            }
+            for (IndexedElement indexedElement : classes) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
+            Collection<IndexedElement> interfaces = getInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX);
+            if (!qnk.isUnqualified()) {
+                interfaces = namespaceFilter.filter(interfaces);
+            }
+            for (IndexedElement indexedElement : interfaces) {
+                result.add(new PHPTypeDescriptor(indexedElement, helper));
+            }
         }
-        if (regexpKinds.contains(kind)) {
+        if (qnk.isUnqualified() && regexpKinds.contains(kind)) {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
             result = new HashSet<PHPTypeDescriptor>();
@@ -150,59 +185,44 @@ public class PHPTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    private static void addClassMembers(PHPIndex index, String query, QuerySupport.Kind kind,
-         Helper helper, Set<PHPTypeDescriptor> result) {
+    private static Collection<IndexedClassMember> getClassMembers(PHPIndex index, String query, QuerySupport.Kind kind) {
+       Collection<IndexedClassMember> result = new ArrayList<IndexedClassMember>();
         Set<String> typeNames = index.typeNamesForIdentifier(query, null,QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
         for (String className : typeNames) {
             for (IndexedClass clz : index.getClasses(null, className, kind)) {
-                for (IndexedFunction func : index.getMethods(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
-                    result.add(new PHPTypeDescriptor(func, clz, helper));
-                }
-                for (IndexedClassMember<IndexedConstant> classMember  : index.getAllFields(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
-                    IndexedConstant constanst = classMember.getMember();
-                    result.add(new PHPTypeDescriptor(constanst, clz, helper));
-                }
-                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, clz.getName(), query, kind)) {
-                    IndexedConstant constanst = classMember.getMember();
-                    result.add(new PHPTypeDescriptor(constanst, clz, helper));
-                }
+                result.addAll(index.getAllMethods(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR));
+                result.addAll(index.getAllFields(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR));
+                result.addAll(index.getAllTypeConstants(null, clz.getName(), query, kind));
             }
         }
+        return result;
     }
-    private static void addTpLevelVariables(PHPIndex index, String query, QuerySupport.Kind kind,
-             Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getTopLevelVariables(null, query, kind)) {
-                result.add(new PHPTypeDescriptor(el, helper));
-            }
+    private static Collection<IndexedElement> getTopLevelVariables(PHPIndex index, String query, QuerySupport.Kind kind) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        result.addAll(index.getTopLevelVariables(null, query, kind));
+        return result;
     }
-    private static void addFunctions(PHPIndex index, String query, QuerySupport.Kind kind,
-             Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getFunctions(null, query, kind)) {
-                result.add(new PHPTypeDescriptor(el, helper));
-            }
+    private static Collection<IndexedElement> getFunctions(PHPIndex index, String query, QuerySupport.Kind kind) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        result.addAll(index.getFunctions(null, query, kind));
+        return result;
+
     }
-    private static void addConstants(PHPIndex index, String query, QuerySupport.Kind kind,
-             Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getConstants(null, query, kind)) {
-                result.add(new PHPTypeDescriptor(el, helper));
-            }
+    private static Collection<IndexedElement> getConstants(PHPIndex index, String query, QuerySupport.Kind kind) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        result.addAll(index.getConstants(null, query, kind));
+        return result;
     }
-    private static void addClasses(PHPIndex index, String query, QuerySupport.Kind kind,
-             Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getClasses(null, query, kind)) {
-                result.add(new PHPTypeDescriptor(el, helper));
-            }
+    private static Collection<IndexedElement> getClasses(PHPIndex index, String query, QuerySupport.Kind kind) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        result.addAll(index.getClasses(null, query, kind));
+        return result;
+
     }
-    private static void addInterfaces(PHPIndex index, String query, QuerySupport.Kind kind,
-             Helper helper, Set<PHPTypeDescriptor> result) {
-            for (IndexedElement el : index.getInterfaces(null, query, kind)) {
-                result.add(new PHPTypeDescriptor(el, helper) {
-                    @Override
-                    public Icon getIcon() {
-                        return PHPCompletionItem.getInterfaceIcon();
-                    }
-                });
-        }
+    private static Collection<IndexedElement> getInterfaces(PHPIndex index, String query, QuerySupport.Kind kind) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        result.addAll(index.getInterfaces(null, query, kind));
+        return result;
     }
 
     private static String stripDollar(String textForQuery) {
@@ -239,6 +259,9 @@ public class PHPTypeSearcher implements IndexSearcher {
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
+            }
+            if (element instanceof IndexedInterface) {
+                return PHPCompletionItem.getInterfaceIcon();
             }
             return helper.getIcon(element);
         }
@@ -295,9 +318,18 @@ public class PHPTypeSearcher implements IndexSearcher {
         public String getContextName() {
             StringBuilder sb = new StringBuilder();
             boolean s = false;
-            if (enclosingClass != null) {
-                sb.append(enclosingClass.getName());
+            if (element instanceof IndexedFullyQualified) {
+                sb.append(((IndexedFullyQualified) element).getFullyQualifiedName());
                 s = true;
+            } else {
+                if (enclosingClass != null) {
+                    if (enclosingClass instanceof IndexedFullyQualified) {
+                        sb.append(((IndexedFullyQualified) enclosingClass).getFullyQualifiedName());
+                    } else {
+                        sb.append(enclosingClass.getName());
+                    }
+                    s = true;
+                }
             }
             FileObject file = getFileObject();
             if (file != null) {
@@ -350,7 +382,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             return hash;
         }
     }
-
+    
     private static Pattern queryToPattern(String query) {
         StringBuilder sb = new StringBuilder();
         char[] chars = query.toCharArray();

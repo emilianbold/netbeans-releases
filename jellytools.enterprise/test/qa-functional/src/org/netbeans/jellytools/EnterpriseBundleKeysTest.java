@@ -51,15 +51,7 @@ public class EnterpriseBundleKeysTest extends TestBundleKeys
 
 
     public EnterpriseBundleKeysTest(String isBundleName) {
-        this(isBundleName, null);
-    }
-
-    /** Constructor required by JUnit.
-     * @param testName method name to be used as testcase
-     */
-    public EnterpriseBundleKeysTest(String bundleName, String keys) {
-        super(bundleName);
-        this.keys=keys;
+        super(isBundleName);
     }
 
     protected ClassLoader getDescendantClassLoader()

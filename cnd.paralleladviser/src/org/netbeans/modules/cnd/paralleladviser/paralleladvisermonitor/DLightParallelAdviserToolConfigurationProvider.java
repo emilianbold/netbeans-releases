@@ -51,16 +51,22 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor;
 
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl.ParallelAdviserIndicatorConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.dlight.util.Util;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,6 +77,7 @@ import org.openide.util.NbBundle;
 public final class DLightParallelAdviserToolConfigurationProvider
         implements DLightToolConfigurationProvider {
 
+    public static final String ID = "dlight.tool.paralleladviser"; // NOI18N
     private static final String TOOL_NAME = loc("ParallelAdviserMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ParallelAdviserMonitorTool.DetailedToolName"); // NOI18N
     // This indicator should be the last one
@@ -79,17 +86,42 @@ public final class DLightParallelAdviserToolConfigurationProvider
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
-        toolConfiguration.setIcon("/org/netbeans/modules/dlight/paralleladviser/resouces/notification.png"); // NOI18N
+        toolConfiguration.setIcon("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/paralleladviser.png"); // NOI18N
 
         // Collectors
         // SunStudio
         SunStudioDCConfiguration ssCollectorConfig =
                 new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
         toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
+        // D-Trace
+        DTDCConfiguration dtraceDataCollectorConfiguration = DTDCConfiguration.createCpuSamplingConfiguration();
+        toolConfiguration.addDataCollectorConfiguration(
+                dtraceDataCollectorConfiguration);
+        // D-Trace 2  -- causes NPE as there is no msa.d in this module
+//        URL scriptUrl = getClass().getResource(Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
+//        Column threads = new Column("threads", Integer.class); // NOI18N
+//        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
+//        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
+//        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
+//        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
+//        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
+//        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
+//        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
+//        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
+//        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
+//        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
+//        DTDCConfiguration dtraceDataCollectorConfiguration2 = new DTDCConfiguration(scriptUrl, Arrays.asList(new DataTableMetadata("MSA", // NOI18N
+//                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null)));
+//        dtraceDataCollectorConfiguration2.setOutputPrefix("msa:"); // NOI18N
+////        dtraceDataCollectorConfiguration2.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
+////        dtraceDataCollectorConfiguration2.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+//        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration2);
+
 
         // Indicator
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
+//        toolConfiguration.addIndicatorDataProviderConfiguration(dtraceDataCollectorConfiguration2);
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);

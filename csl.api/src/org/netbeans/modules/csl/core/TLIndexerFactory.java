@@ -40,6 +40,7 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -102,6 +103,11 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         } catch (IOException ex) {
             LOG.log (Level.WARNING, null, ex);
         }
+    }
+
+    @Override
+    public void rootsRemoved (final Iterable<? extends URL> removedRoots) {
+        //Not needed now
     }
 
     @Override

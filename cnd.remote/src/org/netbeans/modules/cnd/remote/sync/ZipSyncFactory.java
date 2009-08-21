@@ -54,6 +54,8 @@ import org.openide.util.NbBundle;
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class ZipSyncFactory extends RemoteSyncFactory {
 
+    /*package*/ static final String ID = "scp"; //NOI18N
+    
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
             PrintWriter out, PrintWriter err, File privProjectStorageDir) {
@@ -74,7 +76,7 @@ class ZipSyncFactory extends RemoteSyncFactory {
 
     @Override
     public String getID() {
-        return "scp"; //NOI18N
+        return ID;
     }
 
     @Override

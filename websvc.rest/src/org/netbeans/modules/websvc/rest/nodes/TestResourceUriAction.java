@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -76,20 +75,26 @@ public class TestResourceUriAction extends NodeAction  {
 
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
-        RestServiceDescription restDesc = activatedNodes[0].getLookup().lookup(RestServiceDescription.class);
-        if (restDesc != null && restDesc.getUriTemplate() != null && restDesc.getUriTemplate().length() > 0) {
-            return true;
+        ResourceUriProvider resourceUriProvider = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class);
+        if (resourceUriProvider == null) {
+            return false;
+        } else {
+            String resourceUri = resourceUriProvider.getResourceUri();
+            if (resourceUri == null || resourceUri.length() == 0) {
+                return false;
+            }
         }
-        return false;
+        return true;
     }
 
     protected void performAction(Node[] activatedNodes) {
-        RestServiceDescription restDesc = activatedNodes[0].getLookup().lookup(RestServiceDescription.class);
-        String uri = restDesc.getUriTemplate();
+        String uri = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class).getResourceUri();
         if (!uri.startsWith("/")) {
             uri = "/"+uri;
         }
+        System.out.println("uri = "+uri);
         String resourceURL = getResourceURL(activatedNodes[0].getLookup().lookup(Project.class), uri);
+        System.out.println("url = "+resourceURL);
         try {
             URL url = new URL(resourceURL);
             if (url != null) {

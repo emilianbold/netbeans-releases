@@ -71,5 +71,14 @@ public class TestEntryTest extends TestBase {
         URL srcDir = entry.getSrcDir();
         assertEquals(resolveEEPFile("/suite4/module1/test/unit/src").toURI().toURL().toExternalForm(),srcDir.toExternalForm());
     }
-    
+
+    public void testNullsOnShortUNCPath144758() throws IOException {
+        TestEntry entry = TestEntry.get(new File("\\\\server\\shared\\tests.jar"));
+        assertNotNull(entry);
+        assertNull(entry.getTestDistRoot());
+        assertNull(entry.getSrcDir());
+        assertNull(entry.getNetBeansOrgPath());
+        assertNull(entry.getNBRoot());
+    }
+
 }

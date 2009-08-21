@@ -49,7 +49,7 @@ public final class DialogBinding {
      * @param length how many characters replace from the original file
      * @param component component to bind
      * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if fileObject is null
+     * @throws IllegalArgumentException if fileObject is null
      * @since 1.1
      * @deprecated Use {@link org.netbeans.api.editor.DialogBinding#bindComponentToFile(FileObject,int,int,JTextComponent)} instead.
      */

@@ -258,21 +258,28 @@ public class WrappedTextView extends View {
             
             try {
                 for (int i = firstline; i < lineCount; i++) {
+                    if (y > clip.y + clip.height) {
+                        return;
+                    }
                     int lineStart = doc.getLineStart(i);
                     int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
-
-                    g.setColor(lines.getColorForLine(i));
+                    if (length == 0) {
+                        y += charHeight;
+                        continue;
+                    }
+                    LineInfo info = lines.getLineInfo(i);
 
                     // get number of logical lines
                     int logicalLines = length <= charsPerLine ? 1 : 
                         (charsPerLine == 0 ? length : (length + charsPerLine - 1) / charsPerLine);
                     
                     // get current (first which we will draw) logical line
-                    int currLogicalLine = (i == firstline && logicalLines > 0 && ln[1] > 0 )? ln[1] : 0;
+                    int currLogicalLine = (i == firstline && logicalLines > 0 && ln[1] > 0 ) ? ln[1] : 0;
                     
                     // shift lineStart to position of first logical line that will be drawn
-                    lineStart += currLogicalLine * charsPerLine;
+                    int logLineOffset = currLogicalLine * charsPerLine;
+                    lineStart += logLineOffset;
                     
                     // limit number of chars needed by estimation of maximum number of chars we need to repaint
                     length = Math.min(maxVisibleChars, lineEnd - lineStart);
@@ -280,20 +287,43 @@ public class WrappedTextView extends View {
                     // get just small part of document we need (no need to get e.g. whole 10 MB line)
                     doc.getText(lineStart, length, seg);
 
-                    //Iterate all the logicalLines lines
-                    
-                    for (int charpos = 0; currLogicalLine < logicalLines; currLogicalLine++, charpos += charsPerLine) {
-                        int lenToDraw = Math.min(charsPerLine, length - charpos);
-                        if (lenToDraw > 0) {
-                            drawLogicalLine(seg, currLogicalLine, logicalLines, g, y, lineStart, charpos, selStart, lenToDraw, selEnd);
-                            if (lines.isHyperlink(i)) {
-                                underline(g, seg, charpos, lenToDraw, currLogicalLine, y);
+                    int charpos = 0;
+                    int arrowDrawn = currLogicalLine - 1;
+                    int x = 0;
+                    int remainCharsOnLogicalLine = charsPerLine;
+                    for (LineInfo.Segment ls : info.getLineSegments()) {
+                        if (ls.getEnd() < logLineOffset) {
+                            continue;
+                        }
+                        g.setColor(ls.getColor());
+                        while (charpos < ls.getEnd() - logLineOffset && currLogicalLine < logicalLines) {
+                            int lenToDraw = Math.min(remainCharsOnLogicalLine, ls.getEnd() - logLineOffset - charpos);
+                            if (lenToDraw > 0) {
+                                if (currLogicalLine != logicalLines - 1 && arrowDrawn != currLogicalLine) {
+                                    arrowDrawn = currLogicalLine;
+                                    drawArrow(g, y, currLogicalLine == logicalLines - 2);
+                                }
+                                drawText(seg, g, x, y, lineStart, charpos, selStart, lenToDraw, selEnd);
+                                if (ls.getListener() != null) {
+                                    underline(g, seg, charpos, lenToDraw, x, y);
+                                }
+                            }
+                            charpos += lenToDraw;
+                            remainCharsOnLogicalLine -= lenToDraw;
+                            x += lenToDraw * charWidth;
+                            if (remainCharsOnLogicalLine == 0) {
+                                remainCharsOnLogicalLine = charsPerLine;
+                                currLogicalLine++;
+                                x = 0;
+                                y += charHeight;
+                                if (y > clip.y + clip.height) {
+                                    return;
+                                }
                             }
                         }
+                    }
+                    if (charpos % charsPerLine != 0) {
                         y += charHeight;
-                        if (y > clip.y + clip.height) {
-                            return;
-                        }
                     }
                 }
             } catch (BadLocationException e) {
@@ -303,11 +333,9 @@ public class WrappedTextView extends View {
     }
 
     /**
-     * Draw one logical (wrapped) line
+     * Draw text
      *
      * @param seg A Segment object containing the text
-     * @param currLogicalLine Index of the current logical line in the physical line
-     * @param logicalLines Number of logical lines there are
      * @param g The graphics context
      * @param y The baseline in the graphics context
      * @param lineStart The character position at which the line starts
@@ -316,47 +344,28 @@ public class WrappedTextView extends View {
      * @param lenToDraw The number of characters we'll draw before we're outside the clip rectangle
      * @param selEnd The end of the selected range of text, if any
      */
-    private void drawLogicalLine(Segment seg, int currLogicalLine, int logicalLines, Graphics g, int y, int lineStart, int charpos, int selStart, int lenToDraw, int selEnd) {
-        if (currLogicalLine != logicalLines-1) {
-            drawArrow (g, y, currLogicalLine == logicalLines-2);
-        }
-        
+    private void drawText(Segment seg, Graphics g, int x, int y, int lineStart, int charpos, int selStart, int lenToDraw, int selEnd) {
         if (selStart != selEnd) {
             int realPos = lineStart + charpos;
             int a = Math.max(selStart, realPos);
             int b = Math.min(selEnd, realPos + lenToDraw);
             if (a < b) {
-                int start = margin() + (a - realPos) * charWidth;
+                int start = x + margin() + (a - realPos) * charWidth;
                 int len = (b - a) * charWidth;
                 Color c = g.getColor();
                 g.setColor (comp.getSelectionColor());
                 g.fillRect (start, y + fontDescent - charHeight, len, charHeight);
                 g.setColor (c);
-                
             }
         }
-        g.drawChars(seg.array, charpos, lenToDraw, margin(), y);
+        g.drawChars(seg.array, charpos, lenToDraw, margin() + x, y);
     }
 
-
-    private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int currLogicalLine, int y) {
-        int underlineStart = margin();
+    private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int x, int y) {
+        int underlineStart = margin() + x;
         FontMetrics fm = g.getFontMetrics();
         int underlineEnd = underlineStart + fm.charsWidth(seg.array, charpos, lenToDraw);
-        if (currLogicalLine == 0) {
-            //#47263 - start hyperlink underline at first
-            //non-whitespace character
-            for (int k = 0; k < lenToDraw; k++) {
-                if (Character.isWhitespace(seg.array[charpos + k])) {
-                    underlineStart += charWidth;
-                } else {
-                    break;
-                }
-            }
-        } else {
-            underlineStart = margin();
-        }
-        int underlineShift = (int) fm.getDescent() - 1;
+        int underlineShift = fm.getDescent() - 1;
         g.drawLine (underlineStart, y + underlineShift, underlineEnd, y + underlineShift);
     }
 

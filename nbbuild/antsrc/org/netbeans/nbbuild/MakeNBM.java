@@ -73,10 +73,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.w3c.dom.DOMImplementation;
@@ -320,7 +322,8 @@ public class MakeNBM extends Task {
     private ArrayList<Attributes> moduleAttributes = null;
     private Attributes englishAttr = null;
     private Path updaterJar;
-    
+    private FileSet executablesSet;
+
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
         locales = new ArrayList<String>();
@@ -341,6 +344,11 @@ public class MakeNBM extends Task {
     /** Name of resulting NBM file. */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    /** List of executable files in NBM concatinated by ${line.separator}. */
+    public FileSet createExecutables() {
+        return (executablesSet = new FileSet());
     }
     
     /** Module manifest needed for versioning.
@@ -638,12 +646,15 @@ public class MakeNBM extends Task {
  	UpdateTracking tracking = new UpdateTracking(productDir.getAbsolutePath());
  	String files[] = tracking.getListOfNBM( codename );
  	ZipFileSet fs = new ZipFileSet();
+        List <String> moduleFiles = new ArrayList <String>();
  	fs.setDir( productDir );
- 	for (int i=0; i < files.length; i++)
+ 	for (int i=0; i < files.length; i++) {
  	    fs.createInclude().setName( files[i] );
+            moduleFiles.add(files[i]);
+        }
  	fs.setPrefix("netbeans/");
 
-	// JAR it all up together.
+        // JAR it all up together.
         long jarModified = nbm.lastModified(); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) getProject().createTask("jar");
@@ -657,8 +668,49 @@ public class MakeNBM extends Task {
         if (main != null) { // Add the main dir
             main.setPrefix("main"); // use main prefix
             jar.addZipfileset(main);
+            DirectoryScanner ds = main.getDirectoryScanner();
+            ds.scan();
+            String  [] mainFiles = ds.getIncludedFiles();
+            for(String m : mainFiles) {
+                moduleFiles.add(m);
+            }
         }
-            
+
+
+        if (executablesSet != null) {
+            DirectoryScanner eds = executablesSet.getDirectoryScanner();
+            eds.scan();
+            String  [] executables = eds.getIncludedFiles();
+
+            if(executables.length > 0) {
+                ZipFileSet executablesList = new ZipFileSet();
+                File executablesFile;
+                StringBuilder sb = new StringBuilder("");
+                    String ls = System.getProperty("line.separator");
+                    for(int i=0;i < executables.length;i++) {
+                        if(i!=0) {
+                            sb.append(ls);
+                        }
+                        sb.append(executables[i].replace("\\","/"));
+                    }
+                try {
+                    executablesFile = File.createTempFile("executables",".list");
+                    OutputStream infoStream = new FileOutputStream (executablesFile);
+                    try {
+                        infoStream.write(sb.toString().getBytes("UTF-8"));
+                    } finally {
+                        infoStream.close ();
+                    }
+                } catch (IOException e) {
+                    throw new BuildException("exception when creating Info/executables.list", e, getLocation());
+                }
+                executablesFile.deleteOnExit();
+                executablesList.setFile(executablesFile);
+                executablesList.setFullpath("Info/executables.list");
+                jar.addZipfileset(executablesList);
+            }
+        }
+
         jar.setCompress(true);
 	jar.setLocation(getLocation());
 	jar.init ();

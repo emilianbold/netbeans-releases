@@ -124,6 +124,7 @@ made subject to such option by the copyright holder.
                             <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="includeAntRuntime">false</xsl:attribute>
                             <src>
                                 <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
                                     <include name="*"/>
@@ -133,9 +134,6 @@ made subject to such option by the copyright holder.
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <javac>
-                                <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
-                                <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
-                                <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                                 <xsl:attribute name="debug">@{debug}</xsl:attribute>
                                 <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                                 <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
@@ -143,22 +141,12 @@ made subject to such option by the copyright holder.
                                     <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                     <xsl:attribute name="target">${javac.target}</xsl:attribute>
                                 </xsl:if>
-                                <xsl:attribute name="includes">@{includes}</xsl:attribute>
-                                <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                                 <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                     <xsl:attribute name="fork">yes</xsl:attribute>
                                     <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                                     <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                                 </xsl:if>
-                                <xsl:attribute name="includeantruntime">false</xsl:attribute>
-                                <src>
-                                    <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
-                                        <include name="*"/>
-                                    </dirset>
-                                </src>
-                                <classpath>
-                                    <path path="@{{classpath}}"/>
-                                </classpath>
+                                
                                 <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                                 <customize/>
                             </javac>

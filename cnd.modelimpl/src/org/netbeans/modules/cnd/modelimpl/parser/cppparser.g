@@ -882,7 +882,7 @@ typedef_enum
                 (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
         ;
 
-external_declaration {String s; K_and_R = false; boolean definition;}
+external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq;}
 	:  
 	(
                 {isCPlusPlus()}?
@@ -929,15 +929,24 @@ external_declaration {String s; K_and_R = false; boolean definition;}
         // IZ#145071: forward declarations marked as error
         (LITERAL_typedef (LITERAL_struct |	LITERAL_union |	LITERAL_class)) => typedef_class_fwd
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
-*/	|
-		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? (LCURLY))=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_3[%d]: Enum definition\n",
-				LT(1).getLine());
-		}
-		enum_specifier (init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
-		{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
+*/
+    |
+        // Enum definition (don't want to backtrack over this in other alts)
+        (   (LITERAL___extension__!)?
+            (   storage_class_specifier
+            |   cv_qualifier
+            |   LITERAL_typedef
+            )*
+            LITERAL_enum (ID)? (LCURLY)
+        ) =>
+        (LITERAL___extension__!)?
+            (   sc = storage_class_specifier
+            |   tq = cv_qualifier
+            |   LITERAL_typedef
+        )*
+        {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
+        enum_specifier (init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
+        { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
 	|
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?

@@ -56,6 +56,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.Icons;
@@ -75,21 +76,28 @@ import org.openide.text.NbDocument;
  * XXX - needs cleanup
  *
  * @author Jan Lahoda
+ * @deprecated Replaced by various classes in the org.netbeans.modules.java.sourceui module.
  */
 @Deprecated
-public final class  UiUtils {    
-    
+public final class  UiUtils {
+
     private UiUtils() {}
     
     /** Gets correct icon for given ElementKind.
-     *@param modifiers Can be null for empty modifiers collection
+     * @param modifiers Can be null for empty modifiers collection
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementIcons#getElementIcon(javax.lang.model.element.ElementKind, java.util.Collection)}
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static Icon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
         return Icons.getElementIcon(elementKind, modifiers);
     }
-    
-    // XXX Remove
+
+    /**
+     *
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementIcons#getElementIcon(javax.lang.model.element.ElementKind, java.util.Collection)}
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static Icon getDeclarationIcon(Element element) {
         return getElementIcon(element.getKind(), element.getModifiers());
@@ -103,6 +111,8 @@ public final class  UiUtils {
      * @param el    declaration to open
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementOpen#open(org.netbeans.api.java.source.ClasspathInfo, org.netbeans.api.java.source.ElementHandle) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static boolean open(final ClasspathInfo cpInfo, final Element el) {
@@ -114,7 +124,12 @@ public final class  UiUtils {
 	}
 	return false;
     }
-    
+
+    /**
+     *
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementOpen#open(org.openide.filesystems.FileObject, org.netbeans.api.java.source.ElementHandle) }
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static boolean open(final FileObject toSearch, final ElementHandle<? extends Element> toOpen) {
         if (toSearch == null || toOpen == null) {
@@ -146,7 +161,12 @@ public final class  UiUtils {
         VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getVariableHeader(tree, s);
     }
-    
+
+    /**
+     *
+     * @deprecated Use constants from {@link org.netbeans.api.java.source.ui.ElementHeaders}
+     *             of the org.netbeans.modules.java.sourceui module
+     */
     @Deprecated
     public static final class PrintPart {
         private PrintPart() {}
@@ -164,6 +184,8 @@ public final class  UiUtils {
     /**
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getHeader(com.sun.source.util.TreePath, org.netbeans.api.java.source.CompilationInfo, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static String getHeader(TreePath treePath, CompilationInfo info, String formatString) {
@@ -178,6 +200,8 @@ public final class  UiUtils {
     /**
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getHeader(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static String getHeader(Element element, CompilationInfo info, String formatString) {
@@ -233,7 +257,9 @@ public final class  UiUtils {
         }
     }
     
-    /** Computes dostance between strings
+    /** Computes distance between strings
+     * @deprecated Use {@link org.netbeans.api.java.source.ui.ElementHeaders#getDistance(java.lang.String, java.lang.String) }
+     *             of the org.netbeans.modules.java.sourceui module
      */
     @Deprecated
     public static int getDistance(String s, String t) {
@@ -320,8 +346,8 @@ public final class  UiUtils {
     private static boolean doOpen(FileObject fo, int offset) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+            LineCookie lc = od.getLookup().lookup(LineCookie.class);
             
             if (ec != null && lc != null && offset != -1) {                
                 StyledDocument doc = ec.openDocument();                
@@ -334,14 +360,14 @@ public final class  UiUtils {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                            doShow( l, column);
                             return true;
                         }
                     }
                 }
             }
             
-            OpenCookie oc = (OpenCookie) od.getCookie(OpenCookie.class);
+            OpenCookie oc = od.getLookup().lookup(OpenCookie.class);
             
             if (oc != null) {
                 oc.open();                
@@ -356,6 +382,18 @@ public final class  UiUtils {
         return false;
     }
     
+    private static void doShow(final Line l, final int column) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                }
+            });
+        }
+    }
+
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         assert handle != null;
         final int[]  result = new int[] {-1};
@@ -433,30 +471,5 @@ public final class  UiUtils {
         }
     
     }
-    
-        //JL: will anybody need this?:
-//    public static Action createOpenAction(FileObject context, Declaration el) {
-//        return new OpenAction(context, el);
-//    }
-//    
-//    private static final class OpenAction extends AbstractAction {
-//        
-//        private FileObject context;
-//        private Declaration el;
-//        
-//        public OpenAction(FileObject context, Declaration el) {
-//            this.context = context;
-//            this.el = el;
-//            
-//            putValue(NAME, getDisplayName(el));
-//        }
-//        
-//        public void actionPerformed(ActionEvent e) {
-//            open(context, el);
-//        }
-//        
-//    }
-
-    
     
 }

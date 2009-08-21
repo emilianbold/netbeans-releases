@@ -89,23 +89,16 @@ final class IntMap {
         if (line > keys[last]) {
             return backward ? keys[last] : keys[0];
         }
-        int idx = Arrays.binarySearch (keys, line);
-        if (idx < 0 && last > 0) {
-            for (int i=1; i <= last; i++) {
-                if (keys[i-1] < line && keys[i] > line) {
-                    idx = i;
-                    break;
-                }
+        int idx = Arrays.binarySearch(keys, line);
+        if (idx < 0) {
+            idx = -idx + (backward ? -2 :- 1);
+            if (idx > last) {
+                idx = backward ? last : 0;
+            } else if (idx < 0) {
+                idx = backward ? last : 0;
             }
-            return backward ? keys[idx-1] : keys[idx];
-        } else {
-            if (backward) {
-                idx = idx == 0 ? last : idx - 1;
-            } else {
-                idx = idx == last ? 0 : idx + 1;
-            }
-            return keys[idx];
         }
+        return keys[idx];
     }
 
     public int[] getKeys () {
@@ -152,7 +145,10 @@ final class IntMap {
     }
     
     public void put (int key, Object val) {
-        if (last > 0) {
+        if (last >= 0) {
+            if (keys[last] == key && vals[last] == val) {
+                return;
+            }
             assert key > keys[last]: "key=" + key + " last=" + keys[last];
         }
         if (last == keys.length - 1) {
@@ -211,6 +207,7 @@ final class IntMap {
         return last + 1;
     }
     
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("IntMap@") //NOI18N
                 .append(System.identityHashCode(this));
