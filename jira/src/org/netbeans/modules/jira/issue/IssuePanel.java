@@ -103,6 +103,7 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.repository.JiraIssueProvider;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
 import org.netbeans.modules.jira.util.ProjectRenderer;
@@ -129,6 +130,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean skipReload;
     private boolean reloading;
     private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
+    private PropertyChangeListener tasklistListener;
 
     public IssuePanel() {
         initComponents();
@@ -960,9 +962,17 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void updateTasklistButton() {
+        tasklistButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                final boolean isInTasklist = false; // PENDING
+                JiraIssueProvider provider = JiraIssueProvider.getInstance();
+                if (provider == null || issue.isNew()) { // do not enable button for new issues
+                    return;
+                }
+                final boolean isInTasklist = provider.isAdded(issue);
+                if (isInTasklist) {
+                    attachTasklistListener(provider);
+                }
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
@@ -973,6 +983,30 @@ public class IssuePanel extends javax.swing.JPanel {
                 });
             }
         });
+    }
+
+    private void attachTasklistListener (JiraIssueProvider provider) {
+        if (tasklistListener == null) { // is not attached yet
+            // listens on events comming from the tasklist, like when an issue is removed, etc.
+            // needed to correctly update tasklistButton label and status
+            tasklistListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (JiraIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
+                        Runnable inAWT = new Runnable() {
+                            public void run() {
+                                updateTasklistButton();
+                            }
+                        };
+                        if (EventQueue.isDispatchThread()) {
+                            inAWT.run();
+                        } else {
+                            EventQueue.invokeLater(inAWT);
+                        }
+                    }
+                }
+            };
+            provider.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(tasklistListener, provider));
+        }
     }
 
     private void submitChange(final Runnable change, String progressMessage)  {
@@ -1896,7 +1930,15 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
     private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
-        // PENDING
+        tasklistButton.setEnabled(false);
+        JiraIssueProvider provider = JiraIssueProvider.getInstance();
+        if (provider.isAdded(issue)) {
+            provider.remove(issue);
+        } else {
+            attachTasklistListener(provider);
+            provider.add(issue, true);
+        }
+        updateTasklistButton();
     }//GEN-LAST:event_tasklistButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
