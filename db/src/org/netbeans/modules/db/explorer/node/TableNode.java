@@ -123,7 +123,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
     }
 
     private void updateProperties(Table table) {
-        PropertySupport ps = new PropertySupport.Name(TableNode.this);
+        PropertySupport.Name ps = new PropertySupport.Name(TableNode.this);
         addProperty(ps);
 
         addProperty(CATALOG, CATALOGDESC, String.class, false, getCatalogName());
