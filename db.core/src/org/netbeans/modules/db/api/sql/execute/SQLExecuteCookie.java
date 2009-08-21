@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -65,6 +65,14 @@ public interface SQLExecuteCookie extends Node.Cookie {
      * The database connection will be used by the {@link #execute} method.
      */
     public void setDatabaseConnection(DatabaseConnection dbconn);
+
+    /** Allow to set database connection.
+     * The database connection will be used by the {@link #execute} method.
+     *
+     * @return a database connection or null
+     * @since 1.10
+     */
+    public DatabaseConnection getDatabaseConnection();
 
     /**
      * Call this to execute the statements in the object implementing the
