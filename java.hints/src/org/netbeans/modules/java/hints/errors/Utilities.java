@@ -399,8 +399,15 @@ public class Utilities {
     
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
-        
+
         if (orig != null) {
+            if (orig.getKind() == TypeKind.WILDCARD) {
+                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
+                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
+                if (rct != null) {
+                    return rct;
+                }
+            }
             return orig;
         }
         
