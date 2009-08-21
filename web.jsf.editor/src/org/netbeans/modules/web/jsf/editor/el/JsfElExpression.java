@@ -370,13 +370,11 @@ public class JsfElExpression extends ELExpression {
     private boolean checkMethod( ExecutableElement method , 
             CompilationController controller )
     {
-        System.out.println("&&&&&&&&&&&& " +method);
         TypeMirror returnType = method.getReturnType();
         if ( returnType.getKind() == TypeKind.VOID && 
                 method.getSimpleName().toString().startsWith("set")
                 && method.getParameters().size() == 1)    // NOI18N
         {
-            System.out.println("@@@@ "+method.getSimpleName());
             VariableElement param = method.getParameters().get(0);
             // probably method is setter for some property...
             String propertyName = method.getSimpleName().toString().
@@ -389,8 +387,6 @@ public class JsfElExpression extends ELExpression {
                         exec.getParameters().size() == 0 )
                 {
                     TypeMirror execReturnType = exec.getReturnType();
-                    System.out.println("%%% "+execReturnType);
-                    System.out.println("^^^^ type of param :"+param.asType());
                     if ( controller.getTypes().
                             isSameType(param.asType(), execReturnType))
                     {

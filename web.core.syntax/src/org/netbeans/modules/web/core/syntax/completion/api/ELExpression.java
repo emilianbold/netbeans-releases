@@ -585,7 +585,7 @@ public class ELExpression {
             {
                 String methodName = method.getSimpleName().toString();
 
-                if (methodName.startsWith("get")) { //NOI18N
+                if (methodName.startsWith("get") && methodName.length() >3 ) { //NOI18N
                     return getPropertyName(methodName, 3);
                 }
 
