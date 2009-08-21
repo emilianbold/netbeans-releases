@@ -111,7 +111,7 @@ public final class MSAParser extends DtraceParser {
         } catch (NumberFormatException ex) {
             return null;
         }
-        if (chunks.length >= 4 && "exit".equals(chunks[3])) {
+        if (chunks.length >= 4 && "exit".equals(chunks[3])) { // NOI18N
             finished.put(threadID,timestamp);
             return null;
         }

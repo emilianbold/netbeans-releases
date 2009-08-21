@@ -56,7 +56,7 @@ public final class AnnotationSupport {
     private PropertyChangeSupport pcs = null;
     private static AnnotationSupport annotationSupport = null;
     
-    public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";
+    public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible"; // NOI18N
 
     private static final Color COLOR_ANNOTATION = Color.MAGENTA;
     private static final Color COLOR_HIGHLIGHT = new Color(255, 235, 255);
