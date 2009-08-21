@@ -79,7 +79,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
