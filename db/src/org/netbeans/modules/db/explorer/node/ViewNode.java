@@ -115,7 +115,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
     }
 
     private void updateProperties(View view) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
     }
 

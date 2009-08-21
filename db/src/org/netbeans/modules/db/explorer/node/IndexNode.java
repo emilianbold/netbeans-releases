@@ -114,7 +114,7 @@ public class IndexNode extends BaseNode {
     }
 
     private void updateProperties(Index index) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
