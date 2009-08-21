@@ -40,18 +40,16 @@
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
+import java.io.File;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 
 /**
  *
@@ -69,30 +67,9 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         issueLabel.setLabelFor(qs.getIssueComponent());
     }
 
-    void init(Repository[] repos, Repository toSelect) {
-        repositoryComboBox.setModel(new DefaultComboBoxModel(repos != null ? repos : new Repository[0]));
-        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if(value != null) {
-                    Repository r = (Repository) value;
-                    value = r.getDisplayName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
-
+    void init(File referenceFile) {
+        RepositoryComboSupport rs = RepositoryComboSupport.setup(this, repositoryComboBox, referenceFile);
         repositoryComboBox.addItemListener(this);
-        if(toSelect != null) {
-            repositoryComboBox.setSelectedItem(toSelect);
-            qs.setRepository(toSelect);
-        } else {
-            if(repositoryComboBox.getItemCount() > 0) {
-                Repository repo = (Repository) repositoryComboBox.getItemAt(0);
-                repositoryComboBox.setSelectedItem(repo);
-                qs.setRepository(repo);
-            }
-        }
         enableFields();
     }
 
@@ -227,9 +204,12 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     public void itemStateChanged(ItemEvent e) {
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
-            Repository repo = (Repository) e.getItem();
-            if(repo != null) {
-                qs.setRepository(repo);
+            Object item = e.getItem();
+            if(item instanceof Repository) {
+                Repository repo = (Repository) item;
+                if(repo != null) {
+                    qs.setRepository(repo);
+                }
             }
         }
     }
@@ -269,7 +249,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     }
 
     private void enableFields(boolean enable) {
-        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
+        boolean repoSelected = repositoryComboBox.getSelectedItem() instanceof Repository;
         boolean enableFields = getIssue() != null && repoSelected;
 
         descriptionTextField.setEnabled(enableFields && enable);
