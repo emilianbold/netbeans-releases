@@ -75,10 +75,9 @@ tick-10ms
        delta = 0;
        info[ttid].lastts = timestamp;
 }
-/*
+
 proc:::lwp-exit
+/pid == $1/
 {
-      printf("%d %d %d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d\n", cpu, ttid, timestamp,
-                          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0);
+      printf("%d %d %d exit\n", cpu, tid, timestamp);
 }
-*/

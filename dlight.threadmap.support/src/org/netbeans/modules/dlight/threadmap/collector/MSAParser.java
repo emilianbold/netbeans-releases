@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
@@ -73,10 +74,13 @@ public final class MSAParser extends DtraceParser {
     private static final TimeUnit dtraceTimeUnits = TimeUnit.NANOSECONDS;
     // Thread ID to states map
     private final HashMap<Integer, int[]> accumulatedData = new HashMap<Integer, int[]>();
+    private final HashMap<Integer,Long> finished = new HashMap<Integer,Long>();
     private final Set<Integer> lastReportedThreadIDs = new HashSet<Integer>();
+    private final HashMap<Integer,Long> lastReportedFinished = new HashMap<Integer,Long>();
     private final ThreadMapDataStorage storage;
     private final long deltaTime;
     long lastTimestamp = 0;
+    long perodFirstTimestamp = Long.MAX_VALUE;
 
     public MSAParser(TimeDuration frequency, DataTableMetadata metadata) {
         super(metadata);
@@ -93,13 +97,27 @@ public final class MSAParser extends DtraceParser {
         }
 
         String[] chunks = line.split(" +"); // NOI18N
-        //System.err.println(line);
+        System.err.println(line);
         if (chunks.length < 3) {
             return null;
         }
-        int cpuID = Integer.parseInt(chunks[0]);
-        int threadID = Integer.parseInt(chunks[1]);
-        long timestamp = Long.parseLong(chunks[2]);
+        int cpuID;
+        int threadID;
+        long timestamp;
+        try {
+            cpuID = Integer.parseInt(chunks[0]);
+            threadID = Integer.parseInt(chunks[1]);
+            timestamp = Long.parseLong(chunks[2]);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        if (perodFirstTimestamp > timestamp){
+            perodFirstTimestamp = timestamp;
+        }
+        if (chunks.length >= 4 && "exit".equals(chunks[3])) {
+            finished.put(threadID,timestamp);
+            return null;
+        }
 
         if (chunks.length < 20) {
             return null;
@@ -119,10 +137,14 @@ public final class MSAParser extends DtraceParser {
         int[] threadStates = accumulatedData.get(threadID);
 
         //                     r_u    r_s  r_o  utf  udf   kf  wcpu st ulock sleep sobjs...
-        // 0 1 2                3      4    5    6    7    8    9   10   11   12   13   14   15  16    17   18   19
-        // 2 2 540636781605515  999    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
-        // 2 1 540636800605980    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0    0    0
-        // 2 3 540636802604857    0    0    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0
+        // 0 1 2                   3    4    5    6    7    8    9   10   11   12   13   14   15  16    17   18   19
+        // 0 9 4487137064448256  885    1    0    0    0    0    4    0    0    0    0    0  108    0    0    0    0
+        // 0 1 4487137524465623    0    0    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0
+        // 0 6 4487137534441770    0    0    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0
+        // 0 7 4487137544446377    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0    0    0
+        // 0 8 4487137554448488  987    0    0    0    0    0   11    0    0    0    0    0    0    0    0    0    0
+        // 2 6 4487138220181548 exit
+
 
         for (int i = 3; i < chunks.length; i++) {
             int state = Integer.parseInt(chunks[i]);
@@ -147,19 +169,36 @@ public final class MSAParser extends DtraceParser {
             int aggregatedStates[] = new int[10];
             for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
                 int[] states = entry.getValue();
-                ThreadStateImpl state = new ThreadStateImpl(timestamp, states);
+                ThreadStateImpl state = new ThreadStateImpl(perodFirstTimestamp, states);
                 //System.err.println(state);
                 storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
                 for (int i = 3; i < 13; ++i) {
                     aggregatedStates[i - 3] += states[i];
                 }
             }
+            if (finished.size()>0) {
+                lastReportedFinished.clear();
+                for(Map.Entry<Integer,Long> entry : finished.entrySet()){
+                    if(!accumulatedData.containsKey(entry.getKey())){
+                        // report finished process
+                        lastReportedFinished.put(entry.getKey(), entry.getValue());
+                    }
+                }
+                for (Map.Entry<Integer,Long> entry : lastReportedFinished.entrySet()){
+                    finished.remove(entry.getKey());
+                    ThreadInfoImpl info = storage.getThreadInfo(entry.getKey());
+                    if (info != null) {
+                        storage.addThreadState(info, new FinishedState(perodFirstTimestamp));
+                        info.setFinishTime(entry.getValue());
+                    }
+                }
+            }
 
             lastReportedThreadIDs.removeAll(accumulatedData.keySet());
 
-            for (Integer notReportedThreadID : lastReportedThreadIDs) {
-                storage.getThreadInfo(notReportedThreadID.intValue()).setFinishTime(timestamp);
-            }
+            //for (Integer notReportedThreadID : lastReportedThreadIDs) {
+            //    storage.getThreadInfo(notReportedThreadID.intValue()).setFinishTime(timestamp);
+            //}
 
             lastReportedThreadIDs.clear();
             lastReportedThreadIDs.addAll(accumulatedData.keySet());
@@ -172,9 +211,46 @@ public final class MSAParser extends DtraceParser {
                 values.add(aggregatedStates[i]);
             }
             //System.err.println(values);
+            perodFirstTimestamp = Long.MAX_VALUE;
             return new DataRow(COLUMN_NAMES, values);
         } else {
             return null;
+        }
+    }
+
+    private static final class FinishedState implements ThreadState {
+        private long timeStamp;
+        public FinishedState(long timeStamp){
+            this.timeStamp = timeStamp;
+        }
+
+        public int size() {
+            return 1;
+        }
+
+        public MSAState getMSAState(int index, boolean full) {
+            return ThreadState.MSAState.ThreadFinished;
+        }
+
+        public byte getState(int index) {
+            return ThreadState.POINTS;
+        }
+
+        public long getTimeStamp(int index) {
+            return timeStamp;
+        }
+
+        public long getTimeStamp() {
+            return timeStamp;
+        }
+
+        @Override
+        public String toString() {
+            return "MSA " + getTimeStamp() + " " + getMSAState(0, false).name(); // NOI18N
+            }
+
+        public int getSamplingStateIndex(boolean full) {
+            return 0;
         }
     }
 }
