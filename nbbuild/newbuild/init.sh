@@ -31,6 +31,10 @@ create_test_result() {
     echo '</testsuite>' >>$FILE
 }
 
+#JAVAFX build 1/0
+if [ -z ${RUNJAVAFX} ]; then
+    export RUNJAVAFX=1
+fi
 
 #ML BUILD yes/no 1/0
 if [ -z ${ML_BUILD} ]; then
