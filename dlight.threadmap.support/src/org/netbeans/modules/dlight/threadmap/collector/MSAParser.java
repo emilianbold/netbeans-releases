@@ -97,7 +97,7 @@ public final class MSAParser extends DtraceParser {
         }
 
         String[] chunks = line.split(" +"); // NOI18N
-        System.err.println(line);
+        //System.err.println(line);
         if (chunks.length < 3) {
             return null;
         }

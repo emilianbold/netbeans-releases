@@ -249,7 +249,7 @@ public class ThreadsDataManager {
                             //}
                         }
                         col.add(newState);
-                        System.err.println("thread "+number+" state "+newState);
+                        //System.err.println("thread "+number+" state "+newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
                     col.updateStackProvider(monitoredData.getStackProvider(newData));
