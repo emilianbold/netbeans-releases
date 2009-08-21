@@ -380,6 +380,18 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/cc-classvars.rb", "puts @@my_cl^ass_var");
     }
 
+    public void testAttrReader() throws Exception {
+        checkCompletion("testfiles/cc-attr_accessors.rb", "attr_reader ^:bar");
+    }
+
+    public void testAttrReader2() throws Exception {
+        checkCompletion("testfiles/cc-attr_accessors.rb", "attr_reader :^bar");
+    }
+
+    public void testAttrWriter() throws Exception {
+        checkCompletion("testfiles/cc-attr_accessors.rb", "attr_writer :baz, :fo^o");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");
