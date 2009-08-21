@@ -78,7 +78,8 @@ public final class CpuSamplingSupport {
 
     public static final DataTableMetadata CPU_SAMPLE_TABLE =
             new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, STATE_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN), null);
+            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, STATE_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN),
+            Arrays.asList(TIMESTAMP_COLUMN));
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(CpuSamplingSupport.class, key);
