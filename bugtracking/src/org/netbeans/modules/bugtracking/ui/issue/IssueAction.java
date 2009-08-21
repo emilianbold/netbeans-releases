@@ -77,19 +77,20 @@ public class IssueAction extends SystemAction {
         openIssue(null);
     }
 
-    public static void openIssue(Repository givenRepository) {
-        final Repository repository;
-        final boolean repositoryGiven;
+    public static void openIssue(final Repository repository) {
+//        final Repository repository;
+        final boolean repositoryGiven = repository != null;
 
-        if (givenRepository != null) {
-            repository = givenRepository;
-            repositoryGiven = true;
-        } else {
-            repository = BugtrackingOwnerSupport.getInstance()
-                         .getRepository(BugtrackingOwnerSupport.ContextType
-                                        .SELECTED_FILE_AND_ALL_PROJECTS);
-            repositoryGiven = false;
-        }
+//        if (repository != null) {
+//            repository = givenRepository;
+//            repositoryGiven = true;
+//            repositoryGiven = true;
+//        } else {
+//            repository = BugtrackingOwnerSupport.getInstance()
+//                         .getRepository(BugtrackingOwnerSupport.ContextType
+//                                        .SELECTED_FILE_AND_ALL_PROJECTS);
+//            repositoryGiven = false;
+//        }
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
