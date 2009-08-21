@@ -71,7 +71,7 @@ public class ReconfigureProject {
     private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
-    private final boolean isSunColpiler;
+    private final boolean isSunCompiler;
     private DataObject configure;
     private DataObject cmake;
     private DataObject qmake;
@@ -89,7 +89,7 @@ public class ReconfigureProject {
         MakeConfiguration configuration = pdp.getConfigurationDescriptor().getActiveConfiguration();
         assert configuration != null && configuration.getConfigurationType().getValue() ==  MakeConfiguration.TYPE_MAKEFILE;
         CompilerSet2Configuration set = configuration.getCompilerSet();
-        isSunColpiler = set.getCompilerSet().isSunCompiler();
+        isSunCompiler = set.getCompilerSet().isSunCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
             DataObject dao = item.getDataObject();
@@ -108,11 +108,20 @@ public class ReconfigureProject {
         }
     }
 
+    private String escapeFlags(String flags) {
+        if (flags.indexOf(' ') > 0 && !flags.startsWith("\"")) { // NOI18N
+            flags = "\""+flags+"\""; // NOI18N
+        }
+        return flags;
+    }
+
     public void reconfigure(String cFlags, String cxxFlags){
+        cFlags = escapeFlags(cFlags);
+        cxxFlags = escapeFlags(cxxFlags);
         this.cFlags = cFlags;
         this.cxxFlags = cxxFlags;
         if (cmake != null && make != null) {
-            String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), cFlags, cxxFlags, isSunColpiler);
+            String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
             try {
                 List<String> vars = ImportUtils.parseEnvironment(arguments);
@@ -141,7 +150,7 @@ public class ReconfigureProject {
             }
             CMakeAction.performAction(cmake.getNodeDelegate(), listener, null, makeProject);
         } else if (qmake != null && make != null){
-            String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), cFlags, cxxFlags, isSunColpiler);
+            String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
             try {
                 ses.setArguments(new String[]{arguments});
@@ -162,7 +171,7 @@ public class ReconfigureProject {
             }
             QMakeAction.performAction(qmake.getNodeDelegate(), listener, null, makeProject);
         } else if (configure != null && make != null) {
-            String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), cFlags, cxxFlags, isSunColpiler);
+            String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
             try {
                 ses.setArguments(new String[]{arguments});
@@ -206,7 +215,7 @@ public class ReconfigureProject {
     }
 
     private void postMake(){
-        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), cFlags, cxxFlags, isSunColpiler);
+        String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
         if (TRACE) {
             logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + arguments); // NOI18N
         }
@@ -242,5 +251,12 @@ public class ReconfigureProject {
             buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
         }
         return buf.toString();
+    }
+
+    /**
+     * @return the isSunCompiler
+     */
+    public boolean isSunCompiler() {
+        return isSunCompiler;
     }
 }
