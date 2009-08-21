@@ -42,11 +42,16 @@
 package org.netbeans.modules.db.sql.editor;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv;
+import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.modules.editor.NbEditorKit;
 
 /**
@@ -84,6 +89,7 @@ public class SQLEditorKit extends NbEditorKit {
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
         Action[] sqlActions = new Action[] {
+            new SQLDefaultKeyTypedAction(),
             new ToggleCommentAction("--") // NOI18N
         };
         return TextAction.augmentList(superActions, sqlActions);
@@ -95,5 +101,37 @@ public class SQLEditorKit extends NbEditorKit {
     @Override
     public String getContentType() {
         return MIME_TYPE;
+    }
+
+    public static class SQLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+
+        @Override
+        protected void insertString(BaseDocument doc, int caretOffset, Caret caret, String str, boolean overwrite) throws BadLocationException {
+            char insertedChar = str.charAt(0);
+            if (insertedChar == '\"' || insertedChar == '\'') {  //NOI18N
+                if (canCompleteQuote(doc, caretOffset)) {
+                    // add pair quote
+                    super.insertString(doc, caretOffset, caret, String.valueOf(insertedChar) + insertedChar, overwrite);
+                    caret.setDot(caretOffset + 1);
+                    return;
+                }
+            }
+            super.insertString(doc, caretOffset, caret, str, overwrite);
+        }
+
+        /** Returns true if completion of quote is wanted, i.e. cursor is
+         * on token boundary and previous token is dot or whitespace. */
+        private static boolean canCompleteQuote(BaseDocument doc, int caretOffset) {
+            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, caretOffset);
+            TokenSequence<SQLTokenId> seq = env.getTokenSequence();
+            if (seq.move(caretOffset) == 0 && seq.movePrevious()) {
+                switch (seq.token().id()) {
+                    case WHITESPACE:
+                    case DOT:
+                        return true;
+                }
+            }
+            return false;
+        }
     }
 }
