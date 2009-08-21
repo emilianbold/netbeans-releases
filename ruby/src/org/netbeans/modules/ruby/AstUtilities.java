@@ -1475,7 +1475,7 @@ public class AstUtilities {
     }
 
     public static boolean isAttr(Node node) {
-        if (!(node instanceof FCallNode)) {
+        if (!(node instanceof FCallNode || node instanceof VCallNode)) {
             return false;
         }
 

@@ -221,8 +221,15 @@ class RubyCompletionItem extends DefaultCompletionProposal {
 
     static class FieldItem extends RubyCompletionItem {
 
+        private final String forcedPrefix;
+
         FieldItem(Element element, int anchorOffset, CompletionRequest request) {
+            this(element, anchorOffset, request, null);
+        }
+
+        FieldItem(Element element, int anchorOffset, CompletionRequest request, String forcedPrefix) {
             super(element, anchorOffset, request);
+            this.forcedPrefix = forcedPrefix;
         }
 
         @Override
@@ -247,6 +254,11 @@ class RubyCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getInsertPrefix() {
+
+            if (forcedPrefix != null) {
+                return forcedPrefix + getName();
+            }
+
             String name;
             if (element.getModifiers().contains(Modifier.STATIC)) {
                 name = "@@" + getName();
