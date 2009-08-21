@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -82,17 +82,27 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     /** Version number of the rubystubs */
     public static final String RUBYSTUBS_VERSION = "1.8.7-p72"; // NOI18N
+
     /**
      * The name of the rubystubs folder.
      */
     public static final String RUBYSTUBS = "rubystubs"; //NOI18N
+
     /** Name of the Ruby Debug IDE gem. */
-    static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
+    static final String RUBY_DEBUG_IDE_NAME;
+    static {
+        // Allow to pass different gem name for ruby-debug-ide gem. It allows
+        // testing of forks of official ruby-debug-ide gem. Cf. issue #157870.
+        String prop = System.getProperty("rubyDebugIDEName"); // NOI18N
+        if (prop != null) {
+            RUBY_DEBUG_IDE_NAME = prop;
+        } else {
+            RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
+        }
+    }
 
     private final Info info;
-
     private final RubyPlatformValidator validator;
-
     private final String id;
     private final String interpreter;
     private File home;
@@ -100,7 +110,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private FileObject libDirFO;
     private GemManager gemManager;
     private static FileObject stubsFO;
-    private boolean indexInitialized;
+
+    // XXX - see updateIndexRoots below
+//    private boolean indexInitialized;
 
     // Platform tools
     private String gemTool;
