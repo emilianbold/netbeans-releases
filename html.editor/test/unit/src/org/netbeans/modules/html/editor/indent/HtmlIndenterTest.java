@@ -43,8 +43,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
@@ -54,10 +52,6 @@ import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.test.TestBase2;
-import org.netbeans.modules.java.source.save.Reformatter;
-import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
-import org.netbeans.modules.web.core.syntax.JspKit;
-import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -78,12 +72,8 @@ public class HtmlIndenterTest extends TestBase2 {
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
-        JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JspKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
-        Reformatter.Factory factory = new Reformatter.Factory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, JavaTokenId.language());
     }
 
     @Override
@@ -95,7 +85,7 @@ public class HtmlIndenterTest extends TestBase2 {
              DataObject dobj = DataObject.find(fo);
              assertNotNull(dobj);
 
-             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+             EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
              assertNotNull(ec);
 
              return (BaseDocument)ec.openDocument();
