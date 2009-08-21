@@ -45,9 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.gateway.client.Zembly;
+import java.util.Collection;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -56,23 +56,12 @@ import org.openide.NotifyDescriptor;
  * @author peterliu
  */
 public class SearchEngine {
-    private static final String SEARCH_ITEM_URI = "platform/repository/SearchItems;exec";
-    private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
-    private static final String SEARCH_STRING_PARAM = "searchString";
-    private static final String SEARCH_FOR = "searchFor";
-    private static final String START_INDEX = "startIndex";
-    private static final String MAX_RESULTS_PARAM = "maxResults";
-    private static final String ITEM_URI_PARAM = "itemURI";
-    private static final String VERSION_PARAM = "version";
-    private static final String CONTENT_TYPE_ATTR = "contentType";
-    private static final String ITEMS_ATTR = "items";
-    private static final String PATH_ATTR = "path";
-    private static final String NAME_ATTR = "name";
-    private static final String UUID_ATTR = "uuid";
-    private static final String URL_ATTR = "url";
-    private static final String PARAMETERS_ATTR = "parameters";
-    private static final String TYPE_ATTR = "type";
-    private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
+    private static final String SEARCH_ITEM_URI = "platform/repository/SearchItems;exec";   //NOI18N
+    private static final String SEARCH_STRING_PARAM = "searchString";   //NOI18N
+    private static final String SEARCH_FOR = "searchFor";               //NOI18N
+    private static final String START_INDEX = "startIndex";             //NOI18N
+    private static final String MAX_RESULTS_PARAM = "maxResults";       //NOI18N
+    private static final String ITEMS_ATTR = "items";                   //NOI18N
  
     private Zembly zembly;
 
@@ -80,7 +69,7 @@ public class SearchEngine {
         this.zembly = zembly;
     }
 
-    public List<WagService> search(String query, int maxResults, int startIndex) {
+    public Collection<WagService> search(String query, int maxResults, int startIndex) {
         try {
             List<Parameter> params = new ArrayList<Parameter>();
             params.add(Parameter.create(SEARCH_STRING_PARAM, query));
@@ -97,7 +86,7 @@ public class SearchEngine {
         return Collections.emptyList();
     }
 
-    private List<WagService> parse(String data) {
+    private Collection<WagService> parse(String data) {
         try {
             //System.out.println("data = " + data);
             List<WagService> services = new ArrayList<WagService>();
@@ -107,46 +96,7 @@ public class SearchEngine {
             JSONObject obj = (JSONObject) parser.nextValue();
             JSONArray items = obj.getJSONArray(ITEMS_ATTR);
 
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-
-                WagService svc = new WagService();
-                services.add(svc);
-
-                String name = item.getString(NAME_ATTR);
-                svc.setDisplayName(name);
-
-                String contentType = item.getString(CONTENT_TYPE_ATTR);
-                if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
-                    name += "web.";
-                }
-                svc.setCallableName(name);
-                
-                svc.setUuid(item.getString(UUID_ATTR));
-
-                params.clear();
-                params.add(Parameter.create(ITEM_URI_PARAM, item.getString(PATH_ATTR)));
-                params.add(Parameter.create(VERSION_PARAM, "latest"));
-                String result = zembly.callService(GET_ITEM_INFO_URI, params);
-                //System.out.println("result = " + result);
-                parser = new JSONTokener(result);
-
-                JSONObject info = (JSONObject) parser.nextValue();
-                svc.setUrl(info.getString(URL_ATTR));
-                JSONArray svcParams = info.getJSONArray(PARAMETERS_ATTR);
-                List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
-                svc.setParameters(wagParams);
-
-                for (int j = 0; j < svcParams.length(); j++) {
-                    JSONObject p = svcParams.getJSONObject(j);
-                    WagServiceParameter wp = new WagServiceParameter();
-                    wp.setName(p.getString(NAME_ATTR));
-                    wp.setType(p.getString(TYPE_ATTR));
-                    wagParams.add(wp);
-                }
-            }
-
-            return services;
+            return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
             handleException(ex);
         }

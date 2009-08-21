@@ -42,6 +42,7 @@ import com.zembly.gateway.client.Zembly;
 import com.zembly.gateway.client.config.Configuration;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.oauth.api.Response;
+import com.zembly.oauth.core.SSLUtilities;
 import com.zembly.oauth.core.UrlConnection;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,15 +71,17 @@ public class ZemblySession {
     private DomainRetriever domainRetriever;
     private ContentRetriever contentRetriever;
     private UserServiceRetriever userServiceRetriever;
+    private RankingRetriever rankingRetriever;
+    private ItemInfoRetriever itemInfoRetriever;
     private ZemblyUserInfo userInfo;
 
     // For local testing
-    /*
+    
     static {
         SSLUtilities.trustAllHostnames();
         SSLUtilities.trustAllHttpsCertificates();
     }
-     */
+     
 
     public synchronized static ZemblySession getInstance() {
         if (instance == null) {
@@ -97,7 +100,6 @@ public class ZemblySession {
         if (userInfo == null) {
             // For local testing
             //userInfo = zemblyLogin("root@webonweb.org", "rootroot");
-            //userInfo = zemblyLogin("peter.liu@sun.com", "foobar");
             userInfo = new ZemblyUserInfo();
             userInfo.setUserid("914986440");
             userInfo.setUsername("spunky");
@@ -151,7 +153,27 @@ public class ZemblySession {
 
         return userServiceRetriever;
     }
-    
+
+    public RankingRetriever getRankingRetriever() {
+        login();
+
+        if (rankingRetriever == null) {
+            rankingRetriever = new RankingRetriever(getZembly());
+        }
+
+        return rankingRetriever;
+    }
+
+    public ItemInfoRetriever getItemInfoRetriever() {
+        login();
+
+        if (itemInfoRetriever == null) {
+            itemInfoRetriever = new ItemInfoRetriever(getZembly());
+        }
+
+        return itemInfoRetriever;
+    }
+
     private ZemblyUserInfo zemblyLogin(String username, String password) {
         List<Parameter> params = new ArrayList<Parameter>();
         params.add(new Parameter("email", username));

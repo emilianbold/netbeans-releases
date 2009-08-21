@@ -36,74 +36,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.wag.manager.model;
 
 import java.util.Collection;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author peterliu
  */
-public class WagDomain extends WagItems<WagApi> implements Comparable<WagDomain>  {
+public class WagRankedServices extends WagItems<WagService> {
 
-    private static final String PROP_NAME = "domain";  //NOI18N
+     public enum RankingType {
 
-    private String name;
-    private String path;
+        MOST_USED(NbBundle.getMessage(WagRankedServices.class, "Most_Used"),
+        NbBundle.getMessage(WagRankedServices.class, "Most_Used_Desc")),
+        HIGHEST_RATED(NbBundle.getMessage(WagRankedServices.class, "Highest_Rated"),
+        NbBundle.getMessage(WagRankedServices.class, "Highest_Rated_Desc"));
+        private String displayName;
+        private String description;
 
-    public WagDomain(String name, String path) {
-        super();
-        this.name = name;
-        this.path = path;
-    }
+        RankingType(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
 
-    public String getName() {
-        return name;
-    }
+        public String displayName() {
+            return displayName;
+        }
 
-    public String getPath() {
-        return path;
+        public String description() {
+            return description;
+        }
+    };
+
+    public static final String PROP_NAME = "rankedServices";  //NOI18N
+
+    private RankingType type;
+
+    public WagRankedServices(RankingType type) {
+        this.type = type;
     }
 
     public String getDisplayName() {
-        return getName();
+        return type.displayName();
     }
 
     public String getDescription() {
-        return getPath();
-    }
-
-    protected Collection<WagApi> loadItems() {
-        return ZemblySession.getInstance().getContentRetriever().getApis(path);
+        return type.description();
     }
 
     protected String getPropName() {
         return PROP_NAME;
     }
-
-    @Override
-    public String toString() {
-        return "name: " + name + " path: " + path;
+    
+    protected Collection<WagService> loadItems() {
+        return ZemblySession.getInstance().getRankingRetriever().getRankedServices(type);
     }
-
-     @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof WagDomain) {
-            return name.equals(((WagDomain) obj).getName());
-        }
-
-        return false;
-    }
-
-    public int compareTo(WagDomain result) {
-        return name.compareTo(result.getName());
-    }
-
 }
