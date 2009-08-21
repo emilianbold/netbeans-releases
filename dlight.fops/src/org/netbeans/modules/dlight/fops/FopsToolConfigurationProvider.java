@@ -135,10 +135,11 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 "SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written, " + // NOI18N
                 "SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id, " + // NOI18N
                 "SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id, " + // NOI18N
+                "SUM(CASEWHEN(operation='open', timestamp, 0)) AS open_timestamp, " + // NOI18N
                 "BOOL_OR(operation='open') AS open_seen, " + // NOI18N
                 "BOOL_OR(operation='open' AND sid=0) AS open_failed, " + // NOI18N
                 "BOOL_OR(operation='close') AS close_seen " + // NOI18N
-                "FROM fops GROUP BY sid, file)", // NOI18N
+                "FROM fops GROUP BY sid, file) ORDER BY open_timestamp, file", // NOI18N
                 Arrays.asList(dtraceFopsMetadata));
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
