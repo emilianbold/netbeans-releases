@@ -1,0 +1,6 @@
+Code completion result for source line:
+attr_reader :|bar
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+FIELD      bar                                        FooBarBaz
+FIELD      baz                                        FooBarBaz
+FIELD      foo                                        FooBarBaz

@@ -1203,7 +1203,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // Don't try to add local vars, globals etc. as part of calls or class fqns
         if (call.getLhs() == null) {
             if (showLower && (closest != null)) {
-                
+
                 List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
                 for (Node block : applicableBlocks) {
                     addDynamic(block, variables);
@@ -1221,7 +1221,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
             }
 
-            if ((prefix.length() == 0) || (first == '@') || showSymbols) {
+            boolean inAttrCall = isInAttr(closest, path);
+
+            if (prefix.length() == 0 || first == '@' || showSymbols || inAttrCall) {
                 String fqn = AstUtilities.getFqnName(path);
 
                 if ((fqn == null) || (fqn.length() == 0)) {
@@ -1236,11 +1238,17 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     f = new HashSet<IndexedField>();
                     addActionViewFields(f, fileObject, index, prefix, kind);
                 } else {
-                    f = index.getInheritedFields(fqn, prefix, kind, false);
+                     //strip out ':' when querying fields for cases like 'attr_reader :^'
+                    if (inAttrCall && first == ':' && prefix.length() == 1) {
+                        f = index.getInheritedFields(fqn, "", kind, false);
+                    } else {
+                        f = index.getInheritedFields(fqn, prefix, kind, false);
+                    }
                 }
 
                 for (IndexedField field : f) {
-                    FieldItem item = new FieldItem(field, anchor, request);
+                    String insertPrefix = inAttrCall ? ":" : null;
+                    FieldItem item = new FieldItem(field, anchor, request, insertPrefix);
 
                     item.setSmart(field.isSmart());
 
@@ -1249,6 +1257,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     }
 
                     proposals.add(item);
+                }
+
+                // return just the fields for attr_
+                if (inAttrCall) {
+                    return completionResult;
                 }
             }
 
@@ -1496,7 +1509,24 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return completionResult;
     }
         
-    private void addActionViewMethods(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix, 
+
+    private boolean isInAttr(Node closest, AstPath path) {
+        if (closest != null) {
+            // first argument in attr_*
+            for (Node child : closest.childNodes()) {
+                if (AstUtilities.isAttr(child)) {
+                    return true;
+                }
+            }
+            // others, e.g. attr_reader :foo, :ba^r
+            if (AstUtilities.isAttr(path.leafParent()) || AstUtilities.isAttr(path.leafGrandParent())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void addActionViewMethods(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix,
             QuerySupport.Kind kind) { 
         // RHTML and Markaby: Add in the helper methods etc. from the associated files
         boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
