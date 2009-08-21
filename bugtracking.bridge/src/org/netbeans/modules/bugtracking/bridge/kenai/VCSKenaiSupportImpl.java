@@ -40,9 +40,13 @@
 package org.netbeans.modules.bugtracking.bridge.kenai;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.PasswordAuthentication;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 
@@ -52,7 +56,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiSupport;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
 public class VCSKenaiSupportImpl extends VCSKenaiSupport {
-
+    private Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.kenai.VCSKenaiSupport");  // NOI18N
     @Override
     public boolean isKenai(String url) {
         return KenaiUtil.isKenai(url);
@@ -72,6 +76,17 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     public boolean showLogin() {
         return KenaiUtil.showLogin();
     }
+
+    @Override
+    public void setFirmAssociations(File[] files, String url) {
+        Repository repo = KenaiUtil.getKenaiRepository(url);
+        if(repo == null) {
+            LOG.warning("No issue tracker available for the given vcs url " + url);         // NOI18N
+            return;
+        }
+        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, repo);
+    }
+
 
     @Override
     public boolean isLogged () {

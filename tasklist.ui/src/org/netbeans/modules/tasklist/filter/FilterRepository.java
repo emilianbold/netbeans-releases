@@ -87,6 +87,7 @@ public final class FilterRepository {
         }
     }
     
+    @Override
     public Object clone() {
         FilterRepository ret = new FilterRepository();
         ret.assign(this);
@@ -179,6 +180,7 @@ public final class FilterRepository {
             }
             filters.add( filter );
         }
+        boolean shouldSave = false;
         //make sure there's some default filter on the first start
         if( prefs.getBoolean( "firstTimeStart", true ) ) { //NOI18N
             prefs.putBoolean( "firstTimeStart", false ); //NOI18N
@@ -190,7 +192,7 @@ public final class FilterRepository {
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
             setActive( filter );
-            save();
+            shouldSave = true;
         }
             
         if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
@@ -204,8 +206,10 @@ public final class FilterRepository {
             filter.setTypesFilter( types );
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
-            save();
+            shouldSave = true;
         }
+        if( shouldSave )
+            save();
     }
     
     public void save() throws IOException {
@@ -214,6 +218,7 @@ public final class FilterRepository {
             prefs = prefs.node( "Filters" ); //NOI18N
             prefs.clear();
             prefs.putBoolean( "firstTimeStart", false ); //NOI18N
+            prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
 
             prefs.putInt( "count", filters.size() ); //NOI18N
             prefs.putInt( "active", active ); //NOI18N

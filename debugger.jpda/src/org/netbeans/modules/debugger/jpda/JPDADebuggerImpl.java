@@ -1497,14 +1497,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } finally {
             accessLock.writeLock().unlock();
         }
-        notifySuspendAll();
+        notifySuspendAll(true, true);
     }
 
-    public void notifySuspendAll() {
-        notifySuspendAll(true);
-    }
-
-    public List<PropertyChangeEvent> notifySuspendAll(boolean doFire) {
+    public List<PropertyChangeEvent> notifySuspendAll(boolean doFire, boolean explicitelyPaused) {
         Collection threads = threadsTranslation.getTranslated();
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
@@ -1516,7 +1512,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                    status == JPDAThread.STATE_ZOMBIE);
                 if (!invalid) {
                     try {
-                        PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire);
+                        PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire, explicitelyPaused);
                         if (event != null) {
                             events.add(event);
                         }

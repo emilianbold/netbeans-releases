@@ -65,6 +65,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
     private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
     private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
+    // TODO - use own color
+    private static final String KEYWORD_COLOR = "<font color=#0707ab>"; // NOI18N
     private static final String COLOR_END = "</font>"; // NOI18N
 
     private static final String BOLD = "<b>"; // NOI18N
@@ -75,6 +77,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final ImageIcon TABLE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/table.png", false); // NOI18N
     private static final ImageIcon ALIAS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/alias.png", false); // NOI18N
     private static final ImageIcon COLUMN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/column.png", false); // NOI18N
+    // TODO - use own icon
+    private static final ImageIcon KEYWORD_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png", false); // NOI18N
 
     private final SubstitutionHandler substHandler;
     private final String substText;
@@ -98,6 +102,10 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
     public static SQLCompletionItem column(QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
         return new Column(tableName, columnName, substText, substOffset, substHandler);
+    }
+
+    public static SQLCompletionItem keyword(String keyword, int substOffset, SubstitutionHandler substHandler) {
+        return new Keyword(keyword, substOffset, substHandler);
     }
 
     protected SQLCompletionItem(String substText, int substOffset, SubstitutionHandler substHandler) {
@@ -363,6 +371,45 @@ public abstract class SQLCompletionItem implements CompletionItem {
         @Override
         public String toString() {
             return MessageFormat.format("Column {0} in table {1}", columnName, tableName); // NOI18N
+        }
+    }
+
+    private static class Keyword extends SQLCompletionItem {
+
+        private final String keyword;
+        private String leftText;
+
+        public Keyword(String keyword, int substOffset, SubstitutionHandler substHandler) {
+            super(keyword, substOffset, substHandler);
+            this.keyword = keyword;
+        }
+
+        @Override
+        protected ImageIcon getImageIcon() {
+            return KEYWORD_ICON;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(KEYWORD_COLOR);
+                sb.append(BOLD); // NOI18N
+                sb.append(keyword);
+                sb.append(BOLD_END); // NOI18N
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return "Keyword " + keyword; // NOI18N
         }
     }
 }

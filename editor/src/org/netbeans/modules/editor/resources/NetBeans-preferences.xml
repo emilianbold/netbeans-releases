@@ -164,7 +164,7 @@ made subject to such option by the copyright holder.
         <value><![CDATA[1.0]]></value>
     </entry>
     <entry category="private" javaType="java.lang.Boolean" name="line-number-visible" xml:space="preserve">
-        <value><![CDATA[false]]></value>
+        <value><![CDATA[true]]></value>
     </entry>
     <entry category="private" javaType="java.awt.Insets" name="margin" xml:space="preserve">
         <value><![CDATA[0,0,0,0]]></value>

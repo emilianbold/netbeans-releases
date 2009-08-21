@@ -110,7 +110,7 @@ public final class EditorPreferencesDefaults {
     
     public static final boolean defaultStatusBarVisible = true;
 
-    public static final boolean defaultLineNumberVisible = false;
+    public static final boolean defaultLineNumberVisible = true;
     public static final boolean defaultPrintLineNumberVisible = true;
     public static final boolean defaultTextLimitLineVisible = true;
     public static final boolean defaultHomeKeyColumnOne = false;

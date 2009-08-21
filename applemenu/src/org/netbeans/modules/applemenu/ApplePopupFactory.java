@@ -371,7 +371,7 @@ public class ApplePopupFactory extends PopupFactory {
             if (!hackBroken) {
                 try {
                     //First, lookup the global singleton NSApplication
-                    Class c = Class.forName ("com.apple.cocoa.application." +
+                    Class<?> c = Class.forName ("com.apple.cocoa.application." +
                             "NSApplication");
                     
                     Method m = c.getDeclaredMethod ("sharedApplication");

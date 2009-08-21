@@ -73,6 +73,6 @@ public class QT_QLifeTestCase extends MakeProjectBase {
             list.add("sed -e 's:\\\\\\(.\\):/\\1:g' Makefile >Makefile.tmp");
             list.add("mv Makefile.tmp Makefile");
         }
-        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
+        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list, false);
     }
 }

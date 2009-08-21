@@ -81,7 +81,7 @@ public class WagServiceNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return service.getName();
+        return service.getDisplayName();
     }
 
     @Override
