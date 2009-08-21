@@ -164,23 +164,27 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         // bit messy here - we first get a desc preconfigured with project settings,
         // then modify it again with the args user may have provided in the run file dialog
         RubyExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraConvertors);
-        File file = FileUtil.toFile(fileObject);
-        RunFileActionProvider.RunFileArgs args = RunFileActionProvider.getRunArgs(file);
-        if (args == null) {
-            args = new RunFileActionProvider.RunFileArgs(getPlatform(), 
-                    asString(desc.getAdditionalArgs()), asString(desc.getJVMArguments()), true);
+
+        if (fileObject != null) { // null when running/debugging project, don't ask for parameters
+            File file = FileUtil.toFile(fileObject);
+            RunFileActionProvider.RunFileArgs args = RunFileActionProvider.getRunArgs(file);
+            if (args == null) {
+                args = new RunFileActionProvider.RunFileArgs(getPlatform(),
+                        asString(desc.getAdditionalArgs()), asString(desc.getJVMArguments()), true);
+            }
+            if (args != null && args.displayDialog()) {
+                args = RunFileActionProvider.showDialog(args, file, debug, false);
+            }
+            if (args == null) {
+                // cancel pressed
+                return;
+            }
+            if (args.getRunArgs() != null) {
+                desc.additionalArgs(Utilities.parseParameters(args.getRunArgs()));
+            }
+            desc.jvmArguments(args.getJvmArgs());
         }
-        if (args != null && args.displayDialog()) {
-            args = RunFileActionProvider.showDialog(args, file, debug, false);
-        }
-        if (args == null) {
-            // cancel pressed
-            return;
-        }
-        if (args.getRunArgs() != null) {
-            desc.additionalArgs(Utilities.parseParameters(args.getRunArgs()));
-        }
-        desc.jvmArguments(args.getJvmArgs());
+
         RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
         if (rpc.isAbleToCreateProcess()) {
             ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
