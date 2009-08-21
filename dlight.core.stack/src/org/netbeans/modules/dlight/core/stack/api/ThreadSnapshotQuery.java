@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,13 +73,13 @@ public final class ThreadSnapshotQuery {
 
     public static final class ThreadFilter implements Filter {
 
-        private final Set<Integer> threadIds;
+        private final Set<Long> threadIds;
 
-        public ThreadFilter(Collection<Integer> threadIds) {
-            this.threadIds = Collections.unmodifiableSet(new HashSet<Integer>(threadIds));
+        public ThreadFilter(Collection<Long> threadIds) {
+            this.threadIds = Collections.unmodifiableSet(new HashSet<Long>(threadIds));
         }
 
-        public Set<Integer> getThreadIds() {
+        public Set<Long> getThreadIds() {
             return threadIds;
         }
     }

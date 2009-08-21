@@ -126,24 +126,24 @@ public class DtraceParserTest extends NbTestCase {
             knownStacks = new ArrayList<String>();
         }
 
-        public int putStack(List<CharSequence> stack, long sampleDuration) {
+        public long putStack(List<CharSequence> stack, long sampleDuration) {
             String stackAsString = stack.toString();
-            int id = 0;
+            long id = 0;
             while (id < knownStacks.size()) {
-                if (knownStacks.get(id).equals(stackAsString)) {
+                if (knownStacks.get((int)id).equals(stackAsString)) {
                     break;
                 }
                 ++id;
             }
             if (knownStacks.size() <= id) {
-                knownStacks.add(id, stackAsString);
+                knownStacks.add((int)id, stackAsString);
             }
             ++id;
             ref("putStack(" + stack + ", " + sampleDuration + ") = " + id);
             return id;
         }
 
-        public List<FunctionCall> getCallStack(int stackId) {
+        public List<FunctionCall> getCallStack(long stackId) {
             fail("Parser is not expected to call this method");
             return null;
         }

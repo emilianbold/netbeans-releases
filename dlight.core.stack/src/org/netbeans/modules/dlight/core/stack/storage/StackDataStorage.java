@@ -69,9 +69,9 @@ public interface StackDataStorage {//extends StackSupport {
      * @param sampleDuration  number of nanoseconds the program spent in this stack
      * @return
      */
-    int putStack(List<CharSequence> stack, long sampleDuration);
+    long putStack(List<CharSequence> stack, long sampleDuration);
 
-    List<FunctionCall> getCallStack(int stackId);
+    List<FunctionCall> getCallStack(long stackId);
 
     List<FunctionMetric> getMetricsList();
 
