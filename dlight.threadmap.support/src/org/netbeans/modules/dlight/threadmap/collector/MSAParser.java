@@ -111,9 +111,6 @@ public final class MSAParser extends DtraceParser {
         } catch (NumberFormatException ex) {
             return null;
         }
-        if (perodFirstTimestamp > timestamp){
-            perodFirstTimestamp = timestamp;
-        }
         if (chunks.length >= 4 && "exit".equals(chunks[3])) {
             finished.put(threadID,timestamp);
             return null;
@@ -121,6 +118,10 @@ public final class MSAParser extends DtraceParser {
 
         if (chunks.length < 20) {
             return null;
+        }
+
+        if (perodFirstTimestamp > timestamp && timestamp > lastTimestamp){
+            perodFirstTimestamp = timestamp;
         }
 
         ThreadInfoImpl threadInfo = storage.getThreadInfo(threadID);
