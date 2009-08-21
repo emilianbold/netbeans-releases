@@ -146,9 +146,15 @@ public final class TimeStamps {
         if (unseen != null) {
             unseen.remove(fileId);
         }
-
-        long lts = Long.parseLong(value);
-        boolean isUpToDate = lts == fts;
+        long lts = 0L;
+        boolean isUpToDate;
+        try {
+            lts = Long.parseLong(value);
+            isUpToDate = lts == fts;
+        } catch (NumberFormatException nfe) {
+            LOG.warning("Invalid timestamp: " + value + " for file: " + FileUtil.getFileDisplayName(f));   //NOI18N
+            isUpToDate = false;
+        }
         if (!isUpToDate) {
             LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
         }
