@@ -40,9 +40,24 @@
  */
 package org.netbeans.modules.web.jsf.api.metamodel;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Logger;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImplementation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -58,4 +73,87 @@ public final class JsfModelFactory {
         return MetadataModelFactory.createMetadataModel(
                 JsfModelImplementation.create(unit));
     }
+    
+    public static synchronized MetadataModel<JsfModel> getModel( WebModule module ){
+        MetadataModel<JsfModel> model = MODELS.get( module );
+        if ( model == null ){
+            ModelUnit unit = getUnit( module );
+            if ( unit == null ){
+                return null;
+            }
+            model = JsfModelFactory.createMetaModel( unit );
+            MODELS.put(module, model);
+        }
+        return model;
+    }
+    
+    private static ModelUnit getUnit( WebModule module ) {
+        if ( module == null ){
+            return null;
+        }
+        FileObject fileObject = getFileObject( module );
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            return null;
+        }
+        ClassPath boot = getClassPath( project , ClassPath.BOOT);
+        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
+        ClassPath src = getClassPath(project , ClassPath.SOURCE);
+        return ModelUnit.create(boot, compile, src, module);
+    }
+    
+    private static ClassPath getClassPath( Project project, String type ) {
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
+    }
+    
+    private static FileObject getFileObject( WebModule module ) {
+        FileObject fileObject = module.getDocumentBase();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        fileObject = module.getDeploymentDescriptor();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        fileObject = module.getWebInf();
+        if ( fileObject != null ){
+            return fileObject;
+        }
+        
+        FileObject[] facesConfigFiles = ConfigurationUtils.getFacesConfigFiles(module);
+        if ( facesConfigFiles!= null && facesConfigFiles.length >0 ){
+            return facesConfigFiles[0];
+        }
+        
+        FileObject[] fileObjects = module.getJavaSources();
+        if ( fileObjects!= null){
+            for (FileObject source : fileObjects) {
+                if ( source != null ){
+                    return source;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static final Map<WebModule, MetadataModel<JsfModel>> MODELS = 
+        new WeakHashMap<WebModule, MetadataModel<JsfModel>>();
+    
 }

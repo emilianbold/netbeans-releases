@@ -2,18 +2,27 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="/beans2"/>
-	<classpathentry sourcepath="RAVE/insync/external/jsr14/src" kind="var" path="RAVE/insync/external/gjc-rt.jar"/>
+	<classpathentry kind="var" path="RAVE/insync/external/gjc-rt.jar" sourcepath="RAVE/insync/external/jsr14/src"/>
 	<classpathentry kind="var" path="RAVE/xml/external/sac.jar"/>
 	<classpathentry kind="src" path="/jsfsupport"/>
-	<classpathentry sourcepath="J/xerces-2_6_0/src" kind="var" path="RAVE/libs/external/xerces-2.6.0.jar"/>
+	<classpathentry kind="var" path="RAVE/libs/external/xerces-2.6.0.jar" sourcepath="J/xerces-2_6_0/src"/>
 	<classpathentry kind="var" path="RAVE/libs/xerces/netbeans/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
-	<classpathentry sourcepath="RAVE/project/src" kind="var" path="RAVE/project/netbeans/modules/project.jar"/>
+	<classpathentry kind="var" path="RAVE/project/netbeans/modules/project.jar" sourcepath="RAVE/project/src"/>
 	<classpathentry kind="var" path="RAVE/opensrc/batik/netbeans/modules/ext/batik-css.jar"/>
 	<classpathentry kind="var" path="RAVE/opensrc/batik/netbeans/modules/ext/batik-util.jar"/>
-	<classpathentry sourcepath="RAVE/editor/libsrc" kind="var" path="RAVE/editor/netbeans/modules/ext/nb-editor.jar"/>
-	<classpathentry sourcepath="RAVE/openide/src" kind="var" path="RAVE/openide/netbeans/lib/openide.jar"/>
+	<classpathentry kind="var" path="RAVE/editor/netbeans/modules/ext/nb-editor.jar" sourcepath="RAVE/editor/libsrc"/>
+	<classpathentry kind="var" path="RAVE/openide/netbeans/lib/openide.jar" sourcepath="RAVE/openide/src"/>
 	<classpathentry kind="var" path="RAVE/openide/io/netbeans/modules/autoload/openide-io.jar"/>
-	<classpathentry sourcepath="RAVE/openide/loaders/src" kind="var" path="RAVE/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+	<classpathentry kind="var" path="RAVE/openide/loaders/netbeans/lib/openide-loaders.jar" sourcepath="RAVE/openide/loaders/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xml.xam"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xml.xdm"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/web.jsf"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/webmodule.api"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform10/core/org-openide-filesystems.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform10/lib/org-openide-modules.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform10/lib/org-openide-util.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform10/modules/org-openide-loaders.jar"/>
+	<classpathentry kind="var" path="TRUNK_NB/platform10/modules/org-openide-nodes.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

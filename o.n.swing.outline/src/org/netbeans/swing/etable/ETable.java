@@ -702,6 +702,26 @@ public class ETable extends JTable {
         filteredRowCount = -1; // force to recompute the rowCount
         super.tableChanged(new TableModelEvent(getModel()));
     }
+
+    /**
+     * Get the "quick-filter" object that is currently active.
+     *
+     * @return the filter object or <code>null</code>
+     * @see #setQuickFilter(int, java.lang.Object)
+     */
+    public Object getQuickFilterObject() {
+        return quickFilterObject;
+    }
+
+    /**
+     * Get the column which is currently filtered by "quick-filter" object.
+     *
+     * @return the filtered column or <code>-1</code>
+     * @see #setQuickFilter(int, java.lang.Object)
+     */
+    public int getQuickFilterColumn() {
+        return quickFilterColumn;
+    }
     
     /**
      * Makes the table show all the rows, resetting the filter state
@@ -1233,7 +1253,14 @@ public class ETable extends JTable {
         if ((newFormats == null) || (newFormats.length != quickFilterFormatStrings.length)) {
             return;
         }
-        quickFilterFormatStrings = newFormats;
+        quickFilterFormatStrings = newFormats.clone();
+    }
+
+    /**
+     * Returns the quickFilterFormatStrings array.
+     */
+    public String[] getQuickFilterFormatStrings() {
+        return quickFilterFormatStrings.clone();
     }
 
     /**
