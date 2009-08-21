@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -116,6 +117,10 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
         DialogDisplayer.getDefault().notify(desc);
     }
 
+    public static DatabaseConnection selectDatabaseConnection() {
+        return SelectConnectionPanel.selectConnection(false);
+    }
+
     static class ContextAwareDelegate extends AbstractAction implements Presenter.Toolbar, HelpCtx.Provider {
 
         private final SQLExecutionBaseAction parent;
@@ -149,7 +154,7 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
                 sqlExecution.removePropertyChangeListener(listener);
             }
 
-            Iterator iterator = result.allInstances().iterator();
+            Iterator<? extends SQLExecution> iterator = result.allInstances().iterator();
             if (iterator.hasNext()) {
                 setSQLExecution((SQLExecution)iterator.next());
                 listener = new PropertyChangeListener() {
@@ -189,12 +194,13 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
         }
 
         public void actionPerformed(ActionEvent e) {
-            SQLExecution sqlExecution = getSQLExecution();
-            if (sqlExecution != null) {
-                parent.actionPerformed(sqlExecution);
+            SQLExecution sqlExec = getSQLExecution();
+            if (sqlExec != null) {
+                parent.actionPerformed(sqlExec);
             }
         }
 
+        @Override
         public Object getValue(String key) {
             Object value = super.getValue(key);
             if (value == null) {
