@@ -86,10 +86,6 @@ public final class TaskListProvider extends PushTaskScanner {
     private TaskScanningScope scope;
     private WeakReference<TaskScanningScope> lastScope = new WeakReference<TaskScanningScope>(null);
     private static final Object SCOPE_LOCK = new Object();
-    /**
-     * true flag signalizes the tasklist should be opened after a refresh
-     */
-    private boolean openTaskList;
     private static final String TASK_GROUP_NAME = "nb-tasklist-issue";  //NOI18N
     private static final String TC_TASKLIST_ID = "TaskListTopComponent"; //NOI18N
 
@@ -156,7 +152,6 @@ public final class TaskListProvider extends PushTaskScanner {
         }
         LOG.fine("TaskListProvider.add: adding " + issuesToAdd.length + " for " + provider + ", request to open: " + openTaskList); //NOI18N
         synchronized (cachedIssues) {
-            this.openTaskList = this.openTaskList || openTaskList;
             Set<IssueProvider.LazyIssue> issues = cachedIssues.get(provider);
             if (issues == null) {
                 issues = new HashSet<IssueProvider.LazyIssue>(5);
@@ -165,11 +160,24 @@ public final class TaskListProvider extends PushTaskScanner {
                 issues.add(issue);
             }
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.fine("TaskListProvider.add: issues for " + provider + ": " + issues); //NOI18N
+                LOG.finer("TaskListProvider.add: issues for " + provider + ": " + issues); //NOI18N
             }
             cachedIssues.put(provider, issues);
             // also schedule a validation of the provider's issues
             providersToValidate.add(provider);
+        }
+        if (openTaskList) {
+            // openning the tasklist
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("TaskListProvider.add: openning tasklist TC"); //NOI18N
+                    }
+                    TopComponent tc = WindowManager.getDefault().findTopComponent(TC_TASKLIST_ID); //NOI18N
+                    tc.open();
+                    tc.requestVisible();
+                }
+            });
         }
         refreshTasks(false);
     }
@@ -391,26 +399,13 @@ public final class TaskListProvider extends PushTaskScanner {
             if (Thread.interrupted()) {
                 return;
             }
-            boolean openTaskList;
             synchronized(cachedIssues) {
-                openTaskList = TaskListProvider.this.openTaskList;
-                TaskListProvider.this.openTaskList = false;
                 TaskListProvider.this.providersToValidate.clear();
                 validatedIssues.clear();
                 validatedIssues.addAll(issuesToInclude.keySet());
             }
             callback.setTasks(tasks);
             lastScope = new WeakReference<TaskScanningScope>(scope);
-            if (openTaskList) {
-                // openning the tasklist
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        TopComponent tc = WindowManager.getDefault().findTopComponent(TC_TASKLIST_ID); //NOI18N
-                        tc.open();
-                        tc.requestVisible();
-                    }
-                });
-            }
         }
     }
 
