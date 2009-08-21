@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
         </condition>
         <property file="${deploy.ant.properties.file}"/>
         <fail unless="user.properties.file">Must set user properties file</fail>
-        <fail unless="sjsas.root">Must set Sun app server root</fail>
+        <fail unless="gfv3.root">Must set Sun app server root</fail>
     </target>
 
     <target name="-create-wsit-prop" unless="do.not.create.wsit.prop">  
@@ -62,19 +62,19 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="create-user" unless="user.exists">  
-        <exec timeout="10000" outputproperty="creation.out" executable="${sjsas.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+        <exec timeout="10000" outputproperty="creation.out" executable="${gfv3.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
             <arg value="create-file-user"/>
             <arg value="--passwordfile"/>
             <arg value="nbproject/wsit.properties"/>
             <arg value="wsitUser"/>
         </exec>
-        <exec timeout="10000" outputproperty="creation.out" executable="${sjsas.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+        <exec timeout="10000" outputproperty="creation.out" executable="${gfv3.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
             <arg value="create-file-user"/>
             <arg value="--passwordfile"/>
             <arg value="nbproject/wsit.properties"/>
             <arg value="wsitUser"/>
         </exec>
-        <exec timeout="10000" outputproperty="creation.out" executable="${sjsas.root}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+        <exec timeout="10000" outputproperty="creation.out" executable="${gfv3.root}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
             <arg value="create-file-user"/>
             <arg value="--passwordfile"/>
             <arg value="nbproject/wsit.properties"/>
@@ -93,13 +93,13 @@ made subject to such option by the copyright holder.
         <available property="do.not.create.wsit.prop" file="nbproject/wsit.properties"/>
         <antcall target="-create-wsit-prop"/>
         
-        <exec timeout="10000" outputproperty="as.users" executable="${sjsas.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+        <exec timeout="10000" outputproperty="as.users" executable="${gfv3.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
             <arg value="list-file-users"/>
         </exec>
-        <exec timeout="10000" outputproperty="as.users" executable="${sjsas.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+        <exec timeout="10000" outputproperty="as.users" executable="${gfv3.root}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
             <arg value="list-file-users"/>
         </exec>
-        <exec timeout="10000" outputproperty="as.users" executable="${sjsas.root}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+        <exec timeout="10000" outputproperty="as.users" executable="${gfv3.root}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
             <arg value="list-file-users"/>
         </exec>
 

@@ -31,10 +31,10 @@
 package org.me.calculator.client;
 
 import java.io.*;
-import java.net.*;
 import javax.annotation.Resource;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceRef;
@@ -44,6 +44,7 @@ import javax.xml.ws.soap.SOAPFaultException;
  *
  * @author mg116726
  */
+@WebServlet(name="ClientServlet", urlPatterns={"/ClientServlet"})
 public class ClientServlet extends HttpServlet {
     @WebServiceRef(wsdlLocation = "http://localhost:8080/SecureCalculatorApp/CalculatorWSService?wsdl")
     public CalculatorWSService service;

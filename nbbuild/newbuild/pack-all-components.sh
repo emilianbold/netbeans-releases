@@ -70,14 +70,16 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME javacard "javacard*"
     rm -rf javacard*
 
-    cd $NB_ALL/nbbuild
+    if [ $RUNJAVAFX == 1 ]; then
+	cd $NB_ALL/nbbuild
 
-    #Pack all the NetBeans with javafx
-    pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one-w-javafx netbeans
+        #Pack all the NetBeans with javafx
+	pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one-w-javafx netbeans
 
-    cd $NB_ALL/nbbuild/netbeans
-    pack_component $DIST_DIR/zip/moduleclusters $NAME javacard "javafx*"
-    rm -rf javafx*
+        cd $NB_ALL/nbbuild/netbeans
+	pack_component $DIST_DIR/zip/moduleclusters $NAME javafx "javafx*"
+	rm -rf javafx*
+    fi
 
     cd $NB_ALL/nbbuild
 
