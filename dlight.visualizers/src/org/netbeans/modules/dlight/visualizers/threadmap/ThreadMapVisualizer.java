@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.*;
@@ -100,7 +101,8 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
             public ThreadStackVisualizer showStack(long startTime, ThreadDumpQuery query) {
-               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(ThreadMapVisualizer.this.provider.getThreadDump(query), startTime);
+               ThreadDump threadDump = ThreadMapVisualizer.this.provider.getThreadDump(query);
+               ThreadStackVisualizer visualizer  = new ThreadStackVisualizer( threadDump, startTime);
                 CallStackTopComponent tc = CallStackTopComponent.findInstance();
                 tc.addVisualizer(visualizer.getDisplayName(), visualizer);
                 tc.open();

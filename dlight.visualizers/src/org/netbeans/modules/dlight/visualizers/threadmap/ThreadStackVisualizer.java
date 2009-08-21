@@ -137,7 +137,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public String getDisplayName() {
-        if (!descriptor.getThreadStates().isEmpty()) {
+        if (descriptor != null && !descriptor.getThreadStates().isEmpty()) {
             return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
         }
         return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
