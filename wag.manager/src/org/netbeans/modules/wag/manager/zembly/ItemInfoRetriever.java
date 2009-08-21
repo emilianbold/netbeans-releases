@@ -49,6 +49,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -68,7 +69,6 @@ public class ItemInfoRetriever {
     private static final String MIME_TYPE_ATTR = "mimeType";    //NOI18N
     private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";     //NOI18N
     private static final String LATEST = "latest";      //NO118N
-
     private Zembly zembly;
 
     public ItemInfoRetriever(Zembly zembly) {
@@ -76,14 +76,14 @@ public class ItemInfoRetriever {
     }
 
     public Collection<WagService> getServices(JSONArray items) {
-        
+
         try {
             Collection<WagService> services = new ArrayList<WagService>();
             Collection<Parameter> params = new ArrayList<Parameter>();
 
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
-         
+
                 params.clear();
                 params.add(Parameter.create(ITEM_URI_PARAM, item.getString(PATH_ATTR)));
                 params.add(Parameter.create(VERSION_PARAM, LATEST));
@@ -126,9 +126,9 @@ public class ItemInfoRetriever {
 
             return services;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
-    
+
         return Collections.emptyList();
     }
 }

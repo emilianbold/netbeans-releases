@@ -48,6 +48,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagApi;
 import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -74,7 +75,7 @@ public class ContentRetriever {
 
             return result;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return "";
@@ -105,7 +106,7 @@ public class ContentRetriever {
 
             return apis;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -119,8 +120,7 @@ public class ContentRetriever {
 
             return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-             ex.printStackTrace();
-            // TODO: need to handle exception
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();

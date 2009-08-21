@@ -48,8 +48,7 @@ import org.netbeans.modules.wag.manager.model.WagService;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.gateway.client.Zembly;
 import java.util.Collection;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -80,7 +79,7 @@ public class SearchEngine {
 
             return parse(result);
         } catch (Exception ex) {
-            handleException(ex);
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -98,14 +97,9 @@ public class SearchEngine {
 
             return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-            handleException(ex);
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
-    }
-
-    private void handleException(Exception ex) {
-        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
-        DialogDisplayer.getDefault().notify(msg);
     }
 }

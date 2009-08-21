@@ -47,11 +47,10 @@ import com.zembly.oauth.core.UrlConnection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -188,8 +187,7 @@ public class ZemblySession {
 
             return parseUserInfo(result.getString());
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(ZemblySession.class.getName()).log(Level.SEVERE, null, ex);
+            Utilities.handleException(ex);
         }
 
         return null;
@@ -205,7 +203,7 @@ public class ZemblySession {
                 config.setConsumerKey(userInfo.getKey());
                 config.setConsumerSecret(userInfo.getSecret());
             } catch (Exception ex) {
-                // ignore
+                //ignore
             }
         }
 
@@ -232,7 +230,7 @@ public class ZemblySession {
             System.out.println("userInfo: " + userInfo);
             return userInfo;
         } catch (JSONException ex) {
-
+            Utilities.handleException(ex);
         }
 
         return null;

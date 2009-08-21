@@ -45,6 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -81,7 +82,7 @@ public class UserServiceRetriever {
 
             return parseYourServices(result, username);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -96,7 +97,7 @@ public class UserServiceRetriever {
 
             return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();

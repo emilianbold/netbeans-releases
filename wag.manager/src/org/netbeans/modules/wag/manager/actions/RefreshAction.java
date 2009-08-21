@@ -40,8 +40,7 @@
  */
 package org.netbeans.modules.wag.manager.actions;
 
-import org.netbeans.modules.wag.manager.model.WagSearchResult;
-import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.model.WagItems;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
@@ -50,18 +49,18 @@ import org.openide.util.*;
  * 
  * @author  peterliu
  */
-public class RefreshSearchAction extends NodeAction {
+public class RefreshAction extends NodeAction {
 
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         return true;
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(RefreshSearchAction.class);
+        return new HelpCtx(RefreshAction.class);
     }
 
     public String getName() {
-        return NbBundle.getMessage(RefreshSearchAction.class, "RefreshSearchAction");
+        return NbBundle.getMessage(RefreshAction.class, "RefreshAction");
     }
 
     protected void performAction(final Node[] nodes) {
@@ -69,15 +68,13 @@ public class RefreshSearchAction extends NodeAction {
             return;
         }
 
-        final WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
+        final WagItems items = nodes[0].getLookup().lookup(WagItems.class);
 
-        if (results == null) {
-            throw new IllegalArgumentException("Node has no WagSearchResults");
+        if (items == null) {
+            throw new IllegalArgumentException("Node has no WagItems");
         }
 
-        for (int i = 0; i < nodes.length; i++) {
-            nodes[i].getLookup().lookup(WagSearchResult.class).refresh();
-        }
+        items.refresh();
     }
 
     protected boolean asynchronous() {

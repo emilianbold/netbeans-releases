@@ -48,6 +48,7 @@ import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagApi;
 import org.netbeans.modules.wag.manager.model.WagRankedServices.RankingType;
 import org.netbeans.modules.wag.manager.model.WagService;
+import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
@@ -90,9 +91,9 @@ public class RankingRetriever {
                         {MAX_RESULTS_PARAM, MAX_RESULTS}});
             return parseRankings(result);
         } catch (Exception ex) {
-            ex.printStackTrace();
-
+            Utilities.handleException(ex);
         }
+
         return Collections.emptyList();
     }
 
@@ -104,9 +105,9 @@ public class RankingRetriever {
                         {MAX_RESULTS_PARAM, MAX_RESULTS}});
             return parseNewestApis(result);
         } catch (Exception ex) {
-            ex.printStackTrace();
-
+            Utilities.handleException(ex);
         }
+
         return Collections.emptyList();
     }
 
@@ -119,7 +120,7 @@ public class RankingRetriever {
 
             return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
@@ -143,7 +144,7 @@ public class RankingRetriever {
             return apis;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
