@@ -811,10 +811,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         wasDot = false;
                         String part;
                         int offset = caretOffset - seq.offset();
+                        String tokenText = seq.token().text().toString();
                         if (offset > 0 && offset < seq.token().length()) {
-                            part = seq.token().text().subSequence(0, offset).toString();
+                            String quoteString = quoter.getQuoteString();
+                            if (tokenText.startsWith(quoteString) && tokenText.endsWith(quoteString) && offset == tokenText.length() - 1) {
+                                // identifier inside closed quotes and cursor before ending quote ("foo|")
+                                // => completion will not add quotes and replace just foo
+                                part = tokenText.substring(1, offset);
+                                lastPrefixOffset++;
+                            } else {
+                                part = tokenText.substring(0, offset);
+                            }
                         } else {
-                            part = seq.token().text().toString();
+                            part = tokenText;
                         }
                         parts.add(part);
                     } else {
