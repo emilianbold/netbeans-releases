@@ -142,7 +142,7 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // silently change bundle
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         is = new FileInputStream(props.getBundleInfo().getPaths()[0]);
         try {
             ep.load(is);

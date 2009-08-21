@@ -60,11 +60,12 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -84,8 +85,15 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
@@ -93,6 +101,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.w3c.dom.Element;
 
 /**
  * Provides convenient access to a lot of NetBeans Module's properties.
@@ -182,6 +191,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private DependencyListModel dependencyListModel;
     private FriendListModel friendListModel;
     private RequiredTokenListModel requiredTokensListModel;
+    private DefaultListModel wrappedJarsListModel;
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
@@ -195,6 +205,9 @@ public final class SingleModuleProperties extends ModuleProperties {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(), sp, Util.getModuleType(project),
                 project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
     }
+    private ReferenceHelper refHelper;
+    private UpdateHelper updHelper;
+    private ClassPathSupport cps;
     
     /**
      * Creates a new instance of SingleModuleProperties
@@ -220,6 +233,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         dependencyListModel = null;
         friendListModel = null;
         requiredTokensListModel = null;
+        wrappedJarsListModel = null;
         projectXMLManager = null;
         if (isSuiteComponent()) {
             if (getSuiteDirectory() != null)
@@ -457,7 +471,49 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return projectXMLManager;
     }
-    
+
+    ReferenceHelper getRefHelper() {
+        if (refHelper == null) {
+            refHelper = new ReferenceHelper(
+                    getHelper(),
+                    ProjectUtils.getAuxiliaryConfiguration(getProject()),
+                    getEvaluator());
+        }
+        return refHelper;
+    }
+
+    UpdateHelper getUpdateHelper() {
+        if (updHelper == null) {
+            updHelper = new UpdateHelper(new UpdateImplementation() {
+
+                public boolean isCurrent() {
+                    // XXX is metadata version update needed? Currently not supported here
+                    return true;
+                }
+
+                public boolean canUpdate() {
+                    assert false : "Should not get called";
+                    return false;
+                }
+
+                public void saveUpdate(EditableProperties props) throws IOException {
+                    assert false : "Should not get called";
+                }
+
+                public Element getUpdatedSharedConfigurationData() {
+                    assert false : "Should not get called";
+                    return null;
+                }
+
+                public EditableProperties getUpdatedProjectProperties() {
+                    assert false : "Should not get called";
+                    return null;
+                }
+            }, getHelper());
+        }
+        return updHelper;
+    }
+
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.
@@ -631,7 +687,56 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return requiredTokensListModel;
     }
-    
+
+    private final String CPEXT = "CPEXT";    // NOI18N  // just an arbitrary string
+
+    private ClassPathSupport getClassPathSupport() {
+        if (cps == null) {
+            ClassPathSupport.Callback cback = new ClassPathSupport.Callback() {
+
+                public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
+                    if (CPEXT.equals(projectXMLElement)) {
+                        for (Item item : items) {
+                            // file ref properties for <cp-e> jars so that CPS can handle src&javadoc
+                            String ref = getRefHelper().createForeignFileReferenceAsIs(item.getFilePath(), null);
+                            item.setReference(ref);
+                            item.initSourceAndJavadoc(getHelper());
+                        }
+                    }
+                }
+
+                public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
+                    if (CPEXT.equals(projectXMLElement)) {
+                        for (Item item : items) {
+                            // remove file ref properties for <cp-e> jars, keep only src&javadoc
+                            if (item.getReference() != null) {
+                                getRefHelper().destroyReference(item.getReference());
+                            }
+                        }
+                    }
+                }
+            };
+            cps = new ClassPathSupport(getEvaluator(), getRefHelper(), getHelper(), getUpdateHelper(), cback);
+        }
+        return cps;
+    }
+
+    private Iterator<Item> getCPExtIterator() {
+        StringBuilder sb = new StringBuilder();
+        String[] cpExt = SuiteUtils.getAntProperty(Arrays.asList(getProjectXMLManager().getBinaryOrigins()));
+        for (String s : cpExt) {
+            sb.append(s);
+        }
+        return getClassPathSupport().itemsIterator(sb.toString(), CPEXT);
+    }
+
+    DefaultListModel getWrappedJarsListModel() {
+        if (wrappedJarsListModel == null) {
+            wrappedJarsListModel = ClassPathUiSupport.createListModel(getCPExtIterator());
+        }
+        return wrappedJarsListModel;
+    }
+
     // XXX should be probably moved into ModuleList
     String[] getAllTokens() {
         if (allTokens == null) {
@@ -698,7 +803,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return availablePublicPackages;
     }
-    
+
     @Override void storeProperties() throws IOException {
         super.storeProperties();
         
@@ -709,7 +814,9 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (bundleInfo != null && bundleInfo.isModified()) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
-        
+
+        ProjectXMLManager pxm = getProjectXMLManager();
+
         // Store project.xml changes
         // store module dependencies
         DependencyListModel dependencyModel = getDependenciesListModel();
@@ -718,20 +825,56 @@ public final class SingleModuleProperties extends ModuleProperties {
 
             logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
             
-            getProjectXMLManager().replaceDependencies(depsToSave);
+            pxm.replaceDependencies(depsToSave);
         }
         String[] friends = getFriendListModel().getFriends();
         String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
         boolean refreshModuleList = false;
         if (getPublicPackagesModel().isChanged() || getFriendListModel().isChanged()) {
             if (friends.length > 0) { // store friends packages
-                getProjectXMLManager().replaceFriends(friends, publicPkgs);
+                pxm.replaceFriends(friends, publicPkgs);
             } else { // store public packages
-                getProjectXMLManager().replacePublicPackages(publicPkgs);
+                pxm.replacePublicPackages(publicPkgs);
             }
             refreshModuleList = true;
         }
-        
+
+        // store class-path-extensions + its src & javadoc
+        if (cps != null && wrappedJarsListModel != null) {
+            final List<Item> cpExtList = ClassPathUiSupport.getList(wrappedJarsListModel);
+            Map<String, String> newCpExt = new HashMap<String, String>();
+
+            for (Item item : cpExtList) {
+                String binPath = item.getFilePath();
+                if (binPath != null && binPath.startsWith(Util.CPEXT_BINARY_PATH)) {
+                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + binPath.substring(Util.CPEXT_BINARY_PATH.length());
+                    newCpExt.put(runtimePath, binPath);
+                }
+            }
+            
+            // delete removed JARs, remove any remaining exported packages and src&javadoc refs left
+            Iterator<Item> it = getCPExtIterator();
+            HashSet<String> jarsSet = new HashSet<String>(newCpExt.values());
+            while (it.hasNext()) {
+                Item item = it.next();
+                if (! jarsSet.contains(item.getFilePath())) {
+                    File f = new File(getProjectDirectoryFile(), item.getFilePath());
+                    FileObject toDel = FileUtil.toFileObject(f);
+                    if (toDel != null) {
+                        Set<String> pp = Util.getPublicPackages(f);
+                        // TODO delete packages
+//                        getPublicPackagesModel().reloadData(null)
+                        // XXX doesn't work yet: toDel.delete();
+                    }
+                    assert item.getReference() != null : "getCPExtIterator() initializes references to wrapped JARs";
+                    item.removeSourceAndJavadoc(getUpdateHelper());
+                    getRefHelper().destroyReference(item.getReference());
+                }
+            }
+            cps.encodeToStrings(cpExtList, CPEXT);
+            pxm.replaceClassPathExtensions(newCpExt);
+        }
+
         if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), getActivePlatform());
             if (javaPlatformChanged) {
@@ -937,6 +1080,11 @@ public final class SingleModuleProperties extends ModuleProperties {
             assert false : e;
         }
         return p;
+    }
+
+    void updateAvailablePackages() {
+        // TODO getWrappedJarsListModel();
+        firePropertiesRefreshed();
     }
     
 }

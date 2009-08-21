@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -930,5 +931,74 @@ public final class Util {
             urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
         }
         return urls;
+    }
+
+    public static final String CPEXT_BINARY_PATH = "release/modules/ext/";
+    public static final String CPEXT_RUNTIME_RELATIVE_PATH = "ext/";
+
+    /**
+     * Copies given JAR file into <tt>release/modules/ext</tt> folder under <tt>projectDir</tt>.
+     * <tt>release/modules/ext</tt> will be created if necessary.
+     *
+     * @param projectDir Project folder
+     * @param jar JAR file to be copied
+     * @return If JAR copied successfully, returns string array <tt>{&lt;runtime-relative path&gt, &lt;binary origin path&gt;}</tt>,
+     * otherwise <tt>null</tt>.
+     * @throws IOException When <tt>release/modules/ext</tt> folder cannot be created.
+     */
+    public static String[] copyClassPathExtensionJar(File projectDir, File jar) throws IOException {
+        String[] ret = null;
+
+        File releaseDir = new File(projectDir, CPEXT_BINARY_PATH); //NOI18N
+        if (! releaseDir.isDirectory() && !releaseDir.mkdirs()) {
+            throw new IOException("cannot create release directory '" + releaseDir + "'.");    // NOI18N
+        }
+        
+        FileObject relDirFo = FileUtil.toFileObject(releaseDir);
+        FileObject orig = FileUtil.toFileObject(FileUtil.normalizeFile(jar));
+        if (orig != null) {
+            FileObject existing = relDirFo.getFileObject(orig.getName(), orig.getExt());
+            if (existing != null)
+                existing.delete();
+            FileUtil.copyFile(orig, relDirFo, orig.getName());
+            ret = new String[2];
+            ret[0] = CPEXT_RUNTIME_RELATIVE_PATH + orig.getNameExt();    // NOI18N
+            ret[1] = CPEXT_BINARY_PATH + orig.getNameExt(); // NOI18N
+        }
+        return ret;
+    }
+
+    // TODO replace with scanJarForPackageNames?
+    /**
+     * Returns set of packages in given JAR.
+     * @param jar JAR file to scan.
+     * @return Set of packages containing at least single class file. Can be empty, but not null.
+     */
+    public static Set<String> getPublicPackages(File jar) throws IOException {
+        JarFile jf = null;
+        Set<String> packageList = new HashSet<String>();
+        scanJarForPackageNames(packageList, jar);
+//        try {
+//            jf = new JarFile(jar);
+//            Enumeration en = jf.entries();
+//            while (en.hasMoreElements()) {
+//                JarEntry entry = (JarEntry) en.nextElement();
+//                if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
+//                    // NOI18N
+//                    String nm = entry.getName();
+//                    if (!Util.isValidJavaFQN(nm.substring(0, nm.length() - 6).replace('/', '.'))) {
+//                        continue; // #72669
+//                    }
+//                    int index = nm.lastIndexOf('/');
+//                    if (index > -1) {
+//                        String path = nm.substring(0, index);
+//                        packageList.add(path.replace('/', '.'));
+//                    }
+//                }
+//            }
+//        } finally {
+//            jf.close();
+//        }
+        return packageList;
     }
 }

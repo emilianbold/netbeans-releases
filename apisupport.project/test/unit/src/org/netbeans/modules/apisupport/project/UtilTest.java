@@ -49,10 +49,13 @@ import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
@@ -178,7 +181,24 @@ public class UtilTest extends TestBase {
             Locale.setDefault(orig);
         }
     }
-    
+
+    public void testGetPublicPackages() throws Exception {
+        clearWorkDir();
+        File dir = getWorkDir();
+        Manifest mani = new Manifest();
+        File f = new File(dir, "lib1.jar");
+        Map<String, String> contents = new HashMap<String, String>();
+        contents.put("org/test/t1/A.class", "");
+        contents.put("org/test/t1/B.class", "");
+        contents.put("org/test/C.class", "");
+        contents.put("pack/age/P.class", "");
+        contents.put("pack/age/empty", "");
+        contents.put("pack/age/noclass/Bundle.properties", "");
+        createJar(f, contents, mani);
+        Set<String> pp = Util.getPublicPackages(f);
+        assertEquals(new HashSet<String>(Arrays.asList("org.test.t1", "org.test", "pack.age")), pp);
+    }
+
     public void testLoadProperties() throws Exception {
         File props = file(getWorkDir(), "testing.properties");
         OutputStream propsOS = new FileOutputStream(props);

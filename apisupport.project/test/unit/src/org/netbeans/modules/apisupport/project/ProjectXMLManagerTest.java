@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -435,7 +436,62 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectXMLManager xercesPXM = createXercesPXM();
         assertEquals("number of binary origins", 1, xercesPXM.getBinaryOrigins().length);
     }
-    
+
+    public void testRemoveClassPathExtensions() throws Exception {
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        // apply and save project
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.removeClassPathExtensions();
+                return true;
+            }
+        });
+        assertTrue("removing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        final Map<String, String> newCPExts = testingPXM.getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 0, newCPExts.size());
+    }
+
+    public void testReplaceClassPathExtensions() throws Exception {
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        final Map<String, String> newCPE = new HashMap<String, String>();
+        newCPE.put("ext/testing.jar", "release/modules/ext/testing.jar");
+        newCPE.put("ext/jFreeChart-1.0.13.jar", "release/modules/ext/jFreeChart-1.0.13.jar");
+        // apply and save project
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.replaceClassPathExtensions(newCPE);
+                return true;
+            }
+        });
+        assertTrue("replacing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        // try with another ProjectXMLManager so that c-p-es are not cached
+        Map<String, String> actualCPEs = (new ProjectXMLManager(testingProject)).getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 2, actualCPEs.size());
+        assertEquals("correct class-path-extensions", newCPE, actualCPEs);
+
+        newCPE.clear();
+        newCPE.put("ext/testing2.jar", "release/modules/ext/testing2.jar");
+        // apply and save again
+        result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
+                testingPXM.replaceClassPathExtensions(newCPE);
+                return true;
+            }
+        });
+        assertTrue("replacing class-path-extensions", result);
+        ProjectManager.getDefault().saveProject(testingProject);
+
+        actualCPEs = (new ProjectXMLManager(testingProject)).getClassPathExtensions();
+        assertEquals("number of class-path-extensions", 1, actualCPEs.size());
+        assertEquals("correct class-path-extensions", newCPE, actualCPEs);
+    }
+
     public void testThatFriendPackagesAreGeneratedInTheRightOrder_61882() throws Exception {
         FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");
         FileObject projectXMLFO = fo.getFileObject("nbproject/project.xml");
