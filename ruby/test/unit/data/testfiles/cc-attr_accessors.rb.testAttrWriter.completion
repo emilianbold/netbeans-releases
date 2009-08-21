@@ -1,0 +1,4 @@
+Code completion result for source line:
+attr_writer :baz, :fo|o
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+FIELD      foo                                        FooBarBaz

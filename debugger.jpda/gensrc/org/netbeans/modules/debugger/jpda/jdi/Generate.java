@@ -147,6 +147,8 @@ public class Generate {
 
         Map<String, Set<Class>> ObjectReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         ObjectReferenceExceptions.put("setValue", Collections.singleton((Class) java.lang.IllegalArgumentException.class));
+        ObjectReferenceExceptions.put("disableCollection", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
+        ObjectReferenceExceptions.put("enableCollection", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ObjectReference.class.getName(), ObjectReferenceExceptions);
 
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
