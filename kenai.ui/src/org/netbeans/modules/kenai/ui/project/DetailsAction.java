@@ -36,44 +36,64 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai;
 
+package org.netbeans.modules.kenai.ui.project;
+
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author joshis
+ * @author tester
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.class)
-public class IssueAccessorImpl extends KenaiIssueAccessor {
+public class DetailsAction {
 
-    /**
-     * Open a TC with an issue in the IDE
-     * @param project Kenai project
-     * @param issueID Issue identifier
-     */
-    @Override
-    public void open(final KenaiProject project, final String issueID) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
-        handle.start();
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+    static RequestProcessor.Task t = null;
 
-            public void run() {
-                final Repository repo = KenaiRepositories.getInstance().getRepository(project);
-                handle.finish();
-                try {
-                    Issue.open(repo, issueID);
-                } catch (NullPointerException e) {
-                    //
+    public static synchronized AbstractAction forProject(final String proj) {
+
+        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                if (t != null && !t.isFinished()) {
+                    t.cancel();
                 }
+                final ProgressHandle[] handle = new ProgressHandle[1];
+                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
+                handle[0].start();
+                t = RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                try {
+                                    KenaiProject kenaiProj = Kenai.getDefault().getProject(proj);
+                                    kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
+                                    tc.open();
+                                    tc.requestActive();
+                                } catch (KenaiException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } finally {
+                                    handle[0].finish();
+                                }
+                            }
+                        });
+                    }
+                });
             }
-        });
+        };
     }
+
 }

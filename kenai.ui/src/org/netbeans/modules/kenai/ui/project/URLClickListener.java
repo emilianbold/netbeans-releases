@@ -36,44 +36,52 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai;
 
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.kenai.ui.project;
+
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.net.URL;
+import javax.swing.JLabel;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  *
- * @author joshis
+ * @author tester
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.class)
-public class IssueAccessorImpl extends KenaiIssueAccessor {
+class URLClickListener implements MouseListener {
 
-    /**
-     * Open a TC with an issue in the IDE
-     * @param project Kenai project
-     * @param issueID Issue identifier
-     */
-    @Override
-    public void open(final KenaiProject project, final String issueID) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
-        handle.start();
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+    private URL url;
 
-            public void run() {
-                final Repository repo = KenaiRepositories.getInstance().getRepository(project);
-                handle.finish();
-                try {
-                    Issue.open(repo, issueID);
-                } catch (NullPointerException e) {
-                    //
-                }
-            }
-        });
+    private URLClickListener(URL webLocation) {
+        url = webLocation;
     }
+
+    public static void selfRegister(JLabel target, URL urlLoc) {
+        MouseListener[] mouseListeners = target.getMouseListeners();
+        for (int i = 0; i < mouseListeners.length; i++) {
+            MouseListener mouseListener = mouseListeners[i];
+            if (mouseListener instanceof URLClickListener) {
+                target.removeMouseListener(mouseListener);
+            }
+        }
+        target.addMouseListener(new URLClickListener(urlLoc));
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        URLDisplayer.getDefault().showURL(url);
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
 }
