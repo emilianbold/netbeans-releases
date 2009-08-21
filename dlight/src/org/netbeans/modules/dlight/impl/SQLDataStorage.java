@@ -158,10 +158,12 @@ public abstract class SQLDataStorage implements DataStorage {
     private final Map<String, PreparedStatement> stmts;
 
     static {
+        classToType.put(Byte.class, "tinyint"); // NOI18N
+        classToType.put(Short.class, "smallint"); // NOI18N
         classToType.put(Integer.class, "int"); //NOI18N
-        classToType.put(Double.class, "double"); //NOI18N
-        classToType.put(Float.class, "double"); //NOI18N
         classToType.put(Long.class, "bigint"); //NOI18N
+        classToType.put(Double.class, "double"); //NOI18N
+        classToType.put(Float.class, "real"); //NOI18N
         classToType.put(String.class, "varchar"); //NOI18N
     }
 

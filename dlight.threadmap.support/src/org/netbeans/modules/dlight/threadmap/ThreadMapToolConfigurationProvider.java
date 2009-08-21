@@ -61,7 +61,6 @@ import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.threadmap.collector.MSAParser;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
