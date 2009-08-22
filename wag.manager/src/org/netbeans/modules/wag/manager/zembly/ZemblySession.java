@@ -42,7 +42,6 @@ import com.zembly.gateway.client.Zembly;
 import com.zembly.gateway.client.config.Configuration;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.oauth.api.Response;
-import com.zembly.oauth.core.SSLUtilities;
 import com.zembly.oauth.core.UrlConnection;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,12 +74,12 @@ public class ZemblySession {
     private ZemblyUserInfo userInfo;
 
     // For local testing
-    
+    /*
     static {
         SSLUtilities.trustAllHostnames();
         SSLUtilities.trustAllHttpsCertificates();
     }
-     
+     */
 
     public synchronized static ZemblySession getInstance() {
         if (instance == null) {
