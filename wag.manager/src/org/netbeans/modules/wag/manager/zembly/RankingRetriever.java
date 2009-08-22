@@ -43,40 +43,53 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.netbeans.modules.wag.manager.model.WagDomain;
+import org.netbeans.modules.wag.manager.model.WagApi;
+import org.netbeans.modules.wag.manager.model.WagRankedServices.RankingType;
+import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.util.Utilities;
 
 /**
  *
  * @author peterliu
  */
-public class DomainRetriever {
+public class RankingRetriever {
 
-    private static final String LIST_DOMAIN_URI = "platform.api.ListDomain";  //NOI18N
-    private static final String GET_USER_OWNED_ITEMS_URI = "platform.user.GetUserOwnedItems"; // NOI18N
-    private static final String ITEM_TYPE_PARAM = "itemType";     //NOI18N
-    private static final String ITEM_TYPE_VALUE = "[\"DOMAIN\"]";    //NOI18N
-    private static final String SHOW_DRAFTS_PARAM = "showDrafts";   //NOI18N
-    private static final String SHOW_DRAFTS_VALUE = "false";        //NOI18N
-    private static final String USERID_PARAM = "userid";        //NOI18N
+    private static final String GET_RANKINGS_URL = "platform.analytic.GetRankings";        //NOI18N
+    private static final String CATEGORIES_PARAM = "categories";    //NOI18N
+    private static final String MAX_RESULTS_PARAM = "maxResults";    //NOI18N
+    private static final String RANKING_PERIODS_PARAM = "rankingPeriods"; //NOI18N
+    private static final String MAX_RESULTS = "20"; //NOI18N
+    private static final String HIGHEST_RATED_SERVICES = "HIGHEST_RATED_SERVICES";  //NOI18N
+    private static final String MOST_USED_JS_SERVICES = "MOST_USED_JS_SERVICES";    //NOI18N
+    private static final String NEWEST_APIS = "NEWEST_APIS";        //NOI18N
+    private static final String ALL_TIME = "ALL_TIME";      //NOI18N
+    private static final String LAST_24HR = "LAST_24HR";    //NOI18N
+    private static final String RANKS_ATTR = "ranks";       //NOI18N
     private static final String NAME_ATTR = "name";     //NOI18N
     private static final String PATH_ATTR = "path";     //NOI18N
-    private static final String ITEMS_ATTR = "items";   //NOI18N
     private Zembly zembly;
 
-    public DomainRetriever(Zembly zembly) {
+    public RankingRetriever(Zembly zembly) {
         this.zembly = zembly;
     }
 
-    public Collection<WagDomain> getAllDomains() {
+    public Collection<WagService> getRankedServices(RankingType type) {
+        String category = HIGHEST_RATED_SERVICES;
+        String rankingPeriod = ALL_TIME;
+
+        if (type == RankingType.HIGHEST_RATED) {
+            category = MOST_USED_JS_SERVICES;
+            rankingPeriod = LAST_24HR;
+        }
 
         try {
-            String result = zembly.callService(LIST_DOMAIN_URI, new String[][]{});
-            System.out.println("all domains: " + result);
-            return parseAllDomains(result);
+            String result = zembly.callService(GET_RANKINGS_URL,
+                    new String[][]{{CATEGORIES_PARAM, category},
+                        {RANKING_PERIODS_PARAM, rankingPeriod},
+                        {MAX_RESULTS_PARAM, MAX_RESULTS}});
+            return parseRankings(result);
         } catch (Exception ex) {
             Utilities.handleException(ex);
         }
@@ -84,17 +97,13 @@ public class DomainRetriever {
         return Collections.emptyList();
     }
 
-    public Collection<WagDomain> getYourDomains() {
+    public Collection<WagApi> getNewestApis() {
         try {
-            String userid = ZemblySession.getInstance().getUserInfo().getUserid();
-            String result = zembly.callService(GET_USER_OWNED_ITEMS_URI,
-                    new String[][]{
-                        {USERID_PARAM, userid},
-                        {ITEM_TYPE_PARAM, ITEM_TYPE_VALUE},
-                        {SHOW_DRAFTS_PARAM, SHOW_DRAFTS_VALUE}
-                    });
-            System.out.println("your domains: " + result);
-            return parseYourDomains(result);
+            String result = zembly.callService(GET_RANKINGS_URL,
+                    new String[][]{{CATEGORIES_PARAM, NEWEST_APIS},
+                        {RANKING_PERIODS_PARAM, ALL_TIME},
+                        {MAX_RESULTS_PARAM, MAX_RESULTS}});
+            return parseNewestApis(result);
         } catch (Exception ex) {
             Utilities.handleException(ex);
         }
@@ -102,47 +111,39 @@ public class DomainRetriever {
         return Collections.emptyList();
     }
 
-    private Collection<WagDomain> parseAllDomains(String data) {
+    private Collection<WagService> parseRankings(String data) {
         try {
             JSONTokener parser = new JSONTokener(data);
-            Collection<WagDomain> domains = new ArrayList<WagDomain>();
+            JSONArray array = (JSONArray) parser.nextValue();
+            JSONObject obj = array.getJSONObject(0);
+            JSONArray items = (JSONArray) obj.getJSONArray(RANKS_ATTR);
 
-            while (parser.more()) {
-                JSONArray array = (JSONArray) parser.nextValue();
-
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject obj = array.getJSONObject(i);
-                    WagDomain domain = new WagDomain(obj.getString(NAME_ATTR), obj.getString(PATH_ATTR));
-                    System.out.println("domain: " + domain);
-                    domains.add(domain);
-                }
-            }
-
-            return domains;
-        } catch (JSONException ex) {
+            return ZemblySession.getInstance().getItemInfoRetriever().getServices(items);
+        } catch (Exception ex) {
             Utilities.handleException(ex);
         }
 
         return Collections.emptyList();
     }
 
-    private Collection<WagDomain> parseYourDomains(String data) {
+    private Collection<WagApi> parseNewestApis(String data) {
         try {
-            Collection<WagDomain> domains = new ArrayList<WagDomain>();
-
             JSONTokener parser = new JSONTokener(data);
-            JSONObject obj = (JSONObject) parser.nextValue();
-            JSONArray items = (JSONArray) obj.getJSONArray(ITEMS_ATTR);
+            JSONArray array = (JSONArray) parser.nextValue();
+            JSONObject obj = array.getJSONObject(0);
+            JSONArray items = (JSONArray) obj.getJSONArray(RANKS_ATTR);
+            Collection<WagApi> apis = new ArrayList<WagApi>();
 
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
-                WagDomain domain = new WagDomain(item.getString(NAME_ATTR), item.getString(PATH_ATTR));
-                System.out.println("your domain: " + domain);
-                domains.add(domain);
+                WagApi api = new WagApi(item.getString(NAME_ATTR), item.getString(PATH_ATTR));
+                System.out.println("api: " + api);
+                apis.add(api);
             }
 
-            return domains;
-        } catch (JSONException ex) {
+            return apis;
+
+        } catch (Exception ex) {
             Utilities.handleException(ex);
         }
 

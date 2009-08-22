@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.wag.manager.actions;
+package org.netbeans.modules.wag.manager.model;
 
-import org.netbeans.modules.wag.manager.model.WagSearchResult;
-import org.netbeans.modules.wag.manager.model.WagSearchResults;
-import org.openide.nodes.Node;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.*;
+import java.util.Collection;
+import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.openide.util.NbBundle;
 
 /**
- * 
- * @author  peterliu
+ *
+ * @author peterliu
  */
-public class RefreshSearchAction extends NodeAction {
+public class WagNewestApis extends WagItems<WagApi> {
 
-    protected boolean enable(org.openide.nodes.Node[] nodes) {
-        return true;
+    public static final String PROP_NAME = "newestApis";  //NOI18N
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(WagNewestApis.class, "Newest_Apis");
     }
 
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(RefreshSearchAction.class);
+    public String getDescription() {
+        return NbBundle.getMessage(WagNewestApis.class, "Newest_Apis_Desc");
     }
 
-    public String getName() {
-        return NbBundle.getMessage(RefreshSearchAction.class, "RefreshSearchAction");
+    protected String getPropName() {
+        return PROP_NAME;
     }
-
-    protected void performAction(final Node[] nodes) {
-        if (nodes == null) {
-            return;
-        }
-
-        final WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
-
-        if (results == null) {
-            throw new IllegalArgumentException("Node has no WagSearchResults");
-        }
-
-        for (int i = 0; i < nodes.length; i++) {
-            nodes[i].getLookup().lookup(WagSearchResult.class).refresh();
-        }
-    }
-
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    protected String iconResource() {
-        return "org/netbeans/modules/wag/manager/resources/restservice.png"; // NOI18N
+    
+    protected Collection<WagApi> loadItems() {
+        return ZemblySession.getInstance().getRankingRetriever().getNewestApis();
     }
 }

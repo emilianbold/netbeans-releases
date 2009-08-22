@@ -91,7 +91,6 @@ public class WagRootNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(AddSearchAction.class),
             SystemAction.get(ViewZemblyApiBrowserAction.class)
 
         };

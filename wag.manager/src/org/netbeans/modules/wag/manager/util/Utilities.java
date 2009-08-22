@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.wag.manager.util;
 
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+
 /**
  *
  * @author peterliu
@@ -56,4 +59,9 @@ public class Utilities {
         return name;
     }
 
+    public static void handleException(Exception ex) {
+        //ex.printStackTrace();
+        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+        DialogDisplayer.getDefault().notify(msg);
+    }
 }
