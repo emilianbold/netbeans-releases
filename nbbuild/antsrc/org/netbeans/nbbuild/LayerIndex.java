@@ -139,7 +139,7 @@ public class LayerIndex extends Task {
                         if (mf == null) {
                             continue;
                         }
-                        String modname = mf.getMainAttributes().getValue("OpenIDE-Module");
+                        String modname = JarWithModuleAttributes.extractCodeName(mf.getMainAttributes());
                         if (modname == null) {
                             continue;
                         }

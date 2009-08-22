@@ -519,7 +519,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "module1",
                 "test/module1/resources/Bundle.properties",
                 "test/module1/resources/layer.xml",
-                suiteDir);
+                suiteDir, false);
         NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(module1);
         FileUtil.createData(handle.layer(true).getRoot(), "random/stuff");
@@ -531,7 +531,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "module2",
                 "test/module2/resources/Bundle.properties",
                 "test/module2/resources/layer.xml",
-                suiteDir);
+                suiteDir, false);
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
         handle = LayerUtils.layerForProject(module2);
         FileObject layerXML = handle.getLayerFile();
@@ -569,7 +569,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "module1",
                 "test/module1/resources/Bundle.properties",
                 "test/module1/resources/layer.xml",
-                suiteDir);
+                suiteDir, false);
         NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(module1);
         cmf.add(cmf.createLayerEntry("foo", null, null, "Foo", null));
@@ -581,7 +581,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "module2",
                 "test/module2/resources/Bundle.properties",
                 "test/module2/resources/layer.xml",
-                suiteDir);
+                suiteDir, false);
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
         cmf = new CreatedModifiedFiles(module2);
         cmf.add(cmf.createLayerEntry("bar", null, null, "Bar", null));
@@ -648,7 +648,7 @@ public class LayerUtilsTest extends LayerTestBase {
                     "module",
                     "test/module/resources/Bundle.properties",
                     "test/module/resources/layer.xml",
-                    suiteDir);
+                    suiteDir, false);
             NbModuleProject module = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
             FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module);
             assertDisplayName(fs, "#64779: localized platform filename", "folder/file", "Japanese");

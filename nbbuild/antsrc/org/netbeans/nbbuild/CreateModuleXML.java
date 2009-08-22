@@ -99,6 +99,14 @@ public class CreateModuleXML extends Task {
     public void setXmldir(File f) {
         xmldir = f;
     }
+
+    private boolean failOnMissingManifest = true;
+    /** By default true. Set to false if JAR files without proper manifest
+     * shall be ignored.
+     */
+    public void setFailOnMissingManifest(boolean fail) {
+        failOnMissingManifest = fail;
+    }
     
     private List<String> enabledNames = new ArrayList<String>(50);
     private List<String> disabledNames = new ArrayList<String>(10);
@@ -196,9 +204,14 @@ public class CreateModuleXML extends Task {
             try {
                 Manifest m = jar.getManifest();
                 Attributes attr = m.getMainAttributes();
-                String codename = attr.getValue("OpenIDE-Module");
+                String codename = JarWithModuleAttributes.extractCodeName(attr);
                 if (codename == null) {
-                    throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    if (failOnMissingManifest) {
+                        throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    } else {
+                        log("No module manifest in " + module, Project.MSG_WARN);
+                        return;
+                    }
                 }
                 if (codename.endsWith(" ") || codename.endsWith("\t")) {
                     // #62887
