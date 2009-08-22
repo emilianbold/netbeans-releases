@@ -44,10 +44,15 @@ import org.netbeans.modules.wag.manager.actions.DeleteSearchAction;
 import org.netbeans.modules.wag.manager.actions.NextResultsAction;
 import org.netbeans.modules.wag.manager.actions.PreviousResultsAction;
 import org.netbeans.modules.wag.manager.actions.RefineSearchAction;
-import org.netbeans.modules.wag.manager.actions.RefreshSearchAction;
-import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
+import org.netbeans.modules.wag.manager.actions.RefreshAction;
+import org.netbeans.modules.wag.manager.model.WagApi;
+import org.netbeans.modules.wag.manager.model.WagDomain;
+import org.netbeans.modules.wag.manager.model.WagDomains;
+import org.netbeans.modules.wag.manager.model.WagNewestApis;
+import org.netbeans.modules.wag.manager.model.WagRankedServices;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.model.WagUserServices;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -73,16 +78,21 @@ public class WagItemsNodeActionFactory {
         if (type == WagSearchResults.class) {
             return new Action[]{
                         SystemAction.get(AddSearchAction.class),
-                        SystemAction.get(ViewZemblyApiBrowserAction.class)
                     };
         } else if (type == WagSearchResult.class) {
             return new Action[]{
                         SystemAction.get(RefineSearchAction.class),
                         SystemAction.get(NextResultsAction.class),
                         SystemAction.get(PreviousResultsAction.class),
-                        SystemAction.get(RefreshSearchAction.class),
+                        SystemAction.get(RefreshAction.class),
                         SystemAction.get(DeleteSearchAction.class)
                     };
+        } else if (type == WagApi.class || type == WagDomain.class ||
+                type == WagDomains.class || type == WagNewestApis.class ||
+                type == WagRankedServices.class || type == WagUserServices.class) {
+            return new Action[] {
+                SystemAction.get(RefreshAction.class)
+            };
         }
 
         return new Action[]{};

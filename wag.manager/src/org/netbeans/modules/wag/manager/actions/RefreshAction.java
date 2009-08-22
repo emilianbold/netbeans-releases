@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,79 +37,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.wag.manager.actions;
 
-package org.netbeans.modules.wag.manager.model;
-
-import java.util.Collection;
-import org.netbeans.modules.wag.manager.zembly.ZemblySession;
+import org.netbeans.modules.wag.manager.model.WagItems;
+import org.openide.nodes.Node;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.*;
 
 /**
- *
- * @author peterliu
+ * 
+ * @author  peterliu
  */
-public class WagDomain extends WagItems<WagApi> implements Comparable<WagDomain>  {
+public class RefreshAction extends NodeAction {
 
-    private static final String PROP_NAME = "domain";  //NOI18N
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        return true;
+    }
 
-    private String name;
-    private String path;
-
-    public WagDomain(String name, String path) {
-        super();
-        this.name = name;
-        this.path = path;
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new HelpCtx(RefreshAction.class);
     }
 
     public String getName() {
-        return name;
+        return NbBundle.getMessage(RefreshAction.class, "RefreshAction");
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public String getDisplayName() {
-        return getName();
-    }
-
-    public String getDescription() {
-        return getPath();
-    }
-
-    protected Collection<WagApi> loadItems() {
-        return ZemblySession.getInstance().getContentRetriever().getApis(path);
-    }
-
-    protected String getPropName() {
-        return PROP_NAME;
-    }
-
-    @Override
-    public String toString() {
-        return "name: " + name + " path: " + path;
-    }
-
-     @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof WagDomain) {
-            return name.equals(((WagDomain) obj).getName());
+    protected void performAction(final Node[] nodes) {
+        if (nodes == null) {
+            return;
         }
 
+        final WagItems items = nodes[0].getLookup().lookup(WagItems.class);
+
+        if (items == null) {
+            throw new IllegalArgumentException("Node has no WagItems");
+        }
+
+        items.refresh();
+    }
+
+    protected boolean asynchronous() {
         return false;
     }
 
-    public int compareTo(WagDomain result) {
-        return name.compareTo(result.getName());
+    protected String iconResource() {
+        return "org/netbeans/modules/wag/manager/resources/restservice.png"; // NOI18N
     }
-
 }

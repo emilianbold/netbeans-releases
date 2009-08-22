@@ -97,13 +97,13 @@ public abstract class WagItems<T> {
         return Collections.unmodifiableSortedSet(items);
     }
 
-    public void addServices(Collection<T> itemsToAdd) {
+    public void addItems(Collection<T> itemsToAdd) {
         SortedSet<T> old = new TreeSet<T>(items);
         items.addAll(itemsToAdd);
         fireChange(old, Collections.unmodifiableSortedSet(items));
     }
 
-    public void removeServices(Collection<T> itemsToRemove) {
+    public void removeItems(Collection<T> itemsToRemove) {
         SortedSet<T> old = new TreeSet<T>(items);
         items.removeAll(itemsToRemove);
         fireChange(old, Collections.unmodifiableSortedSet(items));
