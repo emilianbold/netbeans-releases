@@ -81,8 +81,10 @@ import org.openide.util.WeakListeners;
  * etc., so it can be changed later to use ReferenceHelper w/o requiring
  * code changes elsewhere
  *
+ * @deprecated - remove after conversion to use new dependencies
  * @author Tim Boudreau
  */
+@Deprecated
 public final class LibrariesManager {
 
     private final JCProject project;

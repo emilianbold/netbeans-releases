@@ -55,8 +55,15 @@ import org.w3c.dom.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.project.deps.ArtifactKind;
+import org.netbeans.modules.javacard.project.deps.DependenciesResolver;
+import org.netbeans.modules.javacard.project.deps.Dependency;
+import org.netbeans.modules.javacard.project.deps.DependencyKind;
+import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,7 +76,9 @@ public class Updater implements UpdateImplementation {
     private final AntProjectHelper helper;
     private final AuxiliaryConfiguration config;
     private Boolean isCurrent;
-    public static final String OLD_PROJECT_NAMESPACE = "http://www.netbeans.org/ns/javacard-project/1"; //NOI18N
+    public static final String NAMESPACE_V1 = "http://www.netbeans.org/ns/javacard-project/1"; //NOI18N
+    public static final String NAMESPACE_V2 = "http://www.netbeans.org/ns/javacard-project/2"; //NOI18N
+    public static final String NAMESPACE_V3 = "http://www.netbeans.org/ns/javacard-project/3"; //NOI18N
 
     public Updater(JCProject p, AntProjectHelper helper, AuxiliaryConfiguration config) {
         this.project = p;
@@ -86,10 +95,14 @@ public class Updater implements UpdateImplementation {
         boolean result = ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
 
             public Boolean run() {
-                Element configFragment = config.getConfigurationFragment("data", //NOI18N
-                        OLD_PROJECT_NAMESPACE, true);
+                Boolean current = config.getConfigurationFragment("data", //NOI18N
+                        NAMESPACE_V1, true) == null;
+                if (current) {
+                    current = config.getConfigurationFragment("data", //NOI18N
+                        NAMESPACE_V2, true) == null;
+                }
                 synchronized (this) {
-                    isCurrent = configFragment == null ? Boolean.TRUE : Boolean.FALSE;
+                    isCurrent = current;
                 }
                 return isCurrent;
             }
@@ -122,7 +135,7 @@ public class Updater implements UpdateImplementation {
             }
             this.helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(), true);
-            this.config.removeConfigurationFragment("data", OLD_PROJECT_NAMESPACE, true); //NOI18N
+            this.config.removeConfigurationFragment("data", NAMESPACE_V1, true); //NOI18N
             EditableProperties updatedProperties = getUpdatedProjectProperties();
             this.helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, updatedProperties);
             synchronized (this) {
@@ -144,7 +157,15 @@ public class Updater implements UpdateImplementation {
 
     public synchronized Element getUpdatedSharedConfigurationData() {
         if (cachedElement == null) {
-            Element oldRoot = this.config.getConfigurationFragment("data", OLD_PROJECT_NAMESPACE, true);    //NOI18N
+            Element result = getUpdatedSharedConfigurationDataV1();
+            return cachedElement = getUpdatedSharedConfigurationDataV2(result);
+        }
+        return cachedElement;
+    }
+
+    public synchronized Element getUpdatedSharedConfigurationDataV1() {
+        if (cachedElement == null) {
+            Element oldRoot = this.config.getConfigurationFragment("data", NAMESPACE_V1, true);    //NOI18N
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "data"); //NOI18N
@@ -161,6 +182,53 @@ public class Updater implements UpdateImplementation {
         }
         return cachedElement;
     }
+
+    public synchronized Element getUpdatedSharedConfigurationDataV2(Element element) {
+        if (element == null) {
+            element = this.config.getConfigurationFragment("data", NAMESPACE_V1, true);    //NOI18N
+        }
+        Document doc = element.getOwnerDocument();
+        Element newRoot = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "data"); //NOI18N
+        Element minAntVersion = doc.createElement("minimum-ant-version"); //NOI18N
+        minAntVersion.setTextContent(JCProjectType.MINIMUM_ANT_VERSION);
+        copyDocument(doc, element, newRoot);
+        Element sourceRoots = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
+        Element root = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");   //NOI18N
+        root.setAttribute("id", "src.dir");   //NOI18N
+        sourceRoots.appendChild(root);
+        newRoot.appendChild(sourceRoots);
+
+        Element dependencies = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "dependencies");
+        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String cp = props.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH);
+        try {
+            if (cp != null && !"".equals(cp.trim())) {
+                ResolvedDependencies deps = project.createResolvedDependencies();
+                String[] paths = cp.split(File.separator);
+                for (int i = 0; i < paths.length; i++) {
+                    String path = paths[i];
+                    File f = FileUtil.normalizeFile(new File(path));
+                    if (f != null && f.exists()) {
+                        Map<ArtifactKind, String> m = new HashMap<ArtifactKind, String>();
+                        m.put(ArtifactKind.ORIGIN, f.getAbsolutePath());
+                        Dependency d = new Dependency("lib" + (i + 1), DependencyKind.RAW_JAR, DeploymentStrategy.ALREADY_ON_CARD);
+                        deps.add(d, m);
+                    }
+                }
+                if (!deps.all().isEmpty()) {
+                    new DependenciesResolver(project.getProjectDirectory(), project.evaluator()).save(project, deps, dependencies);
+                }
+                props.remove(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                newRoot.appendChild(dependencies);
+                element = newRoot;
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Project metadata corrupted", e);
+        }
+        return element;
+    }
+
 
     private static void copyDocument(Document doc, Element from, Element to) {
         NodeList nl = from.getChildNodes();

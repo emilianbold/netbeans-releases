@@ -46,10 +46,13 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -86,6 +89,14 @@ import org.netbeans.modules.javacard.api.ProjectKind;
 import static org.netbeans.modules.javacard.constants.JCConstants.RUNTIME_DESCRIPTOR;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.platform.BrokenJavacardPlatform;
+import org.netbeans.modules.javacard.project.deps.ArtifactKind;
+import org.netbeans.modules.javacard.project.deps.Dependencies;
+import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
+import org.netbeans.modules.javacard.project.deps.DependenciesResolver;
+import org.netbeans.modules.javacard.project.deps.Dependency;
+import org.netbeans.modules.javacard.project.deps.Path;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
 import org.netbeans.modules.javacard.project.ui.BadPlatformOrDevicePanel;
 import org.netbeans.modules.javacard.project.ui.ProblemPanel;
@@ -121,19 +132,24 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Cancellable;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -243,7 +259,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, antHelper, eval),
                     LookupMergerSupport.createJFBLookupMerger(),
                     QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, sourceRoots, antHelper, this.eval), //Does not use APH to get/put properties/cfgdata
-                    new AntArtifactProviderImpl(),});
+                    new AntArtifactProviderImpl(),
+                    new DependenciesProviderImpl(),});
         return LookupProviderSupport.createCompositeLookup(new ProxyLookup(lkp),
                 kind.getLookupMergerPath());
     }
@@ -260,12 +277,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 antHelper.getStockPropertyPreprovider(),
                 globals,
                 PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
                 platformProperties,
                 deviceProperties,
                 privatePropsEval,
-                publicPropsEval
-                );
+                publicPropsEval);
 //        System.err.println("KEYSTORE PATH: " + result.getProperty(ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH));
         return result;
 //        return new WrapperPropertyEvaluator(result);
@@ -391,7 +407,30 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         subprojects.supp.fireChange();
     }
 
+    void onDependenciesChanged() {
+        updateGlobalClassPaths();
+        //Get out of the way of ProjectManager.mutex() + Children.MUTEX
+        EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                depsChanges.fireChange();
+            }
+        });
+    }
+    private final ChangeSupport depsChanges = new ChangeSupport(this);
+
+    public void addDependencyChangeListener(ChangeListener l) {
+        depsChanges.addChangeListener(l);
+    }
+
+    public void removeDependencyChangeListener(ChangeListener l) {
+        depsChanges.removeChangeListener(l);
+    }
+
     private void updateRuntimeDescriptor() {
+        if (kind() != ProjectKind.WEB) {
+            return;
+        }
         ProjectManager.mutex().postWriteRequest(new Runnable() {
 
             public void run() {
@@ -485,12 +524,63 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     private final ClassPath getLibClassPath() {
         synchronized (pml) {
             if (libPath == null) {
-                String cp = eval.getProperty("class.path");
-                if (cp == null) {
-                    cp = "";
+                try {
+                    ResolvedDependencies deps = this.syncGetResolvedDependencies();
+                    List <URL> urls = new ArrayList<URL>();
+                    for (ResolvedDependency d : deps.all()) {
+                        if (!d.isValid()) {
+                            continue;
+                        }
+                        File f = d.resolveFile(ArtifactKind.ORIGIN);
+                        if (d.getKind().isProjectDependency()) {
+                            FileObject fo = FileUtil.toFileObject(f);
+                            if (fo != null) {
+                                Project p = FileOwnerQuery.getOwner(fo);
+                                if (p != null) {
+                                    URL url = p.getProjectDirectory().getURL();
+                                    AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
+                                    for (AntArtifact a : prov.getBuildArtifacts()) {
+                                        if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(a.getType())) {
+                                            URI[] uris = a.getArtifactLocations();
+                                            for (URI u : uris) {
+                                                //XXX either the docs are wrong, or our AntArtifactProvider impl is wrong
+//                                                url = new URL (url.toString() + u.toString());
+                                                System.err.println("URI: " + u);
+                                                url = new URL(u.toString());
+                                                if (FileUtil.isArchiveFile(url)) {
+                                                    url = FileUtil.getArchiveRoot(url);
+                                                    urls.add (url);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            if (f != null) {
+                                URL url = f.toURI().toURL();
+                                if (FileUtil.isArchiveFile(url)) {
+                                    url = FileUtil.getArchiveRoot(url);
+                                }
+                                if (url != null) {
+                                    urls.add (url);
+                                }
+                            }
+                        }
+                    }
+                    libPath = ClassPathSupport.createClassPath(
+                            urls.toArray(new URL[urls.size()]));
+                    System.err.println("Class Path:");
+                    for (URL url : urls) {
+                        System.err.println("   " + url);
+                    }
+                } catch (SAXException ex) {
+                    libPath = ClassPathSupport.createClassPath("");
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    libPath = ClassPathSupport.createClassPath("");
+                    Exceptions.printStackTrace(ex);
                 }
-
-                libPath = ClassPathSupport.createClassPath(cp);
             }
             return libPath;
         }
@@ -597,24 +687,25 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             FIX_PLATFORM_DIALOG_QUEUE.add(this);
         }
     }
-
     private static PlatformAndDeviceDialogQueue FIX_PLATFORM_DIALOG_QUEUE = new PlatformAndDeviceDialogQueue();
+
     private static class PlatformAndDeviceDialogQueue implements ActionListener {
-        private final Set<Item> items = Collections.synchronizedSet(new HashSet<Item> ());
+
+        private final Set<Item> items = Collections.synchronizedSet(new HashSet<Item>());
         private Timer timer;
         boolean firstUse = true;
 
         private synchronized void initTimer() {
             if (timer == null) {
-                timer = new Timer (firstUse ? 7000 : 200, this);
+                timer = new Timer(firstUse ? 7000 : 200, this);
                 timer.setRepeats(false);
                 timer.start();
             }
         }
 
-        void add (JCProject project) {
-            Item nue = new Item (project);
-            items.add (nue);
+        void add(JCProject project) {
+            Item nue = new Item(project);
+            items.add(nue);
             initTimer();
         }
 
@@ -637,12 +728,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     }
                 }
             }
-            synchronized(this) {
+            synchronized (this) {
                 timer = null;
             }
         }
 
         private static class Item {
+
             JCProject project;
 
             public Item(JCProject project) {
@@ -671,7 +763,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 return hash;
             }
         }
-
     }
 
     private void showSelectPlatformAndDeviceDialog(String platform, String device, boolean cbox) {
@@ -704,7 +795,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     JCProject.class, "MSG_SAVING_PROPERTIES")); //NOI18N
             if (!platform.equals(newPlatform) || !device.equals(newDevice)) {
                 Runnable r = new Runnable() {
+
                     boolean first = true;
+
                     public void run() {
                         if (!EventQueue.isDispatchThread()) {
                             if (first) {
@@ -745,7 +838,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                             supp.fireChange();
                         }
                     }
-                    
                 };
                 GuiUtils.showProgressDialogAndRun(progress, r, false);
             }
@@ -753,20 +845,22 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private final class SubprojectProviderImpl implements SubprojectProvider {
+
         private final ChangeSupport supp = new ChangeSupport(this);
+
         public Set<? extends Project> getSubprojects() {
-            Set <Project> result = new HashSet<Project>();
+            Set<Project> result = new HashSet<Project>();
             String cp = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH);
             if (cp != null && cp.length() > 0) {
                 String[] jars = cp.trim().split(File.pathSeparator);
                 for (String jar : jars) {
-                    File f = new File (jar);
+                    File f = new File(jar);
                     if (!f.exists()) {
-                        File projDir = FileUtil.toFile (getProjectDirectory());
-                        f = new File (projDir, jar);
+                        File projDir = FileUtil.toFile(getProjectDirectory());
+                        f = new File(projDir, jar);
                         if (!f.exists()) {
                             Logger.getLogger(JCProject.class.getName()).log(Level.INFO,
-                                    "Non-existent JAR on classpath of " +  //NOI18N
+                                    "Non-existent JAR on classpath of " + //NOI18N
                                     getProjectDirectory().getPath() +
                                     " - '" + jar + "'"); //NOI18N
                             continue;
@@ -774,7 +868,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     }
                     Project project = FileOwnerQuery.getOwner(f.toURI());
                     if (project != null) {
-                        result.add (project);
+                        result.add(project);
                     }
                 }
             }
@@ -788,7 +882,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         public void removeChangeListener(ChangeListener cl) {
             supp.removeChangeListener(cl);
         }
-
     }
 
     private final class RecommendedTempatesImpl implements
@@ -895,11 +988,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                 EditableProperties ep = antHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                                 String ud = System.getProperty("netbeans.user");
                                 if (ud != null) { //unit test
-                                    File userDir = new File (ud);
+                                    File userDir = new File(ud);
                                     File buildProperties = new File(userDir, "build.properties"); // NOI18N
                                     if (buildProperties != null) { //unit test
                                         ep.setProperty(ProjectPropertyNames.PROJECT_PROP_USER_PROPERTIES_FILE,
-                                            buildProperties.getAbsolutePath()); //NOI18N
+                                                buildProperties.getAbsolutePath()); //NOI18N
                                     }
                                 }
                                 // Synchronize the options with actual values
@@ -907,12 +1000,12 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                 antHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                                 EditableProperties pubProps = antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                                platformAndDevice[0] = 
-                                    pubProps.getProperty(
-                                    ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
+                                platformAndDevice[0] =
+                                        pubProps.getProperty(
+                                        ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
                                 platformAndDevice[1] =
-                                    pubProps.getProperty(
-                                    ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
+                                        pubProps.getProperty(
+                                        ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
 
                                 if (updatedCharset != null) {
                                     pubProps.setProperty(ProjectPropertyNames.PROJECT_PROP_SOURCE_ENCODING, updatedCharset.name());
@@ -942,12 +1035,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     cachedBadProjectOrCard = bad;
                 }
                 if (bad) {
-//                    EventQueue.invokeLater (new Runnable() {
-//                        public void run() {
-//                            showSelectPlatformAndDeviceDialog(platform, card, true);
-//                        }
-//
-//                    });
                     FIX_PLATFORM_DIALOG_QUEUE.add(JCProject.this);
                 }
             }
@@ -1083,6 +1170,192 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 cp = getBootClassPath();
             }
             return cp == null ? null : new ClassPath[]{cp};
+        }
+    }
+
+    /**
+     * This method should be used VERY rarely and never from the event thread.
+     * It may resolve the entire transitive closure of all project dependencies,
+     * their projects and files.  Use getLookup().lookup(DependencyProvider.class)
+     * to do this asynchronously from the event thread.
+     * @return A set of resolved dependencies
+     * @throws SAXException
+     * @throws IOException
+     */
+    public ResolvedDependencies syncGetResolvedDependencies() throws SAXException, IOException {
+        DependenciesProviderImpl depsProv = getLookup().lookup(DependenciesProviderImpl.class);
+        assert depsProv != null;
+        Dependencies d = depsProv.sync();
+        ResolvedDependencies result = new ResolvedDependenciesImpl(d, new DependenciesResolver(getProjectDirectory(), evaluator()));
+        return result;
+    }
+
+    private final class DependenciesProviderImpl implements DependenciesProvider {
+
+        public Cancellable requestDependencies(Receiver receiver) {
+            DependenciesFinder finder = new DependenciesFinder(receiver);
+            System.err.println("Posting dependencies finder");
+            RequestProcessor.getDefault().post(finder);
+            return finder;
+        }
+
+        Dependencies sync() throws SAXException, IOException {
+            return new DependenciesFinder(null).collectDependencies();
+        }
+
+        private final class DependenciesFinder implements Runnable, Cancellable {
+
+            private volatile boolean cancelled;
+            private volatile boolean finished;
+            private boolean inMutex = false;
+            private final DependenciesProvider.Receiver receiver;
+
+            public DependenciesFinder(DependenciesProvider.Receiver receiver) {
+                this.receiver = receiver;
+            }
+
+            public void run() {
+                if (cancelled) {
+                    return;
+                }
+                if (!inMutex) {
+                    inMutex = true;
+                    ProjectManager.mutex().readAccess(this);
+                } else {
+                    if (cancelled) {
+                        return;
+                    }
+                    try {
+                        Dependencies deps = collectDependencies();
+                        if (cancelled) {
+                            return;
+                        }
+                        DependenciesResolver resolver = new DependenciesResolver(getProjectDirectory(), evaluator());
+                        if (cancelled) {
+                            return;
+                        }
+                        ResolvedDependencies resolved = new ResolvedDependenciesImpl(deps, resolver);
+                        if (cancelled) {
+                            return;
+                        }
+                        receiver.receive(resolved);
+                    } catch (Exception e) {
+                        receiver.failed(e);
+//                        if (!receiver.failed(e)) {
+                        Exceptions.printStackTrace(e);
+//                        }
+                    } finally {
+                        synchronized (this) {
+                            notifyAll();
+                        }
+                    }
+                }
+            }
+
+            private Dependencies collectDependencies() throws SAXException, IOException {
+                FileObject fo = getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+                InputStream in = new BufferedInputStream(fo.getInputStream());
+                try {
+                    InputSource src = new InputSource(in);
+                    Dependencies result = Dependencies.parse(src, eval);
+                    return result;
+                } finally {
+                    in.close();
+                }
+            }
+
+            public boolean cancel() {
+                return finished ? false : (cancelled = true);
+            }
+        }
+    }
+
+    ResolvedDependencies createResolvedDependencies() throws Exception {
+        //Used by project updater outside EQ
+        DependenciesResolver resolver = new DependenciesResolver(getProjectDirectory(), evaluator());
+        return new ResolvedDependenciesImpl(new DependenciesProviderImpl().sync(), resolver);
+    }
+
+    private class ResolvedDependenciesImpl extends ResolvedDependencies implements Mutex.ExceptionAction<Void> {
+
+        ResolvedDependenciesImpl(Dependencies deps, DependenciesResolver resolver) {
+            super(deps, resolver);
+        }
+
+        @Override
+        protected void doSave() throws IOException {
+            if (!isModified()) {
+                return;
+            }
+            try {
+                ProjectManager.mutex().writeAccess(this);
+            } catch (MutexException ex) {
+                IOException ioe = new IOException("Could not save dependency changes");
+                ioe.initCause(ex);
+                throw ioe;
+            } finally {
+                onDependenciesChanged();
+            }
+        }
+
+        public Void run() throws Exception {
+            Element config = antHelper.getPrimaryConfigurationData(true);
+            NodeList nl = config.getElementsByTagNameNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "dependencies");
+            if (nl.getLength() == 0) {
+                throw new IOException("<dependencies> section missing from project.xml");
+            }
+            if (nl.getLength() > 1) {
+                throw new IOException("project.xml contains multiple <dependencies> sections in " + JCProject.this.getProjectDirectory().getPath());
+            }
+            Element el = (Element) nl.item(0);
+            resolver.save(JCProject.this, this, el);
+            antHelper.putPrimaryConfigurationData(config, true);
+            EditableProperties pub = antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties priv = antHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            boolean pubChanged = false;
+            boolean privChanged = false;
+            Dependencies curr = getDependencies();
+            Dependencies orig = getOriginalDependencies();
+            //Clean up properties for deleted dependencies
+            orig.removeAll(curr);
+            for (Dependency d : orig.all()) {
+                for (ArtifactKind k : d.getKind().supportedArtifacts()) {
+                    String prop = d.getPropertyName(k);
+                    if (pub.getProperty(prop) != null) {
+                        pubChanged |= true;
+                        pub.remove(prop);
+                    }
+                    if (priv.getProperty(prop) != null) {
+                        privChanged |= true;
+                        priv.remove(prop);
+                    }
+                }
+            }
+            for (ResolvedDependency dep : all()) {
+                Dependency d = dep.getDependency();
+                for (ArtifactKind kind : d.getKind().supportedArtifacts()) {
+                    String propName = d.getPropertyName(kind);
+                    Path path = dep.getAntPath(kind);
+                    if (path != null) {
+                        if (!path.isRelative()) {
+                            priv.setProperty(propName, path.toString());
+                            privChanged = true;
+                        } else {
+                            pub.setProperty(propName, path.toString());
+                            pubChanged = true;
+                        }
+                    }
+                }
+            }
+
+            if (privChanged) {
+                antHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+            }
+            if (pubChanged) {
+                antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
+            }
+            ProjectManager.getDefault().saveProject(JCProject.this);
+            return null;
         }
     }
 }

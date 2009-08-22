@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.project.JCProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -79,7 +80,8 @@ public final class ProjectXmlCreator extends FileCreator { //public for unit tes
         sb.append("<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n");
         write(1, "<type>org.netbeans.modules.javacard.JCPROJECT</type>");
         write(1, "<configuration>");
-        write(2, "<data xmlns=\"http://www.netbeans.org/ns/javacard-project/2\">");
+        write(2, "<data xmlns=\"" + JCProjectType.PROJECT_CONFIGURATION_NAMESPACE +
+                "\">");
         write(2, "<!-- Do not use Project Properties customizer when editing this file manually. -->");
         write(3, "<name>" + projectName + "</name>");
         write(3, "<properties>");
@@ -88,6 +90,8 @@ public final class ProjectXmlCreator extends FileCreator { //public for unit tes
         write(3, "<source-roots>");
         write(4, "<root id=\"src.dir\"/>");
         write(3, "</source-roots>");
+        write(3, "<dependencies>");
+        write(3, "</dependencies>");
         write(2, "</data>");
         write(1, "</configuration>");
         write(0, "</project>");

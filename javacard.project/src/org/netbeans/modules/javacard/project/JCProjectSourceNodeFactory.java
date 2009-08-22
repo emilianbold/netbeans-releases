@@ -76,6 +76,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.javacard.api.ProjectKind;
+import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
 import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
 import org.netbeans.modules.javacard.project.libraries.LibrariesManager.ErrFile;
 import org.netbeans.modules.javacard.project.ui.JarOrDirectoryFilter;
@@ -169,7 +170,8 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             } else if (key instanceof ImportantFilesKey) {
                 return new ImportantFilesNode(project);
             } else if (key instanceof LibrariesKey) {
-                return new LibrariesNode(project);
+//                return new LibrariesNode(project);
+                return new DependenciesNode(project);
             } else if (key instanceof ScriptsWebPagesKey) {
                 try {
                     return new ScriptsNode(project.getProjectDirectory().getFileObject(
