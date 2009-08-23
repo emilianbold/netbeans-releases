@@ -180,7 +180,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     private ClassPath[] registeredSourceCP;
     private ClassPath[] registeredCompileCP;
     private ClassPath[] registeredBootCP;
-    private final LibrariesManager libMgr;
     //package private for unit tests
     final ProjectOpenedHookImpl hook = new ProjectOpenedHookImpl();
 
@@ -194,12 +193,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         eval.addPropertyChangeListener(this);
         genFilesHelper = new GeneratedFilesHelper(antHelper);
         aux = antHelper.createAuxiliaryConfiguration();
-        cpProvider = new ClassPathProviderImpl();
-        refHelper = new ReferenceHelper(antHelper, aux, eval);
         Updater updateProject = new Updater(this, antHelper, aux);
         this.updateHelper = new UpdateHelper(updateProject, antHelper);
-        libMgr = new LibrariesManager(this);
-        libMgr.addChangeListener(this);
+        if (!updateProject.isCurrent() && updateProject.canUpdate()) {
+            updateProject.saveUpdate(null);
+        }
+        cpProvider = new ClassPathProviderImpl();
+        refHelper = new ReferenceHelper(antHelper, aux, eval);
         lookup = createLookup();
         for (int v = 3; v < 10; v++) {
             if (aux.getConfigurationFragment("data", //NOI18N
@@ -227,7 +227,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     subprojects,
                     updateHelper,
                     aux,
-                    libMgr,
                     new Info(),
                     new JCLogicalViewProvider(this),
                     new JCProjectSources(this, antHelper, eval, getRoots()),

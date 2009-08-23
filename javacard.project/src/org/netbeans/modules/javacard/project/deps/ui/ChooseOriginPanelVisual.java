@@ -54,7 +54,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
-    private WizardDepKind kind;
+    private InitialDepKind kind;
     private final ChangeSupport supp = new ChangeSupport(this);
     private final WizardDescriptor wiz;
 
@@ -75,8 +75,7 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
         this.wiz = wiz;
         initComponents();
         originField.getDocument().addDocumentListener(this);
-        expFileField.getDocument().addDocumentListener(this);
-        sigFileField.getDocument().addDocumentListener(this);
+        sourcesField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -97,12 +96,6 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
         originLbl = new javax.swing.JLabel();
         originField = new javax.swing.JTextField();
         browseOriginButton = new javax.swing.JButton();
-        expFileLabel = new javax.swing.JLabel();
-        expFileField = new javax.swing.JTextField();
-        browseExpFileButton = new javax.swing.JButton();
-        sigFileLabel = new javax.swing.JLabel();
-        sigFileField = new javax.swing.JTextField();
-        browseSigFileButton = new javax.swing.JButton();
         sourcesLabel = new javax.swing.JLabel();
         sourcesField = new javax.swing.JTextField();
         browseSourcesButton = new javax.swing.JButton();
@@ -138,120 +131,35 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
         add(browseOriginButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(expFileLabel, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.expFileLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 12, 0);
-        add(expFileLabel, gridBagConstraints);
-
-        expFileField.setText(org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.expFileField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 140;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 5, 12, 5);
-        add(expFileField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseExpFileButton, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.browseExpFileButton.text")); // NOI18N
-        browseExpFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onBrowseExpFile(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
-        add(browseExpFileButton, gridBagConstraints);
-
-        sigFileLabel.setLabelFor(sigFileField);
-        org.openide.awt.Mnemonics.setLocalizedText(sigFileLabel, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.sigFileLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 12, 0);
-        add(sigFileLabel, gridBagConstraints);
-
-        sigFileField.setText(org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.sigFileField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 140;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 5, 12, 5);
-        add(sigFileField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseSigFileButton, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.browseSigFileButton.text")); // NOI18N
-        browseSigFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onBrowseSigFile(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
-        add(browseSigFileButton, gridBagConstraints);
-
         sourcesLabel.setLabelFor(sourcesField);
         org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.sourcesLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 12, 0);
         add(sourcesLabel, gridBagConstraints);
 
         sourcesField.setText(org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.sourcesField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 140;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 5, 12, 5);
         add(sourcesField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseSourcesButton, org.openide.util.NbBundle.getMessage(ChooseOriginPanelVisual.class, "ChooseOriginPanelVisual.browseSourcesButton.text")); // NOI18N
-        browseSourcesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onBrowseSourceFile(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
         add(browseSourcesButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void onBrowseExpFile(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseExpFile
-        File f;
-        if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).setFileFilter(new ExpFileFilter()).setTitle(kind.toString()).setFilesOnly(true).showOpenDialog()) != null) {
-            expFileField.setText(f.getAbsolutePath());
-        }
-    }//GEN-LAST:event_onBrowseExpFile
-
     private void onBrowseOrigin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseOrigin
-        if (kind == WizardDepKind.PROJECT) {
+        if (kind == InitialDepKind.PROJECT) {
             JFileChooser chooser = ProjectChooser.projectChooser();
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
@@ -259,98 +167,42 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
             }
         } else {
             File f;
-            if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).setFileFilter(kind.createFileFilter()).setTitle(kind.toString()).setFilesOnly(true).showOpenDialog()) != null) {
+            if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).
+                    setFileFilter(new ArchiveFileFilter()).
+                    setTitle(kind.toString()).
+                    setFilesOnly(true).
+                    showOpenDialog()) != null) {
                 originField.setText(f.getAbsolutePath());
             }
         }
     }//GEN-LAST:event_onBrowseOrigin
-
-    private void onBrowseSigFile(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseSigFile
-            File f;
-            if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).
-                    setFileFilter(new SigFilter()).setTitle(
-                    NbBundle.getMessage(ChooseOriginPanelVisual.class, "TTL_BROWSE_SIGFILE")) //NOI18N
-                    .setFilesOnly(true).showOpenDialog()) != null) {
-                sigFileField.setText(f.getAbsolutePath());
-            }
-
-    }//GEN-LAST:event_onBrowseSigFile
-
-    private void onBrowseSourceFile(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseSourceFile
-            File f;
-            if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).
-                    setFileFilter(new SourcesFilter()).setTitle(
-                    NbBundle.getMessage(ChooseOriginPanelVisual.class, "TTL_BROWSE_SOURCES")) //NOI18N
-                    .setFilesOnly(true).showOpenDialog()) != null) {
-                sourcesField.setText(f.getAbsolutePath());
-            }
-
-    }//GEN-LAST:event_onBrowseSourceFile
-
-    private static final class SigFilter extends FileFilter {
-        public boolean accept (File f) {
-            return f.isDirectory() || f.getName().toLowerCase().endsWith(".sig") || //NOI18N
-                    f.getName().toLowerCase().endsWith(".signature"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SourcesFilter.class, "FILE_FILTER_SIGNATURE"); //NOI18N
-        }
-
-    }
-
-    private static final class SourcesFilter extends FileFilter {
-
-        @Override
-        public boolean accept(File f) {
-            return f.isDirectory() || f.getName().toLowerCase().endsWith(".zip") || //NOI18N
-                    f.getName().toLowerCase().endsWith(".jar"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SourcesFilter.class, "FILE_FILTER_SOURCES"); //NOI18N
-        }
-    }
-
-    private static final class ExpFileFilter extends FileFilter {
-
-        @Override
-        public boolean accept(File f) {
-            return f != null && f.getPath().toLowerCase().endsWith(".exp") || f.isDirectory();
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(ExpFileFilter.class, "FILE_FILTER_EXP_FILES"); //NOI18N
-        }
-
-    }
 
     boolean valid() {
         if (kind == null) {
             return false;
         }
         if (originField.getText().trim().length() == 0) {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ChooseOriginPanelVisual.class, "ERR_ORIGIN_NOT_SET"));
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                    NbBundle.getMessage(ChooseOriginPanelVisual.class, "ERR_ORIGIN_NOT_SET")); //NOI18N
             return false;
         }
         File f = new File (originField.getText().trim());
         boolean e = f.exists();
-        boolean result = e && kind.isProject() ? f.isDirectory() : f.isFile();
+        boolean result = e && kind == InitialDepKind.PROJECT ? f.isDirectory() : f.isFile();
         if (!result) {
-            String key = e ? kind.isProject() ? "ERR_EXPECTING_DIR" : "ERR_EXPECTING_FILE" : "ERR_NON_EXISTENT_FILE";
+            String key = e ? kind == InitialDepKind.PROJECT ?
+                "ERR_EXPECTING_DIR" : "ERR_EXPECTING_FILE" : "ERR_NON_EXISTENT_FILE"; //NOI18N
             wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ChooseOriginPanelVisual.class, key, f.getName()));
             return result;
         }
-        if (kind.requiresExpFile()) {
-            f = new File(expFileField.getText().trim());
-            result = f.exists() && !f.isDirectory();
-            if (!result) {
-                String key = "ERR_EXP_FILE_MISSING";
-                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ChooseOriginPanelVisual.class, key));
-                return result;
+        String s = sourcesField.getText();
+        if (s.trim().length() > 0) {
+            f = new File (s);
+            if (!f.exists()) {
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ChooseOriginPanelVisual.class,
+                        "ERR_SOURCE_FILE_DOES_NOT_EXIST", f.getName())); //NOI18N
+                return false;
             }
         }
         if (result) {
@@ -363,34 +215,20 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
         return valid() ? new File (originField.getText().trim()) : null;
     }
 
-    File getExpFile() {
-        return !expFileField.isVisible() ? null : valid() ? new File (expFileField.getText().trim()) : null;
-    }
-
-    File getSigFile() {
-        return !sigFileField.isVisible() ? null : valid() ? new File (sigFileField.getText().trim()) : null;
-    }
-
     File getSourceFile() {
         return !sourcesField.isVisible() ? null : valid() ? new File (sourcesField.getText().trim()) : null;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseExpFileButton;
     private javax.swing.JButton browseOriginButton;
-    private javax.swing.JButton browseSigFileButton;
     private javax.swing.JButton browseSourcesButton;
-    private javax.swing.JTextField expFileField;
-    private javax.swing.JLabel expFileLabel;
     private javax.swing.JTextField originField;
     private javax.swing.JLabel originLbl;
-    private javax.swing.JTextField sigFileField;
-    private javax.swing.JLabel sigFileLabel;
     private javax.swing.JTextField sourcesField;
     private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
-    void setDepKind(WizardDepKind kind) {
+    void setDepKind(InitialDepKind kind) {
         if (kind != null) {
             switch (kind) {
                 case PROJECT :
@@ -403,26 +241,13 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
             }
         }
         this.kind = kind;
-        boolean expVis = kind == null ? true : kind.requiresExpFile();
-        boolean sigVis = kind == null ? true : kind.requiresSigFile();
-        expFileLabel.setVisible(expVis);
-        expFileField.setVisible(expVis);
-        browseExpFileButton.setVisible(expVis);
-        sigFileLabel.setVisible(sigVis);
-        sigFileField.setVisible(sigVis);
-        browseSigFileButton.setVisible(sigVis);
-        sourcesField.setVisible (kind != WizardDepKind.PROJECT);
-        sourcesLabel.setVisible (kind != WizardDepKind.PROJECT);
-        browseSourcesButton.setVisible (kind != WizardDepKind.PROJECT);
+        sourcesField.setVisible (kind != InitialDepKind.PROJECT);
+        sourcesLabel.setVisible (kind != InitialDepKind.PROJECT);
+        browseSourcesButton.setVisible (kind != InitialDepKind.PROJECT);
     }
 
     public void insertUpdate(DocumentEvent e) {
-        Document d = e.getDocument();
-        if (d == expFileField.getDocument() && kind.requiresExpFile()) {
-            fireChange();
-        } else if (d == originField.getDocument()) {
-            fireChange();
-        }
+        fireChange();
     }
 
     public void removeUpdate(DocumentEvent e) {

@@ -39,29 +39,32 @@
 package org.netbeans.modules.javacard.project.deps.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
-final class ChooseDependencyKindWizardPanel implements WizardDescriptor.Panel<Map<String,Object>>, ChangeListener {
+/**
+ *
+ * @author Tim Boudreau
+ */
+final class ChooseSigOrExpFilePanel implements WizardDescriptor.Panel<Map<String, Object>>, ChangeListener {
     private final WizardDescriptor wiz;
-    public ChooseDependencyKindWizardPanel(WizardDescriptor wiz) {
+    ChooseSigOrExpFilePanelVisual component;
+    private final ChangeSupport supp = new ChangeSupport(this);
+    ChooseSigOrExpFilePanel(WizardDescriptor wiz) {
         this.wiz = wiz;
-        Parameters.notNull ("wiz", wiz); //NOI18N
     }
-
-    private ChooseDependencyKindPanelVisual component;
 
     public Component getComponent() {
         if (component == null) {
-            component = new ChooseDependencyKindPanelVisual(wiz);
-            component.addChangeListener (WeakListeners.change(this, component));
+            component = new ChooseSigOrExpFilePanelVisual(wiz);
+            component.addChangeListener(WeakListeners.change(this, component));
         }
         return component;
     }
@@ -70,37 +73,53 @@ final class ChooseDependencyKindWizardPanel implements WizardDescriptor.Panel<Ma
         return HelpCtx.DEFAULT_HELP;
     }
 
-    public boolean isValid() {
-        boolean result = component == null ? false : component.getDependencyKind() != null;
-        if (!result) {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ChooseDependencyKindWizardPanel.class,
-                    "ERR_CHOOSE_DEP_KIND")); //NOI18N
-        } else {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
-        }
-        return result;
-    }
-
-    private final ChangeSupport supp = new ChangeSupport(this);
-    public final void addChangeListener(ChangeListener l) {
-        supp.addChangeListener(l);
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-        supp.removeChangeListener(l);
-    }
-
-    static final String PROP_DEP_KIND = "depKind"; //NOI18N
     public void readSettings(Map<String, Object> settings) {
         getComponent();
-        InitialDepKind kind = (InitialDepKind) settings.get(PROP_DEP_KIND);
-        component.setDependencyKind(kind);
+        IntermediatePanelKind kind = (IntermediatePanelKind) settings.get(ChooseOriginWizardPanel.PROP_INTERMEDIATE_PANEL_KIND);
+        if (kind != null) {
+            component.setKind(kind);
+            File f = (File) settings.get(kind == IntermediatePanelKind.EXP_FILE ?
+                ChooseOriginWizardPanel.PROP_EXP_FILE : ChooseOriginWizardPanel.PROP_SIG_FILE);
+            component.setFile(f);
+        }
     }
 
     public void storeSettings(Map<String, Object> settings) {
-        if (component != null) {
-            settings.put(PROP_DEP_KIND, component.getDependencyKind());
+        IntermediatePanelKind kind = (IntermediatePanelKind) settings.get(ChooseOriginWizardPanel.PROP_INTERMEDIATE_PANEL_KIND);
+        if (kind != null) {
+            File f = component.getFile();
+            switch (kind) {
+                case EXP_FILE :
+                    if (f != null) {
+                        settings.put (ChooseOriginWizardPanel.PROP_EXP_FILE, f);
+                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.JAR_WITH_EXP_FILE);
+                    } else {
+                        settings.remove (ChooseOriginWizardPanel.PROP_EXP_FILE);
+                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.RAW_JAR);
+                    }
+                    break;
+                case SIG_FILE :
+                    settings.put (ChooseOriginWizardPanel.PROP_SIG_FILE, f);
+                    break;
+                default :
+                    throw new AssertionError();
+            }
+        } else {
+            settings.remove (ChooseOriginWizardPanel.PROP_EXP_FILE);
+            settings.remove (ChooseOriginWizardPanel.PROP_SIG_FILE);
         }
+    }
+
+    public boolean isValid() {
+        return component == null ? false : component.valid();
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        supp.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        supp.removeChangeListener(l);
     }
 
     public void stateChanged(ChangeEvent e) {

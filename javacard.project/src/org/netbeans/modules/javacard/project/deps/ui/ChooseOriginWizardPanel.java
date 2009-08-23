@@ -69,9 +69,19 @@ import org.openide.util.WeakListeners;
 final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<Map<String, Object>>, ChangeListener {
     private ChooseOriginPanelVisual component;
     private final WizardDescriptor wiz;
-
-    ChooseOriginWizardPanel(WizardDescriptor wiz) {
+    private final AddDependencyWizardIterator iter;
+    static final String PROP_EXP_FILE = "_expFile"; //NOI18N
+    static final String PROP_ORIGIN_FILE = "_originFile"; //NOI18N
+    static final String PROP_ACTUAL_DEP_KIND = "_actualDepKind"; //NOI18N
+    static final String PROP_SIG_FILE = "_sigFile"; //NOI18N
+    static final String PROP_SOURCE_ROOT = "_sourceRoot"; //NOI18N
+    static final String PROP_INTERMEDIATE_PANEL_KIND = "_intermediatePanelKind"; //NOI18N
+    private Map<String, Object> settings;
+    private InitialDepKind kind;
+    private final ChangeSupport supp = new ChangeSupport(this);
+    ChooseOriginWizardPanel(WizardDescriptor wiz, AddDependencyWizardIterator iter) {
         this.wiz = wiz;
+        this.iter = iter;
         Parameters.notNull("wiz", wiz); //NOI18N
     }
 
@@ -92,7 +102,6 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         boolean result = kind != null && component != null && component.valid();
         return result;
     }
-    private final ChangeSupport supp = new ChangeSupport(this);
 
     public final void addChangeListener(ChangeListener l) {
         supp.addChangeListener(l);
@@ -101,50 +110,29 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     public final void removeChangeListener(ChangeListener l) {
         supp.removeChangeListener(l);
     }
-    WizardDepKind kind;
 
     public void readSettings(Map<String, Object> settings) {
         this.settings = settings;
-        WizardDepKind k = (WizardDepKind) settings.get(ChooseDependencyKindWizardPanel.PROP_DEP_KIND);
+        InitialDepKind k = (InitialDepKind) settings.get(ChooseDependencyKindWizardPanel.PROP_DEP_KIND);
         this.kind = k;
         if (component != null) {
             component.setDepKind(k);
         }
     }
-    static final String PROP_EXP_FILE = "_expFile"; //NOI18N
-    static final String PROP_ORIGIN_FILE = "_originFile"; //NOI18N
-    static final String PROP_ACTUAL_DEP_KIND = "_actualDepKind"; //NOI18N
-    static final String PROP_SIG_FILE = "_sigFile"; //NOI18N
-    static final String PROP_SOURCE_ROOT = "_sourceRoot"; //NOI18N
-
-    Map<String, Object> settings;
-
     public void storeSettings(Map<String, Object> settings) {
         this.settings = settings;
         if (component != null) {
-            File expFile = component.getExpFile();
             File origin = component.getOriginFile();
-            File sigFile = component.getSigFile();
             File sources = component.getSourceFile();
-            if (expFile != null) {
-                settings.put(PROP_EXP_FILE, expFile);
-            } else {
-                settings.remove(PROP_ORIGIN_FILE);
-            }
             if (origin != null) {
                 settings.put(PROP_ORIGIN_FILE, origin);
             } else {
                 settings.remove(PROP_ORIGIN_FILE);
             }
-            if (sigFile != null) {
-                settings.put (PROP_SIG_FILE, sigFile);
-            } else {
-                settings.remove (PROP_SIG_FILE);
-            }
             if (sources != null) {
-                settings.put (PROP_SOURCE_ROOT, sources);
+                settings.put(PROP_SOURCE_ROOT, sources);
             } else {
-                settings.remove (PROP_SOURCE_ROOT);
+                settings.remove(PROP_SOURCE_ROOT);
             }
         }
     }
@@ -152,8 +140,8 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     public void stateChanged(ChangeEvent e) {
         supp.fireChange();
     }
+    private static final String MANIFEST_APP_TYPE = "Application-Type"; //NOI18N
 
-    private static final String MANIFEST_APP_TYPE="Application-Type"; //NOI18N
     public void validate() throws WizardValidationException {
         assert !EventQueue.isDispatchThread();
         //Here we do the heavy lifting.  Validate that the files are real and
@@ -169,54 +157,52 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         ProjectKind pkind = target.getLookup().lookup(ProjectKind.class);
         if (origin == null || !origin.exists()) {
             throw new WizardValidationException(component, "Bad Jar file: " + origin, //NOI18N
-                    NbBundle.getMessage(ChooseOriginWizardPanel.class, 
+                    NbBundle.getMessage(ChooseOriginWizardPanel.class,
                     "ERR_NON_EXISTENT_JAR_FILE", origin == null ? "\"\"" : origin.getName())); //NOI18N
         }
-        boolean shouldBeFolder = kind.isProject();
+        boolean shouldBeFolder = kind == InitialDepKind.PROJECT;
         if (shouldBeFolder != origin.isDirectory()) {
             throw new WizardValidationException(component, "Bad Jar file: " + origin.getPath(), //NOI18N
-                    NbBundle.getMessage(ChooseOriginWizardPanel.class, shouldBeFolder ? 
-                        "ERR_NOT_FOLDER" : "ERR_NOT_FILE", //NOI18N
-                        origin.getName()));
+                    NbBundle.getMessage(ChooseOriginWizardPanel.class, shouldBeFolder ? "ERR_NOT_FOLDER" : "ERR_NOT_FILE", //NOI18N
+                    origin.getName()));
         }
-        File exp = component.getExpFile();
-        DependencyKind realKind = kind.toDependencyKind();
+        DependencyKind realKind = null;
         switch (kind) {
-            case CLSLIB_JAR:
-            case EXTLIB_JAR:
             case JAR_FILE:
+                realKind = DependencyKind.RAW_JAR;
                 try {
                     JarFile jar = new JarFile(origin);
                     try {
                         Manifest m = jar.getManifest();
-                        if (m == null && kind != WizardDepKind.JAR_FILE && kind != WizardDepKind.JAR_WITH_EXP_FILE) {
-                            String val = m.getMainAttributes().getValue(MANIFEST_APP_TYPE);
-                            if (val == null) {
+                        if (m == null) {
+                            throw new WizardValidationException(component,
+                                    "No Application-Type entry in main section of manifest for " + //NOI18N
+                                    origin.getAbsolutePath(), NbBundle.getMessage(ChooseOriginWizardPanel.class,
+                                    "ERR_MISSING_MANIFEST", origin.getPath())); //NOI18N
+                        }
+                        String libType = m.getMainAttributes().getValue(MANIFEST_APP_TYPE);
+                        if (libType == null) {
+                            realKind = DependencyKind.RAW_JAR;
+                        } else if ("classic-lib".equals(libType)) {
+                            realKind = DependencyKind.CLASSIC_LIB_JAR;
+                        } else if ("extension-lib".equals(libType)) {
+                            if (pkind != null && pkind.isClassic()) {
                                 throw new WizardValidationException(component,
-                                        "No Application-Type entry in main section of manifest for " + //NOI18N
-                                        origin.getAbsolutePath(), NbBundle.getMessage(ChooseOriginWizardPanel.class,
-                                        "ERR_MISSING_MANIFEST_TAG", origin.getPath())); //NOI18N
-
-                            }
-                            if (WizardDepKind.CLSLIB_JAR == kind && !"classic-lib".equals(val)) { //NOI18N
-                                throw new WizardValidationException(component,
-                                        "Wrong manifest tag: " + val, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
-                                        "ERR_WRONG_MANIFEST_TAG", "classic-lib", val)); //NOI18N
-                            } else if (WizardDepKind.EXTLIB_JAR == kind && !"extension-lib".equals(val)) { //NOI18N
-                                throw new WizardValidationException(component,
-                                        "Wrong manifest tag: " + val, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
-                                        "ERR_WRONG_MANIFEST_TAG", "extension-lib", val)); //NOI18N
-                            } else if (pkind != null && pkind.isClassic() && val != null && val.startsWith("ext")) { //NOI18N
-                                throw new WizardValidationException(component,
-                                        "Classic -> Extended dep not allowed" + val, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
+                                        "Classic -> Extended dep not allowed: " + libType, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
                                         "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
-                            }
+                                }
+                            realKind = DependencyKind.EXTENSION_LIB_JAR;
                         }
                         //force further validation - try to trigger an IOE if
-                        //JAR is invalid
+                        //JAR is corrupted
                         for (JarEntry e : NbCollections.iterable(jar.entries())) {
                             e.getName();
                         }
+                    } catch (IOException ex) {
+                        WizardValidationException e = new WizardValidationException(component, ex.getMessage(),
+                                NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_BAD_JAR_FILE")); //NOI18N
+                        e.initCause(ex);
+                        throw e;
                     } finally {
                         jar.close();
                     }
@@ -226,30 +212,14 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                     e.initCause(ex);
                     throw e;
                 }
-                if (kind != WizardDepKind.JAR_WITH_EXP_FILE) {
-                    break;
-                }
-            case JAR_WITH_EXP_FILE:
-                if (exp == null) {
-                    throw new WizardValidationException(component, "exp file not set", //NOI18N
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_EXP_FILE_NOT_SET")); //NOI18N
-                }
-                if (!exp.exists()) {
-                    throw new WizardValidationException(component, "exp file does not exist", //NOI18N
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_EXP_FILE_NON_EXISTENT", exp.getName())); //NOI18N
-                }
-                if (!exp.isFile()) {
-                    throw new WizardValidationException(component, "exp file not a file", //NOI18N
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_FILE", exp.getName())); //NOI18N
-                }
                 break;
             case PROJECT:
-                FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(origin));
+                realKind = DependencyKind.JAVA_PROJECT;
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(origin));
                 Project p = FileOwnerQuery.getOwner(fo);
                 if (p == null) {
                     throw new WizardValidationException(component, "not a project: " + origin.getAbsolutePath(), //NOI18N
                             NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_PROJECT", origin.getName()));
-
                 }
                 if (!p.getProjectDirectory().equals(fo)) {
                     throw new WizardValidationException(component, "not a project root: " + origin.getAbsolutePath(), //NOI18N
@@ -259,26 +229,33 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                     throw new WizardValidationException(component, "Adding a project to itself: " + target, //NOI18N
                             NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_PROJECT_CANNOT_DEPEND_ON_SELF")); //NOI18N
                 }
+                //XXX check for circular dependencies if target is library project
                 JCProject jp = p.getLookup().lookup(JCProject.class);
+                System.err.println("Looked up project " + jp + " from project " + p);
                 if (jp != null) {
+                    if (pkind != null && (pkind.isClassic() && !jp.kind().isClassic())) {
+                        throw new WizardValidationException(component,
+                                "Classic -> Extended dep not allowed", NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
+                                "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
+                    }
                     switch (jp.kind()) {
-                        case CLASSIC_APPLET :
-                        case EXTENDED_APPLET :
-                        case WEB :
+                        case CLASSIC_APPLET:
+                        case EXTENDED_APPLET:
+                        case WEB:
                             //Throw an exception - interdependencies are not allowed
                             //between application -> application, only application -> library or
                             //library -> library
                             ProjectInformation info = jp.getLookup().lookup(ProjectInformation.class);
                             String name = info == null ? origin.getName() : info.getDisplayName();
                             throw new WizardValidationException(component, "not a library project: " + origin.getAbsolutePath(), //NOI18N
-                                NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_LIBRARY_PROJECT", name));
-                        case CLASSIC_LIBRARY :
+                                    NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_LIBRARY_PROJECT", name));
+                        case CLASSIC_LIBRARY:
                             realKind = DependencyKind.CLASSIC_LIB;
                             break;
-                        case EXTENSION_LIBRARY :
+                        case EXTENSION_LIBRARY:
                             realKind = DependencyKind.EXTENSION_LIB;
                             break;
-                        default :
+                        default:
                             throw new AssertionError();
                     }
                 } else {
@@ -287,16 +264,32 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                         ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
                         String name = info == null ? origin.getName() : info.getDisplayName();
                         throw new WizardValidationException(component, "Not a java project" + origin.getAbsolutePath(), //NOI18N
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_JAVA_PROJECT", name));
+                                NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NOT_JAVA_PROJECT", name)); //NOI18N
                     }
                 }
-                break;
-            default:
-                throw new AssertionError();
         }
-        settings.put (PROP_ACTUAL_DEP_KIND, realKind);
-    }
+        assert realKind != null : "Kind not found"; //NOI18N
+        System.err.println("Real kind is " + realKind);
+        settings.put(PROP_ACTUAL_DEP_KIND, realKind);
+        switch (realKind) {
+            case CLASSIC_LIB_JAR:
+            case EXTENSION_LIB_JAR:
+                settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.SIG_FILE);
+                iter.setIntermediatePanelKind(IntermediatePanelKind.SIG_FILE);
+                break;
 
+            case JAVA_PROJECT:
+            case RAW_JAR:
+                settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.EXP_FILE);
+                iter.setIntermediatePanelKind(IntermediatePanelKind.EXP_FILE);
+                break;
+
+            default:
+                settings.remove(PROP_INTERMEDIATE_PANEL_KIND);
+                iter.setIntermediatePanelKind(null);
+        }
+    }
+    
     public void prepareValidation() {
         //do nothing
     }

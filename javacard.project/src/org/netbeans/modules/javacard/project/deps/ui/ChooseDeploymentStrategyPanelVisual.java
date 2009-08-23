@@ -60,7 +60,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-public final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemListener {
+final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemListener {
     private final ChangeSupport supp = new ChangeSupport(this);
     private static final String CLIENT_PROP_DEP_KIND = "_dependencyKind";
     private final WizardDescriptor wiz;

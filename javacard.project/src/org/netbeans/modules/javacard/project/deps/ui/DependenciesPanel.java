@@ -23,7 +23,7 @@ public class DependenciesPanel extends JPanel {
     public DependenciesPanel (JCProjectProperties props) {
         this.props = props;
         setLayout (new BorderLayout());
-        JLabel lbl = new JLabel (NbBundle.getMessage(DependenciesPanel.class, "MSG_LOADING"));
+        JLabel lbl = new JLabel (NbBundle.getMessage(DependenciesPanel.class, "MSG_LOADING")); //NOI18N
         add (lbl, BorderLayout.CENTER);
     }
 
@@ -49,7 +49,6 @@ public class DependenciesPanel extends JPanel {
     }
 
     void setDependencies (ResolvedDependencies deps) {
-        System.err.println("DependenciesPanel setDependencies " + deps);
         synchronized (lock) {
             this.deps = deps;
             if (cancel == null) {
@@ -58,15 +57,12 @@ public class DependenciesPanel extends JPanel {
             }
             cancel = null;
         }
-        System.err.println("Now updating ui");
         if (deps != null) {
-            System.err.println("Adding a new editor panel");
             removeAll();
             add (new DependenciesEditorPanel(props.getProject(), deps), BorderLayout.CENTER);
         } else {
-            System.err.println("adding error message");
             removeAll();
-            add (new JLabel(NbBundle.getMessage(DependenciesPanel.class, "MSG_LOAD_FAILED")));
+            add (new JLabel(NbBundle.getMessage(DependenciesPanel.class, "MSG_LOAD_FAILED"))); //NOI18N
         }
         invalidate();
         revalidate();
@@ -82,7 +78,6 @@ public class DependenciesPanel extends JPanel {
     private class R implements DependenciesProvider.Receiver, Runnable {
         private volatile ResolvedDependencies deps;
         public void receive(ResolvedDependencies deps) {
-            System.err.println("Panel received deps " + deps);
             this.deps = deps;
             EventQueue.invokeLater(this);
         }
@@ -93,7 +88,6 @@ public class DependenciesPanel extends JPanel {
         }
 
         public void run() {
-            System.err.println("Now setting dependencies on panel to " + deps);
             setDependencies(deps);
         }
 

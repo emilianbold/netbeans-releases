@@ -23,7 +23,7 @@ import org.openide.util.Parameters;
  *
  * @author Tim Boudreau
  */
-public class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
+class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
 
     private final ExplorerManager mgr = new ExplorerManager();
     private ResolvedDependencies deps;

@@ -40,8 +40,11 @@ package org.netbeans.modules.javacard.project.deps.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -56,21 +59,23 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class AddDependencyWizardIterator implements WizardDescriptor.Iterator<Map<String, Object>> {
-    static final String PROP_RESOLVED_DEPS = "_resolvedDependencies";
-    static final String PROP_TARGET_PROJECT = "_targetProject";
+
+    static final String PROP_RESOLVED_DEPS = "_resolvedDependencies"; //NOI18N
+    static final String PROP_TARGET_PROJECT = "_targetProject"; //NOI18N
 
     public static void show(ResolvedDependencies deps, JCProject project) {
         AddDependencyWizardIterator iter = new AddDependencyWizardIterator();
-        Map<String, Object> settings = new HashMap<String, Object>();
+        Map<String, Object> settings = Collections.synchronizedMap(new HashMap<String, Object>());
         settings.put(PROP_RESOLVED_DEPS, deps);
         settings.put(PROP_TARGET_PROJECT, project);
         WizardDescriptor desc = new WizardDescriptor(iter, settings);
-        iter.setWizardDescriptor (desc);
+        iter.setWizardDescriptor(desc);
         desc.setTitleFormat(new MessageFormat("{0} ({1})")); //NOI18N
-        desc.setTitle(NbBundle.getMessage(AddDependencyWizardIterator.class, 
+        desc.setTitle(NbBundle.getMessage(AddDependencyWizardIterator.class,
                 "TTL_ADD_LIBRARY")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
@@ -92,16 +97,16 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             while (deps.get(id) != null) {
                 id = nm + "_" + (ix++);
             }
-            Map<ArtifactKind, String> paths = new HashMap <ArtifactKind, String>();
-            paths.put (ArtifactKind.ORIGIN, origin.getAbsolutePath());
+            Map<ArtifactKind, String> paths = new HashMap<ArtifactKind, String>();
+            paths.put(ArtifactKind.ORIGIN, origin.getAbsolutePath());
             if (expFile != null && kind.supportedArtifacts().contains(ArtifactKind.EXP_FILE)) {
-                paths.put (ArtifactKind.EXP_FILE, expFile.getAbsolutePath());
+                paths.put(ArtifactKind.EXP_FILE, expFile.getAbsolutePath());
             }
             if (sigFile != null && kind.supportedArtifacts().contains(ArtifactKind.SIG_FILE)) {
-                paths.put (ArtifactKind.SIG_FILE, sigFile.getAbsolutePath());
+                paths.put(ArtifactKind.SIG_FILE, sigFile.getAbsolutePath());
             }
             if (sourceRoot != null && kind.supportedArtifacts().contains(ArtifactKind.SOURCES_PATH)) {
-                paths.put (ArtifactKind.SOURCES_PATH, sourceRoot.getAbsolutePath());
+                paths.put(ArtifactKind.SOURCES_PATH, sourceRoot.getAbsolutePath());
             }
             deps.add(new Dependency(id, kind, depStrat), paths);
         }
@@ -109,52 +114,102 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
+    private IntermediatePanelKind intermediatePanelKind;
 
     private void setWizardDescriptor(WizardDescriptor w) {
         this.wiz = w;
+    }
+
+    synchronized IntermediatePanelKind getIntermediatePanelKind() {
+        return intermediatePanelKind;
+    }
+
+    void setIntermediatePanelKind(IntermediatePanelKind kind) {
+        assert !EventQueue.isDispatchThread();
+        System.err.println("setIntermediatePanelKind " + kind);
+        synchronized (this) {
+            this.intermediatePanelKind = kind;
+        }
+        try {
+            //Need to trigger a re-get of the panels before next button pressing
+            //completes.  This needs to happen on the event thread, or we will
+            //get the previously computed set of panels
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    System.err.println("Firing steps change");
+                    supp.fireChange();
+                    System.err.println("GetPanels length returns " + getPanels().length);
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private WizardDescriptor.Panel<Map<String,Object>>[] createPanels() {
+        return new WizardDescriptor.Panel[]{
+                    new ChooseDependencyKindWizardPanel(wiz),
+                    new ChooseOriginWizardPanel(wiz, this),
+                    new ChooseSigOrExpFilePanel(wiz),
+                    new ChooseDeploymentStrategyWizardPanel(wiz)
+                };
+    }
+
+    private WizardDescriptor.Panel<Map<String,Object>>[] panels() {
+        WizardDescriptor.Panel<Map<String,Object>>[] pnls = panels == null ? panels = createPanels() : panels;
+        IntermediatePanelKind pk = getIntermediatePanelKind();
+        WizardDescriptor.Panel<Map<String,Object>>[] result = new
+                WizardDescriptor.Panel[pk == null ? pnls.length - 1 : pnls.length];
+        for (int i = 0; i < result.length; i++) {
+            if (i <= 1) {
+                result[i] = pnls[i];
+            } else if (pk != null) {
+                result[i] = pnls[i];
+            } else if (i > 1) {
+                result[i] = pnls[i+1];
+            }
+        }
+        return result;
     }
 
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel[] getPanels() {
-        if (panels == null) {
-            panels = new WizardDescriptor.Panel[]{
-                        new ChooseDependencyKindWizardPanel(wiz),
-                        new ChooseOriginWizardPanel(wiz),
-                        new ChooseDeploymentStrategyWizardPanel(wiz)
-                    };
-            String[] steps = new String[panels.length];
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                // Default step name to component name of panel.
-                steps[i] = c.getName();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
-                }
+    private WizardDescriptor.Panel<Map<String,Object>>[] getPanels() {
+        WizardDescriptor.Panel<Map<String,Object>>[] pnls = panels();
+        //Always update the steps
+        String[] steps = new String[pnls.length];
+        for (int i = 0; i < pnls.length; i++) {
+            Component c = pnls[i].getComponent();
+            // Default step name to component name of panel.
+            steps[i] = c.getName();
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Sets step number of a component
+                // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOII18N
+                // Sets steps names for a panel
+                jc.putClientProperty("WizardPanel_contentData", steps); //NOII18N
+                // Turn on subtitle creation on each step
+                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOII18N
+                // Show steps on the left side with the image on the background
+                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOII18N
+                // Turn on numbering of all steps
+                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOII18N
             }
         }
-        return panels;
+        return pnls;
     }
 
-    public WizardDescriptor.Panel<Map<String,Object>> current() {
+    public WizardDescriptor.Panel<Map<String, Object>> current() {
         return getPanels()[index];
     }
 
     public String name() {
-        return NbBundle.getMessage (AddDependencyWizardIterator.class, 
+        return NbBundle.getMessage(AddDependencyWizardIterator.class,
                 "LOCATION_IN_WIZARD", index + 1, getPanels().length); //NOI18N
     }
 

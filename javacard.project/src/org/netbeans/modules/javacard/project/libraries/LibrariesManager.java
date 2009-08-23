@@ -64,7 +64,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.project.JCProjectSourceNodeFactory.AddProjectAction;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -188,7 +187,7 @@ public final class LibrariesManager {
                                 File f = FileUtil.normalizeFile(new File(url.getFile()));
                                 artifacts.add(f);
                             } catch (MalformedURLException ex) {
-                                Logger.getLogger(AddProjectAction.class.getName()).log(Level.INFO,
+                                Logger.getLogger(LibrariesManager.class.getName()).log(Level.INFO,
                                         "Bad URI in classpath for " + project.getProjectDirectory().getPath() +
                                         ": " + uri);
                             } catch (UnsupportedEncodingException ex) {

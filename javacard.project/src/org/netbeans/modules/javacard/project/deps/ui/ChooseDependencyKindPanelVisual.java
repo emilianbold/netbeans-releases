@@ -54,11 +54,8 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
     ChooseDependencyKindPanelVisual(WizardDescriptor wiz) {
         this.wiz = wiz;
         initComponents();
-        projectButton.putClientProperty(DEP_KIND_CLIENT_PROP, WizardDepKind.PROJECT);
-        jarWithExpButton.putClientProperty(DEP_KIND_CLIENT_PROP, WizardDepKind.JAR_WITH_EXP_FILE);
-        jarfileButton.putClientProperty(DEP_KIND_CLIENT_PROP, WizardDepKind.JAR_FILE);
-        clslibButton.putClientProperty(DEP_KIND_CLIENT_PROP, WizardDepKind.CLSLIB_JAR);
-        extLibButton.putClientProperty(DEP_KIND_CLIENT_PROP, WizardDepKind.EXTLIB_JAR);
+        projectButton.putClientProperty(DEP_KIND_CLIENT_PROP, InitialDepKind.PROJECT);
+        jarfileButton.putClientProperty(DEP_KIND_CLIENT_PROP, InitialDepKind.JAR_FILE);
     }
 
     @Override
@@ -79,14 +76,8 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         projectButton = new javax.swing.JRadioButton();
         jarfileButton = new javax.swing.JRadioButton();
-        clslibButton = new javax.swing.JRadioButton();
-        extLibButton = new javax.swing.JRadioButton();
-        jarWithExpButton = new javax.swing.JRadioButton();
         projectDescription = new javax.swing.JLabel();
         jarFileDescription = new javax.swing.JLabel();
-        classiClibraryDescription = new javax.swing.JLabel();
-        extLibDescription = new javax.swing.JLabel();
-        jarWithExpDescription = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setLayout(new java.awt.GridBagLayout());
@@ -135,72 +126,6 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jarfileButton, gridBagConstraints);
 
-        buttonGroup1.add(clslibButton);
-        clslibButton.setFont(clslibButton.getFont().deriveFont(clslibButton.getFont().getStyle() | java.awt.Font.BOLD));
-        org.openide.awt.Mnemonics.setLocalizedText(clslibButton, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.clslibButton.text")); // NOI18N
-        clslibButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                updateProjectKind(evt);
-            }
-        });
-        clslibButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onSelectKind(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(clslibButton, gridBagConstraints);
-
-        buttonGroup1.add(extLibButton);
-        extLibButton.setFont(extLibButton.getFont().deriveFont(extLibButton.getFont().getStyle() | java.awt.Font.BOLD));
-        org.openide.awt.Mnemonics.setLocalizedText(extLibButton, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.extLibButton.text")); // NOI18N
-        extLibButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                updateProjectKind(evt);
-            }
-        });
-        extLibButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onSelectKind(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(extLibButton, gridBagConstraints);
-
-        buttonGroup1.add(jarWithExpButton);
-        jarWithExpButton.setFont(jarWithExpButton.getFont().deriveFont(jarWithExpButton.getFont().getStyle() | java.awt.Font.BOLD));
-        org.openide.awt.Mnemonics.setLocalizedText(jarWithExpButton, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.jarWithExpButton.text")); // NOI18N
-        jarWithExpButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                updateProjectKind(evt);
-            }
-        });
-        jarWithExpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onSelectKind(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jarWithExpButton, gridBagConstraints);
-
         projectDescription.setLabelFor(projectButton);
         org.openide.awt.Mnemonics.setLocalizedText(projectDescription, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.projectDescription.text")); // NOI18N
         projectDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -226,45 +151,6 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         add(jarFileDescription, gridBagConstraints);
-
-        classiClibraryDescription.setLabelFor(clslibButton);
-        org.openide.awt.Mnemonics.setLocalizedText(classiClibraryDescription, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.classiClibraryDescription.text")); // NOI18N
-        classiClibraryDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
-        add(classiClibraryDescription, gridBagConstraints);
-
-        extLibDescription.setLabelFor(extLibButton);
-        org.openide.awt.Mnemonics.setLocalizedText(extLibDescription, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.extLibDescription.text")); // NOI18N
-        extLibDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
-        add(extLibDescription, gridBagConstraints);
-
-        jarWithExpDescription.setLabelFor(jarWithExpButton);
-        org.openide.awt.Mnemonics.setLocalizedText(jarWithExpDescription, org.openide.util.NbBundle.getMessage(ChooseDependencyKindPanelVisual.class, "ChooseDependencyKindPanelVisual.jarWithExpDescription.text")); // NOI18N
-        jarWithExpDescription.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
-        add(jarWithExpDescription, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateProjectKind(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_updateProjectKind
@@ -272,18 +158,18 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
             return;
         }
         AbstractButton[] btns = new AbstractButton[] {
-            projectButton, clslibButton, extLibButton, jarWithExpButton, jarfileButton
+            projectButton, jarfileButton
         };
         inUpdate = true;
         try {
-            WizardDepKind kind = null;
+            InitialDepKind k = null;
             for (AbstractButton b : btns) {
                 if (b.isSelected()) {
-                    kind = (WizardDepKind) b.getClientProperty(DEP_KIND_CLIENT_PROP);
+                    k = (InitialDepKind) b.getClientProperty(DEP_KIND_CLIENT_PROP);
                     break;
                 }
             }
-            setDependencyKind(kind);
+            setDependencyKind(k);
         } finally {
             inUpdate = false;
         }
@@ -301,8 +187,12 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         supp.removeChangeListener(listener);
     }
 
+    boolean inFireChange;
     public void fireChange() {
+        if (inFireChange) return;
+        inFireChange = true;
         supp.fireChange();
+        inFireChange = false;
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -312,29 +202,23 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JLabel classiClibraryDescription;
-    private javax.swing.JRadioButton clslibButton;
-    private javax.swing.JRadioButton extLibButton;
-    private javax.swing.JLabel extLibDescription;
     private javax.swing.JLabel jarFileDescription;
-    private javax.swing.JRadioButton jarWithExpButton;
-    private javax.swing.JLabel jarWithExpDescription;
     private javax.swing.JRadioButton jarfileButton;
     private javax.swing.JRadioButton projectButton;
     private javax.swing.JLabel projectDescription;
     // End of variables declaration//GEN-END:variables
 
-    private WizardDepKind kind = null;
-    WizardDepKind getDependencyKind() {
+    private InitialDepKind kind = null;
+    InitialDepKind getDependencyKind() {
         return kind;
     }
 
-    void setDependencyKind (WizardDepKind kind) {
-        WizardDepKind old = this.kind;
+    void setDependencyKind (InitialDepKind kind) {
+        InitialDepKind old = this.kind;
         this.kind = kind;
         if (!inUpdate) {
             AbstractButton[] btns = new AbstractButton[] {
-                projectButton, clslibButton, extLibButton, jarWithExpButton, jarfileButton
+                projectButton, jarfileButton
             };
             for (AbstractButton b : btns) {
                 if (kind == null) {
@@ -348,11 +232,6 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         if (old != kind) {
             fireChange();
         }
-    }
-
-    void setJavacard3ArtifactsVisible(boolean b) {
-        extLibDescription.setVisible(b);
-        extLibButton.setVisible(b);
     }
 }
 
