@@ -46,6 +46,7 @@ public class ProjectPropertyNames {
     public static final String PROJECT_PROP_BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String PROJECT_PROP_DIST_JAR = "dist.jar"; //NOI18N
     public static final String PROJECT_PROP_BUILD_SCRIPT ="buildfile"; //NOI18N
+    @Deprecated
     public static final String PROJECT_PROP_CLASS_PATH = "class.path"; //NOI18N
     public static final String PROJECT_PROP_SOURCE_ENCODING = "source.encoding"; //NOI18N
     public static final String PROJECT_PROP_JAVAC_TARGET = "javac.target"; //NOI18N
