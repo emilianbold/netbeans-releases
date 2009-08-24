@@ -27,7 +27,20 @@
  */
 package org.netbeans.modules.ruby.hints;
 
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Test the rails deprecations test hint
@@ -44,6 +57,23 @@ public class RailsDeprecationsTest extends HintTestBase {
         return new RailsDeprecations();
     }
 
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> result = new HashMap<String, ClassPath>();
+        // include gem urls in boot classpath so that rails gems get indexed.
+        Collection<URL> gemUrls = RubyPlatformManager.getDefaultPlatform().getGemManager().getGemUrls().values();
+        result.put(RubyLanguage.BOOT,
+                ClassPathSupport.createProxyClassPath(
+                ClassPathSupport.createClassPath(RubyPlatform.getRubyStubs()),
+                ClassPathSupport.createClassPath(gemUrls.toArray(new URL[gemUrls.size()]))));
+        // golden files
+        FileObject testFileFO = FileUtil.toFileObject(getDataFile("/testfiles"));
+        FileObject controllers = FileUtil.toFileObject(getDataFile("/testfiles/projects/railsproj/app/controllers"));
+        result.put(RubyLanguage.SOURCE, ClassPathSupport.createClassPath(testFileFO, controllers));
+
+        return result;
+    }
+
     public void testRegistered() throws Exception {
         ensureRegistered(createRule());
     }
@@ -51,6 +81,11 @@ public class RailsDeprecationsTest extends HintTestBase {
     public void testInstanceField() throws Exception {
         // Refers to @request
         checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
+    }
+
+    public void testInstanceFieldNonController() throws Exception {
+        // there should be no hints for this file as it doesn't represent a controller
+        checkHints(this, createRule(), "testfiles/projects/railsproj/app/controllers/not_a_controller.rb", null);
     }
 
     public void testSkipNonRails() throws Exception {
