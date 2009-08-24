@@ -41,16 +41,26 @@
 package org.netbeans.modules.javacard.project;
 
 import com.sun.javacard.AID;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.*;
 import org.netbeans.modules.javacard.api.ProjectKind;
@@ -59,8 +69,16 @@ import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.constants.ProjectTemplateWizardKeys;
 import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
+import org.netbeans.modules.javacard.project.deps.ArtifactKind;
+import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
+import org.netbeans.modules.javacard.project.deps.Dependency;
+import org.netbeans.modules.javacard.project.deps.DependencyKind;
+import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.wizard.ProjectXmlCreator;
 import org.netbeans.modules.projecttemplates.ProjectCreator;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -70,7 +88,9 @@ import org.openide.filesystems.FileObject;
 import static org.junit.Assert.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Cancellable;
 import org.openide.util.test.MockLookup;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -208,5 +228,100 @@ public class JCProjectTest extends NbTestCase {
                 PropertyUtils.globalPropertyProvider(), prov);        
         String ap = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         assertEquals ("javacard_default", ap);
+    }
+
+    public void testDependencies() throws SAXException, IOException, InterruptedException {
+        System.out.println("testDependencies");
+        ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
+        assertEquals (1, prov.findClassPath(projDir.getFileObject("src"), ClassPath.COMPILE).getRoots().length);
+
+        ResolvedDependencies deps = project.syncGetResolvedDependencies();
+        assertTrue (deps.all().isEmpty());
+        File tmp = new File (System.getProperty("java.io.tmpdir"));
+        final File fakeLib = new File (tmp, "fakelib.jar");
+        fakeLib.deleteOnExit();
+        if (!fakeLib.exists()) {
+            assertTrue (fakeLib.createNewFile());
+        }
+
+        BufferedOutputStream bo = new BufferedOutputStream(new FileOutputStream(fakeLib));
+        JarOutputStream jo = new JarOutputStream(bo);
+
+        String act = "org/netbeans/modules/javacard/project/Nothing.class";
+        BufferedInputStream bi = new BufferedInputStream(JCProjectTest.class.getResourceAsStream("Nothing.class"));
+        JarEntry je = new JarEntry(act);
+        jo.putNextEntry(je);
+        byte[] buf = new byte[1024];
+        int anz;
+        while ((anz = bi.read(buf)) != -1) {
+          jo.write(buf, 0, anz);
+        }
+        bi.close();
+        jo.close();
+        bo.close();
+
+        Map<ArtifactKind,String> m = new HashMap <ArtifactKind, String>();
+        Dependency dep = new Dependency ("dep", DependencyKind.RAW_JAR, DeploymentStrategy.ALREADY_ON_CARD);
+        m.put (ArtifactKind.ORIGIN, fakeLib.getAbsolutePath());
+        deps.add(dep, m);
+        assertEquals (1, deps.all().size());
+        deps.save();
+
+        //Now force a re-read of the data
+
+        DependenciesProvider.Receiver r = new DependenciesProvider.Receiver() {
+
+            public void receive(ResolvedDependencies deps) {
+                try {
+                    assertNotNull(deps);
+                    assertEquals(1, deps.all().size());
+                    assertEquals("dep", deps.all().get(0).getDependency().getID());
+                    assertEquals(new File(fakeLib.getAbsolutePath()).getCanonicalFile(), new File(deps.all().get(0).getPath(ArtifactKind.ORIGIN)).getCanonicalFile());
+                } catch (IOException ex) {
+                    throw new IllegalStateException (ex);
+                }
+            }
+
+            public boolean failed(Throwable failure) {
+                throw new IllegalStateException(failure);
+            }
+        };
+        DependenciesProvider p = project.getLookup().lookup(DependenciesProvider.class);
+        assertNotNull (p);
+        Cancellable c = p.requestDependencies(r);
+        synchronized (c) {
+            c.wait(10000);
+        }
+
+        assertNotNull (prov);
+
+        FileObject srcDir = projDir.getFileObject("src");
+        ClassPath path = prov.findClassPath(srcDir, ClassPath.COMPILE);
+
+        FileObject[] roots = path.getRoots();
+        assertEquals (2, roots.length);
+
+        FileObject clazz = path.findResource(act);
+        assertNotNull (clazz);
+    }
+
+    public void testAntArtifactProvider() throws Exception {
+        System.out.println("testAntArtifactProvider");
+        AntArtifactProvider prov = project.getLookup().lookup(AntArtifactProvider.class);
+        assertNotNull (prov);
+        boolean jarFound = false;
+        for (AntArtifact a : prov.getBuildArtifacts()) {
+            if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(a.getType())) {
+                jarFound = true;
+                URI[] uris = a.getArtifactLocations();
+                assertNotNull (uris);
+                assertEquals (1, uris.length);
+                System.err.println("URI:  " + uris[0]);
+                File f = new File (uris[0]);
+                File f2 = new File (FileUtil.toFile (project.getProjectDirectory()), "dist" + File.separatorChar + "CapProject.cap");
+                assertEquals (f, f2);
+            }
+        }
+        assertTrue (jarFound);
     }
 }

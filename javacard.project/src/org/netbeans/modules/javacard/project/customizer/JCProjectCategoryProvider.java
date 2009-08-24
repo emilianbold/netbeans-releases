@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
 
 import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.project.JCProject;
+import org.netbeans.modules.javacard.project.deps.ui.DependenciesPanel;
 import org.openide.filesystems.FileObject;
 
 public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -70,7 +71,7 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
 
         switch (id) {
             case CUSTOMIZER_ID_DEPENDENCIES :
-                return new DependencyCustomizer(uiProps);
+                return new DependenciesPanel(uiProps);
             case CUSTOMIZER_ID_COMPILING :
                 return new CompilingPanel (uiProps);
             case CUSTOMIZER_ID_APPLET :
