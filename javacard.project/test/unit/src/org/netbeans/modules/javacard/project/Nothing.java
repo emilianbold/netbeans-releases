@@ -37,28 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javacard.project.deps;
+package org.netbeans.modules.javacard.project;
 
 /**
- * Represents a file path and indicates if it is relative or absolute
+ * Useless class which we simply use to bundle into our fake jar file
+ * to ensure we can really find a class on the classpath.
  *
  * @author Tim Boudreau
  */
-public final class Path {
-    private final boolean relative;
-    private final String path;
-
-    Path (String path, boolean relative) {
-        this.path = path;
-        this.relative = relative;
-    }
-
-    public final boolean isRelative() {
-        return relative;
-    }
-
-    @Override
-    public String toString() {
-        return path;
+public class Nothing {
+    public String foo() {
+        return "foo";
     }
 }

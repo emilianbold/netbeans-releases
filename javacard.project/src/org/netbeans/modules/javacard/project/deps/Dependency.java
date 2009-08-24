@@ -62,13 +62,13 @@ public final class Dependency {
     private final DependencyKind kind;
     private final DeploymentStrategy strategy;
     private final String id;
-    protected static final String DEP_PROPERTY_PREFIX = "dependency.";
+    protected static final String DEP_PROPERTY_PREFIX = "dependency."; //NOI18N
 
     public Dependency(String id, DependencyKind kind, DeploymentStrategy strategy) {
-        Parameters.notNull ("id", id);
-        Parameters.notNull("kind", kind);
-        Parameters.notNull("strategy", strategy);
-        Parameters.notEmpty("id", id);
+        Parameters.notNull ("id", id); //NOI18N
+        Parameters.notNull("kind", kind); //NOI18N
+        Parameters.notNull("strategy", strategy); //NOI18N
+        Parameters.notEmpty("id", id); //NOI18N
         this.id = id;
         this.kind = kind;
         this.strategy = strategy;
@@ -84,12 +84,14 @@ public final class Dependency {
                 return getSourceLocationPropertyName();
             case ORIGIN :
                 return getOriginPropertyName();
+            case EXP_FILE :
+                return getExpFilePropertyName();
             case SIG_FILE :
                 if (getKind().supportedArtifacts().contains(kind)) {
                     return getSigFilePropertyName();
                 } else {
-                    throw new IllegalArgumentException (getKind() + " does not " +
-                            "support " + kind + " artifacts");
+                    throw new IllegalArgumentException (getKind() + " does not " + //NOI18N
+                            "support " + kind + " artifacts"); //NOI18N
                 }
             default :
                 throw new AssertionError();

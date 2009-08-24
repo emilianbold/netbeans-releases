@@ -97,7 +97,6 @@ import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.Path;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
-import org.netbeans.modules.javacard.project.libraries.LibrariesManager;
 import org.netbeans.modules.javacard.project.ui.BadPlatformOrDevicePanel;
 import org.netbeans.modules.javacard.project.ui.ProblemPanel;
 import org.netbeans.modules.javacard.project.ui.UnsupportedEncodingDialog;
@@ -1252,15 +1251,18 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             }
 
             private Dependencies collectDependencies() throws SAXException, IOException {
-                FileObject fo = getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-                InputStream in = new BufferedInputStream(fo.getInputStream());
-                try {
-                    InputSource src = new InputSource(in);
-                    Dependencies result = Dependencies.parse(src, eval);
-                    return result;
-                } finally {
-                    in.close();
-                }
+//                FileObject fo = getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+//                InputStream in = new BufferedInputStream(fo.getInputStream());
+//                try {
+//                    InputSource src = new InputSource(in);
+////                    Dependencies result = Dependencies.parse(src, eval);
+//
+//                    return result;
+//                } finally {
+//                    in.close();
+//                }
+                Element cfgRoot = antHelper.getPrimaryConfigurationData(true);
+                return Dependencies.parse(cfgRoot);
             }
 
             public boolean cancel() {
@@ -1299,15 +1301,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         public Void run() throws Exception {
             Element config = antHelper.getPrimaryConfigurationData(true);
-            NodeList nl = config.getElementsByTagNameNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "dependencies");
-            if (nl.getLength() == 0) {
-                throw new IOException("<dependencies> section missing from project.xml");
-            }
-            if (nl.getLength() > 1) {
-                throw new IOException("project.xml contains multiple <dependencies> sections in " + JCProject.this.getProjectDirectory().getPath());
-            }
-            Element el = (Element) nl.item(0);
-            resolver.save(JCProject.this, this, el);
+            resolver.save(JCProject.this, this, config);
             antHelper.putPrimaryConfigurationData(config, true);
             EditableProperties pub = antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties priv = antHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -1330,6 +1324,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     }
                 }
             }
+            //Update all dependencies
             for (ResolvedDependency dep : all()) {
                 Dependency d = dep.getDependency();
                 for (ArtifactKind kind : d.getKind().supportedArtifacts()) {
@@ -1353,6 +1348,54 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             if (pubChanged) {
                 antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
             }
+            
+            //XXX delete use of class.path var after build scripts updated
+            //to handle new-style complex dependencies
+            //Must do this after the calls to putProperties to ensure all
+            //paths are properly resolved.
+            StringBuilder sb = new StringBuilder();
+            for (ResolvedDependency dep : all()) {
+                //For now, just store absolute paths as in 6.7
+                File f = dep.resolveFile(ArtifactKind.ORIGIN);
+                if (f != null) {
+                    if (dep.getKind().isProjectDependency()) {
+                        FileObject fo = dep.resolve(ArtifactKind.ORIGIN);
+                        if (fo != null) {
+                            Project p = FileOwnerQuery.getOwner(fo);
+                            if (p != null) {
+                                AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
+                                if (prov != null) {
+                                    for (AntArtifact a : prov.getBuildArtifacts()) {
+                                        for (URI uri : a.getArtifactLocations()) {
+                                            File f1;
+                                            try {
+                                                f1 = new File(uri);
+                                            } catch (IllegalArgumentException e) { //non-absolute URI
+                                                System.err.println("URI IS " + uri);
+                                                File projDir = FileUtil.toFile (p.getProjectDirectory());
+                                                f1 = new File (projDir, uri.toString());
+                                            }
+                                            if (sb.length() > 0) {
+                                                sb.append(File.pathSeparatorChar);
+                                            }
+                                            sb.append (f1.getAbsolutePath());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (sb.length() > 0) {
+                            sb.append(File.pathSeparatorChar);
+                        }
+                    }
+                    sb.append (f.getAbsolutePath());
+                }
+            }
+            pub.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
+            antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
+            //end deletia
+
             ProjectManager.getDefault().saveProject(JCProject.this);
             return null;
         }

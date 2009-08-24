@@ -56,6 +56,7 @@ import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
+import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -67,7 +68,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
     static final String PROP_RESOLVED_DEPS = "_resolvedDependencies"; //NOI18N
     static final String PROP_TARGET_PROJECT = "_targetProject"; //NOI18N
 
-    public static void show(ResolvedDependencies deps, JCProject project) {
+    public static ResolvedDependency show(ResolvedDependencies deps, JCProject project) {
         AddDependencyWizardIterator iter = new AddDependencyWizardIterator();
         Map<String, Object> settings = Collections.synchronizedMap(new HashMap<String, Object>());
         settings.put(PROP_RESOLVED_DEPS, deps);
@@ -108,8 +109,9 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             if (sourceRoot != null && kind.supportedArtifacts().contains(ArtifactKind.SOURCES_PATH)) {
                 paths.put(ArtifactKind.SOURCES_PATH, sourceRoot.getAbsolutePath());
             }
-            deps.add(new Dependency(id, kind, depStrat), paths);
+            return deps.add(new Dependency(id, kind, depStrat), paths);
         }
+        return null;
     }
     private int index;
     private WizardDescriptor.Panel[] panels;

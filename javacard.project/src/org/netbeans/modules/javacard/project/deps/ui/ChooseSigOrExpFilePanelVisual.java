@@ -42,6 +42,7 @@ import java.io.File;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.javacard.GuiUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
@@ -59,6 +60,7 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
     public ChooseSigOrExpFilePanelVisual(WizardDescriptor desc) {
         this.wiz = desc;
         initComponents();
+        GuiUtils.prepareContainer(this);
         fileField.getDocument().addDocumentListener(this);
     }
     private IntermediatePanelKind kind;

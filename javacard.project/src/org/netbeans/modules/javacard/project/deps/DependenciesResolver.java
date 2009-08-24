@@ -45,10 +45,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -56,9 +53,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.JCProjectType;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -79,7 +76,6 @@ public final class DependenciesResolver {
 
     private final FileObject projDir;
     private final PropertyEvaluator eval;
-    public static boolean log = Boolean.getBoolean("DependenciesLogger.log");
 
     public DependenciesResolver(FileObject projDir, PropertyEvaluator eval) {
         this.projDir = projDir;
@@ -97,19 +93,12 @@ public final class DependenciesResolver {
         for (ArtifactKind a : dep.getKind().supportedArtifacts()) {
             if (!a.mayBeNull()) {
                 File f = resolveFile(dep.getPropertyName(a));
-                System.err.println("isValid ResolveFile " + dep.getPropertyName(a) + " to " + f);
                 result &= f != null && f.exists();
-                System.err.println(" result " + (f != null && f.exists()));
-                if (log) {
-                    System.err.println("Resolve artifact for " + dep.getID() + " kind " + a.name() + " result " + f);
-                }
                 if (!result) {
-                    System.err.println("Bailing with invalid on " + a);
                     break;
                 }
             }
         }
-        System.err.println("Return valid " + result + " for " + dep.getID());
         return result;
     }
 
@@ -123,17 +112,14 @@ public final class DependenciesResolver {
         int backup = 0;
         boolean ignoreCase = Utilities.isWindows();
         do {
-            boolean isCommonParent = ignoreCase? f.getPath().toLowerCase().startsWith(proj.getPath().toLowerCase()) :
-                f.getPath().startsWith(proj.getPath());
-            System.err.println("Check common parent " + f.getPath() + " and " + proj.getPath() + " : " + isCommonParent);
+            boolean isCommonParent = ignoreCase ? f.getPath().toLowerCase().startsWith(proj.getPath().toLowerCase()) : f.getPath().startsWith(proj.getPath());
             if (isCommonParent) {
                 relPath = f.getPath().substring(proj.getPath().length());
-                System.err.println("Found match '" + relPath +"' appending backup");
-                for (int i=0; i < backup; i++) {
+                for (int i = 0; i < backup; i++) {
                     if (relPath.startsWith(File.separator)) {
-                        relPath = ".." + relPath;
+                        relPath = ".." + relPath; //NOI18N
                     } else {
-                        relPath =  "../" + relPath;
+                        relPath = "../" + relPath; //NOI18N
                     }
                 }
                 break;
@@ -144,17 +130,16 @@ public final class DependenciesResolver {
         } while (proj != null);
         if (relPath != null) {
             if (File.separatorChar != '/') {
-                relPath = relPath.replace(File.separatorChar, '/');
+                relPath = relPath.replace(File.separatorChar, '/'); //NOI18N
             }
-            System.err.println("RelPath for " + absolutePath + " is " + relPath);
             return new Path(relPath, true);
         } else {
-            FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(f));
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
             if (fo == null) {
                 //Does not exist but could be created
-                return new Path (absolutePath.replace(File.separatorChar, '/'), false);
+                return new Path(absolutePath.replace(File.separatorChar, '/'), false); //NOI18N
             } else {
-                return new Path (fo.getPath(), false);
+                return new Path(fo.getPath(), false);
             }
         }
     }
@@ -169,16 +154,16 @@ public final class DependenciesResolver {
      * @return A fileobject, if one can be resolved
      */
     public FileObject resolveArtifact(Dependency dep, ArtifactKind artifact) {
-        File file = resolveFile (dep, artifact);
-        return file == null ? null : FileUtil.toFileObject (FileUtil.normalizeFile(file));
+        File file = resolveFile(dep, artifact);
+        return file == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(file));
     }
 
     public File resolveFile(Dependency dep, ArtifactKind kind) {
-        File result = resolveFile (dep.getPropertyName(kind));
+        File result = resolveFile(dep.getPropertyName(kind));
         try {
             return result == null ? null : result.getCanonicalFile();
         } catch (IOException ex) {
-            IOException nue = new IOException ("Exception canonicalizing " + result.getPath());
+            IOException nue = new IOException("Exception canonicalizing " + result.getPath()); //NOI18N
             nue.initCause(ex);
             Exceptions.printStackTrace(nue);
             return result;
@@ -187,16 +172,15 @@ public final class DependenciesResolver {
 
     private File resolveFile(String propName) {
         String val = eval.getProperty(propName);
-        System.err.println("Evaluated property " + propName + " as " + val);
         if (val == null || "".equals(val)) {
             return null;
         }
         if (File.separatorChar != '/') {
             val = val.replace('/', File.separatorChar);
         }
-        File result = new File (FileUtil.toFile(projDir), val);
+        File result = new File(FileUtil.toFile(projDir), val);
         if (!result.exists()) {
-            result = new File (val);
+            result = new File(val);
         }
         return result;
     }
@@ -223,8 +207,8 @@ public final class DependenciesResolver {
                                     l.add(f);
                                 } catch (MalformedURLException ex) {
                                     Logger.getLogger(DependenciesResolver.class.getName()).log(Level.INFO,
-                                            "Project at " + p.getProjectDirectory().getPath() + " returns " +
-                                            "invalid URI for Ant Artifact " + a + ": " + uri);
+                                            "Project at " + p.getProjectDirectory().getPath() + " returns " + //NOI18N
+                                            "invalid URI for Ant Artifact " + a + ": " + uri); //NOI18N
                                 }
                             }
                         }
@@ -240,21 +224,6 @@ public final class DependenciesResolver {
         return l.toArray(new File[l.size()]);
     }
 
-//    public FileObject[] resolveArtifacts(Dependency dep, ArtifactKind artifact) {
-//        String propName = dep.getPropertyName(artifact);
-//        if (!dep.getKind().supportedArtifacts().contains(artifact)) {
-//            throw new IllegalArgumentException("Dependencies of type " + dep.getKind() + //NOI18N
-//                    "(" + dep.getID() + ")" + " do not support the artifact type " + artifact.name() + "(" + artifact + ")"); //NOI18N
-//        }
-//        String value = eval.evaluate('{' + propName + '}'); //NOI18N
-//        return resolveFileObjects(value);
-//    }
-//
-//    private FileObject[] resolveFileObjects(String antPath) {
-//        FileObject result = resolveFileObject(antPath);
-//        return result == null ? null : new FileObject[]{result};
-//    }
-//
     private FileObject resolveFileObject(String path) {
         //PENDING:  actually handle multiple paths in an Ant-friendly way...or not
         FileObject fo = projDir.getFileObject(path);
@@ -279,28 +248,29 @@ public final class DependenciesResolver {
         return val == null ? null : resolveFileObject(val);
     }
 
-    public void save(JCProject project, ResolvedDependencies dependencies, Element depsRoot) {
+    public void save(JCProject project, ResolvedDependencies dependencies, Element cfgRoot) throws IOException {
 //        assert !EventQueue.isDispatchThread() : "Saving project props on EQ not allowed"; //NOI18N
         if (!ProjectManager.mutex().isWriteAccess()) {
             throw new IllegalStateException("Not in ProjectManager.mutex().writeAccess()"); //NOI18N
         }
-        NodeList nl = depsRoot.getChildNodes();
-        if (nl != null) {
-            int len = nl.getLength();
-            for (int i = 0; i < len; i++) {
-                Node n = nl.item(i);
-                if (n instanceof Element) {
-                    depsRoot.removeChild(n);
-                }
-            }
+        NodeList nls = cfgRoot.getElementsByTagNameNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, DependenciesParser.DEPS);
+        if (nls.getLength() == 0) {
+            throw new IOException("<dependencies> section missing from project.xml");
         }
+        if (nls.getLength() > 1) {
+            throw new IOException("project.xml contains multiple <dependencies> sections in " + project.getProjectDirectory().getPath());
+        }
+        cfgRoot.removeChild(nls.item(0));
+        Element nue = cfgRoot.getOwnerDocument().createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, DependenciesParser.DEPS);
         AntProjectHelper helper = project.getAntProjectHelper();
         EditableProperties pubProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties privProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         boolean privChanged = false;
         boolean pubChanged = false;
         FileObject root = project.getProjectDirectory();
-        for (ResolvedDependency d : dependencies.all()) {
+        List<? extends ResolvedDependency> l = dependencies.all();
+        System.err.println("Saving " + l.size() + " dependencies");
+        for (ResolvedDependency d : l) {
             Dependency dep = d.getDependency();
             for (ArtifactKind kind : d.getModifiedArtifactKinds()) {
                 String propName = dep.getPropertyName(kind);
@@ -323,23 +293,75 @@ public final class DependenciesResolver {
                 }
             }
         }
-        for (ResolvedDependency r : dependencies.all()) {
+        for (ResolvedDependency r : l) {
             Dependency dep = r.getDependency();
-            Element el = depsRoot.getOwnerDocument().createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, DependenciesParser.DEP);
+            Element el = nue.getOwnerDocument().createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, DependenciesParser.DEP);
             el.setAttribute(DependenciesParser.ID, dep.getID());
             el.setAttribute(DependenciesParser.KIND, dep.getKind().name());
             el.setAttribute(DependenciesParser.DEPLOYMENT_STRATEGY, dep.getDeploymentStrategy().name());
-            System.err.println("Appending child " + el + " attributes " + el.getAttributes());
-            depsRoot.appendChild(el);
+            nue.appendChild(el);
         }
+        cfgRoot.appendChild(nue);
         if (privChanged) {
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privProps);
         }
         if (pubChanged) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pubProps);
         }
+        //XXX delete use of class.path var after build scripts updated
+        //to handle new-style complex dependencies
+        //Must do this after the calls to putProperties to ensure all
+        //paths are properly resolved.
+        StringBuilder sb = new StringBuilder();
+        for (ResolvedDependency dep : dependencies.all()) {
+            //For now, just store absolute paths as in 6.7
+            File f = dep.resolveFile(ArtifactKind.ORIGIN);
+            if (f != null) {
+                if (dep.getKind().isProjectDependency()) {
+                    FileObject fo = dep.resolve(ArtifactKind.ORIGIN);
+                    if (fo != null) {
+                        Project p = FileOwnerQuery.getOwner(fo);
+                        if (p != null) {
+                            AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
+                            if (prov != null) {
+                                for (AntArtifact a : prov.getBuildArtifacts()) {
+                                    for (URI uri : a.getArtifactLocations()) {
+                                        File f1;
+                                        try {
+                                            f1 = new File(uri);
+                                        } catch (IllegalArgumentException e) { //non-absolute URI
+                                            File proj = FileUtil.toFile(p.getProjectDirectory());
+                                            f1 = new File(proj, uri.toString());
+                                        }
+                                        if (sb.length() > 0) {
+                                            sb.append(File.pathSeparatorChar);
+                                        }
+                                        sb.append(f1.getAbsolutePath());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (sb.length() > 0) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                }
+                sb.append(f.getAbsolutePath());
+            }
+        }
+        pubProps.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
+        project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pubProps);
+        try {
+            ProjectManager.getDefault().saveProject(project);
+            //end deletia
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        //end deletia
     }
-
 //    private void findFullClosure(Project project, List<File> l, boolean pruneDuplicates) {
 //        SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
 //        if (subs != null) {

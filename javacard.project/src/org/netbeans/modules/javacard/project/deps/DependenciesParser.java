@@ -43,6 +43,7 @@ package org.netbeans.modules.javacard.project.deps;
 import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.javacard.project.JCProjectType;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -58,15 +59,15 @@ import org.xml.sax.helpers.DefaultHandler;
 class DependenciesParser extends DefaultHandler {
     private boolean inDependencies;
     private boolean inDependency;
-    public static final String DEP = "dependency";
-    public static final String DEPS = "dependencies";
-    public static final String KIND = "kind";
-    public static final String DEPLOYMENT_STRATEGY = "deployment";
-    public static final String ID = "id";
+    public static final String DEP = "dependency"; //NOI18N
+    public static final String DEPS = "dependencies"; //NOI18N
+    public static final String KIND = "kind"; //NOI18N
+    public static final String DEPLOYMENT_STRATEGY = "deployment"; //NOI18N
+    public static final String ID = "id"; //NOI18N
     
     private final Dependencies deps = new Dependencies();
 
-    DependenciesParser () {
+    private DependenciesParser () {
     }
 
     static Dependencies parse (InputSource in) throws SAXException, ParserConfigurationException, IOException {
@@ -75,24 +76,31 @@ class DependenciesParser extends DefaultHandler {
         return p.deps;
     }
 
-    static Dependencies parse (Element el, PropertyEvaluator eval) throws IOException {
+    static Dependencies parse (Element cfgRoot) throws IOException {
+        NodeList l = cfgRoot.getElementsByTagNameNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, DEPS);
+        if (l.getLength() == 0) {
+            throw new IOException ("No dependencies section in project configuration"); //NOI18N
+        }
+        if (l.getLength() > 1) {
+            throw new IOException ("Multiple dependencies sections in project configuration"); //NOI18N
+        }
         Dependencies deps = new Dependencies();
-        NodeList nl = el.getElementsByTagName(DEP);
+        NodeList nl = ((Element) l.item(0)).getElementsByTagName(DEP);
         int len = nl.getLength();
         for (int i=0; i < len; i++) {
             Element depElement = (Element) nl.item(i);
             String id = depElement.getAttribute(ID);
             if (id == null) {
-                throw new IOException ("Missing ID for dependency element " + depElement);
+                throw new IOException ("Missing ID for dependency element " + depElement); //NOI18N
             }
             String strategy = depElement.getAttribute(DEPLOYMENT_STRATEGY);
             DeploymentStrategy strat = DeploymentStrategy.valueOf(strategy);
             if (strat == null) {
-                throw new IOException ("Missing Deployment Strategy for " + depElement);
+                throw new IOException ("Missing Deployment Strategy for " + depElement); //NOI18N
             }
             String k = depElement.getAttribute(KIND);
             if (k == null) {
-                throw new IOException ("Missing dependency kind for " + depElement);
+                throw new IOException ("Missing dependency kind for " + depElement); //NOI18N
             }
             DependencyKind kind = DependencyKind.valueOf(k);
             Dependency dep = new Dependency(id, kind, strat);
@@ -100,26 +108,6 @@ class DependenciesParser extends DefaultHandler {
         }
         return deps;
     }
-
-    /*
-    static String getDependenciesXML(Dependencies deps) {
-        StringBuilder sb = new StringBuilder(100);
-        sb.append ("        <dependencies>\n");
-        for (Dependency dep : deps.all()) {
-            sb.append("            <dependency id=\"");
-            sb.append (dep.getID());
-            sb.append ("\" ");
-            sb.append (DEPLOYMENT_STRATEGY);
-            sb.append ('=');
-            sb.append ('"');
-            sb.append (dep.getDeploymentStrategy().name());
-            sb.append ('"');
-            sb.append ("/>\n");
-        }
-        sb.append ("        </dependencies>\n");
-        return sb.toString();
-    }
-     */
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -132,7 +120,7 @@ class DependenciesParser extends DefaultHandler {
         }
         boolean nowInDependency = DEP.equals(qName);
         if (inDependency && nowInDependency) {
-            throw new SAXException("Nested dependencies not supported");
+            throw new SAXException("Nested dependencies not supported"); //NOI18N
         } else {
             inDependency = nowInDependency;
             if (inDependency) {
@@ -154,24 +142,38 @@ class DependenciesParser extends DefaultHandler {
             inDependency = false;
             return;
         }
-//        throw new SAXException ("Unrecognized closing element " + qName);
     }
 
     private Dependency parseDependency(Attributes a) throws SAXException {
         String k = a.getValue(KIND);
         if (k == null) {
-            throw new SAXException(KIND + " missing from dependency attributes");
+            throw new SAXException(KIND + " missing from dependency attributes " + atts2s(a)); //NOI18N
         }
         DependencyKind kind = DependencyKind.parse(k);
         String depStrategy = a.getValue(DEPLOYMENT_STRATEGY);
         if (depStrategy == null) {
-            throw new SAXException (DEPLOYMENT_STRATEGY + " missing from dependency attributes");
+            throw new SAXException (DEPLOYMENT_STRATEGY + " missing from dependency attributes " + atts2s(a)); //NOI18N
         }
         DeploymentStrategy strategy = DeploymentStrategy.valueOf(depStrategy);
         String id = a.getValue(ID);
         if (id == null) {
-            throw new SAXException (ID + " missing from dependency attributes");
+            throw new SAXException (ID + " missing from dependency attributes " + atts2s(a)); //NOI18N
         }
         return new Dependency(id, kind, strategy);
+    }
+
+    private String atts2s(Attributes a) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < a.getLength(); i++) {
+            String qName = a.getQName(i);
+            sb.append (qName);
+            sb.append('='); //NOI18N
+            sb.append('"'); //NOI18N
+            String val = a.getValue(qName);
+            sb.append (val);
+            sb.append('"'); //NOI18N
+            sb.append(" "); //NOI18N
+        }
+        return sb.toString();
     }
 }

@@ -167,11 +167,13 @@ final class DependenciesChildren extends ChildFactory.Detachable<DependencyDescr
 
         @Override
         public Image getIcon(int type) {
+            ResolvedDependency rd = getLookup().lookup(ResolvedDependency.class);
             DependencyDescriptor d = getLookup().lookup(DependencyDescriptor.class);
             Image result = d.getIcon();
             result = result == null ? super.getIcon(type) : result;
-            if (!d.isValid()) {
-                Image badge = ImageUtilities.loadImage("org/netbeans/modules/javacard/resources/brokenProjectBadge.png");
+            boolean valid = rd == null ? d.isValid() : rd.isValid();
+            if (!valid) {
+                Image badge = ImageUtilities.loadImage("org/netbeans/modules/javacard/resources/brokenProjectBadge.png"); //NOI18N
                 result = ImageUtilities.mergeImages(result, badge, 8, 8);
             }
             return result;
@@ -185,7 +187,8 @@ final class DependenciesChildren extends ChildFactory.Detachable<DependencyDescr
         @Override
         public Action[] getActions(boolean ignored) {
             RA ra = new RA();
-            ra.putValue (Action.NAME, NbBundle.getMessage(DDNode.class, "ACTION_REMOVE_DEPENDENCY"));
+            ra.putValue (Action.NAME, NbBundle.getMessage(DDNode.class, 
+                    "ACTION_REMOVE_DEPENDENCY")); //NOI18N
             return new Action[] { ra };
         }
 
@@ -233,6 +236,7 @@ final class DependenciesChildren extends ChildFactory.Detachable<DependencyDescr
         }
 
         private class RA extends AbstractAction {
+            //XXX use ContextAction to support multiple selection
             public void actionPerformed(ActionEvent e) {
                 DDNode.this.remove();
             }

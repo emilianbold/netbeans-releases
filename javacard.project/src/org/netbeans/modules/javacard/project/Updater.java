@@ -200,20 +200,21 @@ public class Updater implements UpdateImplementation {
         Document doc = element.getOwnerDocument();
         Element newRoot = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "data"); //NOI18N
         copyDocument(doc, element, newRoot);
-        Element dependencies = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "dependencies");
+        Element dependencies = doc.createElementNS(JCProjectType.PROJECT_CONFIGURATION_NAMESPACE, "dependencies"); //NOI18N
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String cp = props.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH);
         try {
-            if (cp != null && !"".equals(cp.trim())) {
+            if (cp != null && !"".equals(cp.trim())) { //NOI18N
                 ResolvedDependencies deps = project.createResolvedDependencies();
-                String[] paths = cp.split(File.separator);
+                String[] paths = cp.split(File.pathSeparator);
                 for (int i = 0; i < paths.length; i++) {
                     String path = paths[i];
                     File f = FileUtil.normalizeFile(new File(path));
                     if (f != null && f.exists()) {
                         Map<ArtifactKind, String> m = new HashMap<ArtifactKind, String>();
                         m.put(ArtifactKind.ORIGIN, f.getAbsolutePath());
-                        Dependency d = new Dependency("lib" + (i + 1), DependencyKind.RAW_JAR, DeploymentStrategy.ALREADY_ON_CARD);
+                        Dependency d = new Dependency("lib" + (i + 1), //NOI18N
+                                DependencyKind.RAW_JAR, DeploymentStrategy.ALREADY_ON_CARD);
                         deps.add(d, m);
                     }
                 }
@@ -224,7 +225,7 @@ public class Updater implements UpdateImplementation {
             }
             newRoot.appendChild(dependencies);
         } catch (Exception e) {
-            throw new IllegalStateException("Project metadata corrupted", e);
+            throw new IllegalStateException("Project metadata corrupted", e); //NOI18N
         }
         element = newRoot;
         return element;
@@ -249,8 +250,8 @@ public class Updater implements UpdateImplementation {
                         continue;
                     }
                     if ("property".equals(oldElement.getNodeName())) {
-                        String name = oldElement.getAttribute("name");
-                        if ("ant.script".equals(name)) {
+                        String name = oldElement.getAttribute("name"); //NOI18N
+                        if ("ant.script".equals(name)) { //NOI18N
                             continue;
                         }
                     }

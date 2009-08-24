@@ -1,14 +1,53 @@
-
 /*
- * DependenciesEditorPanel.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on Aug 19, 2009, 7:20:24 PM
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.javacard.project.deps.ui;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
+import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.GuiUtils;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
@@ -17,9 +56,11 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
+ * Panel that appears in the project customizer dialog for handling dependencies.
  *
  * @author Tim Boudreau
  */
@@ -29,11 +70,11 @@ class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerMana
     private ResolvedDependencies deps;
     private JCProject project;
 
-    /** Creates new form DependenciesEditorPanel */
     public DependenciesEditorPanel() {
         initComponents();
         GuiUtils.prepareContainer(this);
         mgr.addPropertyChangeListener(this);
+        ((ListView) depsList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public DependenciesEditorPanel(JCProject project, ResolvedDependencies deps) {
@@ -183,7 +224,7 @@ class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerMana
     }// </editor-fold>//GEN-END:initComponents
 
     private void onAdd(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onAdd
-        AddDependencyWizardIterator.show(deps, project);
+        postReselect(AddDependencyWizardIterator.show(deps, project));
     }//GEN-LAST:event_onAdd
 
     private void onRemove(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRemove
@@ -192,18 +233,50 @@ class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerMana
     }//GEN-LAST:event_onRemove
 
     private void onEdit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onEdit
-        // TODO add your handling code here:
+        ResolvedDependency dep = getSelection();
+        assert dep != null;
+        new DialogBuilder(DependenciesEditorPanel.class).setTitle(NbBundle.getMessage(DependenciesEditorPanel.class, "TTL_EDIT_LIBRARY")). //NOI18N
+                setButtonSet(DialogBuilder.ButtonSet.CLOSE).
+                setContent(new EditOneDependencyPanel(dep)).
+                showDialog();
+        onSelectionChanged();
     }//GEN-LAST:event_onEdit
 
     private void onMoveUp(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onMoveUp
         ResolvedDependency rd = getSelection();
         deps.moveUp(rd);
+        postReselect(rd);
     }//GEN-LAST:event_onMoveUp
 
     private void onMoveDown(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onMoveDown
         ResolvedDependency rd = getSelection();
         deps.moveDown(rd);
+        postReselect(rd);
     }//GEN-LAST:event_onMoveDown
+
+    private void postReselect(final ResolvedDependency rd) {
+        if (rd == null) {
+            return;
+        }
+        //XXX would be nicer to do this in a NodeListener on children changed,
+        //but this appears not to work
+        Timer t = new Timer (200, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                for (Node n : mgr.getRootContext().getChildren().getNodes(true)) {
+                    if (rd.equals(n.getLookup().lookup(ResolvedDependency.class))) {
+                        try {
+                            mgr.setSelectedNodes(new Node[]{n});
+                        } catch (PropertyVetoException ex) {
+                            //do nothing
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+        t.setRepeats(false);
+        t.start();
+    }
 
     private ResolvedDependency getSelection() {
         Node[] n = mgr.getSelectedNodes();
@@ -246,8 +319,8 @@ class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerMana
     private void setSelectedDependency(ResolvedDependency d) {
         editButton.setEnabled(d != null);
         moveUpButton.setEnabled(d != null && deps.canMoveUp(d));
-        moveDownButton.setEnabled(d != null && deps.canMoveUp(d));
-        remButton.setEnabled (d != null);
+        moveDownButton.setEnabled(d != null && deps.canMoveDown(d));
+        remButton.setEnabled(d != null);
         pathField.setEnabled(d != null);
         pathLabel.setEnabled(d != null);
         depStrategyLabel.setEnabled(d != null);

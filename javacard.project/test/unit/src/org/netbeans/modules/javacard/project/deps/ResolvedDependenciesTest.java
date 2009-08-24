@@ -166,7 +166,6 @@ public class ResolvedDependenciesTest {
         assertTrue (rd.all().get(2).isModified());
         String path = rd.all().get(2).getPath(ArtifactKind.ORIGIN);
         assertEquals ("com/foo/bar/baz/asdfjkhasdlf", path);
-        DependenciesResolver.log = true;
         assertFalse (rd.all().get(2).isValid());
         assertFalse (rd.isValid());
     }
@@ -176,9 +175,6 @@ public class ResolvedDependenciesTest {
         public String getProperty(String prop) {
             if (returnGarbage) {
                 return "boooooooooooooooggggggggggggggggggggggggaaaaaaaaaaaa";
-            }
-            if (DependenciesResolver.log) {
-                System.err.println("Get Property " + prop + " return garbage " + returnGarbage);
             }
             char c = prop.charAt(0);
             switch (c) {

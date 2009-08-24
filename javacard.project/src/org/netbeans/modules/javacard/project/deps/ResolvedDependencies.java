@@ -4,9 +4,11 @@ package org.netbeans.modules.javacard.project.deps;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 
@@ -25,7 +27,7 @@ import org.openide.util.ChangeSupport;
  * @author Tim Boudreau
  */
 public abstract class ResolvedDependencies {
-    private final List<ResolvedDependency> deps = new ArrayList<ResolvedDependency>();
+    private final List<ResolvedDependency> deps = Collections.synchronizedList(new ArrayList<ResolvedDependency>());
     private final Dependencies dependencies;
     protected final DependenciesResolver resolver;
     private final Dependencies origDependencies;
@@ -39,36 +41,51 @@ public abstract class ResolvedDependencies {
         }
     }
 
-    public final List<ResolvedDependency> all() {
-        return Collections.unmodifiableList(deps);
+    public final List<? extends ResolvedDependency> all() {
+        //FIXME - somehow remove() is creating duplicates
+        Set<String> ids = new HashSet<String>(deps.size());
+        List<ResolvedDependency> result = new ArrayList<ResolvedDependency>();
+        for (ResolvedDependency d : deps) {
+            if (!ids.contains(d.dep().getID())) {
+                result.add (d);
+                ids.add (d.dep().getID());
+            }
+        }
+        return result;
+//        return Collections.unmodifiableList(deps);
     }
 
-    public final void add (Dependency d, Map <ArtifactKind, String> paths) {
-        System.err.println("Adding resolved dependency " + d + " " + paths + " to " + this);
+    public final ResolvedDependency add (Dependency d, Map <ArtifactKind, String> paths) {
         dependencies.add(d);
         ResolvedDependency r = new ResolvedDependency(d, resolver, paths);
         deps.add (r);
         supp.fireChange();
+        return r;
     }
 
     public final void remove (ResolvedDependency r) {
         //Corrupted metadata can contain duplicate IDs, so perform the
         //removal by ID rather than just depending on being able to
         //remove the dependency from the list - it may be there more than once
+        String id = r.dep().getID();
+        removeById(id);
+        deps.remove (r);
+        supp.fireChange();
+    }
+
+    private void removeById (String id) {
         for (Iterator<ResolvedDependency> it = deps.iterator(); it.hasNext();) {
             ResolvedDependency d = it.next();
-            if (d.getDependency().getID().equals(r.dep().getID())) {
+            if (d.getDependency().getID().equals(id)) {
                 it.remove();
             }
         }
-        deps.remove (r);
         for (Iterator<Dependency> it = new ArrayList<Dependency>(dependencies.all()).iterator(); it.hasNext();) {
             Dependency d = it.next();
-            if (d.getID().equals(r.dep().getID())) {
+            if (d.getID().equals(id)) {
                 dependencies.remove(d);
             }
         }
-        supp.fireChange();
     }
 
     public final Dependencies getDependencies() {
@@ -134,7 +151,7 @@ public abstract class ResolvedDependencies {
         boolean result = !this.origDependencies.equals(getDependencies());
         if (!result) {
             for (ResolvedDependency r : deps) {
-                result = r.isPathsModified();
+                result = r.isPathsModified() | r.dep().getDeploymentStrategy() != r.getDeploymentStrategy();
                 if (result) {
                     break;
                 }

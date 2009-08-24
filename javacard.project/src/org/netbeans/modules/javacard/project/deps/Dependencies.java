@@ -43,18 +43,26 @@ package org.netbeans.modules.javacard.project.deps;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
+ * Models the dependencies data from a project.xml.
+ *
+ * To actually modify and save dependencies, use ResolvedDependencies,
+ * which allows setting of paths and storing the necessary data to both
+ * project.properties and project.xml.  This class simply represents the
+ * data in project.xml only.
  *
  * @author Tim Boudreau
  */
 public final class Dependencies {
-    private final List <Dependency> dependencies = new ArrayList<Dependency>();
+    private final List <Dependency> dependencies = Collections.synchronizedList(new ArrayList<Dependency>());
 
     public Dependencies() {}
 
@@ -66,6 +74,10 @@ public final class Dependencies {
             ioe.initCause(ex);
             throw ioe;
         }
+    }
+
+    public static Dependencies parse(Element configRoot) throws IOException {
+        return DependenciesParser.parse(configRoot);
     }
 
     public Dependencies copy() {
@@ -134,7 +146,11 @@ public final class Dependencies {
     }
 
    public void remove (Dependency d) {
-       dependencies.remove (d);
+       for (Iterator<Dependency> it = dependencies.iterator(); it.hasNext();) {
+           if (d.getID().equals(it.next().getID())) {
+               it.remove();
+           }
+       }
    }
 
     @Override

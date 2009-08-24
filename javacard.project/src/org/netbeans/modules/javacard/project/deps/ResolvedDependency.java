@@ -7,9 +7,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
+ * Represents one "resolved" dependency which is mutable, and is able to
+ * provide actual files for its various artifact kinds.
  *
  * @author Tim Boudreau
  */

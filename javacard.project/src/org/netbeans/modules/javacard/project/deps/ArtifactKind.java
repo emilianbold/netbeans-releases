@@ -15,10 +15,12 @@ public enum ArtifactKind {
     SIG_FILE,
     ;
 
-    private static final String ORIGIN_ATTR = "origin";
-    private static final String EXP_FILE_ATTR = "expfile";
-    private static final String SOURCES_ATTR = "sources";
-    private static final String SIGFILE_ATTR = "signature";
+    //Constants which are used as suffixes for property names in project.properties
+    //e.g. libs.ant.jar.origin=../../apache-ant/lib/ant.jar
+    private static final String ORIGIN_ATTR = "origin"; //NOI18N
+    private static final String EXP_FILE_ATTR = "expfile"; //NOI18N
+    private static final String SOURCES_ATTR = "sources"; //NOI18N
+    private static final String SIGFILE_ATTR = "signature"; //NOI18N
 
     public String XMLName() {
         switch (this) {
