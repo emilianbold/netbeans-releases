@@ -42,6 +42,8 @@
 package org.netbeans.modules.viewmodel;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.WeakHashMap;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -167,6 +169,18 @@ public class TreeModelRoot implements ModelListener {
                     if (node != null) {
                         TreeModelNode tmNode = findNode(node);
                         if (tmNode != null) {
+                            tmNode.refresh(nchEvent.getChange());
+                        }
+                        return ; // We're done
+                    } else { // Refresh all nodes
+                        List<TreeModelNode> nodes = new ArrayList<TreeModelNode>(objectToNode.size());
+                        for (WeakReference<TreeModelNode> wr : objectToNode.values()) {
+                            TreeModelNode tm = wr.get();
+                            if (tm != null) {
+                                nodes.add(tm);
+                            }
+                        }
+                        for (TreeModelNode tmNode : nodes) {
                             tmNode.refresh(nchEvent.getChange());
                         }
                         return ; // We're done
