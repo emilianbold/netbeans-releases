@@ -247,10 +247,10 @@ public class JiraRepository extends Repository {
                 queries = manager.getQueries(this);
             }
             if(alsoRemoteFilters && !remoteFiltersLoaded) {
+                remoteFiltersLoaded = true;
                 Jira.getInstance().getRequestProcessor().post(new Runnable() {
                     public void run() {
                         queries.addAll(getServerQueries());
-                        remoteFiltersLoaded = true;
                         fireQueryListChanged();
                     }
                 });
