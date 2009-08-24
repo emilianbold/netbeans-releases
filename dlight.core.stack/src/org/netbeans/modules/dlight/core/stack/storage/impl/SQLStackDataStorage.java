@@ -497,7 +497,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
             ResultSet rs = s.executeQuery();
             try {
                 if (rs.next()) {
-                    return new SnapshotImpl(this, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
+                    return new SnapshotImpl(this, timestamp, threadId, rs.getInt(1), MSAState.fromCode(rs.getInt(2), fullMsa));
                 } else {
                     return null;
                 }
@@ -663,7 +663,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage {
                 if (stackAndStateResult.next()) {
                     int stackID = stackAndStateResult.getInt(1);
                     int mstate = stackAndStateResult.getInt(2);
-                    result.addStack(new SnapshotImpl(this, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
+                    result.addStack(new SnapshotImpl(this, t, thread_id, stackID, MSAState.fromCode(mstate, query.isFullMode())));
                 }
                 stackAndStateResult.close();
             }

@@ -36,35 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
-package org.netbeans.module.dlight.threads.api.storage;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.dlight.threadmap.api.*;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class ThreadTableMetrics {
-    private static final List<Column> columns;
-    static {
-        columns = new ArrayList<Column>(3);
-        columns.add(create("threadName", String.class)); // NOI18N
-        columns.add(create("state", ThreadStateColumn.class)); // NOI18N
-        columns.add(create("summary", ThreadSummaryColumn.class)); // NOI18N
-    }
+public interface ThreadMapDataProvider extends DataProvider {
 
-    private ThreadTableMetrics() {
-    }
+    /**
+     * @param metadata define needed time selection and aggregation.
+     * @return list threads data about all threads that alive in selected time period.
+     */
+    ThreadMapData queryData(ThreadMapDataQuery query);
 
-    private static  Column create(String id, Class clazz) {
-        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
-    }
+    /**
+     * Returns stack thread dump on the base of the query passed
+     * @param query query to be used to get ThreadDump
+     * @return returns thread dump on the base of the query requested
+     */
+    ThreadDump getThreadDump(ThreadDumpQuery query);
 
-    public static final List<Column> getThredMapColumn(){
-        return columns;
-    }
 }

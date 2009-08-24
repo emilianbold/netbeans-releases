@@ -36,39 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.threadmap.api;
 
-import java.util.HashMap;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
-public final class ThreadStateMapper {
+public interface ThreadMapData {
 
-    private final static HashMap<MSAState, MSAState> translationTable;
+    List<ThreadData> getThreadsData();
 
-    static {
-        translationTable = new HashMap<MSAState, MSAState>();
-        // Running
-        translationTable.put(MSAState.RunningUser, MSAState.Running);
-        translationTable.put(MSAState.RunningSystemCall, MSAState.Running);
-        translationTable.put(MSAState.RunningOther, MSAState.Running);
-        // Sleeping
-        translationTable.put(MSAState.SleepingUserDataPageFault, MSAState.Sleeping);
-        translationTable.put(MSAState.SleepingUserTextPageFault, MSAState.Sleeping);
-        translationTable.put(MSAState.SleepingKernelPageFault, MSAState.Sleeping);
-        translationTable.put(MSAState.SleepingOther, MSAState.Sleeping);
-        // Blocked
-        translationTable.put(MSAState.SleepingUserLock, MSAState.Blocked);
-        // Waiting
-        translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
-        // Stopped
-        translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
-    }
+    TimeDuration getPrecision();
 
-    private ThreadStateMapper() {
-    }
-
-    public static final MSAState toSimpleState(MSAState detailedState) {
-        MSAState result = translationTable.get(detailedState);
-        return (result == null) ? detailedState : result;
-    }
+    /**
+     * 
+     * @return true if data contains only sampling probes
+     */
+    boolean isSamplingMode();
 }

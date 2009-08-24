@@ -37,26 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadState;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
 /**
- * Represents thread state line column
  *
  * @author Alexander Simon
  */
-public interface ThreadStateColumn {
-    String getName();
+public final class ThreadTableMetrics {
+    private static final List<Column> columns;
+    static {
+        columns = new ArrayList<Column>(3);
+        columns.add(create("threadName", String.class)); // NOI18N
+        columns.add(create("state", ThreadStateColumn.class)); // NOI18N
+        columns.add(create("summary", ThreadSummaryColumn.class)); // NOI18N
+    }
 
-    int size();
+    private ThreadTableMetrics() {
+    }
 
-    boolean isAlive(int index);
+    private static  Column create(String id, Class clazz) {
+        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
+    }
 
-    ThreadState getThreadStateAt(int index);
-
-    boolean isAlive();
-
-    ThreadDump getStackTrace(long timeStamp);
+    public static final List<Column> getThredMapColumn(){
+        return columns;
+    }
 }

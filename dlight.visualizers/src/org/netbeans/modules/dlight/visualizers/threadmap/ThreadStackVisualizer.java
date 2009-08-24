@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -57,7 +58,6 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;

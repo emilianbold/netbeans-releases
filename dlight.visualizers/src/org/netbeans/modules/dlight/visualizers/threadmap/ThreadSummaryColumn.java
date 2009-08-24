@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
 /**
  * Represents thread state summary column

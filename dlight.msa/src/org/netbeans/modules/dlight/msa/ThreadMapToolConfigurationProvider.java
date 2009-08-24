@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap;
+package org.netbeans.modules.dlight.msa;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateMapper;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -55,14 +53,15 @@ import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.support.ThreadStateMapper;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.msa.impl.MSAParser;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.threadmap.collector.MSAParser;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 public class ThreadMapToolConfigurationProvider implements DLightToolConfigurationProvider {

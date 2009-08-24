@@ -36,37 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers;
-
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
-import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
-import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
 /**
  *
  * @author Alexander Simon
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
-public class ThreadMapVisualizerFactory implements VisualizerFactory<ThreadMapVisualizerConfiguration> {
+public final class ThreadMapDataQuery {
 
-    public String getID() {
-        return VisualizerConfigurationIDsProvider.THREAD_MAP_VISUALIZER;
+    private final long timeFrom;
+    private final long timeTo;
+    private final boolean fullState;
+    private final boolean isSampling;
+
+    /**
+     * @param timeUnit time unit.
+     * @param timeFrom start time in time units.
+     * @param timeTo end time in time units.
+     * @param step aggregation time in time units.
+     * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     * @return list threads data about all threads that alive in selected time period.
+     */
+    private ThreadMapDataQuery(long timeFrom, long timeTo, boolean isSampling, boolean fullState) {
+        this.timeFrom = timeFrom;
+        this.timeTo = timeTo;
+        this.fullState = fullState;
+        this.isSampling = isSampling;
     }
 
-    public Visualizer<ThreadMapVisualizerConfiguration> create(ThreadMapVisualizerConfiguration configuration, VisualizerDataProvider provider) {
-        if (!(provider instanceof ThreadMapDataProvider)) {
-            return null;
-        }
+    public ThreadMapDataQuery(long timeFrom,boolean isSampling, boolean fullState) {
+        this(timeFrom, Long.MAX_VALUE, isSampling, fullState);
+    }
 
-        ThreadMapVisualizer result = new ThreadMapVisualizer((ThreadMapDataProvider) provider, configuration);
+    /**
+     * @return start time in time units.
+     */
+    public long getTimeFrom() {
+        return timeFrom;
+    }
 
-        result.init();
+    /**
+     * @return end time in time units.
+     */
+    public long getTimeTo() {
+        return timeTo;
+    }
 
-        return result;
+    /**
+     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     */
+    public boolean isFullState() {
+        return fullState;
+    }
+
+    public boolean isSampling(){
+        return isSampling;
     }
 }
