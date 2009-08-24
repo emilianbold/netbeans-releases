@@ -147,6 +147,7 @@ public final class QueryTopComponent extends TopComponent
             BugtrackingController c = query.getController();
             panel.add(c.getComponent());
             this.query.addPropertyChangeListener(this);
+            this.query.addNotifyListener(this);
         } else {
             newButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -404,6 +405,7 @@ public final class QueryTopComponent extends TopComponent
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
+            query.removeNotifyListener(this);
             query.getController().closed();
         }
         Kenai.getDefault().removePropertyChangeListener(this);
@@ -536,6 +538,7 @@ public final class QueryTopComponent extends TopComponent
                     final BugtrackingController removeController = query != null ? query.getController() : null;
                     if(query != null) {
                         query.removePropertyChangeListener(QueryTopComponent.this);
+                        query.removeNotifyListener(QueryTopComponent.this);
                     }
 
                     query = repo.createQuery();
