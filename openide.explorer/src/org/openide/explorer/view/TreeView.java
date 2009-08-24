@@ -2235,6 +2235,7 @@ public abstract class TreeView extends JScrollPane {
             }
 
             public void focusLost(FocusEvent e) {
+                results.clear();
                 removeSearchField();
             }
         }
