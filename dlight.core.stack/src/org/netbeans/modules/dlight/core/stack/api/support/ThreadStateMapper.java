@@ -36,30 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.dataprovider;
+package org.netbeans.modules.dlight.core.stack.api.support;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadMapData;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import java.util.HashMap;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends DataProvider {
+public final class ThreadStateMapper {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    private final static HashMap<MSAState, MSAState> translationTable;
 
-    /**
-     * Returns stack thread dump on the base of the query passed
-     * @param query query to be used to get ThreadDump
-     * @return returns thread dump on the base of the query requested
-     */
-    ThreadDump getThreadDump(ThreadDumpQuery query);
+    static {
+        translationTable = new HashMap<MSAState, MSAState>();
+        // Running
+        translationTable.put(MSAState.RunningUser, MSAState.Running);
+        translationTable.put(MSAState.RunningSystemCall, MSAState.Running);
+        translationTable.put(MSAState.RunningOther, MSAState.Running);
+        // Sleeping
+        translationTable.put(MSAState.SleepingUserDataPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingUserTextPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingKernelPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingOther, MSAState.Sleeping);
+        // Blocked
+        translationTable.put(MSAState.SleepingUserLock, MSAState.Blocked);
+        // Waiting
+        translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
+        // Stopped
+        translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
+    }
 
+    private ThreadStateMapper() {
+    }
+
+    public static final MSAState toSimpleState(MSAState detailedState) {
+        MSAState result = translationTable.get(detailedState);
+        return (result == null) ? detailedState : result;
+    }
 }

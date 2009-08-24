@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.api;
 
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 
 /**
@@ -49,6 +47,8 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
  * @author Alexey Vladykin
  */
 public interface ThreadSnapshot {
+
+    long getTimestamp();
 
     List<FunctionCall> getStack();
 

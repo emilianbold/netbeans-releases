@@ -36,49 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.threadmap.api.ThreadData;
-import org.netbeans.modules.dlight.core.stack.api.ThreadState;
+/**
+ *
+ * @author Alexander Simon
+ */
+public final class ThreadMapDataQuery {
 
-public final class ThreadDataImpl implements ThreadData {
+    private final long timeFrom;
+    private final long timeTo;
+    private final boolean fullState;
+    private final boolean isSampling;
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadState> states;
-    private final List<ThreadState> pstates;
-
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadState>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
+    /**
+     * @param timeUnit time unit.
+     * @param timeFrom start time in time units.
+     * @param timeTo end time in time units.
+     * @param step aggregation time in time units.
+     * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     * @return list threads data about all threads that alive in selected time period.
+     */
+    private ThreadMapDataQuery(long timeFrom, long timeTo, boolean isSampling, boolean fullState) {
+        this.timeFrom = timeFrom;
+        this.timeTo = timeTo;
+        this.fullState = fullState;
+        this.isSampling = isSampling;
     }
 
-    public ThreadInfoImpl getThreadInfo() {
-        return threadInfo;
+    public ThreadMapDataQuery(long timeFrom,boolean isSampling, boolean fullState) {
+        this(timeFrom, Long.MAX_VALUE, isSampling, fullState);
     }
 
-    public List<ThreadState> getThreadState() {
-        return pstates;
+    /**
+     * @return start time in time units.
+     */
+    public long getTimeFrom() {
+        return timeFrom;
     }
 
-    void addState(ThreadState state) {
-        states.add(state);
+    /**
+     * @return end time in time units.
+     */
+    public long getTimeTo() {
+        return timeTo;
     }
 
-    public ThreadDump getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new ThreadDump(){
-            public List<ThreadSnapshot> getThreadStates() {
-                return Collections.<ThreadSnapshot>emptyList();
-            }
-            public long getTimestamp() {
-                return timeStamp;
-            }
-        };
+    /**
+     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
+     */
+    public boolean isFullState() {
+        return fullState;
+    }
+
+    public boolean isSampling(){
+        return isSampling;
     }
 }
