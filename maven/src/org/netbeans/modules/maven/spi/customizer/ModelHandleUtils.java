@@ -48,9 +48,9 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.model.Utilities;
@@ -87,8 +87,9 @@ public final class ModelHandleUtils {
             source = Utilities.createModelSourceForMissingFile(file, true, CustomizerProviderImpl.PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
         }
         ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
-        UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
-        ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));
+        //TODO why only the default? maybe we should add all? but then again, it's deprecated.
+        M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
+        ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
 
         return CustomizerProviderImpl.ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(),
