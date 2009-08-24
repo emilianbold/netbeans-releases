@@ -261,7 +261,7 @@ public class JiraStorageManager {
      * Saves issue attributes permanently
      * @param issues
      */
-    void setTaskListIssues(HashMap<String, List<String>> issues) {
+    public void setTaskListIssues(HashMap<String, List<String>> issues) {
         Jira.LOG.fine("setTaskListIssues: saving issues");              //NOI18N
         File f = new File(getNBConfigPath());
         f.mkdirs();
@@ -316,7 +316,7 @@ public class JiraStorageManager {
      * Loads issues from a permanent storage
      * @return
      */
-    Map<String, List<String>> getTaskListIssues () {
+    public Map<String, List<String>> getTaskListIssues () {
         Jira.LOG.fine("loadTaskListIssues: loading issues");            //NOI18N
         File f = new File(getNBConfigPath());
         ObjectInputStream ois = null;

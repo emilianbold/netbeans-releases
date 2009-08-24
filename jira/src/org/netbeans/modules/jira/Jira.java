@@ -55,7 +55,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
-import org.netbeans.modules.jira.repository.JiraIssueProvider;
+import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;

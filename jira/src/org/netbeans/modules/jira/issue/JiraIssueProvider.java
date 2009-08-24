@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.repository;
+package org.netbeans.modules.jira.issue;
 
+import org.netbeans.modules.jira.repository.*;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
@@ -66,16 +67,11 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.issue.ResolveIssuePanel;
-import org.netbeans.modules.jira.issue.WorkLogPanel;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;

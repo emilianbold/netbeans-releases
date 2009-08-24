@@ -103,7 +103,6 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
-import org.netbeans.modules.jira.repository.JiraIssueProvider;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
 import org.netbeans.modules.jira.util.ProjectRenderer;
