@@ -423,9 +423,10 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
-        if (isNew != (projectCombo.getParent() != null)) {
+        boolean showProjectCombo = isNew && !issue.isSubtask();
+        if (showProjectCombo != (projectCombo.getParent() != null)) {
             GroupLayout layout = (GroupLayout)getLayout();
-            layout.replace(isNew ? projectField : projectCombo, isNew ? projectCombo : projectField);
+            layout.replace(showProjectCombo ? projectField : projectCombo, showProjectCombo ? projectCombo : projectField);
         }
         if (isNew != (statusField.getParent() != null)) {
             GroupLayout layout = (GroupLayout)getLayout();
@@ -492,6 +493,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             if ((projectId != null) && !projectId.equals("")) { // NOI18N
                 Project project = config.getProjectById(projectId);
+                reloadField(projectField, project.getName(), NbJiraIssue.IssueField.PROJECT);
                 if (!project.equals(projectCombo.getSelectedItem())) {
                     projectCombo.setSelectedItem(project);
                 }
