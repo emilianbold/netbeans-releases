@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="web-faces-mime-resolver.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-            <attr name="position" intvalue="410"/>
+            <attr name="position" intvalue="405"/>
             </file>
         </folder>
     </folder>
