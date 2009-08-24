@@ -46,11 +46,13 @@ import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.junit.Log;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 
@@ -125,19 +127,42 @@ public class OutlineOperator extends JTableOperator {
             Waiter lrWaiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object anObject) {
                     int[] lrRows = (int[]) anObject;
+                    TreePath lrPath = null;
+                    int lnIndexModifier = 0;
 
-                    Point lrFindPoint = findCell(isName, lrRows, new int[]{getTreeColumnIndex()}, inIndex);
+                    /*
+                     * I know, a lovely neverending loop :)
+                     * Another way would be to calculate precisely the rows to search,
+                     * but in most cases we want the first node with the specified
+                     * name and also calculating rows would be more expensive.
+                     */
+                    while (true)
+                    {
+                        Point lrFindPoint = findCell(isName, lrRows, new int[]{getTreeColumnIndex()}, inIndex + lnIndexModifier);
 
-                    //no cell found
-                    if (lrFindPoint.equals(new Point(-1,-1)))
-                        return null;
+                        //no cell found
+                        if (lrFindPoint.equals(new Point(-1,-1)))
+                            break;
 
-                    //y is row, x is not important since we're asking for a row in the tree
-                    TreePath lrPath = lrOutline.getLayoutCache().getPathForRow(lrFindPoint.y);
+                        //y is row, x is not important since we're asking for a row in the tree
+                         lrPath = lrOutline.getLayoutCache().getPathForRow(lrFindPoint.y);
 
-                    //cell found, but it is not on the level we're looking for
-                    if (lrPath.getPathCount() > irParentPath.getPathCount() + 1)
-                        return null;
+                        //path for the specified row not found or it is not visible
+                        if (lrPath == null)
+                        {
+                            JemmyProperties.getCurrentOutput().printError("Path for row is null, this should not happen!");
+                            break;
+                        }
+
+                        //found a cell that is a child of the parent path
+                        if (lrPath.getPathCount() == irParentPath.getPathCount() + 1)
+                            break;
+
+                        //in case we've found a cell with correct text, but not a child of the parent path
+                        //try to find a next one
+                        lnIndexModifier++;
+                        lrPath = null;
+                    }
 
                     return lrPath;
                 }
