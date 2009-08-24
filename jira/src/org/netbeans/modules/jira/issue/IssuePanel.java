@@ -82,6 +82,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
+import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -89,6 +91,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.jdesktop.layout.GroupLayout;
@@ -420,9 +423,10 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
-        if (isNew != (projectCombo.getParent() != null)) {
+        boolean showProjectCombo = isNew && !issue.isSubtask();
+        if (showProjectCombo != (projectCombo.getParent() != null)) {
             GroupLayout layout = (GroupLayout)getLayout();
-            layout.replace(isNew ? projectField : projectCombo, isNew ? projectCombo : projectField);
+            layout.replace(showProjectCombo ? projectField : projectCombo, showProjectCombo ? projectCombo : projectField);
         }
         if (isNew != (statusField.getParent() != null)) {
             GroupLayout layout = (GroupLayout)getLayout();
@@ -489,6 +493,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             if ((projectId != null) && !projectId.equals("")) { // NOI18N
                 Project project = config.getProjectById(projectId);
+                reloadField(projectField, project.getName(), NbJiraIssue.IssueField.PROJECT);
                 if (!project.equals(projectCombo.getSelectedItem())) {
                     projectCombo.setSelectedItem(project);
                 }
@@ -1292,6 +1297,11 @@ public class IssuePanel extends javax.swing.JPanel {
         });
 
         createSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.createSubtaskButton.text")); // NOI18N
+        createSubtaskButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createSubtaskButtonActionPerformed(evt);
+            }
+        });
 
         convertToSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.convertToSubtaskButton.text")); // NOI18N
 
@@ -1664,15 +1674,18 @@ public class IssuePanel extends javax.swing.JPanel {
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
                         boolean subtask = issue.isSubtask();
+                        boolean anySubtaskType = false;
                         IssueType[] issueTypes = config.getIssueTypes(project);
                         List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
                         for (IssueType issueType : issueTypes) {
                             if (issueType.isSubTaskType() == subtask) {
                                 types.add(issueType);
                             }
+                            anySubtaskType |= issueType.isSubTaskType();
                         }
                         issueTypeCombo.setModel(new DefaultComboBoxModel(types.toArray(new IssueType[types.size()])));
                         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
+                        createSubtaskButton.setVisible(!subtask && anySubtaskType);
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
@@ -1698,7 +1711,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         reloading = oldReloading;
 
                         TaskData data = issue.getTaskData();
-                        if (data.isNew()) {
+                        if (data.isNew() && !issue.isSubtask()) {
                             issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, project.getId());
                             JiraRepositoryConnector connector = Jira.getInstance().getRepositoryConnector();
                             try {
@@ -1939,6 +1952,26 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         updateTasklistButton();
     }//GEN-LAST:event_tasklistButtonActionPerformed
+
+    private void createSubtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createSubtaskButtonActionPerformed
+        NbJiraIssue subTask = (NbJiraIssue)issue.getRepository().createIssue();
+        TaskAttribute rta = subTask.getTaskData().getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(JiraAttribute.TYPE.id());
+        if (ta == null) {
+            ta = rta.createMappedAttribute(JiraAttribute.TYPE.id());
+        }
+        ta.getMetaData().putValue(IJiraConstants.META_SUB_TASK_TYPE, Boolean.toString(true));
+        subTask.setFieldValue(NbJiraIssue.IssueField.PROJECT, issue.getFieldValue(NbJiraIssue.IssueField.PROJECT));
+        subTask.setFieldValue(NbJiraIssue.IssueField.PARENT_KEY, issue.getKey());
+        subTask.setFieldValue(NbJiraIssue.IssueField.PARENT_ID, issue.getTaskData().getTaskId());
+        JiraRepositoryConnector connector = Jira.getInstance().getRepositoryConnector();
+        try {
+            connector.getTaskDataHandler().initializeSubTaskData(issue.getTaskRepository(), subTask.getTaskData(), issue.getTaskData(), new NullProgressMonitor());
+        } catch (CoreException cex) {
+            cex.printStackTrace();
+        }
+        subTask.open();
+    }//GEN-LAST:event_createSubtaskButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel actionLabel;
