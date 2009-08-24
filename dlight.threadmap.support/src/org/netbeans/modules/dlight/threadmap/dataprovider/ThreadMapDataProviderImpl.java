@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.threadmap.dataprovider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -75,7 +76,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             return storage.queryThreadMapData(query);
         }
         if (query.isSampling() && stackDataStorage != null) {
-            final List<ThreadSnapshot> snapshots =
+            final Collection<ThreadSnapshot> snapshots =
                     stackDataStorage.getThreadSnapshots(
                     new ThreadSnapshotQuery(false, new ThreadSnapshotQuery.TimeFilter(query.getTimeFrom(), query.getTimeTo(), ThreadSnapshotQuery.TimeFilter.Mode.LAST)));
             //now we should create ThreadMapData
