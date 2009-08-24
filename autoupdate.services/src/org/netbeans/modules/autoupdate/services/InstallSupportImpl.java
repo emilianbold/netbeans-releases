@@ -82,6 +82,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
+import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -148,6 +149,31 @@ public class InstallSupportImpl {
                 }
 
                 infos = support.getContainer ().listAll ();
+                List <OperationInfo<?>> newInfos = new ArrayList <OperationInfo<?>>();
+                for(OperationInfo <?> i : infos) {
+                    if(i.getUpdateUnit().getInstalled()!=null &&
+                            i.getUpdateUnit().getInstalled().equals(i.getUpdateElement())   ) {
+                        //internal update, replace by required elements
+                        for(UpdateElement e : i.getRequiredElements()) {
+                            boolean add = true;
+                            for(OperationInfo <?> in : newInfos) {
+                                if(in.getUpdateElement().equals(e)) {
+                                    add = false;
+                                    break;
+                                }
+                            }
+                            if(add) {
+                                OperationContainer<InstallSupport> upd = OperationContainer.createForUpdate();
+                                OperationInfo<?> ii = upd.add(e);
+                                newInfos.add(ii);
+                            }
+                        }
+                    } else {
+                        newInfos.add(i);
+                    }
+                }
+                infos = newInfos;
+                
                 int size = 0;
                 for (OperationInfo info : infos) {
                     size += info.getUpdateElement().getDownloadSize();
