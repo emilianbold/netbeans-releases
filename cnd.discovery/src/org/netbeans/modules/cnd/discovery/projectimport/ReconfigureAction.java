@@ -45,8 +45,10 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -147,7 +149,7 @@ public class ReconfigureAction extends NodeAction {
             cFlags = "-g3 -gdwarf-2"; // NOI18N
             cxxFlags = "-g3 -gdwarf-2"; // NOI18N
         }
-        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags);
+        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, getLegend(reconfigurator));
         JButton runButton = new JButton(NbBundle.getMessage(getClass(), "ReconfigureButton")); // NOI18N
         runButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ReconfigureButtonAD")); // NOI18N
         Object options[] =  new Object[]{runButton, DialogDescriptor.CANCEL_OPTION};
@@ -165,6 +167,87 @@ public class ReconfigureAction extends NodeAction {
             reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags());
         }
         running = false;
+    }
+
+    private String getLegend(ReconfigureProject reconfigurator){
+        DataObject dao = reconfigurator.getImportant();
+        if (dao == null) {
+            return ""; // NOI18N
+        }
+        String lastFlags = reconfigurator.getLastFlags();
+        if (lastFlags == null) {
+            return ""; // NOI18N
+        }
+        String mime = dao.getPrimaryFile().getMIMEType();
+        String lastCFlags = null;
+        String lastCppFlags = null;
+        String lastCCompiler = null;
+        String lastCppCompiler = null;
+        if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+            lastCFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
+            lastCppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
+            lastCCompiler = getFlags(lastFlags, "CC="); // NOI18N
+            lastCppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
+        } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+            lastCFlags = getFlags(lastFlags, "-DCMAKE_C_FLAGS_DEBUG="); // NOI18N
+            lastCppFlags = getFlags(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG="); // NOI18N
+            lastCCompiler = getFlags(lastFlags, "-DCMAKE_C_COMPILER="); // NOI18N
+            lastCppCompiler = getFlags(lastFlags, "-DCMAKE_CXX_COMPILER="); // NOI18N
+        } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+            lastCFlags = getFlags(lastFlags, "QMAKE_CFLAGS="); // NOI18N
+            lastCppFlags = getFlags(lastFlags, "QMAKE_CXXFLAGS="); // NOI18N
+            lastCCompiler = getFlags(lastFlags, "QMAKE_CC="); // NOI18N
+            lastCppCompiler = getFlags(lastFlags, "QMAKE_CXX="); // NOI18N
+        } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
+            return ""; // NOI18N
+        }
+        if (lastCFlags != null && lastCppFlags != null && lastCCompiler != null && lastCppCompiler != null) {
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", lastCCompiler+"/"+lastCppCompiler, lastCFlags, lastCppFlags); // NOI18N
+        }
+        return ""; // NOI18N
+    }
+
+    private String getFlags(String flags, String key){
+        int i = flags.indexOf(key);
+        if (i >= 0) {
+            if (key.charAt(key.length()-1)=='=') { // NOI18N
+                String rest = flags.substring(i+key.length());
+                if (rest.startsWith("\"")){ // NOI18N
+                    int j = rest.indexOf('"',1); // NOI18N
+                    if (j > 0) {
+                        return rest.substring(1,j);
+                    }
+                } else {
+                    int j = rest.indexOf(' ',1); // NOI18N
+                    if (j > 0) {
+                        return rest.substring(0,j);
+                    } else {
+                        return rest;
+                    }
+                }
+            } else {
+                String rest = flags.substring(i+key.length());
+                if (rest.startsWith(" ")){ // NOI18N
+                    rest = rest.substring(1);
+                    if (rest.startsWith("\"")){ // NOI18N
+                        int j = rest.indexOf('"',1); // NOI18N
+                        if (j > 0) {
+                            return rest.substring(1,j);
+                        }
+                    } else {
+                        int j = rest.indexOf(' ',1); // NOI18N
+                        if (j > 0) {
+                            return rest.substring(0,j);
+                        } else {
+                            return rest;
+                        }
+                    }
+                } else if (rest.length()==0) {
+                    return ""; // NOI18N
+                }
+            }
+        }
+        return null;
     }
 
     @Override

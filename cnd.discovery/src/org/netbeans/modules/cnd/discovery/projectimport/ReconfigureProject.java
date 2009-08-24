@@ -123,18 +123,20 @@ public class ReconfigureProject {
         if (cmake != null && make != null) {
             String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
-            try {
-                List<String> vars = ImportUtils.parseEnvironment(arguments);
-                for (String s : ImportUtils.quoteList(vars)) {
-                    int i = arguments.indexOf(s);
-                    if (i >= 0){
-                        arguments = arguments.substring(0, i) + arguments.substring(i + s.length());
+            if (ses != null) {
+                try {
+                    List<String> vars = ImportUtils.parseEnvironment(arguments);
+                    for (String s : ImportUtils.quoteList(vars)) {
+                        int i = arguments.indexOf(s);
+                        if (i >= 0){
+                            arguments = arguments.substring(0, i) + arguments.substring(i + s.length());
+                        }
                     }
+                    ses.setArguments(new String[]{arguments});
+                    ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                ses.setArguments(new String[]{arguments});
-                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
@@ -152,10 +154,12 @@ public class ReconfigureProject {
         } else if (qmake != null && make != null){
             String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
-            try {
-                ses.setArguments(new String[]{arguments});
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (ses != null) {
+                try {
+                    ses.setArguments(new String[]{arguments});
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
@@ -173,12 +177,14 @@ public class ReconfigureProject {
         } else if (configure != null && make != null) {
             String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), cFlags, cxxFlags,isSunCompiler());
             ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
-            try {
-                ses.setArguments(new String[]{arguments});
-                List<String> vars = ImportUtils.parseEnvironment(arguments);
-                ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (ses != null) {
+                try {
+                    ses.setArguments(new String[]{arguments});
+                    List<String> vars = ImportUtils.parseEnvironment(arguments);
+                    ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
@@ -266,5 +272,48 @@ public class ReconfigureProject {
      */
     public boolean isSunCompiler() {
         return isSunCompiler;
+    }
+
+    public DataObject getImportant(){
+        if (cmake != null && make != null) {
+            return cmake;
+        } else if (qmake != null && make != null){
+            return qmake;
+        } else if (configure != null && make != null) {
+            return configure;
+        } else if (make != null && make != null) {
+            return make;
+        }
+        return null;
+    }
+
+    public String getLastFlags(){
+        if (cmake != null && make != null) {
+            ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            if (ses != null) {
+                String[] args = ses.getArguments();
+                if (args != null && args.length > 0) {
+                    return args[0];
+                }
+            }
+        } else if (qmake != null && make != null){
+            ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            if (ses != null) {
+                String[] args = ses.getArguments();
+                if (args != null && args.length > 0) {
+                    return args[0];
+                }
+            }
+        } else if (configure != null && make != null) {
+            ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
+            if (ses != null) {
+                String[] args = ses.getArguments();
+                if (args != null && args.length > 0) {
+                    return args[0];
+                }
+            }
+        } else if (make != null && make != null) {
+        }
+        return null;
     }
 }

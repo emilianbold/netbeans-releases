@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import javax.swing.text.html.HTMLEditorKit;
+
 /**
  *
  * @author Alexander Simon
@@ -52,10 +54,12 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 public class ReconfigurePanel extends javax.swing.JPanel {
 
     /** Creates new form ReconfigurePanel */
-    public ReconfigurePanel(String cFlags, String cxxFlags) {
+    public ReconfigurePanel(String cFlags, String cxxFlags, String legend) {
         initComponents();
+        jTextPane1.setEditorKit(new HTMLEditorKit());
         this.cFlags.setText(cFlags);
         this.cppFlags.setText(cxxFlags);
+        this.jTextPane1.setText(legend);
     }
 
     /** This method is called from within the constructor to
@@ -72,7 +76,11 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         cFlags = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         cppFlags = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
 
+        setMinimumSize(new java.awt.Dimension(300, 200));
+        setPreferredSize(new java.awt.Dimension(300, 200));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(cFlags);
@@ -111,6 +119,25 @@ public class ReconfigurePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
         add(cppFlags, gridBagConstraints);
+
+        jScrollPane1.setBorder(null);
+
+        jTextPane1.setBackground(getBackground());
+        jTextPane1.setEditable(false);
+        jTextPane1.setForeground(getForeground());
+        jTextPane1.setFocusCycleRoot(false);
+        jTextPane1.setFocusable(false);
+        jScrollPane1.setViewportView(jTextPane1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -127,6 +154,8 @@ public class ReconfigurePanel extends javax.swing.JPanel {
     private javax.swing.JTextField cppFlags;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 
 }
