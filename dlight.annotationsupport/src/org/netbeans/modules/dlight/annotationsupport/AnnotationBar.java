@@ -332,7 +332,9 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         if (lineAnnotationInfo != null) {
             String annotation = lineAnnotationInfo.getAnnotation();
             g.setFont(editorUI.getComponent().getFont());
-            g.setColor(getMetricsFGColor());
+            if (getMetricsFGColor() != null) {
+                g.setColor(getMetricsFGColor());
+            }
             g.drawString(annotation, 2, yBase + editorUI.getLineAscent());
         }
 //    String annotation = "CPU 23s/";  // NOI18N
