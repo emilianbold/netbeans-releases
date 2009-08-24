@@ -379,9 +379,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
                 textHighlightFG = null;
                 textHighlightBG = null;
 
-//                revalidate();  // resize the component
-                unAnnotate();
-                annotate(fileAnnotationInfo);
+                if (annotated) {
+                    unAnnotate();
+                    annotate(fileAnnotationInfo);
+                }
             }
         }
     }
