@@ -173,7 +173,7 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         newNode.callPopup();
 
-                Thread.sleep(5000);
+        Thread.sleep(5000);
 
     }
 }
