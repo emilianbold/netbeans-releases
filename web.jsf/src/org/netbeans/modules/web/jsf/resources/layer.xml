@@ -175,7 +175,16 @@ made subject to such option by the copyright holder.
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
         </folder>
     </folder>
-   
+
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="web-faces-mime-resolver.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+            <attr name="position" intvalue="405"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">

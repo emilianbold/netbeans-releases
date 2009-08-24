@@ -937,6 +937,13 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
 
     private void adjust(JHelp jh) {
         JEditorPane contentViewer = (JEditorPane) getContentViewer(jh);
+        if(contentViewer == null) {
+            // Issue #168849
+            Installer.log.log(Level.SEVERE,
+                              NbBundle.getMessage(JavaHelp.class,
+                                                  "LOG_JH_ContentViewer"));
+            return;
+        }
         adjustFontSize(contentViewer);
         HyperlinkEventProcessor.addTo(contentViewer); // Issue #57005
     }

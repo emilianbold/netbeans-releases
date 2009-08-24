@@ -1,0 +1,3 @@
+7:13-7:14:error:method test in class javahints.TestShortErrorsMethodInvocation1 cannot be applied to given types
+  required:java.lang.Integer
+  found:java.lang.Object

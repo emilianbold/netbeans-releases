@@ -57,10 +57,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.util.logging.Level;
@@ -181,11 +179,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             source = Utilities.createModelSourceForMissingFile(file, true, PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
         }
         ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
-        UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
-        ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
-        mapps.put(M2Configuration.DEFAULT, mapping);
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
         ModelHandle.Configuration active = null;
         M2ConfigProvider provider = project.getLookup().lookup(M2ConfigProvider.class);

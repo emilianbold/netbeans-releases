@@ -145,8 +145,17 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return result;
     }
 
-    private final Pattern removeHtmlTags = (System.getProperty("java.version").startsWith("1.6.0_14")
-            || System.getProperty("java.version").startsWith("1.6.0_15")) ? Pattern.compile("\\<.*?\\>") : null;
+    private static final boolean HTML_TABS_BROKEN = htmlTabsBroken();
+    private static boolean htmlTabsBroken() {
+        String version = System.getProperty("java.version");
+        for (int i = 14; i < 18; i++) {
+            if (version.startsWith("1.6.0_" + i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private final Pattern removeHtmlTags = HTML_TABS_BROKEN ? Pattern.compile("\\<.*?\\>") : null;
 
     @Override
     public void setTitleAt(int idx, String title) {
