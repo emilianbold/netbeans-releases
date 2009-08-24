@@ -48,8 +48,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
@@ -70,6 +74,7 @@ public class JiraStorageManager {
     private HashMap<String, JiraQueryData> queriesData;
     private static final String QUERY_DELIMITER           = "<=>";      //NOI18N
     private static final String QUERIES_STORAGE_FILE = "queries.data";  //NOI18N
+    private static final String TASKLISTISSUES_STORAGE_FILE = "tasklistissues.data"; //NOI18N
     private static final Level LOG_LEVEL = JiraUtils.isAssertEnabled() ? Level.SEVERE : Level.INFO;
 
     private JiraStorageManager () {
@@ -89,7 +94,7 @@ public class JiraStorageManager {
      * @param query
      */
     void putQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().put(getQueryKey(repository.getDisplayName(), query.getDisplayName()), new JiraQueryData(query));
+        getCachedQueries().put(getQueryKey(repository.getID(), query.getDisplayName()), new JiraQueryData(query));
     }
 
     private JiraQuery createQuery(JiraRepository repository, JiraQueryData data) {
@@ -113,7 +118,7 @@ public class JiraStorageManager {
      * @param queryName
      */
     void removeQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().remove(getQueryKey(repository.getDisplayName(), query.getDisplayName()));
+        getCachedQueries().remove(getQueryKey(repository.getID(), query.getDisplayName()));
     }
 
      /**
@@ -124,7 +129,7 @@ public class JiraStorageManager {
     HashSet<Query> getQueries (JiraRepository repository) {
         HashSet<Query> queries = new HashSet<Query>(10);
         for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
-            if (e.getKey().startsWith(repository.getDisplayName() + QUERY_DELIMITER)) {
+            if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));
             }
         }
@@ -250,6 +255,104 @@ public class JiraStorageManager {
 
     public void shutdown() {
         storeQueries();
+    }
+
+    /**
+     * Saves issue attributes permanently
+     * @param issues
+     */
+    void setTaskListIssues(HashMap<String, List<String>> issues) {
+        Jira.LOG.fine("setTaskListIssues: saving issues");              //NOI18N
+        File f = new File(getNBConfigPath());
+        f.mkdirs();
+        if (!f.canWrite()) {
+            Jira.LOG.warning("setTaskListIssues: Cannot create perm storage"); //NOI18N
+            return;
+        }
+        ObjectOutputStream out = null;
+        File file = new File(f, TASKLISTISSUES_STORAGE_FILE + ".tmp");
+        boolean success = false;
+        try {
+            // saving to a temp file
+            out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+            out.writeInt(issues.size());
+            for (Entry<String, List<String>> entry : issues.entrySet()) {
+                out.writeUTF(entry.getKey());
+                out.writeInt(entry.getValue().size());
+                for (String issueAttributes : entry.getValue()) {
+                    out.writeUTF(issueAttributes);
+                }
+            }
+            success = true;
+        } catch (IOException ex) {
+            Jira.LOG.log(LOG_LEVEL, null, ex);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        if (success) {
+            success = false;
+            // rename the temp file to the permanent one
+            File newFile = new File(f, TASKLISTISSUES_STORAGE_FILE);
+            try {
+                FileUtils.renameFile(file, newFile);
+            } catch (IOException ex) {
+                Jira.LOG.log(LOG_LEVEL, null, ex);
+                success = false;
+            }
+        }
+        if (!success) {
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
+        }
+    }
+
+    /**
+     * Loads issues from a permanent storage
+     * @return
+     */
+    Map<String, List<String>> getTaskListIssues () {
+        Jira.LOG.fine("loadTaskListIssues: loading issues");            //NOI18N
+        File f = new File(getNBConfigPath());
+        ObjectInputStream ois = null;
+        File file = new File(f, TASKLISTISSUES_STORAGE_FILE);
+        if (!file.canRead()) {
+            Jira.LOG.fine("loadTaskListIssues: no saved data");         //NOI18N
+            return Collections.emptyMap();
+        }
+        try {
+            ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+            int size = ois.readInt();
+            Jira.LOG.fine("loadTaskListIssues: loading " + size + " records"); //NOI18N
+            HashMap<String, List<String>> issuesPerRepo = new HashMap<String, List<String>>(size);
+            while (size-- > 0) {
+                String repoUrl = ois.readUTF();
+                Jira.LOG.fine("loadTaskListIssues: loading issues for " + repoUrl); //NOI18N
+                int issueCount = ois.readInt();
+                Jira.LOG.fine("loadTaskListIssues: loading " + issueCount + " issues"); //NOI18N
+                LinkedList<String> issues = new LinkedList<String>();
+                while (issueCount-- > 0) {
+                    issues.add(ois.readUTF());
+                }
+                issuesPerRepo.put(repoUrl, issues);
+            }
+            return issuesPerRepo;
+        } catch (IOException ex) {
+            Jira.LOG.log(LOG_LEVEL, null, ex);
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return Collections.emptyMap();
     }
 
     private static class JiraQueryData implements Serializable {

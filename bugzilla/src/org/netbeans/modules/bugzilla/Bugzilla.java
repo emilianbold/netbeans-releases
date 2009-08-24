@@ -144,14 +144,14 @@ public class Bugzilla {
         }
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
-            BugzillaConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+            BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
         }
     }
 
     public void removeRepository(BugzillaRepository repository) {
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            BugzillaConfig.getInstance().removeRepository(repository.getDisplayName());
+            BugzillaConfig.getInstance().removeRepository(repository.getID());
         }
     }
 

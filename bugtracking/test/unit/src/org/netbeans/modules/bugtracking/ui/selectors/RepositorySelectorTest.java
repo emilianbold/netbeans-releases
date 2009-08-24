@@ -118,6 +118,11 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
+        public String getID() {
+            return "repoid";
+        }
+
+        @Override
         public String getDisplayName() {
             return "My repository";
         }

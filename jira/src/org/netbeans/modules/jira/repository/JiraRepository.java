@@ -79,7 +79,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -111,13 +110,15 @@ public class JiraRepository extends Repository {
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
+    private String id;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public JiraRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+    public JiraRepository(String repoID, String repoName, String url, String user, String password, String httpUser, String httpPassword) {
         this();
+        id = repoID;
         name = repoName;
         if(user == null) {
             user = "";                                                          // NOI18N
@@ -127,6 +128,14 @@ public class JiraRepository extends Repository {
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
         Jira.getInstance().addRepository(this);
+    }
+
+    @Override
+    public String getID() {
+        if(id == null) {
+            id = name + System.currentTimeMillis();
+        }
+        return id;
     }
 
     public Query createQuery() {

@@ -37,29 +37,55 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugtracking.util;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+import java.awt.Component;
+import java.awt.Font;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author tomas
  */
-public interface TestConstants {
-    public static final String TEST_PROJECT = "TestProduct";
-//    public static final String REPO_PASSWD  = "kenai";
-    public static final String REPO_PASSWD  = "dilino";
-    public static final String REPO_HOST     = "192.168.0.102";
-    public static final String REPO_URL     = "http://" + REPO_HOST + "/bugzilla";
-    public static final String REPO_USER    = "dil@dil.com";
-    public static final String REPO_USER_NAME    = "dilino";
-    public static final String REPO_USER2    = "dil2@dil.com";
-    public static final String REPO_USER2_NAME    = "dilino2";
-    public static final String REPO_USER3    = "dil3@dil.com";
-    public static final String REPO_USER4    = "dil4@dil.com";
-
-    public static final String ISSUE_SEVERITY    = "bug";
-    public static final String ISSUE_DESCRIPTION = "big bug";
-
-    static NullProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
+public class RepositoryComboRenderer extends DefaultListCellRenderer {
+    
+    private final String loadingReposText = NbBundle.getMessage(
+                            RepositoryComboSupport.class,
+                            "RepositoryComboSupport.loadingRepositories");   //NOI18N
+    @Override
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        String text;
+        Repository repo = null;
+        if (value == null) {
+            text = null;
+        } else if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
+            text = loadingReposText;
+        } else {
+            repo = (Repository) value;
+            text = repo.getDisplayName();
+        }
+        Component result = super.getListCellRendererComponent(list,
+                                                              text,
+                                                              index,
+                                                              isSelected,
+                                                              cellHasFocus);
+        if (result instanceof JLabel) {
+            JLabel label = (JLabel) result;
+            if ((value == RepositoryComboSupport.LOADING_REPOSITORIES)) {
+                Font font = label.getFont();
+                label.setFont(new Font(font.getName(),
+                                       font.getStyle() | Font.ITALIC,
+                                       font.getSize()));
+            }
+            if (repo != null) {
+                label.setIcon((Icon) repo.getIcon());
+            }
+        }
+        return result;
+    }
 }

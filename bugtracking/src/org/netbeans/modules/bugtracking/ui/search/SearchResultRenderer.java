@@ -53,7 +53,7 @@ import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
  * ListCellRenderer for SearchResults
  * @author Jan Becicka
  */
-class SearchResultRender extends JLabel implements ListCellRenderer {
+class SearchResultRenderer extends JLabel implements ListCellRenderer {
 
     private QuickSearchPopup popup;
     private QuickSearchComboBar combo;
@@ -63,7 +63,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
 
     private JPanel itemPanel;
 
-    public SearchResultRender (QuickSearchComboBar combo, QuickSearchPopup popup) {
+    public SearchResultRenderer (QuickSearchComboBar combo, QuickSearchPopup popup) {
         super();
         this.popup = popup;
         this.combo = combo;

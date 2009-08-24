@@ -37,29 +37,51 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.kenai.ui.project;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.net.URL;
+import javax.swing.JLabel;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  *
- * @author tomas
+ * @author tester
  */
-public interface TestConstants {
-    public static final String TEST_PROJECT = "TestProduct";
-//    public static final String REPO_PASSWD  = "kenai";
-    public static final String REPO_PASSWD  = "dilino";
-    public static final String REPO_HOST     = "192.168.0.102";
-    public static final String REPO_URL     = "http://" + REPO_HOST + "/bugzilla";
-    public static final String REPO_USER    = "dil@dil.com";
-    public static final String REPO_USER_NAME    = "dilino";
-    public static final String REPO_USER2    = "dil2@dil.com";
-    public static final String REPO_USER2_NAME    = "dilino2";
-    public static final String REPO_USER3    = "dil3@dil.com";
-    public static final String REPO_USER4    = "dil4@dil.com";
+class URLClickListener implements MouseListener {
 
-    public static final String ISSUE_SEVERITY    = "bug";
-    public static final String ISSUE_DESCRIPTION = "big bug";
+    private URL url;
 
-    static NullProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
+    private URLClickListener(URL webLocation) {
+        url = webLocation;
+    }
+
+    public static void selfRegister(JLabel target, URL urlLoc) {
+        MouseListener[] mouseListeners = target.getMouseListeners();
+        for (int i = 0; i < mouseListeners.length; i++) {
+            MouseListener mouseListener = mouseListeners[i];
+            if (mouseListener instanceof URLClickListener) {
+                target.removeMouseListener(mouseListener);
+            }
+        }
+        target.addMouseListener(new URLClickListener(urlLoc));
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        URLDisplayer.getDefault().showURL(url);
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
 }

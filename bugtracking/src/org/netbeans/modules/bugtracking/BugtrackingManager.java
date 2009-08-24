@@ -155,7 +155,7 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     public Collection<Issue> getRecentIssues(Repository repo) {
-        Queue<Issue> l = getRecentIssues().get(repo.getDisplayName());
+        Queue<Issue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
@@ -163,10 +163,10 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     public void addRecentIssue(Repository repo, Issue issue) {
-        Queue<Issue> l = getRecentIssues().get(repo.getDisplayName());
+        Queue<Issue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
             l = new LinkedList<Issue>();
-            getRecentIssues().put(repo.getDisplayName(), l);
+            getRecentIssues().put(repo.getID(), l);
         }
         if(l.size() == 5) {
             l.poll();
