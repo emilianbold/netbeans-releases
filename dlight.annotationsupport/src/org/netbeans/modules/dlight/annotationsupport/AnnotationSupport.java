@@ -57,9 +57,6 @@ public final class AnnotationSupport {
     private static AnnotationSupport annotationSupport = null;
     
     public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible"; // NOI18N
-
-    private static final Color COLOR_ANNOTATION = Color.MAGENTA;
-    private static final Color COLOR_HIGHLIGHT = new Color(255, 235, 255);
     
     private AnnotationSupport() {
         pcs = new PropertyChangeSupport(this);
@@ -92,14 +89,6 @@ public final class AnnotationSupport {
             getPreferences().putBoolean(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, val);
             firePropertyChange(PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, oldVal, val);
         }
-    }
-
-    public Color getAnnotationColor() {
-        return COLOR_ANNOTATION;
-    }
-
-    public Color getHighlightColor() {
-        return COLOR_HIGHLIGHT;
     }
 
     /**
