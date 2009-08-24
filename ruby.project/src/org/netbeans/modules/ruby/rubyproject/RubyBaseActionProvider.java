@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -136,7 +137,7 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         return updateHelper;
     }
 
-    protected void saveFile(final FileObject file) {
+    protected static void saveFile(final FileObject file) {
         // Save the file
         try {
             DataObject dobj = DataObject.find(file);
@@ -159,12 +160,51 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         if (!getPlatform().showWarningIfInvalid()) {
             return;
         }
+
+        // bit messy here - we first get a desc preconfigured with project settings,
+        // then modify it again with the args user may have provided in the run file dialog
         RubyExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraConvertors);
+
+        if (fileObject != null) { // null when running/debugging project, don't ask for parameters
+            File file = FileUtil.toFile(fileObject);
+            RunFileActionProvider.RunFileArgs args = RunFileActionProvider.getRunArgs(file);
+            if (args == null) {
+                args = new RunFileActionProvider.RunFileArgs(getPlatform(),
+                        asString(desc.getAdditionalArgs()), asString(desc.getJVMArguments()), true);
+            }
+            if (args != null && args.displayDialog()) {
+                args = RunFileActionProvider.showDialog(args, file, debug, false);
+            }
+            if (args == null) {
+                // cancel pressed
+                return;
+            }
+            if (args.getRunArgs() != null) {
+                desc.additionalArgs(Utilities.parseParameters(args.getRunArgs()));
+            }
+            desc.jvmArguments(args.getJvmArgs());
+        }
+
         RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
         if (rpc.isAbleToCreateProcess()) {
             ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
             service.run();
         }
+    }
+
+
+    private static String asString(String[] array) {
+        if (array == null) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            result.append(array[i]);
+            if (i + 1 < array.length) {
+                result.append(" "); //NOI18N
+            }
+        }
+        return result.toString();
     }
 
     protected String getSourceEncoding() {

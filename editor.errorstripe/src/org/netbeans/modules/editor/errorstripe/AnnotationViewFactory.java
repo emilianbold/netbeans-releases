@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.errorstripe;
 
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.MimeTypeInitializer;
 import org.netbeans.editor.SideBarFactory;
 import org.openide.ErrorManager;
 
@@ -52,7 +53,7 @@ import org.openide.ErrorManager;
  *
  * @author Jan Lahoda
  */
-public class AnnotationViewFactory implements SideBarFactory {
+public class AnnotationViewFactory implements SideBarFactory, MimeTypeInitializer {
 
     /** Creates a new instance of AnnotationViewFactory */
     public AnnotationViewFactory() {
@@ -70,6 +71,10 @@ public class AnnotationViewFactory implements SideBarFactory {
         }
         
         return view;
+    }
+
+    public void init(String mimeType) {
+        AnnotationViewDataImpl.initProviders(mimeType);
     }
     
 }

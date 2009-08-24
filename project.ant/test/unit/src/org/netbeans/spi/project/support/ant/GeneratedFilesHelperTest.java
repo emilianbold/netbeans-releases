@@ -221,7 +221,7 @@ public class GeneratedFilesHelperTest extends NbTestCase {
             assertEquals("now build.xml is there and clean",
                 0, gfh.getBuildScriptState(path, xslt));
             File buildXml= FileUtil.toFile(projdir.getFileObject("build.xml"));
-            StringBuffer sb = new StringBuffer(AntBasedTestUtil.slurpText(h, path));
+            StringBuilder sb = new StringBuilder(AntBasedTestUtil.slurpText(h, path));
             boolean ok = true;
             for (int i=1; i<sb.length(); i++) {
                 if (sb.charAt(i) == '\n') {

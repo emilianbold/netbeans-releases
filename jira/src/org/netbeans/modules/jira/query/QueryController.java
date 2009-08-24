@@ -141,6 +141,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final IssueTable issueTable;
     private JiraQueryCellRenderer renderer;
 
+    private UserSearch reporterUserSearch;
+    private UserSearch assigneeUserSearch;
+    
     private static SimpleDateFormat dateRangeDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
@@ -377,8 +380,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private UserSearch reporterUserSearch;
-    private UserSearch assigneeUserSearch;
     private void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N

@@ -80,7 +80,7 @@ public final class OpenAdvancedAction extends CookieAction {
             return;
         }
 
-        Task task = RequestProcessor.getDefault().create(new Runnable() {
+        Task task = FeatureManager.getInstance().create(new Runnable() {
             public void run() {
                 boolean success = Utilities.featureNotFoundDialog(
                     info,

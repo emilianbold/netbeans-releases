@@ -80,11 +80,17 @@ public class ContainsErrorsWarning extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(jLabel1)
                 .add(18, 18, 18)
                 .add(doNotAskAgain))
         );
+
+        doNotAskAgain.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainsErrorsWarning.class, "ACSN_CB_ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
+        doNotAskAgain.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainsErrorsWarning.class, "ACSD_CB_ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainsErrorsWarning.class, "ACSN_ContainsErrorsWarning")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainsErrorsWarning.class, "ACSD_ContainsErrorsWarning")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     public boolean getAskBeforeRunning() {

@@ -335,7 +335,10 @@ final public class AppClientProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (Profile.JAVA_EE_5.equals(Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM)))) {
+        Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+        if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.6");
+        } else if (Profile.JAVA_EE_5.equals(profile)) {
             minimalSourceLevel = new SpecificationVersion("1.5");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -386,7 +389,6 @@ final public class AppClientProjectProperties {
         RUN_JVM_ARGS_MODEL = projectGroup.createStringDocument( evaluator, RUN_JVM_ARGS );
         RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
 
-        Profile profile = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty(J2EE_SERVER_INSTANCE),
                 profile,

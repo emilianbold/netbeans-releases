@@ -181,7 +181,7 @@ public abstract class JavaSourceAccessor {
         final Collection<Source> sources = getSources(js);
         assert sources.size() == 1;
         final ParserResultTask<?> hanz = tasks.remove(task);
-        assert hanz != null;
+        if (hanz == null) throw new NullPointerException ();
         Utilities.removeParserResultTask(hanz, sources.iterator().next());
     }
     

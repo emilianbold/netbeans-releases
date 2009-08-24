@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     
     <target name="ext" depends="init">
         <mkdir dir="build/antclasses"/>
-        <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">            
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
                 <pathelement location="${ant.jar}"/>

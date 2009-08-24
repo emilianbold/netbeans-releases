@@ -75,6 +75,15 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         this.substitutionHandler = substitutionHandler;
     }
 
+    /** Adds listed keywords to items but filtered by prefix. */
+    public void addKeywords(String prefix, final int substitutionOffset, String... keywords) {
+        for (String keyword : keywords) {
+            if (filter(keyword, prefix)) {
+                items.add(SQLCompletionItem.keyword(keyword, substitutionOffset, substitutionHandler));
+            }
+        }
+    }
+
     public Set<String> addCatalogs(Metadata metadata, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(metadata.getCatalogs(), restrict, prefix, new Handler<Catalog>() {

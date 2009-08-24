@@ -250,7 +250,9 @@ public final class DDProvider {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_1_4.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } else if (Application.VERSION_5.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_5.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
-          } 
+          } else if (Application.VERSION_6.equals(version)) {
+              return new org.netbeans.modules.j2ee.dd.impl.application.model_6.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+          }
           
           return jar;
     }
@@ -268,6 +270,8 @@ public final class DDProvider {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_4.xsd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/javaee/application_5.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_5.xsd"); //NOI18N
+            } else if ("http://java.sun.com/xml/ns/javaee/application_6.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_6.xsd"); //NOI18N
             } else {
                 // use the default behaviour
                 return null;
@@ -365,7 +369,7 @@ public final class DDProvider {
          */
         private void extractVersion () {
             // This is the default version
-            version = Application.VERSION_5;
+            version = Application.VERSION_6;
             
             // first check the doc type to see if there is one
             DocumentType dt = document.getDoctype();
@@ -381,8 +385,10 @@ public final class DDProvider {
                         String versionValue = vNode.getNodeValue();
                         if(Application.VERSION_1_4.equals(versionValue)) {
                             version = Application.VERSION_1_4;
+                        } else if(Application.VERSION_5.equals(versionValue)) {
+                            version = Application.VERSION_5;
                         } else {
-                            version = Application.VERSION_5; //default
+                            version = Application.VERSION_6; //default
                         }
                     }
                 }

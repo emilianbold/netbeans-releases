@@ -583,14 +583,14 @@ public class Utilities {
         }
         return moreRequested;
     }
-    
+
     private static Set<Dependency> processDependencies (final Set<Dependency> original,
             Set<UpdateElement> retval,
             Set<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies) {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : original) {
-            UpdateElement req = handleDependency (dep, availableInfos, brokenDependencies);
+            UpdateElement req = handleDependency (dep, availableInfos, brokenDependencies, true);
             if (req != null) {
                 ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
                 availableInfos.add (reqM.getModuleInfo ());
@@ -604,7 +604,8 @@ public class Utilities {
     
     public static UpdateElement handleDependency (Dependency dep,
             Collection<ModuleInfo> availableInfos,
-            Set<Dependency> brokenDependencies) {
+            Set<Dependency> brokenDependencies,
+            boolean aggressive) {
         UpdateElement requested = null;
         
         switch (dep.getType ()) {
@@ -620,6 +621,10 @@ public class Utilities {
                 break;
             case Dependency.TYPE_MODULE :
                 UpdateUnit u = DependencyAggregator.getRequested (dep);
+                
+
+                //////////////////////////////////
+                /*
                 boolean matched = false;
                 if (u == null) {
                     // last chance
@@ -672,6 +677,50 @@ public class Utilities {
                         }
                     }
                 }
+                */
+                //////////////////////////////////
+                
+                boolean updateMatched = false;
+                boolean installMatched = false;
+                boolean availableMatched = false;
+                if (u != null) {
+                    // follow aggressive updates strategy
+                    // if new module update is available, promote it even though installed one suites all the dependendencies
+                    UpdateElement reqEl = u.getAvailableUpdates().isEmpty() ? null : u.getAvailableUpdates().get(0);
+                    if (reqEl != null) {
+                        UpdateElementImpl reqElImpl = Trampoline.API.impl(reqEl);
+                        ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
+                        ModuleInfo info = reqModuleImpl.getModuleInfo();
+                        if (DependencyChecker.checkDependencyModule(dep, info)) {
+                            if (!availableInfos.contains(info)) {
+                                requested = reqEl;
+                                updateMatched = true;
+                            }
+                        }
+                    }
+
+                    if (u.getInstalled() != null) {
+                            UpdateElementImpl reqElImpl = Trampoline.API.impl(u.getInstalled());
+                            installMatched = DependencyChecker.checkDependencyModule(dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo());
+                    }                    
+                }
+
+                for (ModuleInfo m : availableInfos) {
+                    if (DependencyChecker.checkDependencyModule(dep, m)) {
+                        availableMatched = true;
+                        break;
+                    }
+                }
+                if(updateMatched && installMatched && !aggressive) {
+                    requested = null;
+                }
+                
+                if (!installMatched && !availableMatched && !updateMatched) {
+                    brokenDependencies.add(dep);
+                }
+                
+
+                //////////////////////////////////
                 break;
             case Dependency.TYPE_REQUIRES :
             case Dependency.TYPE_NEEDS :

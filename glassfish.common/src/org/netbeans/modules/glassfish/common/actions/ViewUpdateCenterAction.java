@@ -54,6 +54,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -176,7 +177,7 @@ public class ViewUpdateCenterAction extends NodeAction {
     }
 
     private boolean installUpdateCenter(String serverName, String serverUrl, File installRoot, File launcher) {
-        if(!installRoot.canWrite()) {
+        if(!Utils.canWrite(installRoot)) {
             String message = NbBundle.getMessage(ViewUpdateCenterAction.class,
                     "MSG_UpdateCenterNoPermission", serverName, installRoot);
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,

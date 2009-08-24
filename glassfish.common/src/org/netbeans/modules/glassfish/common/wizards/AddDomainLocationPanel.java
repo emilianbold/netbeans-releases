@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 
 public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeListener {
@@ -164,7 +165,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         String domainField = panel.getDomainField().trim();
         File domainDirCandidate = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
         if (domainField.length() < 1) {
-            if (!domainDirCandidate.canWrite()) {
+            if (!Utils.canWrite(domainDirCandidate)) {
                 // the user needs to enter the name of a directory for
                 // a personal domain
                 wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_EnterDomainDirectory")); // NOI18N
@@ -189,7 +190,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             return true;
         }
         File domainsDir = domainDirCandidate.getParentFile();
-        if (domainsDir.canWrite() && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
+        if (Utils.canWrite(domainsDir) && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N

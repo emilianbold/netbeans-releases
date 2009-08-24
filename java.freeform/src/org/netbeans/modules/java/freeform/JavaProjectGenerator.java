@@ -816,7 +816,7 @@ public class JavaProjectGenerator {
                 for (String output : cu.output) {
                     File f = Util.resolveFile(evaluator, freeformBase, output);
                     try {
-                        if (f.exists() && !FileUtil.isArchiveFile(f.toURL())) {
+                        if (f.exists() && !FileUtil.isArchiveFile(f.toURI().toURL())) {
                             continue;
                         }
                     } catch (MalformedURLException murle) {

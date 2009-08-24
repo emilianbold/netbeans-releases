@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -50,68 +51,67 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
 
-
 /**
  * @author Alexey Vladykin
  */
-final class StackDataProviderImpl implements StackDataProvider {
+final class StackDataProviderImpl implements StackDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 
-  private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
-          FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
+    private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
+            FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
+    private StackDataStorage storage;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
-  private StackDataStorage storage;
-  private ServiceInfoDataStorage serviceInfoDataStorage;
-
-
-  public void attachTo(DataStorage storage) {
-    this.storage = (StackDataStorage) storage;
-    attachTo((ServiceInfoDataStorage)storage);
-  }
-  
-
-  public List<FunctionMetric> getMetricsList() {
-    return metricsList;
-  }
-
-  public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
-    return storage.getCallers(path, aggregate);
-  }
-
-  public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
-    return storage.getCallees(path, aggregate);
-  }
-
-  public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
-    return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
-  }
-
-  public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
-    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
-  }
-
-  public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
-  }
-
-  public FunctionCallTreeTableNode getValueAt(int row) {
-    //throw new UnsupportedOperationException("Not supported yet.");
-    return null;
-  }
-
-  public String getTableValueAt(Column column, int row) {
-    return null;
-  }
+    public void attachTo(DataStorage storage) {
+        this.storage = (StackDataStorage) storage;
+    }
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         this.serviceInfoDataStorage = serviceInfoDataStorage;
-     //   throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
+    public List<FunctionMetric> getMetricsList() {
+        return metricsList;
+    }
+
+    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
+        return storage.getCallers(path, aggregate);
+    }
+
+    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
+        return storage.getCallees(path, aggregate);
+    }
+
+    public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
+        return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
+    }
+
+    public List<FunctionCall> getCallStack(int stackId) {
+        return storage.getCallStack(stackId);
+    }
+
+    public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
+    }
+
+    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
+    }
+
+    public FunctionCallTreeTableNode getValueAt(int row) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return null;
+    }
+
+    public String getTableValueAt(Column column, int row) {
+        return null;
+    }
+
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);

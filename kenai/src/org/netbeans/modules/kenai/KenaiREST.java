@@ -127,12 +127,15 @@ public class KenaiREST extends KenaiImpl {
     @Override
     public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
         try {
-            ProjectsListData pld = loadPage(baseURL.toString() + 
-                    (pattern.length()==0 ?
-                        "/api/projects.json?full=true":
-                        ("/api/projects.json?full=true&q=" + URLEncoder.encode(pattern, "UTF-8"))
-                     ),
-                     ProjectsListData.class);
+            String m = "/api/projects.json?full=true";
+            if (pattern.length()>0) {
+                if (pattern.startsWith("&")) {
+                    m+=pattern;
+                } else {
+                    m+="&q=" + URLEncoder.encode(pattern, "UTF-8");
+                }
+            }
+            ProjectsListData pld = loadPage(baseURL.toString() + m, ProjectsListData.class);
             return new LazyList(pld, ProjectsListData.class);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);

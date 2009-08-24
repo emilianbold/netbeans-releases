@@ -114,4 +114,9 @@ public interface HostInfo {
     public String getTempDir();
 
     public File getTempDirFile();
+
+    /**
+     * @return time difference in milliseconds between remote and localhost
+     */
+    public long getClockSkew();
 }

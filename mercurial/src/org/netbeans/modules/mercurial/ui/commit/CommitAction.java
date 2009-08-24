@@ -244,7 +244,6 @@ public class CommitAction extends ContextAction {
                         return;
                     }
 
-                    HgFileNode[] nodes;
                     ArrayList<HgFileNode> nodesList = new ArrayList<HgFileNode>(fileList.size());
 
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
@@ -252,8 +251,12 @@ public class CommitAction extends ContextAction {
                         HgFileNode node = new HgFileNode(file);
                         nodesList.add(node);
                     }
-                    nodes = nodesList.toArray(new HgFileNode[fileList.size()]);
-                    table.setNodes(nodes);
+                    final HgFileNode[] nodes = nodesList.toArray(new HgFileNode[fileList.size()]);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            table.setNodes(nodes);
+                        }
+                    });
                 } finally {
                     panel.progressPanel.setVisible(false);
                 }
@@ -281,6 +284,7 @@ public class CommitAction extends ContextAction {
      * @param commit
      */
     private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
+        assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<HgFileNode, CommitOptions> files = table.getCommitFiles();
         Set<String> stickyTags = new HashSet<String>();

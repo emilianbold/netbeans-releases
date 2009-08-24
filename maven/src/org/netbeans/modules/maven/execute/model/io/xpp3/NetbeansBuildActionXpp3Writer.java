@@ -9,9 +9,7 @@ package org.netbeans.modules.maven.execute.model.io.xpp3;
 //---------------------------------/
 
 import java.io.Writer;
-import java.text.DateFormat;
 import java.util.Iterator;
-import java.util.Locale;
 import org.codehaus.plexus.util.xml.pull.MXSerializer;
 import org.codehaus.plexus.util.xml.pull.XmlSerializer;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
@@ -114,6 +112,10 @@ public class NetbeansBuildActionXpp3Writer {
             if ( netbeansActionMapping.getBasedir() != null )
             {
                 serializer.startTag( NAMESPACE, "basedir" ).text( netbeansActionMapping.getBasedir() ).endTag( NAMESPACE, "basedir" );
+            }
+            if ( netbeansActionMapping.getReactor() != null )
+            {
+                serializer.startTag( NAMESPACE, "reactor" ).text( netbeansActionMapping.getReactor() ).endTag( NAMESPACE, "reactor" );
             }
             if ( netbeansActionMapping.getPreAction() != null )
             {

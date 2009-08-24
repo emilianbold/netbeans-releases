@@ -39,10 +39,115 @@
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Jiri Skrivanek
  */
-public abstract class SQLStatement {
-    public abstract SQLStatementKind getKind ();
+public class SQLStatement {
+
+    SQLStatementKind kind;
+    int startOffset, endOffset;
+    SortedMap<Integer, Context> offset2Context;
+    TablesClause tablesClause;
+    private List<SelectStatement> subqueries;
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context) {
+        this(startOffset, endOffset, offset2Context, null, null);
+    }
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause) {
+        this(startOffset, endOffset, offset2Context, tablesClause, null);
+    }
+
+    SQLStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, TablesClause tablesClause, List<SelectStatement> subqueries) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.offset2Context = offset2Context;
+        this.tablesClause = tablesClause;
+        this.subqueries = subqueries;
+    }
+
+    public SQLStatementKind getKind() {
+        return kind;
+    }
+
+    /** Returns context at given offset. If offset falls into subquery, it
+     * tries to find context in this subquery and returns it if not null.
+     * @param offset offset within statement
+     * @return context at given offset
+     */
+    public Context getContextAtOffset(int offset) {
+        if (offset < startOffset || offset > endOffset) {
+            return null;
+        }
+        Context result = null;
+        // scan subqueries
+        if (subqueries != null) {
+            for (SQLStatement subquery : subqueries) {
+                result = subquery.getContextAtOffset(offset);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        // scan this statement
+        for (Entry<Integer, Context> entry : offset2Context.entrySet()) {
+            if (offset >= entry.getKey()) {
+                result = entry.getValue();
+            } else {
+                return result;
+            }
+        }
+        return result;
+    }
+
+    public List<SelectStatement> getSubqueries() {
+        return subqueries;
+    }
+
+    TablesClause getTablesClause() {
+        return tablesClause;
+    }
+
+    public enum Context {
+
+        START(0),
+        // DELETE
+        DELETE(200),
+        // DROP TABLE
+        DROP(300),
+        DROP_TABLE(310),
+        // INSERT
+        INSERT(400),
+        INSERT_INTO(410),
+        COLUMNS(420),
+        VALUES(430),
+        // SELECT
+        SELECT(500),
+        FROM(510),
+        JOIN_CONDITION(520),
+        WHERE(530),
+        GROUP(540),
+        GROUP_BY(550),
+        HAVING(560),
+        ORDER(570),
+        ORDER_BY(580),
+        // UPDATE
+        UPDATE(600),
+        SET(610);
+
+        private final int order;
+
+        private Context(int order) {
+            this.order = order;
+        }
+
+        public boolean isAfter(Context context) {
+            return this.order >= context.order;
+        }
+    }
 }

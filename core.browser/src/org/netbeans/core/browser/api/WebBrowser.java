@@ -51,13 +51,6 @@ import org.w3c.dom.Document;
  */
 public abstract class WebBrowser {
     
-    /**
-     * Package private c'tor - third party implementation are not allowed.
-     */
-    WebBrowser() {
-    }
-
-
     /** The name of property representing status of html browser. */
     public static final String PROP_STATUS_MESSAGE = "statusMessage"; // NOI18N
 

@@ -71,8 +71,6 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -81,7 +79,6 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
-import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -180,6 +177,7 @@ public class Annotator {
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
+        cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
     }
 
     private void initDefaultColor(String name) {
@@ -230,12 +228,12 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
-                String sticky = SvnUtils.getCopy(file);
-                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
                     textAnnotation = "";  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
-                } else if (sticky == null) {
+                } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) {
                         textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
@@ -301,23 +299,11 @@ public class Annotator {
             statusString = info.getShortStatusText();
         }
 
-        String revisionString = "";     // NOI18N
-        String binaryString = "";       // NOI18N
-
-
-        ISVNStatus snvStatus = info.getEntry(file);
-        if (snvStatus != null) {
-            SVNRevision rev = snvStatus.getRevision();
-            revisionString = rev != null ? rev.toString() : "";
-            if(mimeTypeFlag) {
-                binaryString = getMimeType(file);
-            }
-        }
-
-        String stickyString = SvnUtils.getCopy(file);
-        if (stickyString == null) {
-            stickyString = ""; // NOI18N
-        }
+        FileStatusCache.FileLabelCache.FileLabelInfo labelInfo;
+        labelInfo = cache.getLabelsCache().getLabelInfo(file, mimeTypeFlag);
+        String revisionString = labelInfo.getRevisionString();
+        String binaryString = labelInfo.getBinaryString();
+        String stickyString = labelInfo.getStickyString();
 
         Object[] arguments = new Object[] {
             revisionString,
@@ -334,21 +320,6 @@ public class Annotator {
         }
     }
 
-    private String getMimeType(File file) {
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            ISVNProperty prop = client.propertyGet(file, ISVNProperty.MIME_TYPE);
-            if(prop != null) {
-                String mime = prop.getValue();
-                return mime != null ? mime : "";
-            }
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
-            return "";
-        }
-        return "";
-    }
-
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
         name = htmlEncode(name);
         int status = info.getStatus();
@@ -359,20 +330,12 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
-                String sticky;
-                ISVNStatus lstatus = info.getEntry(file);
-                if (lstatus != null && lstatus.getUrl() != null) {
-                    sticky = SvnUtils.getCopy(lstatus.getUrl());
-                } else {
-                    // slower
-                    sticky = SvnUtils.getCopy(file);
-                }
-
-                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
                     textAnnotation = ""; // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
-                } else  if (sticky == null) {
+                } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) { // NOI18N
                         textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N

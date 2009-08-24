@@ -342,7 +342,7 @@ public abstract class TreeView extends JScrollPane {
      * @return <code>true</code> if so
      */
     public boolean isPopupAllowed() {
-        return popupListener != null && isShowing();
+        return popupListener != null && isShowing() && isDisplayable();
     }
 
     /** Enable/disable displaying popup menus on tree view items.
@@ -1581,6 +1581,7 @@ public abstract class TreeView extends JScrollPane {
         return res;
     }
 
+    TreePath[] origSelectionPaths = null;
     private JPanel searchpanel = null;
     // searchTextField manages focus because it handles VK_TAB key
     private JTextField searchTextField = new JTextField() {
@@ -1686,8 +1687,13 @@ public abstract class TreeView extends JScrollPane {
         if( null == searchpanel )
             return;
 
+        if (tree.getSelectionPaths() == null && origSelectionPaths != null) {
+            tree.setSelectionPaths(origSelectionPaths);
+        }
+
         remove(searchpanel);
         searchpanel = null;
+        origSelectionPaths = null;
         getViewport().setScrollMode(originalScrollMode);
         invalidate();
         revalidate();
@@ -1909,6 +1915,7 @@ public abstract class TreeView extends JScrollPane {
 			      (keyCode == KeyEvent.VK_ESCAPE)) return;
 
                         final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
+                        origSelectionPaths = getSelectionPaths();
                         searchTextField.setText(String.valueOf(stroke.getKeyChar()));
 
                         displaySearchField();
@@ -1930,10 +1937,7 @@ public abstract class TreeView extends JScrollPane {
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
 
-            // do search forward the selected index
-            int[] rows = getSelectionRows();
-            int startIndex = ((rows == null) || (rows.length == 0)) ? 0 : rows[0];
-
+            int startIndex = origSelectionPaths != null ? getRowForPath(origSelectionPaths[0]) : 0;
             int size = getRowCount();
 
             if (size == 0) {
@@ -2145,14 +2149,14 @@ public abstract class TreeView extends JScrollPane {
                 if (keyCode == KeyEvent.VK_ESCAPE) {
                     removeSearchField();
                     ExplorerTree.this.requestFocus();
-                } else if (keyCode == KeyEvent.VK_UP) {
+                } else if (keyCode == KeyEvent.VK_UP || (keyCode == KeyEvent.VK_F3 && e.isShiftDown())) {
                     currentSelectionIndex--;
                     displaySearchResult();
 
                     // Stop processing the event here. Otherwise it's dispatched
                     // to the tree too (which scrolls)
                     e.consume();
-                } else if (keyCode == KeyEvent.VK_DOWN) {
+                } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_F3) {
                     currentSelectionIndex++;
                     displaySearchResult();
 
@@ -2198,8 +2202,8 @@ public abstract class TreeView extends JScrollPane {
 
                 if (text.length() > 0) {
                     results = doSearch(text);
-                    displaySearchResult();
                 }
+                displaySearchResult();
             }
 
             private void displaySearchResult() {
@@ -2216,7 +2220,12 @@ public abstract class TreeView extends JScrollPane {
                     setSelectionPath(path);
                     scrollPathToVisible(path);
                 } else {
-                    clearSelection();
+                    if (searchTextField.getText().length() == 0 && origSelectionPaths != null) {
+                        setSelectionPaths(origSelectionPaths);
+                        scrollPathToVisible(origSelectionPaths[0]);
+                    } else {
+                        clearSelection();
+                    }
                 }
             }
 

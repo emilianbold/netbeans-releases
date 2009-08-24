@@ -84,7 +84,7 @@ public class JSFUtils {
     public static final String MYFACES_SPECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
 
     //constants for web.xml
-    protected static final String FACELETS_SKIPCOMMNETS = "facelets.SKIP_COMMENTS";
+    protected static final String FACELETS_SKIPCOMMNETS = "javax.faces.FACELETS_SKIP_COMMENTS";
     protected static final String FACELETS_DEVELOPMENT = "facelets.DEVELOPMENT";
     protected static final String FACELETS_DEFAULT_SUFFIX = "javax.faces.DEFAULT_SUFFIX";
     
@@ -154,9 +154,10 @@ public class JSFUtils {
             // obtain URLs of the jar file
             List <URL> urls = new ArrayList <URL> ();
             for (int i = 0; i < jars.length; i++) {
-                URL url = jars[i].toURL();
-                url = FileUtil.getArchiveRoot(url);
-                urls.add(url);
+                URL url = FileUtil.urlForArchiveOrDir(jars[i]);
+                if (url != null) {
+                    urls.add(url);
+                }
             }
 
             // create new library and regist in the Library Manager. 

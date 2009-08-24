@@ -59,6 +59,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
@@ -117,6 +118,8 @@ public class ProjectNode extends TreeListNode {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
         if( null != MessagingAccessor.getDefault() )
             children.add( new MessagingNode(this, project) );
+        if( null != MemberAccessor.getDefault() )
+            children.add( new MemberListNode(this) );
         BuildAccessor builds = BuildAccessor.getDefault();
         if (builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));

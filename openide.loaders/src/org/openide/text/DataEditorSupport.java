@@ -45,6 +45,7 @@ package org.openide.text;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
+import java.io.CharConversionException;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,6 +98,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.xml.XMLUtil;
 
 /**
  * Support for associating an editor and a Swing {@link Document} to a data object.
@@ -207,6 +209,26 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
 
         String name = obj.getNodeDelegate().getHtmlDisplayName();
+
+        if (Boolean.getBoolean("nb.tabnames.html")) {
+            if (name == null) {
+                try {
+                    name = XMLUtil.toElementContent(obj.getNodeDelegate().getDisplayName());
+                } catch (CharConversionException ex) {
+                    return null;
+                }
+            } else if (name.startsWith("<html>")) {
+                name = name.substring(6);
+            }
+            if (isModified()) {
+                name = "<b>" + name + "</b>";
+            }
+            if (!obj.getPrimaryFile().canWrite()) {
+                name = "<i>" + name + "</i>";
+            }
+            return "<html>" + name;
+        }
+        
         if (name != null) {
             if (!name.startsWith("<html>")) {
                 name = "<html>" + name;
@@ -257,7 +279,16 @@ public class DataEditorSupport extends CloneableEditorSupport {
     @Override
     protected String messageToolTip () {
         // update tooltip
-        return FileUtil.getFileDisplayName(obj.getPrimaryFile());
+        String tip = FileUtil.getFileDisplayName(obj.getPrimaryFile());
+        if (Boolean.getBoolean("nb.tabnames.html")) {
+            if (isModified()) {
+                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_modified");;
+            }
+            if (!obj.getPrimaryFile().canWrite()) {
+                tip += NbBundle.getMessage(DataObject.class, "TIP_editor_ro");;
+            }
+        }
+        return tip;
     }
     
     /** Computes display name for a line based on the 

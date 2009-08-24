@@ -131,15 +131,15 @@ final class GenerateJavadocFix implements Fix {
             Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
 
+        if (docs[0] == null) {
+            // nothing to do
+            return null;
+        }
+
         // XXX #90302; follows workaround until the generator starts to do its job
         final Indent indent = Indent.get(docs[0]);
         final Reformat reformat = Reformat.get(docs[0]);
         try {
-            if (docs[0] == null) {
-                // nothing to do; TreeMaker did his job likely.
-                return null;
-            }
-
             indent.lock();
             reformat.lock();
             NbDocument.runAtomicAsUser((StyledDocument) docs[0], new Runnable() {

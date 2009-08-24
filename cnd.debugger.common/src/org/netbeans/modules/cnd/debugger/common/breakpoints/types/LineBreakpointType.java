@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.debugger.common.breakpoints.types;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.LineBreakpointPanel;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.openide.util.NbBundle;
 

@@ -57,7 +57,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 
 public final class RootObj<T extends FileObject> extends FileObject {
@@ -141,7 +140,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
             files[i] = FileUtil.normalizeFile(file);
         }
         Map<FileObjectFactory, List<File>> files2Factory = new HashMap<FileObjectFactory, List<File>>();
-        Map<File, ? extends FileObjectFactory> roots2Factory = FileBasedFileSystem.getInstance().factories();
+        Map<File, ? extends FileObjectFactory> roots2Factory = FileBasedFileSystem.factories();
         Arrays.sort(files);
         for (File file : files) {
             FileObjectFactory factory =  roots2Factory.get(file);
@@ -182,7 +181,9 @@ public final class RootObj<T extends FileObject> extends FileObject {
                     }
                 }
             } else if (lf.size() > 1) {
-                factory.refreshFor(lf.toArray(new File[lf.size()]));
+                final File[] arr = lf.toArray(new File[lf.size()]);
+                Arrays.sort(arr);
+                factory.refreshFor(arr);
             }
         }
     }

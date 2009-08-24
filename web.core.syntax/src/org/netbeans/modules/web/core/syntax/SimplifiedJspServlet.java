@@ -417,6 +417,13 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
         List<Embedding> content = new LinkedList<Embedding>();
 
+        // debug code to find the root cause of #169924
+        assert !implicitImports.contains(null) : "implicitImports contains null";
+        assert !localImports.contains(null) : "localImports contains null";
+        assert !declarations.contains(null) : "declarations contains null";
+        assert !beanDeclarations.contains(null) : "beanDeclarations contains null";
+        assert !scriptlets.contains(null) : "scriptlets contains null";
+        
         content.addAll(implicitImports);
         content.addAll(localImports);
         content.add(header);

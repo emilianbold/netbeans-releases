@@ -224,7 +224,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         // clean up - delete editable source
         new DeleteAction().performAPI(editableSourceNode);
         // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
         new NbDialogOperator(safeDeleteTitle).ok();
     }
     /*

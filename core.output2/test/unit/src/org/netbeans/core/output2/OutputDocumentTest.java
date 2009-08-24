@@ -305,7 +305,7 @@ public class OutputDocumentTest extends NbTestCase {
         ow.println (third);
         ow.flush();
         
-        int expectedLength = first.length() + second.length() + third.length() + (3 * OutWriter.lineSeparator.length()) ;
+        int expectedLength = first.length() + second.length() + third.length() + (3 * OutWriter.LINE_SEPARATOR.length()) ;
         int receivedLength = doc.getLength();
         
         assertTrue ("Number of characters counting carriage returns should be " 
@@ -387,7 +387,7 @@ public class OutputDocumentTest extends NbTestCase {
             ble.printStackTrace();
             fail ("Unexpected BadLocationException: " + ble.getMessage());
         }
-        expected = first + OutWriter.lineSeparator + second + OutWriter.lineSeparator;
+        expected = first + OutWriter.LINE_SEPARATOR + second + OutWriter.LINE_SEPARATOR;
         
         assertEquals ("getText for first two strings should be \"" + expected + "\" but was \"" + received + "\"", expected, received);
     }
@@ -449,8 +449,8 @@ public class OutputDocumentTest extends NbTestCase {
         Element el = doc.getElement(0);
         assertTrue (el.getStartOffset() == 0);
         assertTrue ("End offset should be length of string + separator length (" 
-            + (first.length() + OutWriter.lineSeparator.length()) + " but was " + el.getEndOffset(), 
-            el.getEndOffset() == first.length() + OutWriter.lineSeparator.length());
+            + (first.length() + OutWriter.LINE_SEPARATOR.length()) + " but was " + el.getEndOffset(),
+            el.getEndOffset() == first.length() + OutWriter.LINE_SEPARATOR.length());
         
         el = doc.getElement(1);
     }
@@ -567,13 +567,13 @@ public class OutputDocumentTest extends NbTestCase {
         
         String s = "This is a string I will append";
         
-        styled.insertString(styled.getLength(), s + OutWriter.lineSeparator, SimpleAttributeSet.EMPTY);
+        styled.insertString(styled.getLength(), s + OutWriter.LINE_SEPARATOR, SimpleAttributeSet.EMPTY);
         ow.println (s);
         ow.flush();
         docListener.assertChanged();
         styListener.assertChanged();
         
-        styled.insertString(styled.getLength(), s + OutWriter.lineSeparator, SimpleAttributeSet.EMPTY);
+        styled.insertString(styled.getLength(), s + OutWriter.LINE_SEPARATOR, SimpleAttributeSet.EMPTY);
         ow.println (s);
         ow.flush();
         
@@ -603,7 +603,7 @@ public class OutputDocumentTest extends NbTestCase {
         //Stress test it to ensure no off-by-ones that show up only when the file is large
         for (int i = 0; i < 10; i++) {
             for (int j=0; j < STRINGS.length; j++) {
-                styled.insertString(styled.getLength(), s + OutWriter.lineSeparator, SimpleAttributeSet.EMPTY);
+                styled.insertString(styled.getLength(), s + OutWriter.LINE_SEPARATOR, SimpleAttributeSet.EMPTY);
                 ow.println (s);
                 ow.flush();
 

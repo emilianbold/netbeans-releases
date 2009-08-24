@@ -469,7 +469,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         Element e = pathFromRoot.get(current);
         if (base.referencesSameNode(e)) {
             if (pathFromRoot.size() == current + 1) {
-                base.getChildren(); // make sure children inited
+                base.checkChildrenPopulated(); // make sure children inited
                 return base;
             } else {
                 for (Object child : base.getChildren()) {

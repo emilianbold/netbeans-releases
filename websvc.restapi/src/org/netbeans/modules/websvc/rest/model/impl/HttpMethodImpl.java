@@ -55,6 +55,7 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
     private String type;
     private String consumeMime;
     private String produceMime;
+    private String path;
     
     public HttpMethodImpl(ExecutableElement methodElement) {
         super(methodElement);   
@@ -62,6 +63,7 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
         this.type = Utils.getHttpMethod(methodElement);
         this.consumeMime = Utils.getConsumeMime(methodElement);
         this.produceMime = Utils.getProduceMime(methodElement);
+        this.path = Utils.hasUriTemplate(methodElement) ? Utils.getUriTemplate(methodElement) : ""; //NOI18N
     }
 
     public String getType() {
@@ -74,6 +76,10 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
     
     public String getProduceMime() {
         return produceMime;
+    }
+    
+    public String getPath() {
+        return path;
     }
     
     public Status refresh(Element element) {    

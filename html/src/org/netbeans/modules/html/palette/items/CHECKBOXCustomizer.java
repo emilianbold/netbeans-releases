@@ -93,6 +93,8 @@ public class CHECKBOXCustomizer extends javax.swing.JPanel {
                 );
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CHECKBOXCustomizer.class, "ACSN_CHECKBOX_Dialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CHECKBOXCustomizer.class, "ACSD_CHECKBOX_Dialog"));
         dialog.setVisible(true);
         repaint();
         

@@ -74,25 +74,12 @@ public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
     // anyway, but the infrastructure to generate the JAR files is useful
     //
     
-    public void testLoaderSkew() throws Exception {
-    }
-
-    public void testStability() throws Exception {
-    }
-
-    public void testMaskingOfResources() throws Exception {
-    }
-
-    public void testOrdering() throws Exception {
-    }
-
-    public void testNoCallToGetResourceForObjectIssue65124() throws Exception {
-    }
-
-    public void testListenersAreNotifiedWithoutHoldingALockIssue36035() throws Exception {
-    }
-    
-    public void testWrongOrderAsInIssue100320() throws Exception {
-    }    
+    public @Override void testLoaderSkew() {}
+    public @Override void testStability() throws Exception {}
+    public @Override void testMaskingOfResources() throws Exception {}
+    public @Override void testOrdering() throws Exception {}
+    public @Override void testNoCallToGetResourceForObjectIssue65124() throws Exception {}
+    public @Override void testSuperTypes() throws Exception {}
+    public @Override void testWrongOrderAsInIssue100320() throws Exception {}
     
 }

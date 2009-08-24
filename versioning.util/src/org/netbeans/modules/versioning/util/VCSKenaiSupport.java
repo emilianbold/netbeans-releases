@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.PasswordAuthentication;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 
 /**
  *
@@ -79,9 +83,39 @@ public abstract class VCSKenaiSupport {
     public abstract boolean showLogin();
 
     /**
+     * Creates a firm association between the roots and a kenai issuetracking repository
+     * which has the given vcs url
+     *
+     * @param roots roots to be associated with a kenai repository
+     * @param url vcs url to match a kenai repository
+     */
+    public abstract void setFirmAssociations(File[] roots, String url);
+
+    /**
      * Returns true if user is logged into kenai
      * @return true if user is logged into kenai
      */
     public abstract boolean isLogged ();
+    
+    public abstract KenaiUser forName(final String user);
+
+    public abstract boolean isUserOnline(String user);
+
+    public abstract class KenaiUser {
+
+        public abstract boolean isOnline();
+
+        public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+
+        public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+        public abstract Icon getIcon();
+
+        public abstract JLabel createUserWidget();
+
+        public abstract String getUser();
+
+        public abstract void startChat();
+    }
     
 }

@@ -1,4 +1,5 @@
 package org.netbeans.modules.web.jsf.editor;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

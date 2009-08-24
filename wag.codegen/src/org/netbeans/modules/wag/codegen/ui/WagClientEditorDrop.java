@@ -85,7 +85,7 @@ public class WagClientEditorDrop implements ActiveEditorDrop {
         final Document targetDoc = targetComponent.getDocument();
         final FileObject targetSource = NbEditorUtilities.getFileObject(targetDoc);
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
-        final String displayName = service.getName();
+        final String displayName = service.getDisplayName();
         
         targetFO = getTargetFile(targetDoc);
 

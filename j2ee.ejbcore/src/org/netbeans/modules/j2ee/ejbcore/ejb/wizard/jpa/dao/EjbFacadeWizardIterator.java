@@ -307,7 +307,13 @@ import org.openide.util.NbBundle;
         findSubOptions.setParameterName("range");//NOI18N
         findSubOptions.setParameterType("int[]");//NOI18N
 
-        return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions);
+        GenerationOptions countOptions = new GenerationOptions();
+        countOptions.setMethodName("count");//NOI18N
+        countOptions.setOperation(GenerationOptions.Operation.COUNT);
+        countOptions.setReturnType("int");//NOI18N
+        countOptions.setQueryAttribute(getEntityName(entityFQN));
+
+        return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions, countOptions);
     }
 
     /**

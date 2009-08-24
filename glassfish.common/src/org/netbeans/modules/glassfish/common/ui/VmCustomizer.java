@@ -302,7 +302,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         if (useUserDefinedAddress.isSelected()) {
             // enable the edit field and fill it in
             addressValue.setEnabled(true);
-            int debugPort = 8787;
+            int debugPort = 9009;
             try {
                     ServerSocket t = new ServerSocket(0);
                     debugPort = t.getLocalPort();

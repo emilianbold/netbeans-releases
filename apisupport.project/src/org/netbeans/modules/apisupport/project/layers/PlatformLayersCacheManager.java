@@ -55,6 +55,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,6 +76,7 @@ import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -131,6 +133,7 @@ class PlatformLayersCacheManager {
     }
 
     static class PLFSCache {
+        // jar --> cache entry map
         private Map<File, PLFSCacheEntry> allEntries = new HashMap<File, PLFSCacheEntry>();
         private boolean modified;
 
@@ -155,11 +158,15 @@ class PlatformLayersCacheManager {
         }
     }
 
+    // <cluster root folder> --> <already loaded layer cache> mapping
     private static Map<File, PLFSCache> loadedCaches = new HashMap<File, PLFSCache>();
     // XXX maybe some runtime cleanup of long unused caches from memory? WeakHashMap is too agile, nothing is usually left even for saving.
     // maybe just keep strong collection until caches are saved.
+
+    // Location of cache dir in userdir; may be null when run as WebStart
     private static File cacheLocation;
-    private static Map<File, Integer> cacheIndex;   // cluster dir --> cache file index ("cache<index>.ser")
+    // cluster dir --> cache file index ("cache<index>.ser") mapping
+    private static Map<File, Integer> cacheIndex;  
     private static boolean anyModified;
     private static final String CACHE_FILE_FMT = "cache%04d.ser";
     private static Logger LOGGER = Logger.getLogger(PlatformLayersCacheManager.class.getName());
@@ -225,7 +232,7 @@ class PlatformLayersCacheManager {
      * Note that this call may block for some time if the cache is invalid,
      * in such case it gets rebuilt here.
      * Returned collection is ordered to handle masked ("_hidden") files correctly.
-     * @param clusters List of absolute paths to cluster files
+     * @param clusters List of absolute paths to cluster root folders
      * @param filter Filter for jars in clusters
      * @return Collection of cache entries, may be empty
      * (should only when something goes terribly wrong), but not null.
@@ -283,6 +290,23 @@ class PlatformLayersCacheManager {
             handle.finish();
         }
         return entries;
+    }
+
+    /**
+     * Searches for given file system in <b>already loaded</b> cached layer FS-s and
+     * if it is found, returns its JAR file.
+     * @param fs One layer filesystem
+     * @return Originating JAR file for give file system or <tt>null</tt> if given FS is not cached layer FS or the cache is not yet loaded
+     */
+    static File findOriginatingJar(FileSystem fs) {
+        Parameters.notNull("fs", fs);
+        for (PLFSCache cache : loadedCaches.values()) {
+            for (PLFSCacheEntry entry : cache.allEntries.values()) {
+                if (fs.equals(entry.getFS()))
+                    return entry.getJar();
+            }
+        }
+        return null;
     }
 
     private static void refreshEntry(PLFSCache oc, PLFSCacheEntry ce) throws IOException {
@@ -432,18 +456,21 @@ class PlatformLayersCacheManager {
     }
 
     private static File[] getClusterJars(File clusterDir) {
-        File[] jars;
-        File modulesDir = new File(clusterDir, "modules");
-        if (modulesDir.isDirectory()) {
-            jars = modulesDir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
-                }
-            });
-        } else {
-            jars = new File[0];
+        String[] moduleDirs = { "modules", "lib", "core" };
+        Collection<File> allJars = new ArrayList<File>();
+
+        for (String mds : moduleDirs) {
+            File[] jars;
+            File modulesDir = new File(clusterDir, mds);
+            if (modulesDir.isDirectory()) {
+                allJars.addAll(Arrays.asList(modulesDir.listFiles(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        return name.endsWith(".jar");
+                    }
+                })));
+            }
         }
-        return jars;
+        return allJars.toArray(new File[allJars.size()]);
     }
 
     private static PLFSCache fillCache(File clusterDir) throws IOException {

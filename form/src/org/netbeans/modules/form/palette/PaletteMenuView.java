@@ -150,6 +150,7 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
     }
 
+    @Override
     protected Point getPopupMenuOrigin() {
         int x = 0;
         int y = 0;

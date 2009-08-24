@@ -159,13 +159,17 @@ public class SwitcherTable extends JTable {
         if (icon == null ) {
             icon = nullIcon;
         }
-        ren.setText(selected || item.isActive() ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+        boolean active = item.isActive();
+        boolean pretty = Boolean.getBoolean("nb.tabnames.html");
+        ren.setText((selected || active) && !pretty ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
         ren.setIconTextGap(26 - icon.getIconWidth());
         
-        if (item.isActive()) {
-            if( Utilities.isWindows() ) {
+        if (active) {
+            if (pretty) {
+                ren.setText(ren.getText() + " ←");
+            } else if (Utilities.isWindows()) {
                 ren.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
             } else {
                 // don't use deriveFont() - see #49973 for details

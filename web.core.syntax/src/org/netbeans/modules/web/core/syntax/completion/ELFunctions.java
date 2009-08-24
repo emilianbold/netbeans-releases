@@ -84,7 +84,7 @@ public class ELFunctions {
             String signature = info.getFunctionSignature().trim();
             String type = null;
             
-            if (signature != null || !signature.equals("")){ 
+            if (signature != null && !signature.equals("")){ 
                 int index = signature.indexOf(info.getName());
                 if (index > -1)
                     type = signature.substring(0, index).trim();
@@ -97,7 +97,7 @@ public class ELFunctions {
             String parameters = "";
             String signature = info.getFunctionSignature().trim();
             
-            if (signature != null || !signature.equals("")){
+            if (signature != null && !signature.equals("")){
                 int index = signature.indexOf(info.getName());
                 if (index > -1){
                     parameters = signature.substring(index+1).trim();
@@ -123,13 +123,13 @@ public class ELFunctions {
         }
     }
     
-    public static List /*<Function>*/ getFunctions(JspSyntaxSupport sup, String start){
-        List functions = new ArrayList();
+    public static List<Function> getFunctions(JspSyntaxSupport sup, String start){
+        List<Function> functions = new ArrayList<Function>();
         JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(sup.getFileObject(), false, false);
         if (result != null) {
-            Map libraries = result.getPageInfo().getTagLibraries();
-            Map prefixes = result.getPageInfo().getJspPrefixMapper();
-            Iterator iter = prefixes.keySet().iterator();
+            Map<?,?> libraries = result.getPageInfo().getTagLibraries();
+            Map<?,?> prefixes = result.getPageInfo().getJspPrefixMapper();
+            Iterator<?> iter = prefixes.keySet().iterator();
             while (iter.hasNext()) {
                 String prefix = (String)iter.next();
                 TagLibraryInfo library = (TagLibraryInfo)libraries.get(prefixes.get(prefix));
@@ -145,7 +145,7 @@ public class ELFunctions {
     
     /** removes invalid function infos and prints a debug message with the problem description */
     private static FunctionInfo[] getValidFunctions(TagLibraryInfo tli) {
-        ArrayList<FunctionInfo> fis = new ArrayList();
+        ArrayList<FunctionInfo> fis = new ArrayList<FunctionInfo>();
         for(FunctionInfo fi :tli.getFunctions()) {
             String msg = null;
             if(fi.getFunctionClass() == null || fi.getFunctionClass().length() == 0) {

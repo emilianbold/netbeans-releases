@@ -231,8 +231,18 @@ final class ExternalUtil extends Object {
         private static FileSystem[] computeDelegates() {
             List<FileSystem> arr = new ArrayList<FileSystem>();
             arr.add(MEMORY);
+            for (FileSystem f : ALL.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    continue;
+                }
+                arr.add(f);
+            }
             arr.add(layers);
-            arr.addAll(ALL.allInstances());
+            for (FileSystem f : ALL.allInstances()) {
+                if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
+                    arr.add(f);
+                }
+            }
             return arr.toArray(new FileSystem[0]);
         }
         

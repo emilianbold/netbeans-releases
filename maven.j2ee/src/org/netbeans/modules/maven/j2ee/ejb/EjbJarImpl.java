@@ -115,9 +115,15 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
-        //TODO??
-        if (EjbJar.VERSION_3_0.equals(getModuleVersion())) {
+        String ver = getModuleVersion();
+        if (EjbJar.VERSION_2_1.equals(ver)) {
+            return Profile.J2EE_14;
+        }
+        if (EjbJar.VERSION_3_0.equals(ver)) {
             return Profile.JAVA_EE_5;
+        }
+        if (EjbJar.VERSION_3_1.equals(ver)) {
+            return Profile.JAVA_EE_6_FULL;
         }
         return Profile.J2EE_14;
     }
@@ -181,18 +187,18 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
-        } else {
-            //look in pom's config.
-            String version = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EJB,
-                    "ejbVersion", "ejb"); //NOI18N
-            if (version != null) {
-                return version.trim();
-            }
-            
+        }
+        //look in pom's config.
+        String version = PluginPropertyUtils.getPluginProperty(project,
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EJB,
+                "ejbVersion", "ejb"); //NOI18N
+        if (version != null) {
+            return version.trim();
         }
         // in case there is no descriptor, we probably have 3.x spec stuff?
-        return EjbJar.VERSION_2_1;
+        //TODO we cannot differenciate ee5 and ee6 at this point, most cases shall
+        // be coved by the previous cases
+       return EjbJar.VERSION_3_0;
     }
     
     public J2eeModule.Type getModuleType() {

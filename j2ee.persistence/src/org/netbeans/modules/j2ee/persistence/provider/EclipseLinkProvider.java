@@ -42,7 +42,9 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,28 +54,36 @@ import org.openide.util.NbBundle;
  */
 class EclipseLinkProvider extends Provider {
 
+    public EclipseLinkProvider(String version){
+        super("org.eclipse.persistence.jpa.PersistenceProvider", version); //NOI18N
+    }
+
     public EclipseLinkProvider(){
-        super("org.eclipse.persistence.jpa.PersistenceProvider"); //NOI18N
+        this(null); //NOI18N
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink"); //NOI18N
+        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
     }
 
+    @Override
     public String getJdbcUrl() {
-        return "eclipselink.jdbc.url";
+        return   Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.url" : super.getJdbcUrl();
     }
 
+    @Override
     public String getJdbcDriver() {
-        return "eclipselink.jdbc.driver";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.driver" : "javax.persistence.jdbc.driver";
     }
 
+    @Override
     public String getJdbcUsername() {
-        return "eclipselink.jdbc.user";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.user" : "javax.persistence.jdbc.user";
     }
 
+    @Override
     public String getJdbcPassword() {
-        return "eclipselink.jdbc.password";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.password" : "javax.persistence.jdbc.password";
     }
 
     public String getTableGenerationPropertyName() {

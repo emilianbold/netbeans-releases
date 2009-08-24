@@ -79,6 +79,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -95,7 +96,7 @@ public class JiraRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
-    private IssueCache cache;
+    private IssueCache<TaskData> cache;
     private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
@@ -255,9 +256,11 @@ public class JiraRepository extends Repository {
         getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
             NamedFilter[] filters = cmd.getNamedFilters();
-            for (NamedFilter nf : filters) {
-                JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
-                ret.add(q);
+            if(filters != null) {
+                for (NamedFilter nf : filters) {
+                    JiraQuery q = new JiraQuery(nf.getName(), this, nf);
+                    ret.add(q);
+                }
             }
         }
         return ret;
@@ -325,7 +328,7 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    public IssueCache getIssueCache() {
+    public IssueCache<TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
@@ -459,10 +462,14 @@ public class JiraRepository extends Repository {
                         return;
                     }
                     Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
-
-                    // XXX
-//                    GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(JiraRepository.this, ids, new IssuesCollector());
-//                    getExecutor().execute(cmd, false);
+                    for (String id : ids) {
+                        try {
+                            TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
+                            getIssueCache().setIssueData(id, data);
+                        } catch (IOException ex) {
+                            Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
+                        }
+                    }
                     scheduleIssueRefresh();
                 }
             });

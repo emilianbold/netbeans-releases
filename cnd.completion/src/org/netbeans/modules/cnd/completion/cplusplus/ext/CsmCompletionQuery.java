@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -81,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
@@ -89,6 +91,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -1991,6 +1994,32 @@ abstract public class CsmCompletionQuery {
                     Collection<CsmObject> data = new ArrayList();
                     data.add(new TemplateBasedReferencedObjectImpl());
                     result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                }
+            }
+
+            if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
+                CsmClassifier classifier = lastType.getClassifier();
+                if(CsmKindUtilities.isInstantiation(classifier)) {
+                    boolean instantiatedByTemplateParam = false;
+                    CsmInstantiation inst = (CsmInstantiation)classifier;
+                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
+                    for (CsmTemplateParameter templateParam : mapping.keySet()) {
+                        CsmSpecializationParameter specParam = mapping.get(templateParam);
+                        if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                            CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
+                            if(type != null && type.isTemplateBased()) {
+                                instantiatedByTemplateParam = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(instantiatedByTemplateParam) {
+                        if(!CsmInstantiationProvider.getDefault().getSpecializations(classifier, contextFile, endOffset).isEmpty()) {
+                            Collection<CsmObject> data = new ArrayList();
+                            data.add(new TemplateBasedReferencedObjectImpl());
+                            result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                        }
+                    }
                 }
             }
 

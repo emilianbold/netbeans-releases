@@ -45,15 +45,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
@@ -87,13 +85,13 @@ public class SymfonyScript extends PhpProgram {
     /**
      * Get the default, <b>valid only</b> Symfony script.
      * @return the default, <b>valid only</b> Symfony script.
-     * @throws InvalidSymfonyScriptException if Symfony script is not valid.
+     * @throws InvalidPhpProgramException if Symfony script is not valid.
      */
-    public static SymfonyScript getDefault() throws InvalidSymfonyScriptException {
+    public static SymfonyScript getDefault() throws InvalidPhpProgramException {
         String symfony = SymfonyOptions.getInstance().getSymfony();
         String error = validate(symfony);
         if (error != null) {
-            throw new InvalidSymfonyScriptException(error);
+            throw new InvalidPhpProgramException(error);
         }
         return new SymfonyScript(symfony);
     }
@@ -103,10 +101,10 @@ public class SymfonyScript extends PhpProgram {
      * @param phpModule PHP module for which Symfony script is taken
      * @param warn <code>true</code> if user is warned when the {@link #getDefault() default} Symfony script is returned.
      * @return the project specific, <b>valid only</b> Symfony script.
-     * @throws InvalidSymfonyScriptException if Symfony script is not valid. If not found, the {@link #getDefault() default} Symfony script is returned.
+     * @throws InvalidPhpProgramException if Symfony script is not valid. If not found, the {@link #getDefault() default} Symfony script is returned.
      * @see #getDefault()
      */
-    public static SymfonyScript forPhpModule(PhpModule phpModule, boolean warn) throws InvalidSymfonyScriptException {
+    public static SymfonyScript forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpProgramException {
         String symfony = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_NAME).getAbsolutePath();
         String error = validate(symfony);
         if (error != null) {
@@ -136,17 +134,12 @@ public class SymfonyScript extends PhpProgram {
     }
 
     @Override
-    public boolean isValid() {
-        return validate(getFullCommand()) == null;
-    }
-
-    public static String validate(String command) {
-        SymfonyScript symfonyScript = new SymfonyScript(command);
-        if (!StringUtils.hasText(symfonyScript.getProgram())) {
+    public String validate() {
+        if (!StringUtils.hasText(getProgram())) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
         }
 
-        File file = new File(symfonyScript.getProgram());
+        File file = new File(getProgram());
         if (!file.isAbsolute()) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotAbsolutePath");
         }
@@ -159,9 +152,13 @@ public class SymfonyScript extends PhpProgram {
         return null;
     }
 
+    public static String validate(String command) {
+        return new SymfonyScript(command).validate();
+    }
+
     public boolean initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
-        SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forCreatingProject(phpModule);
+        SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -174,7 +171,7 @@ public class SymfonyScript extends PhpProgram {
         assert params != null;
 
         String[] cmdParams = mergeArrays(params, new String[]{app});
-        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
@@ -185,14 +182,14 @@ public class SymfonyScript extends PhpProgram {
         assert phpModule != null;
         assert command != null;
 
-        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand());
         assert processBuilder != null;
 
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(FrameworkCommandSupport.ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
+                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.bridge(lineProcessor);
             }
@@ -212,13 +209,8 @@ public class SymfonyScript extends PhpProgram {
     }
 
     private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
-        final ExecutionService service = ExecutionService.newService(
-                processBuilder,
-                executionDescriptor,
-                title);
-        final Future<Integer> result = service.run();
         try {
-            result.get();
+            executeAndWait(processBuilder, executionDescriptor, title);
         } catch (ExecutionException ex) {
             if (warnUser) {
                 UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
@@ -244,14 +236,6 @@ public class SymfonyScript extends PhpProgram {
 
         public String getHelp() {
             return buffer.toString().trim() + "\n"; // NOI18N
-        }
-    }
-
-    public static final class InvalidSymfonyScriptException extends Exception {
-        private static final long serialVersionUID = -83198591758428354L;
-
-        public InvalidSymfonyScriptException(String message) {
-            super(message);
         }
     }
 }

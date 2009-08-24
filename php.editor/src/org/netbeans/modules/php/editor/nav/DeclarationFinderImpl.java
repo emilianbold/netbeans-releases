@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
@@ -303,7 +304,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
             if (ek != null) {
                 formatter.name(ek, true);
-                formatter.appendText(modelElement.getName());
+                QualifiedName namespaceName = modelElement.getNamespaceName();
+                if (namespaceName.isDefaultNamespace()) {
+                    formatter.appendText(modelElement.getName());
+                } else {
+                    formatter.appendText(namespaceName.append(modelElement.getName()).toString());
+                }
                 formatter.name(ek, false);
             } else {
                 formatter.appendText(modelElement.getName());

@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
@@ -88,55 +89,75 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
-        String zipPath = Utilities.projectOpen("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", "jEdit41.zip");
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
-        FileObject projectDir = Utilities.openProject("jEdit41", getWorkDir());
-        scanProject(projectDir);
+        scanProject("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", 
+                    "jEdit41.zip",
+                    "jEdit41");
     }
 
     public void testScanNigelsFreeForm() throws IOException, ExecutionException, InterruptedException {
-        String zipPath = Utilities.projectOpen("http://kim-sun.czech.sun.com/~pf124312/nigel.zip", "Clean.zip");
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
-        FileObject projectDir = Utilities.openProject("clean/projects/ST", getWorkDir());
-        scanProject(projectDir);
+        scanProject("http://kim-sun.czech.sun.com/~pf124312/nigel.zip",
+                    "Clean.zip",
+                    "clean/projects/ST");
     }
 
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
-        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "mediawiki.zip";
-        File f = new File(zipPath);
-        if (!f.exists()) {
-            zipPath = Utilities.projectOpen("http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip", "mediawiki.zip");
-        }
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
-        FileObject projectDir = Utilities.openProject("mediawiki-1.14.0", getWorkDir());
-        scanProject(projectDir);
+        scanProject("http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip",
+                    "mediawiki.zip",
+                    "mediawiki-1.14.0"
+                );
     }
     
+    public void testLimeWire() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://spbweb.russia.sun.com/~ok153203/lime6.zip",
+                    "lime6.zip",
+                    "lime6");
+    }
+
     public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
-        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "openjdk.zip";
+        scanProject("http://kim-sun.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip", 
+                    "openjdk.zip",
+                    "openjdk/jdk/make/netbeans/world");
+    }
+
+    private void scanProject(
+            final String networkFileLoc,
+            final String compressedProject,
+            final String project)
+            throws IOException, ExecutionException, InterruptedException
+    {
+        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + compressedProject;
         File f = new File(zipPath);
         if (!f.exists()) {
-             zipPath = Utilities.projectOpen("http://kim-sun.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip", "openjdk.zip");
+             zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
         }
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         Utilities.unzip(zipFile, getWorkDirPath());
-        FileObject projectDir = Utilities.openProject("openjdk/jdk/make/netbeans/world", getWorkDir());
-        scanProject(projectDir);
-    }
-
-    private void scanProject(final FileObject projectDir) throws IOException, ExecutionException, InterruptedException{
+        
+        FileObject projectDir = Utilities.openProject(project, getWorkDir());
         final String projectName = projectDir.getName();
         
         Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
         repositoryUpdater.setLevel(Level.INFO);
-        repositoryUpdater.addHandler(new ScanningHandler(projectName));
+        ScanningHandler handler = new ScanningHandler(projectName);
+        repositoryUpdater.addHandler(handler);
         JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
 
         src.runWhenScanFinished(new Task<CompilationController>() {
             
+            @Override()
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+            }
+        }, false).get();
+        
+        OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
+        projectDir = Utilities.openProject(project, getWorkDir());
+
+        handler.setType(ScanType.UP_TO_DATE);
+        src = JavaSource.create(ClasspathInfo.create(projectDir));
+
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
             @Override()
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
@@ -153,7 +174,6 @@ public class ScanProjectPerfTest extends NbTestCase {
         data.clear();
     }
 
-    
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
                 addTest(ScanProjectPerfTest.class).
@@ -165,12 +185,34 @@ public class ScanProjectPerfTest extends NbTestCase {
         return data.toArray(new PerformanceData[0]);
     }
 
+    @SuppressWarnings("serial")
+    private static enum ScanType {
+        INITIAL(" initial "),
+        UP_TO_DATE(" up-to-date ");
+
+        private final String name;
+
+        private ScanType(String name) {
+            this.name = name;
+        }
+        
+        private String getName() {
+            return name;
+        }
+    }
+    
     private class ScanningHandler extends Handler {
 
         private final String projectName;
+        private ScanType type;
 
         public ScanningHandler(String projectName) {
             this.projectName = projectName;
+            this.type = ScanType.INITIAL;
+        }
+
+        public void setType(ScanType type) {
+            this.type = type;
         }
         
         @Override
@@ -181,11 +223,16 @@ public class ScanProjectPerfTest extends NbTestCase {
                     PerformanceData res = new PerformanceData();
                     StringTokenizer tokenizer = new StringTokenizer(message, " ");
                     int count = tokenizer.countTokens();
-                    res.name = projectName + " source scan";
-                    for (int i = 0; i < count-2; i++) {
-                        tokenizer.nextToken();
+                    res.name = projectName + type.getName() + "source scan";
+                    
+                    String token = "0";
+                    for (int i = 0; i < count; i++) {
+                        String next = tokenizer.nextToken();
+                        if (next.startsWith("ms")) {
+                            break;
+                        }
+                        token = next;
                     }
-                    String token = tokenizer.nextToken();
                     res.value = Long.parseLong(token);
                     res.unit = "ms";
                     res.runOrder = 0;
@@ -194,7 +241,7 @@ public class ScanProjectPerfTest extends NbTestCase {
                     PerformanceData res = new PerformanceData();
                     StringTokenizer tokenizer = new StringTokenizer(message, " ");
                     int count = tokenizer.countTokens();
-                    res.name = projectName + " binary scan";
+                    res.name = projectName + type.getName() + "binary scan";
                     for (int i = 0; i < count-2; i++) {
                         tokenizer.nextToken();
                     }

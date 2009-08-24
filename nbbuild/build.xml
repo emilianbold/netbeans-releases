@@ -402,7 +402,7 @@ the ${netbeans.dest}/bin/ directory.
     <resolve name="test1.prop" value="${one.cluster.name}-is-built"/>
   </target>
 
-  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
+  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check,-build-external-cluster">
     <echo message="Building ${one.cluster.name} modules"/>
     <resolve name="one-cluster-modules" value="${one.cluster.name}"/>
     <resolve name="one-cluster-dependencies" value="${one.cluster.name}.depends"/>
@@ -424,6 +424,35 @@ the ${netbeans.dest}/bin/ directory.
              mergedependentmodules="false">
     </nbmerge>
     <touch file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
+  </target>
+
+  <target name="-external-cluster-check">
+    <condition property="${one.cluster.name}-is-external">
+      <isset property="${one.cluster.name}.sources"/>
+    </condition>
+  </target>
+
+  <target name="-external-no-sources" unless="${one.cluster.name}-has-sources" if="${one.cluster.name}-is-external" depends="-external-cluster-check,-external-cluster-sources-check">
+    <property name="${one.cluster.name}-is-built" value="true"/>
+  </target>
+
+  <target name="-external-cluster-sources-check">
+    <resolve name="cluster.sources" value="${one.cluster.name}.sources"/>
+    <condition property="${one.cluster.name}-has-sources">
+      <available file="${nb_all}/${cluster.sources}" type="dir"/>
+    </condition>
+  </target>
+
+  <target name="-build-external-cluster" if="${one.cluster.name}-is-external" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check,-external-cluster-check,-external-no-sources">
+    <resolve name="cluster.sources" value="${one.cluster.name}.sources"/>
+    <resolve name="cluster.dir" value="${one.cluster.name}.dir"/>
+    <subant buildpath="${nb_all}/${cluster.sources}/build.xml" inheritAll="false"/>
+    <copy todir="${netbeans.dest.dir}/">
+      <fileset dir="${nb_all}/${cluster.sources}/build/netbeans/">
+        <include name="${cluster.dir}/**"/>
+      </fileset>
+    </copy>
+    <property name="${one.cluster.name}-is-built" value="true"/>
   </target>
 
   <target name="zip-cluster-config" depends="init">

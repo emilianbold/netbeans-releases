@@ -107,6 +107,13 @@ public final class TreeUtilities {
     public boolean isEnum(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.ENUM) != 0;
     }
+
+    /**
+     * Checks wheteher given variable tree represents an enum constant.
+     */
+    public boolean isEnumConstant(VariableTree tree) {
+        return (((JCTree.JCModifiers) tree.getModifiers()).flags & Flags.ENUM) != 0;
+    }
     
     /**Checks whether the given tree represents an annotation.
      */

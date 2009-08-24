@@ -343,7 +343,7 @@ public class AntBasedTestUtil {
         InputStream is = new FileInputStream(f);
         try {
             Reader r = new InputStreamReader(is, "UTF-8");
-            StringBuffer b = new StringBuffer();
+            StringBuilder b = new StringBuilder();
             char[] buf = new char[4096];
             int read;
             while ((read = r.read(buf)) != -1) {
@@ -500,7 +500,7 @@ public class AntBasedTestUtil {
      * @throws IOException in case reading or writing the file failed
      */
     public static int replaceInFile(File f, String from, String to) throws IOException {
-        StringBuffer b = new StringBuffer((int)f.length());
+        StringBuilder b = new StringBuilder((int)f.length());
         InputStream is = new FileInputStream(f);
         try {
             Reader r = new InputStreamReader(is, "UTF-8");

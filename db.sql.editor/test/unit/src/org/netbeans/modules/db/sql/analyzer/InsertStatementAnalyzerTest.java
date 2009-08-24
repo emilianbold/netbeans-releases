@@ -45,7 +45,6 @@ import junit.framework.TestCase;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
-import org.netbeans.modules.db.sql.editor.completion.SQLStatementAnalyzer;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**

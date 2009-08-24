@@ -29,24 +29,28 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.code.Symbol;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
 
 /**
  * Replaces identifiers representing all used types with the new ones - imports
@@ -70,7 +74,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     private int tokenIndexAlreadyAdded = -1;
     private Element rootElement;
     
-    
+
+
     public TranslateIdentifier(final CompilationInfo info, 
             final boolean copyComments, 
             final boolean resolveImports,
@@ -715,7 +720,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return null;
         } else {
             if (copyComments) {
-                mapComments(tree);
+//                mapComments(tree);
+                mapComments2(tree);
             }
             TreePath path = info.getTrees().getPath(unit, tree);
             if (path == null) {
@@ -752,7 +758,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return null;
         } else {
             if (copyComments) {
-                mapComments(tree);
+//                mapComments(tree);
+                mapComments2(tree);
             }
             Tree newTree = tree.accept(this, null);
             // #144209
@@ -760,52 +767,496 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return newTree;
         }
     }
-    
-    private void mapComments(Tree tree) {
+        
+    private void mapComments2(Tree tree) {
         if (((JCTree) tree).pos <= 0) {
             return;
         }
-        commentService.getComments(tree).commentsMapped();
-        SourcePositions pos = info.getTrees().getSourcePositions();
-        seq.move((int) pos.getStartPosition(null, tree));
-        PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
-        int indent = NOPOS;
-        Token<JavaTokenId> token;
-        boolean b = false;
-        while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
-            if (seq.index() <= tokenIndexAlreadyAdded) {
-                return;
+        collect(tree);
+    }
+    
+    /*
+        Implementation of new gathering algorithm based on comment weighting by natural (my) aligning of comments to statements.
+     */
+    
+    private static Logger log = Logger.getLogger(TranslateIdentifier.class.getName());
+    
+    private void collect(Tree tree) {
+        if (isEvil(tree)) {
+            return;
+        }
+        JCTree.JCCompilationUnit cu = (JCTree.JCCompilationUnit) info.getCompilationUnit();
+        int pos = findInterestingStart((JCTree) tree);
+        seq.move(pos);
+        lookForPreceedings(seq, tree, cu.endPositions);
+        if (tree instanceof BlockTree) {
+            BlockTree blockTree = (BlockTree) tree;
+            if (blockTree.getStatements().isEmpty()) {
+                lookWithinEmptyBlock(seq, blockTree, cu.endPositions);
+            }
+        }
+        int end = getBounds((JCTree) tree, cu.endPositions)[1];
+        seq.move(end);        
+        lookForInline(seq, tree, cu.endPositions);
+        lookForTrailing(seq, tree, cu.endPositions);
+
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "T: " + tree + "\nC: " + commentService.getComments(tree));
+        }
+    }
+
+    private void lookForInline(TokenSequence<JavaTokenId> seq, Tree tree, Map<JCTree, Integer> endPositions) {
+        seq.move(getBounds((JCTree) tree, endPositions)[1]);
+        CommentsCollection result = new CommentsCollection();
+        while (seq.moveNext()) {
+            if (seq.index() <= tokenIndexAlreadyAdded) continue;
+            if (seq.token().id() == JavaTokenId.WHITESPACE) {
+                if (numberOfNL(seq.token()) > 0) {
+                    break;
+                }
+            } else if (isComment(seq.token().id())) {
+                result.add(seq.token());
+                tokenIndexAlreadyAdded = seq.index(); 
             } else {
-                if (!b) {
-                    tokenIndexAlreadyAdded = seq.index();
-                    b = true;
+                break;
+            }
+        }
+        if (!result.isEmpty()) {
+            CommentSet.RelativePosition position = CommentSet.RelativePosition.INLINE;
+            attachComments(tree, result, position);
+        }
+    }
+
+    private void attachComments(Tree tree, CommentsCollection result, CommentSet.RelativePosition position) {
+        CommentSetImpl cs = commentService.getComments(tree);
+        for (Token<JavaTokenId> token : result) {
+            attachComment(position, cs, token);
+        }
+    }
+
+    private boolean isEvil(Tree tree) {
+        Tree.Kind kind = tree.getKind();
+        switch (kind) {
+            case MODIFIERS:
+            case COMPILATION_UNIT:
+            case PRIMITIVE_TYPE:
+                return true;
+            default: return false;
+        }
+    }
+
+    private void lookForTrailing(TokenSequence<JavaTokenId> seq, Tree tree, Map<JCTree, Integer> endPositions) {
+        //TODO: [RKo] This does not work correctly... need improvemetns.
+        seq.move(getBounds((JCTree) tree, endPositions)[1]);
+        CommentsCollection foundComments = null;
+        int newlines = 0;
+        while (seq.moveNext()) {
+            if (seq.index() <= tokenIndexAlreadyAdded) continue;
+            Token<JavaTokenId> t = seq.token();
+            if (t.id() == JavaTokenId.WHITESPACE) {
+                newlines += numberOfNL(t);
+            } else if (isComment(t.id())) {
+                if (foundComments != null) {
+                    attachComments(foundComments, tree, commentService, endPositions, seq);
+                }
+                foundComments = getCommentsCollection(seq, newlines);
+                if (t.id() == JavaTokenId.LINE_COMMENT) {
+                    newlines = 1;
+                } else {
+                    newlines = 0;
+                }
+
+            } else {
+//                skipEvil(seq);
+                Tree ctree = getTree(info.getTreeUtilities(), seq);
+                if (ctree != null && foundComments != null) {
+                    int[] bounds = foundComments.getBounds();
+                    double weight = belongsTo(bounds[0], bounds[1], seq);
+                    if (tree.getKind() == Tree.Kind.COMPILATION_UNIT && weight == 0) {
+                        attachComments(foundComments, tree, commentService, endPositions, seq);
+                    } else if (weight >= 0) {
+                        TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
+                        if (path != null && path.getParentPath().getLeaf() == ctree) {
+                            attachComments(foundComments, tree, commentService, endPositions, seq);
+                        }
+//                        attachComments(foundComments, ctree, commentService, endPositions, seq);
+                        return;
+                    } else {
+                        attachComments(foundComments, tree, commentService, endPositions, seq);
+                    }
+                    foundComments = null;
+                }
+                newlines = 0;
+            }
+
+        }
+    }
+
+    private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, BlockTree tree, Map<JCTree, Integer> endPositions) {
+        // moving into opening brace.
+        if (moveTo(seq, JavaTokenId.LBRACE, true)) {
+            CommentsCollection cc = getCommentsCollection(seq, Integer.MAX_VALUE);
+            attachComments(tree, cc, CommentSet.RelativePosition.INNER);
+        } else {
+            int end = getBounds((JCTree) tree, endPositions)[1];
+            seq.move(end); seq.moveNext();
+        }
+    }
+
+    /**
+     * Moves <code>seq</code> to first occurence of specified <code>toToken</code> if specified direction.
+     * @param seq sequence of tokens
+     * @param toToken token to stop on.
+     * @param forward move forward if true, backward otherwise
+     * @return true if token has been reached.
+     */
+    private boolean moveTo(TokenSequence<JavaTokenId> seq, JavaTokenId toToken, boolean forward) {
+        while (forward ? seq.moveNext() : seq.movePrevious()) {
+            if (toToken == seq.token().id()) {
+                return true;
+            } 
+        }
+        return false;
+    }
+
+    private void lookForPreceedings(TokenSequence<JavaTokenId> seq, Tree tree, Map<JCTree, Integer> endPositions) {
+        int reset = ((JCTree) tree).pos;
+        CommentsCollection cc = null;
+        while (seq.moveNext() && seq.offset() < reset) {
+            JavaTokenId id = seq.token().id();
+            if (isComment(id)) {
+                if (cc == null) {
+                    cc = getCommentsCollection(seq, Integer.MAX_VALUE);
+                } else {
+                    cc.merge(getCommentsCollection(seq, Integer.MAX_VALUE));
                 }
             }
-            switch (token.id()) {
-                case LINE_COMMENT:
-                    commentService.addComment(tree, Comment.create(Style.LINE, NOPOS, NOPOS, indent, token.toString()));
-                    indent = 0;
-                    break;
-                case BLOCK_COMMENT:
-                    commentService.addComment(tree, Comment.create(Style.BLOCK, NOPOS, NOPOS, indent, token.toString()));
-                    indent = NOPOS;
-                    break;
-                case JAVADOC_COMMENT:
-                    commentService.addComment(tree, Comment.create(Style.JAVADOC, NOPOS, NOPOS, indent, token.toString()));
-                    indent = NOPOS;
-                    break;
+        }
+        attachComments(cc, tree, commentService, endPositions, seq);
+        seq.move(reset);
+        seq.moveNext();
+    }
+
+    /**
+     * Looking for position where to start looking up for preceeding commnets.
+     * @param tree tree to examine.
+     * @return position where to start 
+     */
+    private int findInterestingStart(JCTree tree) {
+        if (tree.pos <= 0) return 0;
+        seq.move(tree.pos);
+        Tree shouldBeTree = null;
+        while (seq.movePrevious() && tokenIndexAlreadyAdded < seq.index()) {
+            switch (seq.token().id()) {
                 case WHITESPACE:
-                    String tokenText = token.toString();
-                    commentService.addComment(tree, Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
-                    int newLinePos = tokenText.lastIndexOf('\n');
-                    if (newLinePos < 0) {
-                        if (indent >= 0)
-                            indent += tokenText.length();
-                    } else {
-                        indent = tokenText.length() - newLinePos - 1;
+                case LINE_COMMENT:
+                case JAVADOC_COMMENT:
+                case BLOCK_COMMENT:
+                    continue;
+                case LBRACE:
+                    /*
+                        we are reaching parent tree element. This tree has no siblings or is first child. We have no 
+                        interest in number of NL before this kind of comments. This comments are always considered 
+                        as preceeding to tree.
+                    */
+                    return seq.offset() + seq.token().length();
+                default: {
+                    shouldBeTree = getTree(info.getTreeUtilities(), seq);
+                    if (shouldBeTree == null || tree.equals(shouldBeTree)) {
+                        //this is some kind of creepy token which is not interesting nor tree. Just skip it.
+                        continue;
                     }
                     break;
+                }
             }
+        }
+        return seq.offset(); 
+    }
+
+    private void consumeWS(TokenSequence<JavaTokenId> seq, boolean forward) {
+        while (forward ? seq.moveNext() : seq.movePrevious()) {
+            switch (seq.token().id()) {
+                case WHITESPACE:
+                    continue;
+                default: return;
+            }
+        }
+    }
+
+    @SuppressWarnings({"MethodWithMultipleLoops"})
+    private int adjustByComments(int pos, CommentSetImpl comments) {
+        List<Comment> cl = comments.getComments(CommentSet.RelativePosition.INLINE);
+        if (!cl.isEmpty()) {
+            for (Comment comment : cl) {
+                pos = Math.max(pos, comment.endPos());
+            }
+        }
+        cl = comments.getComments(CommentSet.RelativePosition.TRAILING);
+        if (!cl.isEmpty()) {
+            for (Comment comment : cl) {
+                pos = Math.max(pos, comment.endPos());
+            }
+        }
+        return pos;
+    }
+
+    private void skipEvil(TokenSequence<JavaTokenId> ts) {
+        do {
+            JavaTokenId id = ts.token().id();
+            switch (id) {
+                case PUBLIC:
+                case PRIVATE:
+                case PROTECTED:
+                case ABSTRACT:
+                case FINAL:
+                case STATIC:
+                case VOID:
+                case VOLATILE:
+                case NATIVE:
+                case STRICTFP:
+                case WHITESPACE:
+                case INT:
+                case BOOLEAN:
+                case DOUBLE:
+                case FLOAT:
+                case BYTE:
+                case CHAR:
+                case SHORT:
+                case CONST:
+                case LONG:
+                    continue;
+                default:
+                    return;
+            }
+        } while (ts.moveNext());
+    }
+
+    private double belongsTo(int startPos, int endPos, TokenSequence<JavaTokenId> ts) {
+        int index = ts.index();
+        double result = getForwardWeight(endPos, ts) - getBackwardWeight(startPos, ts);
+        ts.moveIndex(index);
+        ts.moveNext();
+        return result;
+    }
+
+    private double getForwardWeight(int endPos, TokenSequence<JavaTokenId> ts) {
+        double result = 0;
+        ts.move(endPos);
+        while (ts.moveNext()) {
+            if (ts.token().id() == JavaTokenId.WHITESPACE) {
+                int nls = numberOfNL(ts.token());
+                result = nls == 0 ? 1 : (1 / nls);
+            } else if (isComment(ts.token().id())) {
+                if (ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                    return 1;
+                }
+                result = 0;
+                break;
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private double getBackwardWeight(int startPos, TokenSequence<JavaTokenId> ts) {
+        double result = 0;
+        ts.move(startPos);
+        while (ts.movePrevious()) {
+            if (ts.token().id() == JavaTokenId.WHITESPACE) {
+                int nls = numberOfNL(ts.token());
+                result = nls == 0 ? 0 : (1 / nls);
+            } else if (isComment(ts.token().id())) {
+                result = 0;
+                break;
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private void attachComments(CommentsCollection foundComments, Tree tree, CommentHandler ch, Map<JCTree, Integer> endPositions, TokenSequence<JavaTokenId> ts) {
+        if (foundComments == null || foundComments.isEmpty()) return;
+        int[] bounds = getBounds((JCTree) tree, endPositions);
+        CommentSet.RelativePosition positioning;
+        if (tree instanceof BlockTree) {
+            BlockTree bt = (BlockTree) tree;
+            if (bt.getStatements().isEmpty()
+                    && bounds[0] >= foundComments.getBounds()[0]
+                    && bounds[1] <= foundComments.getBounds()[1]) {
+                positioning = CommentSet.RelativePosition.INNER;
+            } else {
+                positioning = computePositioning(bounds, foundComments, ts);
+            }
+        } else {
+            positioning = computePositioning(bounds, foundComments, ts);
+        }
+        CommentSet set = createCommentSet(ch, tree);
+        for (Token<JavaTokenId> comment : foundComments) {
+            attachComment(positioning, set, comment);
+        }
+    }
+
+    private void attachComment(CommentSet.RelativePosition positioning, CommentSet set, Token<JavaTokenId> comment) {
+        Comment c = Comment.create(getStyle(comment.id()), comment.offset(null),
+                getEndPos(comment), NOPOS, getText(comment));
+        set.addComment(positioning, c);        
+    }
+
+    private String getText(Token<JavaTokenId> comment) {
+        return String.valueOf(comment.text());
+    }
+
+    private int getEndPos(Token<JavaTokenId> comment) {
+        return comment.offset(null) + comment.length();
+    }
+
+    private Comment.Style getStyle(JavaTokenId id) {
+        switch (id) {
+            case JAVADOC_COMMENT:
+                return Comment.Style.JAVADOC;
+            case LINE_COMMENT:
+                return Comment.Style.LINE;
+            case BLOCK_COMMENT:
+                return Comment.Style.BLOCK;
+            default:
+                return Comment.Style.WHITESPACE;
+        }
+    }
+
+    private CommentSet.RelativePosition computePositioning(int[] treeBounds, CommentsCollection cc, TokenSequence<JavaTokenId> ts) {
+        int[] commentsBounds = cc.getBounds();
+        if (commentsBounds[1] < treeBounds[0]) return CommentSet.RelativePosition.PRECEDING;
+        if (commentsBounds[0] > treeBounds[1]) {
+            TokenSequence<JavaTokenId> sequence = ts.subSequence(treeBounds[1], commentsBounds[0]);
+            sequence.move(0);
+//            sequence.move(treeBounds[1]);
+            if (!sequence.moveNext()) return CommentSet.RelativePosition.INLINE;
+            switch (sequence.token().id()) {
+                case WHITESPACE: {
+                    if (numberOfNL(sequence.token()) > 0) {
+                        return CommentSet.RelativePosition.TRAILING;
+                    } else {
+                        return CommentSet.RelativePosition.INLINE;
+                    }
+                }
+                default:
+                    return CommentSet.RelativePosition.TRAILING;
+            }
+        }
+
+        if (commentsBounds[0] > treeBounds[0] && commentsBounds[1] < treeBounds[1])
+            return CommentSet.RelativePosition.INNER;
+        return CommentSet.RelativePosition.TRAILING;
+    }
+
+    private int[] getBounds(JCTree tree, Map<JCTree, Integer> endPositions) {
+        return new int[]{TreeInfo.getStartPos(tree), TreeInfo.getEndPos(tree, endPositions)};
+    }
+
+
+    private Tree getTree(TreeUtilities tu, TokenSequence<JavaTokenId> ts) {
+        int start = ts.offset();
+        if (ts.token().length() > 0) {
+            start++; //going into token. This is required because token offset is not considered as start of tree :(
+        }
+        TreePath path = tu.pathFor(start);
+        if (path != null) {
+            return path.getLeaf();
+        }
+        return null;
+    }
+
+    private int numberOfNL(Token<JavaTokenId> t) {
+        int count = 0;
+        CharSequence charSequence = t.text();
+        for (int i = 0; i < charSequence.length(); i++) {
+            char a = charSequence.charAt(i);
+            if ('\n' == a) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private CommentsCollection getCommentsCollection(TokenSequence<JavaTokenId> ts, int maxTension) {
+        CommentsCollection result = new CommentsCollection();
+        Token<JavaTokenId> t = ts.token();
+        result.add(t);
+        boolean isLC = t.id() == JavaTokenId.LINE_COMMENT;
+        int lastCommentIndex = ts.index();
+        int start = ts.offset();
+        int end = ts.offset() + ts.token().length();
+        while (ts.moveNext()) {
+            if (ts.index() < tokenIndexAlreadyAdded) continue;
+            t = ts.token();
+            if (isComment(t.id())) {
+                result.add(t);
+                start = Math.min(ts.offset(), start);
+                end = Math.max(ts.offset() + t.length(), end);
+                isLC = t.id() == JavaTokenId.LINE_COMMENT;
+                lastCommentIndex = ts.index();                
+            } else if (t.id() == JavaTokenId.WHITESPACE) {
+                if ((numberOfNL(t) + (isLC ? 1 : 0)) > maxTension) {
+                    break;
+                }
+            } else {
+                break;                
+            }
+        }
+        ts.moveIndex(lastCommentIndex);
+        ts.moveNext();
+        tokenIndexAlreadyAdded = ts.index();
+        result.setBounds(new int[]{start, end});
+//        System.out.println("tokenIndexAlreadyAdded = " + tokenIndexAlreadyAdded);
+        return result;
+    }
+
+    private CommentSet createCommentSet(CommentHandler ch, Tree lastTree) {
+        return ch.getComments(lastTree);
+    }
+
+    private boolean isComment(JavaTokenId tid) {
+        switch (tid) {
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case JAVADOC_COMMENT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static class CommentsCollection implements Iterable<Token<JavaTokenId>> {
+        private final int[] bounds = {NOPOS, NOPOS};
+        private final List<Token<JavaTokenId>> comments = new LinkedList<Token<JavaTokenId>>();
+
+        void add(Token<JavaTokenId> comment) {
+            comments.add(comment);
+        }
+
+        boolean isEmpty() {
+            return comments.isEmpty();
+        }
+
+        public Iterator<Token<JavaTokenId>> iterator() {
+            return comments.iterator();
+        }
+
+        void setBounds(int[] bounds) {
+            this.bounds[0] = bounds[0];
+            this.bounds[1] = bounds[1];
+        }
+
+        public int[] getBounds() {
+            return bounds.clone();
+        }
+
+        public void merge(CommentsCollection cc) {
+            comments.addAll(cc.comments);
+            this.bounds[0] = Math.min(this.bounds[0], cc.bounds[0]);
+            this.bounds[1] = Math.max(this.bounds[1], cc.bounds[1]);
         }
     }
 }

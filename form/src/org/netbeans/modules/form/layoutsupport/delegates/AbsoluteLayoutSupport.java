@@ -43,12 +43,10 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
 import java.beans.*;
-import java.util.*;
 import java.lang.reflect.Constructor;
 
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;

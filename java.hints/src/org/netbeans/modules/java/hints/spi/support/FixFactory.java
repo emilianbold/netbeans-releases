@@ -41,6 +41,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -265,5 +266,37 @@ public final class FixFactory {
 
             return null;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FixImpl other = (FixImpl) obj;
+            if (!Arrays.deepEquals(this.keys, other.keys)) {
+                return false;
+            }
+            if (this.handle != other.handle && (this.handle == null || !this.handle.equals(other.handle))) {
+                return false;
+            }
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 79 * hash + Arrays.deepHashCode(this.keys);
+            hash = 79 * hash + (this.handle != null ? this.handle.hashCode() : 0);
+            hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
+            return hash;
+        }
+
+        
     }
 }

@@ -46,27 +46,28 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
  */
-public class ImplementAbstractMethods extends ModelRule {
+public class ImplementAbstractMethods extends AbstractRule {
     public String getId() {
         return "Implement.Abstract.Methods";//NOI18N
     }
@@ -79,29 +80,37 @@ public class ImplementAbstractMethods extends ModelRule {
         return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDispName");//NOI18N
     }
 
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    void check(FileScope fileScope, RuleContext context, List<Hint> hints) {
-        Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(fileScope);
-        for (FixInfo fixInfo : checkHints(allTypes)) {
-            hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
-                    context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
-                    Collections.<HintFix>singletonList(new Fix(context,
-                    fixInfo)), 500));
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+        final BaseDocument doc = context.doc;
+        final int caretOffset = context.caretOffset;
+        int lineBegin = -1;
+        int lineEnd = -1;
+        try {
+            lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
+            Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(context.fileScope);
+            for (FixInfo fixInfo : checkHints(allTypes, lineBegin, lineEnd)) {
+                hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
+                        context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
+                        Collections.<HintFix>singletonList(new Fix(context,
+                        fixInfo)), 500));
+            }
         }
     }
 
-    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes) {
+
+    private static boolean isInside(int carret, int left, int right) {
+        return carret >= left && carret <= right;
+    }
+
+    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes, int lineBegin, int lineEnd) {
         List<FixInfo> retval = new ArrayList<FixInfo>();
         for (TypeScope typeScope : allTypes) {
+            if (!isInside(typeScope.getOffset(), lineBegin, lineEnd)) continue;
             LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
             ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope) typeScope).getSuperClasses()) : null;
             Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();

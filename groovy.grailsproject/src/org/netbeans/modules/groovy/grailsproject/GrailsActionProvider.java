@@ -50,7 +50,6 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
@@ -71,6 +70,7 @@ public class GrailsActionProvider implements ActionProvider {
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_RUN,
+        COMMAND_DEBUG,
         COMMAND_TEST,
         COMMAND_CLEAN,
         COMMAND_DELETE,
@@ -87,16 +87,7 @@ public class GrailsActionProvider implements ActionProvider {
 
 
     public String[] getSupportedActions() {
-        if (WebClientToolsSessionStarterService.isAvailable()) {
-            String[] debugSupportedActions = new String[supportedActions.length + 1];
-            for (int i = 0; i < supportedActions.length; i++) {
-                debugSupportedActions[i] = supportedActions[i];
-            }
-            debugSupportedActions[supportedActions.length] = COMMAND_DEBUG;
-            return debugSupportedActions;
-        } else {
-            return supportedActions.clone();
-        }
+        return supportedActions.clone();
     }
 
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
@@ -140,21 +131,30 @@ public class GrailsActionProvider implements ActionProvider {
     private void executeRunAction(final boolean debug) {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
-            URL url = serverState.getRunningUrl();
-            if (url != null) {
-                GrailsCommandSupport.showURL(url, debug, project);
+            if (!debug || debug == serverState.isDebug()) {
+                URL url = serverState.getRunningUrl();
+                if (url != null) {
+                    GrailsCommandSupport.showURL(url, debug, project);
+                }
+                return;
+            } else {
+                Process process = serverState.getProcess();
+                if (process != null) {
+                    process.destroy();
+                }
             }
-            return;
         }
 
         Callable<Process> callable = new Callable<Process>() {
 
             public Process call() throws Exception {
-                Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(GrailsProjectConfig.forProject(project));
+                Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(
+                        GrailsProjectConfig.forProject(project), debug);
                 Process process = inner.call();
                 final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
                 if (serverState != null) {
                     serverState.setProcess(process);
+                    serverState.setDebug(debug);
                 }
                 return process;
             }

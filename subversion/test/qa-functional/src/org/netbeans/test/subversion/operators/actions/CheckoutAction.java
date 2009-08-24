@@ -56,7 +56,9 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class CheckoutAction extends ActionNoBlock {
 
-    public static final String VERSIONING_ITEM = "Versioning";
+    public static final String TEAM_ITEM = "Team";
+
+//    public static final String VERSIONING_ITEM = "Versioning";
     
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
@@ -66,7 +68,7 @@ public class CheckoutAction extends ActionNoBlock {
     
     /** Creates a new instance of CheckoutAction */
     public CheckoutAction() {
-        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + CHECKOUT_ITEM, null);
+        super(TEAM_ITEM + "|" + SVN_ITEM + "|" + CHECKOUT_ITEM, null);
     }
     
 }

@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Window|Output|Output" main menu item or
@@ -55,9 +57,13 @@ public class OutputWindowViewAction extends Action {
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
                                 "OutputWindow");
+        
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_4, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_4, KeyEvent.CTRL_MASK);
 
     /** Creates new instance. */    
     public OutputWindowViewAction() {
-        super(menu, null, "org.netbeans.core.output2.OutputWindowAction");
+        super(menu, null, "org.netbeans.core.output2.OutputWindowAction", keystroke);
     }
 }

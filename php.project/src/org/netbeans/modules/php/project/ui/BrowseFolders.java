@@ -59,7 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,16 +87,20 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
     private static final JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     private static final String NB_PROJECT_DIR = "nbproject"; // NOI18N
 
+    private final PhpVisibilityQuery phpVisibilityQuery;
     private final ExplorerManager manager;
     private final SourceGroup[] folders;
-    private final Class target;
+    private final Class<?> target;
     private final BeanTreeView btv;
 
-    public BrowseFolders(SourceGroup[] folders, Class target, String preselectedFileName) {
+    BrowseFolders(PhpVisibilityQuery phpVisibilityQuery, SourceGroup[] folders, Class<?> target, String preselectedFileName) {
+        assert phpVisibilityQuery != null;
+
         initComponents();
         String description = target == DataFolder.class ? "ACSD_BrowseFolders" : "ACSD_BrowseFiles"; // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, description));
 
+        this.phpVisibilityQuery = phpVisibilityQuery;
         this.folders = folders;
         this.target = target;
         manager = new ExplorerManager();
@@ -204,8 +208,8 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
-    public static FileObject showDialog(SourceGroup[] folders, Class target, String preselectedFileName) {
-        BrowseFolders bf = new BrowseFolders(folders, target, preselectedFileName);
+    public static FileObject showDialog(PhpVisibilityQuery phpVisibilityQuery, SourceGroup[] folders, Class<?> target, String preselectedFileName) {
+        BrowseFolders bf = new BrowseFolders(phpVisibilityQuery, folders, target, preselectedFileName);
 
         String title = target == DataFolder.class ? "LBL_SelectFolder" : "LBL_SelectFile"; // NOI18N
         JButton selectButton = new JButton(NbBundle.getMessage(BrowseFolders.class, title));
@@ -234,13 +238,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         return optionsListener.getResult();
     }
 
-    public static FileObject showDialog(FileObject[] folders, Class target, String preselectedFileName) {
+    public static FileObject showDialog(PhpVisibilityQuery phpVisibilityQuery, FileObject[] folders, Class<?> target, String preselectedFileName) {
         SourceGroup[] groups = new SourceGroup[folders.length];
         int i = 0;
         for (FileObject fo : folders) {
             groups[i++] = new FOSourceGroup(fo);
         }
-        return showDialog(groups, target, preselectedFileName);
+        return showDialog(phpVisibilityQuery, groups, target, preselectedFileName);
     }
 
     /** Children to be used to show FileObjects from given SourceGroups
@@ -335,7 +339,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             if (fo.getNameExt().equals(NB_PROJECT_DIR)) {
                 return false;
             }
-            return VisibilityQuery.getDefault().isVisible(fo);
+            return phpVisibilityQuery.isVisible(fo);
         }
 
         private final class Key {

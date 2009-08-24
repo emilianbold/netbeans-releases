@@ -54,6 +54,15 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
                 </file> 
             </folder>
+            <folder name="xhtml">
+                <attr name="useCustomEditorKit" boolvalue="true"/>
+                <file name="language.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage"/>
+                </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage$Scanner"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     
@@ -97,11 +106,123 @@ made subject to such option by the copyright holder.
     
     <folder name="Editors">
 
+
         <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider$Factory.instance">
             <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
         </file>
 
         <folder name="text">
+
+            <folder name="xhtml">
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+
+                <file name="org-netbeans-modules-html-editor-xhtml-XhtmlElEmbeddingProvider$Factory.instance"/>
+
+                <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
+                <folder name="Preferences">
+                    <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
+                </folder>
+
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-html-editor-xhtml.XhtmlElHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
+                </file>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-html-editor-HtmlBracesMatching.instance">
+                        <attr name="position" intvalue="50"/>
+                    </file>
+                </folder>
+
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
+                        <attr name="position" intvalue="1300"/>
+                        <attr name="location" stringvalue="North"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                    </file>
+                </folder>
+
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+
+               <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-editor-xhtml-coloring.xml" url="xhtmlFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-editor-keybindings.xml" url="keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
+                </folder>
+
+                <folder name="HyperlinkProviders">
+                    <file name="GsfHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
+                </folder>
+
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HtmlKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HtmlKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
+
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-csl-hints-GsfUpToDateStateProviderFactory.instance"/>
+                </folder>
+
+                <folder name="Popup">
+
+                    <file name="SeparatorAfterView.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1166"/>
+                    </file>
+                    <file name="ViewAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1333"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1666"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
+                </folder>
+            </folder>
+
             <folder name="html">
 
                 <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
@@ -162,6 +283,7 @@ made subject to such option by the copyright holder.
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 

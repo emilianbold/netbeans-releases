@@ -45,11 +45,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.PathMatcher;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.WeakListeners;
 
 /**
@@ -58,12 +66,20 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
+    static final String INCLUDES = "**"; // NOI18N
+
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PhpProject project;
+    private final PropertyEvaluator evaluator;
     private List<PathResourceImplementation> resources;
     private final SourceRoots src;
 
-    public SourcePathImplementation(SourceRoots sources) {
+    public SourcePathImplementation(PhpProject project, SourceRoots sources) {
+        assert project != null;
         assert sources != null;
+
+        this.project = project;
+        evaluator = ProjectPropertiesSupport.getPropertyEvaluator(project);
         src = sources;
         src.addPropertyChangeListener(WeakListeners.propertyChange(this, src));
     }
@@ -79,7 +95,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
                 for (URL root : urls) {
-                    result.add(ClassPathSupport.createResource(root));
+                    result.add(new FilteringPathResource(evaluator, root));
                 }
                 resources = Collections.unmodifiableList(result);
             }
@@ -96,6 +112,95 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-       resources = null;
+        if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+            invalidate();
+        } else if (evt.getSource() == evaluator && evt.getPropertyName() == null) {
+            invalidate();
+        }
+    }
+
+    private void invalidate() {
+        synchronized (this) {
+            resources = null;
+        }
+        support.firePropertyChange(PROP_RESOURCES, null, null);
+    }
+
+    // compute ant pattern
+    String computeExcludes(File root) {
+        StringBuilder buffer = new StringBuilder(100);
+        boolean first = true;
+        for (File file : project.getIgnoredFiles()) {
+            String relPath = PropertyUtils.relativizeFile(root, file);
+            if (relPath != null
+                    && !relPath.equals(".") // NOI18N
+                    && !relPath.startsWith("../")) { // NOI18N
+                String pattern = relPath;
+                if (file.isDirectory()) {
+                    pattern += "/**"; // NOI18N
+                }
+                if (first) {
+                    first = false;
+                } else {
+                    buffer.append(","); // NOI18N
+                }
+                buffer.append(pattern);
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener {
+
+        final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        volatile PathMatcher matcher;
+        private final URL root;
+
+        FilteringPathResource(PropertyEvaluator evaluator, URL root) {
+            assert evaluator != null;
+            assert root != null;
+
+            this.root = root;
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        }
+
+        public URL[] getRoots() {
+            return new URL[]{root};
+        }
+
+        public boolean includes(URL root, String resource) {
+            if (matcher == null) {
+                File rootFile = new File(URI.create(root.toExternalForm()));
+                matcher = new PathMatcher(
+                        INCLUDES,
+                        computeExcludes(rootFile),
+                        rootFile);
+            }
+            return matcher.matches(resource, true);
+        }
+
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public void propertyChange(PropertyChangeEvent ev) {
+            String prop = ev.getPropertyName();
+            // listen only on IGNORE_PATH, VisibilityQuery changes should be checked by parsing & indexing automatically
+            if (prop == null || prop.equals(PhpProjectProperties.IGNORE_PATH)) {
+                matcher = null;
+                PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+                ev2.setPropagationId(ev);
+                pcs.firePropertyChange(ev2);
+            }
+        }
     }
 }

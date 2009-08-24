@@ -82,29 +82,20 @@ public class JiraQuery extends Query {
     private boolean firstRun = true;
 
     public JiraQuery(JiraRepository repository) {
-        this(null, repository, null, false, -1);
+        this(null, repository, null, false, true);
     }
 
-    protected JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, boolean saved) {
-        super();
-        this.name = name;
-        this.repository = repository;
-        this.jiraFilter = jiraFilter;
-        this.saved = saved;
-        // let the subclass create the controller
+    public JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter) {
+        this(name, repository, jiraFilter, true, true);
     }
 
-    public JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, long lastRefresh) {
-        this(name, repository, jiraFilter, true, lastRefresh);
-    }
-
-    private JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, boolean saved, long lastRefresh) {
+    public JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, boolean saved, boolean initControler) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
         this.jiraFilter = jiraFilter;
-        this.setLastRefresh(lastRefresh);
-        controller = createControler(repository, this, jiraFilter);
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(name));
+        if(initControler) createControler(repository, this, jiraFilter);
     }
 
     @Override
@@ -323,7 +314,7 @@ public class JiraQuery extends Query {
             String id = NbJiraIssue.getID(taskData);
             NbJiraIssue issue;
             try {
-                IssueCache cache = repository.getIssueCache();
+                IssueCache<TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
                 

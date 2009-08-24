@@ -880,6 +880,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_5_0).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_5));
+            } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_6_0).equals(version)) {
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_6_FULL));
             }
         } catch (IOException e) {
             String message = NbBundle.getMessage(ProjectServerPanel.class, "MSG_AppClientXmlCorrupted"); // NOI18N

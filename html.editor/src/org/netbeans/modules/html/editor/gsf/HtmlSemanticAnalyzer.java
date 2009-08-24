@@ -42,7 +42,6 @@ import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
-import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -74,8 +73,9 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
         HtmlParserResult htmlResult = (HtmlParserResult) result;
 
+        String sourceMimeType = result.getSnapshot().getSource().getMimeType();
         //process extensions
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions()) {
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(sourceMimeType)) {
             if (cancelled) {
                 return;
             }

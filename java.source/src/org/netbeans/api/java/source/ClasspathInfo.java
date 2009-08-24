@@ -46,9 +46,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.annotations.common.NonNull;
@@ -72,10 +70,10 @@ import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObj
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -117,7 +115,7 @@ public final class ClasspathInfo {
     //@GuardedBy (this)
     private OutputFileManager outFileManager;
     private final MemoryFileManager memoryFileManager;
-    private EventListenerList listenerList =  null;
+    private final ChangeSupport listenerList;
     private ClassIndex usagesQuery;
     
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
@@ -130,6 +128,7 @@ public final class ClasspathInfo {
         this.archiveProvider = archiveProvider;        
         this.bootClassPath = bootCp;
         this.compileClassPath = compileCp;
+        this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath);
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
@@ -157,7 +156,8 @@ public final class ClasspathInfo {
             this.memoryFileManager = null;
         }
     }
-    
+
+    @Override
     public String toString() {
         return String.format("ClasspathInfo boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal out: %s", //NOI18N
                 bootClassPath,
@@ -291,19 +291,15 @@ public final class ClasspathInfo {
     /** Registers ChangeListener which will be notified about the changes in the classpath.
      * @param listener The listener to register.
      */
-    public synchronized void addChangeListener(ChangeListener listener) {
-        if (listenerList == null ) {
-            listenerList = new EventListenerList();
-        }
-        listenerList.add (ChangeListener.class, listener);
+    public void addChangeListener(@NonNull final ChangeListener listener) {
+        listenerList.addChangeListener(listener);
     }
 
     /**Removes ChangeListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeChangeListener(ChangeListener listener) {
-        if (listenerList != null)
-            listenerList.remove (ChangeListener.class, listener);
+    public synchronized void removeChangeListener(@NonNull final ChangeListener listener) {
+        listenerList.removeChangeListener(listener);
     }
 
     public ClassPath getClassPath (@NonNull PathKind pathKind) {
@@ -371,16 +367,7 @@ public final class ClasspathInfo {
     // Private methods ---------------------------------------------------------
     
     private void fireChangeListenerStateChanged() {
-        ChangeEvent e = null;
-        if (listenerList == null) return;
-        Object[] listeners = listenerList.getListenerList ();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i]==ChangeListener.class) {
-                if (e == null)
-                    e = new ChangeEvent(this);
-                ((ChangeListener)listeners[i+1]).stateChanged (e);
-           }
-        }
+        listenerList.fireChange();
     }
 
 

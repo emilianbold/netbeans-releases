@@ -65,6 +65,8 @@ public class FileType {
             new FileType("listener", "java");
     public static final FileType JSP =
             new FileType("jsp", "jsp");
+    public static final FileType JSF =
+            new FileType("jsf", "jsp");
     public static final FileType JSPDOC =
             new FileType("jspdoc", "jspx");
     public static final FileType JSPF =

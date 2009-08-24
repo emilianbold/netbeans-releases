@@ -63,15 +63,10 @@ import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.WeakHashMap;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -84,7 +79,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Keymap;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
@@ -202,66 +196,6 @@ public class Actions extends Object {
             ((Actions.MenuItem)item).setBridge(b);
         }
         b.updateState(null);
-        if (!popup) {
-            // #39508 fix.
-            setMenuActionConnection(item, action);
-        }
-    }
-
-    /**
-     * #39508 fix. the MenuItems have the accelerator set by the Bridge, however that is not removed when the Menu is invisible.
-     * it's because of the AddNotify/removeNotify method calls and the Bridge.VisL listener.
-     * that conflicts with the changes done in the global keymap (NbKeymap) that are not propagated to the menu items when such change occurs.
-     * Fixed by having one global observer on the NbKeyMap (or any other Keymap impl which is Observable) and always synchronizing the menus with the current
-     * global Keymap
-     */
-    private static void setMenuActionConnection(JMenuItem menu, Action action) {
-        synchronized (menuActionLock) {
-            if (menuActionCache == null) {
-                menuActionCache = new WeakHashMap<Action, Reference<JMenuItem>>();
-
-                Keymap map = Lookup.getDefault().lookup(Keymap.class);
-
-                if (map instanceof Observable) {
-                    //HACK MAJOR - assuming we have the NbKeymap which is observable
-                    ((Observable) map).addObserver(
-                        new Observer() {
-                            public void update(Observable o, Object arg) {
-                                synchronized (menuActionLock) {
-                                    Iterator<Map.Entry<Action, Reference<JMenuItem>>> it = menuActionCache.entrySet().iterator();
-
-                                    while (it.hasNext()) {
-                                        Map.Entry<Action, Reference<JMenuItem>> entry = it.next();
-                                        Action act = entry.getKey();
-                                        Reference<JMenuItem> ref = entry.getValue();
-                                        JMenuItem mn = ref.get();
-
-                                        if ((act != null) && (mn != null)) {
-                                            KeyStroke actKey = (KeyStroke) act.getValue(Action.ACCELERATOR_KEY);
-                                            KeyStroke mnKey = mn.getAccelerator();
-
-                                            if (
-                                                ((mnKey == null) && (actKey != null)) ||
-                                                    ((mnKey != null) && (actKey == null)) ||
-                                                    ((mnKey != null) && (actKey != null) && !actKey.equals(mnKey))
-                                            ) {
-                                                mn.setAccelerator(actKey);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    );
-                } else {
-                    Logger.getLogger(Actions.class.getName()).warning(
-                        "Keymap is not observable, behaviour described in bug #39508 can reappear."
-                    );
-                }
-            }
-
-            menuActionCache.put(action, new WeakReference<JMenuItem>(menu));
-        }
     }
 
     /** Attaches checkbox menu item to boolean state action.

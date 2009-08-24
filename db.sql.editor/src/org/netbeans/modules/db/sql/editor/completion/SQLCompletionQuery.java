@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
+import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -66,19 +68,15 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.sql.analyzer.DropStatement;
-import org.netbeans.modules.db.sql.analyzer.DropStatement.DropContext;
-import org.netbeans.modules.db.sql.analyzer.DropStatementAnalyzer;
-import org.netbeans.modules.db.sql.analyzer.FromClause;
+import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
+import org.netbeans.modules.db.sql.analyzer.TablesClause;
 import org.netbeans.modules.db.sql.analyzer.InsertStatement;
-import org.netbeans.modules.db.sql.analyzer.InsertStatement.InsertContext;
-import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.Context;
 import org.netbeans.modules.db.sql.analyzer.SelectStatement;
-import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
-import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
+import org.netbeans.modules.db.sql.analyzer.UpdateStatement;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -95,7 +93,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private static final Logger LOGGER = Logger.getLogger(SQLCompletionQuery.class.getName());
 
-    // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
 
     private final DatabaseConnection dbconn;
@@ -104,10 +101,15 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private SQLCompletionEnv env;
     private Quoter quoter;
     private SQLStatement statement;
-    private FromClause fromClause;
+    /** All tables available for completion in current offset. */
+    private TablesClause tablesClause;
     private int anchorOffset = -1; // Relative to statement offset.
     private int substitutionOffset = 0; // Relative to statement offset.
     private SQLCompletionItems items;
+    /** Context in SQL statement. */
+    private Context context;
+    /** Recognized identifier (also incomplete) in SQL statement. */
+    private Identifier ident;
 
     public SQLCompletionQuery(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
@@ -165,35 +167,44 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoter = quoter;
         anchorOffset = -1;
         substitutionOffset = 0;
-        if (env == null) {
-            return null;
-        }
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
-        SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
-        if (kind == null) {
+        if (env.getTokenSequence().isEmpty()) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
             return items;
         }
+        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+        if (statement == null) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            return items;
+        }
+        context = statement.getContextAtOffset(env.getCaretOffset());
+        if (context == null) {
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            return items;
+        }
+        ident = findIdentifier();
+        if (ident == null) {
+            completeKeyword(context);
+            return items;
+        }
+        anchorOffset = ident.anchorOffset;
+        substitutionOffset = ident.substitutionOffset;
+        SQLStatementKind kind = statement.getKind();
         switch (kind) {
             case SELECT:
-                statement = SelectStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.SELECT : statement.getKind ();
-                    completeSelect ();
-                }
+                completeSelect();
                 break;
             case INSERT:
-                statement = InsertStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.INSERT : statement.getKind ();
-                    completeInsert ();
-                }
+                completeInsert();
                 break;
             case DROP:
-                statement = DropStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-                if (statement != null) {
-                    assert statement.getKind() == SQLStatementKind.DROP : statement.getKind ();
-                    completeDrop();
-                }
+                completeDrop();
+                break;
+            case UPDATE:
+                completeUpdate();
+                break;
+            case DELETE:
+                completeDelete();
                 break;
         }
         return items;
@@ -201,52 +212,42 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
-        SelectContext context = selectStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
-        fromClause = selectStatement.getTablesInEffect(env.getCaretOffset());
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
+        tablesClause = selectStatement.getTablesInEffect(env.getCaretOffset());
         switch (context) {
             case SELECT:
-                insideSelect(ident);
+                completeColumn(ident);
                 break;
             case FROM:
                 completeTable(ident);
                 break;
             case JOIN_CONDITION:
-                insideClauseAfterFrom(ident);
+                completeColumnWithDefinedTable(ident);
+                break;
+            case WHERE:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                } else {
+                    completeColumn(ident);
+                }
+                break;
+            case ORDER:
+            case GROUP:
+                completeKeyword(context);
                 break;
             default:
-                if (fromClause != null) {
-                    insideClauseAfterFrom(ident);
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
                 }
         }
     }
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
-        InsertContext context = insertStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
             case INSERT:
+                completeKeyword(context);
                 break;
-            case INTO:
+            case INSERT_INTO:
                 completeTable(ident);
                 break;
             case COLUMNS:
@@ -258,31 +259,134 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeDrop() {
-        DropStatement dropStatement = (DropStatement) statement;
-        DropContext context = dropStatement.getContextAtOffset(env.getCaretOffset());
-        if (context == null) {
-            return;
-        }
-
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
         switch (context) {
-            case TABLE:
+            case DROP:
+                completeKeyword(context);
+                break;
+            case DROP_TABLE:
                 completeTable(ident);
                 break;
             default:
         }
     }
 
-    private void insideSelect(Identifier ident) {
+    private void completeUpdate() {
+        UpdateStatement updateStatement = (UpdateStatement) statement;
+        tablesClause = updateStatement.getTablesInEffect(env.getCaretOffset());
+        switch (context) {
+            case UPDATE:
+                completeTable(ident);
+                break;
+            case JOIN_CONDITION:
+                completeColumnWithDefinedTable(ident);
+                break;
+            case SET:
+                completeColumn(ident);
+                break;
+            default:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                }
+        }
+    }
+
+    private void completeDelete() {
+        DeleteStatement deleteStatement = (DeleteStatement) statement;
+        tablesClause = deleteStatement.getTablesInEffect(env.getCaretOffset());
+        switch (context) {
+            case DELETE:
+                completeKeyword(context);
+                completeTable(ident);
+                break;
+            case FROM:
+                completeTable(ident);
+                break;
+            case JOIN_CONDITION:
+                completeColumnWithDefinedTable(ident);
+                break;
+            case WHERE:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                } else {
+                    completeColumn(ident);
+                }
+                break;
+            default:
+                if (tablesClause != null) {
+                    completeColumnWithDefinedTable(ident);
+                }
+        }
+    }
+
+    /** Adds keyword/s according to typed prefix and given context. */
+    private void completeKeyword(Context context) {
+        switch (context) {
+            case SELECT:
+                completeKeyword("FROM");  //NOI18N
+                break;
+            case DELETE:
+                completeKeyword("FROM");  //NOI18N
+                break;
+            case INSERT:
+                completeKeyword("INTO");  //NOI18N
+                break;
+            case INSERT_INTO:
+            case COLUMNS:
+                completeKeyword("VALUES");  //NOI18N
+                break;
+            case FROM:
+                completeKeyword("WHERE");  //NOI18N
+                // with join keywors
+                //completeKeyword("WHERE", "INNER", "OUTER", "LEFT", "JOIN", "ON");  //NOI18N
+                break;
+            case UPDATE:
+                completeKeyword("SET");  //NOI18N
+                // with join keywors
+                //completeKeyword("WHERE", "INNER", "OUTER", "LEFT", "JOIN", "ON");  //NOI18N
+                break;
+            case JOIN_CONDITION:
+                completeKeyword("WHERE");  //NOI18N
+                break;
+            case SET:
+                completeKeyword("WHERE");  //NOI18N
+                break;
+            case WHERE:
+                completeKeyword("GROUP", "ORDER");  //NOI18N
+                break;
+            case ORDER:
+            case GROUP:
+                completeKeyword("BY");  //NOI18N
+                break;
+            case GROUP_BY:
+                completeKeyword("HAVING");  //NOI18N
+                break;
+            case DROP:
+                completeKeyword("TABLE");  //NOI18N
+                break;
+            case DROP_TABLE:
+            case HAVING:
+            case ORDER_BY:
+            case VALUES:
+                // nothing to complete
+                break;
+        }
+    }
+
+    /** Adds listed keyword/s according to typed prefix. */
+    private void completeKeyword(String... keywords) {
+        Arrays.sort(keywords);
+        Symbol prefix = findPrefix();
+        substitutionOffset = prefix.substitutionOffset;
+        anchorOffset = substitutionOffset;
+        items.addKeywords(prefix.lastPrefix, substitutionOffset, keywords);
+    }
+
+    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    private void completeColumn(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
+            completeColumnSimpleIdent(ident.lastPrefix, ident.quoted);
         } else {
-            completeSelectQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            completeColumnQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }
 
@@ -311,7 +415,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideClauseAfterFrom(Identifier ident) {
+    /** Adds columns, tables, schemas and catalogs according to given identifier
+     * but only for tables already defined in statement. */
+    private void completeColumnWithDefinedTable(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.quoted);
         } else {
@@ -319,8 +425,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSelectSimpleIdent(String typedPrefix, boolean quoted) {
-        if (fromClause != null) {
+    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    private void completeColumnSimpleIdent(String typedPrefix, boolean quoted) {
+        if (tablesClause != null) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
             Schema defaultSchema = metadata.getDefaultSchema();
@@ -384,8 +491,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
     }
 
-    private void completeSelectQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        if (fromClause != null) {
+    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    private void completeColumnQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+        if (tablesClause != null) {
             completeQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
         } else {
             // Assume fullyTypedIdent is a table.
@@ -437,12 +545,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeSimpleIdentBasedOnFromClause(String typedPrefix, boolean quoted) {
-        assert fromClause != null;
-        Set<QualIdent> tableNames = fromClause.getUnaliasedTableNames();
+        assert tablesClause != null;
+        Set<QualIdent> tableNames = tablesClause.getUnaliasedTableNames();
         Set<Table> tables = resolveTables(tableNames);
         Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
         Set<Table> allTables = new LinkedHashSet<Table>(tables);
-        Map<String, QualIdent> aliases = fromClause.getAliasedTableNames();
+        Map<String, QualIdent> aliases = tablesClause.getAliasedTableNames();
         for (Entry<String, QualIdent> entry : aliases.entrySet()) {
             QualIdent tableName = entry.getValue();
             allTableNames.add(tableName);
@@ -490,8 +598,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        assert fromClause != null;
-        Set<Table> tables = resolveTables(fromClause.getUnaliasedTableNames());
+        assert tablesClause != null;
+        Set<Table> tables = resolveTables(tablesClause.getUnaliasedTableNames());
         // Assume fullyTypedIdent is the name of a table in the default schema.
         Table foundTable = resolveTable(fullyTypedIdent);
         if (foundTable == null || !tables.contains(foundTable)) {
@@ -499,7 +607,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             foundTable = null;
             // Then assume fullyTypedIdent is an alias.
             if (fullyTypedIdent.isSimple()) {
-                QualIdent aliasedTableName = fromClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
+                QualIdent aliasedTableName = tablesClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
                 if (aliasedTableName != null) {
                     foundTable = resolveTable(aliasedTableName);
                 }
@@ -623,6 +731,41 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         return result;
     }
 
+    /** Returns part of token before cursor or entire token if at the end of it.
+     * Returns null prefix if token is comma or whitespace. Returned offset is
+     * caret offset if prefix is null, otherwise it is token offset. */
+    private Symbol findPrefix() {
+        TokenSequence<SQLTokenId> seq = env.getTokenSequence();
+        int caretOffset = env.getCaretOffset();
+        String prefix = null;
+        if (seq.move(caretOffset) > 0) {
+            // Not on token boundary.
+            if (!seq.moveNext() && !seq.movePrevious()) {
+                return new Symbol(null, caretOffset, caretOffset);
+            }
+        } else {
+            if (!seq.movePrevious()) {
+                return new Symbol(null, caretOffset, caretOffset);
+            }
+        }
+        switch (seq.token().id()) {
+            case WHITESPACE:
+            case COMMA:
+                return new Symbol(null, caretOffset, caretOffset);
+            default:
+                int offset = caretOffset - seq.offset();
+                if (offset > 0 && offset < seq.token().length()) {
+                    prefix = seq.token().text().subSequence(0, offset).toString();
+                } else {
+                    prefix = seq.token().text().toString();
+                }
+                return new Symbol(prefix, seq.offset(), seq.offset());
+        }
+    }
+
+    /** Finds valid identifier within SQL statement at cursor position.
+     * It handles fully qualified and quoted identifiers. Returns null if no
+     * valid identifier found. */
     private Identifier findIdentifier() {
         TokenSequence<SQLTokenId> seq = env.getTokenSequence();
         int caretOffset = env.getCaretOffset();
@@ -668,10 +811,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         wasDot = false;
                         String part;
                         int offset = caretOffset - seq.offset();
+                        String tokenText = seq.token().text().toString();
                         if (offset > 0 && offset < seq.token().length()) {
-                            part = seq.token().text().subSequence(0, offset).toString();
+                            String quoteString = quoter.getQuoteString();
+                            if (tokenText.startsWith(quoteString) && tokenText.endsWith(quoteString) && offset == tokenText.length() - 1) {
+                                // identifier inside closed quotes and cursor before ending quote ("foo|")
+                                // => completion will not add quotes and replace just foo
+                                part = tokenText.substring(1, offset);
+                                lastPrefixOffset++;
+                            } else {
+                                part = tokenText.substring(0, offset);
+                            }
                         } else {
-                            part = seq.token().text().toString();
+                            part = tokenText;
                         }
                         parts.add(part);
                     } else {
@@ -683,17 +835,34 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                     if (seq.movePrevious()) {
-                        // Cannot complete 'SELECT foo |'.
-                        if (seq.token().id() == SQLTokenId.IDENTIFIER) {
-                            return null;
-                        } else if (seq.token().id() == SQLTokenId.DOT) {
-                            // Process the dot in the main loop.
-                            seq.moveNext();
-                            continue main;
+                        switch (seq.token().id()) {
+                            case IDENTIFIER:  // Cannot complete 'SELECT foo |'.
+                            case INT_LITERAL:  // Cannot complete 'WHERE a = 1 |'.
+                            case DOUBLE_LITERAL:
+                            case STRING:
+                            case INCOMPLETE_STRING:
+                            case RPAREN:  // foo is not valid identifier in 'WHERE (a+b > c) foo'
+                                return null;
+                            case OPERATOR:  // foo is not valid identifier in 'SELECT * foo'
+                                if (seq.token().text().toString().equals("*")) {  //NOI18N
+                                    if (seq.movePrevious()) {
+                                        if (seq.movePrevious()) {
+                                            if (seq.token().text().toString().equalsIgnoreCase("SELECT")) {  //NOI18N
+                                                return null;
+                                            }
+                                            seq.moveNext();
+                                        }
+                                        seq.moveNext();
+                                    }
+                                }
+                                break;
+                            case DOT:
+                                // Process the dot in the main loop.
+                                seq.moveNext();
+                                continue main;
                         }
                     }
                     break main;
-
                 default:
                     break main;
             }
@@ -759,20 +928,28 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
-    private static final class Identifier {
+    private static class Symbol {
 
-        final QualIdent fullyTypedIdent;
         final String lastPrefix;
-        final boolean quoted;
         final int anchorOffset;
         final int substitutionOffset;
 
-        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted, int anchorOffset, int substitutionOffset) {
-            this.fullyTypedIdent = fullyTypedIdent;
+        private Symbol(String lastPrefix, int anchorOffset, int substitutionOffset) {
             this.lastPrefix = lastPrefix;
-            this.quoted = quoted;
             this.anchorOffset = anchorOffset;
             this.substitutionOffset = substitutionOffset;
+        }
+    }
+
+    private static final class Identifier extends Symbol {
+
+        final QualIdent fullyTypedIdent;
+        final boolean quoted;
+
+        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted, int anchorOffset, int substitutionOffset) {
+            super(lastPrefix, anchorOffset, substitutionOffset);
+            this.fullyTypedIdent = fullyTypedIdent;
+            this.quoted = quoted;
         }
     }
 }

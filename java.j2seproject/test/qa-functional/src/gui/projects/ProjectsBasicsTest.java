@@ -299,12 +299,4 @@ public class ProjectsBasicsTest extends JellyTestCase {
 
     }
 
-    @SuppressWarnings("deprecation")
-    private void waitScanFinished() {
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-    }
 }

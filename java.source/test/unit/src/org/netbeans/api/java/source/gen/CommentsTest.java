@@ -73,7 +73,7 @@ public class CommentsTest extends GeneratorTest {
         return suite;
     }
 
-    public void DISABLEtestAddStatement() throws Exception {
+    public void testAddStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -100,7 +100,7 @@ public class CommentsTest extends GeneratorTest {
             "        /**\n" +
             "         * becko\n" +
             "         */\n" +
-            "        int b;\n" +
+            "        int b; //NOI18N\n" +
             "        // cecko\n" +
             "        int c;\n" +
             "    }\n" +
@@ -124,7 +124,7 @@ public class CommentsTest extends GeneratorTest {
                         "    /**\n" +
                         "     * becko\n" +
                         "     */\n" +
-                        "    int b;\n" +
+                        "    int b; //NOI18N\n" +
                         "    // cecko\n" +
                         "    int c; // trail\n" +
                         "}";
@@ -139,7 +139,7 @@ public class CommentsTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
-    public void DISABLEtestGetComment1() throws Exception {
+    public void testGetComment1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -175,7 +175,7 @@ public class CommentsTest extends GeneratorTest {
     }
     
     // #99329
-    public void DISABLEtestAddJavaDocToMethod() throws Exception {
+    public void testAddJavaDocToMethod() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -237,7 +237,7 @@ public class CommentsTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
-    public void DISABLEtestAddJavaDocToExistingMethod() throws Exception {
+    public void testAddJavaDocToExistingMethod() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -283,7 +283,7 @@ public class CommentsTest extends GeneratorTest {
         assertTrue(TestUtilities.copyFileToString(testFile), TestUtilities.copyFileToString(testFile).contains("Comentario"));
     }
 
-    public void DISABLEtestAddTwoEndLineCommments() throws Exception {
+    public void testAddTwoEndLineCommments() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -338,7 +338,7 @@ public class CommentsTest extends GeneratorTest {
     }
     
     // issue #100829
-    public void testCopyMethodWithCommments() throws Exception {
+    public void DISABLEtestCopyMethodWithCommments() throws Exception {
         testFile = new File(getWorkDir(), "Origin.java");
         TestUtilities.copyStringToFile(testFile, 
             "public class Origin {\n" +
@@ -402,7 +402,7 @@ public class CommentsTest extends GeneratorTest {
     }
     
 
-    public void DISABLEDtestAddStatementWithEmptyLine() throws Exception {
+    public void testAddStatementWithEmptyLine() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -424,10 +424,8 @@ public class CommentsTest extends GeneratorTest {
             "public class Test {\n" +
             "\n" +
             "    void method() {\n" +
-            "\n" +
             "        // test\n" +
             "        int a;\n" +
-            "\n" +
             "        /*\n" +
             "         * Test\n" +
             "         * Test2\n" +
@@ -473,7 +471,7 @@ public class CommentsTest extends GeneratorTest {
     /*
      * http://www.netbeans.org/issues/show_bug.cgi?id=113315
      */
-    public void DISABLEtestAddJavaDoc113315() throws Exception {
+    public void testAddJavaDoc113315() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -540,7 +538,7 @@ public class CommentsTest extends GeneratorTest {
     /*
      * http://www.netbeans.org/issues/show_bug.cgi?id=100829
      */
-    public void DISABLEtestCopyDoc100829_1() throws Exception {
+    public void testCopyDoc100829_1() throws Exception {
         File secondFile = new File(getWorkDir(), "Test2.java");
         TestUtilities.copyStringToFile(secondFile, 
             "package hierbas.del.litoral;\n" +
@@ -603,7 +601,7 @@ public class CommentsTest extends GeneratorTest {
     /*
      * http://www.netbeans.org/issues/show_bug.cgi?id=100829
      */
-    public void DISABLEtestCopyDoc100829_2() throws Exception {
+    public void testCopyDoc100829_2() throws Exception {
         File secondFile = new File(getWorkDir(), "Test2.java");
         TestUtilities.copyStringToFile(secondFile, 
             "package hierbas.del.litoral;\n" +
@@ -669,7 +667,7 @@ public class CommentsTest extends GeneratorTest {
     /**
      * http://www.netbeans.org/issues/show_bug.cgi?id=121898
      */
-    public void DISABLEtestRemoveMethodWithComment() throws Exception {
+    public void testRemoveMethodWithComment() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "\n" +

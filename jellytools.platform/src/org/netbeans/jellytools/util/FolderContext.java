@@ -285,8 +285,8 @@ public class FolderContext {
         if (spec == null || spec.equals("")) {
             return _base;
         }
-        // Emits leading whitespaces and '/'.
-        spec.trim();
+        // Omits leading whitespaces and '/'.
+        spec = spec.trim();
         while (spec.startsWith("/")) {
             spec = spec.substring(1);
         }

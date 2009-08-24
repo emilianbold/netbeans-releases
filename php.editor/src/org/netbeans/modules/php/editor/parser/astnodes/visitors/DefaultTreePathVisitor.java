@@ -111,6 +111,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 
@@ -140,6 +142,17 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
     public void visit(NamespaceDeclaration node) {
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
+
+    @Override
+    public void visit(UseStatement statement) {
+        path.addFirst(statement);super.visit(statement);path.removeFirst();
+    }
+
+    @Override
+    public void visit(UseStatementPart statementPart) {
+        path.addFirst(statementPart);super.visit(statementPart);path.removeFirst();
+    }
+ 
 
     @Override
     public void visit(ArrayAccess node) {

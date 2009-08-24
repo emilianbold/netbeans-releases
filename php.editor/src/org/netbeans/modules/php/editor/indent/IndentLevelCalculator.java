@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -90,16 +92,25 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Block node) {
-
-        // do not indent virtual blocks created by namespace declarations
+        super.visit(node);
+        
         if (getPath().get(0) instanceof NamespaceDeclaration){
             return;
         }
 
-        // end of hot fix
-
-        indentListOfStatements(node.getStatements());
-        super.visit(node);
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
+        ts.move(node.getStartOffset());
+        ts.moveNext();
+        ts.moveNext();
+        int start = ts.offset();
+        ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+        ts.move(node.getEndOffset());
+        ts.movePrevious();
+        ts.movePrevious();
+        
+        int end = ts.offset();
+        addIndentLevel(start, indentSize);
+        addIndentLevel(end, -1 * indentSize);  
     }
 
     @Override
@@ -143,6 +154,20 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ExpressionStatement node) {
+        indentContinuationWithinStatement(node);
+        // do not call super.visit()
+        // to avoid reccurency!
+    }
+
+    @Override
+    public void visit(ReturnStatement node) {
+        indentContinuationWithinStatement(node);
+        // do not call super.visit()
+        // to avoid reccurency!
+    }
+
+    @Override
+    public void visit(FieldsDeclaration node) {
         indentContinuationWithinStatement(node);
         // do not call super.visit()
         // to avoid reccurency!

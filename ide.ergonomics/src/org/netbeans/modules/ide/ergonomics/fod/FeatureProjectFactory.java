@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -82,7 +84,10 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.FilterNode;
 import org.xml.sax.SAXException;
 
 /**
@@ -90,7 +95,8 @@ import org.xml.sax.SAXException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>, Jirka Rechtacek <jrechtacek@netbeans.org>
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
-public class FeatureProjectFactory implements ProjectFactory, PropertyChangeListener {
+public class FeatureProjectFactory
+implements ProjectFactory, PropertyChangeListener, Runnable {
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.ide.ergonomics.projects"); // NOI18N
 
     public FeatureProjectFactory() {
@@ -252,56 +258,56 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
+    public void run() {
+        final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
+        FeatureInfo f = null;
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            Data d = new Data(p.getProjectDirectory(), true);
+            for (FeatureInfo info : FeatureManager.features()) {
+                switch (info.isProject(d)) {
+                    case 0:
+                        break;
+                    case 1:
+                        f = info;
+                        break;
+                    case 2:
+                        f = info;
+                        additional.add(info);
+                        break;
+                    default:
+                        assert false;
+                }
+            }
+        }
+        if (f != null && !additional.isEmpty()) {
+            final FeatureInfo finalF = f;
+            final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
+
+            boolean success = false;
+            FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
+            FindComponentModules findModules = new FindComponentModules(finalF, addF);
+            Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
+            Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
+            if (toInstall != null && !toInstall.isEmpty()) {
+                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
+                installer.getInstallTask().waitFinished();
+                success = true;
+            } else if (toEnable != null && !toEnable.isEmpty()) {
+                ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
+                enabler.getEnableTask().waitFinished();
+                success = true;
+            } else if (toEnable == null || toInstall == null) {
+                success = true;
+            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
+                success = true;
+            }
+        }
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
-            FeatureInfo f = null;
-            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                Data d = new Data(p.getProjectDirectory(), true);
-
-                for (FeatureInfo info : FeatureManager.features()) {
-                    switch (info.isProject(d)) {
-                        case 0: break;
-                        case 1: 
-                            f = info;
-                            break;
-                        case 2:
-                            f = info;
-                            additional.add(info);
-                            break;
-                        default: assert false;
-                    }
-                }
-            }
-
-            if (f != null && !additional.isEmpty()) {
-                final FeatureInfo finalF = f;
-                final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
-                class Enable implements Runnable {
-                    private boolean success;
-                    public void run() {
-                        FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
-                        FindComponentModules findModules = new FindComponentModules(finalF, addF);
-                        Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
-                        Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
-                        if (toInstall != null && !toInstall.isEmpty()) {
-                            ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                            installer.getInstallTask().waitFinished();
-                            success = true;
-                        } else if (toEnable != null && !toEnable.isEmpty()) {
-                            ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
-                            enabler.getEnableTask().waitFinished();
-                            success = true;
-                        } else if (toEnable == null || toInstall == null) {
-                            success = true;
-                        } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                            success = true;
-                        }
-                    }
-                }
-                Enable en = new Enable();
-                RequestProcessor.getDefault ().post (en, 0, Thread.NORM_PRIORITY).waitFinished ();
-            }
+            RequestProcessor.Task t = FeatureManager.getInstance().create(this);
+            t.schedule(0);
         }
     }
 
@@ -383,7 +389,9 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                 if (state == null) {
                     return;
                 }
-                RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
+                RequestProcessor.Task t = FeatureManager.getInstance().create(this);
+                t.schedule(0);
+                t.waitFinished ();
                 if (error == null) {
                     switchToReal();
                     // make sure support for projects we depend on are also enabled
@@ -439,13 +447,14 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
         } // end of FeatureOpenHook
     } // end of FeatureNonProject
     private static final class FeatureDelegate 
-    implements Lookup.Provider, ProjectInformation {
+    implements Lookup.Provider, ProjectInformation, LogicalViewProvider {
         private final FileObject dir;
         private final PropertyChangeSupport support;
         Lookup delegate;
         private final InstanceContent ic = new InstanceContent();
         private final Lookup hooks = new AbstractLookup(ic);
         private final FeatureNonProject.FeatureOpenHook hook;
+        private List<RootNode> lvs;
 
 
         public FeatureDelegate(FileObject dir, FeatureNonProject feature) {
@@ -520,7 +529,51 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
             for (ProjectOpenedHook h : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
                 ic.add(h);
             }
+            List<RootNode> list = lvs;
+            lvs = Collections.emptyList();
+            if (list != null) {
+                for (RootNode fn : list) {
+                    fn.change(delegate);
+                }
+            }
             support.firePropertyChange(null, null, null);
         }
+
+        public Node createLogicalView() {
+            LogicalViewProvider lvp = delegate.lookup(LogicalViewProvider.class);
+            if (lvp != null && lvp != this) {
+                return lvp.createLogicalView();
+            }
+            if (lvs == null) {
+                lvs = new ArrayList<RootNode>();
+            }
+
+            RootNode fn = new RootNode(dir);
+            lvs.add(fn);
+            return fn;
+        }
+
+        public Node findPath(Node root, Object target) {
+            LogicalViewProvider lvp = delegate.lookup(LogicalViewProvider.class);
+            if (lvp != null && lvp != this) {
+                return lvp.findPath(root, target);
+            }
+            return null;
+        }
     }
+
+    private static final class RootNode extends FilterNode {
+        public RootNode(FileObject fo) {
+            super(DataFolder.findFolder(fo).getNodeDelegate());
+        }
+
+        public void change(Lookup l) {
+            LogicalViewProvider lvp = l.lookup(LogicalViewProvider.class);
+            if (lvp != null) {
+                changeOriginal(lvp.createLogicalView(), true);
+            }
+
+        }
+    }
+
 }

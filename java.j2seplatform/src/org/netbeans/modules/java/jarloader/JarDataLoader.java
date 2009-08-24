@@ -82,20 +82,9 @@ public final class JarDataLoader extends UniFileLoader {
         setExtensions(extensions);
     }
 
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    @Override
+    protected String actionsContext() {
+       return "Loaders/application/x-java-archive/Actions/"; // NOI18N
     }
     
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {

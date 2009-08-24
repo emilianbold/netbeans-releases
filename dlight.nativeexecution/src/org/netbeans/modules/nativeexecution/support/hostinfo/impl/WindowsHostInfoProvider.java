@@ -164,5 +164,9 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         public File getTempDirFile() {
             return tmpDirFile;
         }
+
+        public long getClockSkew() {
+            return 0;
+        }
     }
 }

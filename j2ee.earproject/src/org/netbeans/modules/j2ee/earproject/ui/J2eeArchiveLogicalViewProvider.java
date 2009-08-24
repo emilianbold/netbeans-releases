@@ -486,7 +486,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 Profile j2eeProfile = Profile.fromPropertiesString(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(EarProjectProperties.J2EE_PLATFORM));
                 if (j2eeProfile == null) {
-                    j2eeProfile = Profile.JAVA_EE_5;
+                    j2eeProfile = Profile.JAVA_EE_6_FULL;
                     Logger.getLogger(J2eeArchiveLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+EarProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeProfile); // NOI18N

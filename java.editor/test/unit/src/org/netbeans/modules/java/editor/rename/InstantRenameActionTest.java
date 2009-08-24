@@ -160,6 +160,101 @@ public class InstantRenameActionTest extends NbTestCase {
         assertTrue(wasResolved[0]);
         validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
     }
+
+    public void testIsInaccessibleOutsideOuterClassForStaticFieldOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public static int field;}}", 81, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 79, 84);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForStaticFieldOfNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { static class PPP { public static int field;}}", 73, wasResolved);
+
+        assertNull(changePoints);
+        assertTrue(wasResolved[0]);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForFieldOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public int field;}}", 73, wasResolved);
+
+        assertNull(changePoints);
+        assertTrue(wasResolved[0]);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForFieldOfPrivateFinalNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static final class PPP { public int field;}}", 80, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 78, 83);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForFieldOfPrivateFinalNestedClassWithExtends() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static final class PPP extends Test { public int field;}}", 93, wasResolved);
+
+        assertNull(changePoints);
+        assertTrue(wasResolved[0]);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForEnumOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public enum En {E1;}}}", 75, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 73, 75);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForEnumConstantOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public enum En {E1;}}}", 79, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 77, 79);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForInterfaceOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public interface In {int method();}}}", 80, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 78, 80);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForInterfaceMethodOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public interface In {int method();}}}", 88, wasResolved);
+
+        assertNull(changePoints);
+        assertTrue(wasResolved[0]);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForAnnTypeOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public @interface In {int method();}}}", 81, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 79, 81);
+    }
+
+    public void testIsInaccessibleOutsideOuterClassForAnnTypeMethodOfPrivateNestedClass() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Token> changePoints = performTest("package test; public class Test { private static class PPP { public @interface In {int method();}}}", 89, wasResolved);
+
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 87, 93);
+    }
     
     private void validateChangePoints(Collection<Token> changePoints, int... origs) {
         Set<Pair> awaited = new HashSet<Pair>();

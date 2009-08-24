@@ -168,7 +168,7 @@ public class TreeFactory {
     }
     
     public BreakTree Break(CharSequence label) {
-    Name n = label != null ? names.fromString(label.toString()) : names.empty;
+        Name n = label != null ? names.fromString(label.toString()) : null;
         return make.Break(n);
     }
     
@@ -282,7 +282,7 @@ public class TreeFactory {
     }
     
     public ContinueTree Continue(CharSequence label) {
-        Name n = label != null ? names.fromString(label.toString()) : names.empty;
+        Name n = label != null ? names.fromString(label.toString()) : null;
         return make.Continue(n);
     }
     

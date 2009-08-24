@@ -43,12 +43,12 @@ package org.openide.text;
 import java.awt.Color;
 import java.awt.Component;
 
-import java.beans.*;
 
 import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.openide.cookies.EditorCookie;
 
 
 /** Dummy class holding utility methods for working with NetBeans document conventions.
@@ -367,7 +367,34 @@ public final class NbDocument extends Object {
             doc.setLogicalStyle(offset, st);
         }
     }
-
+    
+    /**
+     * Gets recently selected editor pane opened by editor cookie
+     * Can be called from AWT event thread only.
+     *
+     * @param ec EditorCookie used to find out recently selected editor pane
+     * @return pane or null
+     *
+     * @since 6.24
+     *
+     */
+    public static JEditorPane findRecentEditorPane (EditorCookie ec) {
+        // expected in AWT only
+        assert SwingUtilities.isEventDispatchThread()
+                : "NbDocument.findInitializedPaneForActiveTC must be called from AWT thread only"; // NOI18N
+        if (ec instanceof CloneableEditorSupport) {
+            // find if initialized or return null immediately
+            JEditorPane pane = ((CloneableEditorSupport) ec).getRecentPane();
+            return pane;
+        } else {
+            JEditorPane [] panes = ec.getOpenedPanes();
+            if (panes != null) {
+                return panes[0];
+            }
+            return null;
+        }
+    }
+    
     /** Locks the document to have exclusive access to it.
      * Documents implementing {@link Lockable} can specify exactly how to do this.
     *

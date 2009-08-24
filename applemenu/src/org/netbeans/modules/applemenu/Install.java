@@ -55,13 +55,14 @@ import org.openide.modules.ModuleInstall;
 public class Install extends ModuleInstall {
     private CtrlClickHack listener;
 
+    @Override
     public void restored () {
         listener = new CtrlClickHack();
-        Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK);
+        Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.FOCUS_EVENT_MASK);
         if (System.getProperty("mrj.version") != null) { // NOI18N
 //            FontReferenceQueue.install();
             try {
-                Class adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
+                Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
                 Method m = adapter.getDeclaredMethod("install", new Class[0] );
                 m.invoke(adapter, new Object[0]);
             } catch (NoClassDefFoundError e) {
@@ -75,6 +76,7 @@ public class Install extends ModuleInstall {
         }
     }
     
+    @Override
     public void uninstalled () {
          if (listener != null) {
             Toolkit.getDefaultToolkit().removeAWTEventListener(listener);
@@ -83,7 +85,7 @@ public class Install extends ModuleInstall {
         if (System.getProperty("mrj.version") != null) { // NOI18N
 
             try {
-                Class adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
+                Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
                 Method m = adapter.getDeclaredMethod("uninstall", new Class[0] );
                 m.invoke(adapter, new Object[0]);
             } catch (NoClassDefFoundError e) {

@@ -47,10 +47,12 @@ import java.util.logging.LogRecord;
  * @author tomas
  */
 public class LogHandler extends Handler {
-    private long TIMEOUT = 30 * 1000000;
+    private long TIMEOUT = 30 * 1000;
     private final String messageToWaitFor;
+    private String interceptedMessage;
     private boolean done = false;
     private final Compare compare;
+    private boolean reset = false;
     public enum Compare {
         STARTS_WITH,
         ENDS_WITH
@@ -69,9 +71,6 @@ public class LogHandler extends Handler {
         }
     }
 
-    public void reset() {
-        done = false;
-    }
     @Override
     public void publish(LogRecord record) {
         if(!done) {
@@ -89,11 +88,22 @@ public class LogHandler extends Handler {
                 default:
                     throw new IllegalStateException("wrong value " + compare);
             }
+            if(done) {
+                interceptedMessage = message;
+            }
         }
     }
 
     public boolean isDone() {
         return done;
+    }
+
+    public void reset() {
+        reset = true;
+    }
+
+    public String getInterceptedMessage() {
+        return interceptedMessage;
     }
 
     @Override
@@ -102,8 +112,9 @@ public class LogHandler extends Handler {
     public void close() throws SecurityException { }
 
     public void waitUntilDone() throws InterruptedException {
+        reset = false;
         long t = System.currentTimeMillis();
-        while(!done) {
+        while(!done && !reset) {
             Thread.sleep(200);
             if(System.currentTimeMillis() - t > TIMEOUT) {
                 throw new IllegalStateException("Timeout >" + TIMEOUT);

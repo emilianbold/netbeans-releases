@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.Bootstrap;
-import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.*;
@@ -59,16 +58,13 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -87,10 +83,8 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -653,13 +647,14 @@ public class ConnectPanel extends JPanel implements ActionListener {
                     }
                 }
             });
-            Runnable action = new Runnable() {
-
-                public void run() {
-                    startTaskPtr[0].schedule(0);
-                }
-            };
-            ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (ConnectPanel.class, "CTL_Connect"));   //NOI18N
+            startTaskPtr[0].schedule(0);
+//            Runnable action = new Runnable() {
+//
+//                public void run() {
+//                    startTaskPtr[0].schedule(0);
+//                }
+//            };
+//            ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (ConnectPanel.class, "CTL_Connect"));   //NOI18N
             //System.out.println("Before return from ConnectPanel.ok()");
             return true;
         }

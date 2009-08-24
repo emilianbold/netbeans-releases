@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
@@ -61,10 +62,17 @@ import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -107,13 +115,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public String getSortText() {
+        IndexedElement indexedElement = null;
         if (getElement() instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) getElement();
-
-            if (indexedElement.isResolved()) {
-                return "-" + getName(); //NOI18N
-
-            }
+            indexedElement = (IndexedElement) getElement();
+        } else if (getElement() instanceof IndexedClassMember) {
+            indexedElement = ((IndexedClassMember)getElement()).getMember();
+        }
+        if (indexedElement != null && indexedElement.isResolved()) {
+            return "-" + getName(); //NOI18N
         }
         return getName();
     }
@@ -139,13 +148,29 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     public boolean isSmart() {
         // true for elements defined in the currently file
+        IndexedElement indexedElement = null;
         if (getElement() instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) getElement();
+            indexedElement = (IndexedElement) getElement();
+        } else if (getElement() instanceof IndexedClassMember) {
+            indexedElement = ((IndexedClassMember) getElement()).getMember();
+        }
+
+        if (indexedElement != null) {
             String url = indexedElement.getFilenameUrl();
             return url != null && url.equals(request.currentlyEditedFileURL);
         }
 
         return false;
+    }
+
+    private static NamespaceDeclaration findEnclosingNamespace(ParserResult info, int offset) {
+        List<ASTNode> nodes = NavUtils.underCaret(info, offset);
+        for(ASTNode node : nodes) {
+            if (node instanceof NamespaceDeclaration) {
+                return (NamespaceDeclaration) node;
+            }
+        }
+        return null;
     }
 
     public String getCustomInsertTemplate() {
@@ -173,6 +198,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
+                    Model model = ModelFactory.getModel(request.result);
+                    NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
+
+                    if (namespaceScope != null) {
+                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                        QualifiedName fqna = QualifiedName.create(false, segments);
+                        if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
+                            QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                            if (suffix != null) {
+                                template.append(suffix.toString());
+                                break;
+                            }
+                        }
+                    }
                     template.append(getName());
                     break;
             }
@@ -183,7 +223,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public String getRhsHtml(HtmlFormatter formatter) {
-        if (element.getIn() != null) {
+        if (element instanceof IndexedClassMember) {
+            IndexedClassMember classMember = (IndexedClassMember) element;
+            IndexedType type = classMember.getType();
+            QualifiedName qualifiedName = QualifiedName.create(type.getNamespaceName());
+            if (qualifiedName.isDefaultNamespace()) {
+                formatter.appendText(type.getName());
+                return formatter.getText();
+            } else {
+                formatter.appendText(type.getFullyQualifiedName());
+                return formatter.getText();
+            }
+        } if (element.getIn() != null) {
             formatter.appendText(element.getIn());
             return formatter.getText();
         } else if (element instanceof IndexedElement) {
@@ -492,9 +543,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
         }
+        VariableItem(IndexedClassMember<IndexedConstant> classMember, CompletionRequest request) {
+            super(classMember, request);
+        }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            String typeName = ((IndexedConstant)getElement()).getTypeName();
+            final ElementHandle elem = getElement();
+            String typeName = null;
+            if (elem instanceof IndexedConstant) {
+                typeName = ((IndexedConstant)elem).getTypeName();
+            } else if (elem instanceof IndexedClassMember) {
+                typeName = ((IndexedClassMember<IndexedConstant>)elem).getMember().getTypeName();
+            }
 
             if (typeName == null) {
                 typeName = "?"; //NOI18N
@@ -562,8 +622,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ClassConstantItem extends VariableItem {
-        ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
+        ClassConstantItem(IndexedClassMember<IndexedConstant> classMember, CompletionRequest request) {
+            super(classMember, request);
         }
 
         @Override
@@ -671,8 +731,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             super(function, request);
             this.optionalArgCount = optionalArgCount;
         }
+        FunctionItem(IndexedClassMember<IndexedFunction> function, CompletionRequest request, int optionalArgCount) {
+            super(function, request);
+            this.optionalArgCount = optionalArgCount;
+        }
 
         public IndexedFunction getFunction(){
+            if (getElement() instanceof IndexedClassMember) {
+                return (IndexedFunction)((IndexedClassMember)getElement()).getMember();
+            }
             return (IndexedFunction)getElement();
         }
 

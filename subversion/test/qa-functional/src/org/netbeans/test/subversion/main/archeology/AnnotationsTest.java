@@ -80,11 +80,13 @@ public class AnnotationsTest extends JellyTestCase {
     
     public void testShowAnnotations() throws Exception {
         try {
+
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 NewProjectWizardOperator.invoke().close();
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -92,7 +94,7 @@ public class AnnotationsTest extends JellyTestCase {
             CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
             RepositoryStepOperator rso = new RepositoryStepOperator();
-            
+
             //create repository...
             File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
             new File(TMP_PATH).mkdirs();
@@ -116,6 +118,7 @@ public class AnnotationsTest extends JellyTestCase {
             open.push();
             TestKit.waitForScanFinishedAndQueueEmpty();
 
+            System.out.println("initialize MessageHandler");
             mh = new MessageHandler("Annotating");
             TestKit.removeHandlers(log);
             log.addHandler(mh);

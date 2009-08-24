@@ -263,6 +263,7 @@ public class UpdateAction extends ContextAction {
                 // the cache fires status change events to trigger the annotation refresh.
                 // unfortunatelly, we have to call the refresh explicitly for each file from this place
                 // as the revision label was changed even if the files status wasn't
+                Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
                 Subversion.getInstance().refreshAnnotations(fileArray);
             }
         });

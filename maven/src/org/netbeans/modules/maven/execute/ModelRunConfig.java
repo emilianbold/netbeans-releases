@@ -69,6 +69,14 @@ public final class ModelRunConfig extends BeanRunConfig {
         if (mod.getPreAction() != null) {
             setPreExecutionActionName(mod.getPreAction());
         }
+        String react = mod.getReactor();
+        if (react != null) {
+            if ("am".equals(react) || "also-make".equals(react)) {
+                setReactorStyle(ReactorStyle.ALSO_MAKE);
+            } else if ("amd".equals(react) || "also-make-dependents".equals(react)) {
+                setReactorStyle(ReactorStyle.ALSO_MAKE_DEPENDENTS);
+            }
+        }
     }
 
 }

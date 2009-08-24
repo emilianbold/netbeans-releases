@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.subversion;
 
+import java.io.File;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
 import org.openide.util.Lookup;
 
 /**
@@ -71,12 +73,26 @@ public class SvnKenaiSupport {
         return kenaiSupport.getPasswordAuthentication(forceRelogin);
     }
 
+    public void setFirmAssociations(File[] files, String url) {
+        kenaiSupport.setFirmAssociations(files, url);
+    }
+
     /**
      * Shows a login dialog
      * @return true if successfully logged in
      */
     public boolean showLogin () {
         return kenaiSupport.showLogin();
-}
+    }
+
+    public boolean isOnline(String user) {
+        return kenaiSupport.isUserOnline(user);
+    }
+
+    public KenaiUser forName(String user) {
+        return kenaiSupport.forName(user);
+    }
+
+
 
 }

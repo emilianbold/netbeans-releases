@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,6 +76,9 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 public final class PathRegistry implements Runnable {
+
+    private static final boolean FIRE_UNKNOWN_ALWAYS = false;
+
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
@@ -159,7 +163,7 @@ public final class PathRegistry implements Runnable {
                         unknownRoots.put(u,new WeakValue(definingClassPath,u));
                     }
                 }
-                if (fire) {
+                if (FIRE_UNKNOWN_ALWAYS && fire) {
                     this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, null, Collections.singleton(definingClassPath));
                 }
                 return result;
@@ -167,6 +171,26 @@ public final class PathRegistry implements Runnable {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Registers unknown source path, for example non open project visited by favorities.
+     */
+    public void registerUnknownSourceRoots (final ClassPath owner, final Iterable<? extends URL> roots) {
+        assert owner != null;
+        assert roots != null;
+        synchronized (this) {
+            for (URL root : roots) {
+                unknownRoots.put(root,new WeakValue(owner,root));
+            }
+            unknownSourcePath = new HashSet<URL>(unknownRoots.keySet());
+            changes.add(new PathRegistryEvent.Change(EventKind.PATHS_ADDED,
+                    PathKind.UNKNOWN_SOURCE,
+                    null,
+                    Collections.singleton(owner)));
+        }
+        LOGGER.log(Level.FINE, "registerUnknownSourceRoots: " + Arrays.asList(roots)); // NOI18N
+        firerTask.schedule(0);
     }
 
     public Collection<? extends URL> getSources () {
@@ -889,7 +913,7 @@ public final class PathRegistry implements Runnable {
             synchronized (PathRegistry.this) {
                 fire = (unknownRoots.remove (key) != null);
             }
-            if (fire) {
+            if (FIRE_UNKNOWN_ALWAYS && fire) {
                 resetCacheAndFire(EventKind.PATHS_REMOVED, PathKind.UNKNOWN_SOURCE, null, null);
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -80,6 +80,7 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar2"));
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar3"));
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar4"));
+//        suite.addTest(new MethodTypeParametersTest("testWhitespaceAfterTypeParamInMethodInvocation170340"));
         return suite;
     }
     
@@ -639,6 +640,45 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testWhitespaceAfterTypeParamInMethodInvocation170340() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.<String> foo(); }\n" +
+            "}");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.<String> bar(); }\n" +
+            "}";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                BlockTree init = (BlockTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) init.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+
+                workingCopy.rewrite(mit.getMethodSelect(), make.setLabel(mit.getMethodSelect(), "bar"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

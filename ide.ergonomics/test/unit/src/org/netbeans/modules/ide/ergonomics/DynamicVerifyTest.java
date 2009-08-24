@@ -72,7 +72,8 @@ public class DynamicVerifyTest extends NbTestCase {
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
-            enableModules(".*")
+            enableModules(".*").
+            honorAutoloadEager(true)
         );
         Test ergonomics = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
@@ -86,7 +87,8 @@ public class DynamicVerifyTest extends NbTestCase {
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
-            enableModules("ide[0-9]*", ".*")
+            enableModules("ide[0-9]*", ".*").
+            honorAutoloadEager(true)
         );
 
         all.addTest(full);

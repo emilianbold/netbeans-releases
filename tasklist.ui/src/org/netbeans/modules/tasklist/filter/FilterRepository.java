@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -88,6 +87,7 @@ public final class FilterRepository {
         }
     }
     
+    @Override
     public Object clone() {
         FilterRepository ret = new FilterRepository();
         ret.assign(this);
@@ -180,6 +180,7 @@ public final class FilterRepository {
             }
             filters.add( filter );
         }
+        boolean shouldSave = false;
         //make sure there's some default filter on the first start
         if( prefs.getBoolean( "firstTimeStart", true ) ) { //NOI18N
             prefs.putBoolean( "firstTimeStart", false ); //NOI18N
@@ -191,9 +192,24 @@ public final class FilterRepository {
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
             setActive( filter );
-            
-            save();
+            shouldSave = true;
         }
+            
+        if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
+            prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
+            TaskFilter filter = createNewFilter();
+            filter.setName( NbBundle.getMessage( FilterRepository.class, "LBL_IssuesFilter" ) ); //NOI18N
+            TypesFilter types = new TypesFilter();
+            types.clear();
+            types.setEnabled("org.netbeans.modules.bugtracking.tasklist.TaskListProvider", true); //NOI18N
+            types.setTaskCountLimit( 100 );
+            filter.setTypesFilter( types );
+            filter.setKeywordsFilter( new KeywordsFilter() );
+            filters.add( filter );
+            shouldSave = true;
+        }
+        if( shouldSave )
+            save();
     }
     
     public void save() throws IOException {
@@ -202,6 +218,7 @@ public final class FilterRepository {
             prefs = prefs.node( "Filters" ); //NOI18N
             prefs.clear();
             prefs.putBoolean( "firstTimeStart", false ); //NOI18N
+            prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
 
             prefs.putInt( "count", filters.size() ); //NOI18N
             prefs.putInt( "active", active ); //NOI18N

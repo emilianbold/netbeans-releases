@@ -232,13 +232,7 @@ public class VersionsCache {
     private InputStream getInputStream (SvnClient client, SVNUrl url, String revision, String pegRevision) throws SVNClientException {
         InputStream in = null;
         try {
-            if (SvnClientFactory.isCLI()) {
-                // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
-                // doesn't work with javahl but we won't change for cli as there might be some reason
-                in = client.getContent(url.appendPath("@" + pegRevision), SvnUtils.toSvnRevision(revision));
-            } else {
-                in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(pegRevision));
-            }
+            in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(pegRevision));
         } catch (SVNClientException e) {
             if (SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ||
                     SvnClientExceptionHandler.isPathNotFound(e.getMessage())) {

@@ -96,6 +96,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         
         // Ask for Java folders
         Project project = Templates.getProject( wizardDescriptor );
+        if (project == null) throw new NullPointerException ("No project found for: " + wizardDescriptor);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;

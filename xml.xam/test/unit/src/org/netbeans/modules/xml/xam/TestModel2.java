@@ -104,7 +104,7 @@ public class TestModel2 extends AbstractDocumentModel<TestComponent2> implements
     public void addChildComponent(Component target, Component child, int index) {
         TestComponent2 parent = (TestComponent2) target;
         TestComponent2 tc = (TestComponent2) child;
-        parent.insertAtIndex(tc.getName(), tc, index > -1 ? index : parent.getChildren().size());
+        parent.insertAtIndex(tc.getName(), tc, index > -1 ? index : parent.getChildrenCount());
     }
 
     public void removeChildComponent(Component child) {

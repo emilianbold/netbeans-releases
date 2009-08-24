@@ -75,7 +75,7 @@ public class Legend extends JPanel {
         GridBagConstraints c;
 
         for (GraphDescriptor graph : graphs) {
-            JLabel label = new JLabel(graph.getDescription(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
+            JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
             label.setForeground(GraphConfig.TEXT_COLOR);
             label.setFont(label.getFont().deriveFont(10f));
             c = new GridBagConstraints();

@@ -220,9 +220,6 @@ class FoldingTaskListModel extends TaskListModel {
         case COL_DESCRIPTION:
             comparator = TaskComparator.getDescriptionComparator( ascending );
             break;
-        case COL_LINE:
-            comparator = TaskComparator.getLineComparator( ascending );
-            break;
         case COL_LOCATION:
             comparator = TaskComparator.getLocationComparator( ascending );
             break;
@@ -249,7 +246,7 @@ class FoldingTaskListModel extends TaskListModel {
     
     class FoldingGroup implements Comparable<FoldingTaskListModel.FoldingGroup> {
         private TaskGroup tg;
-        private ArrayList<Task> tasks = new ArrayList<Task>( 100 );
+        private final ArrayList<Task> tasks = new ArrayList<Task>( 100 );
         private boolean isExpanded;
         private Comparator<Task> comparator;
         

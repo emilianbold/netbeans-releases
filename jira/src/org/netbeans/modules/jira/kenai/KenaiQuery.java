@@ -56,7 +56,7 @@ public class KenaiQuery extends JiraQuery {
     private String project;
 
     public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
-        super(name, repository, jf, saved);
+        super(name, repository, jf, saved, false);
         this.predefinedQuery = predefined;
         this.project = project;
         controller = createControler(repository, this, jf);

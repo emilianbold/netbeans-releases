@@ -181,8 +181,10 @@ public class AppClientProjectGenerator {
         String resource;
         if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
-        } else {
+        } else if (Profile.J2EE_14.equals(j2eeProfile)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
+        } else {
+                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-6.xml"; // NOI18N
         }
         FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "application-client"); //NOI18N
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
@@ -392,8 +394,10 @@ public class AppClientProjectGenerator {
             String resource;
             if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
-            } else {
+            } else if (Profile.J2EE_14.equals(j2eeProfile)) {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
+            } else {
+                resource = "org-netbeans-modules-j2ee-clientproject/application-client-6.xml"; // NOI18N
             }
             FileUtil.copyFile(FileUtil.getConfigFile(resource),
                     confFolderFO, "application-client"); //NOI18N

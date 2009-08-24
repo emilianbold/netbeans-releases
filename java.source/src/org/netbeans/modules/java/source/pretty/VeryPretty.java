@@ -56,6 +56,7 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
 import com.sun.tools.javac.util.*;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.code.Symbol.*;
 import static com.sun.tools.javac.code.Flags.*;
@@ -65,9 +66,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
@@ -409,7 +408,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitClassDef(JCClassDecl tree) {
-	Name enclClassNamePrev = enclClassName;
+        Name enclClassNamePrev = enclClassName;
 	enclClassName = tree.name;
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
@@ -1788,62 +1787,68 @@ public final class VeryPretty extends JCTree.Visitor {
 
     private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
-        if (!commentSet.getPrecedingComments().isEmpty()) {
-            for (Comment c : commentSet.getPrecedingComments())
+        java.util.List<Comment> pc = commentSet.getComments(CommentSet.RelativePosition.PRECEDING);
+        if (!pc.isEmpty()) {
+            for (Comment c : pc)
                 printComment(c, true, printWhitespace);
         }
     }
 
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
-        if (!commentSet.getTrailingComments().isEmpty()) {
-            for (Comment c : commentSet.getTrailingComments())
+        java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INLINE);
+        for (Comment comment : cl) {
+            printComment(comment, false, printWhitespace);
+        }
+        java.util.List<Comment> tc = commentSet.getComments(CommentSet.RelativePosition.TRAILING);
+        if (!tc.isEmpty()) {
+            for (Comment c : tc)
                 printComment(c, false, printWhitespace);
         }
     }
 
     private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {
-        //TODO: [RKo] Implement comments printing by new API
-        LinkedList<Comment> comments = new LinkedList<Comment>();
-        if (cInfo != null) {
-            int pos = TreeInfo.getEndPos(tree, origUnit.endPositions) - 1;
-            if (pos >= 0) {
-                TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                tokens.move(pos);
-                moveToSrcRelevant(tokens, Direction.BACKWARD);
-                int indent = NOPOS;
-                while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
-                    if (tokens.index() > lastReadCommentIdx) {
-                        switch (tokens.token().id()) {
-                            case LINE_COMMENT:
-                                comments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = 0;
-                                break;
-                            case BLOCK_COMMENT:
-                                comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case JAVADOC_COMMENT:
-                                comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case WHITESPACE:
-                                String tokenText = tokens.token().toString();
-                                comments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
-                                int newLinePos = tokenText.lastIndexOf('\n');
-                                if (newLinePos < 0) {
-                                    if (indent >= 0)
-                                        indent += tokenText.length();
-                                } else {
-                                    indent = tokenText.length() - newLinePos - 1;
-                                }
-                                break;
-                        }
-                        lastReadCommentIdx = tokens.index();
-                    }
-                }
-            }
-        }
+//        LinkedList<Comment> comments = new LinkedList<Comment>();
+//        if (cInfo != null) {
+//            int pos = TreeInfo.getEndPos(tree, origUnit.endPositions) - 1;
+//            if (pos >= 0) {
+//                TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+//                tokens.move(pos);
+//                moveToSrcRelevant(tokens, Direction.BACKWARD);
+//                int indent = NOPOS;
+//                while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
+//                    if (tokens.index() > lastReadCommentIdx) {
+//                        switch (tokens.token().id()) {
+//                            case LINE_COMMENT:
+//                                comments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+//                                indent = 0;
+//                                break;
+//                            case BLOCK_COMMENT:
+//                                comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+//                                indent = NOPOS;
+//                                break;
+//                            case JAVADOC_COMMENT:
+//                                comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+//                                indent = NOPOS;
+//                                break;
+//                            case WHITESPACE:
+//                                String tokenText = tokens.token().toString();
+//                                comments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
+//                                int newLinePos = tokenText.lastIndexOf('\n');
+//                                if (newLinePos < 0) {
+//                                    if (indent >= 0)
+//                                        indent += tokenText.length();
+//                                } else {
+//                                    indent = tokenText.length() - newLinePos - 1;
+//                                }
+//                                break;
+//                        }
+//                        lastReadCommentIdx = tokens.index();
+//                    }
+//                }
+//            }
+//        }
+        java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INLINE);
         for (Comment c : comments)
             printComment(c, false, printWhitespace);
     }
@@ -1884,11 +1889,11 @@ public final class VeryPretty extends JCTree.Visitor {
         if (stpos >= 0 && stpos < limit)
             lines.add(new CommentLine(stpos, limit - stpos, body));
         if (comment.indent() == 0) {
-            if (!preceding && out.lastBlankLines == 0)
+            if (!preceding && out.lastBlankLines == 0 && comment.style() != Style.LINE)
                 newline();
             out.toLineStart();
         } else if (comment.indent() > 0 && !preceding) {
-            if (out.lastBlankLines == 0)
+            if (out.lastBlankLines == 0 && comment.style() != Style.LINE)
                 newline();
             toLeftMargin();
         } else {

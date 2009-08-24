@@ -81,7 +81,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -167,6 +166,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         showResultComponent();
     }
     
+    @SuppressWarnings("deprecation")
     private void createResultComponent() {
         JPanel container = findContainer(this);
         if (container == null) {
@@ -372,6 +372,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         return null;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         Lookup currentLookup = super.getLookup();
         if (currentLookup != originalLookup) {
@@ -384,6 +385,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         return resultingLookup;
     }
 
+    @Override
     protected void componentDeactivated() {
         SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
         // #132333: need to test if the support is still valid (it may be not, because
@@ -398,11 +400,13 @@ public class SQLCloneableEditor extends CloneableEditor {
         super.componentDeactivated();
     }
 
+    @Override
     protected void componentClosed() {
         sqlExecution.editorClosed();
         super.componentClosed();
     }
 
+    @Override
     public void writeExternal(java.io.ObjectOutput out) throws IOException {
         if (sqlEditorSupport().isConsole()) {
             try {
@@ -414,6 +418,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         super.writeExternal(out);
     }
 
+    @Override
     public void readExternal(java.io.ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         initialize();
@@ -438,11 +443,13 @@ public class SQLCloneableEditor extends CloneableEditor {
             this.editorPane = editorPane;
         }
 
+        @Override
         public void remove(Object key) {
 
             super.remove(key);
         }
 
+        @Override
         public javax.swing.Action get(Object key) {
             boolean isEditorPaneFocused = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() == editorPane;
             if (isEditorPaneFocused) {
@@ -452,30 +459,37 @@ public class SQLCloneableEditor extends CloneableEditor {
             }
         }
 
+        @Override
         public void put(Object key, Action action) {
             delegate.put(key, action);
         }
 
+        @Override
         public void setParent(ActionMap map) {
             delegate.setParent(map);
         }
 
+        @Override
         public int size() {
             return delegate.size();
         }
 
+        @Override
         public Object[] keys() {
             return delegate.keys();
         }
 
+        @Override
         public ActionMap getParent() {
             return delegate.getParent();
         }
 
+        @Override
         public void clear() {
             delegate.clear();
         }
 
+        @Override
         public Object[] allKeys() {
             return delegate.allKeys();
         }
@@ -525,7 +539,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public DatabaseConnection getDatabaseConnection() {
-            return sqlEditorSupport().getDatabaseConnection();
+            return sqlEditorSupport().getActiveDatabaseConnection();
         }
 
         public void setDatabaseConnection(DatabaseConnection dbconn) {
@@ -576,8 +590,9 @@ public class SQLCloneableEditor extends CloneableEditor {
             return result.booleanValue();
         }
         
+        @Override
         public String toString() {
-            return "SQLExecution[support=" + sqlEditorSupport().messageName()  + ", dbconn=" + sqlEditorSupport().getDatabaseConnection() + "]"; // NOI18N
+            return "SQLExecution[support=" + sqlEditorSupport().messageName()  + ", dbconn=" + sqlEditorSupport().getActiveDatabaseConnection() + "]"; // NOI18N
         }
         
         private String getText(JEditorPane editorPane) {

@@ -41,30 +41,26 @@
 
 package helloworld;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Web Service
  *
- * @author __USER__
+ * @author mkuchtiak
  */
 
 @Path("/helloWorld")
 public class HelloWorldResource {
+    // A Servlet-based implementation supports injection of the following Servlet-defined types:
+    // ServletConfig, ServletContext, HttpServletRequest and HttpServletResponse.
     @Context
-    private UriInfo context;
-    
-    /** Creates a new instance of HelloWorldResource */
-    public HelloWorldResource() {
-    }
-
+    private HttpServletRequest request;
     /**
      * Retrieves representation of an instance of helloworld.HelloWorldResource
      * @return an instance of java.lang.String
@@ -72,7 +68,11 @@ public class HelloWorldResource {
     @GET
     @Produces("text/html")
     public String getXml() {
-        return "<html><body><h1>Hello World!</body></h1></html>";
+        String name = (String)request.getSession(true).getAttribute("name");
+        if (name == null) {
+            name = "World!";
+        }
+        return "<html><body><h1>Hello "+name+"</body></h1></html>";
     }
 
     /**
@@ -81,7 +81,12 @@ public class HelloWorldResource {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @Consumes("application/xml")
+    @Consumes("text/plain")
     public void putXml(String content) {
+        if (content.trim().length() == 0) {
+            request.getSession(true).invalidate();
+        } else {
+            request.getSession(true).setAttribute("name", content);
+        }
     }
 }

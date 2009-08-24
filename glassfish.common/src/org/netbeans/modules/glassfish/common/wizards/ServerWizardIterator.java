@@ -64,6 +64,7 @@ import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -230,7 +231,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
     
-    // !PW All servers local for now...
     private int httpPort = -1; // GlassfishInstance.DEFAULT_HTTP_PORT;
     private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
     private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
@@ -345,7 +345,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             return;
         }
 
-        if(!installDir.canWrite()) {
+        if(!Utils.canWrite(installDir)) {
             // for unwritable installs (e.g root), don't even bother.
             return;
         }

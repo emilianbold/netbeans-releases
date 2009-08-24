@@ -156,7 +156,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="portValueLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="portValueField" min="-2" max="-2" attributes="1"/>
+                          <Component id="portValueField" min="-2" pref="70" max="-2" attributes="1"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>

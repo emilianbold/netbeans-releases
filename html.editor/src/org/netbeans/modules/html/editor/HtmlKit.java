@@ -53,8 +53,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -89,15 +87,14 @@ import org.openide.util.Exceptions;
 /**
  * Editor kit implementation for HTML content type
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author Miloslav Metelka, mfukala@netbeans.org
+ * 
  */
 public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HtmlKit.class);
     }
-    private static final Logger LOGGER = Logger.getLogger(HtmlKit.class.getName());
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
@@ -121,24 +118,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return new HtmlKit();
     }
 
-    @Override
-    protected void initDocument(final BaseDocument doc) {
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        if (hi == null) {
-            LOGGER.log(Level.WARNING, "TokenHierarchy is null for document " + doc);
-            return;
-        }
-
-        //listen on the HTML parser and recolor after changes
-//        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
-//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
-    }
-
     /** Called after the kit is installed into JEditorPane */
     @Override
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
         c.setTransferHandler(new HtmlTransferHandler());
+        NbReaderProvider.setupReaders();
     }
     
     protected DeleteCharAction createDeletePrevAction() {

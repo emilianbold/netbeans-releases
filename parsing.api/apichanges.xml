@@ -107,6 +107,35 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="SourceIndexerFactory">
+      <api name="ParsingAPI"/>
+      <summary>Added methods scanStarted and scanFinished. Moved up common methods of EmbeddingIndexerFactory and CustomIndexerFactory</summary>
+      <version major="1" minor="20"/>
+      <date day="19" month="8" year="2009"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added scanStarted and scanFinished methods for notifying indexers about start and finish of the indexing of given root.
+              Refactored EmbeddingIndexerFactory and CustomIndexerFactory to move up common methods into super class SourceIndexerFactory.
+          </p>
+      </description>
+  </change>
+  <change id="removing-of-unused-roots">
+      <api name="ParsingAPI"/>
+      <summary>Notifying indexers about unused roots</summary>
+      <version major="1" minor="19"/>
+      <date day="12" month="8" year="2009"/>
+      <author login="tzezula"/>
+      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Modified <code>CustomIndexerFactory</code>, <code>EmbeddingIndexerFactory</code> and <code>BinaryIndexerFactory</code>
+              to have a method <code>rootsRemoved(Iterable&lt;? extends URL&gt;)</code>.This method is used to notify indexers about unused roots.
+              Indexers may do a clean up of memory caches or close indexes.
+          </p>
+      </description>
+  </change>
   <change id="modifying-filesDeleted-filesDirty">
       <api name="ParsingAPI"/>
       <summary>Modifying CustomIndexerFactory and EmbeddingIndexerFactory</summary>
