@@ -361,7 +361,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = true;
 
         boolean isNew = issue.getTaskData().isNew();
-        headerLabel.setVisible(!isNew);
+        headerLabel.setVisible(!isNew || issue.isSubtask());
         createdLabel.setVisible(!isNew);
         createdField.setVisible(!isNew);
         updatedLabel.setVisible(!isNew);
@@ -504,6 +504,9 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
             fixPrefSize(statusField);
+            if (issue.isSubtask()) {
+                headerLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.newSubtask")); // NOI18N
+            }
         } else {
             ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
             // Header label
