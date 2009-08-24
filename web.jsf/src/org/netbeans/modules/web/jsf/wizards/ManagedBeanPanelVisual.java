@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
@@ -89,10 +88,16 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 configFiles = (String[])files.toArray(new String[files.size()]);
             }
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
-            Profile profile = wm.getJ2eeProfile();
-            if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
-                jCheckBox1.setSelected(true);
+            //No config files found
+            if (configFiles.length==0) {
                 jCheckBox1.setEnabled(false);
+                jComboBoxConfigFile.setEnabled(false);
+            } else {
+                Profile profile = wm.getJ2eeProfile();
+                if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
+                    jCheckBox1.setSelected(true);
+                    jCheckBox1.setEnabled(false);
+                }
             }
         }
         ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
@@ -232,12 +237,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
-        if ((configFile == null) || configFile.trim().equals("")) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfFileSelected"));
-            return false;
+        if (configFile==null) {
+            return true;
         }
-
+        
         Project project = Templates.getProject(wizardDescriptor);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         FileObject dir = wm.getDocumentBase();

@@ -55,12 +55,12 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.gsf.api.HtmlExtension;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -249,8 +249,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         //filter the items according to the prefix
         Iterator<CompletionItem> itr = items.iterator();
         while (itr.hasNext()) {
-            HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
-            if (!hci.getItemText().startsWith(context.getPrefix())) {
+            if (!CharSequenceUtilities.startsWith(itr.next().getInsertPrefix(), context.getPrefix())) {
                 itr.remove();
             }
         }
@@ -324,8 +323,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             //filter the items according to the prefix
             Iterator<CompletionItem> itr = items.iterator();
             while (itr.hasNext()) {
-                HtmlCompletionItem hci = (HtmlCompletionItem) itr.next();
-                if (!hci.getItemText().startsWith(context.getPrefix())) {
+                if (!CharSequenceUtilities.startsWith(itr.next().getInsertPrefix(), context.getPrefix())) {
                     itr.remove();
                 }
             }
