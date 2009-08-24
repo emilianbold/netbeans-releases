@@ -76,7 +76,7 @@ public class SyntaxTree {
     }
 
     private static AstNode makeUncheckedTree(List<SyntaxElement> elements) {
-        assert elements != null;
+        assert elements != null : "passed elements list cannot but null"; //NOI18N
 
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
