@@ -31,13 +31,11 @@
 package enterprise.servlet_stateless_war;
 
 import java.io.*;
-
 import javax.ejb.EJB;
-
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
-import javax.naming.*;
 
 import enterprise.servlet_stateless_ejb.*;
 
@@ -47,6 +45,7 @@ import enterprise.servlet_stateless_ejb.*;
 // container to inject the bean.
 // @EJB(name="StatelessSession", beanInterface=StatelessSession.class)
 
+@WebServlet(name="Servlet", urlPatterns={"/servlet"})
 public class Servlet2Stateless
     extends HttpServlet {
 
@@ -58,6 +57,7 @@ public class Servlet2Stateless
     @EJB
     private StatelessSession sless;
 
+    @Override
     public void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
