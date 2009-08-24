@@ -85,10 +85,9 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     private synchronized void ensureProduct() {
         List<String> knownProducts = super.getProducts();
-        for (String knownProduct : products) {
-            if(!knownProducts.contains(knownProduct)) {
+        for (String product : products) {
+            if(!knownProducts.contains(product)) {
                 initialize(repository, true);
-                rc = null;
                 break;
             }
         }
