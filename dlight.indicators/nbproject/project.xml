@@ -44,6 +44,7 @@
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.simpletool</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>

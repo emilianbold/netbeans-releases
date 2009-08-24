@@ -37,24 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import javax.swing.Icon;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author mt154047
  */
-public interface ThreadsDataStorage {
-    /**
-     * Returns stack trace (stacks for all threads) for the moment of timestamp
-     * (i.e. all returned callstacks will be with timestamp &lt;= than the
-     * passed one). Also the state of the thread with id == threadID will be
-     * threadState.
-     *
-     * @param threadID
-     * @param timestamp
-     * @return
-     */
-    ThreadDump getThreadDump(long timestamp, int threadID, int threadState);
+final class IconedText {
+    private final String text;
+    private final Icon icon;
+
+    IconedText(String text, Icon icon){
+        this.text = text;
+        this.icon = icon;
+
+    }
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    
+
 }

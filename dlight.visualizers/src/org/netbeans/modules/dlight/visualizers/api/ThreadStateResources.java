@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api.storage;
+package org.netbeans.modules.dlight.visualizers.api;
 
 import java.awt.Color;
 import java.util.ResourceBundle;
@@ -64,6 +64,7 @@ public enum ThreadStateResources {
 
     THREAD_THREAD_STOPPED(new Color(255, 242, 0), MSAState.ThreadStopped);
 
+
     public final Color color;
     public final String name;
     public final String tooltip;
@@ -76,6 +77,9 @@ public enum ThreadStateResources {
     }
 
     public static ThreadStateResources forState(MSAState threadState) {
+        if (threadState == null){
+            return THREAD_THREAD_STOPPED;
+        }
         switch(threadState) {
             case Running: return THREAD_RUNNING;
             case RunningUser: return THREAD_RUNNING_USER;

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -48,11 +49,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadData;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateColumn;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
+import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
 
 /**
@@ -164,7 +163,9 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
                 }
             }
             if (s < delta) {
-                aMap.get(maxMsa).addAndGet(delta - s);
+                if (aMap.get(maxMsa) != null){
+                    aMap.get(maxMsa).addAndGet(delta - s);
+                }
             }
         }
     }
@@ -264,6 +265,9 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     public boolean isAlive(int index) {
+        if (list.get(index) == null || list.get(index).getMSAState(0, false) == null){
+            return true;
+        }
         return !list.get(index).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
     
@@ -275,9 +279,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
-    public ThreadDump getStackTrace(long timeStamp) {
-        return stackProvider.getStackTrace(timeStamp);
-    }
+
 
     void add(ThreadState state) {
         list.add(state);

@@ -36,20 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-public interface ThreadMapData {
+import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
-    List<ThreadData> getThreadsData();
+/**
+ * Represents thread state line column
+ *
+ * @author Alexander Simon
+ */
+public interface ThreadStateColumn {
+    String getName();
 
-    TimeDuration getPrecision();
+    int size();
 
-    /**
-     * 
-     * @return true if data contains only sampling probes
-     */
-    boolean isSamplingMode();
+    boolean isAlive(int index);
+
+    ThreadState getThreadStateAt(int index);
+
+    boolean isAlive();
+   
 }

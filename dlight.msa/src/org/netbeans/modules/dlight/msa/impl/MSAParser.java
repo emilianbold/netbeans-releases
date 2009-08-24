@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.collector;
+package org.netbeans.modules.dlight.msa.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;

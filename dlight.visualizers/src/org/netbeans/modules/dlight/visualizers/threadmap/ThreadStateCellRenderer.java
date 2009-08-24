@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -53,7 +54,6 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateResources;
 
 /**
  * @author Jiri Sedlacek
