@@ -36,23 +36,42 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators;
 
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+import java.awt.Color;
 
 /**
+ * Describes a time series representation.
+ *
  * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public final class PlotIndicatorFactory implements IndicatorFactory<PlotIndicatorConfiguration> {
+public final class TimeSeriesDescriptor {
 
-    public Indicator<PlotIndicatorConfiguration> create(PlotIndicatorConfiguration configuration) {
-        return new PlotIndicator(configuration);
+    private final Color color;
+    private final String displayName;
+    private final Kind kind;
+
+    public TimeSeriesDescriptor(Color color, String displayName, Kind kind) {
+        this.color = color;
+        this.displayName = displayName;
+        this.kind = kind;
     }
 
-    public String getID() {
-        return IndicatorConfigurationIDs.PLOT_ID;
+    public Color getColor() {
+        return color;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    public static enum Kind {
+        LINE,
+        ABS_SURFACE,
+        REL_SURFACE
     }
 }

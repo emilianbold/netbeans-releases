@@ -36,32 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.indicators.support;
+
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 
 /**
+ * Factory for {@link TimeSeriesIndicator}s.
+ *
  * @author Alexey Vladykin
  */
-public final class DetailDescriptor {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
+public final class TimeSeriesIndicatorFactory implements IndicatorFactory<TimeSeriesIndicatorConfiguration> {
 
-    private final String name;
-    private final String displayName;
-    private final String defaultValue;
-
-    public DetailDescriptor(String name, String displayName, String defaultValue) {
-        this.name = name;
-        this.displayName = displayName;
-        this.defaultValue = defaultValue;
+    public String getID() {
+        return IndicatorConfigurationIDs.TIMESERIES_ID;
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getName() {
-        return name;
+    public Indicator<TimeSeriesIndicatorConfiguration> create(TimeSeriesIndicatorConfiguration configuration) {
+        return new TimeSeriesIndicator(configuration);
     }
 }

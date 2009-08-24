@@ -38,30 +38,53 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.util.Map;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+import java.util.List;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
 
 /**
- * Converts incoming data rows into plot data.
- * Required part of every plot indicator.
- *
  * @author Alexey Vladykin
  */
-public interface DataRowToPlot {
+public abstract class TimeSeriesIndicatorConfigurationAccessor {
 
-    /**
-     * Indicator calls this method for every data row
-     * it gets from indicator data provider.
-     *
-     * @param row  new data row
-     */
-    public void addDataRow(DataRow row);
+    private static volatile TimeSeriesIndicatorConfigurationAccessor instance;
 
-    /**
-     * Indicator calls this every second to request new data to draw.
-     *
-     * @param data  implementation should fill this array with new data
-     * @param details  implementation should fill the map with new details
-     */
-    public void tick(float[] data, Map<String, String> details);
+    public static void setDefault(TimeSeriesIndicatorConfigurationAccessor accessor) {
+        if (instance != null) {
+            throw new IllegalStateException();
+        }
+        instance = accessor;
+    }
+
+    public static TimeSeriesIndicatorConfigurationAccessor getDefault() {
+        TimeSeriesIndicatorConfigurationAccessor a = instance;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(TimeSeriesIndicatorConfiguration.class.getName(), true,
+                    TimeSeriesIndicatorConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return instance;
+    }
+
+    public TimeSeriesIndicatorConfigurationAccessor() {
+    }
+
+    public abstract String getTitle(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract int getGraphScale(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract List<TimeSeriesDescriptor> getTimeSeriesDescriptors(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract List<DetailDescriptor> getDetailDescriptors(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract DataRowToTimeSeries getDataRowHandler(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf);
 }

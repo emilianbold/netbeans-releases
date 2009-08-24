@@ -36,37 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.indicators;
 
-import java.awt.Color;
+/**
+ *
+ * @author Alexey Vladykin
+ */
+public interface ValueFormatter {
 
-public final class GraphDescriptor {
-
-    private final Color color;
-    private final String displayName;
-    private final Kind kind;
-
-    public GraphDescriptor(Color color, String displayName, Kind kind) {
-        this.color = color;
-        this.displayName = displayName;
-        this.kind = kind;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public Kind getKind() {
-        return kind;
-    }
-
-    public static enum Kind {
-        LINE,
-        ABS_SURFACE,
-        REL_SURFACE
-    }
+    String format(int value);
 }

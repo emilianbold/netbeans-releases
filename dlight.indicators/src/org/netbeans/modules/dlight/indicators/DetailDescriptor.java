@@ -36,50 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.graph;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.DataUtil;
+package org.netbeans.modules.dlight.indicators;
 
 /**
- * Default {@link DataRowToPlot} implementation, suitable for simple cases.
- *
  * @author Alexey Vladykin
  */
-public final class DefaultDataRowToPlot implements DataRowToPlot {
+public final class DetailDescriptor {
 
-    private final float[] data;
-    private final Map<String, Integer> columnToIndex;
+    private final String name;
+    private final String displayName;
+    private final String defaultValue;
 
-    public DefaultDataRowToPlot(Column[][] columns) {
-        this.data = new float[columns.length];
-        this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
+    public DetailDescriptor(String name, String displayName, String defaultValue) {
+        this.name = name;
+        this.displayName = displayName;
+        this.defaultValue = defaultValue;
     }
 
-    public synchronized void addDataRow(DataRow row) {
-        for (String columnName : row.getColumnNames()) {
-            Integer index = columnToIndex.get(columnName);
-            if (index != null) {
-                data[index] = DataUtil.toFloat(row.getData(columnName));
-            }
-        }
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public synchronized void tick(float[] data, Map<String, String> details) {
-        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
+    public String getDisplayName() {
+        return displayName;
     }
 
-    private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {
-        Map<String, Integer> result = new HashMap<String, Integer>();
-        for (int i = 0; i < columns.length; ++i) {
-            for (Column column : columns[i]) {
-                result.put(column.getColumnName(), Integer.valueOf(i));
-            }
-        }
-        return result;
+    public String getName() {
+        return name;
     }
 }

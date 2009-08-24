@@ -36,14 +36,51 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators.graph;
+
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 
 /**
+ * Default {@link DataRowToTimeSeries} implementation, suitable for simple cases.
  *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-public interface IndicatorConfigurationIDs {
-    static final String CLOCK_ID = "DLightClockIndicatorConfiguration"; //NOI18N
-    static final String BAR_ID = "DLightBarIndicatorConfigurationID"; //NOI18N
-    static final String TIMESERIES_ID = "DLightTimeSeriesIndicatorConfigurationID"; //NOI18N
+public final class DefaultDataRowToTimeSeries implements DataRowToTimeSeries {
+
+    private final float[] data;
+    private final Map<String, Integer> columnToIndex;
+
+    public DefaultDataRowToTimeSeries(Column[][] columns) {
+        this.data = new float[columns.length];
+        this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
+    }
+
+    public synchronized void addDataRow(DataRow row) {
+        for (String columnName : row.getColumnNames()) {
+            Integer index = columnToIndex.get(columnName);
+            if (index != null) {
+                data[index] = DataUtil.toFloat(row.getData(columnName));
+            }
+        }
+    }
+
+    public synchronized void tick(float[] data, Map<String, String> details) {
+        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
+    }
+
+    private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {
+        Map<String, Integer> result = new HashMap<String, Integer>();
+        for (int i = 0; i < columns.length; ++i) {
+            for (Column column : columns[i]) {
+                result.put(column.getColumnName(), Integer.valueOf(i));
+            }
+        }
+        return result;
+    }
 }

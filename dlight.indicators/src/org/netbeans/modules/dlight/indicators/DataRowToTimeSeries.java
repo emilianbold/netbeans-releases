@@ -36,14 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators.support;
+package org.netbeans.modules.dlight.indicators;
+
+import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
+ * Converts incoming data rows into time series data.
+ * Required part of every time series indicator.
  *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-public interface IndicatorConfigurationIDs {
-    static final String CLOCK_ID = "DLightClockIndicatorConfiguration"; //NOI18N
-    static final String BAR_ID = "DLightBarIndicatorConfigurationID"; //NOI18N
-    static final String TIMESERIES_ID = "DLightTimeSeriesIndicatorConfigurationID"; //NOI18N
+public interface DataRowToTimeSeries {
+
+    /**
+     * Indicator calls this method for every data row
+     * it gets from indicator data provider.
+     *
+     * @param row  new data row
+     */
+    public void addDataRow(DataRow row);
+
+    /**
+     * Indicator calls this every second to request new data to draw.
+     *
+     * @param data  implementation should fill this array with new data
+     * @param details  implementation should fill the map with new details
+     */
+    public void tick(float[] data, Map<String, String> details);
 }

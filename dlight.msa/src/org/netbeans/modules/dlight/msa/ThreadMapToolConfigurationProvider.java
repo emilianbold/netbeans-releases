@@ -55,9 +55,9 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.ThreadStateMapper;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.msa.impl.MSAParser;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
@@ -78,14 +78,17 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         DataTableMetadata msaTableMetadata = createIndicatorTableMetadata();
 
-        PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(
-                new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION, loc("ThreadMapTool.Indicator.Title"), 1, // NOI18N
-                Arrays.asList(
-                    new GraphDescriptor(ThreadStateResources.THREAD_SLEEPING.color, ThreadStateResources.THREAD_SLEEPING.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(ThreadStateResources.THREAD_WAITING.color, ThreadStateResources.THREAD_WAITING.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
-                new DataRowToMSAPlot(msaTableMetadata.getColumns()));
+        TimeSeriesIndicatorConfiguration indicatorConfig = new TimeSeriesIndicatorConfiguration(
+                new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION);
+        indicatorConfig.setTitle(loc("ThreadMapTool.Indicator.Title")); // NOI18N
+        indicatorConfig.setGraphScale(1);
+        indicatorConfig.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(ThreadStateResources.THREAD_SLEEPING.color, ThreadStateResources.THREAD_SLEEPING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor(ThreadStateResources.THREAD_WAITING.color, ThreadStateResources.THREAD_WAITING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+        indicatorConfig.setDataRowHandler(
+                new DataRowToMSA(msaTableMetadata.getColumns()));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
 
         VisualizerConfiguration visualizerConfig = new ThreadMapVisualizerConfiguration();
@@ -129,12 +132,12 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null);
     }
 
-    private static class DataRowToMSAPlot implements DataRowToPlot {
+    private static class DataRowToMSA implements DataRowToTimeSeries {
 
         private final List<Column> columns;
         private float[] data;
 
-        public DataRowToMSAPlot(List<Column> columns) {
+        public DataRowToMSA(List<Column> columns) {
             this.columns = new ArrayList<Column>(columns);
             this.data = new float[STATE_COUNT];
         }

@@ -51,43 +51,48 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
+import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 
 /**
+ * Indicator capable of drawing one or more time series.
+ *
  * @author Alexey Vladykin
  */
-public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
+public final class TimeSeriesIndicator extends Indicator<TimeSeriesIndicatorConfiguration> {
 
-    private final DataRowToPlot dataRowHandler;
+    private final DataRowToTimeSeries dataRowHandler;
     private final GraphPanel<Graph, Legend> panel;
     private final Graph graph;
     private final Legend legend;
     private final JButton button;
     private final int graphCount;
 
-    public PlotIndicator(PlotIndicatorConfiguration configuration) {
+    public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
-        this.dataRowHandler = configuration.getDataRowHandler();
+        TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+        this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graph = createGraph(configuration);
-        this.legend = new Legend(configuration.getGraphDescriptors(), configuration.getDetailDescriptors());
+        this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
         this.button = new JButton(getDefaultAction());
         button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
-        this.panel = new GraphPanel<Graph, Legend>(configuration.getTitle(), graph, legend, null, graph.getVerticalAxis(), button);
-        this.graphCount = configuration.getGraphDescriptors().size();
+        this.panel = new GraphPanel<Graph, Legend>(accessor.getTitle(configuration), graph, legend, null, graph.getVerticalAxis(), button);
+        this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
     }
 
-    private static Graph createGraph(PlotIndicatorConfiguration configuration) {
-        Graph graph = new Graph(configuration.getGraphScale(), configuration.getLabelRenderer(), configuration.getGraphDescriptors());
+    private static Graph createGraph(TimeSeriesIndicatorConfiguration configuration) {
+        TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+        Graph graph = new Graph(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
         graph.setMinimumSize(graphSize);

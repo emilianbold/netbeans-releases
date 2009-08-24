@@ -53,11 +53,11 @@ import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
-import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.ValueFormatter;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -144,17 +144,20 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(fopsColumns);
 
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION, getMessage("Indicator.Title"), BINARY_ORDER, // NOI18N
-                Arrays.asList(
-                        new GraphDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), GraphDescriptor.Kind.LINE), // NOI18N
-                        new GraphDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), GraphDescriptor.Kind.LINE)), // NOI18N
-                new DataRowToIOPlot(opColumn, sizeColumn, fileCountColumn));
-        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
-                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0)))); // NOI18N
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(getMessage("Indicator.Title")); // NOI18N
+        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), TimeSeriesDescriptor.Kind.LINE), // NOI18N
+                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(
+                new DataRowToFops(opColumn, sizeColumn, fileCountColumn));
+        indicatorConfiguration.addDetailDescriptors(
+                new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
-        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
-            public String render(int value) {
+        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
+            public String format(int value) {
                 return formatValue(value);
             }
         });
@@ -193,7 +196,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         return nf.format(dbl) + SUFFIXES[i];
     }
 
-    private static class DataRowToIOPlot implements DataRowToPlot {
+    private static class DataRowToFops implements DataRowToTimeSeries {
 
         private final String opColumn;
         private final String sizeColumn;
@@ -202,7 +205,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         private long writes;
         private long fileCount;
 
-        public DataRowToIOPlot(Column opColumn, Column sizeColumn, Column fileCountColumn) {
+        public DataRowToFops(Column opColumn, Column sizeColumn, Column fileCountColumn) {
             this.opColumn = opColumn.getColumnName();
             this.sizeColumn = sizeColumn.getColumnName();
             this.fileCountColumn = fileCountColumn.getColumnName();
