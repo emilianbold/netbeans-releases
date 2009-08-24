@@ -109,9 +109,9 @@ final class ProcessList {
                     argsSimple.add("-o"); // NOI18N
                     // Used only localy, so we can use Utilities.getOperatingSystem()
                     if (hostInfo.getOSFamily() == HostInfo.OSFamily.MACOSX) {
-                        argsSimple.add(" user,pid,ppid,stime,time,command"); // NOI18N
+                        argsSimple.add("user,pid,ppid,stime,time,command"); // NOI18N
                     } else {
-                        argsSimple.add(" user,pid,ppid,stime,time,args"); // NOI18N
+                        argsSimple.add("user,pid,ppid,stime,time,args"); // NOI18N
                     }
                     ptype = PTYPE.STD;
                 }
