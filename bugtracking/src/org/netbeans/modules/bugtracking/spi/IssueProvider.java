@@ -95,7 +95,7 @@ public abstract class IssueProvider {
      */
     public static abstract class LazyIssue {
         private final URL url;
-        private final String name;
+        private String name;
         private boolean valid;
 
         /**
@@ -121,6 +121,17 @@ public abstract class IssueProvider {
          */
         public final String getName () {
             return name;
+        }
+
+        /**
+         * Sets the issue's name and refreshes the tasklist
+         * @param name new issue's name. If set to <code>null</code>, no action is taken.
+         */
+        protected final void setName (String name) {
+            if (name != null) {
+                this.name = name;
+                setValid(false);
+            }
         }
 
         /**
@@ -166,6 +177,9 @@ public abstract class IssueProvider {
          */
         public final void setValid (boolean valid) {
             this.valid = valid;
+            if (!valid) {
+                TaskListProvider.getInstance().refresh();
+            }
         }
 
         /**

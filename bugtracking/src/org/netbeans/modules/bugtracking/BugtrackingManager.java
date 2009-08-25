@@ -163,6 +163,9 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     public void addRecentIssue(Repository repo, Issue issue) {
+        if (issue.getID() == null) {
+            return;
+        }
         Queue<Issue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
             l = new LinkedList<Issue>();
