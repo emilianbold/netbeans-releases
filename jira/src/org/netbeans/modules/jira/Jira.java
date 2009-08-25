@@ -144,6 +144,7 @@ public class Jira {
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
+        JiraIssueProvider.getInstance().removeAllFor(repository);
     }
 
     public JiraRepository[] getRepositories() {

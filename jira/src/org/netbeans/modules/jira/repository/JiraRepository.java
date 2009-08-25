@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import java.util.Map;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -48,7 +49,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -105,12 +108,15 @@ public class JiraRepository extends Repository {
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
     private JiraConfiguration configuration;
-    
+
     private boolean remoteFiltersLoaded = false;
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
     private String id;
+
+    public static final String ATTRIBUTE_URL = "jira.repository.attribute.url"; //NOI18N
+    public static final String ATTRIBUTE_DISPLAY_NAME = "jira.repository.attribute.displayName"; //NOI18N
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -178,7 +184,7 @@ public class JiraRepository extends Repository {
     public Image getIcon() {
         return icon;
     }
-    
+
     public TaskRepository getTaskRepository() {
         return taskRepository;
     }
@@ -225,6 +231,30 @@ public class JiraRepository extends Repository {
     @Override
     public void fireQueryListChanged() {
         super.fireQueryListChanged();
+    }
+
+    @Override
+    protected void fireAttributesChanged(Map<String, Object> oldAttributes, Map<String, Object> newAttributes) {
+        LinkedList<String> equalAttributes = new LinkedList<String>();
+        // find unchanged values
+        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            Object oldValue = oldAttributes.get(key);
+            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
+                equalAttributes.add(key);
+            }
+        }
+        // remove unchanged values
+        for (String equalAttribute : equalAttributes) {
+            if (oldAttributes != null) {
+                oldAttributes.remove(equalAttribute);
+            }
+            newAttributes.remove(equalAttribute);
+        }
+        if (!newAttributes.isEmpty()) {
+            super.fireAttributesChanged(oldAttributes, newAttributes); // fire the event
+        }
     }
 
     public void removeQuery(JiraQuery query) {
@@ -315,7 +345,7 @@ public class JiraRepository extends Repository {
 
         // XXX escape special characters
         // + - && || ! ( ) { } [ ] ^ " ~ * ? \
-        
+
         FilterDefinition fd = new FilterDefinition();
         StringBuffer sb = new StringBuffer();
         StringTokenizer st = new StringTokenizer(criteria, " \t"); // NOI18N
@@ -349,9 +379,12 @@ public class JiraRepository extends Repository {
     }
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+        HashMap<String, Object> oldAttributes = createAttributesMap();
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
         resetRepository(); // only on url, user or passwd change
         Jira.getInstance().addRepository(this);
+        HashMap<String, Object> newAttributes = createAttributesMap();
+        fireAttributesChanged(oldAttributes, newAttributes);
     }
 
     public void setCredentials(String user, String password, String httpUser, String httpPassword) {
@@ -400,7 +433,7 @@ public class JiraRepository extends Repository {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
         return c != null ? c.getPassword() : ""; // NOI18N
     }
-    
+
     void resetRepository() {
         // XXX synchronization
         configuration = null;
@@ -565,7 +598,7 @@ public class JiraRepository extends Repository {
     public boolean authenticate(String errroMsg) {
         return BugtrackingUtil.editRepository(this, errroMsg);
     }
-    
+
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
             refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
@@ -578,7 +611,9 @@ public class JiraRepository extends Repository {
             super(JiraRepository.this.getUrl());
         }
         protected Issue createIssue(TaskData taskData) {
-            return new NbJiraIssue(taskData, JiraRepository.this);
+            NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+            org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
+            return issue;
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((NbJiraIssue)issue).setTaskData(taskData);
@@ -617,5 +652,13 @@ public class JiraRepository extends Repository {
      */
     protected ProjectFilter getProjectFilter () {
         return null;
+    }
+
+    private HashMap<String, Object> createAttributesMap () {
+        HashMap<String, Object> attributes = new HashMap<String, Object>(2);
+        // XXX add more if requested
+        attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
+        attributes.put(ATTRIBUTE_URL, getUrl());
+        return attributes;
     }
 }

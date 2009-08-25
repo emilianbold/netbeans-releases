@@ -62,6 +62,13 @@ public abstract class Repository {
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
 
     /**
+     * Repository's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
+
+    /**
      * Returns the icon for this repository
      * @return
      */
@@ -176,6 +183,15 @@ public abstract class Repository {
      */
     protected void fireQueryListChanged() {
         support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+
+    /**
+     * Notify listeners on this repository that some of repository's attributes have changed.
+     * @param oldValue map of old attributes
+     * @param newValue map of new attributes
+     */
+    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
+        support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
     }
 
     IssueCache getCache() {
