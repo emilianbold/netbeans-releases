@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,20 +77,7 @@ public class IssueAction extends SystemAction {
     }
 
     public static void openIssue(final Repository repository) {
-//        final Repository repository;
         final boolean repositoryGiven = repository != null;
-
-//        if (repository != null) {
-//            repository = givenRepository;
-//            repositoryGiven = true;
-//            repositoryGiven = true;
-//        } else {
-//            repository = BugtrackingOwnerSupport.getInstance()
-//                         .getRepository(BugtrackingOwnerSupport.ContextType
-//                                        .SELECTED_FILE_AND_ALL_PROJECTS);
-//            repositoryGiven = false;
-//        }
-
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 IssueTopComponent tc = new IssueTopComponent();

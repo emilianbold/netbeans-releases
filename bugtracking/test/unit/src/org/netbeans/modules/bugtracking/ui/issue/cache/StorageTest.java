@@ -37,8 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.ui.issue.cache;
 
+import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueStorage;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.*;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -289,7 +293,6 @@ public class StorageTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public String getRecentChanges() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

@@ -103,6 +103,7 @@ import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -1002,11 +1003,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
-                    try {
-                        ((NbJiraIssue) issue).setSeen(true);
-                    } catch (IOException ex) {
-                        Jira.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    IssueCacheUtils.setSeen(issue, true);
                 }
             }
         });

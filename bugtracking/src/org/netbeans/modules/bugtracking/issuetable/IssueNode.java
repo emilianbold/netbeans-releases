@@ -39,8 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.issuetable;
 
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
+import org.netbeans.modules.bugtracking.spi.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,6 +51,7 @@ import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +61,15 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public abstract class IssueNode extends AbstractNode {
+
+    /**
+     * Seen property id
+     */
+    public static final String LABEL_NAME_SEEN = "issue.seen";                        // NOI18N
+    /**
+     * Recetn Changes property id
+     */
+    public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
     
     private Issue issue;
 
@@ -81,9 +93,12 @@ public abstract class IssueNode extends AbstractNode {
         this.issue = issue;
         initProperties();
         refreshHtmlDisplayName();
-        issue.addPropertyChangeListener(new PropertyChangeListener() {
+        IssueCacheUtils.addCacheListener(issue, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_SEEN_CHANGED)) {
+                if(IssueNode.this.issue != evt.getSource()) {
+                    return;
+                }
+                if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
                     fireSeenValueChanged((Boolean)evt.getOldValue(), (Boolean)evt.getNewValue());
                 }
             }
@@ -108,7 +123,7 @@ public abstract class IssueNode extends AbstractNode {
     }
 
     public boolean wasSeen() {
-        return issue.wasSeen();
+        return IssueCacheUtils.wasSeen(issue);
     }
 
     private void initProperties() {
@@ -137,12 +152,12 @@ public abstract class IssueNode extends AbstractNode {
         if(oldValue != newValue) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    firePropertyChange(Issue.LABEL_NAME_SEEN, oldValue, newValue);
+                    firePropertyChange(LABEL_NAME_SEEN, oldValue, newValue);
                     Property[] properties = getProperties();
                     for (Property p : properties) {
                         if(p instanceof IssueNode.IssueProperty) {
                             String pName = ((IssueProperty)p).getName();
-                            if(!pName.equals(Issue.LABEL_NAME_SEEN)) {
+                            if(!pName.equals(LABEL_NAME_SEEN)) {
                                 firePropertyChange(pName, null, null);
                             }
                         }
@@ -196,19 +211,19 @@ public abstract class IssueNode extends AbstractNode {
      */
     public class SeenProperty extends IssueProperty<Boolean> {
         public SeenProperty() {
-            super(Issue.LABEL_NAME_SEEN,
+            super(LABEL_NAME_SEEN,
                   Boolean.class,
                   "", // NOI18N
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Seen_Desc")); // NOI18N
         }
         public Boolean getValue() {
-            return getIssue().wasSeen();
+            return IssueCacheUtils.wasSeen(issue);
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             if(IssueNode.this.wasSeen()) return 1;
-            if(p.getIssue().wasSeen()) return -1;
+            if(IssueCacheUtils.wasSeen(p.getIssue())) return -1;
             return 0;
         }
 
@@ -219,19 +234,21 @@ public abstract class IssueNode extends AbstractNode {
      */
     public class RecentChangesProperty extends IssueProperty<String> {
         public RecentChangesProperty() {
-            super(Issue.LABEL_RECENT_CHANGES,
+            super(LABEL_RECENT_CHANGES,
                   String.class,
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Recent"), // NOI18N
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Recent_Desc")); // NOI18N
         }
         public String getValue() {
-            return getIssue().getRecentChanges();
+            return IssueCacheUtils.getRecentChanges(getIssue());
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             if(p instanceof RecentChangesProperty) {
-                return getIssue().getRecentChanges().compareToIgnoreCase(((RecentChangesProperty)p).getIssue().getRecentChanges());
+                String recentChanges1 = IssueCacheUtils.getRecentChanges(getIssue());
+                String recentChanges2 = IssueCacheUtils.getRecentChanges(((RecentChangesProperty)p).getIssue());
+                return recentChanges1.compareToIgnoreCase(recentChanges2);
             }
             return 1;
         }

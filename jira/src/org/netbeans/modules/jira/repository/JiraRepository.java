@@ -71,7 +71,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -83,8 +83,10 @@ import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -213,6 +215,10 @@ public class JiraRepository extends Repository {
         return controller;
     }
 
+    public Lookup getLookup() {
+        return Lookups.singleton(getIssueCache());
+    }
+    
     @Override
     public String getUrl() {
         return taskRepository != null ? taskRepository.getUrl() : null;
@@ -277,10 +283,10 @@ public class JiraRepository extends Repository {
                 queries = manager.getQueries(this);
             }
             if(alsoRemoteFilters && !remoteFiltersLoaded) {
+                remoteFiltersLoaded = true;
                 Jira.getInstance().getRequestProcessor().post(new Runnable() {
                     public void run() {
                         queries.addAll(getServerQueries());
-                        remoteFiltersLoaded = true;
                         fireQueryListChanged();
                     }
                 });
@@ -366,7 +372,6 @@ public class JiraRepository extends Repository {
         return issues.toArray(new NbJiraIssue[issues.size()]);
     }
 
-    @Override
     public IssueCache<TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
@@ -617,6 +622,10 @@ public class JiraRepository extends Repository {
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((NbJiraIssue)issue).setTaskData(taskData);
+        }
+        @Override
+        protected String getRecentChanges(Issue issue) {
+            return ((NbJiraIssue)issue).getRecentChanges();
         }
     }
 
