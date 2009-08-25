@@ -61,6 +61,10 @@ import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -84,6 +88,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+    private File cache;
+    private FileObject cacheFO;
 
     public JavaHintsPositionRefresherTest(String name) {
         super(name);
@@ -98,7 +104,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
                     return Lookups.fixed(new Object[] {
-                        new JavaKit(),
+                        new JavaKit(), new JavacParserFactory(), new JavaCustomIndexer.Factory()
                     });
                 }
             },
@@ -114,6 +120,17 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 }
             }
         });
+
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
+            cacheFO = FileUtil.toFileObject(cache);
+
+            cache.deleteOnExit();
+
+            IndexUtil.setCacheFolder(cache);
+
+            TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
+        }
     }
 
     private void prepareTest(String fileName, String code) throws Exception {
@@ -126,7 +143,6 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         sourceRoot = workFO.createFolder("src");
 
         FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
 
         FileObject data = FileUtil.createData(sourceRoot, fileName);
         File dataFile = FileUtil.toFile(data);
@@ -135,9 +151,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
         TestUtilities.copyStringToFile(dataFile, code);
 
-//        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-//                    new JavaCustomIndexer.Factory()});
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
 
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -173,14 +187,18 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         return ctx;
     }
 
+//    public void testOverride0() throws Exception {
+//        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "");
+//    }
+
     public void testErrorHint0() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:0-1:14:error:illegal start of expression1:6-1:9:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
     }
 
     private void performTest(String fileName , String code, String expected) throws Exception {
-        prepareTest(fileName, code);
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        prepareTest(fileName, code);
         Context ctx = prepareContext(caretPosition[0]);
         Map<String, List<ErrorDescription>> errorDescriptionsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
         StringBuffer buf = new StringBuffer();
