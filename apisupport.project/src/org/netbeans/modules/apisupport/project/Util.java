@@ -791,13 +791,25 @@ public final class Util {
     }
     
     /**
-     * Finds all available packages in a given project directory. Found entries
-     * are in the form of a regular java package (x.y.z).
+     * Finds all available packages in a given project directory, including <tt>%lt;class-path-extension&gt;</tt>-s.
+     * See {@link #scanJarForPackageNames(java.util.Set, java.io.File)} for details.
      * 
      * @param prjDir directory containing project to be scanned
      * @return a set of found packages
      */
     public static SortedSet<String> scanProjectForPackageNames(final File prjDir) {
+        return scanProjectForPackageNames(prjDir, true);
+    }
+
+    /**
+     * Finds all available packages in a given project directory. Found entries
+     * are in the form of a regular java package (x.y.z).
+     *
+     * @param prjDir directory containing project to be scanned
+     * @param withCPExt When <tt>false</tt> only source roots are scanned, otherwise scans <tt>%lt;class-path-extension&gt;</tt>-s as well.
+     * @return a set of found packages
+     */
+    public static SortedSet<String> scanProjectForPackageNames(final File prjDir, boolean withCPExt) {
         NbModuleProject project = null;
         // find all available public packages in classpath extensions
         FileObject source = FileUtil.toFileObject(prjDir);
@@ -826,9 +838,11 @@ public final class Util {
             availablePublicPackages.add(pkgS.replace('/', '.'));
         }
         
-        String[] libsPaths = new ProjectXMLManager(project).getBinaryOrigins();
-        for (int i = 0; i < libsPaths.length; i++) {
-            scanJarForPackageNames(availablePublicPackages, project.getHelper().resolveFile(libsPaths[i]));
+        if (withCPExt) {
+            String[] libsPaths = new ProjectXMLManager(project).getBinaryOrigins();
+            for (int i = 0; i < libsPaths.length; i++) {
+                scanJarForPackageNames(availablePublicPackages, project.getHelper().resolveFile(libsPaths[i]));
+            }
         }
         
         // #72669: remove invalid packages.
@@ -867,8 +881,9 @@ public final class Util {
             if (root.equals(pkg)) { // default package #71532
                 continue;
             }
-            String pkgS = pkg.getPath();
-            packages.add(pkgS.replace('/', '.'));
+            String pkgS = pkg.getPath().replace('/', '.');
+            if (Util.isValidJavaFQN(pkgS))
+                packages.add(pkgS);
         }
     }
     
@@ -968,37 +983,4 @@ public final class Util {
         return ret;
     }
 
-    // TODO replace with scanJarForPackageNames?
-    /**
-     * Returns set of packages in given JAR.
-     * @param jar JAR file to scan.
-     * @return Set of packages containing at least single class file. Can be empty, but not null.
-     */
-    public static Set<String> getPublicPackages(File jar) throws IOException {
-        JarFile jf = null;
-        Set<String> packageList = new HashSet<String>();
-        scanJarForPackageNames(packageList, jar);
-//        try {
-//            jf = new JarFile(jar);
-//            Enumeration en = jf.entries();
-//            while (en.hasMoreElements()) {
-//                JarEntry entry = (JarEntry) en.nextElement();
-//                if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
-//                    // NOI18N
-//                    String nm = entry.getName();
-//                    if (!Util.isValidJavaFQN(nm.substring(0, nm.length() - 6).replace('/', '.'))) {
-//                        continue; // #72669
-//                    }
-//                    int index = nm.lastIndexOf('/');
-//                    if (index > -1) {
-//                        String path = nm.substring(0, index);
-//                        packageList.add(path.replace('/', '.'));
-//                    }
-//                }
-//            }
-//        } finally {
-//            jf.close();
-//        }
-        return packageList;
-    }
 }

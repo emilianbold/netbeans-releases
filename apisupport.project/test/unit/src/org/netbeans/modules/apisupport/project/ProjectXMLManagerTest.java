@@ -383,7 +383,8 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         ManifestManager.PackageExport[] publicPackages = testingPXM.getPublicPackages();
         assertEquals("number of public packages", 1, publicPackages.length);
-        final String[] newPP = {publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99"};
+        final Set<String> newPP = new HashSet<String>();
+        Collections.addAll(newPP, publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99");
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
@@ -396,9 +397,8 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         ManifestManager.PackageExport[] newPublicPackages = testingPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
-        Collection newPPs = Arrays.asList(newPP);
-        assertTrue(newPPs.contains(newPublicPackages[0].getPackage()));
-        assertTrue(newPPs.contains(newPublicPackages[1].getPackage()));
+        assertTrue(newPP.contains(newPublicPackages[0].getPackage()));
+        assertTrue(newPP.contains(newPublicPackages[1].getPackage()));
         assertNull("there must not be friend", testingPXM.getFriends());
     }
     
@@ -407,15 +407,16 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         assertEquals("one friend", 1, testingPXM.getFriends().length);
         assertEquals("friend org.module.examplemodule", "org.module.examplemodule", testingPXM.getFriends()[0]);
-        final String[] newFriends = new String[] { "org.exampleorg.somefriend", "org.exampleorg.anotherfriend" };
+        final Set<String> newFriends = new HashSet<String>();
+        Collections.addAll(newFriends, "org.exampleorg.somefriend", "org.exampleorg.anotherfriend" );
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
                 ManifestManager.PackageExport pkgs[] = testingPXM.getPublicPackages();
-                String[] packagesToExpose = new String[pkgs.length];
+                Set<String> packagesToExpose = new HashSet<String>();
                 for (int i = 0; i < pkgs.length; i++) {
-                    packagesToExpose[i] = pkgs[i].getPackage();
+                    packagesToExpose.add(pkgs[i].getPackage());
                 }
                 testingPXM.replaceFriends(newFriends, packagesToExpose);
                 return true;
@@ -425,10 +426,9 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject);
         String[] actualFriends = newTestingPXM.getFriends();
-        assertEquals("number of new friend", 2, actualFriends.length);
+        assertEquals("number of new friends", newFriends.size(), actualFriends.length);
         Collection newFriendsCNBs = Arrays.asList(actualFriends);
-        assertTrue(newFriendsCNBs.contains(newFriends[0]));
-        assertTrue(newFriendsCNBs.contains(newFriends[1]));
+        assertTrue("friends correctly replaced", newFriends.containsAll(newFriendsCNBs));
         assertEquals("public packages", 1, newTestingPXM.getPublicPackages().length);
     }
     

@@ -176,7 +176,7 @@ public class NbModuleProjectGenerator {
                             String[] entry = Util.copyClassPathExtensionJar(projectDir, jar);
                             if (entry != null) {
                                 classPathExtensions.put(entry[0], entry[1]);
-                                packageList.addAll(Util.getPublicPackages(jar));
+                                Util.scanJarForPackageNames(packageList, jar);
                             }
                         } catch (IOException e) {
                             //TODO report

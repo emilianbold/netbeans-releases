@@ -649,7 +649,7 @@ public final class ProjectXMLManager {
      * <code>newPackages</code>. Also removes friend packages if there are any
      * since those two mutually exclusive.
      */
-    public void replacePublicPackages(String[] newPackages) {
+    public void replacePublicPackages(Set<String> newPackages) {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
@@ -657,9 +657,9 @@ public final class ProjectXMLManager {
 
         insertPublicOrFriend(publicPackagesEl);
 
-        for (int i = 0; i < newPackages.length; i++) {
+            for (String pkg : newPackages) {
             publicPackagesEl.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
         }
         project.putPrimaryConfigurationData(confData);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
@@ -680,19 +680,20 @@ public final class ProjectXMLManager {
      * removes public packages if there are any since those two are mutually
      * exclusive.
      */
-    public void replaceFriends(String[] friends, String[] packagesToExpose) {
+    public void replaceFriends(Set<String> friends, Set<String> packagesToExpose) {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element friendPackages = createModuleElement(doc, ProjectXMLManager.FRIEND_PACKAGES);
         insertPublicOrFriend(friendPackages);
-        for (int i = 0; i < friends.length; i++) {
+
+        for (String friend : friends) {
             friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.FRIEND, friends[i]));
+                    createModuleElement(doc, ProjectXMLManager.FRIEND, friend));
         }
-        for (int i = 0; i < packagesToExpose.length; i++) {
+        for (String pkg : packagesToExpose) {
             friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, packagesToExpose[i]));
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
         }
         project.putPrimaryConfigurationData(confData);
         publicPackages = null;

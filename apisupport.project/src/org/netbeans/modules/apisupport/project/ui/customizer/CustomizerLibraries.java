@@ -45,11 +45,18 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -67,6 +75,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
@@ -83,13 +93,12 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator.ListComponent;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -105,8 +114,9 @@ import org.openide.util.RequestProcessor;
  * @author mkrauskopf
  */
 public class CustomizerLibraries extends NbPropertyPanel.Single {
-    private final ListComponent emListComp;
-    
+    private ListComponent emListComp;
+    private Map<File, Boolean> isJarExportedMap = Collections.synchronizedMap(new HashMap<File, Boolean>());
+
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(final SingleModuleProperties props, ProjectCustomizer.Category category) {
         super(props, CustomizerLibraries.class, category);
@@ -124,7 +134,6 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 getProperties().getEvaluator(),
                 FileUtil.toFileObject(getProperties().getProjectDirectoryFile())));
         DefaultButtonModel dummy = new DefaultButtonModel();
-        emListComp = EditMediator.createListComponent(wrappedJarsList);
         EditMediator.register(
                 getProperties().getProject(),
                 getProperties().getHelper(),
@@ -147,15 +156,18 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
         managePlafsButton.setEnabled(getProperties().isStandalone());
-        updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
-        wrappedJarsList.setModel(getProperties().getWrappedJarsListModel());
         dependencyList.getModel().addListDataListener(new ListDataListener() {
             public void contentsChanged(ListDataEvent e) { updateEnabled(); }
             public void intervalAdded(ListDataEvent e) { updateEnabled(); }
             public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
         });
+        final DefaultListModel model = getProperties().getWrappedJarsListModel();
+        wrappedJarsList.setModel(model);
+        emListComp = EditMediator.createListComponent(wrappedJarsList);
+        updateJarExportedMap();
+        updateEnabled();
     }
     
     private void attachListeners() {
@@ -187,6 +199,13 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     removeTokenButton.setEnabled(reqTokenList.getSelectedIndex() != -1);
+                }
+            }
+        });
+        getProperties().getPublicPackagesModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
+                    updateJarExportedMap();
                 }
             }
         });
@@ -241,6 +260,21 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
         javaPlatformCombo.setEnabled(javaEnabled);
         javaPlatformButton.setEnabled(javaEnabled);
+
+        int[] selectedIndices = emListComp.getSelectedIndices();
+        DefaultListModel listModel = getProperties().getWrappedJarsListModel();
+        boolean exportEnabled = false;
+        for (int i : selectedIndices) {
+            Item item = (Item) listModel.getElementAt(i);
+            if (item.getType() == Item.TYPE_JAR) {
+                final Boolean value = isJarExportedMap.get(item.getResolvedFile());
+                // value == null means not yet refreshed map, we can just allow export in such case
+                exportEnabled |= (value == null || ! value.booleanValue());
+                if (exportEnabled)
+                    break;
+            }
+        }
+        exportButton.setEnabled(exportEnabled);
     }
     
     private CustomizerComponentFactory.DependencyListModel getDepListModel() {
@@ -504,6 +538,11 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         jPanelJars.add(jLabel1, gridBagConstraints);
 
+        wrappedJarsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                wrappedJarsListValueChanged(evt);
+            }
+        });
         wrappedJarsSP.setViewportView(wrappedJarsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -527,11 +566,6 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         jPanelJars.add(editButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton")); // NOI18N
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -697,7 +731,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
     private void addJarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJarButtonActionPerformed
         // Let user search for the Jar file;
-        // copied from EditMediator in order to setup
+        // copied from EditMediator in order to copy selected JARs to release/modules/ext
         FileChooser chooser;
         AntProjectHelper helper = getProperties().getHelper();
         Project project = getProperties().getProject();
@@ -766,31 +800,49 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                         continue;
                     }
                 }
-                // todo - notify available packages
-
                 newPaths.add (path);
             }
 
             filePaths = newPaths.toArray (new String [newPaths.size ()]);
-            int[] newSelection = ClassPathUiSupport.addJarFiles(getProperties().getWrappedJarsListModel(), emListComp.getSelectedIndices(),
+            final DefaultListModel model = getProperties().getWrappedJarsListModel();
+            int[] newSelection = ClassPathUiSupport.addJarFiles(model,emListComp.getSelectedIndices(),
                     filePaths, base,
                     chooser.getSelectedPathVariables(), null);
             emListComp.setSelectedIndices( newSelection );
+            for (int i : newSelection) {    // newly added JARs are (probably) not exported
+                isJarExportedMap.put(((Item) model.getElementAt(i)).getResolvedFile(), Boolean.FALSE);
+            }
+            // ??? updateEnabled();?
             curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
             EditMediator.setLastUsedClassPathFolder(curDir);
         }
     }//GEN-LAST:event_addJarButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        // TODO add your handling code here:
-//        getProperties().getPublicPackagesModel().reloadData(getProperties().loadPublicPackages());
-//        getProperties().firePropertiesRefreshed();
+        int[] selectedIndices = emListComp.getSelectedIndices();
+        List<File> jars = new ArrayList<File>();
+        DefaultListModel listModel = getProperties().getWrappedJarsListModel();
+        for (int i : selectedIndices) {
+            Item item = (Item) listModel.getElementAt(i);
+            if (item.getType() == Item.TYPE_JAR) {
+                jars.add(item.getResolvedFile());
+            }
+        }
+        if (jars.size() > 0) {
+            int dif = getProperties().exportPackagesFromJars(jars);
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerLibraries.class, "MSG_PublicPackagesAddedFmt", dif));
+            DialogDisplayer.getDefault().notify(msg);
+            for (File jar : jars) {
+                isJarExportedMap.put(jar, Boolean.TRUE);
+            }
+        }
+        exportButton.setEnabled(false);
     }//GEN-LAST:event_exportButtonActionPerformed
 
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        getProperties().updateAvailablePackages();
-
-    }//GEN-LAST:event_removeButtonActionPerformed
+    private void wrappedJarsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_wrappedJarsListValueChanged
+        updateEnabled();
+    }//GEN-LAST:event_wrappedJarsListValueChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDepButton;
@@ -840,6 +892,41 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         
         javaPlatformLabel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformLbl"));
         platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
+    }
+
+    private RequestProcessor RP = new RequestProcessor(CustomizerLibraries.class.getName(), 1);
+    private RequestProcessor.Task updateMapTask;
+    private final Set[] selPkgsRef = new Set[1];
+    private final File[][] jarsRef = new File[1][];
+
+    private void updateJarExportedMap() {
+        selPkgsRef[0] = getProperties().getPublicPackagesModel().getSelectedPackages();
+        Object[] items = getProperties().getWrappedJarsListModel().toArray();
+        jarsRef[0] = new File[items.length];
+        for (int i = 0; i < items.length; i++) {
+            Item item = (Item) items[i];
+            jarsRef[0][i] = item.getResolvedFile();
+        }
+        if (updateMapTask == null) {
+            updateMapTask = RP.create(new Runnable() {
+                public void run() {
+                    File[] jars = jarsRef[0];
+                    for (File jar : jars) {
+                        final Set<String> pkgs = new HashSet<String>();
+                        Util.scanJarForPackageNames(pkgs, jar);
+                        pkgs.removeAll(selPkgsRef[0]);
+                        // when pkgs - selPkgs is empty, all packages are already exported
+                        isJarExportedMap.put(jar, Boolean.valueOf(pkgs.isEmpty()));
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateEnabled();
+                        }
+                    });
+                }
+            });
+        }
+        updateMapTask.schedule(0);
     }
     
 }
