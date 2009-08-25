@@ -772,6 +772,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      */
     public String getFastDebuggerProblemsInHTML() {
         assert getGemManager() != null : "has gemManager when asking whether Fast Debugger is installed";
+        getGemManager().resetLocal();
         StringBuilder errors = new StringBuilder();
         checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersionPattern(), errors);
         return errors.length() == 0 ? null : errors.toString();
