@@ -63,8 +63,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
@@ -96,14 +94,36 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     /** @return URI -> library map */
     public synchronized Map<String, FaceletsLibrary> getLibraries() {
-        if(faceletsLibraries == null) {
+        if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
             debugLibraries();
         }
+        
+        updateUndeclaredCompositeLibraries(faceletsLibraries);
+
         return faceletsLibraries;
     }
 
-    private Map<String,FaceletsLibrary> findLibraries() {
+    private void updateUndeclaredCompositeLibraries(Map<String, FaceletsLibrary> faceletsLibraries) {
+        //process default undeclared composite libraries
+        List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
+        //check if the libraries have been declared
+        for(FaceletsLibrary lib : faceletsLibraries.values()) {
+            if(lib instanceof CompositeComponentLibrary) {
+                String libraryName = ((CompositeComponentLibrary)lib).getLibraryName();
+                libraryNames.remove(libraryName);
+            }
+        }
+
+        //create libraries for the rest of undeclared libs
+        for(String libraryName : libraryNames) {
+            CompositeComponentLibrary ccl = new CompositeComponentLibrary(this, libraryName);
+            faceletsLibraries.put(ccl.getNamespace(), ccl);
+        }
+
+    }
+
+    private Map<String, FaceletsLibrary> findLibraries() {
         //create a new classloader loading the classpath roots
         ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         Collection<URL> urlsToLoad = new ArrayList<URL>();
@@ -122,7 +142,6 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             //reset the original loader
             Thread.currentThread().setContextClassLoader(originalLoader);
         }
-
     }
 
     private Map<String, FaceletsLibrary> parseLibraries() {
@@ -159,7 +178,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         allLibs.addAll(getConvertedDefaultLibraries());
 
         Map<String, FaceletsLibrary> libsMap = new HashMap<String, FaceletsLibrary>();
-        for(FaceletsLibrary lib : allLibs) {
+        for (FaceletsLibrary lib : allLibs) {
             libsMap.put(lib.getNamespace(), lib);
         }
 
@@ -167,21 +186,20 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     }
 
-
     private Collection<FaceletsLibrary> getConvertedDefaultLibraries() {
         Collection<FaceletsLibrary> converted = new ArrayList<FaceletsLibrary>();
-        for(TagLibrary library : getDefaultLibraries()) {
+        for (TagLibrary library : getDefaultLibraries()) {
             if (library instanceof AbstractTagLibrary) {
                 String namespace = (String) getField("namespace", AbstractTagLibrary.class, library); //NOI18N
-                if(namespace == null) {
+                if (namespace == null) {
                     continue; //error, take next
                 }
-                FaceletsLibrary flib = new FaceletsLibrary(this, namespace);
+                ClassBasedFaceletsLibrary flib = new ClassBasedFaceletsLibrary(this, namespace);
                 Map tagComponents = (Map) getField("factories", AbstractTagLibrary.class, library); //NOI18N
                 Collection<FaceletsLibrary.NamedComponent> components = new ArrayList<FaceletsLibrary.NamedComponent>();
                 if (tagComponents != null) {
                     for (Object key : tagComponents.keySet()) {
-                        String componentName = (String)key;
+                        String componentName = (String) key;
                         //XXX resolve the component type accoring to the factory instance, ufff
                         //fortunately it looks like we do not need that
                         components.add(flib.createNamedComponent(componentName));
@@ -189,18 +207,18 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 }
                 flib.setComponents(components);
                 converted.add(flib);
-                
+
             } else if (library instanceof FunctionLibrary) {
                 String namespace = (String) getField("namespace", FunctionLibrary.class, library); //NOI18N
-                if(namespace == null) {
+                if (namespace == null) {
                     continue; //error, take next
                 }
-                FaceletsLibrary flib = new FaceletsLibrary(this, namespace);
+                ClassBasedFaceletsLibrary flib = new ClassBasedFaceletsLibrary(this, namespace);
                 Collection<FaceletsLibrary.NamedComponent> components = new ArrayList<FaceletsLibrary.NamedComponent>();
                 Map functionComponents = (Map) getField("functions", FunctionLibrary.class, library); //NOI18N
                 if (functionComponents != null) {
                     for (Object key : functionComponents.keySet()) {
-                        String componentName = (String)key;
+                        String componentName = (String) key;
                         //XXX resolve the component type accoring to the factory instance, ufff
                         //fortunately it looks like we do not need that
                         components.add(flib.createFunction(componentName, null));
@@ -273,12 +291,12 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     }
 
     private void debugLibraries() {
-         System.out.println("Facelets Libraries:");
+        System.out.println("Facelets Libraries:");
         System.out.println("====================");
-        for(FaceletsLibrary lib : faceletsLibraries.values()) {
+        for (FaceletsLibrary lib : faceletsLibraries.values()) {
             System.out.println("Library: " + lib.getNamespace());
             System.out.println("----------------------------------------------------");
-            for(FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
+            for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
                 System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");
             }
             System.out.println();
@@ -294,5 +312,4 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         }
 
     }
-    
 }

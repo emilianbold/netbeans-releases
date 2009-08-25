@@ -77,7 +77,6 @@ public class OLCustomizer extends javax.swing.JPanel {
             ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner1.getAccessibleContext().getAccessibleName());
             ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner1.getAccessibleContext().getAccessibleDescription());
         }catch (Exception e) {
-            e.printStackTrace();
         }
         if (ol.getType().equals(OL.DEFAULT))
             jRadioButton1.setSelected(true);

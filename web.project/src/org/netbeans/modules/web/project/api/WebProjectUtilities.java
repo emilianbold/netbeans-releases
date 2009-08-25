@@ -51,9 +51,13 @@ import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.project.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -907,7 +911,64 @@ public class WebProjectUtilities {
         ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
                 "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
     }
-    
+
+    public static void upgradeJ2EEProfile(WebProject project){
+        if (Profile.JAVA_EE_6_WEB.equals(project.getAPIEjbJar().getJ2eeProfile())){
+            //check the J2EE 6 Full profile specific functionality
+            Boolean isFullRequired = Boolean.FALSE;
+            try{
+                isFullRequired = project.getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    public Boolean run(EjbJarMetadata metadata) {
+                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                        if (ejbJar != null) {
+                            EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                            if (enterpriseBeans != null) {
+                                if (enterpriseBeans.getMessageDriven().length > 0
+                                        || enterpriseBeans.getEntity().length > 0){
+                                    return Boolean.TRUE;
+                                }
+                                for(Session session: enterpriseBeans.getSession()){
+                                    if (session.getRemote() != null){
+                                        return Boolean.TRUE;
+                                    }
+                                }
+                            }
+                        }
+                        return Boolean.FALSE;
+                    }
+                }).get();
+            }catch(Exception e){
+                Exceptions.printStackTrace(e);
+            }
+
+            //change profile if required
+            if (isFullRequired){
+                Set<Profile> supportedProfiles = new HashSet<Profile>();
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                String serverInstanceID = privateProps.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                    supportedProfiles = j2eePlatform.getSupportedProfiles();
+                } catch (InstanceRemovedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (supportedProfiles.contains(Profile.JAVA_EE_6_FULL)){
+                    EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM, Profile.JAVA_EE_6_FULL.toPropertiesString());
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
+
     private static String readResource(InputStream is) throws IOException {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
