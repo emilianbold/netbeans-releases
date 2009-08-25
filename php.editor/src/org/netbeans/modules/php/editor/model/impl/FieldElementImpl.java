@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -61,19 +60,19 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class FieldElementImpl extends ScopeImpl implements FieldElement {
-    private String returnType;
+    private String defaultType;
     private String className;
 
-    FieldElementImpl(Scope inScope, String returnType, SingleFieldDeclarationInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String defaultType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
-        this.returnType = returnType;
+        this.defaultType = defaultType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, String returnType, PhpDocTypeTagInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String defaultType, PhpDocTypeTagInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
-        this.returnType = returnType;
+        this.defaultType = defaultType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
@@ -90,10 +89,16 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
-            PhpModifiers modifiers, String returnType) {
+            PhpModifiers modifiers, String defaultType) {
         super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);
-        this.returnType = returnType;
+        this.defaultType = defaultType;
     }
+
+    @Override
+    void addElement(ModelElementImpl element) {
+        //super.addElement(element);
+    }
+
 
     static String toName(SingleFieldDeclaration node) {
         return VariableNameImpl.toName(node.getName());
@@ -107,9 +112,9 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return new PhpModifiers(node.getModifier());
     }
 
-    public Collection<? extends TypeScope> getReturnTypes() {
-        return (returnType != null && returnType.length() > 0) ?
-            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
+    public Collection<? extends TypeScope> getDefaultTypes() {
+        return (defaultType != null && defaultType.length() > 0) ?
+            CachingSupport.getTypes(defaultType.split("\\|")[0], this) :
             Collections.<TypeScopeImpl>emptyList();
 
     }
@@ -121,7 +126,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
         final Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
-        return  retval.isEmpty() ? getReturnTypes() : retval;
+        return  retval.isEmpty() ? getDefaultTypes() : retval;
     }
 
     public Collection<? extends FieldAssignmentImpl> getAssignments() {
@@ -157,10 +162,14 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         sb.append(getName().substring(1)).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         sb.append(getPhpModifiers().toBitmask()).append(";");
-        if (returnType != null) {
-            sb.append(returnType);
+        if (defaultType != null) {
+            sb.append(defaultType);
         }
         sb.append(";");//NOI18N
         return sb.toString();
+    }
+
+    public Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -448,32 +448,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else if (leftHandSide instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) leftHandSide;
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
-            //TODO: varN.representsThis() is hotfix for #166982 but this code 
-            //deserves review, the same like type inference for fields like $v->a = new a();$v->a->|
-            if (varN != null && varN.representsThis()) {
-                Collection<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
-                TypeScope type = ModelUtils.getFirst(types);
-                if (type instanceof ClassScope) {
-                    ClassScope cls = (ClassScope) type;
-                    String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
-                    if (fldName != null ) {
-                        //TODO: wrap up this $ handling not to care about it ever
-                        if (!fldName.startsWith("$")) {//NOI18N
-                            fldName = "$" + fldName;//NOI18N
-                        }
-                        FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
-                        if (field != null) {
-                            //List<? extends FieldAssignmentImpl> assignments = field.getAssignments();
-                            String typeName = VariousUtils.extractVariableTypeFromAssignment(node,
-                                    Collections.<String,AssignmentImpl>emptyMap());
-                            ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
-                            FieldAssignmentImpl fa = new FieldAssignmentImpl((FieldElementImpl) field, scope, scope.getBlockRange(), fieldInfo.getRange(), typeName);
-                            field.addElement(fa);
-                        }
-                    }
-                }
+            if (varN != null) {
+                varN.createLazyFieldAssignment(fieldAccess, node, scope);
             }
 
+        } else if (leftHandSide instanceof StaticFieldAccess) {
+            StaticFieldAccess sfa = (StaticFieldAccess) leftHandSide;
+            //TODO:
+            //CodeUtils.extractQualifiedName(sfa);
         }
 
         super.scan(rightHandSide);

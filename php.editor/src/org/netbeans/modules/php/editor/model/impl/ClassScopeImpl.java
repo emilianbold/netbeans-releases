@@ -67,7 +67,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     @Override
     void addElement(ModelElementImpl element) {
-        assert element instanceof MethodScope || element instanceof FieldElement || element instanceof ClassConstantElement : element.getPhpKind();
+        assert element instanceof MethodScope ||
+                element instanceof FieldElement || element instanceof ClassConstantElement : element.getPhpKind();
         super.addElement(element);
     }
 
@@ -160,7 +161,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
             IndexScope indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
             return indexScopeImpl.findFields(nameKind, this, queryName, modifiers);
         }
-        return filter(null, new ElementFilter() {
+        return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.FIELD) &&

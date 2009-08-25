@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,17 +48,23 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -66,6 +73,7 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
+    List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
     private boolean globallyVisible;
     VariableNameImpl(IndexScope inScope, IndexedVariable indexedVariable) {
         this(inScope, indexedVariable.getName(),
@@ -74,12 +82,12 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
     VarAssignmentImpl createElement(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
-        addElement(retval);
         return retval;
     }
 
     VariableNameImpl(Scope inScope, Variable variable, boolean globallyVisible) {
-        this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
+        this(inScope,
+                toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
@@ -106,16 +114,37 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends VarAssignmentImpl> getAssignments() {
-        return (List<? extends VarAssignmentImpl>) getElements();
+    public List<? extends VarAssignmentImpl> getVarAssignments() {
+        Collection<? extends VarAssignmentImpl> values = filter(getElements(), new ElementFilter() {
+
+            public boolean isAccepted(ModelElement element) {
+                return element instanceof VarAssignmentImpl;
+            }
+        });
+        return new ArrayList<VarAssignmentImpl>(values);
+    }
+    private List<? extends FieldAssignmentImpl> getFieldAssignments() {
+        Collection<? extends FieldAssignmentImpl> values = filter(getElements(), new ElementFilter() {
+
+            public boolean isAccepted(ModelElement element) {
+                return element instanceof FieldAssignmentImpl;
+            }
+        });
+        return new ArrayList<FieldAssignmentImpl>(values);
     }
 
-    public AssignmentImpl findAssignment(int offset) {
-        VarAssignmentImpl retval = null;
-        Collection<? extends VarAssignmentImpl> assignments = getAssignments();
+    private AssignmentImpl findAssignment(int offset, boolean varAssignment,FieldElement expectedField) {
+        AssignmentImpl retval = null;
+        Collection<? extends AssignmentImpl> assignments = varAssignment ? 
+            getVarAssignments() : getFieldAssignments();
         if (assignments.size() == 1) {
-            retval = assignments.iterator().next();
-        } else {
+            AssignmentImpl assign = assignments.iterator().next();
+            if (expectedField == null || expectedField.equals(assign.getContainer())) {
+                retval = assign;
+            }
+
+        }
+        if (retval == null) {
             if (assignments.isEmpty() && isGloballyVisible()) {
                 Scope inScope = getInScope();
                 if (inScope != null) {
@@ -127,16 +156,18 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                     if (!variables.isEmpty()) {
                         VariableName varName = ModelUtils.getFirst(variables);
                         if (varName instanceof VariableNameImpl) {
-                            return ((VariableNameImpl)varName).findAssignment(offset);
+                            return ((VariableNameImpl)varName).findAssignment(offset, true, null);
                         }
                     }
                 }
             }
-            for (VarAssignmentImpl varAssignmentImpl : assignments) {
-                if (varAssignmentImpl.getBlockRange().containsInclusive(offset)) {
-                    if (retval == null || retval.getOffset() <= varAssignmentImpl.getOffset()) {
-                         if (varAssignmentImpl.getOffset() < offset) {
-                            retval = varAssignmentImpl;
+            for (AssignmentImpl assign : assignments) {
+                if (assign.getBlockRange().containsInclusive(offset)) {
+                    if (retval == null || retval.getOffset() <= assign.getOffset()) {
+                         if (assign.getOffset() < offset) {
+                             if (expectedField == null || expectedField.equals(assign.getContainer())) {
+                                 retval = assign;
+                             }
                          }
                     }
                 }
@@ -162,7 +193,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             MethodScope methodScope = (MethodScope) getInScope();
             return Collections.singletonList(methodScope.getTypeScope());
         }
-        AssignmentImpl assignment = findAssignment(offset);
+        AssignmentImpl assignment = findAssignment(offset, true, null);
         return (assignment != null) ? assignment.getTypes() : empty;
     }
 
@@ -203,4 +234,60 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         }
         return null;
     }
+
+    void createLazyFieldAssignment(FieldAccess fieldAccess, Assignment node, Scope scope) {
+        String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
+        if (fldName != null) {
+            if (!fldName.startsWith("$")) {
+                fldName = "$" + fldName; //NOI18N
+            }
+        }
+        String typeName = VariousUtils.extractVariableTypeFromAssignment(node, Collections.<String, AssignmentImpl>emptyMap());
+        ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
+        final OffsetRange range = fieldInfo.getRange();
+        final int startOffset = fieldAccess.getStartOffset();
+        assignmentDatas.add(new LazyFieldAssignment(typeName, fldName, range, startOffset, scope));
+    }
+
+    public Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset) {
+        if (!assignmentDatas.isEmpty()) {
+            for (LazyFieldAssignment fieldAssignmentData : assignmentDatas) {
+                fieldAssignmentData.process();
+            }
+            assignmentDatas = Collections.emptyList();
+        }
+        AssignmentImpl assignment = findAssignment(offset, false,element);
+        return (assignment != null) ? assignment.getTypes() : element.getTypes(offset);
+    }
+
+    private class LazyFieldAssignment {
+        private final String typeName;
+        private final String fldName;
+        private final OffsetRange range;
+        private final int startOffset;
+        private final Scope scope;
+
+        private LazyFieldAssignment(String typeName, String fldName, OffsetRange range, int startOffset, Scope scope) {
+            this.typeName = typeName;
+            this.fldName = fldName;
+            this.range = range;
+            this.startOffset = startOffset;
+            this.scope = scope;
+        }
+
+        void process() {
+            Collection<? extends TypeScope> types = getTypes(startOffset);
+            FieldElementImpl field = null;
+            TypeScope type = ModelUtils.getFirst(types);
+            if (type instanceof ClassScope) {
+                ClassScope cls = (ClassScope) type;
+                field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
+                if (field != null) {
+                    FieldAssignmentImpl fa = new FieldAssignmentImpl(VariableNameImpl.this, (FieldElementImpl) field, scope, scope.getBlockRange(), range, typeName);
+                    addElement(fa);
+                }
+            }
+        }
+    }
 }
+

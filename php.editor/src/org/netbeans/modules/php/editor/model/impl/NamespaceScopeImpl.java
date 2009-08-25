@@ -94,7 +94,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
-        return filter(getElements(), new ElementFilter<ModelElement>() {
+        return filter(getElements(), new ElementFilter<ClassScopeImpl>() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS);
             }
