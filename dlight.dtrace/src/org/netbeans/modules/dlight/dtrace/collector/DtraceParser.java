@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.support;
+package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 
 /**
  * @author Alexey Vladykin

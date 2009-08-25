@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
