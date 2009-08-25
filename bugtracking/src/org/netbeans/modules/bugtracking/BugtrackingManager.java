@@ -40,16 +40,20 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -80,6 +84,8 @@ public final class BugtrackingManager implements LookupListener {
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
      */
     private final Lookup.Result<BugtrackingConnector> connectorsLookup;
+
+    private Map<String, Queue<Issue>> recentIssues;
 
     public static BugtrackingManager getInstance() {
         instance.init();
@@ -146,6 +152,39 @@ public final class BugtrackingManager implements LookupListener {
 
     public void resultChanged(LookupEvent ev) {
         refreshConnectors();
+    }
+
+    public Collection<Issue> getRecentIssues(Repository repo) {
+        Queue<Issue> l = getRecentIssues().get(repo.getID());
+        if(l == null) {
+            return Collections.EMPTY_LIST;
+        }
+        return l;
+    }
+
+    public void addRecentIssue(Repository repo, Issue issue) {
+        Queue<Issue> l = getRecentIssues().get(repo.getID());
+        if(l == null) {
+            l = new LinkedList<Issue>();
+            getRecentIssues().put(repo.getID(), l);
+        }
+        if(l.size() == 5) {
+            l.poll();
+        }
+        for (Issue i : l) {
+            if(i.getID().equals(issue.getID())) {                
+                l.remove(i);
+                break;
+            }
+        }
+        l.add(issue);
+    }
+
+    private Map<String, Queue<Issue>> getRecentIssues() {
+        if(recentIssues == null) {
+            recentIssues = new HashMap<String, Queue<Issue>>();
+        }
+        return recentIssues;
     }
 
     private void refreshConnectors() {

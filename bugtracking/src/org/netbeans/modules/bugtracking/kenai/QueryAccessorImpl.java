@@ -98,11 +98,11 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
         KenaiRepositoryListener krl = null;
         synchronized(kenaiRepoListeners) {
-            krl = kenaiRepoListeners.get(repo.getDisplayName());
+            krl = kenaiRepoListeners.get(repo.getID());
             if(krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
                 repo.addPropertyChangeListener(krl);
-                kenaiRepoListeners.put(repo.getDisplayName(), krl);
+                kenaiRepoListeners.put(repo.getID(), krl);
             } 
         }
         

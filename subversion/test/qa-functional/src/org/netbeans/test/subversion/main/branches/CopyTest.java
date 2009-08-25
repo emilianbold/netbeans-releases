@@ -93,7 +93,7 @@ public class CopyTest extends JellyTestCase {
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
             RepositoryStepOperator rso = new RepositoryStepOperator();
             
@@ -166,7 +166,7 @@ public class CopyTest extends JellyTestCase {
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
             RepositoryStepOperator rso = new RepositoryStepOperator();
             

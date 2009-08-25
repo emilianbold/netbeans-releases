@@ -70,6 +70,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
@@ -295,7 +296,12 @@ public class EvaluationContext {
                 thread.getDebugger().addPropertyChangeListener(threadPropertyChangeListener);
             }
             if (disabledCollectionObjects.add(or)) {
-                or.disableCollection();
+                try {
+                    or.disableCollection();
+                } catch (UnsupportedOperationException uoex) {
+                    // So we can not disable collection
+                    disabledCollectionObjects.remove(or);
+                }
                 //System.err.println("\nDISABLED COLLECTION of "+or);
                 //Thread.dumpStack();
                 //System.err.println("");
@@ -316,6 +322,8 @@ public class EvaluationContext {
                     } catch (ObjectCollectedExceptionWrapper ex) {
                         // Should not be thrown!
                         Exceptions.printStackTrace(ex);
+                    } catch (UnsupportedOperationExceptionWrapper uoex) {
+                        // Ignore
                     }
                     disabledCollectionObjects.remove(or);
                     //System.err.println("\nENABLED COLLECTION of "+or+"\n");

@@ -42,8 +42,15 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import javax.swing.text.Document;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -51,10 +58,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -69,10 +78,10 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -250,9 +259,13 @@ public class JsfElExpression extends ELExpression {
      * @return
      */
     public List <ResourceBundle> getJSFResourceBundles(WebModule webModule){
-        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(webModule);
-        ArrayList <ResourceBundle> bundles = new ArrayList<ResourceBundle>();
+        final ArrayList <ResourceBundle> bundles = new ArrayList<ResourceBundle>();
         
+        /*
+         *  Old usage of JSF XML model.
+         *  Switched to merged JSF model. 
+         * 
+        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(webModule);
         for (int i = 0; i < files.length; i++) {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], 
                     true).getRootComponent();
@@ -264,6 +277,37 @@ public class JsfElExpression extends ELExpression {
                 {
                     bundles.add(it.next());   
                 }
+            }
+        }*/
+        /**
+         * @author ads
+         */
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
+        if ( model != null ){
+            try {
+                model.runReadAction( new MetadataModelAction<JsfModel, Void>() {
+
+                public Void run( JsfModel metaModel ) throws Exception {
+                    List<Application> applications = metaModel.getElements(
+                            Application.class);
+                        for (Application application : applications) {
+                            Collection<ResourceBundle> resourceBundles = 
+                                application.getResourceBundles();
+                            for (Iterator<ResourceBundle> it = resourceBundles
+                                    .iterator(); it.hasNext();)
+                            {
+                                bundles.add(it.next());
+                            }
+                        }
+                    return null;
+                }
+            });
+            }
+            catch(MetadataModelException e ){
+                logger.log( Level.WARNING, e.getMessage(), e );
+            }
+            catch(IOException e ){
+                logger.log( Level.WARNING, e.getMessage(), e );
             }
         }
         return bundles;
@@ -314,12 +358,50 @@ public class JsfElExpression extends ELExpression {
         return items;
     }
     
-    public List<CompletionItem> getListenerMethodCompletionItems(String beanType, 
+    public List<CompletionItem> /*getListenerMethodCompletionItems*/
+                                getMethodCompletionItems(String beanType, 
             int anchor)
     {
         JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType, anchor);
         runTask(task);
         return task.getCompletionItems();
+    }
+    
+    private boolean checkMethod( ExecutableElement method , 
+            CompilationController controller )
+    {
+        TypeMirror returnType = method.getReturnType();
+        if ( returnType.getKind() == TypeKind.VOID && 
+                method.getSimpleName().toString().startsWith("set")
+                && method.getParameters().size() == 1)    // NOI18N
+        {
+            VariableElement param = method.getParameters().get(0);
+            // probably method is setter for some property...
+            String propertyName = method.getSimpleName().toString().
+                substring(3);
+            String getterName = "get"+propertyName;
+            for ( ExecutableElement exec : ElementFilter.methodsIn(
+                    method.getEnclosingElement().getEnclosedElements()))
+            {
+                if ( exec.getSimpleName().contentEquals(getterName) &&
+                        exec.getParameters().size() == 0 )
+                {
+                    TypeMirror execReturnType = exec.getReturnType();
+                    if ( controller.getTypes().
+                            isSameType(param.asType(), execReturnType))
+                    {
+                        /*
+                         *  Found getter which correspond 
+                         *  <code>method</code> as setter. So this method 
+                         *  should not be available in completion list .
+                         *  Pair setter/getter is represented just property name. 
+                         */
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
     
     public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass 
@@ -337,10 +419,10 @@ public class JsfElExpression extends ELExpression {
         @Override
         public void cancel() {}
         
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             
-            TypeElement bean = getTypePreceedingCaret(parameter);
+            TypeElement bean = getTypePreceedingCaret(controller);
             
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
@@ -348,17 +430,28 @@ public class JsfElExpression extends ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.
                         getEnclosedElements()))
                 {
-                    if (isActionListenerMethod(method)) {
+                    /* EL 2.1 for JSF allows to call any method , not just action listener 
+                     * if (isActionListenerMethod(method)) {
+                      */
+                    // skip bean property accessors 
+                    if ( method.getSimpleName().toString().equals( 
+                            getExpressionSuffix(method, controller)) )
+                    {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, "void");
+                                    methodName, anchor, method.getReturnType().toString());
 
                             completionItems.add(item);
                         }
                     }
                 }
             }
+        }
+        
+
+        public List<CompletionItem> getCompletionItems(){
+            return completionItems;
         }
         
         protected boolean isActionListenerMethod(ExecutableElement method){
@@ -375,9 +468,19 @@ public class JsfElExpression extends ELExpression {
             
             return isALMethod;
         }
-
-        public List<CompletionItem> getCompletionItems(){
-            return completionItems;
+        
+        @Override
+        protected boolean checkMethodParameters( ExecutableElement method ,
+                CompilationController controller)
+        {
+            return true;
+        }
+        
+        @Override
+        protected boolean checkMethod( ExecutableElement method , 
+                CompilationController compilationController)
+        {
+            return JsfElExpression.this.checkMethod(method, compilationController);
         }
     }
 
@@ -401,9 +504,9 @@ public class JsfElExpression extends ELExpression {
             super(beanType);
         }
 
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement bean = getTypePreceedingCaret(parameter);
+        public void run(CompilationController controller ) throws Exception {
+            controller .toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement bean = getTypePreceedingCaret(controller );
 
             if (bean != null){
                 String suffix = removeQuotes(getPropertyBeingTypedName());
@@ -411,13 +514,13 @@ public class JsfElExpression extends ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.
                         getEnclosedElements()))
                 {
-                    String propertyName = getExpressionSuffix(method);
+                    String propertyName = getExpressionSuffix(method, controller);
 
                     if (propertyName != null && propertyName.equals(suffix)){
                         ElementHandle<ExecutableElement> el = 
                             ElementHandle.create(method);
                         FileObject fo = SourceUtils.getFile(el, 
-                                parameter.getClasspathInfo());
+                                controller .getClasspathInfo());
 
                         // Not a regular Java data object (may be a multi-view data object), open it first
                         DataObject od = DataObject.find(fo);
@@ -437,33 +540,19 @@ public class JsfElExpression extends ELExpression {
         public boolean wasSuccessful(){
             return success;
         }
-
-        /**
-         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
-         */
+        
         @Override
-        protected String getExpressionSuffix(ExecutableElement method){
-
-            if (method.getModifiers().contains(Modifier.PUBLIC)){
-                String methodName = method.getSimpleName().toString();
-
-                if (methodName.startsWith("get")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(3)) + 
-                        methodName.substring(4);
-                }
-
-                if (methodName.startsWith("is")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(2)) + 
-                        methodName.substring(3);
-                }
-
-                if (isDefferedExecution()){
-                    //  also return values for method expressions
-                    return methodName;
-                }
-            }
-
-            return null; // not a property accessor
+        protected boolean checkMethodParameters( ExecutableElement method ,
+                CompilationController controller )
+        {
+            return true;
+        }
+        
+        @Override
+        protected boolean checkMethod( ExecutableElement method, 
+                CompilationController controller)
+        {
+            return JsfElExpression.this.checkMethod(method, controller);
         }
     }
 }

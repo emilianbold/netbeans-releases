@@ -41,30 +41,27 @@
 
 package helloworld;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Web Service
  *
- * @author __USER__
+ * @author mkuchtiak
  */
 
+@Stateless
 @Path("/helloWorld")
 public class HelloWorldResource {
-    @Context
-    private UriInfo context;
-    
-    /** Creates a new instance of HelloWorldResource */
-    public HelloWorldResource() {
-    }
 
+    @EJB
+    private NameStorageBean nameStorage;
     /**
      * Retrieves representation of an instance of helloworld.HelloWorldResource
      * @return an instance of java.lang.String
@@ -72,16 +69,17 @@ public class HelloWorldResource {
     @GET
     @Produces("text/html")
     public String getXml() {
-        return "<html><body><h1>Hello World!</body></h1></html>";
+        return "<html><body><h1>Hello "+nameStorage.getName()+"!</h1></body></html>";
     }
 
     /**
-     * PUT method for updating or creating an instance of HelloWorldResource
+     * PUT method for updating an instance of HelloWorldResource
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @Consumes("application/xml")
+    @Consumes("text/plain")
     public void putXml(String content) {
+        nameStorage.setName(content);
     }
 }

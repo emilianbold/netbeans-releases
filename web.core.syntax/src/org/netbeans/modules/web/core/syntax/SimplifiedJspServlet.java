@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -402,7 +403,10 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return String.format(CLASS_HEADER, extendsClass);
     }
 
-    
+    @Override
+    protected Collection<String> processedIncludes() {
+        return Collections.emptyList();
+    }
 
     public Embedding getSimplifiedServlet() {
         assureProcessCalled();

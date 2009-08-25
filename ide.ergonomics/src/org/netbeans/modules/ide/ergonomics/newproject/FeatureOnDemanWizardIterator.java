@@ -86,6 +86,10 @@ public final class FeatureOnDemanWizardIterator implements WizardDescriptor.Prog
         } catch (Exception x) {
             // x.printStackTrace ();
         }
+        Object obj = fo.getAttribute("templateWizardIterator"); // NOI18N
+        if (obj != null) {
+            return null;
+        }
         return new FeatureOnDemanWizardIterator (fo);
     }
     

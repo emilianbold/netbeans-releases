@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -65,6 +66,7 @@ import org.openide.util.WeakSet;
 public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyChangeListener {
     
     private final Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
+    private final RequestProcessor rp = new RequestProcessor("Deadlock Detector", 1); // NOI18N
     
     private Map<Long, Node> monitorToNode;
 
@@ -89,21 +91,25 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
         } else if (JPDAThread.PROP_SUSPENDED.equals(propName)) {
             JPDAThread thread = (JPDAThread) evt.getSource();
             boolean suspended = (Boolean) evt.getNewValue();
-            Set<Deadlock> deadlocks = null;
             if (suspended) {
-                Set<JPDAThread> tempSuspThreads;
+                final Set<JPDAThread> tempSuspThreads;
                 synchronized(suspendedThreads) {
                     suspendedThreads.add(thread);
                     tempSuspThreads = new HashSet<JPDAThread>(suspendedThreads);
                 }
-                deadlocks = findDeadlockedThreads(tempSuspThreads);
+                rp.post(new Runnable() {
+                    public void run() {
+                        Set<Deadlock> deadlocks;
+                        deadlocks = findDeadlockedThreads(tempSuspThreads);
+                        if (deadlocks != null) {
+                            setDeadlocks(deadlocks);
+                        }
+                    }
+                });
             } else {
                 synchronized (suspendedThreads) {
                     suspendedThreads.remove(thread);
                 }
-            }
-            if (deadlocks != null) {
-                setDeadlocks(deadlocks);
             }
         }
     }

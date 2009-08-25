@@ -57,7 +57,7 @@ public final class ObjectReferenceWrapper {
     private ObjectReferenceWrapper() {}
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void disableCollection(com.sun.jdi.ObjectReference a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static void disableCollection(com.sun.jdi.ObjectReference a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper {
         try {
             a.disableCollection();
         } catch (com.sun.jdi.InternalException ex) {
@@ -67,11 +67,13 @@ public final class ObjectReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (java.lang.UnsupportedOperationException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void enableCollection(com.sun.jdi.ObjectReference a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static void enableCollection(com.sun.jdi.ObjectReference a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper {
         try {
             a.enableCollection();
         } catch (com.sun.jdi.InternalException ex) {
@@ -81,6 +83,8 @@ public final class ObjectReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (java.lang.UnsupportedOperationException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper(ex);
         }
     }
 

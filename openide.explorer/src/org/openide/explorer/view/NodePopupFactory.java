@@ -42,6 +42,8 @@ package org.openide.explorer.view;
 
 import java.awt.Component;
 import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.swing.etable.ETable;
 import org.openide.nodes.Node;
@@ -75,13 +77,20 @@ public class NodePopupFactory {
         Action[] actions = NodeOp.findActions (selectedNodes);
         JPopupMenu res = Utilities.actionsToPopup(actions, component);
         if (showQuickFilter) {
-            if ((component instanceof ETable) && 
-                    (row >= 0) && (column >= 0)) {
+            if ((component instanceof ETable) && (column >= 0)) {
                 ETable et = (ETable)component;
-                Object val = et.getValueAt(row, column);
-                val = et.transformValue(val);
-                String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
-                res.add(et.getQuickFilterPopup(column, val, s));
+                if (row >= 0) {
+                    Object val = et.getValueAt(row, column);
+                    val = et.transformValue(val);
+                    String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
+                    res.add(et.getQuickFilterPopup(column, val, s));
+                } else if (et.getQuickFilterColumn() == column) {
+                    String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
+                    JMenu menu = new JMenu(s);
+                    JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(et.getQuickFilterFormatStrings()[6]);
+                    menu.add(noFilterItem);
+                    res.add(menu);
+                }
             }
         }
         return res;

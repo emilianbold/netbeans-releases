@@ -43,7 +43,9 @@ package org.netbeans.modules.html.palette.items;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import javax.swing.JSpinner;
+import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -53,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Libor Kotouc
+ * @author  Libor Kotouc, Alexey Butenko
  */
 public class OLCustomizer extends javax.swing.JPanel {
 
@@ -75,7 +77,7 @@ public class OLCustomizer extends javax.swing.JPanel {
             ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleName(jSpinner1.getAccessibleContext().getAccessibleName());
             ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField().getAccessibleContext().setAccessibleDescription(jSpinner1.getAccessibleContext().getAccessibleDescription());
         }catch (Exception e) {
-
+            e.printStackTrace();
         }
         if (ol.getType().equals(OL.DEFAULT))
             jRadioButton1.setSelected(true);
@@ -270,7 +272,7 @@ public class OLCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSD_OL_Items")); // NOI18N
 
         jSpinner1.setModel(new SpinnerNumberModel(ol.getCount(), 0, Integer.MAX_VALUE, 1));
-        jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
+        jSpinner1.setEditor(new NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(ol.getCount()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -293,5 +295,32 @@ public class OLCustomizer extends javax.swing.JPanel {
     private javax.swing.JRadioButton jRadioButton6;
     private javax.swing.JSpinner jSpinner1;
     // End of variables declaration//GEN-END:variables
-    
+
+    private class NumberEditor extends JSpinner.NumberEditor {
+
+        public NumberEditor(JSpinner jSpinner, String decimalFormat) {
+            super(jSpinner, decimalFormat);
+        }
+
+        @Override
+        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+            try {
+                return super.processKeyBinding(ks, e, condition, pressed);
+            } finally {
+                //Fix for #166154: passes Enter kb action to dialog
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    if (descriptor!=null) {
+                        ActionListener al = descriptor.getButtonListener();
+                        if (al!=null) {
+                            al.actionPerformed(new ActionEvent(this,
+                                                                ActionEvent.ACTION_PERFORMED,
+                                                                "OK",           //NOI18N
+                                                                e.getWhen(),
+                                                                e.getModifiers()));
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

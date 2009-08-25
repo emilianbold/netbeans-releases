@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:jcproj="http://www.netbeans.org/ns/javacard-project/2"
+                xmlns:jcproj="http://www.netbeans.org/ns/javacard-project/3"
 >
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">

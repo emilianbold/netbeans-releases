@@ -90,7 +90,7 @@ public class DeleteSearchAction extends NodeAction {
                 searchesToRemove.add(nodes[i].getLookup().lookup(WagSearchResult.class));
             }
 
-            results.removeResults(searchesToRemove);
+            results.removeItems(searchesToRemove);
         }
     }
 

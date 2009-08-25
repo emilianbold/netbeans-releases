@@ -62,10 +62,17 @@ import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -156,6 +163,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return false;
     }
 
+    private static NamespaceDeclaration findEnclosingNamespace(ParserResult info, int offset) {
+        List<ASTNode> nodes = NavUtils.underCaret(info, offset);
+        for(ASTNode node : nodes) {
+            if (node instanceof NamespaceDeclaration) {
+                return (NamespaceDeclaration) node;
+            }
+        }
+        return null;
+    }
+
     public String getCustomInsertTemplate() {
         StringBuilder template = new StringBuilder();
         ElementHandle elem = getElement();
@@ -181,6 +198,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
+                    Model model = ModelFactory.getModel(request.result);
+                    NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
+
+                    if (namespaceScope != null) {
+                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                        QualifiedName fqna = QualifiedName.create(false, segments);
+                        if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
+                            QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                            if (suffix != null) {
+                                template.append(suffix.toString());
+                                break;
+                            }
+                        }
+                    }
                     template.append(getName());
                     break;
             }

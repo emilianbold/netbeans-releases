@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -122,6 +123,14 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 Token current = htmlTs.token();
                 if(current.id() != HTMLTokenId.TEXT) { //works only in plain text
                     return ;
+                }
+
+                //end tag autocompletion workaround - we do not want to see the palette items when user finished
+                //an open tag and the end tag autocompletion pops up
+                if(diff == 0 && htmlTs.movePrevious()) {
+                    if(htmlTs.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        return ;
+                    }
                 }
                 
                 String prefix = current.text().subSequence(0, diff).toString();

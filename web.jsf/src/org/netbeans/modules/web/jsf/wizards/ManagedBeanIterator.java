@@ -42,9 +42,9 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -66,12 +66,17 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 /** A template wizard iterator for new struts action
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Alexey BUtenko
  * 
  */
 
@@ -152,49 +157,66 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );
         
-        DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard )  );
-        
+        DataObject dTemplate = DataObject.find( template );
+
         String configFile = (String) wizard.getProperty(WizardProperties.CONFIG_FILE);
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         dir = wm.getDocumentBase();
-        FileObject fo = dir.getFileObject(configFile); //NOI18N
-        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
-                
-        ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
-        String targetName = Templates.getTargetName(wizard);
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        String packageName = null;
-        org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
-        for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
-            if (packageName!=null) break;
+        if (configFile == null) {
+            if (!JSFConfigUtilities.hasJsfFramework(dir)) {
+                JSFConfigUtilities.extendJsfFramework(dir, false);
+            }
         }
-        if (packageName!=null) packageName = packageName.replace('/','.');
-            else packageName="";
-        String className=null;
-        if (packageName.length()>0)
-            className=packageName+"."+targetName;//NOI18N
-        else
-            className=targetName;
-        
-        bean.setManagedBeanName(getUniqueName((String) wizard.getProperty(WizardProperties.NAME), facesConfig));
-        bean.setManagedBeanClass(className);
-        bean.setManagedBeanScope((ManagedBean.Scope) wizard.getProperty(WizardProperties.SCOPE));
-        
-        String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
-        if (description != null && description.length() > 0){
-            Description beanDescription = bean.getModel().getFactory().createDescription();
-            beanDescription.setValue(description);
-            bean.addDescription(beanDescription);
+        String beanName = getUniqueName((String) wizard.getProperty(WizardProperties.NAME), wm);
+        Scope scope = (ManagedBean.Scope) wizard.getProperty(WizardProperties.SCOPE);
+        boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
+        DataObject dobj = null;
+
+        if (isAnnotate && Utilities.isJavaEE6(wizard)) {
+            HashMap<String, String> templateProperties = new HashMap<String, String>();
+            templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
+            templateProperties.put("scopeAnnotation", SCOPES.get(scope).toString());    //NOI18N
+            dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ),templateProperties  );
+        } else {
+            FileObject fo = dir.getFileObject(configFile); //NOI18N
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
+            JSFBeanCache.getBeans(wm);
+            dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ));
+
+            ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
+            String targetName = Templates.getTargetName(wizard);
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String packageName = null;
+            org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
+            for (int i = 0; i < groups.length && packageName == null; i++) {
+                packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+                if (packageName!=null) break;
+            }
+            if (packageName!=null) packageName = packageName.replace('/','.');
+                else packageName="";
+            String className=null;
+            if (packageName.length()>0)
+                className=packageName+"."+targetName;//NOI18N
+            else
+                className=targetName;
+
+            bean.setManagedBeanName(beanName);
+            bean.setManagedBeanClass(className);
+            bean.setManagedBeanScope(scope);
+
+            String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
+            if (description != null && description.length() > 0){
+                Description beanDescription = bean.getModel().getFactory().createDescription();
+                beanDescription.setValue(description);
+                bean.addDescription(beanDescription);
+            }
+            facesConfig.getModel().startTransaction();
+            facesConfig.addManagedBean(bean);
+            facesConfig.getModel().endTransaction();
+            facesConfig.getModel().sync();
         }
-        facesConfig.getModel().startTransaction();
-        facesConfig.addManagedBean(bean);
-        facesConfig.getModel().endTransaction();
-        facesConfig.getModel().sync();
-        
         return Collections.singleton(dobj);
     }
     
@@ -264,11 +286,11 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             }
         } catch (javax.swing.text.BadLocationException ex){}
     }
-    
-    private String getUniqueName(String original, FacesConfig facesConfig){
+
+    private String getUniqueName(String original, WebModule wm) {
         String value = original;
-        int count = 0;
-        for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
+        int count=0;
+        for (FacesManagedBean managedBean: JSFBeanCache.getBeans(wm)) {
             if (value.equals(managedBean.getManagedBeanName())) {
                 count++;
                 value = original+count;
@@ -277,4 +299,18 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         return value;
     }
 
+    private final static Map<ManagedBean.Scope, String> SCOPES
+                = new HashMap<Scope, String>();
+    static {
+        SCOPES.put(ManagedBean.Scope.APPLICATION,
+                "ApplicationScoped"); // NOI18N
+        SCOPES.put(ManagedBean.Scope.NONE,
+                "NoneScoped"); // NOI18N
+        SCOPES.put(ManagedBean.Scope.REQUEST,
+                "RequestScoped");        // NOI18N
+        SCOPES.put(ManagedBean.Scope.SESSION,
+                "SessionScoped");        // NOI18N
+        SCOPES.put(ManagedBean.Scope.VIEW,
+                "ViewScoped");           // NOI18N
+    }
 }

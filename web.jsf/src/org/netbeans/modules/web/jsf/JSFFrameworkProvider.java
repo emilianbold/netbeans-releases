@@ -51,6 +51,7 @@ import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +64,6 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel;
@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl, Po-Ting Wu
+ * @author Petr Pisl, Po-Ting Wu, Alexey Butenko
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
     
@@ -144,7 +144,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 //use a selected library
                 jsfLibrary = panel.getLibrary();
                 // if the selected library is a default one, add also JSTL library
-                if (jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_2_NAME) 
+                if (jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_2_NAME)
+                        || jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_2_0_NAME)
                         || jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_1_NAME)) {
                     jstlLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSTL_1_1_NAME);
                 }
@@ -194,7 +195,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }  catch (IOException exception) {   
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
-
         createWelcome = true;
 
         return result;
@@ -381,32 +381,38 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                     // add welcome file
                     WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
-                    if (welcomeFiles == null) {
-                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
-                        ddRoot.setWelcomeFileList(welcomeFiles);
-                    }
+                    List<String> welcomeFileList = new ArrayList<String>();
+
                     // add the welcome file only if there not any
-                    if (!faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
+                    if (!faceletsEnabled && welcomeFiles == null) {
                         if (facesMapping.charAt(0) == '/') {
-                            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
-                            welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
-                        }
-                        else {
-                            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+                            // if the mapping start with '/' (like /faces/*), then the welcome file can be the mapping
+                            if (webModule.getDocumentBase().getFileObject(WELCOME_JSF) != null || createWelcome) {
+                                welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                            }
+                        } else {
+                            // if the mapping doesn't start '/' (like *.jsf), then the welcome file has to be
                             // a helper file, which will foward the request to the right url
-                            welcomeFiles.addWelcomeFile(FORWARD_JSF);
+                            welcomeFileList.add(FORWARD_JSF);
                             //copy forwardToJSF.jsp
                             if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
                                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, FORWARD_JSF));
                                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                                 content = content.replaceAll("__ENCODING__", encoding.name());
                                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
                                 createFile(target, content, encoding.name());  //NOI18N
                             }
                         }
-                    } else if (faceletsEnabled && welcomeFiles.sizeWelcomeFile() == 0) {
-                          welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
+                    } else if (faceletsEnabled && welcomeFiles == null) {
+                        welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
+                    }
+                    if (welcomeFiles == null && !welcomeFileList.isEmpty()) {
+                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
+                        ddRoot.setWelcomeFileList(welcomeFiles);
+                        for (String fileName: welcomeFileList) {
+                            welcomeFiles.addWelcomeFile(fileName);
+                        }
                     }
                     ddRoot.write(dd);                    
                     

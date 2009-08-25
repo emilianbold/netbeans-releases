@@ -88,6 +88,13 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 String name = allAttributes.nextElement();
                 Object attr = fo.getAttribute(name);
                 if (attr == null) {
+                    if ("instantiatingIterator".equals(name)) {
+                        final Object tvi = fo.getAttribute("templateWizardIterator");
+                        if (tvi == null) {
+                            fail("There shall be templateWizardIterator: " + tvi + " for " + fo + " when " + name + " is null");
+                        }
+                        continue;
+                    }
                     fail("fo: " + fo + " has null " + name + " attribute");
                 }
                 System.setProperty(dynAttr + fo.getPath() + "@" + name, attr.toString());

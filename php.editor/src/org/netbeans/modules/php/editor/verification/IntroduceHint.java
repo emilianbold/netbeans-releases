@@ -42,9 +42,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -55,8 +52,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
@@ -97,7 +92,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class IntroduceHint implements AstRule {
+public class IntroduceHint extends AbstractRule {
 
     public String getId() {
         return "Introduce.Hint";//NOI18N
@@ -111,15 +106,7 @@ public class IntroduceHint implements AstRule {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDispName");//NOI18N
     }
 
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    void check(RuleContext context, List<Hint> hints) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -136,7 +123,7 @@ public class IntroduceHint implements AstRule {
         }
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             Model model = ModelFactory.getModel(context.parserResult);
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, doc, caretOffset, lineBegin, lineEnd);
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model,lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -147,39 +134,17 @@ public class IntroduceHint implements AstRule {
         }
     }
 
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.INTRODUCE_HINT);
-    }
-
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
-    }
-
     private class IntroduceFixVisitor extends DefaultTreePathVisitor {
 
         private int lineBegin;
         private int lineEnd;
-        private BaseDocument doc;
         private IntroduceFix fix;
         private Model model;
-        private int caretOffset;
 
-        IntroduceFixVisitor(Model model, BaseDocument doc, int caretOffset, int lineBegin, int lineEnd) {
-            this.doc = doc;
+        IntroduceFixVisitor(Model model, int lineBegin, int lineEnd) {
             this.lineBegin = lineBegin;
             this.lineEnd = lineEnd;
             this.model = model;
-            this.caretOffset = caretOffset;
         }
 
         @Override

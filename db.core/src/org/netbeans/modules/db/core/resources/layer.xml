@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -54,6 +54,64 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-db-sql-loader-SQLDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.core.Bundle"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-openide-actions-CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="2400"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="3000"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="2700"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="2900"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2600"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2800"/>
+                    </file>
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="1610"/>
                     </file>
                 </folder>
             </folder>

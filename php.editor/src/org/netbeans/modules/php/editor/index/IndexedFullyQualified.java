@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
@@ -51,5 +52,8 @@ public abstract class IndexedFullyQualified extends IndexedElement{
     }
 
     public abstract String getFullyQualifiedName();
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getNamespaceName()).append(getName());
+    }
     public abstract String getNamespaceName();
 }

@@ -107,7 +107,7 @@ public class ProcedureNode extends BaseNode {
     }
 
     private void updateProperties(Procedure proc) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         if (proc.getReturnValue() == null) {

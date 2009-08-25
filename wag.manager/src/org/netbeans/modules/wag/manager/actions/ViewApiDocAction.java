@@ -79,7 +79,7 @@ public class ViewApiDocAction extends NodeAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(RefreshSearchAction.class);
+        return null;
     }
 
     public String getName() {

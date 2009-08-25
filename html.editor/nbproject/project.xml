@@ -300,9 +300,6 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.el.lexer</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -321,22 +318,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.mozilla.rhino.patched</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.lexer</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jsp.lexer</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -347,10 +328,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
-                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.loaders</code-name-base>
@@ -374,9 +351,6 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
@@ -385,9 +359,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
-                <package>org.netbeans.modules.html.editor</package>
-                <package>org.netbeans.modules.html.editor.completion</package>
-                <package>org.netbeans.modules.html.editor.gsf.api</package>
+                <package>org.netbeans.modules.html.editor.api</package>
+                <package>org.netbeans.modules.html.editor.api.completion</package>
+                <package>org.netbeans.modules.html.editor.api.gsf</package>
             </friend-packages>
         </data>
     </configuration>

@@ -7,11 +7,23 @@
 package ${package};
 
 </#if>
+<#if classAnnotation??>
+import javax.faces.bean.ManagedBean;
+</#if>
+<#if scopeAnnotation??>
+import javax.faces.bean.${scopeAnnotation};
+</#if>
+
 /**
  *
  * @author ${user}
  */
-
+<#if classAnnotation??>
+${classAnnotation}
+</#if>
+<#if scopeAnnotation??>
+@${scopeAnnotation}
+</#if>
 public class ${name} {
 
     /** Creates a new instance of ${name} */

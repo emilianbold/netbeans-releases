@@ -80,6 +80,13 @@ public abstract class Repository {
     public abstract String getTooltip();
 
     /**
+     * Returns a unique ID for this repository
+     * 
+     * @return
+     */
+    public abstract String getID();
+
+    /**
      * Returns a Node representing this repository
      * @return
      */

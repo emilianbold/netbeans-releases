@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.StringTokenizer;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -76,10 +77,14 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
             String faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
                 public String run(WebAppMetadata metadata) throws Exception {
-                    InitParam[] contextParams = metadata.getRoot().getContextParam();
-                    for(InitParam param : contextParams) {
-                        if(FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName())) {
-                            return param.getParamValue();
+                    //TODO can be init param specified by some annotation or the dd must be present?
+                    WebApp ddRoot = metadata.getRoot();
+                    if (ddRoot != null) {
+                        InitParam[] contextParams = ddRoot.getContextParam();
+                        for (InitParam param : contextParams) {
+                            if (FACELETS_LIBRARIES_PROPERTY_NAME.equals(param.getParamName())) {
+                                return param.getParamValue();
+                            }
                         }
                     }
                     return null;

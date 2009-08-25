@@ -71,6 +71,8 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
     private final SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
     private final String nodeColumnName;
     private final String nodeRowColumnID;
+    private  String iconColumnID;
+    private  String iconPath;    
     private final DataTableMetadata dataTableMetadata;
     private NodeActionsProvider nodeActionProvider;
     private TableModel tableModelImpl;
@@ -106,8 +108,29 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         this.emptyAnalyzeMessage = emptyAnalyzeMessage;
     }
 
+    /**
+     * Sets the column name which will be used to get the icon which will be displayed in the NODE (first) column.
+     * The name for the icon displayed is formed for the DataRow <code>row</code> as following:
+     * <pre>
+     *    resourceID + "/" + row.getValueFor(iconColumnID) + ".png";
+     * </pre>
+     * @param iconColumnID icon column name
+     * @param resourceID the resource id, <code>"org/netbeans/modules/dlight/visualizers/resources"</code>
+     */
+    public void setNodeColumnIcon(String iconColumnID, String resourceID){
+        this.iconColumnID = iconColumnID;
+        this.iconPath = resourceID;
+    }
 
+    private String getIconColumnID() {
+        return iconColumnID;
+    }
 
+    private String getIconPath(){
+        return iconPath;
+    }
+
+  
     String getEmptyRunningMessage(){
         return emptyRuntimeMessage;
     }
@@ -278,5 +301,16 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         public Renderer<DataRow> getDetailsRenderer(AdvancedTableViewVisualizerConfiguration configuration) {
             return configuration.getDataRowRenderer();
         }
+
+        @Override
+        public String getIconColumnID(AdvancedTableViewVisualizerConfiguration configuration) {
+            return configuration.getIconColumnID();
+        }
+
+        @Override
+        public String getIconPath(AdvancedTableViewVisualizerConfiguration configuration) {
+            return configuration.getIconPath();
+        }
+
     }
 }

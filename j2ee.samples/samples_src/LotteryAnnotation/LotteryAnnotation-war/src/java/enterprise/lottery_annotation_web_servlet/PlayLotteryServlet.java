@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.ResourceBundle; 
 
 import javax.naming.InitialContext;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +46,7 @@ import enterprise.lottery_annotation_ejb_stateful.Lottery;
 import enterprise.lottery_annotation_ejb_stateless.Dice;
 
 
+@WebServlet(name="PlayLotteryServlet", urlPatterns={"/PlayLotteryServlet"})
 public class PlayLotteryServlet extends HttpServlet {
     
     /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.

@@ -107,6 +107,12 @@ public class ScanProjectPerfTest extends NbTestCase {
                 );
     }
     
+    public void testLimeWire() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://spbweb.russia.sun.com/~ok153203/lime6.zip",
+                    "lime6.zip",
+                    "lime6");
+    }
+
     public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
         scanProject("http://kim-sun.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip", 
                     "openjdk.zip",

@@ -213,6 +213,11 @@ public class QTCTest extends NbTestCase {
         }
 
         @Override
+        public String getID() {
+            return "repoid";
+        }
+
+        @Override
         public Image getIcon() {
             return null;
         }

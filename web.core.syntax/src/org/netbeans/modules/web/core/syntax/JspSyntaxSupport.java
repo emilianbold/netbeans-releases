@@ -74,7 +74,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.text.CloneableEditorSupport;

@@ -100,7 +100,7 @@ public class FormatPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
         issueInfoTextArea.setColumns(20);
-        issueInfoTextArea.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        issueInfoTextArea.setFont(new java.awt.Font("Monospaced", 0, 13));
         issueInfoTextArea.setRows(5);
         issueInfoTextArea.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.issueInfoTextArea.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(issueInfoTextArea);

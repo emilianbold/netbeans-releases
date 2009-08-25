@@ -49,6 +49,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
 
@@ -58,6 +60,12 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
 
     private ModelUtils() {
+    }
+
+    public static NamespaceScope getNamespaceScope(NamespaceDeclaration currenNamespace, FileScope fileScope) {
+        NamespaceDeclarationInfo ndi = currenNamespace != null ? NamespaceDeclarationInfo.create(currenNamespace) : null;
+        NamespaceScope currentScope = ndi != null ? ModelUtils.getFirst(ModelUtils.filter(fileScope.getDeclaredNamespaces(), ndi.getName())) : fileScope.getDefaultDeclaredNamespace();
+        return currentScope;
     }
 
     public static Collection<? extends TypeScope> getDeclaredTypes(FileScope fileScope) {

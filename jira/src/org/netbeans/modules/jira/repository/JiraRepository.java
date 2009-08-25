@@ -110,13 +110,15 @@ public class JiraRepository extends Repository {
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
+    private String id;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public JiraRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+    public JiraRepository(String repoID, String repoName, String url, String user, String password, String httpUser, String httpPassword) {
         this();
+        id = repoID;
         name = repoName;
         if(user == null) {
             user = "";                                                          // NOI18N
@@ -126,6 +128,14 @@ public class JiraRepository extends Repository {
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
         Jira.getInstance().addRepository(this);
+    }
+
+    @Override
+    public String getID() {
+        if(id == null) {
+            id = name + System.currentTimeMillis();
+        }
+        return id;
     }
 
     public Query createQuery() {
@@ -461,10 +471,14 @@ public class JiraRepository extends Repository {
                         return;
                     }
                     Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
-
-                    // XXX
-//                    GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(JiraRepository.this, ids, new IssuesCollector());
-//                    getExecutor().execute(cmd, false);
+                    for (String id : ids) {
+                        try {
+                            TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
+                            getIssueCache().setIssueData(id, data);
+                        } catch (IOException ex) {
+                            Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
+                        }
+                    }
                     scheduleIssueRefresh();
                 }
             });

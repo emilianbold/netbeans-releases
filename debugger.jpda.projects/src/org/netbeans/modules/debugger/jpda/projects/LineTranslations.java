@@ -95,17 +95,19 @@ class LineTranslations {
      *
      * @param timeStamp a new time stamp
      */
-    synchronized void createTimeStamp (Object timeStamp) {
+    void createTimeStamp (Object timeStamp) {
         Set<DataObject> modifiedDataObjects = DataObject.getRegistry().getModifiedSet();
         Registry r = new Registry ();
-        timeStampToRegistry.put (timeStamp, r);
-        for (DataObject dobj : modifiedDataObjects) {
-            r.register (dobj);
-        }
-        
-        if (changedFilesListener == null) {
-            changedFilesListener = new ChangedFilesListener ();
-            DataObject.getRegistry ().addChangeListener (changedFilesListener);
+        synchronized (this) {
+            timeStampToRegistry.put (timeStamp, r);
+            for (DataObject dobj : modifiedDataObjects) {
+                r.register (dobj);
+            }
+
+            if (changedFilesListener == null) {
+                changedFilesListener = new ChangedFilesListener ();
+                DataObject.getRegistry ().addChangeListener (changedFilesListener);
+            }
         }
     }
 
@@ -133,38 +135,48 @@ class LineTranslations {
      *
      * @return The original line number
      */
-    synchronized int getOriginalLineNumber (
-        LineBreakpoint lb,
+    int getOriginalLineNumber (
+        final LineBreakpoint lb,
         final Object timeStamp
     ) {
-        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
-        if (bpLines != null) {
-            Integer line = bpLines.get(lb);
-            if (line != null) {
-                //System.err.println("Original line of "+lb+" IS "+line);
-                return line.intValue();
+        Map<LineBreakpoint, Integer> bpLines;
+        PropertyChangeListener lineNumberListener;
+        synchronized (this) {
+            bpLines = originalBreakpointLines.get(timeStamp);
+            if (bpLines != null) {
+                Integer line = bpLines.get(lb);
+                if (line != null) {
+                    //System.err.println("Original line of "+lb+" IS "+line);
+                    return line.intValue();
+                }
+            } else {
+                bpLines = new WeakHashMap<LineBreakpoint, Integer>();
+                originalBreakpointLines.put(timeStamp, bpLines);
             }
-        } else {
-            bpLines = new WeakHashMap<LineBreakpoint, Integer>();
-            originalBreakpointLines.put(timeStamp, bpLines);
         }
         int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
-        bpLines.put(lb, line);
-        PropertyChangeListener lineNumberListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
-                    synchronized (LineTranslations.this) {
-                        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
-                        if (bpLines != null) {
-                            LineBreakpoint lb = (LineBreakpoint) evt.getSource();
-                            int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
+        synchronized (this) {
+            bpLines.put(lb, line);
+            lineNumberListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
+                        final Map<LineBreakpoint, Integer> bpLines;
+                        synchronized (LineTranslations.this) {
+                            bpLines = originalBreakpointLines.get(timeStamp);
+                            if (bpLines == null) {
+                                return ;
+                            }
+                        }
+                        LineBreakpoint lb = (LineBreakpoint) evt.getSource();
+                        int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
+                        synchronized (LineTranslations.this) {
                             bpLines.put(lb, line);
                         }
                     }
                 }
-            }
-        };
-        breakpointListeners.put(timeStamp, lineNumberListener);
+            };
+            breakpointListeners.put(timeStamp, lineNumberListener);
+        }
         lb.addPropertyChangeListener(WeakListeners.propertyChange(lineNumberListener, lb));
         return line;
     }
@@ -211,16 +223,19 @@ class LineTranslations {
      * @param timeStamp time stamp to be updated
      * @param url an url
      */
-    synchronized void updateTimeStamp (Object timeStamp, String url) {
+    void updateTimeStamp (Object timeStamp, String url) {
         //System.err.println("LineTranslations.updateTimeStamp("+timeStamp+", "+url+")");
-        Registry registry = timeStampToRegistry.get (timeStamp);
-        registry.register (getDataObject (url));
-        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
-        if (bpLines != null) {
-            Set<LineBreakpoint> bpts = new HashSet<LineBreakpoint>(bpLines.keySet());
-            for (LineBreakpoint bp : bpts) {
-                if (url.equals(bp.getURL())) {
-                    bpLines.remove(bp);
+        DataObject dobj = getDataObject (url);
+        synchronized (this) {
+            Registry registry = timeStampToRegistry.get (timeStamp);
+            registry.register (dobj);
+            Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
+            if (bpLines != null) {
+                Set<LineBreakpoint> bpts = new HashSet<LineBreakpoint>(bpLines.keySet());
+                for (LineBreakpoint bp : bpts) {
+                    if (url.equals(bp.getURL())) {
+                        bpLines.remove(bp);
+                    }
                 }
             }
         }
@@ -265,23 +280,28 @@ class LineTranslations {
         return null;
     }
     
-    synchronized void registerForLineUpdates(LineBreakpoint lb) {
+    void registerForLineUpdates(LineBreakpoint lb) {
         //translatedBreakpoints.add(lb);
         DataObject dobj = getDataObject(lb.getURL());
         if (dobj != null) {
             BreakpointLineUpdater blu = new BreakpointLineUpdater(lb, dobj);
             try {
                 blu.attach();
-                lineUpdaters.put(lb, blu);
+                synchronized (this) {
+                    lineUpdaters.put(lb, blu);
+                }
             } catch (IOException ioex) {
                 // Ignore
             }
         }
     }
 
-    synchronized void unregisterFromLineUpdates(LineBreakpoint lb) {
+    void unregisterFromLineUpdates(LineBreakpoint lb) {
         //translatedBreakpoints.remove(lb);
-        BreakpointLineUpdater blu = lineUpdaters.remove(lb);
+        BreakpointLineUpdater blu;
+        synchronized (this) {
+            blu = lineUpdaters.remove(lb);
+        }
         if (blu != null) {
             blu.detach();
         }
@@ -351,7 +371,7 @@ class LineTranslations {
     
     private class BreakpointLineUpdater implements PropertyChangeListener {
         
-        private LineBreakpoint lb;
+        private final LineBreakpoint lb;
         private DataObject dataObject;
         private Line line;
         private boolean updatingLine = false;
@@ -380,48 +400,76 @@ class LineTranslations {
             }
         }
 
-        private synchronized void update() {
-            updatingLine = true;
+        private void update(Line l) {
             try {
-                lb.setLineNumber(line.getLineNumber() + 1);
+                int ln;
+                synchronized (this) {
+                    updatingLine = true;
+                    ln = l.getLineNumber() + 1;
+                }
+                lb.setLineNumber(ln);
             } finally {
-                updatingLine = false;
+                synchronized (this) {
+                    updatingLine = false;
+                }
             }
         }
 
-        public synchronized void propertyChange(PropertyChangeEvent evt) {
-            if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName()) && line == evt.getSource()) {
-                update();
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            Line l;
+            boolean ul;
+            synchronized (this) {
+                l = this.line;
+                ul = this.updatingLine;
+            }
+            if (Line.PROP_LINE_NUMBER.equals(propertyName) && l == evt.getSource()) {
+                update(l);
                 return ;
             }
-            if (!updatingLine && LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
-                line.removePropertyChangeListener(this);
-                if (dataObject == null) return ;
-                LineCookie lc = dataObject.getCookie (LineCookie.class);
+            if (!ul && LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
+                DataObject dobj;
+                synchronized (this) {
+                    line.removePropertyChangeListener(this);
+                    if (dataObject == null) return ;
+                    dobj = dataObject;
+                }
+                Line newLine;
                 try {
-                    line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
-                    line.addPropertyChangeListener(this);
+                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
+                    newLine.addPropertyChangeListener(this);
                 } catch (IndexOutOfBoundsException ioobex) {
-                    // ignore document changes for BP with bad line number
-                    line = null;
+                    newLine = null;
+                }
+                synchronized (this) {
+                    line = newLine;
                 }
             }
-            if (LineBreakpoint.PROP_URL.equals(evt.getPropertyName())) {
-                // detach
-                line.removePropertyChangeListener(this);
-                
-                // update DataObject
-                this.dataObject = getDataObject(lb.getURL());
-                if (dataObject == null) return ;
-                
-                // attach
-                LineCookie lc = dataObject.getCookie (LineCookie.class);
-                try {
-                    this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
-                    line.addPropertyChangeListener(this);
-                } catch (IndexOutOfBoundsException ioobex) {
-                    // ignore document changes for BP with bad line number
-                    this.line = null;
+            if (LineBreakpoint.PROP_URL.equals(propertyName)) {
+                DataObject newDO = getDataObject(lb.getURL());
+                Line newLine;
+                if (newDO != null) {
+                    LineCookie lc = newDO.getCookie (LineCookie.class);
+                    try {
+                        newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
+                        newLine.addPropertyChangeListener(this);
+                    } catch (IndexOutOfBoundsException ioobex) {
+                        // ignore document changes for BP with bad line number
+                        newLine = null;
+                    }
+                } else {
+                    newLine = null;
+                }
+                synchronized (this) {
+                    // detach
+                    line.removePropertyChangeListener(this);
+
+                    // update DataObject
+                    this.dataObject = newDO;
+
+                    // attach
+                    this.line = newLine;
                 }
             }
         }

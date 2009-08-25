@@ -700,6 +700,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
                 <package>org.netbeans.modules.web.jsf.api.metamodel</package>
+                <package>org.netbeans.modules.web.jsf.api.palette</package>
             </friend-packages>
         </data>
     </configuration>

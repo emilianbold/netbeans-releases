@@ -71,7 +71,8 @@ import org.openide.util.TaskListener;
 
 /**
  * Component representing drop down for quick search
- * @author  Jan Becicka
+ * @author Jan Becicka
+ * @author Tomas Stupka
  */
 public class QuickSearchPopup extends javax.swing.JPanel 
         implements ListDataListener, ActionListener, TaskListener, Runnable {
@@ -109,9 +110,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
         hintSep.setVisible(false);
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
-        jList1.setCellRenderer(new SearchResultRender(comboBar, this));
+        jList1.setCellRenderer(new SearchResultRenderer(comboBar, this));
         rp = new RequestProcessor("Bugtracking quick issue search", 1, true); // NOI18N
-
+        setVisible(false);
         updateStatusPanel();
     }
 
@@ -207,7 +208,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     public void actionPerformed(ActionEvent e) {
         updateTimer.stop();
         // search only if we are not cancelled already
-        if (comboBar.getCommand().isFocusOwner()) {
+        if (comboBar.isTextFieldFocusOwner()) {
             // start waiting on all providers execution
             runTask(new Runnable() {
                 public void run() {
@@ -229,7 +230,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     private void searchLocalIssues() {
-        String criteria = comboBar.getCommand().getText().trim();
+        String criteria = comboBar.getText();
         if(criteria.equals("")) { // NOI18N
             rModel.setContent(null);
             return;
@@ -444,7 +445,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         }
 
         // popup visibility constraints
-        if ((modelSize > 0 || statusVisible) && comboBar.getCommand().isFocusOwner()) {
+        if ((modelSize > 0 || statusVisible) && comboBar.isTextFieldFocusOwner()) {
             if (jList1.getSelectedIndex() >= modelSize) {
                 jList1.setSelectedIndex(modelSize - 1);
             }
@@ -482,8 +483,8 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
         Point location =
                 new Point(
-                    comboBar.getCommand().getX(),
-                    comboBar.getCommand().getY() + comboBar.getCommand().getHeight() - 1);
+                    comboBar.getIssueComponent().getX(),
+                    comboBar.getIssueComponent().getY() + comboBar.getIssueComponent().getHeight() - 1);
         location = SwingUtilities.convertPoint(comboBar, location, lPane); // XXX terrible hack! fix this
         result.setLocation(location);
 
@@ -497,7 +498,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         jList1.setVisibleRowCount(modelSize);
         Dimension preferredSize = jList1.getPreferredSize();
 
-        preferredSize.width = comboBar.getCommand().getWidth();
+        preferredSize.width = comboBar.getIssueComponent().getWidth();
         preferredSize.height += statusPanel.getPreferredSize().height + 3;
         if(preferredSize.height > 150) preferredSize.height = 150;
 
@@ -539,7 +540,8 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         // XXX
         Issue issue = comboBar.getIssue();
-        shouldBeVisible = shouldBeVisible && (issue == null || !IssueItem.getIssueDescription(issue).trim().equals(comboBar.getCommand().getText().trim()));
+        String issueText = issue != null ? IssueItem.getIssueDescription(issue).trim() : "";                    // NOI18N
+        shouldBeVisible = shouldBeVisible && (issue == null || !issueText.equals(comboBar.getText().trim()));
 
         return shouldBeVisible;
     }

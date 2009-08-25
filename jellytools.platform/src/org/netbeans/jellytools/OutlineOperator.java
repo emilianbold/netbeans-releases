@@ -46,11 +46,13 @@ import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.junit.Log;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 
@@ -81,11 +83,22 @@ public class OutlineOperator extends JTableOperator {
         super(outline);
     }
 
+    /**
+     * Gets the Outline component the operator is working with.
+     *
+     * @return Outline component
+     */
     protected Outline getOutline()
     {
         return (Outline)getSource();
     }
 
+    /**
+     * Gets the current index of the tree column (column of the table which contains
+     * the tree) in the table.
+     *
+     * @return index of the tree column or -1 if is not found (error)
+     */
     public int getTreeColumnIndex()
     {
         int lnNumColumns = this.getColumnCount();
@@ -99,22 +112,21 @@ public class OutlineOperator extends JTableOperator {
         return -1;
     }
 
+    /**
+     * Tries to find a child of the irParentPath which matches isName. The index parameter
+     * is used if we want indexth node of the same name (otherwise use 0). If it is
+     * not found a TimeoutExpiredException is thrown.
+     *
+     * @param irParentPath parent path in which to search
+     * @param isName name of the node to be found
+     * @param inIndex index of the node among its siblings (in case there are more of the same name)
+     * @return found path
+     */
     public TreePath findNextPathElement(final TreePath irParentPath, final String isName, final int inIndex)
     {
-        final Outline lrOutline = getOutline();
-
         if (!isExpanded(irParentPath))
             expandPath(irParentPath);
-        
-        //create a list of rows we will search in
-        int lnRowSpan = lrOutline.getOutlineModel().getChildCount(irParentPath.getLastPathComponent());
-        int lnStartRow = getRowForPath(irParentPath) + 1;
-        int[] lrRowsToSearch = new int[lnRowSpan];
-        for (int i = 0; i < lnRowSpan; i++)
-        {
-            lrRowsToSearch[i] = lnStartRow + i;
-        }
-        
+                
         TreePath lrTreePath;
         Timeouts lrTimes = getTimeouts().cloneThis();
 
@@ -122,32 +134,10 @@ public class OutlineOperator extends JTableOperator {
 	lrTimes.setTimeout("Waiter.WaitingTime", getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout"));
         try
         {
-            Waiter lrWaiter = new Waiter(new Waitable() {
-                public Object actionProduced(Object anObject) {
-                    int[] lrRows = (int[]) anObject;
-
-                    Point lrFindPoint = findCell(isName, lrRows, new int[]{getTreeColumnIndex()}, inIndex);
-
-                    //no cell found
-                    if (lrFindPoint.equals(new Point(-1,-1)))
-                        return null;
-
-                    //y is row, x is not important since we're asking for a row in the tree
-                    TreePath lrPath = lrOutline.getLayoutCache().getPathForRow(lrFindPoint.y);
-
-                    //cell found, but it is not on the level we're looking for
-                    if (lrPath.getPathCount() > irParentPath.getPathCount() + 1)
-                        return null;
-
-                    return lrPath;
-                }
-                public String getDescription() {
-                    return("Tree node cell with name '" + isName + "' present.");
-                }
-            });
+            Waiter lrWaiter = new Waiter(new NodeWaiter(irParentPath, isName, inIndex));
 
             lrWaiter.setTimeouts(lrTimes);
-            lrTreePath = (TreePath)lrWaiter.waitAction(lrRowsToSearch);
+            lrTreePath = (TreePath)lrWaiter.waitAction(null);
         }
         catch (InterruptedException e) {
         throw new JemmyException("Interrupted.", e);
@@ -156,16 +146,39 @@ public class OutlineOperator extends JTableOperator {
         return lrTreePath;
     }
 
+    /**
+     * Tries to find a child of the irParentPath which matches isName. If it is
+     * not found a TimeoutExpiredException is thrown.
+     *
+     * @param irParentPath
+     * @param isName
+     * @return found path
+     */
     public TreePath findNextPathElement(TreePath irParentPath, String isName)
     {
         return findNextPathElement(irParentPath, isName, 0);
     }
 
+    /**
+     * Gets the first root node (child of the root element) of the specified name.
+     *
+     * @param isName
+     * @return
+     */
     public OutlineNode getRootNode(String isName)
     {
         return getRootNode(isName, 0);
     }
 
+    /**
+     * Gets a root node (child of the root element) of the specified name. The
+     * index parameter is used if we want indexth node of the same
+     * name (otherwise use 0).
+     *
+     * @param isName
+     * @param inIndex
+     * @return
+     */
     public OutlineNode getRootNode(final String isName, final int inIndex)
     {
         TreePath lrParentPath = new TreePath(getOutline().getOutlineModel().getRoot());
@@ -173,6 +186,14 @@ public class OutlineOperator extends JTableOperator {
         return new OutlineNode(this, findNextPathElement(lrParentPath, isName, inIndex));
     }
 
+    /**
+     *
+     * Tries to find a subpath (descendant) of a parent path in the tree.
+     *
+     * @param irParentPath parent path to start the search in
+     * @param isPath node name or a list of nodes separated by "|"
+     * @return found path
+     */
     public TreePath findPath(TreePath irParentPath, String isPath)
     {
         int lnDelimIndex = isPath.indexOf("|");        
@@ -186,6 +207,11 @@ public class OutlineOperator extends JTableOperator {
         return findNextPathElement(irParentPath, isPath);
     }
 
+    /**
+     * Waits until the given TreePath is expanded.
+     *
+     * @param irTP TreePath in question
+     */
     public void waitExpanded(final TreePath irTP)
     {
          if(irTP != null) {            
@@ -202,33 +228,24 @@ public class OutlineOperator extends JTableOperator {
         }
     }
 
-    public void expandPath(final TreePath irTP)
-    {
-        runMapping(new MapVoidAction("expandPath")
-        {
-            public void map()
-            {
-                getOutline().expandPath(irTP);
-            }
-        });
-    }
-
-    public boolean isExpanded(final TreePath irTP)
-    {
-        return((Boolean)runMapping(new MapAction("isExpanded")
-        {
-		public Object map()
-                {
-		    return(getOutline().isExpanded(irTP));
-		}
-        }));
-    }
-
+    /**
+     * Returns modifier based on root being hidden or not. When the root is hidden, 
+     * all y coordinates need to be decreased by 1.
+     * 
+     * @return 0 or -1
+     */
     protected int getVisibleRootModifier()
     {
         return getOutline().isRootVisible() ? 0 : -1;
     }
 
+    /**
+     * Gets the location of a given TreePath in the Outline table (x for columns
+     * and y for rows) or (-1,-1) in case it was not found.
+     *
+     * @param irTreePath TreePath in question
+     * @return Location for the given path or Point(-1,-1) if it was not found.
+     */
     public Point getLocationForPath(TreePath irTreePath)
     {
         int lnX = getTreeColumnIndex();
@@ -238,12 +255,19 @@ public class OutlineOperator extends JTableOperator {
         return (lnY == -1) ? new Point(-1, -1) : new Point(lnX, lnY);
     }
 
+    /**
+     * Gets the row in the Outline table for a given TreePath or -1 if the
+     * TreePath is invalid.
+     *
+     * @param irTreePath TreePath in question
+     * @return Row of the path or -1 if it is invalid.
+     */
     public int getRowForPath(TreePath irTreePath)
-    {        
+    {
         if (irTreePath.getParentPath() == null)
             return getVisibleRootModifier();
 
-        if (!getOutline().isExpanded(irTreePath.getParentPath())) 
+        if (!getOutline().isExpanded(irTreePath.getParentPath()))
             expandPath(irTreePath.getParentPath());
 
         int lnRow = -1;
@@ -257,6 +281,13 @@ public class OutlineOperator extends JTableOperator {
         return lnRow;
     }
 
+    /**
+     * Gets the rowspan of siblings which are above irTreePath in the tree. Only
+     * expanded paths are taken into account.
+     *
+     * @param irTreePath
+     * @return
+     */
     protected int getPrecedingSiblingsRowSpan(TreePath irTreePath)
     {
         OutlineModel lrModel = getOutline().getOutlineModel();
@@ -273,19 +304,25 @@ public class OutlineOperator extends JTableOperator {
         for (int i = lnIndex - 1; i >= 0; i--)
         {
             Object lrSibling = lrModel.getChild(lrParent.getLastPathComponent(), i);
-            lnRowSpan += getRowSpanOfLastElement(irTreePath.pathByAddingChild(lrSibling));
+            lnRowSpan += getRowSpanOfLastElement(lrParent.pathByAddingChild(lrSibling));
         }
 
         return lnRowSpan;
     }
 
+    /**
+     * Gets the total rowspan of the last element of irTreePath.
+     *
+     * @param irTreePath
+     * @return
+     */
     protected int getRowSpanOfLastElement(TreePath irTreePath)
     {
         OutlineModel lrModel = getOutline().getOutlineModel();
 
         if (!lrModel.getTreePathSupport().isExpanded(irTreePath))
             return 1;
-        
+
         Object lrLast = irTreePath.getLastPathComponent();
         int lnRowspan = 1; //1 for the current node
         int lnChildCount = lrModel.getChildCount(lrLast);
@@ -300,6 +337,43 @@ public class OutlineOperator extends JTableOperator {
 
         return lnRowspan;
     }
+
+    //Mappings
+
+    /**
+     * Expands target path.
+     *
+     * @param irTP
+     */
+    public void expandPath(final TreePath irTP)
+    {
+        runMapping(new MapVoidAction("expandPath")
+        {
+            public void map()
+            {
+                getOutline().expandPath(irTP);
+            }
+        });
+    }
+
+    /**
+     * Returns true if target path is expanded.
+     *
+     * @param irTP
+     * @return
+     */
+    public boolean isExpanded(final TreePath irTP)
+    {
+        return((Boolean)runMapping(new MapAction("isExpanded")
+        {
+		public Object map()
+                {
+		    return(getOutline().isExpanded(irTP));
+		}
+        }));
+    }
+
+    //Nested classes
 
     private static class OutlineFinder implements ComponentChooser
     {
@@ -324,6 +398,81 @@ public class OutlineOperator extends JTableOperator {
             return subFinder.getDescription();
         }
         
+    }
+
+    /**
+     * Waits for indexth node with string name to appear.
+     */
+    private class NodeWaiter implements Waitable
+    {
+        private TreePath parentPath;
+        private int[] rowsToSearch = null;
+        private String name;
+        private int index;
+
+        public NodeWaiter(TreePath irParentPath, String isName, int inIndex)
+        {
+            parentPath = irParentPath;
+            name = isName;
+            index = inIndex;
+        }
+
+        /**
+         * Returns the array of rows we will search in. The array is cached and
+         * will regenerate when the child count of parentPath changes.
+         *
+         * @return array of row numbers
+         */
+        private int[] getRowsToSearch()
+        {
+            int lnRowSpan = getOutline().getOutlineModel().getChildCount(parentPath.getLastPathComponent());
+
+            if ( (rowsToSearch == null) || (rowsToSearch.length != lnRowSpan) )
+            {
+                int lnStartRow = getRowForPath(parentPath) + 1;
+                int lnPrecedingSiblingRowSpan = 0;
+
+                rowsToSearch = new int[lnRowSpan];
+                for (int i = 0; i < lnRowSpan; i++)
+                {
+                    rowsToSearch[i] = lnStartRow + lnPrecedingSiblingRowSpan;
+                    Object lrSibling = getOutline().getOutlineModel().getChild(parentPath.getLastPathComponent(), i);
+
+                    TreePath lrSiblingPath = parentPath.pathByAddingChild(lrSibling);
+
+                    lnPrecedingSiblingRowSpan += getRowSpanOfLastElement(lrSiblingPath);
+                }
+            }
+
+            return rowsToSearch;
+        }
+
+        public Object actionProduced(Object anObject) {
+            TreePath lrPath = null;
+            int lnIndexModifier = 0;
+
+            Point lrFindPoint = findCell(name, getRowsToSearch(), new int[]{getTreeColumnIndex()}, index);
+
+            //no cell found
+            if (lrFindPoint.equals(new Point(-1,-1)))
+                return null;
+
+            //y is row, x is not important since we're asking for a row in the tree
+             lrPath = getOutline().getLayoutCache().getPathForRow(lrFindPoint.y);
+
+            //path for the specified row not found or it is not visible
+            if (lrPath == null)
+                return null;
+
+            //found a cell that is a not a direct child of the parent path
+            if (lrPath.getPathCount() != parentPath.getPathCount() + 1)
+                return null;
+
+            return lrPath;
+        }
+        public String getDescription() {
+            return("Tree node cell with name '" + name + "' present.");
+        }
     }
 
 }

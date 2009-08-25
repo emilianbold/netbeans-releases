@@ -208,7 +208,14 @@ public final class TreePathSupport {
 	// Is this node expanded?
 	Object value = expandedPaths.get(path);
 
-	if(value == null || !((Boolean)value).booleanValue())
+        if (value == null) {
+            if (!mdl.getLayout().isRootVisible() && path.getParentPath() == null) {
+                return true; // Invisible root is always expanded
+            } else {
+                return false;
+            }
+        }
+	if (!((Boolean) value).booleanValue())
 	    return false;
 
 	// It is, make sure its parent is also expanded.

@@ -52,6 +52,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -166,8 +168,30 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         return new File(path+File.separator+"configure");
     }
 
-    public void performTestProject(String URL, List<String> additionalScripts){
+    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers){
         Map<String, String> tools = findTools();
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        if (useSunCompilers) {
+            if (def != null && def.isGnuCompiler()) {
+                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                    if (set.isSunCompiler()) {
+                        CompilerSetManager.getDefault().setDefault(set);
+                        break;
+                    }
+                }
+            }
+        } else {
+            if (def != null && def.isSunCompiler()) {
+                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                    if (set.isGnuCompiler()) {
+                        CompilerSetManager.getDefault().setDefault(set);
+                        break;
+                    }
+                }
+            }
+        }
+        def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        final boolean isSUN = def != null ? def.isSunCompiler() : false;
         if (tools == null) {
             System.err.println("Test did not run because required tools do not found");
             return;
@@ -199,14 +223,30 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
                         }
                     } else if ("realFlags".equals(name)) {
                         if (path.indexOf("cmake-")>0) {
-                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                            if (isSUN) {
+                                return "CMAKE_C_COMPILER=cc CMAKE_CXX_COMPILER=CC CFLAGS=-g CXXFLAGS=-g CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=-g CMAKE_C_FLAGS_DEBUG=-g";
+                            } else {
+                                return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                            }
                         } else {
                             if (configure.getAbsolutePath().endsWith("configure")) {
-                                return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                if (isSUN) {
+                                    return "CC=cc CXX=CC CFLAGS=-g CXXFLAGS=-g";
+                                } else {
+                                    return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                }
                             } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-                                return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                                if (isSUN) {
+                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g -DCMAKE_C_FLAGS_DEBUG=-g";
+                                } else {
+                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                                }
                             } else if (configure.getAbsolutePath().endsWith(".pro")) {
-                                return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                if (isSUN) {
+                                    return "-spec solaris-cc QMAKE_CC=cc QMAKE_CXX=CC QMAKE_CFLAGS=-g QMAKE_CXXFLAGS=-g";
+                                } else {
+                                    return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                                }
                             }
                         }
                     } else if ("buildProject".equals(name)) {

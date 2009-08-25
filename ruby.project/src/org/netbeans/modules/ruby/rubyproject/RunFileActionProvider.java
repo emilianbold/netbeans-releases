@@ -152,7 +152,9 @@ public final class RunFileActionProvider implements ActionProvider {
         desc.debug(debug);
         desc.script(file.getAbsolutePath());
         RubyProcessCreator rpc = new RubyProcessCreator(desc);
-        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), file.getName()).run();
+        if (rpc.isAbleToCreateProcess()) {
+            ExecutionService.newService(rpc, desc.toExecutionDescriptor(), file.getName()).run();
+        }
     }
 
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {

@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -82,7 +84,10 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.FilterNode;
 import org.xml.sax.SAXException;
 
 /**
@@ -442,13 +447,14 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
         } // end of FeatureOpenHook
     } // end of FeatureNonProject
     private static final class FeatureDelegate 
-    implements Lookup.Provider, ProjectInformation {
+    implements Lookup.Provider, ProjectInformation, LogicalViewProvider {
         private final FileObject dir;
         private final PropertyChangeSupport support;
         Lookup delegate;
         private final InstanceContent ic = new InstanceContent();
         private final Lookup hooks = new AbstractLookup(ic);
         private final FeatureNonProject.FeatureOpenHook hook;
+        private List<RootNode> lvs;
 
 
         public FeatureDelegate(FileObject dir, FeatureNonProject feature) {
@@ -523,7 +529,51 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
             for (ProjectOpenedHook h : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
                 ic.add(h);
             }
+            List<RootNode> list = lvs;
+            lvs = Collections.emptyList();
+            if (list != null) {
+                for (RootNode fn : list) {
+                    fn.change(delegate);
+                }
+            }
             support.firePropertyChange(null, null, null);
         }
+
+        public Node createLogicalView() {
+            LogicalViewProvider lvp = delegate.lookup(LogicalViewProvider.class);
+            if (lvp != null && lvp != this) {
+                return lvp.createLogicalView();
+            }
+            if (lvs == null) {
+                lvs = new ArrayList<RootNode>();
+            }
+
+            RootNode fn = new RootNode(dir);
+            lvs.add(fn);
+            return fn;
+        }
+
+        public Node findPath(Node root, Object target) {
+            LogicalViewProvider lvp = delegate.lookup(LogicalViewProvider.class);
+            if (lvp != null && lvp != this) {
+                return lvp.findPath(root, target);
+            }
+            return null;
+        }
     }
+
+    private static final class RootNode extends FilterNode {
+        public RootNode(FileObject fo) {
+            super(DataFolder.findFolder(fo).getNodeDelegate());
+        }
+
+        public void change(Lookup l) {
+            LogicalViewProvider lvp = l.lookup(LogicalViewProvider.class);
+            if (lvp != null) {
+                changeOriginal(lvp.createLogicalView(), true);
+            }
+
+        }
+    }
+
 }

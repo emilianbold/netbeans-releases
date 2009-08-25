@@ -1687,6 +1687,10 @@ public abstract class TreeView extends JScrollPane {
         if( null == searchpanel )
             return;
 
+        if (tree.getSelectionPaths() == null && origSelectionPaths != null) {
+            tree.setSelectionPaths(origSelectionPaths);
+        }
+
         remove(searchpanel);
         searchpanel = null;
         origSelectionPaths = null;
@@ -2231,6 +2235,7 @@ public abstract class TreeView extends JScrollPane {
             }
 
             public void focusLost(FocusEvent e) {
+                results.clear();
                 removeSearchField();
             }
         }

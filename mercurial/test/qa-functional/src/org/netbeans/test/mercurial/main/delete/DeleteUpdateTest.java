@@ -119,7 +119,7 @@ public class DeleteUpdateTest extends JellyTestCase {
 
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.select();
-            node.performMenuActionNoBlock("Versioning|Mercurial|Update...");
+            node.performMenuActionNoBlock("Team|Mercurial|Update...");
             NbDialogOperator dlgUpdate = new NbDialogOperator("Update Repository");
             JButtonOperator btnUpdate = new JButtonOperator(dlgUpdate, "Update");
             btnUpdate.push();

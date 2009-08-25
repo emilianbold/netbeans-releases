@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
@@ -51,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -88,6 +88,17 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 configFiles = (String[])files.toArray(new String[files.size()]);
             }
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+            //No config files found
+            if (configFiles.length==0) {
+                jCheckBox1.setEnabled(false);
+                jComboBoxConfigFile.setEnabled(false);
+            } else {
+                Profile profile = wm.getJ2eeProfile();
+                if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
+                    jCheckBox1.setSelected(true);
+                    jCheckBox1.setEnabled(false);
+                }
+            }
         }
         ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
         for (int i = 0; i < scopes.length; i++){
@@ -117,11 +128,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         jLabelDesc = new javax.swing.JLabel();
         jScrollPaneDesc = new javax.swing.JScrollPane();
         jTextAreaDesc = new javax.swing.JTextArea();
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         jLabelConfigFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_ConfigFile").charAt(0));
         jLabelConfigFile.setLabelFor(jComboBoxConfigFile);
         jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_ConfigFile")); // NOI18N
 
+        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
         jComboBoxConfigFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxConfigFileActionPerformed(evt);
@@ -148,30 +161,40 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
         jTextAreaDesc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanDescription")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Add_data_to_conf_file")); // NOI18N
+        jCheckBox1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jCheckBox1ItemStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelConfigFile)
                     .add(jLabelName)
                     .add(jLabelScope)
-                    .add(jLabelDesc))
+                    .add(jLabelDesc)
+                    .add(jLabelConfigFile))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jComboBoxConfigFile, 0, 303, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jComboBoxScope, 0, 303, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPaneDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jTextFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                    .add(jComboBoxScope, 0, 302, Short.MAX_VALUE)
+                    .add(jScrollPaneDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                    .add(jComboBoxConfigFile, 0, 302, Short.MAX_VALUE)))
+            .add(layout.createSequentialGroup()
+                .add(jCheckBox1)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(3, 3, 3)
-                        .add(jLabelConfigFile))
+                .add(jCheckBox1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabelConfigFile)
                     .add(jComboBoxConfigFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -184,7 +207,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelDesc)
-                    .add(jScrollPaneDesc)))
+                    .add(jScrollPaneDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)))
         );
 
         jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ConfigurationFile")); // NOI18N
@@ -194,8 +217,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     private void jComboBoxConfigFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxConfigFileActionPerformed
         fireChange();
     }//GEN-LAST:event_jComboBoxConfigFileActionPerformed
+
+    private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
+        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
+    }//GEN-LAST:event_jCheckBox1ItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBoxConfigFile;
     private javax.swing.JComboBox jComboBoxScope;
     private javax.swing.JLabel jLabelConfigFile;
@@ -209,12 +237,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
-        if ((configFile == null) || configFile.trim().equals("")) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfFileSelected"));
-            return false;
+        if (configFile==null) {
+            return true;
         }
-
+        
         Project project = Templates.getProject(wizardDescriptor);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         FileObject dir = wm.getDocumentBase();
@@ -301,6 +327,10 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
 
     public String getManagedBeanName() {
         return jTextFieldName.getText();
+    }
+
+    public boolean isAddBeanToConfig() {
+        return jCheckBox1.isSelected();
     }
 
     public void insertUpdate(DocumentEvent e) {

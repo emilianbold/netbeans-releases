@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.util.Collection;
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -56,9 +57,11 @@ class IncludedJSPFileProcessor extends JSPProcessor {
     private StringBuilder importsDeclarations = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
     private StringBuilder scriptlets = new StringBuilder();
+    private Collection<String> processedIncludes;
 
-    public IncludedJSPFileProcessor(BaseDocument doc) {
+    public IncludedJSPFileProcessor(BaseDocument doc, Collection<String> processedFiles) {
         this.doc = doc;
+        this.processedIncludes = processedFiles;
     }
 
     @Override
@@ -110,6 +113,11 @@ class IncludedJSPFileProcessor extends JSPProcessor {
     protected void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor) {
         declarations.append(includedJSPFileProcessor.getDeclarations());
         includedJSPFileProcessor.getImports();
+    }
+
+    @Override
+    protected Collection<String> processedIncludes() {
+        return processedIncludes;
     }
 
 
