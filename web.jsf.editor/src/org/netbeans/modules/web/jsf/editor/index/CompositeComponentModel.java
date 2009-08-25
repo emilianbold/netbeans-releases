@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
 public class CompositeComponentModel extends JsfPageModel {
 
     //index
-    private static final String LIBRARY_NAME_KEY = "library"; //NOI18N
+    static final String LIBRARY_NAME_KEY = "library"; //NOI18N
     private static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
     private static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
 
