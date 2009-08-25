@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.kenai.QueryAccessorImpl;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -248,8 +248,11 @@ public class KenaiTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         protected IssueCache getIssueCache() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Lookup getLookup() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
