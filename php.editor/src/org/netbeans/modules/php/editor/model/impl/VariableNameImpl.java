@@ -145,7 +145,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
         }
         if (retval == null) {
-            if (assignments.isEmpty() && isGloballyVisible()) {
+            if (assignments.isEmpty() && (isGloballyVisible() || representsThis())) {
                 Scope inScope = getInScope();
                 if (inScope != null) {
                     inScope = inScope.getInScope();
@@ -190,8 +190,8 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public Collection<? extends TypeScope> getTypes(int offset) {
         List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
-            MethodScope methodScope = (MethodScope) getInScope();
-            return Collections.singletonList(methodScope.getTypeScope());
+            ClassScope classScope = (ClassScope) getInScope();
+            return Collections.singletonList(classScope);
         }
         AssignmentImpl assignment = findAssignment(offset, true, null);
         return (assignment != null) ? assignment.getTypes() : empty;
@@ -214,7 +214,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     public boolean representsThis() {
         Scope inScope = getInScope();
-        if (inScope instanceof MethodScope && getName().equals("$this")) {//NOI18N
+        if (inScope instanceof ClassScope && getName().equals("$this")) {//NOI18N
             return true;
         }
         return false;

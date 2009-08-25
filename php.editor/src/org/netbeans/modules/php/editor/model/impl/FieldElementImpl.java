@@ -40,14 +40,18 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -123,10 +127,30 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return className+super.getNormalizedName();
     }
 
+    private static Set<String> recursionDetection = new HashSet<String>();//#168868
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
-        final Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
-        return  retval.isEmpty() ? getDefaultTypes() : retval;
+        Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
+        if  (retval.isEmpty()) {
+            retval = getDefaultTypes();
+            if (retval.isEmpty()) {
+                ClassScope classScope = (ClassScope) getInScope();
+                for (VariableName variableName : classScope.getDeclaredVariables()) {
+                    if (variableName.representsThis()) {
+                        final String checkName = getNormalizedName();
+                        boolean added = recursionDetection.add(checkName);
+                        try {
+                            if (added) {
+                                return variableName.getFieldTypes(this, offset);
+                            }
+                        } finally {
+                          recursionDetection.remove(checkName);
+                        }
+                    }
+                }
+            }
+        }
+        return retval;
     }
 
     public Collection<? extends FieldAssignmentImpl> getAssignments() {

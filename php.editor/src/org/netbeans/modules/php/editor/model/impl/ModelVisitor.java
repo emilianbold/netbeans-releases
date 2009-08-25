@@ -117,7 +117,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class ModelVisitor extends DefaultTreePathVisitor {
     private final FileScopeImpl fileScope;
-    private Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
+    private Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
     private Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
@@ -167,7 +167,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(Program program) {
         modelBuilder.setProgram(program);
         fileScope.setBlockRange(program);
-        this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
+        this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
         try {
             prepareVarComments(program);
             super.visit(program);
@@ -353,21 +353,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
 
-        if (scope instanceof VariableContainerImpl) {
-            VariableContainerImpl varContainer = (VariableContainerImpl) scope;
-            Map<String, VariableNameImpl> map = vars.get(varContainer);
-            if (map == null) {
-                map = new HashMap<String, VariableNameImpl>();
-                vars.put(varContainer, map);
+        if (scope instanceof VariableNameFactory) {
+            ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
+            if (scope instanceof MethodScope && varInfo.getName().equals("$this")) {//NOI18N
+               scope = scope.getInScope();
             }
-            String name = VariableNameImpl.toName(node);
-            VariableName original = map.get(name);
-            if (original == null) {
-                if (varContainer.getVariablesImpl(name).isEmpty()) {
-                    VariableNameImpl varInstance = varContainer.createElement( node);
-                    map.put(name, varInstance);
-                }
-            }
+            createVariable((VariableNameFactory)scope, node);
         } else {
             assert scope instanceof ClassScope : scope;
         }
@@ -385,15 +376,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 continue;
             }
             Scope scope = modelBuilder.getCurrentScope();
-            if (scope instanceof VariableContainerImpl) {
-                VariableContainerImpl vc = (VariableContainerImpl) scope;
-                Collection<? extends VariableName> variablesImpl = vc.getVariablesImpl(varName);
+            if (scope instanceof VariableNameFactory) {
+                VariableNameFactory vc = (VariableNameFactory) scope;
+                Collection<? extends VariableName> variablesImpl = ModelUtils.filter(vc.getDeclaredVariables(), varName);
                 VariableNameImpl varElem = (VariableNameImpl) ModelUtils.getFirst(variablesImpl);
                 if (varElem != null) {
                     varElem.setGloballyVisible(true);
                 } else {
-                    vc = (VariableContainerImpl) modelBuilder.getCurrentNameSpace();
-                    variablesImpl = vc.getVariablesImpl(varName);
+                    vc = (VariableNameFactory) modelBuilder.getCurrentNameSpace();
+                    variablesImpl = ModelUtils.filter(vc.getDeclaredVariables(), varName);
                     varElem = (VariableNameImpl) ModelUtils.getFirst(variablesImpl);
                     if (varElem != null) {
                         varElem.setGloballyVisible(true);
@@ -478,26 +469,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (parameterName instanceof Variable) {
             for (Parameter parameter : parameters) {
                 List<QualifiedName> types = parameter.getTypes();
-                VariableContainerImpl varContainer = (VariableContainerImpl) fncScope;
-                Map<String, VariableNameImpl> map = vars.get(varContainer);
-                if (map == null) {
-                    map = new HashMap<String, VariableNameImpl>();
-                    vars.put(varContainer, map);
-                }
-                String name = parameter.getName();
-                VariableNameImpl varInstance = map.get(name);
-                if (varInstance == null) {
-                    if (varContainer.getVariablesImpl(name).isEmpty()) {
-                        varInstance = new VariableNameImpl(fncScope, name, fncScope.getFile(), parameter.getOffsetRange(), false);
-                        fncScope.addElement(varInstance);
-                        map.put(name, varInstance);
-                    }
-                }
-                if (!types.isEmpty() && varInstance != null) {
-                    varInstance.addElement(new VarAssignmentImpl(varInstance, fncScope, fncScope.getBlockRange(),
+                VariableNameImpl var = createParameter(fncScope, parameter);
+                if (!types.isEmpty() && var != null) {
+                    var.addElement(new VarAssignmentImpl(var, fncScope, fncScope.getBlockRange(),
                             parameter.getOffsetRange(), types.get(0).toString()));
                 }
-
             }
         }
 
@@ -513,27 +489,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(CatchClause node) {
         Variable variable = node.getVariable();
-        //Scope Scope = currentScope.peek();
-        Scope Scope = modelBuilder.getCurrentScope();
-        VariableContainerImpl varContainer = (VariableContainerImpl) Scope;
-        if (varContainer instanceof VariableContainerImpl) {
-            VariableContainerImpl ps = (VariableContainerImpl) varContainer;
-            Map<String, VariableNameImpl> map = vars.get(ps);
-            if (map == null) {
-                map = new HashMap<String, VariableNameImpl>();
-                vars.put(ps, map);
-            }
-            VariableNameImpl varNameImpl = varContainer.createElement( variable);
-            String name = varNameImpl.getName();
-            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, Scope,new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                    VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node)));
-            VariableName original = map.get(name);
-            if (original == null) {
-                map.put(name, varNameImpl);
+        Scope scope = modelBuilder.getCurrentScope();
+        if (scope instanceof VariableNameFactory) {
+            VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
+            if (varNameImpl != null) {
+                varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope,new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                        VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node)));
             }
         }
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), Scope);
-        occurencesBuilder.prepare(variable, Scope);
+        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        occurencesBuilder.prepare(variable, scope);
 
 
         scan(node.getBody());
@@ -694,6 +659,61 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             }            
         }
+    }
+
+    private VariableNameImpl findVariable(Scope scope, final VariableBase leftHandSide) {
+
+        Map<String, VariableNameImpl> varnames = vars.get(scope);
+        VariableNameImpl varN = null;
+        while (scope != null) {
+            if (varnames != null) {
+                if (leftHandSide instanceof Variable) {
+                    varN = varnames.get(VariableNameImpl.toName((Variable) leftHandSide));
+                }
+                if (varN != null) {
+                    break;
+                }
+            }
+            scope = scope.getInScope();
+            varnames = vars.get(scope);
+        }
+        return varN;
+    }
+
+    private VariableNameImpl createParameter(FunctionScopeImpl fncScope, Parameter parameter) {
+        VariableNameFactory varContainer = (VariableNameFactory) fncScope;
+        Map<String, VariableNameImpl> map = vars.get(varContainer);
+        if (map == null) {
+            map = new HashMap<String, VariableNameImpl>();
+            vars.put(varContainer, map);
+        }
+        String name = parameter.getName();
+        VariableNameImpl varInstance = map.get(name);
+        if (varInstance == null) {
+            if (ModelUtils.filter(varContainer.getDeclaredVariables(),name).isEmpty()) {
+                varInstance = new VariableNameImpl(fncScope, name, fncScope.getFile(), parameter.getOffsetRange(), false);
+                fncScope.addElement(varInstance);
+                map.put(name, varInstance);
+            }
+        }
+        return varInstance;
+    }
+
+    private VariableNameImpl createVariable(VariableNameFactory varContainer, Variable node) {
+        Map<String, VariableNameImpl> map = vars.get(varContainer);
+        if (map == null) {
+            map = new HashMap<String, VariableNameImpl>();
+            vars.put(varContainer, map);
+        }
+        String name = VariableNameImpl.toName(node);
+        VariableNameImpl retval = map.get(name);
+        if (retval == null) {
+            if (ModelUtils.filter(varContainer.getDeclaredVariables(),name).isEmpty()) {
+                retval = varContainer.createElement(node);
+                map.put(name, retval);
+            }
+        }
+        return retval;
     }
 
     @CheckForNull
@@ -868,22 +888,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             atOffset = (VariableScope) scope;
         }
         return atOffset;
-    }
-
-    private VariableNameImpl findVariable(Scope scope, final VariableBase leftHandSide) {
-        Map<String, VariableNameImpl> varnames = vars.get(scope);
-        VariableNameImpl varN = null;
-        while (scope != null && varnames != null) {
-            if (leftHandSide instanceof Variable) {
-                varN = varnames.get(VariableNameImpl.toName((Variable) leftHandSide));
-            }
-            if (varN != null) {
-                break;
-            }
-            scope = scope.getInScope();
-            varnames = vars.get(scope);
-        }
-        return varN;
     }
 
     private OffsetRange getBlockRange(Scope currentScope) {

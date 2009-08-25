@@ -55,19 +55,20 @@ import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
-class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
+class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFactory {
 
     private Union2<String, List<ClassScopeImpl>> superClass;
 
     @Override
     void addElement(ModelElementImpl element) {
-        assert element instanceof MethodScope ||
+        assert element instanceof VariableName ||element instanceof MethodScope ||
                 element instanceof FieldElement || element instanceof ClassConstantElement : element.getPhpKind();
         super.addElement(element);
     }
@@ -341,6 +342,20 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         for (ClassScopeImpl cls : supeClasses) {
             retval.add(cls.getName());
         }
+        return retval;
+    }
+
+    public Collection<? extends VariableName> getDeclaredVariables() {
+        return filter(getElements(), new ElementFilter() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.VARIABLE);
+            }
+        });
+    }
+
+    public VariableNameImpl createElement(Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, node, false);
+        addElement(retval);
         return retval;
     }
 }
