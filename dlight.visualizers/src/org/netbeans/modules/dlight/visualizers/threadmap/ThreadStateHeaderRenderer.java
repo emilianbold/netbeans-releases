@@ -63,17 +63,17 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
     private long viewEnd;
     private long viewStart;
     private TimeLine timeLine;
-    private int shift = 0;
+    static int shift = 0;
 
     /** Creates a new instance of ThreadStateHeaderRenderer */
     public ThreadStateHeaderRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
         //System.err.println("L&F="+UIManager.getLookAndFeel().getID());
-        if (UIUtils.isGTKLookAndFeel()) {
-            shift = 2;
-        } else if (UIUtils.isMotifLookAndFeel()){
-            shift = 1;
-        }
+        //if (UIUtils.isGTKLookAndFeel()) {
+        //    shift = 2;
+        //} else if (UIUtils.isMotifLookAndFeel()){
+        //    shift = 1;
+        //}
     }
 
     @Override
