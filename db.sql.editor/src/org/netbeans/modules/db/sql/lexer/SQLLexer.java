@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.sql.lexer;
 
 import org.netbeans.api.lexer.PartType;
@@ -53,27 +52,10 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 public class SQLLexer implements Lexer<SQLTokenId> {
 
-    // XXX is ISA_ZERO really needed?
-
-    private static final int INIT = 1;
-    private static final int ISI_WHITESPACE = 2; // inside white space
-    private static final int ISI_LINE_COMMENT = 4; // inside line comment --
-    private static final int ISI_BLOCK_COMMENT = 5; // inside block comment /* ... */
-    private static final int ISI_STRING = 6; // inside string constant
-    private static final int ISI_IDENTIFIER = 10; // inside identifier
-    private static final int ISA_SLASH = 11; // slash char
-    private static final int ISA_MINUS = 13;
-    private static final int ISA_STAR_IN_BLOCK_COMMENT = 21; // after '*' in a block comment
-    private static final int ISA_ZERO = 27; // after '0'
-    private static final int ISI_INT = 28; // integer number
-    private static final int ISI_DOUBLE = 30; // double number
-    private static final int ISA_DOT = 33; // after '.'
-
-    private final LexerRestartInfo info;
+    private final LexerRestartInfo<SQLTokenId> info;
     private final LexerInput input;
     private final TokenFactory<SQLTokenId> factory;
-
-    private int state = INIT;
+    private State state = State.INIT;
     private int startQuoteChar = -1;
 
     public SQLLexer(LexerRestartInfo<SQLTokenId> info) {
@@ -93,13 +75,13 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case INIT:
                     switch (actChar) {
                         case '\'': // NOI18N
-                            state = ISI_STRING;
+                            state = State.ISI_STRING;
                             break;
                         case '/':
-                            state = ISA_SLASH;
+                            state = State.ISA_SLASH;
                             break;
                         case '#':
-                            state = ISI_LINE_COMMENT;
+                            state = State.ISI_LINE_COMMENT;
                             break;
                         case '=':
                         case '>':
@@ -108,36 +90,36 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case ';':
                         case '*':
                         case '!':
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.OPERATOR);
                         case '(':
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.LPAREN);
                         case ')':
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.RPAREN);
                         case ',':
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.COMMA);
                         case '-':
-                            state = ISA_MINUS;
+                            state = State.ISA_MINUS;
                             break;
                         case '0':
-                            state = ISA_ZERO;
+                            state = State.ISA_ZERO;
                             break;
                         case '.':
-                            state = ISA_DOT;
+                            state = State.ISA_DOT;
                             break;
                         default:
                             // Check for whitespace.
                             if (Character.isWhitespace(actChar)) {
-                                state = ISI_WHITESPACE;
+                                state = State.ISI_WHITESPACE;
                                 break;
                             }
 
                             // Check for digit.
                             if (Character.isDigit(actChar)) {
-                                state = ISI_INT;
+                                state = State.ISI_INT;
                                 break;
                             }
 
@@ -145,7 +127,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             if (isStartQuoteChar(actChar)) {
                                 startQuoteChar = actChar;
                             }
-                            state = ISI_IDENTIFIER;
+                            state = State.ISI_IDENTIFIER;
                             break;
                     }
                     break;
@@ -153,7 +135,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a whitespace token.
                 case ISI_WHITESPACE:
                     if (!Character.isWhitespace(actChar)) {
-                        state = INIT;
+                        state = State.INIT;
                         input.backup(1);
                         return factory.createToken(SQLTokenId.WHITESPACE);
                     }
@@ -162,15 +144,15 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a line comment.
                 case ISI_LINE_COMMENT:
                     if (actChar == '\n') {
-                        state = INIT;
+                        state = State.INIT;
                         return factory.createToken(SQLTokenId.LINE_COMMENT);
                     }
                     break;
 
                 // If we are currently in a block comment.
                 case ISI_BLOCK_COMMENT:
-                    if (actChar =='*') {
-                        state = ISA_STAR_IN_BLOCK_COMMENT;
+                    if (actChar == '*') {
+                        state = State.ISA_STAR_IN_BLOCK_COMMENT;
                     }
                     break;
 
@@ -178,7 +160,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISI_STRING:
                     switch (actChar) {
                         case '\'': // NOI18N
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.STRING);
                     }
                     break;
@@ -197,7 +179,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             input.backup(1);
                         }
                     }
-                    state = INIT;
+                    state = State.INIT;
                     startQuoteChar = -1;
                     return factory.createToken(testKeyword(input.readText()));
 
@@ -205,10 +187,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISA_SLASH:
                     switch (actChar) {
                         case '*':
-                            state = ISI_BLOCK_COMMENT;
+                            state = State.ISI_BLOCK_COMMENT;
                             break;
                         default:
-                            state = INIT;
+                            state = State.INIT;
                             input.backup(1);
                             return factory.createToken(SQLTokenId.OPERATOR);
                     }
@@ -218,10 +200,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISA_MINUS:
                     switch (actChar) {
                         case '-':
-                            state = ISI_LINE_COMMENT;
+                            state = State.ISI_LINE_COMMENT;
                             break;
                         default:
-                            state = INIT;
+                            state = State.INIT;
                             input.backup(1);
                             return factory.createToken(SQLTokenId.OPERATOR);
                     }
@@ -231,10 +213,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISA_STAR_IN_BLOCK_COMMENT:
                     switch (actChar) {
                         case '/':
-                            state = INIT;
+                            state = State.INIT;
                             return factory.createToken(SQLTokenId.BLOCK_COMMENT);
                         default:
-                            state = ISI_BLOCK_COMMENT;
+                            state = State.ISI_BLOCK_COMMENT;
                             break;
                     }
                     break;
@@ -243,14 +225,14 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISA_ZERO:
                     switch (actChar) {
                         case '.':
-                            state = ISI_DOUBLE;
+                            state = State.ISI_DOUBLE;
                             break;
                         default:
                             if (Character.isDigit(actChar)) {
-                                state = ISI_INT;
+                                state = State.ISI_INT;
                                 break;
                             } else {
-                                state = INIT;
+                                state = State.INIT;
                                 input.backup(1);
                                 return factory.createToken(SQLTokenId.INT_LITERAL);
                             }
@@ -261,14 +243,14 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 case ISI_INT:
                     switch (actChar) {
                         case '.':
-                            state = ISI_DOUBLE;
+                            state = State.ISI_DOUBLE;
                             break;
                         default:
                             if (Character.isDigit(actChar)) {
-                                state = ISI_INT;
+                                state = State.ISI_INT;
                                 break;
                             } else {
-                                state = INIT;
+                                state = State.INIT;
                                 input.backup(1);
                                 return factory.createToken(SQLTokenId.INT_LITERAL);
                             }
@@ -278,10 +260,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are in the middle of what we believe is a floating point /number.
                 case ISI_DOUBLE:
                     if (actChar >= '0' && actChar <= '9') {
-                        state = ISI_DOUBLE;
+                        state = State.ISI_DOUBLE;
                         break;
                     } else {
-                        state = INIT;
+                        state = State.INIT;
                         input.backup(1);
                         return factory.createToken(SQLTokenId.DOUBLE_LITERAL);
                     }
@@ -289,9 +271,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are after a period.
                 case ISA_DOT:
                     if (Character.isDigit(actChar)) {
-                        state = ISI_DOUBLE;
+                        state = State.ISI_DOUBLE;
                     } else { // only single dot
-                        state = INIT;
+                        state = State.INIT;
                         input.backup(1);
                         return factory.createToken(SQLTokenId.DOT);
                     }
@@ -350,11 +332,11 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         }
 
         if (id != null) {
-            state = INIT;
+            state = State.INIT;
             return factory.createToken(id, input.readLength(), part);
         }
 
-        if (state != INIT) {
+        if (state != State.INIT) {
             throw new IllegalStateException("Unhandled state " + state + " at end of file");
         }
 
@@ -370,15 +352,14 @@ public class SQLLexer implements Lexer<SQLTokenId> {
 
     private static boolean isStartQuoteChar(int start) {
         return start == '\"' || // SQL-99
-               start == '`' ||  // MySQL
-               start == '[';    // MS SQL Server
+                start == '`' || // MySQL
+                start == '[';    // MS SQL Server
     }
-
 
     private static boolean isEndQuoteChar(int start, int end) {
         return start == '\"' && end == start || // SQL-99
-               start == '`' && end == start ||  // MySQL
-               start == '[' && end == ']';      // MS SQL Server
+                start == '`' && end == start || // MySQL
+                start == '[' && end == ']';      // MS SQL Server
     }
 
     private static SQLTokenId testKeyword(CharSequence value) {
@@ -387,5 +368,23 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         } else {
             return SQLTokenId.IDENTIFIER;
         }
+    }
+
+    private static enum State {
+
+        INIT,
+        ISI_WHITESPACE, // inside white space
+        ISI_LINE_COMMENT, // inside line comment --
+        ISI_BLOCK_COMMENT, // inside block comment /* ... */
+        ISI_STRING, // inside string constant
+        ISI_IDENTIFIER, // inside identifier
+        ISA_SLASH, // slash char
+        ISA_MINUS,
+        ISA_STAR_IN_BLOCK_COMMENT, // after '*' in a block comment
+        // XXX is ISA_ZERO really needed?
+        ISA_ZERO, // after '0'
+        ISI_INT, // integer number
+        ISI_DOUBLE, // double number
+        ISA_DOT // after '.'
     }
 }
