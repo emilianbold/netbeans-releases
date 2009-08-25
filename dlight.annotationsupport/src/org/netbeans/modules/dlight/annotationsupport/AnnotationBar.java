@@ -375,7 +375,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             }
         }
         if ("editorFontColors".equals(id)) {  // NOI18N
-            if (evt.getNewValue() != null && ((String)evt.getNewValue()).equals("NetBeans")) {
+            if (evt.getNewValue() != null && ((String)evt.getNewValue()).equals("NetBeans")) { // NOI18N
                 metricsFG = null;
                 metricsBG = null;
                 textHighlightFG = null;
