@@ -444,7 +444,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             projectProperties.setProperty(WEB_ROOT, webRoot);
         }
         if (phpVersion != null) {
-            projectProperties.setProperty(PHP_VERSION, phpVersion);
+            // disabled for now
+            //projectProperties.setProperty(PHP_VERSION, phpVersion);
         }
         if (shortTags != null) {
             projectProperties.setProperty(SHORT_TAGS, shortTags);
