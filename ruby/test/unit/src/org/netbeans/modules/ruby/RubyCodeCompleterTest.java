@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby;
 
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -303,11 +304,7 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
     public void testPredefConstantsComletion__FILE__() throws Exception {
         checkCompletion("testfiles/predef_constants.rb", "__FILE__.cho^");
     }
-//
-//    void doPredefConstantsComletion__FILE__Setup() {
-//        RubyIndexer.userSourcesTest = true;
-//    }
-//
+
     // #threw NPE from RubyDeclarationFinder
     public void testUnkownInTheBlock() throws Exception {
         // TODO: it actually tries to infer wrongly upon the 'arr', but should
@@ -352,28 +349,62 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/methods_chaining.rb", "puts greeting.cap^italize");
     }
 
+    public void doMethodsChainingAssignmentSetup() {
+        enableTypeInference();
+    }
+
     public void testMethodsChainingDirect() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "puts greeting.empty?.to_^s");
+    }
+
+    public void doMethodsChainingDirectSetup() {
+        enableTypeInference();
     }
 
     public void testMethodsChainingDirectLiterals() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "puts 1.even?.to^_s");
     }
 
+    public void doMethodsChainingDirectLiteralsSetup() throws Exception {
+        enableTypeInference();
+    }
+
     public void testMethodsChainingParenthesised() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "10.between?(0, 100).to^");
+    }
+
+    public void doMethodsChainingNoParenthesisedSetup() {
+        enableTypeInference();
     }
 
     public void testMethodsChainingParenthesised2() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "puts greeting.capitalize().swapc^ase()");
     }
 
+    public void doMethodsChainingParenthesised2Setup() {
+        enableTypeInference();
+    }
+
     public void testMethodsChainingNoParenthesis() throws Exception {
         checkCompletion("testfiles/methods_chaining.rb", "puts greeting.capitalize.swapc^ase");
     }
 
+    public void doMethodsChainingNoParenthesisSetup() {
+        enableTypeInference();
+    }
+
     public void testMethodTypeInference() throws Exception {
         checkCompletion("testfiles/method_type_inference.rb", "puts num.abs^");
+    }
+
+    public void doMethodTypeInferenceSetup() {
+        enableTypeInference();
+    }
+
+    private void enableTypeInference() {
+        RubyIndexer.userSourcesTest = true;
+        TypeInferenceSettings.getDefault().setMethodTypeInference(true);
+        TypeInferenceSettings.getDefault().setRdocTypeInference(true);
     }
 
     public void testClassVariables() throws Exception {
