@@ -1804,6 +1804,7 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 boolean ret = false;
+                boolean wasNew = issue.isNew();
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
@@ -1822,6 +1823,10 @@ public class IssuePanel extends javax.swing.JPanel {
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
+                        if (wasNew && (issue.getParentKey() != null)) {
+                            Issue parent = issue.getRepository().getIssue(issue.getParentKey());
+                            parent.refresh();
+                        }
                     }
                 }
             }
