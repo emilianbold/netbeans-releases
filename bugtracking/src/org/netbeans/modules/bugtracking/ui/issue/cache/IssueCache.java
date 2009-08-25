@@ -37,8 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.ui.issue.cache;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.bugtracking.spi.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +58,45 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
  */
 public abstract class IssueCache<T> {
 
+    // XXX do we need this?
+    public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
+    /**
+     * No information available
+     */
+    public static final int ISSUE_STATUS_UNKNOWN = 0;
+    /**
+     * Issue was seen
+     */
+    public static final int ISSUE_STATUS_SEEN = 2;
+    /**
+     * Issue wasn't seen yet
+     */
+    public static final int ISSUE_STATUS_NEW = 4;
+    /**
+     * Issue was remotely modified since the last time it was seen
+     */
+    public static final int ISSUE_STATUS_MODIFIED = 8;
+    /**
+     * Seen, New or Modified
+     */
+    public static final int ISSUE_STATUS_ALL =
+            ISSUE_STATUS_NEW |
+            ISSUE_STATUS_MODIFIED |
+            ISSUE_STATUS_SEEN;
+    /**
+     * New or modified
+     */
+    public static final int ISSUE_STATUS_NOT_SEEN =
+            ISSUE_STATUS_NEW |
+            ISSUE_STATUS_MODIFIED;
+
+    /**
+     * an issues seen state changed
+     */
+    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
+    
     private Map<String, IssueEntry> cache;
+    private final Map<String, PropertyChangeSupport> supports = new HashMap<String, PropertyChangeSupport>();
     private Map<String, Map<String, String>> lastSeenAttributes;
 
     private String nameSpace;
@@ -64,6 +105,7 @@ public abstract class IssueCache<T> {
 
     public IssueCache(String nameSpace) {
         this.nameSpace = nameSpace;
+        
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 synchronized(CACHE_LOCK) {
@@ -89,6 +131,14 @@ public abstract class IssueCache<T> {
      */
     protected abstract void setTaskData(Issue issue, T issueData);
 
+    /**
+     * Returns a description summarizing the changes made
+     * in the given issue since the last time it was as seen.
+     * 
+     * @return
+     */
+    protected abstract String getRecentChanges(Issue issue);
+
     public Issue setIssueData(String id, T issueData) throws IOException {
         return setIssueData(id, issueData, null);
     }
@@ -109,7 +159,7 @@ public abstract class IssueCache<T> {
                 } else {
                     entry.issue = createIssue(issueData);
                     BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
-                    readIssue(entry);
+                    readIssue(entry);                    
                 }
             } else {
                 BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
@@ -122,7 +172,7 @@ public abstract class IssueCache<T> {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         storeIssue(entry);
                         entry.seen = false;
-                        entry.status= Issue.ISSUE_STATUS_MODIFIED;
+                        entry.status= ISSUE_STATUS_MODIFIED;
                     } else {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         // keep old values
@@ -132,12 +182,12 @@ public abstract class IssueCache<T> {
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
-                        entry.status= Issue.ISSUE_STATUS_MODIFIED;
+                        entry.status= ISSUE_STATUS_MODIFIED;
                     } else {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         entry.seenAttributes = null;
                         entry.seen = false;
-                        entry.status= Issue.ISSUE_STATUS_NEW;
+                        entry.status= ISSUE_STATUS_NEW;
                     }
                 }
             }            
@@ -148,9 +198,12 @@ public abstract class IssueCache<T> {
     public void setSeen(String id, boolean seen) throws IOException {
         BugtrackingManager.LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         assert !SwingUtilities.isEventDispatchThread();
+        boolean oldValue;
+        IssueEntry entry;
         synchronized(CACHE_LOCK) {
-            final IssueEntry entry = getCache().get(id);
-            assert entry != null;
+            oldValue = wasSeen(id);
+            entry = getCache().get(id);
+            assert entry != null && entry.issue != null;
             if(seen) {
                 getLastSeenAttributes().put(id, entry.seenAttributes);
                 entry.seenAttributes = entry.issue.getAttributes();
@@ -160,6 +213,7 @@ public abstract class IssueCache<T> {
             entry.seen = seen;
             storeIssue(entry);
         }
+        fireSeenChanged(entry.issue, oldValue, seen);
     }
 
     public boolean wasSeen(String id) {
@@ -192,7 +246,7 @@ public abstract class IssueCache<T> {
     private IssueEntry createNewEntry(String id) {
         IssueEntry entry = new IssueEntry();
         entry.id = id;
-        entry.status = Issue.ISSUE_STATUS_NEW;
+        entry.status = ISSUE_STATUS_NEW;
         getCache().put(id, entry);
         return entry;
     }
@@ -209,11 +263,11 @@ public abstract class IssueCache<T> {
             IssueEntry entry = getCache().get(id);
             if(entry == null ) {
                 BugtrackingManager.LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
-                return Issue.ISSUE_STATUS_UNKNOWN;
+                return ISSUE_STATUS_UNKNOWN;
             }
             if(entry.seen) {
                 BugtrackingManager.LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
-                return Issue.ISSUE_STATUS_SEEN;
+                return ISSUE_STATUS_SEEN;
             }
             BugtrackingManager.LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
             return entry.status;
@@ -303,6 +357,39 @@ public abstract class IssueCache<T> {
         IssueStorage.getInstance().storeIssue(nameSpace, entry);
     }
 
+    void addPropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
+        PropertyChangeSupport support = getChangeSupport(issue, true);
+        support.addPropertyChangeListener(propertyChangeListener);
+    }
+
+    private PropertyChangeSupport getChangeSupport(Issue issue, boolean forceCreate) {
+        PropertyChangeSupport support = supports.get(issue.getID());
+        if (support == null && forceCreate) {
+            support = new PropertyChangeSupport(issue);
+            supports.put(issue.getID(), support);
+        }
+        return support;
+    }
+
+    void removePropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
+        PropertyChangeSupport support = getChangeSupport(issue, true);
+        support.removePropertyChangeListener(propertyChangeListener);
+    }
+
+    /**
+     * Notify listeners on this issue that the seen state has chaged
+     *
+     * @param oldSeen the old seen state
+     * @param newSeen the new seen state
+     * @see #EVENT_ISSUE_SEEN_CHANGED
+     */
+    private void fireSeenChanged(Issue issue, boolean oldSeen, boolean newSeen) {
+        PropertyChangeSupport support = getChangeSupport(issue, false);
+        if(support != null) {
+            support.firePropertyChange(EVENT_ISSUE_SEEN_CHANGED, oldSeen, newSeen);
+        }
+    }
+
     private boolean isChanged(Map<String, String> oldAttr, Map<String, String> newAttr) {
         if(oldAttr == null) {
             return false; // can't be changed if it wasn't seen yet
@@ -313,7 +400,7 @@ public abstract class IssueCache<T> {
             if(newValue == null && oldValue == null) {
                 continue;
             }
-            if(!e.getKey().equals(Issue.ATTR_DATE_MODIFICATION) &&
+            if(!e.getKey().equals(ATTR_DATE_MODIFICATION) &&
                (newValue == null || !newValue.trim().equals(oldValue.trim())))
             {
                 return true;

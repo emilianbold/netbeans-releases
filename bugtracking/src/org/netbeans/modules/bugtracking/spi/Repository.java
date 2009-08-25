@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * 
@@ -51,7 +52,7 @@ import org.openide.nodes.Node;
  * 
  * @author Tomas Stupka
  */
-public abstract class Repository {
+public abstract class Repository implements Lookup.Provider {
 
     private RepositoryNode node;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -155,13 +156,6 @@ public abstract class Repository {
      */
     public abstract Issue[] simpleSearch(String criteria);
 
-    /**
-     * Returns the {@link IssueCache} for the repository
-     * @return
-     */
-    protected abstract IssueCache getIssueCache();
-
-
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -176,10 +170,6 @@ public abstract class Repository {
      */
     protected void fireQueryListChanged() {
         support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
-    }
-
-    IssueCache getCache() {
-        return getIssueCache();
     }
 
 }

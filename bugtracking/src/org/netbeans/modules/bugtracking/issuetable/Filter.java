@@ -1,6 +1,7 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +76,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(Issue issue) {
-            return query.contains(issue) || !issue.wasSeen();
+            return query.contains(issue) || !IssueCacheUtils.wasSeen(issue);
         }
     }
     private static class NotSeenFilter extends Filter {
@@ -86,7 +88,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(Issue issue) {
-            return !issue.wasSeen();
+            return !IssueCacheUtils.wasSeen(issue);
         }
     }
     private static class NewFilter extends Filter {
@@ -100,7 +102,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(Issue issue) {
-            return query.getIssueStatus(issue) == Issue.ISSUE_STATUS_NEW;
+            return query.getIssueStatus(issue) == IssueCache.ISSUE_STATUS_NEW;
         }
     }
     private static class ObsoleteDateFilter extends Filter {
@@ -131,6 +133,5 @@ public abstract class Filter {
             return query.contains(issue);
         }
     }
-
 
 }

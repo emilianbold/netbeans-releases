@@ -97,7 +97,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
@@ -871,6 +872,17 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() != issue) {
+                return;
+            }
+            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                updateFieldStatuses();
+            }
+        }
+    };
+
     private void attachIssueListener(final NbJiraIssue issue) {
         issue.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -879,11 +891,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                     reloadFormInAWT(false);
-                } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
-                    updateFieldStatuses();
-                }
+                } 
             }
         });
+        IssueCacheUtils.removeCacheListener(issue, cacheListener);
+        IssueCacheUtils.addCacheListener(issue, cacheListener);
     }
 
     private static void fixPrefSize(JTextField textField) {
